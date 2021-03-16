@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static where(string $key, string $value)
+ *
  * @property int user_id
  * @property int role_id
  */

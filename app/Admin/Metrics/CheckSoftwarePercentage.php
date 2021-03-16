@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Models\CheckRecord;
 use App\Models\CheckTrack;
@@ -13,7 +11,6 @@ use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Widgets\Card;
 use Exception;
 use Illuminate\Contracts\Support\Renderable;
-
 
 class CheckSoftwarePercentage extends Card
 {
@@ -35,7 +32,8 @@ class CheckSoftwarePercentage extends Card
                 ->where('status', '!=', 0)
                 ->get()
                 ->count();
-            $done_counts = trans('main.check_process') . $check_tracks_counts . ' / ' . $software_records_all;
+            $done_counts = trans('main.check_process').$check_tracks_counts.' / '.$software_records_all;
+
             try {
                 $percentage = round($check_tracks_counts / $software_records_all * 100, 2);
             } catch (Exception $exception) {
@@ -51,7 +49,6 @@ class CheckSoftwarePercentage extends Card
         <div class="progress-bar bg-info" style="background: rgba(70,160,153,1);width: {$percentage}%"></div>
     </div>
 HTML;
-
 
         if ($percentage == 0) {
             $display = '';

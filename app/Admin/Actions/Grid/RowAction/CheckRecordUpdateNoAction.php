@@ -13,11 +13,12 @@ class CheckRecordUpdateNoAction extends RowAction
     public function __construct()
     {
         parent::__construct();
-        $this->title = '❌ ' . admin_trans_label('Cancel Check');
+        $this->title = '❌ '.admin_trans_label('Cancel Check');
     }
 
     /**
-     * 处理动作逻辑
+     * 处理动作逻辑.
+     *
      * @return Response
      */
     public function handle(): Response
@@ -40,13 +41,15 @@ class CheckRecordUpdateNoAction extends RowAction
 
         $check_record->status = 2;
         $check_record->save();
+
         return $this->response()
             ->success(trans('main.success'))
             ->refresh();
     }
 
     /**
-     * 对话框
+     * 对话框.
+     *
      * @return string[]
      */
     public function confirm(): array

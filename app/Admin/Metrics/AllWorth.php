@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Admin\Metrics;
 
 use Closure;
@@ -9,7 +8,6 @@ use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Widgets\Card;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\DB;
-
 
 class AllWorth extends Card
 {

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Models\DeviceRecord;
 use App\Models\PartRecord;
@@ -66,6 +64,7 @@ class WorthHeatmap
             }
             array_push($all_year_worth, $days);
         }
+
         return json_encode($all_year_worth);
     }
 }

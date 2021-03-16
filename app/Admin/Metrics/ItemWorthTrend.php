@@ -10,7 +10,6 @@ use App\Support\Support;
 use Dcat\Admin\Widgets\Metrics\Line;
 use Illuminate\Http\Request;
 
-
 class ItemWorthTrend extends Line
 {
     /**
@@ -32,7 +31,7 @@ class ItemWorthTrend extends Line
     {
         $year = date('Y', time());
         if ($request->get('option') == 'pre_year') {
-            $year = (int)$year - 1;
+            $year = (int) $year - 1;
         }
         $from = Support::makeYearDate($year);
         $to = Support::makeYearDate($year, 'to');
@@ -125,14 +124,14 @@ class ItemWorthTrend extends Line
     }
 
     /**
-     * 设置卡片内
+     * 设置卡片内.
      *
      * @return ItemWorthTrend
      */
     public function withContent(): ItemWorthTrend
     {
         return $this->content(
-            <<<HTML
+            <<<'HTML'
 <div class="d-flex justify-content-between align-items-center mt-1" style="margin-bottom: 2px">
 </div>
 HTML
@@ -149,6 +148,7 @@ HTML
     public function withChart(array $data): ItemWorthTrend
     {
         $this->chartOptions['tooltip']['x']['show'] = true;
+
         return $this->chart([
             'series' => [
                 [
@@ -170,20 +170,20 @@ HTML
             ],
             'tooltip' => [
                 'x' => [
-                    'show' => true
-                ]
+                    'show' => true,
+                ],
             ],
             'colors' => [
                 '#9475CC',
                 '#63B5F7',
                 '#4CB5AB',
-                '#FF994C'
+                '#FF994C',
             ],
         ]);
     }
 
     /**
-     * 初始化卡片内容
+     * 初始化卡片内容.
      *
      * @return void
      */
@@ -194,8 +194,7 @@ HTML
         $this->title(trans('main.item_worth_trend'));
         $this->dropdown([
             'current_year' => trans('main.current_year'),
-            'pre_year' => trans('main.last_year')
+            'pre_year'     => trans('main.last_year'),
         ]);
     }
-
 }

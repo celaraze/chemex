@@ -8,15 +8,15 @@ use Dcat\Admin\Widgets\Modal;
 
 class ServiceRecordCreateIssueAction extends RowAction
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->title = '📢 ' . admin_trans_label('Issue Create');
+        $this->title = '📢 '.admin_trans_label('Issue Create');
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()

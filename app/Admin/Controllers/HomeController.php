@@ -19,7 +19,6 @@ use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Widgets\Card;
 
-
 class HomeController extends Controller
 {
     public function index(Content $content): Content

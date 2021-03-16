@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Traits;
 
 use App\Admin\Repositories\PartTrack;
@@ -12,8 +11,10 @@ use Dcat\Admin\Grid;
 trait ControllerHasDeviceRelatedGrid
 {
     /**
-     * 查看某个设备下面的全部关联配件&软件&服务程序，并且返回它们的渲染集合
+     * 查看某个设备下面的全部关联配件&软件&服务程序，并且返回它们的渲染集合.
+     *
      * @param $device_id
+     *
      * @return array
      */
     public static function hasDeviceRelated($device_id): array

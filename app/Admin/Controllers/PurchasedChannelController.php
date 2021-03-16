@@ -12,11 +12,11 @@ use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Show;
 use Illuminate\Http\Request;
 
-
 class PurchasedChannelController extends AdminController
 {
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
@@ -62,7 +62,7 @@ class PurchasedChannelController extends AdminController
             $grid->column('updated_at');
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Grid\Tools $tools) {
                 // @permissions
@@ -72,14 +72,14 @@ class PurchasedChannelController extends AdminController
             });
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'name', 'description')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('purchased.channel.create')) {
@@ -143,7 +143,7 @@ class PurchasedChannelController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableCreatingCheck();
             $form->disableEditingCheck();

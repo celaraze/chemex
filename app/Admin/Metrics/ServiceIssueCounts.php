@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Models\ServiceIssue;
 use App\Models\ServiceRecord;

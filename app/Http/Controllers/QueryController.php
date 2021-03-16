@@ -7,15 +7,16 @@ use Illuminate\Http\JsonResponse;
 
 class QueryController extends Controller
 {
-
     public function __construct()
     {
         $this->middleware('jwt.auth');
     }
 
     /**
-     * 移动端扫码查看设备配件软件详情
+     * 移动端扫码查看设备配件软件详情.
+     *
      * @param $string
+     *
      * @return JsonResponse
      */
     public function query($string): JsonResponse
@@ -28,10 +29,11 @@ class QueryController extends Controller
         $item->vendor;
         $item->channel;
         $return = [
-            'code' => 200,
+            'code'    => 200,
             'message' => '查询成功',
-            'data' => $item
+            'data'    => $item,
         ];
+
         return response()->json($return);
     }
 }

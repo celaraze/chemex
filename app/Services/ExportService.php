@@ -1,22 +1,21 @@
 <?php
 
-
 namespace App\Services;
-
 
 use App\Models\DeviceRecord;
 use Dcat\EasyExcel\Excel;
 
 /**
  * 和导出相关的功能模块
- * Class ExportService
- * @package App\Services
+ * Class ExportService.
  */
 class ExportService
 {
     /**
-     * 设备履历导出
+     * 设备履历导出.
+     *
      * @param $device_id
+     *
      * @return mixed
      */
     public static function deviceHistory($device_id)
@@ -28,6 +27,7 @@ class ExportService
             $name = $device->name;
         }
         $history = DeviceService::history($device_id);
-        return Excel::export($history)->download($name . '履历清单.xlsx');
+
+        return Excel::export($history)->download($name.'履历清单.xlsx');
     }
 }

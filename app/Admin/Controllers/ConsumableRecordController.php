@@ -22,7 +22,6 @@ use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Show;
 use Dcat\Admin\Widgets\Tab;
 
-
 /**
  * @method allCounts()
  */
@@ -35,10 +34,10 @@ class ConsumableRecordController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->add(Data::icon('record') . trans('main.record'), $this->grid(), true);
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('consumable.categories.index'));
-                $tab->addLink(Data::icon('track') . trans('main.history'), admin_route('consumable.tracks.index'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('consumable.columns.index'));
+                $tab->add(Data::icon('record').trans('main.record'), $this->grid(), true);
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('consumable.categories.index'));
+                $tab->addLink(Data::icon('track').trans('main.history'), admin_route('consumable.tracks.index'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('consumable.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -73,17 +72,17 @@ class ConsumableRecordController extends AdminController
             $grid->column('updated_at', '', $column_sort);
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeGrid((new ConsumableRecord())->getTable(), $grid, $column_sort);
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Tools $tools) {
                 // @permissions
@@ -97,7 +96,7 @@ class ConsumableRecordController extends AdminController
             });
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch(
                 array_merge([
@@ -114,13 +113,13 @@ class ConsumableRecordController extends AdminController
                 ->auto(false);
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function ($filter) {
                 $filter->equal('category_id')->select(ConsumableCategory::pluck('name', 'id'));
                 $filter->equal('vendor_id')->select(VendorRecord::pluck('name', 'id'));
                 /**
-                 * 自定义字段
+                 * 自定义字段.
                  */
                 ControllerHasCustomColumns::makeFilter((new ConsumableRecord())->getTable(), $filter);
             });
@@ -164,7 +163,7 @@ class ConsumableRecordController extends AdminController
             $show->field('price');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeDetail((new ConsumableRecord())->getTable(), $show);
 
@@ -172,7 +171,7 @@ class ConsumableRecordController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             // @permissions
@@ -219,7 +218,7 @@ class ConsumableRecordController extends AdminController
             $form->text('price');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeForm((new ConsumableRecord())->getTable(), $form);
 

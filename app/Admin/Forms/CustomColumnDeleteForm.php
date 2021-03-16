@@ -9,14 +9,15 @@ use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Widgets\Form;
 use Exception;
 
-
 class CustomColumnDeleteForm extends Form
 {
     use LazyWidget;
 
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
@@ -52,12 +53,12 @@ class CustomColumnDeleteForm extends Form
                 ->refresh();
         } catch (Exception $exception) {
             return $this->response()
-                ->error(trans('main.fail') . '：' . $exception->getMessage());
+                ->error(trans('main.fail').'：'.$exception->getMessage());
         }
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {

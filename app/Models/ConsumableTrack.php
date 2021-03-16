@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Date;
 
 /**
  * @method static where(string $key, string $value1, string $value2 = null)
+ *
  * @property int consumable_id
  * @property string operator
- * @property double number
- * @property double change
+ * @property float number
+ * @property float change
  * @property Date|null purchased
  * @property Date|null expired
  */

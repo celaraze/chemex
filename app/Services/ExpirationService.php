@@ -1,21 +1,19 @@
 <?php
 
-
 namespace App\Services;
-
 
 use App\Models\DeviceRecord;
 use App\Support\Support;
 
 /**
  * 检测记录是否过期（比如保固时间）
- * Class ExpirationService
- * @package App\Services
+ * Class ExpirationService.
  */
 class ExpirationService
 {
     /**
-     * 30天内即将过期的设备
+     * 30天内即将过期的设备.
+     *
      * @return int
      */
     public static function deviceCounts(): int
@@ -28,13 +26,16 @@ class ExpirationService
                 $result++;
             }
         }
+
         return $result;
     }
 
     /**
-     * 判断物品维保剩余天数后返回 HTML 渲染体
+     * 判断物品维保剩余天数后返回 HTML 渲染体.
+     *
      * @param $item_type
      * @param $id
+     *
      * @return string
      */
     public static function itemExpirationLeftDaysRender($item_type, $id): string
@@ -55,9 +56,11 @@ class ExpirationService
     }
 
     /**
-     * 判断物品维保剩余天数
+     * 判断物品维保剩余天数.
+     *
      * @param $item_type
      * @param $id
+     *
      * @return string
      */
     public static function itemExpirationLeftDays($item_type, $id)
@@ -79,6 +82,7 @@ class ExpirationService
                 $day = ceil($day);
             }
         }
-        return (int)$day;
+
+        return (int) $day;
     }
 }

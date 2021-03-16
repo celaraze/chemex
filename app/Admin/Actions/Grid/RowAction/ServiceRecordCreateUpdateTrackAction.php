@@ -8,15 +8,15 @@ use Dcat\Admin\Widgets\Modal;
 
 class ServiceRecordCreateUpdateTrackAction extends RowAction
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->title = '💻 ' . admin_trans_label('Track Create Update');
+        $this->title = '💻 '.admin_trans_label('Track Create Update');
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()

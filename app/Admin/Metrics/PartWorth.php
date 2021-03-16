@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use Closure;
 use Dcat\Admin\Grid\LazyRenderable as LazyGrid;

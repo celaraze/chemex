@@ -8,15 +8,15 @@ use Dcat\Admin\Widgets\Modal;
 
 class MaintenanceRecordUpdateAction extends RowAction
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->title = '🧱 ' . admin_trans_label('Update');
+        $this->title = '🧱 '.admin_trans_label('Update');
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Support;
 
 use App\Admin\Repositories\ConsumableRecord;
@@ -14,7 +13,8 @@ use Dcat\Admin\Widgets\Alert;
 class Data
 {
     /**
-     * 发行方式
+     * 发行方式.
+     *
      * @return string[]
      */
     public static function distribution(): array
@@ -23,12 +23,13 @@ class Data
             'u' => '未知',
             'o' => '开源',
             'f' => '免费',
-            'b' => '商业授权'
+            'b' => '商业授权',
         ];
     }
 
     /**
-     * 性别
+     * 性别.
+     *
      * @return string[]
      */
     public static function genders(): array
@@ -36,25 +37,27 @@ class Data
         return [
             '无' => '无',
             '男' => '男',
-            '女' => '女'
+            '女' => '女',
         ];
     }
 
     /**
-     * 物件
+     * 物件.
+     *
      * @return string[]
      */
     public static function items(): array
     {
         return [
-            'device' => '设备',
-            'part' => '配件',
-            'software' => '软件'
+            'device'   => '设备',
+            'part'     => '配件',
+            'software' => '软件',
         ];
     }
 
     /**
      * 盘点任务状态
+     *
      * @return string[]
      */
     public static function checkRecordStatus(): array
@@ -62,12 +65,13 @@ class Data
         return [
             0 => '进行',
             1 => '完成',
-            2 => '中止'
+            2 => '中止',
         ];
     }
 
     /**
      * 维修状态
+     *
      * @return string[]
      */
     public static function maintenanceStatus(): array
@@ -75,12 +79,13 @@ class Data
         return [
             0 => '等待处理',
             1 => '处理完毕',
-            2 => '取消'
+            2 => '取消',
         ];
     }
 
     /**
      * 盘点追踪状态
+     *
      * @return string[]
      */
     public static function checkTrackStatus(): array
@@ -88,12 +93,13 @@ class Data
         return [
             0 => '未盘点',
             1 => '盘盈',
-            2 => '盘亏'
+            2 => '盘亏',
         ];
     }
 
     /**
      * 服务异常状态
+     *
      * @return string[]
      */
     public static function serviceIssueStatus(): array
@@ -102,12 +108,13 @@ class Data
             0 => '正常',
             1 => '故障',
             2 => '恢复',
-            3 => '暂停'
+            3 => '暂停',
         ];
     }
 
     /**
-     * 软件标签
+     * 软件标签.
+     *
      * @return array
      */
     public static function softwareTags(): array
@@ -117,7 +124,7 @@ class Data
                 'windows',
                 'win10',
                 'win8',
-                'win7'
+                'win7',
             ],
             'macos' => [
                 'mac',
@@ -134,7 +141,7 @@ class Data
                 'sierra',
                 'mojave',
                 'catalina',
-                'bigsur'
+                'bigsur',
             ],
             'linux' => [
                 'linux',
@@ -143,7 +150,7 @@ class Data
                 'kali',
                 'debian',
                 'arch',
-                'deepin'
+                'deepin',
             ],
             'android' => [
                 'cupcake',
@@ -159,16 +166,17 @@ class Data
                 'marshmallow',
                 'nougat',
                 'oreo',
-                'pie'
+                'pie',
             ],
             'ios' => [
-                'ios'
-            ]
+                'ios',
+            ],
         ];
     }
 
     /**
-     * 返回不支持操作的错误信息 warning
+     * 返回不支持操作的错误信息 warning.
+     *
      * @return Alert
      */
     public static function unsupportedOperationWarning(): Alert
@@ -176,134 +184,145 @@ class Data
         $alert = Alert::make('此功能不允许通过此操作实现。', '未提供的操作');
         $alert->warning();
         $alert->icon('feather icon-alert-triangle');
+
         return $alert;
     }
 
     /**
      * 保固状态
+     *
      * @return string[]
      */
     public static function expiredStatus(): array
     {
         return [
-            'one day' => '一天内过期',
+            'one day'   => '一天内过期',
             'three day' => '三天内过期',
-            'one week' => '一周内过期',
+            'one week'  => '一周内过期',
             'one month' => '一月内过期',
-            'normal' => '正常',
-            'none' => '无效的设备',
-            'default' => '错误'
+            'normal'    => '正常',
+            'none'      => '无效的设备',
+            'default'   => '错误',
         ];
     }
 
     /**
-     * 保固状态颜色
+     * 保固状态颜色.
+     *
      * @return array
      */
     public static function expiredStatusColors(): array
     {
         return [
-            'one day' => 'danger',
+            'one day'   => 'danger',
             'three day' => 'danger',
-            'one week' => 'warning',
+            'one week'  => 'warning',
             'one month' => 'warning',
-            'normal' => 'success',
-            'none' => 'primary',
-            'default' => Admin::color()->gray()
+            'normal'    => 'success',
+            'none'      => 'primary',
+            'default'   => Admin::color()->gray(),
         ];
     }
 
     /**
-     * 返回时间尺度
+     * 返回时间尺度.
+     *
      * @return string[]
      */
     public static function timeScales(): array
     {
         return [
-            'day' => '天',
+            'day'   => '天',
             'month' => '月',
-            'year' => '年'
+            'year'  => '年',
         ];
     }
 
     /**
-     * 返回emoji
+     * 返回emoji.
+     *
      * @return string[]
      */
     public static function emoji(): array
     {
         return [
-            'happy' => '😀 愉快',
+            'happy'  => '😀 愉快',
             'normal' => '😐 一般',
-            'sad' => '😟 悲伤'
+            'sad'    => '😟 悲伤',
         ];
     }
 
     /**
-     * 返回控制器图标
+     * 返回控制器图标.
+     *
      * @param $string
+     *
      * @return string
      */
     public static function icon($string): string
     {
         $array = [
-            'record' => '<i class="fa feather icon-list"></i> ',
-            'category' => '<i class="fa feather icon-pie-chart"></i> ',
-            'track' => '<i class="fa feather icon-archive"></i> ',
-            'issue' => '<i class="fa feather icon-alert-triangle"></i> ',
-            'user' => '<i class="fa feather icon-users"></i> ',
+            'record'     => '<i class="fa feather icon-list"></i> ',
+            'category'   => '<i class="fa feather icon-pie-chart"></i> ',
+            'track'      => '<i class="fa feather icon-archive"></i> ',
+            'issue'      => '<i class="fa feather icon-alert-triangle"></i> ',
+            'user'       => '<i class="fa feather icon-users"></i> ',
             'department' => '<i class="fa feather icon-copy"></i> ',
-            'role' => '<i class="fa feather icon-users"></i> ',
+            'role'       => '<i class="fa feather icon-users"></i> ',
             'permission' => '<i class="fa feather icon-lock"></i> ',
             'statistics' => '<i class="fa feather icon-bar-chart-2"></i> ',
-            'column' => '<i class="fa feather icon-edit-2"></i> '
+            'column'     => '<i class="fa feather icon-edit-2"></i> ',
         ];
+
         return $array[$string];
     }
 
     /**
-     * 返回优先级的键值对
+     * 返回优先级的键值对.
+     *
      * @return string[]
      */
     public static function priority(): array
     {
         return [
-            'high' => '高',
+            'high'   => '高',
             'normal' => '普通',
-            'low' => '低'
+            'low'    => '低',
         ];
     }
 
     /**
-     * 返回自定义字段的类型
+     * 返回自定义字段的类型.
+     *
      * @return string[]
      */
     public static function customColumnTypes(): array
     {
         return [
-            'string' => '字符串',
-            'date' => '日期',
+            'string'   => '字符串',
+            'date'     => '日期',
             'dateTime' => '日期时间',
-            'integer' => '整数',
-            'float' => '浮点',
-            'double' => '双精度',
+            'integer'  => '整数',
+            'float'    => '浮点',
+            'double'   => '双精度',
             'longText' => '长文本',
-            'select' => '选项'
+            'select'   => '选项',
         ];
     }
 
     /**
-     * 表名返回资产名
+     * 表名返回资产名.
+     *
      * @return string[]
      */
     public static function itemNameByTableName(): array
     {
         return [
-            (new DeviceRecord())->getTable() => trans('main.device'),
-            (new PartRecord())->getTable() => trans('main.part'),
-            (new SoftwareRecord())->getTable() => trans('main.software'),
+            (new DeviceRecord())->getTable()     => trans('main.device'),
+            (new PartRecord())->getTable()       => trans('main.part'),
+            (new SoftwareRecord())->getTable()   => trans('main.software'),
             (new ConsumableRecord())->getTable() => trans('main.consumable'),
-            (new ServiceRecord())->getTable() => trans('main.service'),
+            (new ServiceRecord())->getTable()    => trans('main.service'),
         ];
     }
 }

@@ -12,6 +12,7 @@ class TodoRecordObserver
      * Handle the TodoRecord "created" event.
      *
      * @param TodoRecord $todoRecord
+     *
      * @return void
      */
     public function created(TodoRecord $todoRecord)
@@ -26,6 +27,7 @@ class TodoRecordObserver
      * Handle the TodoRecord "updated" event.
      *
      * @param TodoRecord $todoRecord
+     *
      * @return void
      */
     public function updated(TodoRecord $todoRecord)
@@ -37,6 +39,7 @@ class TodoRecordObserver
      * Handle the TodoRecord "deleted" event.
      *
      * @param TodoRecord $todoRecord
+     *
      * @return void
      */
     public function deleted(TodoRecord $todoRecord)
@@ -48,6 +51,7 @@ class TodoRecordObserver
      * Handle the TodoRecord "restored" event.
      *
      * @param TodoRecord $todoRecord
+     *
      * @return void
      */
     public function restored(TodoRecord $todoRecord)
@@ -59,6 +63,7 @@ class TodoRecordObserver
      * Handle the TodoRecord "force deleted" event.
      *
      * @param TodoRecord $todoRecord
+     *
      * @return void
      */
     public function forceDeleted(TodoRecord $todoRecord)

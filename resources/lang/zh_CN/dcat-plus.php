@@ -1,4 +1,5 @@
 <?php
+
 return [
     'labels' => [
         'site' => '站点配置',

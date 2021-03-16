@@ -37,6 +37,7 @@ use Dcat\Admin\Widgets\Tab;
  * @property  DeviceRecord device
  * @property  int id
  * @property  string deleted_at
+ *
  * @method leftCounts()
  */
 class SoftwareRecordController extends AdminController
@@ -48,11 +49,11 @@ class SoftwareRecordController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->add(Data::icon('record') . trans('main.record'), $this->grid(), true);
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('software.categories.index'));
-                $tab->addLink(Data::icon('track') . trans('main.track'), admin_route('software.tracks.index'));
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('software.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('software.columns.index'));
+                $tab->add(Data::icon('record').trans('main.record'), $this->grid(), true);
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('software.categories.index'));
+                $tab->addLink(Data::icon('track').trans('main.track'), admin_route('software.tracks.index'));
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('software.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('software.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -75,7 +76,7 @@ class SoftwareRecordController extends AdminController
                 ->toArray();
             $grid->column('id', '', $column_sort);
             $grid->column('qrcode', '', $column_sort)->qrcode(function () {
-                return 'software:' . $this->id;
+                return 'software:'.$this->id;
             }, 200, 200);
             $grid->column('name', '', $column_sort);
             $grid->column('description', '', $column_sort);
@@ -98,12 +99,12 @@ class SoftwareRecordController extends AdminController
             $grid->column('updated_at', '', $column_sort);
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeGrid((new SoftwareRecord())->getTable(), $grid, $column_sort);
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -117,23 +118,23 @@ class SoftwareRecordController extends AdminController
                 // @permissions
                 if (Admin::user()->can('software.record.track.list')) {
                     $tracks_route = admin_route('software.tracks.index', ['_search_' => $this->id]);
-                    $actions->append("<a href='$tracks_route'>💿 " . admin_trans_label('Manage Track') . '</a>');
+                    $actions->append("<a href='$tracks_route'>💿 ".admin_trans_label('Manage Track').'</a>');
                 }
             });
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
             $grid->hideColumns([
                 'description',
                 'price',
                 'expired',
-                'expiration_left_days'
+                'expiration_left_days',
             ]);
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch(
                 array_merge([
@@ -149,19 +150,19 @@ class SoftwareRecordController extends AdminController
                 ->auto(false);
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function ($filter) {
                 $filter->equal('category_id')->select(SoftwareCategory::pluck('name', 'id'));
                 $filter->equal('vendor_id')->select(VendorRecord::pluck('name', 'id'));
                 /**
-                 * 自定义按钮
+                 * 自定义按钮.
                  */
                 ControllerHasCustomColumns::makeFilter((new SoftwareRecord())->getTable(), $filter);
             });
 
             /**
-             * 批量操作按钮
+             * 批量操作按钮.
              */
             $grid->batchActions(function (BatchActions $batchActions) {
                 // @permissions
@@ -171,7 +172,7 @@ class SoftwareRecordController extends AdminController
             });
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Tools $tools) {
                 // @permissions
@@ -181,7 +182,7 @@ class SoftwareRecordController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->enableDialogCreate();
             $grid->disableDeleteButton();
@@ -205,6 +206,7 @@ class SoftwareRecordController extends AdminController
     public function show($id, Content $content): Content
     {
         $history = SoftwareService::history($id);
+
         return $content
             ->title($this->title())
             ->description($this->description()['index'] ?? trans('admin.show'))
@@ -246,7 +248,7 @@ class SoftwareRecordController extends AdminController
                         $card = new Card(trans('main.history'), view('history')->with('data', $history));
                         // @permissions
                         if (Admin::user()->can('software.record.history.export')) {
-                            $card->tool('<a class="btn btn-primary btn-xs" href="' . admin_route('export.software.history', [$id]) . '" target="_blank">' . admin_trans_label('Export To Excel') . '</a>');
+                            $card->tool('<a class="btn btn-primary btn-xs" href="'.admin_route('export.software.history', [$id]).'" target="_blank">'.admin_trans_label('Export To Excel').'</a>');
                         }
                         $column->row($card);
                     });
@@ -279,7 +281,7 @@ class SoftwareRecordController extends AdminController
             $show->field('counts');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeDetail((new SoftwareRecord())->getTable(), $show);
 
@@ -287,7 +289,7 @@ class SoftwareRecordController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             // @permissions
@@ -298,8 +300,10 @@ class SoftwareRecordController extends AdminController
     }
 
     /**
-     * 履历导出
+     * 履历导出.
+     *
      * @param $software_id
+     *
      * @return mixed
      */
     public function exportHistory($software_id)
@@ -360,7 +364,7 @@ class SoftwareRecordController extends AdminController
             $form->date('expired');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeForm((new SoftwareRecord())->getTable(), $form);
 
@@ -368,7 +372,7 @@ class SoftwareRecordController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableDeleteButton();
             $form->disableCreatingCheck();

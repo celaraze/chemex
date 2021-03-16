@@ -15,12 +15,12 @@ class ConsumableCategoryImportAction extends AbstractTool
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()
     {
-
         return Modal::make()
             ->lg()
             ->body(new ConsumableCategoryImportForm())

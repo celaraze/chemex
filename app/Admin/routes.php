@@ -25,8 +25,8 @@ use Illuminate\Support\Facades\Route;
 Admin::routes();
 
 Route::group([
-    'prefix' => config('admin.route.prefix'),
-    'namespace' => config('admin.route.namespace'),
+    'prefix'     => config('admin.route.prefix'),
+    'namespace'  => config('admin.route.namespace'),
     'middleware' => config('admin.route.middleware'),
 ], function (Router $router) {
     $router->get('/', 'HomeController@index');
@@ -34,7 +34,7 @@ Route::group([
         ->name('ldap.test');
 
     /**
-     * 辅助信息
+     * 辅助信息.
      */
     $router->get('/version', 'VersionController@index');
     $router->get('/action/migrate', 'VersionController@migrate')
@@ -45,7 +45,7 @@ Route::group([
         ->name('upgrade');
 
     /**
-     * 工具
+     * 工具.
      */
     $router->get('/tools/qrcode_generator', 'ToolQRCodeGeneratorController@index')
         ->name('qrcode_generator');
@@ -53,7 +53,7 @@ Route::group([
         ->name('chemex_app');
 
     /**
-     * 设备管理
+     * 设备管理.
      */
     $router->resource('/device/records', 'DeviceRecordController')
         ->names('device.records');
@@ -71,7 +71,7 @@ Route::group([
         ->name('selection.device.categories');
 
     /**
-     * 配件管理
+     * 配件管理.
      */
     $router->resource('/part/records', 'PartRecordController')
         ->names('part.records');
@@ -87,7 +87,7 @@ Route::group([
         ->name('selection.part.categories');
 
     /**
-     * 软件管理
+     * 软件管理.
      */
     $router->resource('/software/records', 'SoftwareRecordController')
         ->names('software.records');
@@ -105,7 +105,7 @@ Route::group([
         ->name('export.software.history');
 
     /**
-     * 服务管理
+     * 服务管理.
      */
     $router->resource('/service/records', 'ServiceRecordController')
         ->names('service.records');
@@ -119,7 +119,7 @@ Route::group([
         ->names('service.columns');
 
     /**
-     * 耗材管理
+     * 耗材管理.
      */
     $router->resource('/consumable/records', 'ConsumableRecordController')
         ->names('consumable.records');
@@ -133,13 +133,13 @@ Route::group([
         ->name('selection.consumable.categories');
 
     /**
-     * 待办
+     * 待办.
      */
     $router->resource('/todo/records', 'TodoRecordController')
         ->names('todo.records');
 
     /**
-     * 厂商管理
+     * 厂商管理.
      */
     $router->resource('/vendor/records', 'VendorRecordController')
         ->names('vendor.records');
@@ -147,7 +147,7 @@ Route::group([
         ->name('selection.vendor.records');
 
     /**
-     * 购入途径管理
+     * 购入途径管理.
      */
     $router->resource('/purchased/channels', 'PurchasedChannelController')
         ->names('purchased.channels');
@@ -155,7 +155,7 @@ Route::group([
         ->name('selection.purchased.channels');
 
     /**
-     * 组织管理
+     * 组织管理.
      */
     $router->resource('/organization/users', 'UserController')
         ->names('organization.users');
@@ -171,7 +171,7 @@ Route::group([
         ->name('selection.organization.departments');
 
     /**
-     * 盘点管理
+     * 盘点管理.
      */
     $router->resource('/check/records', 'CheckRecordController')
         ->names('check.records');
@@ -179,13 +179,13 @@ Route::group([
         ->names('check.tracks');
 
     /**
-     * 故障维护
+     * 故障维护.
      */
     $router->resource('/maintenance/records', 'MaintenanceRecordController')
         ->names('maintenance.records');
 
     /**
-     * 折旧规则
+     * 折旧规则.
      */
     $router->resource('/depreciation/rules', 'DepreciationRuleController')
         ->names('depreciation.rules');
@@ -193,7 +193,7 @@ Route::group([
         ->name('selection.depreciation.rules');
 
     /**
-     * 导出
+     * 导出.
      */
     $router->get('/export/device/{device_id}/history', [DeviceRecordController::class, 'exportHistory'])
         ->name('export.device.history');
@@ -201,7 +201,7 @@ Route::group([
         ->name('export.check.report');
 
     /**
-     * 通知
+     * 通知.
      */
     $router->get('/notifications/read_all', [NotificationController::class, 'readAll'])
         ->name('notification.read.all');
@@ -209,19 +209,19 @@ Route::group([
         ->name('notification.read');
 
     /**
-     * 自定义字段
+     * 自定义字段.
      */
     $router->resource('/custom_columns', 'CustomColumnController')
         ->names('custom_columns');
 
     /**
-     * 菜单
+     * 菜单.
      */
     $router->resource('/menu', 'MenuController')
         ->names('menu');
 
     /**
-     * LDAP
+     * LDAP.
      */
     $router->get('/ldap', [LDAPController::class, 'index'])
         ->name('ldap.index');

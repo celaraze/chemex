@@ -26,11 +26,11 @@ class PartTrackController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('record') . trans('main.record'), admin_route('part.records.index'));
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('part.categories.index'));
-                $tab->add(Data::icon('track') . trans('main.track'), $this->grid(), true);
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('part.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('part.columns.index'));
+                $tab->addLink(Data::icon('record').trans('main.record'), admin_route('part.records.index'));
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('part.categories.index'));
+                $tab->add(Data::icon('track').trans('main.track'), $this->grid(), true);
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('part.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('part.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -56,7 +56,7 @@ class PartTrackController extends AdminController
             $grid->column('updated_at');
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -66,7 +66,7 @@ class PartTrackController extends AdminController
             });
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
@@ -74,14 +74,14 @@ class PartTrackController extends AdminController
             });
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'part.name', 'device.name')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->disableCreateButton();
             $grid->disableRowSelector();

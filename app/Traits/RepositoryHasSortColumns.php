@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Traits;
-
 
 use App\Models\ColumnSort;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +9,8 @@ trait RepositoryHasSortColumns
 {
     /**
      * 重写这个方法为了让DeviceRecord的字段能够以模型树展示
-     * 为了做到字段排序，这个方法是展示到页面上的
+     * 为了做到字段排序，这个方法是展示到页面上的.
+     *
      * @return array
      */
     public function toTree(): array
@@ -37,7 +36,7 @@ trait RepositoryHasSortColumns
             $needle_columns = array_merge($model_columns, $not_in_needle_columns);
         }
         foreach ($needle_columns as $key => $needle_column) {
-            $model = new $this->model;
+            $model = new $this->model();
             $model->id = $key;
             $model->title = admin_trans_field($needle_column);
             $model->parent_id = 0;
@@ -52,7 +51,8 @@ trait RepositoryHasSortColumns
     }
 
     /**
-     * 获取数据仓库对应模型的数据库表名
+     * 获取数据仓库对应模型的数据库表名.
+     *
      * @return string
      */
     public function getTable(): string
@@ -61,8 +61,10 @@ trait RepositoryHasSortColumns
     }
 
     /**
-     * 对需要排序的全部字段进行排序
+     * 对需要排序的全部字段进行排序.
+     *
      * @param $table_name
+     *
      * @return array
      */
     public function sortNeedleColumns($table_name): array
@@ -90,6 +92,7 @@ trait RepositoryHasSortColumns
             $return[$item['order']] = $item['field'];
         }
         $return = array_values($return);
+
         return $return;
     }
 }

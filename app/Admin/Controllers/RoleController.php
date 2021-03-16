@@ -15,7 +15,6 @@ use Dcat\Admin\Support\Helper;
 use Dcat\Admin\Widgets\Tab;
 use Dcat\Admin\Widgets\Tree;
 
-
 class RoleController extends BaseRoleController
 {
     public function index(Content $content): Content
@@ -25,10 +24,10 @@ class RoleController extends BaseRoleController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('user') . admin_trans_label('User'), admin_route('organization.users.index'));
-                $tab->addLink(Data::icon('department') . admin_trans_label('Department'), admin_route('organization.departments.index'));
-                $tab->add(Data::icon('role') . admin_trans_label('Role'), $this->grid(), true);
-                $tab->addLink(Data::icon('permission') . admin_trans_label('Permission'), admin_route('organization.permissions.index'));
+                $tab->addLink(Data::icon('user').admin_trans_label('User'), admin_route('organization.users.index'));
+                $tab->addLink(Data::icon('department').admin_trans_label('Department'), admin_route('organization.departments.index'));
+                $tab->add(Data::icon('role').admin_trans_label('Role'), $this->grid(), true);
+                $tab->addLink(Data::icon('permission').admin_trans_label('Permission'), admin_route('organization.permissions.index'));
                 $row->column(12, $tab);
             });
     }
@@ -48,14 +47,14 @@ class RoleController extends BaseRoleController
             $grid->column('updated_at')->sortable();
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch(['id', 'name', 'slug'])
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (Grid\Displayers\Actions $actions) {
                 $roleModel = config('admin.database.roles_model');
@@ -66,7 +65,7 @@ class RoleController extends BaseRoleController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (Admin::user()->can('role.update')) {
@@ -105,6 +104,7 @@ class RoleController extends BaseRoleController
                 $tree->check(
                     array_column(Helper::array($permission), $keyName)
                 );
+
                 return $tree->render();
             });
 

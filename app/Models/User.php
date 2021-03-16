@@ -18,6 +18,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @method static count()
  * @method static truncate()
  * @method static find($id)
+ *
  * @property int id
  * @property string username
  * @property string password
@@ -49,7 +50,7 @@ class User extends Administrator implements JWTSubject
     }
 
     /**
-     * 获取JWT验证器
+     * 获取JWT验证器.
      */
     public function getJWTIdentifier()
     {
@@ -57,7 +58,8 @@ class User extends Administrator implements JWTSubject
     }
 
     /**
-     * 构造JWT自定义的声明key-values
+     * 构造JWT自定义的声明key-values.
+     *
      * @return array
      */
     public function getJWTCustomClaims(): array
@@ -66,7 +68,8 @@ class User extends Administrator implements JWTSubject
     }
 
     /**
-     * 用户有一个组织部门记录
+     * 用户有一个组织部门记录.
+     *
      * @return HasOne
      */
     public function department(): HasOne
@@ -75,7 +78,8 @@ class User extends Administrator implements JWTSubject
     }
 
     /**
-     * 设备记录在远处有一个使用者（用户）
+     * 设备记录在远处有一个使用者（用户）.
+     *
      * @return HasManyThrough
      */
     public function device(): HasManyThrough
@@ -86,11 +90,13 @@ class User extends Administrator implements JWTSubject
             'user_id',    // 中间表对主表的关联字段
             'id',   // 远程表对中间表的关联字段
             'id',   // 主表对中间表的关联字段
-            'device_id'); // 中间表对远程表的关联字段
+            'device_id'
+        ); // 中间表对远程表的关联字段
     }
 
     /**
      * 用户的资产总价值
+     *
      * @return int
      */
     public function itemsPrice(): int
@@ -108,6 +114,7 @@ class User extends Administrator implements JWTSubject
                 $price += $service->price;
             }
         }
+
         return $price;
     }
 }

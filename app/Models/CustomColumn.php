@@ -6,7 +6,6 @@ use Dcat\Admin\Traits\HasDateTimeFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
 /**
  * @property string table_name
  * @property string name
@@ -14,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int is_nullable
  * @property string nick_name
  * @property string|null select_options
+ *
  * @method static find(int $int)
  * @method static where(string $key, string $value1, string $value2 = null)
  */

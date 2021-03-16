@@ -11,8 +11,10 @@ use Exception;
 class ConsumableRecordInForm extends Form
 {
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
@@ -25,6 +27,7 @@ class ConsumableRecordInForm extends Form
             return $this->response()
                 ->error(trans('main.parameter_missing'));
         }
+
         try {
             $consumable_track = ConsumableTrack::where('consumable_id', $consumable_record_id)->first();
             if (empty($consumable_track)) {
@@ -50,14 +53,14 @@ class ConsumableRecordInForm extends Form
         } catch (Exception $e) {
             $return = $this
                 ->response()
-                ->error(trans('main.fail') . $e->getMessage());
+                ->error(trans('main.fail').$e->getMessage());
         }
 
         return $return;
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {

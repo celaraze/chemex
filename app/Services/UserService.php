@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Services;
-
 
 use App\Models\DeviceTrack;
 use App\Models\User;
@@ -10,7 +8,8 @@ use App\Models\User;
 class UserService
 {
     /**
-     * 删除用户
+     * 删除用户.
+     *
      * @param $user_id
      */
     public static function deleteUser($user_id)

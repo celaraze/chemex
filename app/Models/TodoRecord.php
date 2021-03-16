@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @method static where(string $key, string $value, string $value = null)
  * @method static whereBetween(string $string, array $array)
+ *
  * @property int id
  * @property string name
  * @property DateTime start
@@ -34,7 +35,8 @@ class TodoRecord extends Model
 
     /**
      * 修改器
-     * 将标签的数组转为字符串
+     * 将标签的数组转为字符串.
+     *
      * @param $value
      */
     public function setTagsAttribute($value)
@@ -43,7 +45,8 @@ class TodoRecord extends Model
     }
 
     /**
-     * 待办记录有一个负责人
+     * 待办记录有一个负责人.
+     *
      * @return HasOne
      */
     public function user(): HasOne

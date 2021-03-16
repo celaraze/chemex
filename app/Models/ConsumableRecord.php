@@ -19,17 +19,17 @@ class ConsumableRecord extends Model
 {
     use HasDateTimeFormatter;
     use SoftDeletes;
-
     /**
      * 这里需要给个别名，否则delete方法将会重复
-     * 和下面的delete方法重写打配合调整优先级
+     * 和下面的delete方法重写打配合调整优先级.
      */
     use ModelTree {
         ModelTree::delete as traitDelete;
     }
 
     /**
-     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段
+     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段.
+     *
      * @var string[]
      */
     public $sortIncludeColumns = [
@@ -38,7 +38,8 @@ class ConsumableRecord extends Model
     ];
 
     /**
-     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段
+     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段.
+     *
      * @var string[]
      */
     public $sortExceptColumns = [
@@ -52,8 +53,10 @@ class ConsumableRecord extends Model
      * 复写这个是为了让delete方法的优先级满足：
      * 子类>trait>父类
      * 这个是因为字段管理中删除动作的需要
-     * @return bool|null
+     *
      * @throws Exception
+     *
+     * @return bool|null
      */
     public function delete(): ?bool
     {
@@ -71,7 +74,8 @@ class ConsumableRecord extends Model
     }
 
     /**
-     * 耗材总数
+     * 耗材总数.
+     *
      * @return HigherOrderBuilderProxy|int|mixed
      */
     public function allCounts()

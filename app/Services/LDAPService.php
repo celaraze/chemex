@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Services;
-
 
 use Adldap\Laravel\Facades\Adldap;
 use App\Models\Department;
@@ -12,8 +10,10 @@ use Exception;
 class LDAPService
 {
     /**
-     * 获取AD中全部的OU，并且带上层级
+     * 获取AD中全部的OU，并且带上层级.
+     *
      * @param $mode
+     *
      * @return bool|string
      */
     public static function importUserDepartments($mode): string
@@ -66,6 +66,7 @@ class LDAPService
                 }
                 $department->save();
             }
+
             return true;
         } catch (Exception $exception) {
             return $exception->getMessage();
@@ -73,8 +74,10 @@ class LDAPService
     }
 
     /**
-     * 获取AD中全部的User，并且自动写入部门
+     * 获取AD中全部的User，并且自动写入部门.
+     *
      * @param $mode
+     *
      * @return string
      */
     public static function importUsers($mode): string

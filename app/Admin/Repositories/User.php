@@ -6,5 +6,4 @@ use Dcat\Admin\Http\Repositories\Administrator;
 
 class User extends Administrator
 {
-
 }

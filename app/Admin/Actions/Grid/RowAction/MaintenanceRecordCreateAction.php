@@ -13,19 +13,20 @@ class MaintenanceRecordCreateAction extends RowAction
     public function __construct($item)
     {
         parent::__construct();
-        $this->title = '🔧 ' . admin_trans_label('Maintenance Create');
+        $this->title = '🔧 '.admin_trans_label('Maintenance Create');
         $this->item = $item;
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()
     {
         $form = MaintenanceRecordCreateForm::make()->payload([
-            'item' => $this->item,
-            'item_id' => $this->getKey()
+            'item'    => $this->item,
+            'item_id' => $this->getKey(),
         ]);
 
         return Modal::make()

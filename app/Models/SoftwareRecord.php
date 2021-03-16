@@ -14,12 +14,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static where(string $key, string $value, string $value = null)
  * @method static whereBetween(string $string, array $array)
  * @method static count()
+ *
  * @property string name
  * @property string purchased
  * @property string version
  * @property int category_id
  * @property int vendor_id
- * @property double price
+ * @property float price
  * @property string expired
  * @property int purchased_channel_id
  * @property string asset_number
@@ -30,17 +31,17 @@ class SoftwareRecord extends Model
 {
     use HasDateTimeFormatter;
     use SoftDeletes;
-
     /**
      * 这里需要给个别名，否则delete方法将会重复
-     * 和下面的delete方法重写打配合调整优先级
+     * 和下面的delete方法重写打配合调整优先级.
      */
     use ModelTree {
         ModelTree::delete as traitDelete;
     }
 
     /**
-     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段
+     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段.
+     *
      * @var string[]
      */
     public $sortIncludeColumns = [
@@ -53,7 +54,8 @@ class SoftwareRecord extends Model
     ];
 
     /**
-     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段
+     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段.
+     *
      * @var string[]
      */
     public $sortExceptColumns = [
@@ -69,8 +71,10 @@ class SoftwareRecord extends Model
      * 复写这个是为了让delete方法的优先级满足：
      * 子类>trait>父类
      * 这个是因为字段管理中删除动作的需要
-     * @return bool|null
+     *
      * @throws Exception
+     *
+     * @return bool|null
      */
     public function delete(): ?bool
     {
@@ -78,7 +82,8 @@ class SoftwareRecord extends Model
     }
 
     /**
-     * 软件记录有一个分类
+     * 软件记录有一个分类.
+     *
      * @return HasOne
      */
     public function category(): HasOne
@@ -87,7 +92,8 @@ class SoftwareRecord extends Model
     }
 
     /**
-     * 软件记录有一个厂商
+     * 软件记录有一个厂商.
+     *
      * @return HasOne
      */
     public function vendor(): HasOne
@@ -96,7 +102,8 @@ class SoftwareRecord extends Model
     }
 
     /**
-     * 软件记录有一个购入途径
+     * 软件记录有一个购入途径.
+     *
      * @return HasOne
      */
     public function channel(): HasOne
@@ -105,7 +112,8 @@ class SoftwareRecord extends Model
     }
 
     /**
-     * 软件剩余可用授权数量
+     * 软件剩余可用授权数量.
+     *
      * @return int|string
      */
     public function leftCounts()
@@ -115,11 +123,13 @@ class SoftwareRecord extends Model
         if ($counts <= 0) {
             return '不受限';
         }
+
         return $this->counts - $used;
     }
 
     /**
-     * 软件记录有很多追踪
+     * 软件记录有很多追踪.
+     *
      * @return HasMany
      */
     public function track(): HasMany

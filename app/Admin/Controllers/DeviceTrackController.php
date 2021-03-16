@@ -28,11 +28,11 @@ class DeviceTrackController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('record') . trans('main.record'), admin_route('device.records.index'));
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('device.categories.index'));
-                $tab->add(Data::icon('track') . trans('main.track'), $this->grid(), true);
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('device.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('device.columns.index'));
+                $tab->addLink(Data::icon('record').trans('main.record'), admin_route('device.records.index'));
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('device.categories.index'));
+                $tab->add(Data::icon('track').trans('main.track'), $this->grid(), true);
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('device.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('device.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -50,7 +50,6 @@ class DeviceTrackController extends AdminController
     protected function grid(): Grid
     {
         return Grid::make(new DeviceTrack(['device', 'user']), function (Grid $grid) {
-
             $grid->column('id');
             $grid->column('device.name');
             $grid->column('user.name');
@@ -59,7 +58,7 @@ class DeviceTrackController extends AdminController
             $grid->column('created_at');
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 if (empty($this->lend_time)) {
@@ -76,7 +75,7 @@ class DeviceTrackController extends AdminController
             });
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->panel();
@@ -84,14 +83,14 @@ class DeviceTrackController extends AdminController
             });
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'device.name', 'user.name')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->disableCreateButton();
             $grid->disableRowSelector();
@@ -106,6 +105,7 @@ class DeviceTrackController extends AdminController
      * Make a show builder.
      *
      * @param $id
+     *
      * @return Show
      */
     protected function detail($id): Show
@@ -123,7 +123,7 @@ class DeviceTrackController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             $show->disableEditButton();

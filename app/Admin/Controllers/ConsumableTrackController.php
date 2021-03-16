@@ -11,7 +11,6 @@ use Dcat\Admin\Layout\Row;
 use Dcat\Admin\Show;
 use Dcat\Admin\Widgets\Tab;
 
-
 class ConsumableTrackController extends AdminController
 {
     public function index(Content $content): Content
@@ -21,10 +20,10 @@ class ConsumableTrackController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('record') . trans('main.record'), admin_route('consumable.records.index'));
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('consumable.categories.index'));
-                $tab->add(Data::icon('track') . trans('main.history'), $this->grid(), true);
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('consumable.columns.index'));
+                $tab->addLink(Data::icon('record').trans('main.record'), admin_route('consumable.records.index'));
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('consumable.categories.index'));
+                $tab->add(Data::icon('track').trans('main.history'), $this->grid(), true);
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('consumable.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -54,14 +53,14 @@ class ConsumableTrackController extends AdminController
             $grid->column('expired');
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function (Grid\Filter $filter) {
                 $filter->equal('id');
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->disableCreateButton();
             $grid->disableDeleteButton();
@@ -94,7 +93,7 @@ class ConsumableTrackController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableEditButton();
             $show->disableDeleteButton();

@@ -16,7 +16,6 @@ use Dcat\Admin\Tree;
 use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
-
 class DeviceCategoryController extends AdminController
 {
     public function index(Content $content): Content
@@ -26,11 +25,11 @@ class DeviceCategoryController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('record') . trans('main.record'), admin_route('device.records.index'));
-                $tab->add(Data::icon('category') . trans('main.category'), $this->treeView(), true);
-                $tab->addLink(Data::icon('track') . trans('main.track'), admin_route('device.tracks.index'));
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('device.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('device.columns.index'));
+                $tab->addLink(Data::icon('record').trans('main.record'), admin_route('device.records.index'));
+                $tab->add(Data::icon('category').trans('main.category'), $this->treeView(), true);
+                $tab->addLink(Data::icon('track').trans('main.track'), admin_route('device.tracks.index'));
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('device.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('device.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -41,7 +40,8 @@ class DeviceCategoryController extends AdminController
     }
 
     /**
-     * 模型树构建
+     * 模型树构建.
+     *
      * @return Tree
      */
     protected function treeView(): Tree
@@ -50,7 +50,7 @@ class DeviceCategoryController extends AdminController
             $tree->disableCreateButton();
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $tree->tools(function (Tree\Tools $tools) {
                 // @permissions
@@ -60,7 +60,7 @@ class DeviceCategoryController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('device.category.create')) {
@@ -81,11 +81,13 @@ class DeviceCategoryController extends AdminController
 
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
     {
         $q = $request->get('q');
+
         return \App\Models\DeviceCategory::where('name', 'like', "%$q%")
             ->paginate(null, ['id', 'name as text']);
     }
@@ -122,7 +124,7 @@ class DeviceCategoryController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableCreatingCheck();
             $form->disableEditingCheck();

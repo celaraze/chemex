@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Services;
-
 
 use App\Models\CheckRecord;
 use App\Models\CheckTrack;
@@ -38,9 +36,9 @@ class CheckService
         $pdf->SetDefaultMonospacedFont('courier');
 
         // 设置间距
-        $pdf->SetMargins(15, 15, 15);//页面间隔
-        $pdf->SetHeaderMargin(5);//页眉top间隔
-        $pdf->SetFooterMargin(10);//页脚bottom间隔
+        $pdf->SetMargins(15, 15, 15); //页面间隔
+        $pdf->SetHeaderMargin(5); //页眉top间隔
+        $pdf->SetFooterMargin(10); //页脚bottom间隔
 
         // 设置分页
         $pdf->SetAutoPageBreak(true, 25);
@@ -53,23 +51,23 @@ class CheckService
 
         //第一页
         $pdf->AddPage();
-        $pdf->writeHTML('<div style="text-align: center"><h1>' . Data::items()[$check_record->check_item] . '盘点报告</h1></div>');
-        $pdf->writeHTML('<p style="text-align: center">盘点任务创建时间：' . $check_record->created_at . '</p>');
-        $pdf->writeHTML('<p style="text-align: center">盘点报告生成时间：' . date('yy-m-d H:m:i') . '</p>');
-        $pdf->Ln(5);//换行符
-        $pdf->writeHTML('<div style="text-align: center">盘点状态：' . Data::checkRecordStatus()[$check_record->status] . '</div>');
-        $pdf->Ln(5);//换行符
+        $pdf->writeHTML('<div style="text-align: center"><h1>'.Data::items()[$check_record->check_item].'盘点报告</h1></div>');
+        $pdf->writeHTML('<p style="text-align: center">盘点任务创建时间：'.$check_record->created_at.'</p>');
+        $pdf->writeHTML('<p style="text-align: center">盘点报告生成时间：'.date('yy-m-d H:m:i').'</p>');
+        $pdf->Ln(5); //换行符
+        $pdf->writeHTML('<div style="text-align: center">盘点状态：'.Data::checkRecordStatus()[$check_record->status].'</div>');
+        $pdf->Ln(5); //换行符
 
         $all_counts = CheckTrack::where('check_id', $check_id)->count();
         $yes_counts = CheckTrack::where('check_id', $check_id)->where('status', 1)->count();
         $no_counts = CheckTrack::where('check_id', $check_id)->where('status', 2)->count();
         $left_counts = $all_counts - $yes_counts - $no_counts;
-        $pdf->writeHTML('<div style="text-align: center">条目总数：' . $all_counts . '</div>');
-        $pdf->writeHTML('<div style="text-align: center">盘盈总数：' . $yes_counts . '</div>');
-        $pdf->writeHTML('<div style="text-align: center">盘亏总数：' . $no_counts . '</div>');
-        $pdf->writeHTML('<div style="text-align: center">未盘总数：' . $left_counts . '</div>');
+        $pdf->writeHTML('<div style="text-align: center">条目总数：'.$all_counts.'</div>');
+        $pdf->writeHTML('<div style="text-align: center">盘盈总数：'.$yes_counts.'</div>');
+        $pdf->writeHTML('<div style="text-align: center">盘亏总数：'.$no_counts.'</div>');
+        $pdf->writeHTML('<div style="text-align: center">未盘总数：'.$left_counts.'</div>');
 
         //输出PDF
-        return $pdf->Output('t.pdf', 'D');//I输出、D下载
+        return $pdf->Output('t.pdf', 'D'); //I输出、D下载
     }
 }

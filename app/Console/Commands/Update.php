@@ -50,6 +50,7 @@ class Update extends Command
         // 填充权限-菜单
         $this->call('db:seed', ['--class' => 'AdminPermissionMenuTableSeeder']);
         $this->info('升级完成！');
+
         return 0;
     }
 }

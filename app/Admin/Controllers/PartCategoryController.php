@@ -16,16 +16,17 @@ use Dcat\Admin\Tree;
 use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
-
 class PartCategoryController extends AdminController
 {
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
     {
         $q = $request->get('q');
+
         return \App\Models\PartCategory::where('name', 'like', "%$q%")
             ->paginate(null, ['id', 'name as text']);
     }
@@ -37,11 +38,11 @@ class PartCategoryController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('record') . trans('main.record'), admin_route('part.records.index'));
-                $tab->add(Data::icon('category') . trans('main.category'), $this->treeView(), true);
-                $tab->addLink(Data::icon('track') . trans('main.track'), admin_route('part.tracks.index'));
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('part.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('part.columns.index'));
+                $tab->addLink(Data::icon('record').trans('main.record'), admin_route('part.records.index'));
+                $tab->add(Data::icon('category').trans('main.category'), $this->treeView(), true);
+                $tab->addLink(Data::icon('track').trans('main.track'), admin_route('part.tracks.index'));
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('part.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('part.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -55,7 +56,7 @@ class PartCategoryController extends AdminController
     {
         return new Tree(new \App\Models\PartCategory(), function (Tree $tree) {
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $tree->tools(function (Tree\Tools $tools) {
                 // @permissions
@@ -65,7 +66,7 @@ class PartCategoryController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('part.category.create')) {

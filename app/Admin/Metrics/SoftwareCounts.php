@@ -1,15 +1,12 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Models\SoftwareRecord;
 use Closure;
 use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Widgets\Card;
 use Illuminate\Contracts\Support\Renderable;
-
 
 class SoftwareCounts extends Card
 {

@@ -74,6 +74,7 @@ class Install extends Command
         $this->call('chemex:reset');
         $this->info('安装完成！');
         $this->warn('用户名密码都为：admin');
+
         return 0;
     }
 }

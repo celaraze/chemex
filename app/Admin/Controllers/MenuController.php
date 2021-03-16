@@ -2,7 +2,6 @@
 
 namespace App\Admin\Controllers;
 
-
 use Dcat\Admin\Http\Controllers\MenuController as BaseMenuController;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Layout\Row;

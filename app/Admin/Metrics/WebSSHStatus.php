@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Services\SSHService;
 use Dcat\Admin\Widgets\Metrics\Line;
@@ -41,6 +39,7 @@ class WebSSHStatus extends Line
      *
      * @param $text
      * @param $color
+     *
      * @return $this
      */
     public function withContent($text, $color): WebSSHStatus
@@ -55,7 +54,7 @@ HTML
     }
 
     /**
-     * 初始化卡片内容
+     * 初始化卡片内容.
      *
      * @return void
      */

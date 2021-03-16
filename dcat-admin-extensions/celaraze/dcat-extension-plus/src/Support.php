@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Celaraze\DcatPlus;
-
 
 use Celaraze\DcatPlus\Extensions\Form\SelectCreate;
 use Dcat\Admin\Admin;
@@ -13,8 +11,10 @@ use Illuminate\Support\Facades\Storage;
 class Support
 {
     /**
-     * 快速翻译（为了缩短代码量）
+     * 快速翻译（为了缩短代码量）.
+     *
      * @param $string
+     *
      * @return array|string|null
      */
     public static function trans($string)
@@ -23,12 +23,12 @@ class Support
     }
 
     /**
-     * 初始化配置注入
+     * 初始化配置注入.
      */
     public function initConfig()
     {
         /**
-         * 处理站点LOGO自定义
+         * 处理站点LOGO自定义.
          */
         if (empty(admin_setting('site_logo'))) {
             $logo = admin_setting('site_logo_text');
@@ -38,7 +38,7 @@ class Support
         }
 
         /**
-         * 处理站点LOGO-MINI自定义
+         * 处理站点LOGO-MINI自定义.
          */
         if (empty(admin_setting('site_logo_mini'))) {
             $logo_mini = admin_setting('site_logo_text');
@@ -48,7 +48,7 @@ class Support
         }
 
         /**
-         * 处理站点名称
+         * 处理站点名称.
          */
         $horizontal_menu = false;
         if (empty(admin_setting('site_url'))) {
@@ -78,25 +78,25 @@ class Support
         }
 
         /**
-         * 复写admin站点配置
+         * 复写admin站点配置.
          */
         config([
-            'app.url' => $site_url,
-            'app.debug' => $site_debug,
-            'app.locale' => admin_setting('site_lang'),
+            'app.url'             => $site_url,
+            'app.debug'           => $site_debug,
+            'app.locale'          => admin_setting('site_lang'),
             'app.fallback_locale' => admin_setting('site_lang'),
 
-            'admin.title' => admin_setting('site_title'),
-            'admin.logo' => $logo,
-            'admin.logo-mini' => $logo_mini,
-            'admin.layout.color' => $theme_color,
-            'admin.layout.body_class' => $sidebar_style,
-            'admin.layout.horizontal_menu' => $horizontal_menu
+            'admin.title'                  => admin_setting('site_title'),
+            'admin.logo'                   => $logo,
+            'admin.logo-mini'              => $logo_mini,
+            'admin.layout.color'           => $theme_color,
+            'admin.layout.body_class'      => $sidebar_style,
+            'admin.layout.horizontal_menu' => $horizontal_menu,
         ]);
     }
 
     /**
-     * 复写菜单栏
+     * 复写菜单栏.
      */
     public function injectSidebar()
     {
@@ -117,7 +117,8 @@ class Support
     }
 
     /**
-     * 返回菜单视图路径
+     * 返回菜单视图路径.
+     *
      * @return string
      */
     public static function menu_view(): string
@@ -134,7 +135,7 @@ class Support
     {
         if (admin_setting('footer_remove')) {
             Admin::style(
-                <<<CSS
+                <<<'CSS'
 .main-footer {
     display: none;
 }
@@ -147,7 +148,7 @@ CSS
     {
         if (admin_setting('header_padding_fix')) {
             Admin::style(
-                <<<CSS
+                <<<'CSS'
 .navbar{
     margin: 0 35px !important;
 }
@@ -183,13 +184,12 @@ CSS
     {
         if (admin_setting('grid_row_actions_right')) {
             Admin::style(
-                <<<CSS
+                <<<'CSS'
 .grid__actions__{
     width: 20%;
     text-align: right;
 }
 CSS
-
             );
         }
     }

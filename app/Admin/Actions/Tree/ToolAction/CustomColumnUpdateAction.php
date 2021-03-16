@@ -18,12 +18,14 @@ class CustomColumnUpdateAction extends RowAction
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()
     {
         $form = CustomColumnUpdateForm::make()->payload(['table_name' => $this->table_name]);
+
         return Modal::make()
             ->lg()
             ->body($form)

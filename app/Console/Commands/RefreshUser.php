@@ -52,7 +52,7 @@ class RefreshUser extends Command
                 $user->username = Uni::trim(Pinyin::sentence($staff_record->name));
                 $exist = User::where('username', $user->username)->first();
                 if (!empty($exist)) {
-                    $user->username = $user->username . Uni::randomNumberString(4);
+                    $user->username = $user->username.Uni::randomNumberString(4);
                 }
                 $user->password = bcrypt($user->username);
                 $user->name = $staff_record->name;

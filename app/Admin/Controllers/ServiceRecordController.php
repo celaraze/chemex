@@ -34,11 +34,11 @@ class ServiceRecordController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->add(Data::icon('record') . trans('main.record'), $this->grid(), true);
-                $tab->addLink(Data::icon('track') . trans('main.track'), admin_route('service.tracks.index'));
-                $tab->addLink(Data::icon('issue') . trans('main.issue'), admin_route('service.issues.index'));
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('service.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('service.columns.index'));
+                $tab->add(Data::icon('record').trans('main.record'), $this->grid(), true);
+                $tab->addLink(Data::icon('track').trans('main.track'), admin_route('service.tracks.index'));
+                $tab->addLink(Data::icon('issue').trans('main.issue'), admin_route('service.issues.index'));
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('service.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('service.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -75,7 +75,7 @@ class ServiceRecordController extends AdminController
             ControllerHasCustomColumns::makeGrid((new ServiceRecord())->getTable(), $grid, $column_sort);
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -93,37 +93,37 @@ class ServiceRecordController extends AdminController
             });
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch(
                 array_merge([
                     'id',
                     'name',
                     'description',
-                    'device.name'
+                    'device.name',
                 ], ControllerHasCustomColumns::makeQuickSearch((new ServiceRecord())->getTable()))
             )
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function ($filter) {
                 $filter->equal('device.name');
                 /**
-                 * 自定义字段
+                 * 自定义字段.
                  */
                 ControllerHasCustomColumns::makeFilter((new ServiceRecord())->getTable(), $filter);
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->enableDialogCreate();
             $grid->disableRowSelector();
@@ -165,7 +165,7 @@ class ServiceRecordController extends AdminController
             $show->field('channel.name');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeDetail((new ServiceRecord())->getTable(), $show);
 
@@ -173,7 +173,7 @@ class ServiceRecordController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             // @permissions
@@ -213,7 +213,7 @@ class ServiceRecordController extends AdminController
             }
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeForm((new ServiceRecord())->getTable(), $form);
 
@@ -221,7 +221,7 @@ class ServiceRecordController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableDeleteButton();
             $form->disableCreatingCheck();

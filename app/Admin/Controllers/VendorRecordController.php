@@ -49,14 +49,14 @@ class VendorRecordController extends AdminController
             $grid->column('location');
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'name', 'description', 'location')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Grid\Tools $tools) {
                 // @permissions
@@ -66,7 +66,7 @@ class VendorRecordController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('vendor.record.create')) {
@@ -95,6 +95,7 @@ class VendorRecordController extends AdminController
 
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
@@ -152,7 +153,7 @@ class VendorRecordController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableCreatingCheck();
             $form->disableEditingCheck();

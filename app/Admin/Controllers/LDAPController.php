@@ -14,8 +14,10 @@ use Dcat\Admin\Widgets\Card;
 class LDAPController extends AdminController
 {
     /**
-     * 页面
+     * 页面.
+     *
      * @param Content $content
+     *
      * @return Content
      */
     public function index(Content $content): Content
@@ -33,6 +35,7 @@ class LDAPController extends AdminController
 
     /**
      * AD登录验证
+     *
      * @return bool|string
      */
     public function test()
@@ -41,6 +44,7 @@ class LDAPController extends AdminController
             if (!admin_setting('ad_enabled')) {
                 return -3;
             }
+
             return LDAP::auth();
         } catch (BindException $e) {
             return $e->getMessage();

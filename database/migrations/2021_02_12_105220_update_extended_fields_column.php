@@ -87,7 +87,6 @@ class UpdateExtendedFieldsColumn extends Migration
         Schema::table('departments', function (Blueprint $table) {
             $table->string('extended_fields')->nullable();
         });
-
     }
 
     /**

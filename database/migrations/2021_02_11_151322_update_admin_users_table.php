@@ -18,7 +18,7 @@ class UpdateAdminUsersTable extends Migration
 
     public function config($key)
     {
-        return config('admin.' . $key);
+        return config('admin.'.$key);
     }
 
     /**

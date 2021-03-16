@@ -16,8 +16,10 @@ use Pour\Base\Uni;
 class VersionController extends Controller
 {
     /**
-     * 页面
+     * 页面.
+     *
      * @param Content $content
+     *
      * @return Content
      */
     public function index(Content $content): Content
@@ -33,7 +35,7 @@ class VersionController extends Controller
                     $column->row(new Card(view('version.upgrade')));
                     $column->row(new Card(admin_trans_label('Current Version'), $version));
                 });
-                $row->column(9, function (Column $column) use ($version, $description) {
+                $row->column(9, function (Column $column) use ($description) {
                     $column->row(new Card($description['name'], $description['description']));
                 });
             });
@@ -45,7 +47,8 @@ class VersionController extends Controller
     }
 
     /**
-     * 更新数据库结构
+     * 更新数据库结构.
+     *
      * @return JsonResponse
      */
     public function migrate(): JsonResponse
@@ -53,20 +56,22 @@ class VersionController extends Controller
         $result = ConfigService::migrate();
         if ($result) {
             $return = response()->json([
-                'code' => 200,
-                'message' => trans('main.success')
+                'code'    => 200,
+                'message' => trans('main.success'),
             ]);
         } else {
             $return = response()->json([
-                'code' => 500,
-                'message' => trans('main.fail')
+                'code'    => 500,
+                'message' => trans('main.fail'),
             ]);
         }
+
         return response()->json($return);
     }
 
     /**
-     * 清理全部缓存
+     * 清理全部缓存.
+     *
      * @return JsonResponse
      */
     public function clear(): JsonResponse
@@ -74,20 +79,22 @@ class VersionController extends Controller
         $result = ConfigService::clear();
         if ($result) {
             $return = response()->json([
-                'code' => 200,
-                'message' => trans('main.success')
+                'code'    => 200,
+                'message' => trans('main.success'),
             ]);
         } else {
             $return = response()->json([
-                'code' => 500,
-                'message' => trans('main.fail')
+                'code'    => 500,
+                'message' => trans('main.fail'),
             ]);
         }
+
         return response()->json($return);
     }
 
     /**
-     * 获取远程版本号
+     * 获取远程版本号.
+     *
      * @return string|null
      */
     public function getRemoteVersion(): ?string
@@ -96,13 +103,15 @@ class VersionController extends Controller
     }
 
     /**
-     * 版本升级
+     * 版本升级.
+     *
      * @return JsonResponse
      */
     public function upgrade(): JsonResponse
     {
         $result = VersionService::upgrade();
         $return = Uni::rr(200, $result);
+
         return response()->json($return);
     }
 }

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App;
-
 
 use Dcat\Admin\Grid\Column;
 
@@ -13,7 +11,8 @@ class Grid extends \Dcat\Admin\Grid
      *
      * @param string $name
      * @param string $label
-     * @param array $sorts
+     * @param array  $sorts
+     *
      * @return Column
      */
     public function column($name, $label = '', $sorts = []): Column
@@ -22,20 +21,23 @@ class Grid extends \Dcat\Admin\Grid
         if (!empty($sorts)) {
             $field = array_column($sorts, 'field');
             $key = array_search($name, $field);
-            if ($key !== false)
+            if ($key !== false) {
                 if (isset($sorts[$key])) {
                     $order = $sorts[$key]['order'];
                 }
+            }
         }
-        return $this->addColumn($name, $label, (int)$order);
+
+        return $this->addColumn($name, $label, (int) $order);
     }
 
     /**
      * Add column to grid.
      *
-     * @param int $order
+     * @param int    $order
      * @param string $field
      * @param string $label
+     *
      * @return Column
      */
     protected function addColumn($field = '', $label = '', $order = 99): Column
@@ -49,16 +51,17 @@ class Grid extends \Dcat\Admin\Grid
     }
 
     /**
-     * @param int $order
+     * @param int    $order
      * @param string $field
      * @param string $label
+     *
      * @return Column
      */
     public function newColumn($field = '', $label = '', $order = 99): Column
     {
         $column = new Column($field, $label);
         $column->setGrid($this);
-        if ((substr($field, 0, 2) != "__")) {
+        if ((substr($field, 0, 2) != '__')) {
             $column->__order__ = $order;
         }
 
@@ -104,10 +107,8 @@ class Grid extends \Dcat\Admin\Grid
             $this->columnNames[] = $column->getName();
         });
 
-
         $this->buildRows($collection);
 
         $this->sortHeaders();
-
     }
 }

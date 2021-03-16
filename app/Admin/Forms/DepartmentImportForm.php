@@ -15,15 +15,18 @@ use League\Flysystem\FileNotFoundException;
 class DepartmentImportForm extends Form
 {
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
     {
         if ($input['type'] == 'file') {
             $file = $input['file'];
-            $file_path = public_path('uploads/' . $file);
+            $file_path = public_path('uploads/'.$file);
+
             try {
                 $rows = Excel::import($file_path)->first()->toArray();
                 foreach ($rows as $row) {
@@ -52,18 +55,19 @@ class DepartmentImportForm extends Form
                         return $this->response()->error($exception->getMessage());
                     }
                 }
+
                 return $this->response()
                     ->success(trans('main.upload_success'))
                     ->refresh();
             } catch (IOException $e) {
                 return $this->response()
-                    ->error(trans('main.file_io_error') . $e->getMessage());
+                    ->error(trans('main.file_io_error').$e->getMessage());
             } catch (UnsupportedTypeException $e) {
                 return $this->response()
-                    ->error(trans('main.file_format') . $e->getMessage());
+                    ->error(trans('main.file_format').$e->getMessage());
             } catch (FileNotFoundException $e) {
                 return $this->response()
-                    ->error(trans('main.file_none') . $e->getMessage());
+                    ->error(trans('main.file_none').$e->getMessage());
             }
         }
 
@@ -81,7 +85,7 @@ class DepartmentImportForm extends Form
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {

@@ -14,8 +14,10 @@ class ServiceIssueUpdateForm extends Form implements LazyRenderable
     use LazyWidget;
 
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
@@ -49,7 +51,7 @@ class ServiceIssueUpdateForm extends Form implements LazyRenderable
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {

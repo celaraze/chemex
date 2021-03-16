@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @method static where(string $key, string $value)
+ *
  * @property int check_id
  * @property int item_id
  * @property int status
@@ -22,7 +23,8 @@ class CheckTrack extends Model
     protected $table = 'check_tracks';
 
     /**
-     * 盘点追踪有一个负责人
+     * 盘点追踪有一个负责人.
+     *
      * @return HasOne
      */
     public function checker(): HasOne
@@ -32,6 +34,7 @@ class CheckTrack extends Model
 
     /**
      * 盘点追踪有一个盘点任务
+     *
      * @return HasOne
      */
     public function check(): HasOne

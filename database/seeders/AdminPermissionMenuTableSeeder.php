@@ -7,756 +7,646 @@ use Illuminate\Database\Seeder;
 
 class AdminPermissionMenuTableSeeder extends Seeder
 {
-
     /**
-     * Auto generated seed file
+     * Auto generated seed file.
      *
      * @return void
      */
     public function run()
     {
-
-
         DB::table('admin_permission_menu')->delete();
 
-        DB::table('admin_permission_menu')->insert(array (
-            0 =>
-            array (
+        DB::table('admin_permission_menu')->insert([
+            0 => [
                 'permission_id' => 2,
-                'menu_id' => 32,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            1 =>
-            array (
+                'menu_id'       => 32,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            1 => [
                 'permission_id' => 2,
-                'menu_id' => 33,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            2 =>
-            array (
+                'menu_id'       => 33,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            2 => [
                 'permission_id' => 2,
-                'menu_id' => 34,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            3 =>
-            array (
+                'menu_id'       => 34,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            3 => [
                 'permission_id' => 2,
-                'menu_id' => 35,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            4 =>
-            array (
+                'menu_id'       => 35,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            4 => [
                 'permission_id' => 2,
-                'menu_id' => 36,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            5 =>
-            array (
+                'menu_id'       => 36,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            5 => [
                 'permission_id' => 2,
-                'menu_id' => 37,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            6 =>
-            array (
+                'menu_id'       => 37,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            6 => [
                 'permission_id' => 2,
-                'menu_id' => 38,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            7 =>
-            array (
+                'menu_id'       => 38,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            7 => [
                 'permission_id' => 2,
-                'menu_id' => 39,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            8 =>
-            array (
+                'menu_id'       => 39,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            8 => [
                 'permission_id' => 2,
-                'menu_id' => 40,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            9 =>
-            array (
+                'menu_id'       => 40,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            9 => [
                 'permission_id' => 2,
-                'menu_id' => 41,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            10 =>
-            array (
+                'menu_id'       => 41,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            10 => [
                 'permission_id' => 2,
-                'menu_id' => 42,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            11 =>
-            array (
+                'menu_id'       => 42,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            11 => [
                 'permission_id' => 2,
-                'menu_id' => 43,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            12 =>
-            array (
+                'menu_id'       => 43,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            12 => [
                 'permission_id' => 2,
-                'menu_id' => 44,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            13 =>
-            array (
+                'menu_id'       => 44,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            13 => [
                 'permission_id' => 2,
-                'menu_id' => 45,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            14 =>
-            array (
+                'menu_id'       => 45,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            14 => [
                 'permission_id' => 2,
-                'menu_id' => 46,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            15 =>
-            array (
+                'menu_id'       => 46,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            15 => [
                 'permission_id' => 2,
-                'menu_id' => 47,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            16 =>
-            array (
+                'menu_id'       => 47,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            16 => [
                 'permission_id' => 2,
-                'menu_id' => 48,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            17 =>
-            array (
+                'menu_id'       => 48,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            17 => [
                 'permission_id' => 2,
-                'menu_id' => 49,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            18 =>
-            array (
+                'menu_id'       => 49,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            18 => [
                 'permission_id' => 2,
-                'menu_id' => 50,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            19 =>
-            array (
+                'menu_id'       => 50,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            19 => [
                 'permission_id' => 2,
-                'menu_id' => 51,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            20 =>
-            array (
+                'menu_id'       => 51,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            20 => [
                 'permission_id' => 2,
-                'menu_id' => 52,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            21 =>
-            array (
+                'menu_id'       => 52,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            21 => [
                 'permission_id' => 3,
-                'menu_id' => 32,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            22 =>
-            array (
+                'menu_id'       => 32,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            22 => [
                 'permission_id' => 3,
-                'menu_id' => 33,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            23 =>
-            array (
+                'menu_id'       => 33,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            23 => [
                 'permission_id' => 3,
-                'menu_id' => 34,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            24 =>
-            array (
+                'menu_id'       => 34,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            24 => [
                 'permission_id' => 3,
-                'menu_id' => 35,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            25 =>
-            array (
+                'menu_id'       => 35,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            25 => [
                 'permission_id' => 3,
-                'menu_id' => 36,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            26 =>
-            array (
+                'menu_id'       => 36,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            26 => [
                 'permission_id' => 3,
-                'menu_id' => 37,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            27 =>
-            array (
+                'menu_id'       => 37,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            27 => [
                 'permission_id' => 3,
-                'menu_id' => 38,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            28 =>
-            array (
+                'menu_id'       => 38,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            28 => [
                 'permission_id' => 3,
-                'menu_id' => 39,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            29 =>
-            array (
+                'menu_id'       => 39,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            29 => [
                 'permission_id' => 3,
-                'menu_id' => 40,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            30 =>
-            array (
+                'menu_id'       => 40,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            30 => [
                 'permission_id' => 3,
-                'menu_id' => 41,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            31 =>
-            array (
+                'menu_id'       => 41,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            31 => [
                 'permission_id' => 3,
-                'menu_id' => 42,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            32 =>
-            array (
+                'menu_id'       => 42,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            32 => [
                 'permission_id' => 3,
-                'menu_id' => 43,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            33 =>
-            array (
+                'menu_id'       => 43,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            33 => [
                 'permission_id' => 3,
-                'menu_id' => 44,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            34 =>
-            array (
+                'menu_id'       => 44,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            34 => [
                 'permission_id' => 3,
-                'menu_id' => 45,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            35 =>
-            array (
+                'menu_id'       => 45,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            35 => [
                 'permission_id' => 3,
-                'menu_id' => 46,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            36 =>
-            array (
+                'menu_id'       => 46,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            36 => [
                 'permission_id' => 3,
-                'menu_id' => 47,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            37 =>
-            array (
+                'menu_id'       => 47,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            37 => [
                 'permission_id' => 3,
-                'menu_id' => 48,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            38 =>
-            array (
+                'menu_id'       => 48,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            38 => [
                 'permission_id' => 3,
-                'menu_id' => 49,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            39 =>
-            array (
+                'menu_id'       => 49,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            39 => [
                 'permission_id' => 3,
-                'menu_id' => 50,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            40 =>
-            array (
+                'menu_id'       => 50,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            40 => [
                 'permission_id' => 3,
-                'menu_id' => 51,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            41 =>
-            array (
+                'menu_id'       => 51,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            41 => [
                 'permission_id' => 3,
-                'menu_id' => 52,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            42 =>
-            array (
+                'menu_id'       => 52,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            42 => [
                 'permission_id' => 4,
-                'menu_id' => 32,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            43 =>
-            array (
+                'menu_id'       => 32,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            43 => [
                 'permission_id' => 4,
-                'menu_id' => 33,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            44 =>
-            array (
+                'menu_id'       => 33,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            44 => [
                 'permission_id' => 4,
-                'menu_id' => 34,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            45 =>
-            array (
+                'menu_id'       => 34,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            45 => [
                 'permission_id' => 4,
-                'menu_id' => 35,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            46 =>
-            array (
+                'menu_id'       => 35,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            46 => [
                 'permission_id' => 4,
-                'menu_id' => 36,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            47 =>
-            array (
+                'menu_id'       => 36,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            47 => [
                 'permission_id' => 4,
-                'menu_id' => 37,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            48 =>
-            array (
+                'menu_id'       => 37,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            48 => [
                 'permission_id' => 4,
-                'menu_id' => 38,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            49 =>
-            array (
+                'menu_id'       => 38,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            49 => [
                 'permission_id' => 4,
-                'menu_id' => 39,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            50 =>
-            array (
+                'menu_id'       => 39,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            50 => [
                 'permission_id' => 4,
-                'menu_id' => 40,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            51 =>
-            array (
+                'menu_id'       => 40,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            51 => [
                 'permission_id' => 4,
-                'menu_id' => 41,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            52 =>
-            array (
+                'menu_id'       => 41,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            52 => [
                 'permission_id' => 4,
-                'menu_id' => 42,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            53 =>
-            array (
+                'menu_id'       => 42,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            53 => [
                 'permission_id' => 4,
-                'menu_id' => 43,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            54 =>
-            array (
+                'menu_id'       => 43,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            54 => [
                 'permission_id' => 4,
-                'menu_id' => 44,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            55 =>
-            array (
+                'menu_id'       => 44,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            55 => [
                 'permission_id' => 4,
-                'menu_id' => 45,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            56 =>
-            array (
+                'menu_id'       => 45,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            56 => [
                 'permission_id' => 4,
-                'menu_id' => 46,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            57 =>
-            array (
+                'menu_id'       => 46,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            57 => [
                 'permission_id' => 4,
-                'menu_id' => 47,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            58 =>
-            array (
+                'menu_id'       => 47,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            58 => [
                 'permission_id' => 4,
-                'menu_id' => 48,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            59 =>
-            array (
+                'menu_id'       => 48,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            59 => [
                 'permission_id' => 4,
-                'menu_id' => 49,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            60 =>
-            array (
+                'menu_id'       => 49,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            60 => [
                 'permission_id' => 4,
-                'menu_id' => 50,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            61 =>
-            array (
+                'menu_id'       => 50,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            61 => [
                 'permission_id' => 4,
-                'menu_id' => 51,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            62 =>
-            array (
+                'menu_id'       => 51,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            62 => [
                 'permission_id' => 4,
-                'menu_id' => 52,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            63 =>
-            array (
+                'menu_id'       => 52,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            63 => [
                 'permission_id' => 5,
-                'menu_id' => 32,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            64 =>
-            array (
+                'menu_id'       => 32,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            64 => [
                 'permission_id' => 5,
-                'menu_id' => 33,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            65 =>
-            array (
+                'menu_id'       => 33,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            65 => [
                 'permission_id' => 5,
-                'menu_id' => 34,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            66 =>
-            array (
+                'menu_id'       => 34,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            66 => [
                 'permission_id' => 5,
-                'menu_id' => 35,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            67 =>
-            array (
+                'menu_id'       => 35,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            67 => [
                 'permission_id' => 5,
-                'menu_id' => 36,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            68 =>
-            array (
+                'menu_id'       => 36,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            68 => [
                 'permission_id' => 5,
-                'menu_id' => 37,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            69 =>
-            array (
+                'menu_id'       => 37,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            69 => [
                 'permission_id' => 5,
-                'menu_id' => 38,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            70 =>
-            array (
+                'menu_id'       => 38,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            70 => [
                 'permission_id' => 5,
-                'menu_id' => 39,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            71 =>
-            array (
+                'menu_id'       => 39,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            71 => [
                 'permission_id' => 5,
-                'menu_id' => 40,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            72 =>
-            array (
+                'menu_id'       => 40,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            72 => [
                 'permission_id' => 5,
-                'menu_id' => 41,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            73 =>
-            array (
+                'menu_id'       => 41,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            73 => [
                 'permission_id' => 5,
-                'menu_id' => 42,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            74 =>
-            array (
+                'menu_id'       => 42,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            74 => [
                 'permission_id' => 5,
-                'menu_id' => 43,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            75 =>
-            array (
+                'menu_id'       => 43,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            75 => [
                 'permission_id' => 5,
-                'menu_id' => 44,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            76 =>
-            array (
+                'menu_id'       => 44,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            76 => [
                 'permission_id' => 5,
-                'menu_id' => 45,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            77 =>
-            array (
+                'menu_id'       => 45,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            77 => [
                 'permission_id' => 5,
-                'menu_id' => 46,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            78 =>
-            array (
+                'menu_id'       => 46,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            78 => [
                 'permission_id' => 5,
-                'menu_id' => 47,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            79 =>
-            array (
+                'menu_id'       => 47,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            79 => [
                 'permission_id' => 5,
-                'menu_id' => 48,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            80 =>
-            array (
+                'menu_id'       => 48,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            80 => [
                 'permission_id' => 5,
-                'menu_id' => 49,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            81 =>
-            array (
+                'menu_id'       => 49,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            81 => [
                 'permission_id' => 5,
-                'menu_id' => 50,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            82 =>
-            array (
+                'menu_id'       => 50,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            82 => [
                 'permission_id' => 5,
-                'menu_id' => 51,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            83 =>
-            array (
+                'menu_id'       => 51,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            83 => [
                 'permission_id' => 5,
-                'menu_id' => 52,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            84 =>
-            array (
+                'menu_id'       => 52,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            84 => [
                 'permission_id' => 6,
-                'menu_id' => 32,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            85 =>
-            array (
+                'menu_id'       => 32,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            85 => [
                 'permission_id' => 6,
-                'menu_id' => 33,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            86 =>
-            array (
+                'menu_id'       => 33,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            86 => [
                 'permission_id' => 6,
-                'menu_id' => 34,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            87 =>
-            array (
+                'menu_id'       => 34,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            87 => [
                 'permission_id' => 6,
-                'menu_id' => 35,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            88 =>
-            array (
+                'menu_id'       => 35,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            88 => [
                 'permission_id' => 6,
-                'menu_id' => 36,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            89 =>
-            array (
+                'menu_id'       => 36,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            89 => [
                 'permission_id' => 6,
-                'menu_id' => 37,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            90 =>
-            array (
+                'menu_id'       => 37,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            90 => [
                 'permission_id' => 6,
-                'menu_id' => 38,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            91 =>
-            array (
+                'menu_id'       => 38,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            91 => [
                 'permission_id' => 6,
-                'menu_id' => 39,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            92 =>
-            array (
+                'menu_id'       => 39,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            92 => [
                 'permission_id' => 6,
-                'menu_id' => 40,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            93 =>
-            array (
+                'menu_id'       => 40,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            93 => [
                 'permission_id' => 6,
-                'menu_id' => 41,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            94 =>
-            array (
+                'menu_id'       => 41,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            94 => [
                 'permission_id' => 6,
-                'menu_id' => 42,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            95 =>
-            array (
+                'menu_id'       => 42,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            95 => [
                 'permission_id' => 6,
-                'menu_id' => 43,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            96 =>
-            array (
+                'menu_id'       => 43,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            96 => [
                 'permission_id' => 6,
-                'menu_id' => 44,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            97 =>
-            array (
+                'menu_id'       => 44,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            97 => [
                 'permission_id' => 6,
-                'menu_id' => 45,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            98 =>
-            array (
+                'menu_id'       => 45,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            98 => [
                 'permission_id' => 6,
-                'menu_id' => 46,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            99 =>
-            array (
+                'menu_id'       => 46,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            99 => [
                 'permission_id' => 6,
-                'menu_id' => 47,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            100 =>
-            array (
+                'menu_id'       => 47,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            100 => [
                 'permission_id' => 6,
-                'menu_id' => 48,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            101 =>
-            array (
+                'menu_id'       => 48,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            101 => [
                 'permission_id' => 6,
-                'menu_id' => 49,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            102 =>
-            array (
+                'menu_id'       => 49,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            102 => [
                 'permission_id' => 6,
-                'menu_id' => 50,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            103 =>
-            array (
+                'menu_id'       => 50,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            103 => [
                 'permission_id' => 6,
-                'menu_id' => 51,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-            104 =>
-            array (
+                'menu_id'       => 51,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+            104 => [
                 'permission_id' => 6,
-                'menu_id' => 52,
-                'created_at' => NULL,
-                'updated_at' => NULL,
-            ),
-        ));
-
-
+                'menu_id'       => 52,
+                'created_at'    => null,
+                'updated_at'    => null,
+            ],
+        ]);
     }
 }

@@ -16,11 +16,11 @@ use Dcat\Admin\Tree;
 use Dcat\Admin\Widgets\Tab;
 use Illuminate\Http\Request;
 
-
 class DepartmentController extends AdminController
 {
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
@@ -38,10 +38,10 @@ class DepartmentController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('user') . admin_trans_label('User'), admin_route('organization.users.index'));
-                $tab->add(Data::icon('department') . admin_trans_label('Department'), $this->treeView(), true);
-                $tab->addLink(Data::icon('role') . admin_trans_label('Role'), admin_route('organization.roles.index'));
-                $tab->addLink(Data::icon('permission') . admin_trans_label('Permission'), admin_route('organization.permissions.index'));
+                $tab->addLink(Data::icon('user').admin_trans_label('User'), admin_route('organization.users.index'));
+                $tab->add(Data::icon('department').admin_trans_label('Department'), $this->treeView(), true);
+                $tab->addLink(Data::icon('role').admin_trans_label('Role'), admin_route('organization.roles.index'));
+                $tab->addLink(Data::icon('permission').admin_trans_label('Permission'), admin_route('organization.permissions.index'));
                 $row->column(12, $tab);
             });
     }
@@ -55,18 +55,19 @@ class DepartmentController extends AdminController
     {
         return new Tree(new \App\Models\Department(), function (Tree $tree) {
             /**
-             * 行显示
+             * 行显示.
              */
             $tree->branch(function ($branch) {
                 $display = "{$branch['name']}";
                 if ($branch['ad_tag'] === 1) {
-                    $display = "<span class='badge badge-primary mr-1'>AD</span>" . $display;
+                    $display = "<span class='badge badge-primary mr-1'>AD</span>".$display;
                 }
+
                 return $display;
             });
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $tree->tools(function (Tree\Tools $tools) {
                 if (Admin::user()->can('department.import')) {
@@ -75,7 +76,7 @@ class DepartmentController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('department.create')) {
@@ -141,7 +142,7 @@ class DepartmentController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableCreatingCheck();
             $form->disableEditingCheck();

@@ -49,7 +49,6 @@ class MaintenanceRecordController extends AdminController
     protected function grid(): Grid
     {
         return Grid::make(new MaintenanceRecord(), function (Grid $grid) {
-
             $grid->model()->orderBy('status', 'ASC');
 
             $grid->column('id');
@@ -64,7 +63,7 @@ class MaintenanceRecordController extends AdminController
             $grid->column('status')->using(Data::maintenanceStatus());
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -81,12 +80,12 @@ class MaintenanceRecordController extends AdminController
                 $selector->select('status', [
                     0 => admin_trans_label('Status Waiting'),
                     1 => admin_trans_label('Status Done'),
-                    2 => admin_trans_label('Status Cancelled')
+                    2 => admin_trans_label('Status Cancelled'),
                 ]);
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->disableCreateButton();
             $grid->disableViewButton();

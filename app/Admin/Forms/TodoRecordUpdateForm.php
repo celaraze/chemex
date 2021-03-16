@@ -15,8 +15,10 @@ class TodoRecordUpdateForm extends Form implements LazyRenderable
     use LazyWidget;
 
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
@@ -30,6 +32,7 @@ class TodoRecordUpdateForm extends Form implements LazyRenderable
             return $this->response()
                 ->error(trans('main.unauthorized'));
         }
+
         try {
             $todo_record = TodoRecord::where('id', $id)->first();
             if (empty($todo_record)) {
@@ -47,14 +50,14 @@ class TodoRecordUpdateForm extends Form implements LazyRenderable
         } catch (Exception $e) {
             $return = $this
                 ->response()
-                ->error(trans('main.fail') . $e->getMessage());
+                ->error(trans('main.fail').$e->getMessage());
         }
 
         return $return;
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {

@@ -16,6 +16,7 @@ class DepreciationRuleController extends AdminController
 {
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
@@ -59,14 +60,14 @@ class DepreciationRuleController extends AdminController
             $grid->column('description');
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'name', 'description')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('depreciation.rule.create')) {
@@ -130,9 +131,9 @@ class DepreciationRuleController extends AdminController
                     ->required();
                 $table->select('scale')
                     ->options([
-                        'day' => '天',
+                        'day'   => '天',
                         'month' => '月',
-                        'year' => '年'
+                        'year'  => '年',
                     ])
                     ->required();
                 $table->currency('ratio')

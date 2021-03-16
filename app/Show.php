@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App;
-
 
 use Dcat\Admin\Show\Field;
 

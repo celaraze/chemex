@@ -19,6 +19,7 @@ class TodoRecord extends EloquentRepository
     public static function getTable(): string
     {
         $model = new Model();
+
         return $model->getTable();
     }
 
@@ -56,6 +57,7 @@ class TodoRecord extends EloquentRepository
         usort($array, function ($a, $b) {
             return $a->order < $b->order ? -1 : 1;
         });
+
         return $array;
     }
 }

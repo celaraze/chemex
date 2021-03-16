@@ -11,7 +11,7 @@ class SoftwareRecordBatchDeleteAction extends BatchAction
     public function __construct($title = null)
     {
         parent::__construct($title);
-        $this->title = '🔨 ' . admin_trans_label('Batch Delete');
+        $this->title = '🔨 '.admin_trans_label('Batch Delete');
     }
 
     public function confirm(): string

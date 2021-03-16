@@ -13,8 +13,10 @@ class MaintenanceRecordUpdateForm extends Form implements LazyRenderable
     use LazyWidget;
 
     /**
-     * 处理表单提交逻辑
+     * 处理表单提交逻辑.
+     *
      * @param array $input
+     *
      * @return JsonResponse
      */
     public function handle(array $input): JsonResponse
@@ -57,7 +59,7 @@ class MaintenanceRecordUpdateForm extends Form implements LazyRenderable
     }
 
     /**
-     * 构造表单
+     * 构造表单.
      */
     public function form()
     {
@@ -65,7 +67,7 @@ class MaintenanceRecordUpdateForm extends Form implements LazyRenderable
         $this->datetime('ok_time', trans('main.maintenance_record_ok_time'))->required();
         $this->select('status', trans('main.maintenance_record_status'))->options([
             1 => trans('main.maintenance_update_done'),
-            2 => trans('main.maintenance_update_cancelled')
+            2 => trans('main.maintenance_update_cancelled'),
         ])->required();
     }
 }

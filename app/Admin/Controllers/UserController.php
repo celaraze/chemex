@@ -33,10 +33,10 @@ class UserController extends BaseUserController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->add(Data::icon('user') . admin_trans_label('User'), $this->grid(), true);
-                $tab->addLink(Data::icon('department') . admin_trans_label('Department'), admin_route('organization.departments.index'));
-                $tab->addLink(Data::icon('role') . admin_trans_label('Role'), admin_route('organization.roles.index'));
-                $tab->addLink(Data::icon('permission') . admin_trans_label('Permission'), admin_route('organization.permissions.index'));
+                $tab->add(Data::icon('user').admin_trans_label('User'), $this->grid(), true);
+                $tab->addLink(Data::icon('department').admin_trans_label('Department'), admin_route('organization.departments.index'));
+                $tab->addLink(Data::icon('role').admin_trans_label('Role'), admin_route('organization.roles.index'));
+                $tab->addLink(Data::icon('permission').admin_trans_label('Permission'), admin_route('organization.permissions.index'));
                 $row->column(12, $tab);
             });
     }
@@ -60,6 +60,7 @@ class UserController extends BaseUserController
                 if ($this->ad_tag === 1) {
                     return "<span class='badge badge-primary mr-1'>AD</span>$name";
                 }
+
                 return $name;
             });
             $grid->column('gender');
@@ -92,17 +93,17 @@ class UserController extends BaseUserController
             }
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
             $grid->hideColumns([
                 'title',
                 'mobile',
-                'email'
+                'email',
             ]);
 
             /**
-             * 批量操作
+             * 批量操作.
              */
             $grid->batchActions(function (Grid\Tools\BatchActions $batchActions) {
                 // @permissions
@@ -112,7 +113,7 @@ class UserController extends BaseUserController
             });
 
             /**
-             * 行内操作
+             * 行内操作.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -122,7 +123,7 @@ class UserController extends BaseUserController
             });
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Grid\Tools $tools) {
                 // @permissions
@@ -132,21 +133,21 @@ class UserController extends BaseUserController
             });
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch('id', 'name', 'department.name', 'gender', 'title', 'mobile', 'email')
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function ($filter) {
                 $filter->equal('department.name')->select(Department::pluck('name', 'id'));
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->enableDialogCreate();
             $grid->disableDeleteButton();
@@ -169,6 +170,7 @@ class UserController extends BaseUserController
 
     /**
      * @param Request $request
+     *
      * @return mixed
      */
     public function selectList(Request $request)
@@ -254,7 +256,7 @@ class UserController extends BaseUserController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableDeleteButton();
             $form->disableCreatingCheck();
@@ -282,8 +284,7 @@ class UserController extends BaseUserController
      *
      * @return Show
      */
-    protected
-    function detail($id): Show
+    protected function detail($id): Show
     {
         return Show::make($id, User::with(['roles', 'department']), function (Show $show) {
             $show->field('id');
@@ -291,6 +292,7 @@ class UserController extends BaseUserController
                 if ($this->ad_tag === 1) {
                     return "<span class='badge badge-primary mr-1'>AD</span>$name";
                 }
+
                 return $name;
             });
             $show->field('avatar', __('admin.avatar'))->image();
@@ -342,7 +344,7 @@ class UserController extends BaseUserController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             // @permissions

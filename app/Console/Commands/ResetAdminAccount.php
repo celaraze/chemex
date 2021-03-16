@@ -47,6 +47,7 @@ class ResetAdminAccount extends Command
         $user->name = 'Administrator';
         $user->save();
         $this->info('Admin账户已成功重置为 admin/admin');
+
         return 0;
     }
 }

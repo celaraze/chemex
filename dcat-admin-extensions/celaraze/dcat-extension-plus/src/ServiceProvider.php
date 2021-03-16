@@ -8,8 +8,7 @@ use Celaraze\DcatPlus\Http\Middleware\MiddleInjectDcatPlus;
 use Dcat\Admin\Extend\ServiceProvider as BaseServiceProvider;
 
 /**
- * Class ServiceProvider
- * @package Celaraze\DcatPlus
+ * Class ServiceProvider.
  */
 class ServiceProvider extends BaseServiceProvider
 {
@@ -28,14 +27,14 @@ class ServiceProvider extends BaseServiceProvider
         ],
         'after' => [
             AfterInjectDcatPlus::class,
-        ]
+        ],
     ];
     protected $menu = [
         [
             'title' => 'Dcat Plus',
-            'uri' => 'dcat-plus/site',
-            'icon' => 'feather icon-settings'
-        ]
+            'uri'   => 'dcat-plus/site',
+            'icon'  => 'feather icon-settings',
+        ],
     ];
 
     public function register()
@@ -51,6 +50,5 @@ class ServiceProvider extends BaseServiceProvider
     public function init()
     {
         parent::init();
-
     }
 }

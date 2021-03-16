@@ -28,7 +28,7 @@ class ServiceWorthTrend extends Line
     {
         $year = date('Y', time());
         if ($request->get('option') == 'pre_year') {
-            $year = (int)$year - 1;
+            $year = (int) $year - 1;
         }
         $from = Support::makeYearDate($year);
         $to = Support::makeYearDate($year, 'to');
@@ -56,7 +56,7 @@ class ServiceWorthTrend extends Line
             array_push($data, $temp);
         }
 
-        $this->withContent(trans('main.all_year') . $year_all);
+        $this->withContent(trans('main.all_year').$year_all);
         // 图表数据
         $this->withChart($data);
     }
@@ -89,6 +89,7 @@ HTML
     public function withChart(array $data): ServiceWorthTrend
     {
         $this->chartOptions['tooltip']['x']['show'] = true;
+
         return $this->chart([
             'series' => [
                 [
@@ -98,14 +99,14 @@ HTML
             ],
             'tooltip' => [
                 'x' => [
-                    'show' => true
-                ]
-            ]
+                    'show' => true,
+                ],
+            ],
         ]);
     }
 
     /**
-     * 初始化卡片内容
+     * 初始化卡片内容.
      *
      * @return void
      */
@@ -116,8 +117,7 @@ HTML
         $this->title(trans('main.service_worth_trend'));
         $this->dropdown([
             'current_year' => trans('main.current_year'),
-            'pre_year' => trans('main.last_year')
+            'pre_year'     => trans('main.last_year'),
         ]);
     }
-
 }

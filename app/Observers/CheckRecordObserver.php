@@ -12,6 +12,7 @@ class CheckRecordObserver
      * Handle the CheckRecord "created" event.
      *
      * @param CheckRecord $checkRecord
+     *
      * @return void
      */
     public function created(CheckRecord $checkRecord)
@@ -26,6 +27,7 @@ class CheckRecordObserver
      * Handle the CheckRecord "updated" event.
      *
      * @param CheckRecord $checkRecord
+     *
      * @return void
      */
     public function updated(CheckRecord $checkRecord)
@@ -37,6 +39,7 @@ class CheckRecordObserver
      * Handle the CheckRecord "deleted" event.
      *
      * @param CheckRecord $checkRecord
+     *
      * @return void
      */
     public function deleted(CheckRecord $checkRecord)
@@ -48,6 +51,7 @@ class CheckRecordObserver
      * Handle the CheckRecord "restored" event.
      *
      * @param CheckRecord $checkRecord
+     *
      * @return void
      */
     public function restored(CheckRecord $checkRecord)
@@ -59,6 +63,7 @@ class CheckRecordObserver
      * Handle the CheckRecord "force deleted" event.
      *
      * @param CheckRecord $checkRecord
+     *
      * @return void
      */
     public function forceDeleted(CheckRecord $checkRecord)

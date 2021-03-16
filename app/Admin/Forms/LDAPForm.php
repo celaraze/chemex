@@ -16,6 +16,7 @@ class LDAPForm extends Form
     public function handle(array $input)
     {
         admin_setting($input);
+
         return $this
             ->response()
             ->success(trans('main.success'))
@@ -78,6 +79,7 @@ class LDAPForm extends Form
             $ldap_disabled = admin_trans_label('LDAP Disabled');
             $connect_fail = admin_trans_label('Connect Fail');
             $connect_error = admin_trans_label('Connect Error');
+
             return <<<HTML
 <a class='btn btn-success' style='color: #FFFFFF;' onclick="test()">{$test_connection}</a>
 <script>

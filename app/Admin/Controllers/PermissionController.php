@@ -13,7 +13,6 @@ use Dcat\Admin\Tree;
 use Dcat\Admin\Widgets\Tab;
 use Illuminate\Support\Str;
 
-
 class PermissionController extends BasePermissionController
 {
     public function index(Content $content): Content
@@ -23,10 +22,10 @@ class PermissionController extends BasePermissionController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->addLink(Data::icon('user') . admin_trans_label('User'), admin_route('organization.users.index'));
-                $tab->addLink(Data::icon('department') . admin_trans_label('Department'), admin_route('organization.departments.index'));
-                $tab->addLink(Data::icon('role') . admin_trans_label('Role'), admin_route('organization.roles.index'));
-                $tab->add(Data::icon('permission') . admin_trans_label('Permission'), $this->treeView(), true);
+                $tab->addLink(Data::icon('user').admin_trans_label('User'), admin_route('organization.users.index'));
+                $tab->addLink(Data::icon('department').admin_trans_label('Department'), admin_route('organization.departments.index'));
+                $tab->addLink(Data::icon('role').admin_trans_label('Role'), admin_route('organization.roles.index'));
+                $tab->add(Data::icon('permission').admin_trans_label('Permission'), $this->treeView(), true);
                 $row->column(12, $tab);
             });
     }
@@ -50,7 +49,7 @@ class PermissionController extends BasePermissionController
                 $path = array_filter($branch['http_path']);
 
                 if (!$path) {
-                    return $payload . '</div>&nbsp;';
+                    return $payload.'</div>&nbsp;';
                 }
 
                 $max = 3;
@@ -77,10 +76,10 @@ class PermissionController extends BasePermissionController
                 })->implode('&nbsp;&nbsp;');
 
                 $method = collect($method ?: ['ANY'])->unique()->map(function ($name) {
-                        return strtoupper($name);
-                    })->map(function ($name) {
-                        return "<span class='label bg-primary'>{$name}</span>";
-                    })->implode('&nbsp;') . '&nbsp;';
+                    return strtoupper($name);
+                })->map(function ($name) {
+                    return "<span class='label bg-primary'>{$name}</span>";
+                })->implode('&nbsp;').'&nbsp;';
 
                 $payload .= "</div>&nbsp; $method<a class=\"dd-nodrag\">$path</a>";
 
@@ -116,7 +115,7 @@ class PermissionController extends BasePermissionController
             $form->select('parent_id', trans('admin.parent_id'))
                 ->options($permissionModel::selectOptions())
                 ->saving(function ($v) {
-                    return (int)$v;
+                    return (int) $v;
                 });
 
             $form->text('slug', trans('admin.slug'))

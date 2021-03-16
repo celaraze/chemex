@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @method static where(string $key, string $value)
+ *
  * @property int id
  * @property int user_id
  * @property string check_item
@@ -22,7 +23,8 @@ class CheckRecord extends Model
     protected $table = 'check_records';
 
     /**
-     * 盘点记录有一个用户
+     * 盘点记录有一个用户.
+     *
      * @return HasOne
      */
     public function user(): HasOne

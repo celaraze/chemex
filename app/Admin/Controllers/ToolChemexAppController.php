@@ -11,8 +11,10 @@ use Dcat\Admin\Widgets\Card;
 class ToolChemexAppController extends Controller
 {
     /**
-     * 页面
+     * 页面.
+     *
      * @param Content $content
+     *
      * @return Content
      */
     public function index(Content $content): Content

@@ -2,6 +2,7 @@
 
 /**
  * Dcat-admin - admin builder based on Laravel.
+ *
  * @author jqh <https://github.com/jqhph>
  *
  * Bootstraper for Admin.
@@ -16,7 +17,6 @@
  * Or require js and css assets:
  * Admin::css('/packages/prettydocs/css/styles.css');
  * Admin::js('/packages/prettydocs/js/main.js');
- *
  */
 
 use App\Models\User;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Grid\Displayers;
-
 
 use Dcat\Admin\Grid\Displayers\DropdownActions;
 use Illuminate\Contracts\View\Factory;
@@ -11,8 +9,10 @@ use Illuminate\View\View;
 class RowActions extends DropdownActions
 {
     /**
-     * 构造行操作菜单按钮
+     * 构造行操作菜单按钮.
+     *
      * @param array $callbacks
+     *
      * @return Factory|View
      */
     public function display(array $callbacks = [])
@@ -59,11 +59,11 @@ class RowActions extends DropdownActions
         }
 
         $actions = [
-            'view' => $view,
-            'edit' => $edit,
-            'default' => $default,
-            'custom' => $this->appends,
-            'remove' => $remove,
+            'view'     => $view,
+            'edit'     => $edit,
+            'default'  => $default,
+            'custom'   => $this->appends,
+            'remove'   => $remove,
             'selector' => ".{$this->grid->getRowName()}-checkbox",
         ];
 

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Admin\Metrics;
-
 
 use App\Models\PartRecord;
 use Closure;
@@ -10,7 +8,6 @@ use Dcat\Admin\Grid\LazyRenderable as LazyGrid;
 use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Widgets\Card;
 use Illuminate\Contracts\Support\Renderable;
-
 
 class PartExpiredCounts extends Card
 {

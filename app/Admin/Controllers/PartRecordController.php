@@ -33,8 +33,9 @@ use Dcat\Admin\Widgets\Tab;
 /**
  * @property DeviceRecord device
  * @property int id
- * @property double price
+ * @property float price
  * @property string purchased
+ *
  * @method device()
  */
 class PartRecordController extends AdminController
@@ -46,11 +47,11 @@ class PartRecordController extends AdminController
             ->description(admin_trans_label('description'))
             ->body(function (Row $row) {
                 $tab = new Tab();
-                $tab->add(Data::icon('record') . trans('main.record'), $this->grid(), true);
-                $tab->addLink(Data::icon('category') . trans('main.category'), admin_route('part.categories.index'));
-                $tab->addLink(Data::icon('track') . trans('main.track'), admin_route('part.tracks.index'));
-                $tab->addLink(Data::icon('statistics') . trans('main.statistics'), admin_route('part.statistics'));
-                $tab->addLink(Data::icon('column') . trans('main.column'), admin_route('part.columns.index'));
+                $tab->add(Data::icon('record').trans('main.record'), $this->grid(), true);
+                $tab->addLink(Data::icon('category').trans('main.category'), admin_route('part.categories.index'));
+                $tab->addLink(Data::icon('track').trans('main.track'), admin_route('part.tracks.index'));
+                $tab->addLink(Data::icon('statistics').trans('main.statistics'), admin_route('part.statistics'));
+                $tab->addLink(Data::icon('column').trans('main.column'), admin_route('part.columns.index'));
                 $row->column(12, $tab);
             });
     }
@@ -73,7 +74,7 @@ class PartRecordController extends AdminController
                 ->toArray();
             $grid->column('id', '', $column_sort);
             $grid->column('qrcode', '', $column_sort)->qrcode(function () {
-                return 'part:' . $this->id;
+                return 'part:'.$this->id;
             }, 200, 200);
             $grid->column('price', '', $column_sort);
             $grid->column('purchased', '', $column_sort);
@@ -96,12 +97,12 @@ class PartRecordController extends AdminController
             $grid->column('updated_at', '', $column_sort);
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeGrid((new PartRecord())->getTable(), $grid, $column_sort);
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -119,13 +120,13 @@ class PartRecordController extends AdminController
             });
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
             $grid->hideColumns(['description', 'price', 'expired']);
 
             /**
-             * 快速搜索
+             * 快速搜索.
              */
             $grid->quickSearch(
                 array_merge([
@@ -143,7 +144,7 @@ class PartRecordController extends AdminController
                 ->auto(false);
 
             /**
-             * 筛选
+             * 筛选.
              */
             $grid->filter(function ($filter) {
                 $filter->equal('category_id')->select(PartCategory::pluck('name', 'id'));
@@ -151,14 +152,13 @@ class PartRecordController extends AdminController
                 $filter->equal('device.name');
                 $filter->equal('depreciation_id')->select(DepreciationRule::pluck('name', 'id'));
                 /**
-                 * 自定义字段
+                 * 自定义字段.
                  */
                 ControllerHasCustomColumns::makeFilter((new PartRecord())->getTable(), $filter);
             });
 
-
             /**
-             * 批量按钮
+             * 批量按钮.
              */
             $grid->batchActions(function (BatchActions $batchActions) {
                 // @permissions
@@ -168,7 +168,7 @@ class PartRecordController extends AdminController
             });
 
             /**
-             * 工具按钮
+             * 工具按钮.
              */
             $grid->tools(function (Tools $tools) {
                 // @permissions
@@ -178,7 +178,7 @@ class PartRecordController extends AdminController
             });
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $grid->enableDialogCreate();
             $grid->disableDeleteButton();
@@ -223,6 +223,7 @@ class PartRecordController extends AdminController
                 $part_record = \App\Models\PartRecord::where('id', $this->id)->first();
                 if (!empty($part_record)) {
                     $depreciation_rule_id = Support::getDepreciationRuleId($part_record);
+
                     return Support::depreciationPrice($this->price, $this->purchased, $depreciation_rule_id);
                 }
             });
@@ -232,7 +233,7 @@ class PartRecordController extends AdminController
             $show->field('depreciation.termination');
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeDetail((new PartRecord())->getTable(), $show);
 
@@ -240,7 +241,7 @@ class PartRecordController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             // @permissions
@@ -316,7 +317,7 @@ class PartRecordController extends AdminController
             }
 
             /**
-             * 自定义字段
+             * 自定义字段.
              */
             ControllerHasCustomColumns::makeForm((new PartRecord())->getTable(), $form);
 
@@ -324,7 +325,7 @@ class PartRecordController extends AdminController
             $form->display('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $form->disableDeleteButton();
             $form->disableCreatingCheck();

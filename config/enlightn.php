@@ -29,7 +29,7 @@ return [
     |
     */
     'analyzer_paths' => [
-        'Enlightn\\Enlightn\\Analyzers' => base_path('vendor/enlightn/enlightn/src/Analyzers'),
+        'Enlightn\\Enlightn\\Analyzers'    => base_path('vendor/enlightn/enlightn/src/Analyzers'),
         'Enlightn\\EnlightnPro\\Analyzers' => base_path('vendor/enlightn/enlightnpro/src/Analyzers'),
     ],
 
@@ -114,20 +114,20 @@ return [
     ],
 
     'allowed_permissions' => [
-        base_path() => '775',
-        app_path() => '775',
-        resource_path() => '775',
-        storage_path() => '775',
-        public_path() => '775',
-        config_path() => '775',
-        database_path() => '775',
-        base_path('routes') => '775',
-        app()->bootstrapPath() => '775',
-        app()->bootstrapPath('cache') => '775',
+        base_path()                     => '775',
+        app_path()                      => '775',
+        resource_path()                 => '775',
+        storage_path()                  => '775',
+        public_path()                   => '775',
+        config_path()                   => '775',
+        database_path()                 => '775',
+        base_path('routes')             => '775',
+        app()->bootstrapPath()          => '775',
+        app()->bootstrapPath('cache')   => '775',
         app()->bootstrapPath('app.php') => '664',
-        base_path('artisan') => '775',
-        public_path('index.php') => '664',
-        public_path('server.php') => '664',
+        base_path('artisan')            => '775',
+        public_path('index.php')        => '664',
+        public_path('server.php')       => '664',
     ],
 
     'writable_directories' => [

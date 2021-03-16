@@ -34,7 +34,6 @@ class TodoRecordController extends AdminController
             ->body(function (Row $row) {
                 $row->column(12, function (Column $column) {
                     $column->row(function (Row $row) {
-
                     });
                 });
                 $row->column(12, $this->grid());
@@ -69,7 +68,7 @@ class TodoRecordController extends AdminController
             $grid->column('updated_at', '', $column_sort);
 
             /**
-             * 行操作按钮
+             * 行操作按钮.
              */
             $grid->actions(function (RowActions $actions) {
                 // @permissions
@@ -86,12 +85,12 @@ class TodoRecordController extends AdminController
             });
 
             /**
-             * 字段过滤
+             * 字段过滤.
              */
             $grid->showColumnSelector();
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             // @permissions
             if (!Admin::user()->can('todo.record.delete')) {
@@ -135,7 +134,7 @@ class TodoRecordController extends AdminController
             $show->field('updated_at');
 
             /**
-             * 按钮控制
+             * 按钮控制.
              */
             $show->disableDeleteButton();
             $show->disableEditButton();
@@ -144,6 +143,7 @@ class TodoRecordController extends AdminController
 
     /**
      * Make a form builder.
+     *
      * @return Alert
      */
     protected function form(): Alert

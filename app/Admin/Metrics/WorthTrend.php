@@ -10,7 +10,6 @@ use App\Support\Support;
 use Dcat\Admin\Widgets\Metrics\Line;
 use Illuminate\Http\Request;
 
-
 class WorthTrend extends Line
 {
     /**
@@ -33,7 +32,7 @@ class WorthTrend extends Line
     {
         $year = date('Y', time());
         if ($request->get('option') == 'pre_year') {
-            $year = (int)$year - 1;
+            $year = (int) $year - 1;
         }
         $from = Support::makeYearDate($year);
         $to = Support::makeYearDate($year, 'to');
@@ -103,7 +102,7 @@ class WorthTrend extends Line
             array_push($data, $item);
         }
 
-        $this->withContent(trans('main.all_year') . $year_all);
+        $this->withContent(trans('main.all_year').$year_all);
         // 图表数据
         $this->withChart($data);
     }
@@ -136,23 +135,24 @@ HTML
     public function withChart(array $data): WorthTrend
     {
         $this->chartOptions['tooltip']['x']['show'] = true;
+
         return $this->chart([
             'series' => [
                 [
                     'name' => trans('main.worth'),
-                    'data' => $data
+                    'data' => $data,
                 ],
             ],
             'tooltip' => [
                 'x' => [
-                    'show' => true
-                ]
+                    'show' => true,
+                ],
             ],
         ]);
     }
 
     /**
-     * 初始化卡片内容
+     * 初始化卡片内容.
      *
      * @return void
      */
@@ -163,8 +163,7 @@ HTML
         $this->title(trans('main.worth_trend'));
         $this->dropdown([
             'current_year' => trans('main.current_year'),
-            'pre_year' => trans('main.last_year')
+            'pre_year'     => trans('main.last_year'),
         ]);
     }
-
 }

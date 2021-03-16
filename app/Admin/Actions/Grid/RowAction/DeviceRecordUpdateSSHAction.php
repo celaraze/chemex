@@ -8,15 +8,15 @@ use Dcat\Admin\Widgets\Modal;
 
 class DeviceRecordUpdateSSHAction extends RowAction
 {
-
     public function __construct()
     {
         parent::__construct();
-        $this->title = '✍ ' . admin_trans_label('Update SSH');
+        $this->title = '✍ '.admin_trans_label('Update SSH');
     }
 
     /**
-     * 渲染模态框
+     * 渲染模态框.
+     *
      * @return Modal|string
      */
     public function render()

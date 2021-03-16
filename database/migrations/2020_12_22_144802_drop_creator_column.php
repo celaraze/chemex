@@ -79,6 +79,5 @@ class DropCreatorColumn extends Migration
      */
     public function down()
     {
-
     }
 }

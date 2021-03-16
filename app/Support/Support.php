@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Support;
-
 
 use App\Models\CheckRecord;
 use App\Models\CheckTrack;
@@ -23,7 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 class Support
 {
     /**
-     * 获取所有物品的类型和ID，并且以 device:1 形式加入到数组中返回
+     * 获取所有物品的类型和ID，并且以 device:1 形式加入到数组中返回.
+     *
      * @return array
      */
     public static function getAllItemTypeAndId(): array
@@ -34,22 +33,25 @@ class Support
         $software_records = SoftwareRecord::all();
 
         foreach ($device_records as $device_record) {
-            array_push($data, 'device:' . $device_record->id . '&#10;');
+            array_push($data, 'device:'.$device_record->id.'&#10;');
         }
         foreach ($part_records as $part_record) {
-            array_push($data, 'part:' . $part_record->id . '&#10;');
+            array_push($data, 'part:'.$part_record->id.'&#10;');
         }
         foreach ($software_records as $software_record) {
-            array_push($data, 'software:' . $software_record->id . '&#10;');
+            array_push($data, 'software:'.$software_record->id.'&#10;');
         }
+
         return $data;
     }
 
     /**
-     * 物品履历 形成清单数组（未排序）
+     * 物品履历 形成清单数组（未排序）.
+     *
      * @param $template
      * @param $item_track
      * @param array $data
+     *
      * @return array
      */
     public static function itemTrack($template, $item_track, $data = []): array
@@ -62,13 +64,16 @@ class Support
             $template['datetime'] = json_decode($item_track, true)['deleted_at'];
             array_push($data, $template);
         }
+
         return $data;
     }
 
     /**
-     * 计算盘点任务记录的数量
+     * 计算盘点任务记录的数量.
+     *
      * @param $check_id
      * @param string $type
+     *
      * @return int
      */
     public static function checkTrackCounts($check_id, $type = 'A'): int
@@ -108,8 +113,10 @@ class Support
     }
 
     /**
-     * 设备id获取操作系统标识
+     * 设备id获取操作系统标识.
+     *
      * @param $device_id
+     *
      * @return string
      */
     public static function getSoftwareIcon($device_id): string
@@ -133,11 +140,13 @@ class Support
     }
 
     /**
-     * 构造WebSSH连接字符串
+     * 构造WebSSH连接字符串.
+     *
      * @param $host
      * @param $port
      * @param $username
      * @param $password
+     *
      * @return string
      */
     public static function getSSHBaseUrl($host, $port, $username, $password): string
@@ -146,9 +155,11 @@ class Support
     }
 
     /**
-     * 物品id换取物品名称
+     * 物品id换取物品名称.
+     *
      * @param $item
      * @param $item_id
+     *
      * @return string
      */
     public static function itemIdToItemName($item, $item_id): string
@@ -162,9 +173,11 @@ class Support
     }
 
     /**
-     * 通过类名获取对应物资的模型
+     * 通过类名获取对应物资的模型.
+     *
      * @param $item
      * @param $item_id
+     *
      * @return null
      */
     public static function getItemRecordByClass($item, $item_id)
@@ -180,14 +193,17 @@ class Support
             default:
                 $item_record = DeviceRecord::where('id', $item_id)->first();
         }
+
         return $item_record;
     }
 
     /**
      * 获取折旧后的价格
+     *
      * @param $price
      * @param $date
      * @param $depreciation_rule_id
+     *
      * @return float|int
      */
     public static function depreciationPrice($price, $date, $depreciation_rule_id)
@@ -196,7 +212,6 @@ class Support
         if (empty($depreciation)) {
             return $price;
         } else {
-
             $purchased_timestamp = strtotime($date);
             $now_timestamp = time();
 
@@ -211,13 +226,13 @@ class Support
             $return = array_filter($data, function ($item) use ($diff) {
                 switch ($item['scale']) {
                     case 'month':
-                        $number = (int)$item['number'] * 24 * 60 * 60 * 30;
+                        $number = (int) $item['number'] * 24 * 60 * 60 * 30;
                         break;
                     case 'year':
-                        $number = (int)$item['number'] * 24 * 60 * 60 * 365;
+                        $number = (int) $item['number'] * 24 * 60 * 60 * 365;
                         break;
                     default:
-                        $number = (int)$item['number'] * 24 * 60 * 60;
+                        $number = (int) $item['number'] * 24 * 60 * 60;
                 }
 
                 return $diff >= $number;
@@ -225,15 +240,18 @@ class Support
 
             if (!empty($return)) {
                 array_multisort(array_column($return, 'number'), SORT_DESC, $return);
-                $price = $price * (double)$return[0]['ratio'];
+                $price = $price * (float) $return[0]['ratio'];
             }
+
             return $price;
         }
     }
 
     /**
-     * 根据模型查找折旧规则的id（记录的优先级>分类的优先级）
+     * 根据模型查找折旧规则的id（记录的优先级>分类的优先级）.
+     *
      * @param Model $model
+     *
      * @return mixed|null
      */
     public static function getDepreciationRuleId(Model $model)
@@ -258,7 +276,8 @@ class Support
     }
 
     /**
-     * 判断是否切换到selectCreate
+     * 判断是否切换到selectCreate.
+     *
      * @return bool
      */
     public static function ifSelectCreate(): bool
@@ -271,7 +290,8 @@ class Support
     }
 
     /**
-     * 获取服务异常总览（看板）
+     * 获取服务异常总览（看板）.
+     *
      * @return ServiceRecord[]|Collection
      */
     public static function getServiceIssueStatus()
@@ -301,13 +321,13 @@ class Support
                 // 如果异常待修复
                 if ($service_issue->status == 1) {
                     $service->status = 1;
-                    $issue = $service_issue->issue . '<br>';
+                    $issue = $service_issue->issue.'<br>';
                     array_push($issues, $issue);
                 }
                 // 如果是修复的
                 if ($service_issue->status == 2) {
                     $service->status = 0;
-                    $issue = '<span class="status-recovery">[已修复最近一个问题]</span> ' . $service_issue->issue . '<br>';
+                    $issue = '<span class="status-recovery">[已修复最近一个问题]</span> '.$service_issue->issue.'<br>';
                     if ((time() - strtotime($service_issue->end)) > (24 * 60 * 60)) {
                         $issue = '';
                         $service->start = '';
@@ -332,13 +352,16 @@ class Support
             $service->issues = $issues;
         }
         $services = json_decode($services, true);
+
         return $services;
     }
 
     /**
-     * 返回某一年的开始时间和结束时间
+     * 返回某一年的开始时间和结束时间.
+     *
      * @param $year
      * @param string $field
+     *
      * @return false|string
      */
     public static function makeYearDate($year, $field = 'from')
@@ -348,12 +371,15 @@ class Support
         if ($field == 'to') {
             return $to;
         }
+
         return $from;
     }
 
     /**
-     * 设备详情页的归属关系拓扑图的数据
+     * 设备详情页的归属关系拓扑图的数据.
+     *
      * @param $device_id
+     *
      * @return array|false|string
      */
     public static function makeDeviceRelatedChartData($device_id)
@@ -362,21 +388,21 @@ class Support
         $device_record = DeviceRecord::where('id', $device_id)->first();
         if (!empty($device_record)) {
             $return = [
-                'name' => $device_record->name,
+                'name'     => $device_record->name,
                 'children' => [
                     [
-                        'name' => trans('main.part'),
-                        'children' => []
+                        'name'     => trans('main.part'),
+                        'children' => [],
                     ],
                     [
-                        'name' => trans('main.software'),
-                        'children' => []
+                        'name'     => trans('main.software'),
+                        'children' => [],
                     ],
                     [
-                        'name' => trans('main.service'),
-                        'children' => []
-                    ]
-                ]
+                        'name'     => trans('main.service'),
+                        'children' => [],
+                    ],
+                ],
             ];
             foreach ($device_record->part as $part) {
                 array_push($return['children'][0]['children'], ['name' => $part->name]);
@@ -388,7 +414,7 @@ class Support
                 array_push($return['children'][2]['children'], ['name' => $service->name]);
             }
         }
+
         return json_encode($return);
     }
-
 }

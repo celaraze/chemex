@@ -14,7 +14,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static where(string $key, string $value, string $value = null)
  * @method static whereBetween(string $string, array $array)
  * @method static count()
- * @property double price
+ *
+ * @property float price
  * @property string purchased
  * @property string expired
  * @property string specification
@@ -30,17 +31,17 @@ class PartRecord extends Model
 {
     use HasDateTimeFormatter;
     use SoftDeletes;
-
     /**
      * 这里需要给个别名，否则delete方法将会重复
-     * 和下面的delete方法重写打配合调整优先级
+     * 和下面的delete方法重写打配合调整优先级.
      */
     use ModelTree {
         ModelTree::delete as traitDelete;
     }
 
     /**
-     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段
+     * 需要被包括进排序字段的字段，一般来说是虚拟出来的关联字段.
+     *
      * @var string[]
      */
     public $sortIncludeColumns = [
@@ -48,11 +49,12 @@ class PartRecord extends Model
         'vendor.name',
         'channel.name',
         'depreciation.name',
-        'expiration_left_days'
+        'expiration_left_days',
     ];
 
     /**
-     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段
+     * 需要被排除出排序字段的字段，一般来说是关联字段的原始字段.
+     *
      * @var string[]
      */
     public $sortExceptColumns = [
@@ -69,8 +71,10 @@ class PartRecord extends Model
      * 复写这个是为了让delete方法的优先级满足：
      * 子类>trait>父类
      * 这个是因为字段管理中删除动作的需要
-     * @return bool|null
+     *
      * @throws Exception
+     *
+     * @return bool|null
      */
     public function delete(): ?bool
     {
@@ -78,7 +82,8 @@ class PartRecord extends Model
     }
 
     /**
-     * 配件记录有一个分类
+     * 配件记录有一个分类.
+     *
      * @return HasOne
      */
     public function category(): HasOne
@@ -87,7 +92,8 @@ class PartRecord extends Model
     }
 
     /**
-     * 配件记录有一个厂商
+     * 配件记录有一个厂商.
+     *
      * @return HasOne
      */
     public function vendor(): HasOne
@@ -96,7 +102,8 @@ class PartRecord extends Model
     }
 
     /**
-     * 配件记录有一个购入途径
+     * 配件记录有一个购入途径.
+     *
      * @return HasOne
      */
     public function channel(): HasOne
@@ -105,7 +112,8 @@ class PartRecord extends Model
     }
 
     /**
-     * 配件记录在远处有一个设备
+     * 配件记录在远处有一个设备.
+     *
      * @return HasOneThrough
      */
     public function device(): HasOneThrough
@@ -116,11 +124,13 @@ class PartRecord extends Model
             'part_id',    // 中间表对主表的关联字段
             'id',   // 远程表对中间表的关联字段
             'id',   // 主表对中间表的关联字段
-            'device_id'); // 中间表对远程表的关联字段
+            'device_id'
+        ); // 中间表对远程表的关联字段
     }
 
     /**
-     * 配件分类有一个折旧规则
+     * 配件分类有一个折旧规则.
+     *
      * @return HasOne
      */
     public function depreciation(): HasOne

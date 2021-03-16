@@ -13,11 +13,12 @@ class CustomColumnDeleteAction extends RowAction
     public function __construct()
     {
         parent::__construct();
-        $this->title = '🔨 ' . admin_trans_label('Delete');
+        $this->title = '🔨 '.admin_trans_label('Delete');
     }
 
     /**
-     * 处理动作逻辑
+     * 处理动作逻辑.
+     *
      * @return Response
      */
     public function handle(): Response
@@ -37,12 +38,13 @@ class CustomColumnDeleteAction extends RowAction
                 ->refresh();
         } catch (Exception $exception) {
             return $this->response()
-                ->error(trans('main.fail') . '：' . $exception->getMessage());
+                ->error(trans('main.fail').'：'.$exception->getMessage());
         }
     }
 
     /**
-     * 对话框
+     * 对话框.
+     *
      * @return string[]
      */
     public function confirm(): array

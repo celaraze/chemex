@@ -14,6 +14,7 @@ class CustomFieldObserver
      * Handle the CustomColumn "created" event.
      *
      * @param CustomColumn $customColumn
+     *
      * @return void
      */
     public function created(CustomColumn $customColumn)
@@ -43,6 +44,7 @@ class CustomFieldObserver
      * Handle the CustomColumn "updated" event.
      *
      * @param CustomColumn $customColumn
+     *
      * @return void
      */
     public function updated(CustomColumn $customColumn)
@@ -54,6 +56,7 @@ class CustomFieldObserver
      * Handle the CustomColumn "deleted" event.
      *
      * @param CustomColumn $customColumn
+     *
      * @return void
      */
     public function deleted(CustomColumn $customColumn)
@@ -71,6 +74,7 @@ class CustomFieldObserver
      * Handle the CustomColumn "restored" event.
      *
      * @param CustomColumn $customColumn
+     *
      * @return void
      */
     public function restored(CustomColumn $customColumn)
@@ -82,6 +86,7 @@ class CustomFieldObserver
      * Handle the CustomColumn "force deleted" event.
      *
      * @param CustomColumn $customColumn
+     *
      * @return void
      */
     public function forceDeleted(CustomColumn $customColumn)

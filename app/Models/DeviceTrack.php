@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @method static where(string $key, string $value)
+ *
  * @property int device_id
  * @property int user_id
  * @property DateTime|null lend_time
@@ -25,7 +26,8 @@ class DeviceTrack extends Model
     protected $table = 'device_tracks';
 
     /**
-     * 设备追踪有一个设备记录
+     * 设备追踪有一个设备记录.
+     *
      * @return BelongsTo
      */
     public function device(): BelongsTo
@@ -34,7 +36,8 @@ class DeviceTrack extends Model
     }
 
     /**
-     * 设备追踪有一个使用者（用户）
+     * 设备追踪有一个使用者（用户）.
+     *
      * @return HasOne
      */
     public function user(): HasOne
