@@ -1,0 +1,103 @@
+name: Phpunit
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  php71:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: shivammathur/setup-php@b7d1d9c9a92d8d8463ce36d7f60da34d461724f8
+        with:
+          php-version: '7.1'
+
+      - uses: actions/checkout@v2
+
+      - name: Composer Update
+        run: composer self-update --2
+
+      - name: Install
+        run: composer install --no-interaction
+
+      - name: Run test suite
+        run: ./vendor/bin/phpunit
+
+  php72:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: shivammathur/setup-php@b7d1d9c9a92d8d8463ce36d7f60da34d461724f8
+        with:
+          php-version: '7.2'
+
+      - uses: actions/checkout@v2
+
+      - name: Composer Update
+        run: composer self-update --2
+
+      - name: Install
+        run: composer install --no-interaction
+
+      - name: Run test suite
+        run: ./vendor/bin/phpunit
+
+  php73:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: shivammathur/setup-php@b7d1d9c9a92d8d8463ce36d7f60da34d461724f8
+        with:
+          php-version: '7.3'
+
+      - uses: actions/checkout@v2
+
+      - name: Composer Update
+        run: composer self-update --2
+
+      - name: Install
+        run: composer install --no-interaction
+
+      - name: Run test suite
+        run: ./vendor/bin/phpunit
+
+  php74:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: shivammathur/setup-php@b7d1d9c9a92d8d8463ce36d7f60da34d461724f8
+        with:
+          php-version: '7.4'
+
+      - uses: actions/checkout@v2
+
+      - name: Composer Update
+        run: composer self-update --2
+
+      - name: Install
+        run: composer install --no-interaction
+
+      - name: Run test suite
+        run: ./vendor/bin/phpunit
+
+  php8:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: shivammathur/setup-php@b7d1d9c9a92d8d8463ce36d7f60da34d461724f8
+        with:
+          php-version: '8'
+
+      - uses: actions/checkout@v2
+
+      - name: Composer Update
+        run: composer self-update --2
+
+      - name: Install
+        run: composer install --no-interaction
+
+      - name: Run test suite
+        run: ./vendor/bin/phpunit

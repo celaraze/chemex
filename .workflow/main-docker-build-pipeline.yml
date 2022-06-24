@@ -1,0 +1,27 @@
+version: '1.0'
+name: docker-build-prd
+displayName: docker-build-prd
+triggers:
+  trigger: auto
+  push:
+    branches:
+      precise:
+        - main
+stages:
+  - name: stage-528ebcf8
+    displayName: 未命名
+    strategy: naturally
+    trigger: auto
+    executor: [ ]
+    steps:
+      - step: build@docker
+        name: build_docker
+        displayName: 镜像构建
+        type: cert
+        certificate: d66c3ab0-7cc8-013a-6066-5a7ac4d3e693
+        tag: celaraze/chemex:latest
+        dockerfile: ./Dockerfile
+        isCache: false
+permissions:
+  - role: admin
+    members: [ ]

@@ -1,0 +1,92 @@
+﻿/**修改非皮肤部分记得同步修改其他的skin_xx.css文件**/
+.themecolor {
+    background-color: #3E91B8
+}
+
+/*skin*/
+.skincolor-blue {
+    background-color: #3E91B8
+}
+
+/*蓝的，用于top、左侧子菜单选中、父菜单左边色块*/
+.leftbgcolor-black {
+    background-color: #333744
+}
+
+/*黑的，左侧整体*/
+.leftmenucolor-black {
+    background-color: #222C32
+}
+
+/*黑的，左侧父菜单。注意：此class未实际应用*/
+.leftmenucolor-active {
+    background-color: #1E282C;
+    color: #ffffff;
+}
+
+/*黑的，左侧父菜单选中*/
+.bottom_frame_bordercolor {
+    border-top: 2px solid #3E91B8
+}
+
+/*leftframe skin*/
+.lefttop {
+    width: 100%;
+    height: 40px;
+    color: #b8c7ce;
+    font-size: 14px;
+    line-height: 40px;
+}
+
+/**.menuson li:hover{background-color:#3E91B8;}**/
+.menuson li.active {
+    position: relative;
+    background-color: #3E91B8;
+    line-height: 30px;
+    color: #FFFFFF;
+}
+
+.menuson li {
+    color: #b8c7ce;
+}
+
+.menuson li:hover {
+    color: #ffffff;
+}
+
+.menuson li a {
+    color: #b8c7ce;
+}
+
+.menuson li a:hover {
+    color: #ffffff;
+}
+
+.left_title.active {
+    position: absolute;
+    background-color: #3E91B8;
+    width: 4px;
+    top: 0;
+}
+
+.title {
+    cursor: default;
+    background-color: #222C32;
+    color: #b8c7ce;
+}
+
+/*#222C32暗色背景，#b8c7ce暗色调字体颜色，配合暗背景*/
+.title:hover {
+    background-color: #1E282C;
+    color: #ffffff;
+}
+
+/*mainframe skin*/
+.box {
+    position: relative;
+    border-radius: 3px;
+    background-color: #ffffff;
+    border-top: 3px solid #3E91B8;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}

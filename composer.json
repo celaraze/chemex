@@ -1,0 +1,81 @@
+{
+    "name": "celaraze/chemex",
+    "type": "project",
+    "description": "MIS",
+    "keywords": [
+        "chemex",
+        "laravel",
+        "dcat-admin",
+        "mis"
+    ],
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": "^8.0",
+        "ext-bcmath": "*",
+        "ext-json": "*",
+        "ext-ldap": "*",
+        "ext-mysqli": "*",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-zip": "*",
+        "adldap2/adldap2-laravel": "^6.1",
+        "celaraze/laravel-ace": "dev-main",
+        "dcat/easy-excel": "^1.0",
+        "dcat/laravel-admin": "^2.0",
+        "doctrine/dbal": "^3.0",
+        "enlightn/enlightn": "^1.7",
+        "fruitcake/laravel-cors": "^2.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "laravel/framework": "^9.0",
+        "laravel/tinker": "^2.0",
+        "mosiboom/dcat-iframe-tab": "^1.2",
+        "orangehill/iseed": "^3.0",
+        "overtrue/laravel-pinyin": "~4.0",
+        "spiral/roadrunner": "^2.0",
+        "tecnickcom/tcpdf": "^6.3",
+        "tymon/jwt-auth": "^1"
+    },
+    "require-dev": {
+        "spatie/laravel-ignition": "^1.0",
+        "fakerphp/faker": "^1.9.1",
+        "mockery/mockery": "^1.4.2",
+        "nunomaduro/collision": "^6.1",
+        "phpunit/phpunit": "^9.3.3"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
+    }
+}

@@ -1,0 +1,9 @@
+version: "2"
+
+services:
+  web:
+    image: celaraze/chemex:latest
+    container_name: chemex-app
+    build: .
+    ports:
+      - "60001:80"

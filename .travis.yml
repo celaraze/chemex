@@ -1,0 +1,20 @@
+# .travis.yml
+dist: focal
+language: php
+
+php:
+  - 8.0
+
+services:
+  - mysql
+
+cache:
+  directories:
+    - node_modules
+    - vendor
+
+before_script:
+  - echo "extension = ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - cp .env.travis .env
+  - sudo mysql -e 'CREATE DATABASE testing DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+  - php artisan chemex:install --no-interaction
