@@ -242,9 +242,9 @@ Route::group([
         ->name('site.version.index');
 
     /**
-     * 标签查询.
-     */
-    $router->get('/device/tag', [DevicePrintController::class, 'tag'])
+     * 设备标签查询.
+     */	
+    $router->get('/device/tag', [DeviceTagController::class, 'checktag'])
         ->name('device.tag');
 
     /**
