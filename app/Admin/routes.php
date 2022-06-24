@@ -7,6 +7,7 @@ use App\Admin\Controllers\DepartmentController;
 use App\Admin\Controllers\DepreciationRuleController;
 use App\Admin\Controllers\DeviceCategoryController;
 use App\Admin\Controllers\DevicePrintController;
+use App\Admin\Controllers\DeviceTagController;
 use App\Admin\Controllers\DeviceRecordController;
 use App\Admin\Controllers\DeviceStatisticsController;
 use App\Admin\Controllers\NotificationController;
@@ -242,9 +243,9 @@ Route::group([
         ->name('site.version.index');
 
     /**
-     * 标签查询.
-     */
-    $router->get('/device/tag', [DevicePrintController::class, 'tag'])
+     * 设备标签查询.
+     */	
+    $router->get('/device/tag', [DeviceTagController::class, 'checktag'])
         ->name('device.tag');
 
     /**
