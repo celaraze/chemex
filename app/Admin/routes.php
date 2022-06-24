@@ -7,6 +7,7 @@ use App\Admin\Controllers\DepartmentController;
 use App\Admin\Controllers\DepreciationRuleController;
 use App\Admin\Controllers\DeviceCategoryController;
 use App\Admin\Controllers\DevicePrintController;
+use App\Admin\Controllers\DeviceTagController;
 use App\Admin\Controllers\DeviceRecordController;
 use App\Admin\Controllers\DeviceStatisticsController;
 use App\Admin\Controllers\NotificationController;
