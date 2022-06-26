@@ -72,6 +72,7 @@
             font-size: 1rem;
             font-family: Poppins,sans-serif
         }
+        
     </style>
     <link id="new-stylesheet" rel="stylesheet">
 </head>
@@ -101,7 +102,7 @@
                         </tr>
                         <tr>
                             <th align='left' width='120px'>资产类型</th>
-                            <td>{{$data->categories}}</td>
+                            <td>{{$data->category()->value('name')}}</td>
                         </tr>
 
                         <!--
@@ -120,12 +121,16 @@
                             <td>{{$data->purchased}} --> {{$data->expired}}</td>
                         </tr>
                         <tr>
+                            <th align='left' width='120px'>资产状态</th>
+                            <td>{!!$data->status()[0]!!}</td>
+                        </tr>
+                        <tr>
                             <th align='left' width='120px'>使用部门</th>
-                            <td>{{$data->departments}}</td>
+                            <td>{{$data->department()}}</td>
                         </tr>
                         <tr>
 							<th align='left' width='120px'>使用人员</th>
-                            <td>{{$data->admin_users}}</td>
+                            <td>{{$data->userName()}}</td>
                         </tr>
                         <tr>
                             <th align='left' width='120px'>资产备注</th>
