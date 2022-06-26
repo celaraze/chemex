@@ -188,6 +188,23 @@ class DeviceRecord extends Model
     }
 
     /**
+     * 设备当前使用者所属部门.
+     *
+     * @return string
+     */
+    public function department(): string
+    {
+        $user = $this->admin_user()->first();
+        if(empty($user)){
+            $name = '未分配部门';
+        }
+        else{
+            $name = $user->hasOne(Department::class,'id','department_id')->first()->name;
+        }
+        return $name;
+    }
+
+    /**
      * 设备记录在远处有一个使用者（用户）.
      *
      * @return HasOneThrough
