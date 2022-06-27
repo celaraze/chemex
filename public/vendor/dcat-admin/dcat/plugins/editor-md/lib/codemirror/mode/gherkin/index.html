@@ -2,40 +2,37 @@
 
 <title>CodeMirror: Gherkin mode</title>
 <meta charset="utf-8"/>
-<link href="../../doc/docs.css" rel=stylesheet>
+<link rel=stylesheet href="../../doc/docs.css">
 
-<link href="../../lib/codemirror.css" rel="stylesheet">
+<link rel="stylesheet" href="../../lib/codemirror.css">
 <script src="../../lib/codemirror.js"></script>
 <script src="gherkin.js"></script>
-<style>.CodeMirror {
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-}</style>
+<style>.CodeMirror { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }</style>
 <div id=nav>
-    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
 
-    <ul>
-        <li><a href="../../index.html">Home</a>
-        <li><a href="../../doc/manual.html">Manual</a>
-        <li><a href="https://github.com/codemirror/codemirror">Code</a>
-    </ul>
-    <ul>
-        <li><a href="../index.html">Language modes</a>
-        <li><a class=active href="#">Gherkin</a>
-    </ul>
+  <ul>
+    <li><a href="../../index.html">Home</a>
+    <li><a href="../../doc/manual.html">Manual</a>
+    <li><a href="https://github.com/codemirror/codemirror">Code</a>
+  </ul>
+  <ul>
+    <li><a href="../index.html">Language modes</a>
+    <li><a class=active href="#">Gherkin</a>
+  </ul>
 </div>
 
 <article>
-    <h2>Gherkin mode</h2>
-    <form><textarea id="code" name="code">
+<h2>Gherkin mode</h2>
+<form><textarea id="code" name="code">
 Feature: Using Google
-  Background:
+  Background: 
     Something something
     Something else
   Scenario: Has a homepage
     When I navigate to the google home page
     Then the home page should contain the menu and the search form
-  Scenario: Searching for a term
+  Scenario: Searching for a term 
     When I navigate to the google home page
     When I search for Tofu
     Then the search results page is displayed
@@ -43,9 +40,9 @@ Feature: Using Google
     Then the search results contain a link to the wikipedia tofu page
 </textarea></form>
     <script>
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {});
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {});
     </script>
 
     <p><strong>MIME types defined:</strong> <code>text/x-feature</code>.</p>
 
-</article>
+  </article>

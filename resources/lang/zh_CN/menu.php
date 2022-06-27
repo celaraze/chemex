@@ -58,6 +58,5 @@ return [
         'logs' => '日志',
         'import_logs' => '导入日志',
         'import_log_details' => '导入日志明细'
-
     ],
 ];

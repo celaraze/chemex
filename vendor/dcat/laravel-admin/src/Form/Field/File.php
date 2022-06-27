@@ -17,7 +17,10 @@ class File extends Field implements UploadFieldInterface
     /**
      * @var array
      */
-    protected $options = ['events' => []];
+    protected $options = [
+        'events' => [],
+        'override' => false,
+    ];
 
     public function __construct($column, $arguments = [])
     {
@@ -103,7 +106,7 @@ class File extends Field implements UploadFieldInterface
      */
     public function setRelation(array $options = [])
     {
-        $this->options['formData']['_relation'] = [$options['relation'], $options['key']];
+        $this->options['formData']['_relation'] = [$options['relation'], $options['key'] ?? null];
 
         return $this;
     }
@@ -226,5 +229,12 @@ class File extends Field implements UploadFieldInterface
 
             Helper::deleteContains($fieldRules, ['image', 'file', 'dimensions', 'size', 'max', 'min']);
         }
+    }
+
+    public function override(bool $override = true)
+    {
+        $this->options['override'] = $override;
+
+        return $this;
     }
 }
