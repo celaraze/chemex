@@ -2,6 +2,7 @@
 
 namespace Dcat\Admin\Form\Concerns;
 
+use Dcat\Admin\Contracts\FieldsCollection;
 use Dcat\Admin\Contracts\UploadField as UploadFieldInterface;
 use Dcat\Admin\Form\Builder;
 use Dcat\Admin\Form\Field;
@@ -65,7 +66,19 @@ trait HasFiles
      */
     public function findFieldByName(?string $column)
     {
-        return $this->builder->field($column);
+        if ($field = $this->builder->field($column)) {
+            return $field;
+        }
+
+        $columns = explode('.', $column);
+        $field = $this->builder;
+        foreach ($columns as $column) {
+            if ($field instanceof FieldsCollection) {
+                $field = $field->field($column);
+            }
+        }
+
+        return $field;
     }
 
     /**

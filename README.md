@@ -25,7 +25,7 @@
 
 ## 鸣谢
 
-没有它们就没有 资产管理系统（Chemex）：
+没有它们就没有 Chemex：
 
 `JetBrains` 提供优秀的IDE。
 

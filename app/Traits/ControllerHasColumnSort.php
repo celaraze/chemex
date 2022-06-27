@@ -107,8 +107,8 @@ trait ControllerHasColumnSort
                         'table_name' => $repository->getTable(),
                         'name' => $actions->getRow()->title
                     ];
-                    $actions->append('<a href="' . admin_route('columns.update', $form_data) . '">' . admin_trans('main.update_column') . '</a>');
-//                    $actions->append(new CustomColumnUpdateAction($repository->getTable(), $actions->getRow()->title));
+                    $html = '<i class="fa fa-fw feather icon-edit"></i>';
+                    $actions->append('<a href="' . admin_route('columns.update', $form_data) . '">' . $html . admin_trans('main.update_column') . '</a>');
                     $actions->append('&nbsp;&nbsp;&nbsp;&nbsp;');
                     $actions->append(new CustomColumnDeleteAction($repository->getTable(), $actions->getRow()->title));
                 }

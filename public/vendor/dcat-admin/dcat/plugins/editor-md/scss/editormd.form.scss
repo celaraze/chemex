@@ -1,10 +1,10 @@
 @charset "UTF-8";
 
 // Form
-
+            
 #{$prefix}form {
     color: $color;
-
+    
     label {
         float: left;
         display: block;
@@ -32,7 +32,7 @@
         padding: 8px;
         border: 1px solid $borderColor;
     }
-
+            
     input[type="number"] {
         width: 40px;
         display: inline-block;
@@ -43,7 +43,7 @@
         display: inline-block;
         width: 264px;
     }
-
+    
     .fa-btns {
         display: inline-block;
 
@@ -90,8 +90,7 @@
     }
 
     #{$prefix}btn {
-        padding: 5px 8px 4px \0
-    ;
+        padding: 5px 8px 4px\0;
     }
 
     #{$prefix}btn + #{$prefix}btn {
@@ -122,10 +121,10 @@
         }
     }
 
-    input[type="submit"] {
+    input[type="submit"]  {
     }
 
-    &:hover input[type="submit"] {
+    &:hover input[type="submit"]  {
         background: #eee;
     }
 }
