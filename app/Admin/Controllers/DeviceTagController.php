@@ -2,7 +2,8 @@
 
 namespace App\Admin\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\DeviceRecord;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\View\Factory;
@@ -10,7 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 
-class DeviceTagController
+class DeviceTagController extends Controller
 {
     /**
      * 页面.
