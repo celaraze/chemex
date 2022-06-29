@@ -243,14 +243,25 @@ Route::group([
         ->name('site.version.index');
 
     /**
-     * 设备标签查询.
-     */	
-    $router->get('/device/tag', [DeviceTagController::class, 'checktag'])
-        ->name('device.tag');
-
-    /**
      * 自定义字段维护.
      */
     $router->get('/columns/update', [CustomColumnUpdateController::class, 'index'])
         ->name('columns.update');
+});
+
+/*
+ * 公共路由
+*/
+Route::group([
+    'prefix' => config('admin.route.prefix'),
+    'namespace' => config('admin.route.namespace'),
+    'middleware' => 'guest',
+], function (Router $router) {
+
+    /**
+     * 设备标签查询.
+     */
+    $router->get('/device/tag', [DeviceTagController::class, 'checktag'])
+        ->name('device.tag');
+    
 });
