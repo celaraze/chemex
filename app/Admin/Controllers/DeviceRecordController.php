@@ -292,6 +292,10 @@ class DeviceRecordController extends AdminController
                 if (Admin::user()->can('device.record.batch.force.delete')) {
                     $batchActions->add(new DeviceRecordBatchForceDeleteAction());
                 }
+                // @permissions
+                if (Admin::user()->can('device.record.batch.discard')) {
+                    $batchActions->add(new DeviceRecordBatchDiscardAction());
+                }
             });
 
             /**

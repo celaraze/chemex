@@ -270,6 +270,19 @@ class DeviceRecord extends Model
     }
 
     /**
+     * 报废设备.
+     */
+    public function discard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
+
+        }
+    }
+
+    /**
      * 删除方法.
      * 这是里为了兼容数据删除和字段删除.
      */
