@@ -261,7 +261,8 @@ Route::group([
     /**
      * 设备标签查询.
      */
-    $router->get('/device/tag', [DeviceTagController::class, 'checktag'])
+    $router->get('/device/{assetnumber}',[DeviceTagController::class,'checktag'])
         ->name('device.tag');
+
     
 });
