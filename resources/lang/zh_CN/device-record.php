@@ -15,6 +15,8 @@ return [
         'Batch Force Delete' => '批量强制删除设备（不可恢复）',
         'Batch Force Delete Confirm' => '您确定要强制删除选中的设备吗？（此操作不可逆）',
         'Batch Delete Confirm' => '您确定要删除选中的设备吗？',
+        'Batch Discard' => '批量报废设备',
+        'Batch Discard Confirm' => '您确定要报废选中的设备吗？',
         'Delete' => '删除设备',
         'Delete Confirm' => '确认删除设备',
         'Delete Confirm Description' => '删除设备将会同时删除所有与之关联的信息',

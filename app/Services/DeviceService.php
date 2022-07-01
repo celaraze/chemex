@@ -83,6 +83,19 @@ class DeviceService
 
         return $data;
     }
+    
+    /**
+     * 报废设备.
+     *
+     * @param $device_id
+     */
+    public static function deviceDiscard($device_id)
+    {
+        $device_record = DeviceRecord::where('id', $device_id)->first();
+        if (!empty($device_record)) {
+            $device_record->discard();
+        }
+    }
 
     /**
      * 删除设备.

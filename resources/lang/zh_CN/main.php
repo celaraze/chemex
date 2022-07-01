@@ -11,6 +11,7 @@ return [
     'idle' => '闲置',
     'using' => '正在使用',
     'dead' => '堪用',
+    'discard' => '已报废',
     'column' => '字段',
     'update_column' => '更新字段',
     'custom_field' => '自定义字段',

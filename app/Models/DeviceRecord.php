@@ -40,6 +40,7 @@ use Illuminate\Translation\Translator;
  * @property int parent_id
  * @property int order
  * @property string field
+ * @property string discard_at
  */
 class DeviceRecord extends Model
 {
@@ -228,6 +229,10 @@ class DeviceRecord extends Model
      */
     public function status(): array|string|Translator|Application|null
     {
+        if(!empty($this -> discard_at)){
+            return ["<span class='badge badge-danger'>" . trans('main.discard') . "</span>", trans('main.discard')];
+        }
+
         if ($this->isLend()) {
             return ["<span class='badge badge-primary'>" . trans('main.lend') . "</span>", trans('main.lend')];
         }
@@ -267,6 +272,19 @@ class DeviceRecord extends Model
     public function track(): HasMany
     {
         return $this->hasMany(DeviceTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 报废设备.
+     */
+    public function discard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
+
+        }
     }
 
     /**
