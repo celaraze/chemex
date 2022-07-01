@@ -385,6 +385,7 @@ class DeviceRecordController extends AdminController
                     $filter->panel();
                 }
                 $filter->scope('history', admin_trans_label('Deleted'))->onlyTrashed();
+                $filter->scope('Discard', trans('main.discard'))->doesntHave('admin_user')->whereNotNull('discard_at');
                 $filter->scope('lend', trans('main.lend'))->whereHas('track', function ($query) {
                     $query->whereNotNUll('lend_time');
                 });
