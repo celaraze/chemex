@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchDeleteAction;
+use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchDiscardAction;
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchForceDeleteAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordCreateUpdateTrackAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordDeleteAction;
