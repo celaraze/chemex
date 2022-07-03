@@ -7,6 +7,10 @@ use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchDiscardAction;
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchForceDeleteAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordCreateUpdateTrackAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordDeleteAction;
+use App\Admin\Actions\Grid\RowAction\DeviceRecordReDeleteAction;
+use App\Admin\Actions\Grid\RowAction\DeviceRecordDiscardAction;
+use App\Admin\Actions\Grid\RowAction\DeviceRecordReDiscardAction;
+use App\Admin\Actions\Grid\RowAction\DeviceTrackUpdateDeleteAction;
 use App\Admin\Actions\Grid\RowAction\MaintenanceRecordCreateAction;
 use App\Admin\Actions\Grid\ToolAction\DevicePrintListAction;
 use App\Admin\Actions\Grid\ToolAction\DevicePrintTagAction;
@@ -46,8 +50,9 @@ use Illuminate\Http\Request;
  * @property float price
  * @property string purchased
  * @property int depreciation_rule_id
+ * @property string discard_at
  * @property string deleted_at
- * @property  string asset_number
+ * @property string asset_number
  *
  * @method isLend()
  * @method track()
@@ -320,19 +325,57 @@ class DeviceRecordController extends AdminController
              */
             $grid->actions(function (RowActions $actions) {
                 if ($this->deleted_at == null) {
+
+                    //报废状态
+                    $is_discard = !empty($this -> discard_at);
+
+                    //借出状态
+                    $is_lend = $this->isLend();
+
+                    // 删除设备
                     // @permissions
-                    if (Admin::user()->can('device.record.delete')) {
+                    if (Admin::user()->can('device.record.delete') && !$is_discard) {
                         $actions->append(new DeviceRecordDeleteAction());
                     }
-                    $is_lend = $this->isLend();
+
+                    // 分配用户
                     // @permissions
-                    if (Admin::user()->can('device.record.track.create_update') && !$is_lend) {
+                    if (Admin::user()->can('device.record.track.create_update') && !$is_lend && !$is_discard) {
                         $actions->append(new DeviceRecordCreateUpdateTrackAction($is_lend));
                     }
+
+                    // 归还设备
                     // @permissions
-                    if (Admin::user()->can('device.maintenance.create')) {
+                    if (Admin::user()->can('device.record.track.returndevice') && $is_lend) {
+                        $actions->append(new DeviceTrackUpdateDeleteAction());
+                    }
+
+                    // 撤销报废
+                    // @permissions
+                    if (Admin::user()->can('device.record.rediscard') && $is_discard) {
+                        $actions->append(new DeviceRecordReDiscardAction());
+                    }
+
+                    // 报废设备
+                    // @permissions
+                    if (Admin::user()->can('device.record.discard') && !$is_discard) {
+                        $actions->append(new DeviceRecordDiscardAction());
+                    }
+
+                    // 报障
+                    // @permissions
+                    if (Admin::user()->can('device.maintenance.create') && !$is_discard) {
                         $actions->append(new MaintenanceRecordCreateAction($this->asset_number));
                     }
+                }
+                else{
+
+                    // 撤销删除
+                    // @permissions
+                    if (Admin::user()->can('device.record.redelete')) {
+                        $actions->append(new DeviceRecordReDeleteAction());
+                    }
+
                 }
             });
 
@@ -387,6 +430,9 @@ class DeviceRecordController extends AdminController
                 }
                 $filter->scope('history', admin_trans_label('Deleted'))->onlyTrashed();
                 $filter->scope('Discard', trans('main.discard'))->doesntHave('admin_user')->whereNotNull('discard_at');
+                $filter->scope('maintenance', trans('main.maintenance'))->whereHas('maintenance', function ($query) {
+                    $query->where('status','0');
+                });
                 $filter->scope('lend', trans('main.lend'))->whereHas('track', function ($query) {
                     $query->whereNotNUll('lend_time');
                 });

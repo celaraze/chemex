@@ -229,24 +229,60 @@ class DeviceRecord extends Model
      */
     public function status(): array|string|Translator|Application|null
     {
+        //报废状态
         if(!empty($this -> discard_at)){
             return ["<span class='badge badge-danger'>" . trans('main.discard') . "</span>", trans('main.discard')];
         }
 
+        //维修中状态
+
+        if($this -> isMaintenance()){
+            return ["<span class='badge badge-warning'>" . trans('main.maintenance') . "</span>", trans('main.maintenance')];
+        }
+
+        //借用状态
         if ($this->isLend()) {
             return ["<span class='badge badge-primary'>" . trans('main.lend') . "</span>", trans('main.lend')];
         }
 
+        //正在使用状态
         $user = $this->admin_user()->first();
         if (!empty($user)) {
             return ["<span class='badge badge-success'>" . trans('main.using') . "</span>", trans('main.using')];
         }
 
+        //堪用（过保且闲置）状态
         if (!empty($this->expired) && (time() > strtotime($this->expired))) {
-            return ["<span class='badge badge-danger'>" . trans('main.dead') . "</span>", trans('main.dead')];
+            return ["<span class='badge badge-dark'>" . trans('main.dead') . "</span>", trans('main.dead')];
         }
 
+        //闲置状态
         return ["<span class='badge badge-info'>" . trans('main.idle') . "</span>", trans('main.idle')];
+    }
+
+    /**
+     * 判定设备是否处于维修中状态
+     *
+     * @return bool
+     */
+    public function isMaintenance():bool
+    {
+        $result = $this->maintenance()->where('status','0')->get();
+
+        if(count($result) <= 0){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 设备有很多维修记录.
+     *
+     * @return HasMany
+     */
+    public function maintenance(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class,'asset_number','asset_number');
     }
 
     /**
@@ -280,6 +316,19 @@ class DeviceRecord extends Model
     public function discard()
     {
         $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
+
+        }
+    }
+
+    /**
+     * 报废设备.
+     */
+    public function rediscard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
         try {
             return parent::update();
         } catch (Exception $exception) {
