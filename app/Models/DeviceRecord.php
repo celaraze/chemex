@@ -90,6 +90,8 @@ class DeviceRecord extends Model
         });
     }
 
+    //region 模型关联
+
     /**
      * 设备记录有一个分类.
      *
@@ -162,6 +164,16 @@ class DeviceRecord extends Model
     }
 
     /**
+     * 设备有很多维修记录.
+     *
+     * @return HasMany
+     */
+    public function maintenance(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class, 'asset_number', 'asset_number');
+    }
+
+    /**
      * 设备分类有一个折旧规则.
      *
      * @return HasOne
@@ -170,6 +182,27 @@ class DeviceRecord extends Model
     {
         return $this->hasOne(DepreciationRule::class, 'id', 'depreciation_rule_id');
     }
+
+    /**
+     * 设备记录在远处有一个使用者（用户）.
+     *
+     * @return HasOneThrough
+     */
+    public function admin_user(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            User::class,  // 远程表
+            DeviceTrack::class,   // 中间表
+            'device_id',    // 中间表对主表的关联字段
+            'id',   // 远程表对中间表的关联字段
+            'id',   // 主表对中间表的关联字段
+            'user_id'
+        ); // 中间表对远程表的关联字段
+    }
+
+    //endregion
+
+    //region 设备信息
 
     /**
      * 设备当前使用者.
@@ -196,30 +229,12 @@ class DeviceRecord extends Model
     public function department(): string
     {
         $user = $this->admin_user()->first();
-        if(empty($user)){
+        if (empty($user)) {
             $name = '未分配部门';
-        }
-        else{
-            $name = $user->hasOne(Department::class,'id','department_id')->first()->name;
+        } else {
+            $name = $user->hasOne(Department::class, 'id', 'department_id')->first()->name;
         }
         return $name;
-    }
-
-    /**
-     * 设备记录在远处有一个使用者（用户）.
-     *
-     * @return HasOneThrough
-     */
-    public function admin_user(): HasOneThrough
-    {
-        return $this->hasOneThrough(
-            User::class,  // 远程表
-            DeviceTrack::class,   // 中间表
-            'device_id',    // 中间表对主表的关联字段
-            'id',   // 远程表对中间表的关联字段
-            'id',   // 主表对中间表的关联字段
-            'user_id'
-        ); // 中间表对远程表的关联字段
     }
 
     /**
@@ -230,13 +245,13 @@ class DeviceRecord extends Model
     public function status(): array|string|Translator|Application|null
     {
         //报废状态
-        if(!empty($this -> discard_at)){
+        if (!empty($this->discard_at)) {
             return ["<span class='badge badge-danger'>" . trans('main.discard') . "</span>", trans('main.discard')];
         }
 
         //维修中状态
 
-        if($this -> isMaintenance()){
+        if ($this->isMaintenance()) {
             return ["<span class='badge badge-warning'>" . trans('main.maintenance') . "</span>", trans('main.maintenance')];
         }
 
@@ -265,24 +280,14 @@ class DeviceRecord extends Model
      *
      * @return bool
      */
-    public function isMaintenance():bool
+    public function isMaintenance(): bool
     {
-        $result = $this->maintenance()->where('status','0')->get();
+        $result = $this->maintenance()->where('status', '0')->get();
 
-        if(count($result) <= 0){
+        if (count($result) <= 0) {
             return false;
         }
         return true;
-    }
-
-    /**
-     * 设备有很多维修记录.
-     *
-     * @return HasMany
-     */
-    public function maintenance(): HasMany
-    {
-        return $this->hasMany(MaintenanceRecord::class,'asset_number','asset_number');
     }
 
     /**
@@ -300,6 +305,10 @@ class DeviceRecord extends Model
         return true;
     }
 
+    //endregion
+
+    //region 设备的归属记录
+
     /**
      * 设备有很多归属记录.
      *
@@ -311,28 +320,75 @@ class DeviceRecord extends Model
     }
 
     /**
-     * 报废设备.
+     * 设备有很多配件归属记录.
+     *
+     * @return HasMany
      */
-    public function discard()
+    public function parttrack(): HasMany
     {
-        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
-        try {
-            return parent::update();
-        } catch (Exception $exception) {
-
-        }
+        return $this->hasMany(PartTrack::class, 'device_id', 'id');
     }
+
+    /**
+     * 设备有很多软件归属记录.
+     *
+     * @return HasMany
+     */
+    public function softwaretrack(): HasMany
+    {
+        return $this->hasMany(SoftwareTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 设备有很多服务归属记录.
+     *
+     * @return HasMany
+     */
+    public function Servicetrack(): HasMany
+    {
+        return $this->hasMany(ServiceTrack::class, 'device_id', 'id');
+    }
+
+    //endregion
+
+    //region 设备的删除与报废
 
     /**
      * 报废设备.
      */
-    public function rediscard()
+    public function discard()
     {
-        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
+        //解除用户绑定.
+        $this->track()->delete();
+
+        //解除配件绑定.
+        $this->parttrack()->delete();
+
+        //解除软件绑定.
+        $this->softwaretrack()->delete();
+
+        //解除服务绑定.
+        $this->Servicetrack()->delete();
+
+        //报废设备.
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
+
         try {
             return parent::update();
         } catch (Exception $exception) {
+        }
+    }
 
+    /**
+     * 撤销报废设备.
+     */
+    public function rediscard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
+
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
         }
     }
 
@@ -346,7 +402,6 @@ class DeviceRecord extends Model
         try {
             return parent::delete();
         } catch (Exception $exception) {
-
         }
     }
 
@@ -362,7 +417,9 @@ class DeviceRecord extends Model
         try {
             return parent::forceDelete();
         } catch (Exception $exception) {
-
         }
     }
+
+    //endregion
+
 }
