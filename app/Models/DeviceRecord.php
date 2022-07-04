@@ -354,10 +354,10 @@ class DeviceRecord extends Model
     //region 设备的删除与报废
 
     /**
-     * 报废设备.
+     * 解除设备关联
      */
-    public function discard()
-    {
+    public function disassociate(){
+
         //解除用户绑定.
         $this->track()->delete();
 
@@ -369,6 +369,16 @@ class DeviceRecord extends Model
 
         //解除服务绑定.
         $this->Servicetrack()->delete();
+
+    }
+
+    /**
+     * 报废设备.
+     */
+    public function discard()
+    {
+        //解除关联
+        $this->disassociate();
 
         //报废设备.
         $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
@@ -398,6 +408,9 @@ class DeviceRecord extends Model
      */
     public function delete()
     {
+        //解除关联
+        $this->disassociate();
+
         $this->where($this->primaryKey, $this->getKey())->delete();
         try {
             return parent::delete();
@@ -413,6 +426,9 @@ class DeviceRecord extends Model
      */
     public function forceDelete()
     {
+        //解除关联
+        $this->disassociate();
+
         $this->where($this->primaryKey, $this->getKey())->forceDelete();
         try {
             return parent::forceDelete();
