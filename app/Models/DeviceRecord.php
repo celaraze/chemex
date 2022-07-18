@@ -40,6 +40,7 @@ use Illuminate\Translation\Translator;
  * @property int parent_id
  * @property int order
  * @property string field
+ * @property string discard_at
  */
 class DeviceRecord extends Model
 {
@@ -88,6 +89,8 @@ class DeviceRecord extends Model
             }
         });
     }
+
+    //region 模型关联
 
     /**
      * 设备记录有一个分类.
@@ -204,6 +207,26 @@ class DeviceRecord extends Model
         ); // 中间表对远程表的关联字段
     }
 
+    //endregion
+
+    //region 设备信息
+
+    /**
+     * 设备当前使用者所属部门.
+     *
+     * @return string
+     */
+    public function department(): string
+    {
+        $user = $this->admin_user()->first();
+        if (empty($user)) {
+            $name = '未分配部门';
+        } else {
+            $name = $user->hasOne(Department::class, 'id', 'department_id')->first()->name;
+        }
+        return $name;
+    }
+
     /**
      * 返回设备状态.
      *
@@ -211,20 +234,60 @@ class DeviceRecord extends Model
      */
     public function status(): array|string|Translator|Application|null
     {
+        //报废状态
+        if (!empty($this->discard_at)) {
+            return ["<span class='badge badge-danger'>" . trans('main.discard') . "</span>", trans('main.discard')];
+        }
+
+        //维修中状态
+
+        if ($this->isMaintenance()) {
+            return ["<span class='badge badge-warning'>" . trans('main.maintenance') . "</span>", trans('main.maintenance')];
+        }
+
+        //借用状态
         if ($this->isLend()) {
             return ["<span class='badge badge-primary'>" . trans('main.lend') . "</span>", trans('main.lend')];
         }
 
+        //正在使用状态
         $user = $this->admin_user()->first();
         if (!empty($user)) {
             return ["<span class='badge badge-success'>" . trans('main.using') . "</span>", trans('main.using')];
         }
 
+        //堪用（过保且闲置）状态
         if (!empty($this->expired) && (time() > strtotime($this->expired))) {
-            return ["<span class='badge badge-danger'>" . trans('main.dead') . "</span>", trans('main.dead')];
+            return ["<span class='badge badge-dark'>" . trans('main.dead') . "</span>", trans('main.dead')];
         }
 
+        //闲置状态
         return ["<span class='badge badge-info'>" . trans('main.idle') . "</span>", trans('main.idle')];
+    }
+
+    /**
+     * 判定设备是否处于维修中状态
+     *
+     * @return bool
+     */
+    public function isMaintenance(): bool
+    {
+        $result = $this->maintenance()->where('status', '0')->get();
+
+        if (count($result) <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 设备有很多维修记录.
+     *
+     * @return HasMany
+     */
+    public function maintenance(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class, 'asset_number', 'asset_number');
     }
 
     /**
@@ -242,6 +305,10 @@ class DeviceRecord extends Model
         return true;
     }
 
+    //endregion
+
+    //region 设备的归属记录
+
     /**
      * 设备有很多归属记录.
      *
@@ -253,16 +320,102 @@ class DeviceRecord extends Model
     }
 
     /**
+     * 报废设备.
+     */
+    public function discard()
+    {
+        //解除关联
+        $this->disassociate();
+
+        //报废设备.
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => now()]);
+
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
+        }
+    }
+
+    /**
+     * 解除设备关联
+     */
+    public function disassociate()
+    {
+
+        //解除用户绑定.
+        $this->track()->delete();
+
+        //解除配件绑定.
+        $this->partTrack()->delete();
+
+        //解除软件绑定.
+        $this->softwareTrack()->delete();
+
+        //解除服务绑定.
+        $this->serviceTrack()->delete();
+
+    }
+
+    /**
      * 删除方法.
      * 这是里为了兼容数据删除和字段删除.
      */
     public function delete()
     {
+        //解除关联
+        $this->disassociate();
+
         $this->where($this->primaryKey, $this->getKey())->delete();
         try {
             return parent::delete();
         } catch (Exception $exception) {
+        }
+    }
 
+    //endregion
+
+    //region 设备的删除与报废
+
+    /**
+     * 设备有很多配件归属记录.
+     *
+     * @return HasMany
+     */
+    public function partTrack(): HasMany
+    {
+        return $this->hasMany(PartTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 设备有很多软件归属记录.
+     *
+     * @return HasMany
+     */
+    public function softwareTrack(): HasMany
+    {
+        return $this->hasMany(SoftwareTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 设备有很多服务归属记录.
+     *
+     * @return HasMany
+     */
+    public function serviceTrack(): HasMany
+    {
+        return $this->hasMany(ServiceTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 撤销报废设备.
+     */
+    public function cancelDiscard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
+
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
         }
     }
 
@@ -272,13 +425,18 @@ class DeviceRecord extends Model
      *
      * @return bool|null
      */
-    public function forceDelete()
+    public function forceDelete(): ?bool
     {
+        //解除关联
+        $this->disassociate();
+
         $this->where($this->primaryKey, $this->getKey())->forceDelete();
         try {
             return parent::forceDelete();
         } catch (Exception $exception) {
-
         }
     }
+
+    //endregion
+
 }

@@ -7,6 +7,9 @@ use App\Models\DeviceRecord;
 use App\Models\PartRecord;
 use App\Models\SoftwareRecord;
 use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -109,5 +112,23 @@ class AssetController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * 页面.
+     *
+     * @param string $asset_number
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+
+    public function assetCardDevice(string $asset_number): View|Factory|Application
+    {
+        if (!empty($asset_number)) {
+            $data = DeviceRecord::where('asset_number', $asset_number)->first();
+            if (!empty($data)) {
+                return view("asset_card_device", ["data" => $data]);
+            }
+        }
+        abort(404);
     }
 }

@@ -16,7 +16,7 @@ return [
         'Delete Confirm' => '确认删除？',
         'Delete Confirm Description' => '删除的同时将会解除所有与之关联的归属关系',
         'Track Create Update' => '归属设备',
-        'Import' => '导入配件模板',
+        'Import' => '导入配件',
         'Maintenance Create' => '报告故障',
         'File Help' => '导入支持xlsx、csv文件，且表格头必填栏位【资产编号、分类、规格、厂商】，支持资产管理系统导出的Excel文件直接导入。',
         'Deleted' => '已删除',

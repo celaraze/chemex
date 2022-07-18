@@ -1,14 +1,15 @@
 <?php
 
 use App\Admin\Controllers\CheckRecordController;
-use App\Admin\Controllers\CustomColumnUpdateController;
 use App\Admin\Controllers\ConsumableCategoryController;
+use App\Admin\Controllers\CustomColumnUpdateController;
 use App\Admin\Controllers\DepartmentController;
 use App\Admin\Controllers\DepreciationRuleController;
 use App\Admin\Controllers\DeviceCategoryController;
 use App\Admin\Controllers\DevicePrintController;
 use App\Admin\Controllers\DeviceRecordController;
 use App\Admin\Controllers\DeviceStatisticsController;
+use App\Admin\Controllers\DeviceTagController;
 use App\Admin\Controllers\NotificationController;
 use App\Admin\Controllers\PartCategoryController;
 use App\Admin\Controllers\PartStatisticsController;
@@ -240,12 +241,6 @@ Route::group([
         ->name('site.ldap.test');
     $router->get('/site/version', [SiteVersionController::class, 'index'])
         ->name('site.version.index');
-
-    /**
-     * 标签查询.
-     */
-    $router->get('/device/tag', [DevicePrintController::class, 'tag'])
-        ->name('device.tag');
 
     /**
      * 自定义字段维护.

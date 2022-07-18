@@ -2971,6 +2971,42 @@ class AdminPermissionsTableSeeder extends Seeder
                     'created_at' => '2021-11-22 16:56:52',
                     'updated_at' => '2021-11-22 16:56:52',
                 ),
+            246 =>
+                array(
+                    'id' => 287,
+                    'name' => '设备清单报废',
+                    'slug' => 'device.record.discard',
+                    'http_method' => '',
+                    'http_path' => '',
+                    'order' => 257,
+                    'parent_id' => 7,
+                    'created_at' => '2022-07-18 10:01:08',
+                    'updated_at' => '2022-07-18 10:01:55',
+                ),
+            247 =>
+                array(
+                    'id' => 288,
+                    'name' => '设备清单报废取消',
+                    'slug' => 'device.record.cancel_discard',
+                    'http_method' => '',
+                    'http_path' => '',
+                    'order' => 258,
+                    'parent_id' => 7,
+                    'created_at' => '2022-07-18 10:01:38',
+                    'updated_at' => '2022-07-18 10:02:00',
+                ),
+            248 =>
+                array(
+                    'id' => 289,
+                    'name' => '设备清单删除取消',
+                    'slug' => 'device.record.cancel_delete',
+                    'http_method' => '',
+                    'http_path' => '',
+                    'order' => 259,
+                    'parent_id' => 7,
+                    'created_at' => '2022-07-18 10:02:30',
+                    'updated_at' => '2022-07-18 10:02:30',
+                ),
         ));
 
 
