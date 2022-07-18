@@ -11,7 +11,7 @@ class DeviceTrackUpdateDeleteAction extends RowAction
     public function __construct()
     {
         parent::__construct();
-        $this->title = '<i class="fa fa-fw feather icon-user-plus"></i> ' . admin_trans_label('Update Delete');
+        $this->title = '<i class="fa fa-fw feather icon-download"></i> ' . admin_trans_label('Update Delete');
     }
 
     /**
