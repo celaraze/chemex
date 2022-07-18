@@ -3,6 +3,8 @@ FROM celaraze/php-web:latest
 RUN git clone --recursive https://gitee.com/celaraze/chemex.git /var/www/chemex/
 COPY .env.docker /var/www/chemex/.env
 WORKDIR /var/www/chemex/
+RUN composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+RUN composer update -vvv
 
 RUN chown -R www-data:www-data /var/www/chemex && \
     chmod -R 755 /var/www/chemex && \
