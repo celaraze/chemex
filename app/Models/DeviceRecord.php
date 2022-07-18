@@ -164,16 +164,6 @@ class DeviceRecord extends Model
     }
 
     /**
-     * 设备有很多维修记录.
-     *
-     * @return HasMany
-     */
-    public function maintenance(): HasMany
-    {
-        return $this->hasMany(MaintenanceRecord::class, 'asset_number', 'asset_number');
-    }
-
-    /**
      * 设备分类有一个折旧规则.
      *
      * @return HasOne
@@ -181,6 +171,23 @@ class DeviceRecord extends Model
     public function depreciation(): HasOne
     {
         return $this->hasOne(DepreciationRule::class, 'id', 'depreciation_rule_id');
+    }
+
+    /**
+     * 设备当前使用者.
+     *
+     * @return string
+     */
+    public function userName(): string
+    {
+        $user = $this->admin_user()->first();
+        if (empty($user)) {
+            $name = '闲置';
+        } else {
+            $name = $user->name;
+        }
+
+        return $name;
     }
 
     /**
@@ -203,23 +210,6 @@ class DeviceRecord extends Model
     //endregion
 
     //region 设备信息
-
-    /**
-     * 设备当前使用者.
-     *
-     * @return string
-     */
-    public function userName(): string
-    {
-        $user = $this->admin_user()->first();
-        if (empty($user)) {
-            $name = '闲置';
-        } else {
-            $name = $user->name;
-        }
-
-        return $name;
-    }
 
     /**
      * 设备当前使用者所属部门.
@@ -291,6 +281,16 @@ class DeviceRecord extends Model
     }
 
     /**
+     * 设备有很多维修记录.
+     *
+     * @return HasMany
+     */
+    public function maintenance(): HasMany
+    {
+        return $this->hasMany(MaintenanceRecord::class, 'asset_number', 'asset_number');
+    }
+
+    /**
      * 判断设备是否借用状态
      *
      * @return bool
@@ -320,59 +320,6 @@ class DeviceRecord extends Model
     }
 
     /**
-     * 设备有很多配件归属记录.
-     *
-     * @return HasMany
-     */
-    public function parttrack(): HasMany
-    {
-        return $this->hasMany(PartTrack::class, 'device_id', 'id');
-    }
-
-    /**
-     * 设备有很多软件归属记录.
-     *
-     * @return HasMany
-     */
-    public function softwaretrack(): HasMany
-    {
-        return $this->hasMany(SoftwareTrack::class, 'device_id', 'id');
-    }
-
-    /**
-     * 设备有很多服务归属记录.
-     *
-     * @return HasMany
-     */
-    public function Servicetrack(): HasMany
-    {
-        return $this->hasMany(ServiceTrack::class, 'device_id', 'id');
-    }
-
-    //endregion
-
-    //region 设备的删除与报废
-
-    /**
-     * 解除设备关联
-     */
-    public function disassociate(){
-
-        //解除用户绑定.
-        $this->track()->delete();
-
-        //解除配件绑定.
-        $this->parttrack()->delete();
-
-        //解除软件绑定.
-        $this->softwaretrack()->delete();
-
-        //解除服务绑定.
-        $this->Servicetrack()->delete();
-
-    }
-
-    /**
      * 报废设备.
      */
     public function discard()
@@ -390,16 +337,23 @@ class DeviceRecord extends Model
     }
 
     /**
-     * 撤销报废设备.
+     * 解除设备关联
      */
-    public function rediscard()
+    public function disassociate()
     {
-        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
 
-        try {
-            return parent::update();
-        } catch (Exception $exception) {
-        }
+        //解除用户绑定.
+        $this->track()->delete();
+
+        //解除配件绑定.
+        $this->partTrack()->delete();
+
+        //解除软件绑定.
+        $this->softwareTrack()->delete();
+
+        //解除服务绑定.
+        $this->serviceTrack()->delete();
+
     }
 
     /**
@@ -418,13 +372,60 @@ class DeviceRecord extends Model
         }
     }
 
+    //endregion
+
+    //region 设备的删除与报废
+
+    /**
+     * 设备有很多配件归属记录.
+     *
+     * @return HasMany
+     */
+    public function partTrack(): HasMany
+    {
+        return $this->hasMany(PartTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 设备有很多软件归属记录.
+     *
+     * @return HasMany
+     */
+    public function softwareTrack(): HasMany
+    {
+        return $this->hasMany(SoftwareTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 设备有很多服务归属记录.
+     *
+     * @return HasMany
+     */
+    public function serviceTrack(): HasMany
+    {
+        return $this->hasMany(ServiceTrack::class, 'device_id', 'id');
+    }
+
+    /**
+     * 撤销报废设备.
+     */
+    public function cancelDiscard()
+    {
+        $this->where($this->primaryKey, $this->getKey())->update(['discard_at' => null]);
+
+        try {
+            return parent::update();
+        } catch (Exception $exception) {
+        }
+    }
+
     /**
      * 强制删除方法.
      * 这里为了兼容数据强制删除和字段强制删除.
      *
      * @return bool|null
      */
-    public function forceDelete()
+    public function forceDelete(): ?bool
     {
         //解除关联
         $this->disassociate();

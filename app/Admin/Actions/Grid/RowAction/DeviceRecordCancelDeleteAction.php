@@ -6,7 +6,7 @@ use App\Services\DeviceService;
 use Dcat\Admin\Actions\Response;
 use Dcat\Admin\Grid\RowAction;
 
-class DeviceRecordReDeleteAction extends RowAction
+class DeviceRecordCancelDeleteAction extends RowAction
 {
     public function __construct()
     {

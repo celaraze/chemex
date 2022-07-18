@@ -89,7 +89,7 @@ class DeviceService
      *
      * @param $device_id
      */
-    public static function deviceDiscard($device_id)
+    public static function deviceDiscard($device_id): void
     {
         $device_record = DeviceRecord::where('id', $device_id)->first();
         if (!empty($device_record)) {
@@ -102,11 +102,11 @@ class DeviceService
      *
      * @param $device_id
      */
-    public static function deviceReDiscard($device_id)
+    public static function deviceReDiscard($device_id): void
     {
         $device_record = DeviceRecord::where('id', $device_id)->first();
         if (!empty($device_record)) {
-            $device_record -> rediscard();
+            $device_record->cancelDiscard();
         }
     }
 
@@ -115,7 +115,7 @@ class DeviceService
      *
      * @param $device_id
      */
-    public static function deviceDelete($device_id)
+    public static function deviceDelete($device_id): void
     {
         $device_record = DeviceRecord::where('id', $device_id)->first();
         if (!empty($device_record)) {
@@ -128,7 +128,7 @@ class DeviceService
      *
      * @param $device_id
      */
-    public static function deviceReDelete($device_id)
+    public static function deviceReDelete($device_id): void
     {
         $device_record = DeviceRecord::where('id', $device_id);
         if (!empty($device_record)) {
@@ -141,7 +141,7 @@ class DeviceService
      *
      * @param $device_id
      */
-    public static function deviceForceDelete($device_id)
+    public static function deviceForceDelete($device_id): void
     {
         $device_record = DeviceRecord::where('id', $device_id)
             ->withTrashed()

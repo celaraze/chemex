@@ -5,11 +5,11 @@ namespace App\Admin\Controllers;
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchDeleteAction;
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchDiscardAction;
 use App\Admin\Actions\Grid\BatchAction\DeviceRecordBatchForceDeleteAction;
+use App\Admin\Actions\Grid\RowAction\DeviceRecordCancelDeleteAction;
+use App\Admin\Actions\Grid\RowAction\DeviceRecordCancelDiscardAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordCreateUpdateTrackAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordDeleteAction;
-use App\Admin\Actions\Grid\RowAction\DeviceRecordReDeleteAction;
 use App\Admin\Actions\Grid\RowAction\DeviceRecordDiscardAction;
-use App\Admin\Actions\Grid\RowAction\DeviceRecordReDiscardAction;
 use App\Admin\Actions\Grid\RowAction\DeviceTrackUpdateDeleteAction;
 use App\Admin\Actions\Grid\RowAction\MaintenanceRecordCreateAction;
 use App\Admin\Actions\Grid\ToolAction\DevicePrintListAction;
@@ -327,7 +327,7 @@ class DeviceRecordController extends AdminController
                 if ($this->deleted_at == null) {
 
                     //报废状态
-                    $is_discard = !empty($this -> discard_at);
+                    $is_discard = !empty($this->discard_at);
 
                     //借出状态
                     $is_lend = $this->isLend();
@@ -346,14 +346,14 @@ class DeviceRecordController extends AdminController
 
                     // 归还设备
                     // @permissions
-                    if (Admin::user()->can('device.record.track.returndevice') && $is_lend) {
+                    if (Admin::user()->can('device.track.update_delete') && $is_lend) {
                         $actions->append(new DeviceTrackUpdateDeleteAction());
                     }
 
                     // 撤销报废
                     // @permissions
-                    if (Admin::user()->can('device.record.rediscard') && $is_discard) {
-                        $actions->append(new DeviceRecordReDiscardAction());
+                    if (Admin::user()->can('device.record.cancel_discard') && $is_discard) {
+                        $actions->append(new DeviceRecordCancelDiscardAction());
                     }
 
                     // 报废设备
@@ -367,13 +367,12 @@ class DeviceRecordController extends AdminController
                     if (Admin::user()->can('device.maintenance.create') && !$is_discard) {
                         $actions->append(new MaintenanceRecordCreateAction($this->asset_number));
                     }
-                }
-                else{
+                } else {
 
                     // 撤销删除
                     // @permissions
-                    if (Admin::user()->can('device.record.redelete')) {
-                        $actions->append(new DeviceRecordReDeleteAction());
+                    if (Admin::user()->can('device.record.cancel_delete')) {
+                        $actions->append(new DeviceRecordCancelDeleteAction());
                     }
 
                 }
@@ -431,7 +430,7 @@ class DeviceRecordController extends AdminController
                 $filter->scope('history', admin_trans_label('Deleted'))->onlyTrashed();
                 $filter->scope('Discard', trans('main.discard'))->doesntHave('admin_user')->whereNotNull('discard_at');
                 $filter->scope('maintenance', trans('main.maintenance'))->whereHas('maintenance', function ($query) {
-                    $query->where('status','0');
+                    $query->where('status', '0');
                 });
                 $filter->scope('lend', trans('main.lend'))->whereHas('track', function ($query) {
                     $query->whereNotNUll('lend_time');

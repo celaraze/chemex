@@ -1,15 +1,15 @@
 <?php
 
 use App\Admin\Controllers\CheckRecordController;
-use App\Admin\Controllers\CustomColumnUpdateController;
 use App\Admin\Controllers\ConsumableCategoryController;
+use App\Admin\Controllers\CustomColumnUpdateController;
 use App\Admin\Controllers\DepartmentController;
 use App\Admin\Controllers\DepreciationRuleController;
 use App\Admin\Controllers\DeviceCategoryController;
 use App\Admin\Controllers\DevicePrintController;
-use App\Admin\Controllers\DeviceTagController;
 use App\Admin\Controllers\DeviceRecordController;
 use App\Admin\Controllers\DeviceStatisticsController;
+use App\Admin\Controllers\DeviceTagController;
 use App\Admin\Controllers\NotificationController;
 use App\Admin\Controllers\PartCategoryController;
 use App\Admin\Controllers\PartStatisticsController;
@@ -247,22 +247,4 @@ Route::group([
      */
     $router->get('/columns/update', [CustomColumnUpdateController::class, 'index'])
         ->name('columns.update');
-});
-
-/*
- * 公共路由
-*/
-Route::group([
-    'prefix' => config('admin.route.prefix'),
-    'namespace' => config('admin.route.namespace'),
-    'middleware' => 'guest',
-], function (Router $router) {
-
-    /**
-     * 设备标签查询.
-     */
-    $router->get('/device/{assetnumber}',[DeviceTagController::class,'checktag'])
-        ->name('device.tag');
-
-    
 });

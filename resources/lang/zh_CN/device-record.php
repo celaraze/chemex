@@ -33,7 +33,7 @@ return [
         'Update Delete' => '归还设备',
         'Batch Track Create Update' => '批量分配用户',
         'Maintenance Create' => '报告故障',
-        'Import' => '导入设备模板',
+        'Import' => '导入设备',
         'Export To Excel' => '导出到Excel',
         'NG Description' => '故障描述',
         'Lend Track Create' => '借用设备',
