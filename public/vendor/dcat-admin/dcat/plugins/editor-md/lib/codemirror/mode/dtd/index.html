@@ -2,34 +2,31 @@
 
 <title>CodeMirror: DTD mode</title>
 <meta charset="utf-8"/>
-<link href="../../doc/docs.css" rel=stylesheet>
+<link rel=stylesheet href="../../doc/docs.css">
 
-<link href="../../lib/codemirror.css" rel="stylesheet">
+<link rel="stylesheet" href="../../lib/codemirror.css">
 <script src="../../lib/codemirror.js"></script>
 <script src="dtd.js"></script>
-<style type="text/css">.CodeMirror {
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-}</style>
+<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
 <div id=nav>
-    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
 
-    <ul>
-        <li><a href="../../index.html">Home</a>
-        <li><a href="../../doc/manual.html">Manual</a>
-        <li><a href="https://github.com/codemirror/codemirror">Code</a>
-    </ul>
-    <ul>
-        <li><a href="../index.html">Language modes</a>
-        <li><a class=active href="#">DTD</a>
-    </ul>
+  <ul>
+    <li><a href="../../index.html">Home</a>
+    <li><a href="../../doc/manual.html">Manual</a>
+    <li><a href="https://github.com/codemirror/codemirror">Code</a>
+  </ul>
+  <ul>
+    <li><a href="../index.html">Language modes</a>
+    <li><a class=active href="#">DTD</a>
+  </ul>
 </div>
 
 <article>
-    <h2>DTD mode</h2>
-    <form><textarea id="code" name="code"><?xml version="1.0" encoding="UTF-8"?>
+<h2>DTD mode</h2>
+<form><textarea id="code" name="code"><?xml version="1.0" encoding="UTF-8"?>
 
-        <!ATTLIST title
+<!ATTLIST title
   xmlns	CDATA	#FIXED	"http://docbook.org/ns/docbook"
   role	CDATA	#IMPLIED
   %db.common.attributes;
@@ -81,12 +78,12 @@
 
 "></textarea></form>
     <script>
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            mode: {name: "dtd", alignCDATA: true},
-            lineNumbers: true,
-            lineWrapping: true
-        });
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: {name: "dtd", alignCDATA: true},
+        lineNumbers: true,
+        lineWrapping: true
+      });
     </script>
 
     <p><strong>MIME types defined:</strong> <code>application/xml-dtd</code>.</p>
-</article>
+  </article>

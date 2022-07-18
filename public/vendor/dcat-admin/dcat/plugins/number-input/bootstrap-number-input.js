@@ -39,7 +39,7 @@
             function getVal() {
                 var val = clone.val();
 
-                if (!val || val === "NaN") {
+                if (! val || val === "NaN") {
                     return 0;
                 }
 
@@ -57,6 +57,12 @@
             }
 
             var group = $("<div class='input-group'></div>");
+<<<<<<< HEAD
+            var down = $("<button type='button'>-</button>").attr({'class': 'btn btn-' +settings.downClass, 'disabled': options.disabled}).click(function () {
+                setText(getVal() - 1);
+            });
+            var up = $("<button type='button'>+</button>").attr({'class': 'btn btn-' +settings.upClass, 'disabled': options.disabled}).click(function () {
+=======
             var down = $("<button type='button'>-</button>").attr({
                 'class': 'btn btn-' + settings.downClass,
                 'disabled': options.disabled
@@ -67,6 +73,7 @@
                 'class': 'btn btn-' + settings.upClass,
                 'disabled': options.disabled
             }).click(function () {
+>>>>>>> dev
                 setText(getVal() + 1);
             });
             $("<span class='input-group-btn'></span>").append(down).appendTo(group);
@@ -105,7 +112,8 @@
 
                 if ((min && n < min)) {
                     setText(min);
-                } else if (max && n > max) {
+                }
+                else if (max && n > max) {
                     setText(max);
                 }
             });
