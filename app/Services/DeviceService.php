@@ -85,6 +85,32 @@ class DeviceService
     }
 
     /**
+     * 报废设备.
+     *
+     * @param $device_id
+     */
+    public static function deviceDiscard($device_id)
+    {
+        $device_record = DeviceRecord::where('id', $device_id)->first();
+        if (!empty($device_record)) {
+            $device_record->discard();
+        }
+    }
+
+    /**
+     * 撤销报废设备.
+     *
+     * @param $device_id
+     */
+    public static function deviceReDiscard($device_id)
+    {
+        $device_record = DeviceRecord::where('id', $device_id)->first();
+        if (!empty($device_record)) {
+            $device_record -> rediscard();
+        }
+    }
+
+    /**
      * 删除设备.
      *
      * @param $device_id
@@ -94,6 +120,19 @@ class DeviceService
         $device_record = DeviceRecord::where('id', $device_id)->first();
         if (!empty($device_record)) {
             $device_record->delete();
+        }
+    }
+
+    /**
+     * 恢复删除的设备.
+     *
+     * @param $device_id
+     */
+    public static function deviceReDelete($device_id)
+    {
+        $device_record = DeviceRecord::where('id', $device_id);
+        if (!empty($device_record)) {
+            $device_record->restore();
         }
     }
 
