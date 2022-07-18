@@ -44,14 +44,13 @@ namespace Psy\Readline\Hoa;
 class StreamContext
 {
     /**
-     * Context ID.
-     */
-    protected $_id = null;
-
-    /**
      * Multiton.
      */
     protected static $_instances = [];
+    /**
+     * Context ID.
+     */
+    protected $_id = null;
 
     /**
      * Construct a context.
@@ -77,19 +76,19 @@ class StreamContext
     }
 
     /**
-     * Get context ID.
-     */
-    public function getId(): string
-    {
-        return $this->_id;
-    }
-
-    /**
      * Check if a context exists.
      */
     public static function contextExists(string $id): bool
     {
         return \array_key_exists($id, static::$_instances);
+    }
+
+    /**
+     * Get context ID.
+     */
+    public function getId(): string
+    {
+        return $this->_id;
     }
 
     /**
@@ -99,6 +98,14 @@ class StreamContext
     public function setOptions(array $options): bool
     {
         return \stream_context_set_option($this->getContext(), $options);
+    }
+
+    /**
+     * Get context as a resource.
+     */
+    public function getContext()
+    {
+        return $this->_context;
     }
 
     /**
@@ -124,13 +131,5 @@ class StreamContext
     public function getParameters(): array
     {
         return \stream_context_get_params($this->getContext());
-    }
-
-    /**
-     * Get context as a resource.
-     */
-    public function getContext()
-    {
-        return $this->_context;
     }
 }

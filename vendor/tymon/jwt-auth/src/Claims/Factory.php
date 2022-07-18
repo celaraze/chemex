@@ -56,7 +56,7 @@ class Factory
     /**
      * Constructor.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      */
     public function __construct(Request $request)
@@ -65,10 +65,21 @@ class Factory
     }
 
     /**
+     * Generate the initial value and return the Claim instance.
+     *
+     * @param string $name
+     * @return \Tymon\JWTAuth\Claims\Claim
+     */
+    public function make($name)
+    {
+        return $this->get($name, $this->$name());
+    }
+
+    /**
      * Get the instance of the claim when passing the name and value.
      *
-     * @param  string  $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param mixed $value
      * @return \Tymon\JWTAuth\Claims\Claim
      */
     public function get($name, $value)
@@ -87,7 +98,7 @@ class Factory
     /**
      * Check whether the claim exists.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function has($name)
@@ -96,14 +107,16 @@ class Factory
     }
 
     /**
-     * Generate the initial value and return the Claim instance.
+     * Set the leeway in seconds.
      *
-     * @param  string  $name
-     * @return \Tymon\JWTAuth\Claims\Claim
+     * @param int $leeway
+     * @return $this
      */
-    public function make($name)
+    public function setLeeway($leeway)
     {
-        return $this->get($name, $this->$name());
+        $this->leeway = $leeway;
+
+        return $this;
     }
 
     /**
@@ -159,8 +172,8 @@ class Factory
     /**
      * Add a new claim mapping.
      *
-     * @param  string  $name
-     * @param  string  $classPath
+     * @param string $name
+     * @param string $classPath
      * @return $this
      */
     public function extend($name, $classPath)
@@ -173,25 +186,12 @@ class Factory
     /**
      * Set the request instance.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return $this
      */
     public function setRequest(Request $request)
     {
         $this->request = $request;
-
-        return $this;
-    }
-
-    /**
-     * Set the token ttl (in minutes).
-     *
-     * @param  int  $ttl
-     * @return $this
-     */
-    public function setTTL($ttl)
-    {
-        $this->ttl = $ttl;
 
         return $this;
     }
@@ -207,14 +207,14 @@ class Factory
     }
 
     /**
-     * Set the leeway in seconds.
+     * Set the token ttl (in minutes).
      *
-     * @param  int  $leeway
+     * @param int $ttl
      * @return $this
      */
-    public function setLeeway($leeway)
+    public function setTTL($ttl)
     {
-        $this->leeway = $leeway;
+        $this->ttl = $ttl;
 
         return $this;
     }

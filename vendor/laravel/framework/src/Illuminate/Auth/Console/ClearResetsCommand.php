@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ClearResetsCommand extends Command
 {
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'auth:clear-resets {name? : The name of the password broker}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class ClearResetsCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'auth:clear-resets';
-
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'auth:clear-resets {name? : The name of the password broker}';
     /**
      * The console command description.
      *

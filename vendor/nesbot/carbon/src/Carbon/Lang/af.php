@@ -65,7 +65,7 @@ return [
         'sameElse' => 'L',
     ],
     'ordinal' => function ($number) {
-        return $number.(($number === 1 || $number === 8 || $number >= 20) ? 'ste' : 'de');
+        return $number . (($number === 1 || $number === 8 || $number >= 20) ? 'ste' : 'de');
     },
     'meridiem' => ['VM', 'NM'],
     'months' => ['Januarie', 'Februarie', 'Maart', 'April', 'Mei', 'Junie', 'Julie', 'Augustus', 'September', 'Oktober', 'November', 'Desember'],

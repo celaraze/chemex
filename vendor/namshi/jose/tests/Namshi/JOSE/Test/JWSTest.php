@@ -3,11 +3,11 @@
 namespace Namshi\JOSE\Test;
 
 use DateTime;
+use Namshi\JOSE\Base64\Base64UrlSafeEncoder;
 use Namshi\JOSE\JWS;
+use Namshi\JOSE\Signer\OpenSSL\HS256;
 use PHPUnit_Framework_TestCase as TestCase;
 use Prophecy\Argument;
-use Namshi\JOSE\Signer\OpenSSL\HS256;
-use Namshi\JOSE\Base64\Base64UrlSafeEncoder;
 
 class JWSTest extends TestCase
 {
@@ -109,11 +109,11 @@ class JWSTest extends TestCase
 
     public function testVerificationRS256()
     {
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = JWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertTrue($jws->verify($public_key));
 
         $payload = $jws->getPayload();
@@ -122,11 +122,11 @@ class JWSTest extends TestCase
 
     public function testVerificationRS256KeyAsString()
     {
-        $privateKey = file_get_contents(TEST_DIR.'/private.key');
+        $privateKey = file_get_contents(TEST_DIR . '/private.key');
         $this->jws->sign($privateKey, self::SSL_KEY_PASSPHRASE);
 
         $jws = JWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertTrue($jws->verify($public_key));
 
         $payload = $jws->getPayload();
@@ -149,7 +149,7 @@ class JWSTest extends TestCase
 
     public function testVerificationThatTheJWSIsSigned()
     {
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
         $this->assertTrue($this->jws->isSigned());
     }
@@ -164,11 +164,11 @@ class JWSTest extends TestCase
      */
     public function testWrongVerificationRS256()
     {
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = JWS::load('eyJhbGciOiJ0ZXN0In0=.eyJhbGciOiJ0ZXN0In0=.eyJhbGciOiJ0ZXN0In0=');
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertFalse($jws->verify($public_key));
     }
 
@@ -212,8 +212,8 @@ class JWSTest extends TestCase
 
     public function testLoadingWithAnyOrderOfHeaders()
     {
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
 
         $this->jws = new JWS(array('alg' => 'RS256', 'custom' => '1'));
 
@@ -239,10 +239,10 @@ class JWSTest extends TestCase
         $data = array('a' => 'b');
         $jwsRSA->setPayload($data);
 
-        $jwsRSA->sign(file_get_contents(SSL_KEYS_PATH.'private.key'), 'tests');
+        $jwsRSA->sign(file_get_contents(SSL_KEYS_PATH . 'private.key'), 'tests');
         $jws = JWS::load($jwsRSA->getTokenString(), false, null, 'SecLib');
 
-        $this->assertTrue($jws->verify(file_get_contents(SSL_KEYS_PATH.'public.key', 'RS256')));
+        $this->assertTrue($jws->verify(file_get_contents(SSL_KEYS_PATH . 'public.key', 'RS256')));
     }
 
     public function testConstructionFromHeader()
@@ -259,11 +259,11 @@ class JWSTest extends TestCase
         $header['test'] = true;
         $this->jws->setHeader($header);
 
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = JWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $headerFromSig = $jws->getHeader();
 
         $this->assertSame($headerFromSig['test'], true);

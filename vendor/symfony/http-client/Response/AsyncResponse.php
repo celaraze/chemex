@@ -90,122 +90,6 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
         }
     }
 
-    public function getStatusCode(): int
-    {
-        if ($this->initializer) {
-            self::initialize($this);
-        }
-
-        return $this->response->getStatusCode();
-    }
-
-    public function getHeaders(bool $throw = true): array
-    {
-        if ($this->initializer) {
-            self::initialize($this);
-        }
-
-        $headers = $this->response->getHeaders(false);
-
-        if ($throw) {
-            $this->checkStatusCode();
-        }
-
-        return $headers;
-    }
-
-    public function getInfo(string $type = null): mixed
-    {
-        if (null !== $type) {
-            return $this->info[$type] ?? $this->response->getInfo($type);
-        }
-
-        return $this->info + $this->response->getInfo();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toStream(bool $throw = true)
-    {
-        if ($throw) {
-            // Ensure headers arrived
-            $this->getHeaders(true);
-        }
-
-        $handle = function () {
-            $stream = $this->response instanceof StreamableInterface ? $this->response->toStream(false) : StreamWrapper::createResource($this->response);
-
-            return stream_get_meta_data($stream)['wrapper_data']->stream_cast(\STREAM_CAST_FOR_SELECT);
-        };
-
-        $stream = StreamWrapper::createResource($this);
-        stream_get_meta_data($stream)['wrapper_data']
-            ->bindHandles($handle, $this->content);
-
-        return $stream;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function cancel(): void
-    {
-        if ($this->info['canceled']) {
-            return;
-        }
-
-        $this->info['canceled'] = true;
-        $this->info['error'] = 'Response has been canceled.';
-        $this->close();
-        $client = $this->client;
-        $this->client = null;
-
-        if (!$this->passthru) {
-            return;
-        }
-
-        try {
-            foreach (self::passthru($client, $this, new LastChunk()) as $chunk) {
-                // no-op
-            }
-
-            $this->passthru = null;
-        } catch (ExceptionInterface) {
-            // ignore any errors when canceling
-        }
-    }
-
-    public function __destruct()
-    {
-        $httpException = null;
-
-        if ($this->initializer && null === $this->getInfo('error')) {
-            try {
-                self::initialize($this, -0.0);
-                $this->getHeaders(true);
-            } catch (HttpExceptionInterface $httpException) {
-                // no-op
-            }
-        }
-
-        if ($this->passthru && null === $this->getInfo('error')) {
-            $this->info['canceled'] = true;
-
-            try {
-                foreach (self::passthru($this->client, $this, new LastChunk()) as $chunk) {
-                    // no-op
-                }
-            } catch (ExceptionInterface) {
-                // ignore any errors when destructing
-            }
-        }
-
-        if (null !== $httpException) {
-            throw $httpException;
-        }
-    }
-
     /**
      * @internal
      */
@@ -317,30 +201,6 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
     /**
      * @param \SplObjectStorage<ResponseInterface, AsyncResponse>|null $asyncMap
      */
-    private static function passthru(HttpClientInterface $client, self $r, ChunkInterface $chunk, \SplObjectStorage $asyncMap = null): \Generator
-    {
-        $r->stream = null;
-        $response = $r->response;
-        $context = new AsyncContext($r->passthru, $client, $r->response, $r->info, $r->content, $r->offset);
-        if (null === $stream = ($r->passthru)($chunk, $context)) {
-            if ($r->response === $response && (null !== $chunk->getError() || $chunk->isLast())) {
-                throw new \LogicException('A chunk passthru cannot swallow the last chunk.');
-            }
-
-            return;
-        }
-
-        if (!$stream instanceof \Iterator) {
-            throw new \LogicException(sprintf('A chunk passthru must return an "Iterator", "%s" returned.', get_debug_type($stream)));
-        }
-        $r->stream = $stream;
-
-        yield from self::passthruStream($response, $r, null, $asyncMap);
-    }
-
-    /**
-     * @param \SplObjectStorage<ResponseInterface, AsyncResponse>|null $asyncMap
-     */
     private static function passthruStream(ResponseInterface $response, self $r, ?ChunkInterface $chunk, ?\SplObjectStorage $asyncMap): \Generator
     {
         while (true) {
@@ -441,6 +301,65 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function cancel(): void
+    {
+        if ($this->info['canceled']) {
+            return;
+        }
+
+        $this->info['canceled'] = true;
+        $this->info['error'] = 'Response has been canceled.';
+        $this->close();
+        $client = $this->client;
+        $this->client = null;
+
+        if (!$this->passthru) {
+            return;
+        }
+
+        try {
+            foreach (self::passthru($client, $this, new LastChunk()) as $chunk) {
+                // no-op
+            }
+
+            $this->passthru = null;
+        } catch (ExceptionInterface) {
+            // ignore any errors when canceling
+        }
+    }
+
+    private function close(): void
+    {
+        $this->response->cancel();
+    }
+
+    /**
+     * @param \SplObjectStorage<ResponseInterface, AsyncResponse>|null $asyncMap
+     */
+    private static function passthru(HttpClientInterface $client, self $r, ChunkInterface $chunk, \SplObjectStorage $asyncMap = null): \Generator
+    {
+        $r->stream = null;
+        $response = $r->response;
+        $context = new AsyncContext($r->passthru, $client, $r->response, $r->info, $r->content, $r->offset);
+        if (null === $stream = ($r->passthru)($chunk, $context)) {
+            if ($r->response === $response && (null !== $chunk->getError() || $chunk->isLast())) {
+                throw new \LogicException('A chunk passthru cannot swallow the last chunk.');
+            }
+
+            return;
+        }
+
+        if (!$stream instanceof \Iterator) {
+            throw new \LogicException(sprintf('A chunk passthru must return an "Iterator", "%s" returned.', get_debug_type($stream)));
+        }
+        $r->stream = $stream;
+
+        yield from self::passthruStream($response, $r, null, $asyncMap);
+    }
+
     private function openBuffer(): ?\Throwable
     {
         if (null === $shouldBuffer = $this->shouldBuffer) {
@@ -471,8 +390,89 @@ final class AsyncResponse implements ResponseInterface, StreamableInterface
         return $e;
     }
 
-    private function close(): void
+    public function getHeaders(bool $throw = true): array
     {
-        $this->response->cancel();
+        if ($this->initializer) {
+            self::initialize($this);
+        }
+
+        $headers = $this->response->getHeaders(false);
+
+        if ($throw) {
+            $this->checkStatusCode();
+        }
+
+        return $headers;
+    }
+
+    public function getInfo(string $type = null): mixed
+    {
+        if (null !== $type) {
+            return $this->info[$type] ?? $this->response->getInfo($type);
+        }
+
+        return $this->info + $this->response->getInfo();
+    }
+
+    public function getStatusCode(): int
+    {
+        if ($this->initializer) {
+            self::initialize($this);
+        }
+
+        return $this->response->getStatusCode();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toStream(bool $throw = true)
+    {
+        if ($throw) {
+            // Ensure headers arrived
+            $this->getHeaders(true);
+        }
+
+        $handle = function () {
+            $stream = $this->response instanceof StreamableInterface ? $this->response->toStream(false) : StreamWrapper::createResource($this->response);
+
+            return stream_get_meta_data($stream)['wrapper_data']->stream_cast(\STREAM_CAST_FOR_SELECT);
+        };
+
+        $stream = StreamWrapper::createResource($this);
+        stream_get_meta_data($stream)['wrapper_data']
+            ->bindHandles($handle, $this->content);
+
+        return $stream;
+    }
+
+    public function __destruct()
+    {
+        $httpException = null;
+
+        if ($this->initializer && null === $this->getInfo('error')) {
+            try {
+                self::initialize($this, -0.0);
+                $this->getHeaders(true);
+            } catch (HttpExceptionInterface $httpException) {
+                // no-op
+            }
+        }
+
+        if ($this->passthru && null === $this->getInfo('error')) {
+            $this->info['canceled'] = true;
+
+            try {
+                foreach (self::passthru($this->client, $this, new LastChunk()) as $chunk) {
+                    // no-op
+                }
+            } catch (ExceptionInterface) {
+                // ignore any errors when destructing
+            }
+        }
+
+        if (null !== $httpException) {
+            throw $httpException;
+        }
     }
 }

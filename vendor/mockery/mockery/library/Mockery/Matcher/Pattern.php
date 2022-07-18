@@ -30,7 +30,7 @@ class Pattern extends MatcherAbstract
      */
     public function match(&$actual)
     {
-        return preg_match($this->_expected, (string) $actual) >= 1;
+        return preg_match($this->_expected, (string)$actual) >= 1;
     }
 
     /**

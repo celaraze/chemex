@@ -12,18 +12,18 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
-use Composer\Util\Platform;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
+use React\Promise\PromiseInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * Download a package from a local path.
@@ -98,7 +98,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
-            $this->io->writeError("  - " . InstallOperation::format($package).': ', false);
+            $this->io->writeError("  - " . InstallOperation::format($package) . ': ', false);
         }
 
         $isFallback = false;
@@ -121,9 +121,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                         $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     }
                     if ($transportOptions['relative']) {
-                        $symfonyFilesystem->symlink($shortestPath.'/', $path);
+                        $symfonyFilesystem->symlink($shortestPath . '/', $path);
                     } else {
-                        $symfonyFilesystem->symlink($realUrl.'/', $path);
+                        $symfonyFilesystem->symlink($realUrl . '/', $path);
                     }
                 }
             } catch (IOException $e) {
@@ -161,69 +161,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
-    {
-        $path = Filesystem::trimTrailingSlash($path);
-        /**
-         * realpath() may resolve Windows junctions to the source path, so we'll check for a junction first
-         * to prevent a false positive when checking if the dist and install paths are the same.
-         * See https://bugs.php.net/bug.php?id=77639
-         *
-         * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
-         * inadvertently locks the file the removal will fail, but it would fall back to recursive delete which
-         * is disastrous within a junction. So in that case we have no other real choice but to fail hard.
-         */
-        if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
-            if ($output) {
-                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
-            }
-            if (!$this->filesystem->removeJunction($path)) {
-                $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
-                throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
-            }
-
-            return \React\Promise\resolve(null);
-        }
-
-        // ensure that the source path (dist url) is not the same as the install path, which
-        // can happen when using custom installers, see https://github.com/composer/composer/pull/9116
-        // not using realpath here as we do not want to resolve the symlink to the original dist url
-        // it points to
-        $fs = new Filesystem;
-        $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
-        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
-        if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
-            if ($output) {
-                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
-            }
-
-            return \React\Promise\resolve(null);
-        }
-
-        return parent::remove($package, $path, $output);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getVcsReference(PackageInterface $package, string $path): ?string
-    {
-        $path = Filesystem::trimTrailingSlash($path);
-        $parser = new VersionParser;
-        $guesser = new VersionGuesser($this->config, $this->process, $parser);
-        $dumper = new ArrayDumper;
-
-        $packageConfig = $dumper->dump($package);
-        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
-            return $packageVersion['commit'];
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
         $realUrl = realpath($package->getDistUrl());
@@ -236,13 +173,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if ($currentStrategy === self::STRATEGY_SYMLINK) {
             if (Platform::isWindows()) {
-                return ': Junctioning from '.$package->getDistUrl();
+                return ': Junctioning from ' . $package->getDistUrl();
             }
 
-            return ': Symlinking from '.$package->getDistUrl();
+            return ': Symlinking from ' . $package->getDistUrl();
         }
 
-        return ': Mirroring from '.$package->getDistUrl();
+        return ': Mirroring from ' . $package->getDistUrl();
     }
 
     /**
@@ -310,6 +247,69 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // We need to call mklink, and rmdir on Windows 7 (version 6.1)
         return function_exists('proc_open') &&
             (PHP_WINDOWS_VERSION_MAJOR > 6 ||
-            (PHP_WINDOWS_VERSION_MAJOR === 6 && PHP_WINDOWS_VERSION_MINOR >= 1));
+                (PHP_WINDOWS_VERSION_MAJOR === 6 && PHP_WINDOWS_VERSION_MINOR >= 1));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
+    {
+        $path = Filesystem::trimTrailingSlash($path);
+        /**
+         * realpath() may resolve Windows junctions to the source path, so we'll check for a junction first
+         * to prevent a false positive when checking if the dist and install paths are the same.
+         * See https://bugs.php.net/bug.php?id=77639
+         *
+         * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
+         * inadvertently locks the file the removal will fail, but it would fall back to recursive delete which
+         * is disastrous within a junction. So in that case we have no other real choice but to fail hard.
+         */
+        if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
+            if ($output) {
+                $this->io->writeError("  - " . UninstallOperation::format($package) . ", source is still present in $path");
+            }
+            if (!$this->filesystem->removeJunction($path)) {
+                $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
+                throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
+            }
+
+            return \React\Promise\resolve(null);
+        }
+
+        // ensure that the source path (dist url) is not the same as the install path, which
+        // can happen when using custom installers, see https://github.com/composer/composer/pull/9116
+        // not using realpath here as we do not want to resolve the symlink to the original dist url
+        // it points to
+        $fs = new Filesystem;
+        $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
+        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
+        if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
+            if ($output) {
+                $this->io->writeError("  - " . UninstallOperation::format($package) . ", source is still present in $path");
+            }
+
+            return \React\Promise\resolve(null);
+        }
+
+        return parent::remove($package, $path, $output);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVcsReference(PackageInterface $package, string $path): ?string
+    {
+        $path = Filesystem::trimTrailingSlash($path);
+        $parser = new VersionParser;
+        $guesser = new VersionGuesser($this->config, $this->process, $parser);
+        $dumper = new ArrayDumper;
+
+        $packageConfig = $dumper->dump($package);
+        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
+            return $packageVersion['commit'];
+        }
+
+        return null;
     }
 }

@@ -45,7 +45,7 @@ class ClassAttributesMatcher extends AbstractMatcher
         $vars = \array_merge(
             \array_map(
                 function ($var) {
-                    return '$'.$var;
+                    return '$' . $var;
                 },
                 \array_keys($reflection->getStaticProperties())
             ),
@@ -57,7 +57,7 @@ class ClassAttributesMatcher extends AbstractMatcher
                 $chunks = \explode('\\', $class);
                 $className = \array_pop($chunks);
 
-                return $className.'::'.$name;
+                return $className . '::' . $name;
             },
             \array_filter(
                 $vars,

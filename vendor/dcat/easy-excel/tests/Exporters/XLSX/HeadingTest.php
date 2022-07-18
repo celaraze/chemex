@@ -12,23 +12,23 @@ class HeadingTest extends TestCase
     use Exporter;
 
     protected $headings = [
-        'id'                => 'ID',
-        'name'              => '名称',
-        'email'             => '邮箱',
+        'id' => 'ID',
+        'name' => '名称',
+        'email' => '邮箱',
         'email_verified_at' => '邮箱验证时间',
-        'password'          => '密码',
-        'remember_token'    => '记住登录Token',
-        'created_at'        => '创建时间',
-        'updated_at'        => '更新时间',
+        'password' => '密码',
+        'remember_token' => '记住登录Token',
+        'created_at' => '创建时间',
+        'updated_at' => '更新时间',
     ];
 
     protected $headings2 = [
-        'id'                => 'ID',
-        'name'              => '名称',
-        'email'             => '邮箱',
+        'id' => 'ID',
+        'name' => '名称',
+        'email' => '邮箱',
         'email_verified_at' => '邮箱验证时间',
-        'remember_token'    => '记住登录Token',
-        'password'          => '密码',
+        'remember_token' => '记住登录Token',
+        'password' => '密码',
     ];
 
     /**
@@ -36,7 +36,7 @@ class HeadingTest extends TestCase
      */
     public function test()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $storePath = $this->generateTempFilePath('xlsx');
 
@@ -81,11 +81,24 @@ class HeadingTest extends TestCase
     }
 
     /**
+     * @param $sheetArray
+     * @param array $headings
+     */
+    protected function assertSheetHeadings($sheetArray, array $headings)
+    {
+        $firstRowInSheet = current($sheetArray);
+
+        $this->assertIsArray($firstRowInSheet);
+        $this->assertEquals(count($firstRowInSheet), count($headings));
+        $this->assertEquals(array_keys($firstRowInSheet), array_values($headings));
+    }
+
+    /**
      * @group exporter
      */
     public function testMultipleSheets()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $sheet1 = Excel::createSheet(array_slice($users, 0, 30))->headings($this->headings);
         $sheet2 = Excel::createSheet(array_slice($users, 30, 30))->headings($this->headings2);
@@ -127,18 +140,5 @@ class HeadingTest extends TestCase
         $this->assertEquals(count($sheetsArray['Sheet2']), 30);
 
         $this->assertEquals(current($sheetsArray['Sheet1']), array_values($this->headings));
-    }
-
-    /**
-     * @param $sheetArray
-     * @param  array  $headings
-     */
-    protected function assertSheetHeadings($sheetArray, array $headings)
-    {
-        $firstRowInSheet = current($sheetArray);
-
-        $this->assertIsArray($firstRowInSheet);
-        $this->assertEquals(count($firstRowInSheet), count($headings));
-        $this->assertEquals(array_keys($firstRowInSheet), array_values($headings));
     }
 }

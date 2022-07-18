@@ -12,19 +12,19 @@
 
 namespace Composer\Installer;
 
-use Composer\IO\IOInterface;
-use Composer\IO\ConsoleIO;
-use Composer\Package\PackageInterface;
-use Composer\Package\AliasPackage;
-use Composer\Repository\InstalledRepositoryInterface;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\IO\ConsoleIO;
+use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
@@ -58,15 +58,6 @@ class InstallationManager
         $this->loop = $loop;
         $this->io = $io;
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * @return void
-     */
-    public function reset(): void
-    {
-        $this->notifiablePackages = array();
-        FileDownloader::$downloadMetadata = array();
     }
 
     /**
@@ -118,12 +109,29 @@ class InstallationManager
     }
 
     /**
+     * Checks whether provided package is installed in one of the registered installers.
+     *
+     * @param InstalledRepositoryInterface $repo repository in which to check
+     * @param PackageInterface $package package instance
+     *
+     * @return bool
+     */
+    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package): bool
+    {
+        if ($package instanceof AliasPackage) {
+            return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
+        }
+
+        return $this->getInstaller($package->getType())->isInstalled($repo, $package);
+    }
+
+    /**
      * Returns installer for a specific package type.
      *
      * @param string $type package type
      *
-     * @throws \InvalidArgumentException if installer for provided type is not registered
      * @return InstallerInterface
+     * @throws \InvalidArgumentException if installer for provided type is not registered
      */
     public function getInstaller(string $type): InstallerInterface
     {
@@ -139,24 +147,7 @@ class InstallationManager
             }
         }
 
-        throw new \InvalidArgumentException('Unknown installer type: '.$type);
-    }
-
-    /**
-     * Checks whether provided package is installed in one of the registered installers.
-     *
-     * @param InstalledRepositoryInterface $repo    repository in which to check
-     * @param PackageInterface             $package package instance
-     *
-     * @return bool
-     */
-    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package): bool
-    {
-        if ($package instanceof AliasPackage) {
-            return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
-        }
-
-        return $this->getInstaller($package->getType())->isInstalled($repo, $package);
+        throw new \InvalidArgumentException('Unknown installer type: ' . $type);
     }
 
     /**
@@ -185,10 +176,10 @@ class InstallationManager
     /**
      * Executes solver operation.
      *
-     * @param InstalledRepositoryInterface $repo       repository in which to add/remove/update packages
-     * @param OperationInterface[]         $operations operations to execute
-     * @param bool                         $devMode    whether the install is being run in dev mode
-     * @param bool                         $runScripts whether to dispatch script events
+     * @param InstalledRepositoryInterface $repo repository in which to add/remove/update packages
+     * @param OperationInterface[] $operations operations to execute
+     * @param bool $devMode whether the install is being run in dev mode
+     * @param bool $runScripts whether to dispatch script events
      *
      * @return void
      */
@@ -308,7 +299,7 @@ class InstallationManager
     }
 
     /**
-     * @param OperationInterface[] $operations    List of operations to execute in this batch
+     * @param OperationInterface[] $operations List of operations to execute in this batch
      * @param PromiseInterface[] $cleanupPromises
      * @param bool $devMode
      * @param bool $runScripts
@@ -392,7 +383,34 @@ class InstallationManager
     }
 
     /**
-     * @param OperationInterface[] $operations    List of operations to execute in this batch
+     * @param PromiseInterface[] $promises
+     *
+     * @return void
+     */
+    private function waitOnPromises(array $promises): void
+    {
+        $progress = null;
+        if (
+            $this->outputProgress
+            && $this->io instanceof ConsoleIO
+            && !Platform::getEnv('CI')
+            && !$this->io->isDebug()
+            && count($promises) > 1
+        ) {
+            $progress = $this->io->getProgressBar();
+        }
+        $this->loop->wait($promises, $progress);
+        if ($progress) {
+            $progress->clear();
+            // ProgressBar in non-decorated output does not output a final line-break and clear() does nothing
+            if (!$this->io->isDecorated()) {
+                $this->io->writeError('');
+            }
+        }
+    }
+
+    /**
+     * @param OperationInterface[] $operations List of operations to execute in this batch
      * @param PromiseInterface[] $cleanupPromises
      * @param bool $devMode
      * @param bool $runScripts
@@ -431,10 +449,10 @@ class InstallationManager
             $installer = $this->getInstaller($package->getType());
 
             $eventName = [
-                'install' => PackageEvents::PRE_PACKAGE_INSTALL,
-                'update' => PackageEvents::PRE_PACKAGE_UPDATE,
-                'uninstall' => PackageEvents::PRE_PACKAGE_UNINSTALL,
-            ][$opType] ?? null;
+                    'install' => PackageEvents::PRE_PACKAGE_INSTALL,
+                    'update' => PackageEvents::PRE_PACKAGE_UPDATE,
+                    'uninstall' => PackageEvents::PRE_PACKAGE_UNINSTALL,
+                ][$opType] ?? null;
 
             if (null !== $eventName && $runScripts && $this->eventDispatcher) {
                 $this->eventDispatcher->dispatchPackageEvent($eventName, $devMode, $repo, $allOperations, $operation);
@@ -451,19 +469,19 @@ class InstallationManager
             $promise = $promise->then(function () use ($opType, $repo, $operation) {
                 return $this->$opType($repo, $operation);
             })->then($cleanupPromises[$index])
-            ->then(function () use ($devMode, $repo): void {
-                $repo->write($devMode, $this);
-            }, function ($e) use ($opType, $package, $io): void {
-                $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
+                ->then(function () use ($devMode, $repo): void {
+                    $repo->write($devMode, $this);
+                }, function ($e) use ($opType, $package, $io): void {
+                    $io->writeError('    <error>' . ucfirst($opType) . ' of ' . $package->getPrettyName() . ' failed</error>');
 
-                throw $e;
-            });
+                    throw $e;
+                });
 
             $eventName = [
-                'install' => PackageEvents::POST_PACKAGE_INSTALL,
-                'update' => PackageEvents::POST_PACKAGE_UPDATE,
-                'uninstall' => PackageEvents::POST_PACKAGE_UNINSTALL,
-            ][$opType] ?? null;
+                    'install' => PackageEvents::POST_PACKAGE_INSTALL,
+                    'update' => PackageEvents::POST_PACKAGE_UPDATE,
+                    'uninstall' => PackageEvents::POST_PACKAGE_UNINSTALL,
+                ][$opType] ?? null;
 
             if (null !== $eventName && $runScripts && $dispatcher) {
                 $postExecCallbacks[] = function () use ($dispatcher, $eventName, $devMode, $repo, $allOperations, $operation): void {
@@ -487,55 +505,10 @@ class InstallationManager
     }
 
     /**
-     * @param PromiseInterface[] $promises
-     *
-     * @return void
-     */
-    private function waitOnPromises(array $promises): void
-    {
-        $progress = null;
-        if (
-            $this->outputProgress
-            && $this->io instanceof ConsoleIO
-            && !Platform::getEnv('CI')
-            && !$this->io->isDebug()
-            && count($promises) > 1
-        ) {
-            $progress = $this->io->getProgressBar();
-        }
-        $this->loop->wait($promises, $progress);
-        if ($progress) {
-            $progress->clear();
-            // ProgressBar in non-decorated output does not output a final line-break and clear() does nothing
-            if (!$this->io->isDecorated()) {
-                $this->io->writeError('');
-            }
-        }
-    }
-
-    /**
-     * Executes install operation.
-     *
-     * @param InstalledRepositoryInterface $repo      repository in which to check
-     * @param InstallOperation             $operation operation instance
-     *
-     * @return PromiseInterface|null
-     */
-    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation): ?PromiseInterface
-    {
-        $package = $operation->getPackage();
-        $installer = $this->getInstaller($package->getType());
-        $promise = $installer->install($repo, $package);
-        $this->markForNotification($package);
-
-        return $promise;
-    }
-
-    /**
      * Executes update operation.
      *
-     * @param InstalledRepositoryInterface $repo      repository in which to check
-     * @param UpdateOperation              $operation operation instance
+     * @param InstalledRepositoryInterface $repo repository in which to check
+     * @param UpdateOperation $operation operation instance
      *
      * @return PromiseInterface|null
      */
@@ -572,10 +545,20 @@ class InstallationManager
     }
 
     /**
+     * @return void
+     */
+    private function markForNotification(PackageInterface $package): void
+    {
+        if ($package->getNotificationUrl()) {
+            $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
+        }
+    }
+
+    /**
      * Uninstalls package.
      *
-     * @param InstalledRepositoryInterface $repo      repository in which to check
-     * @param UninstallOperation           $operation operation instance
+     * @param InstalledRepositoryInterface $repo repository in which to check
+     * @param UninstallOperation $operation operation instance
      *
      * @return PromiseInterface|null
      */
@@ -588,10 +571,28 @@ class InstallationManager
     }
 
     /**
+     * Executes install operation.
+     *
+     * @param InstalledRepositoryInterface $repo repository in which to check
+     * @param InstallOperation $operation operation instance
+     *
+     * @return PromiseInterface|null
+     */
+    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation): ?PromiseInterface
+    {
+        $package = $operation->getPackage();
+        $installer = $this->getInstaller($package->getType());
+        $promise = $installer->install($repo, $package);
+        $this->markForNotification($package);
+
+        return $promise;
+    }
+
+    /**
      * Executes markAliasInstalled operation.
      *
-     * @param InstalledRepositoryInterface $repo      repository in which to check
-     * @param MarkAliasInstalledOperation  $operation operation instance
+     * @param InstalledRepositoryInterface $repo repository in which to check
+     * @param MarkAliasInstalledOperation $operation operation instance
      *
      * @return void
      */
@@ -607,7 +608,7 @@ class InstallationManager
     /**
      * Executes markAlias operation.
      *
-     * @param InstalledRepositoryInterface  $repo      repository in which to check
+     * @param InstalledRepositoryInterface $repo repository in which to check
      * @param MarkAliasUninstalledOperation $operation operation instance
      *
      * @return void
@@ -622,7 +623,7 @@ class InstallationManager
     /**
      * Returns the installation path of a package
      *
-     * @param  PackageInterface $package
+     * @param PackageInterface $package
      * @return string           path
      */
     public function getInstallPath(PackageInterface $package): string
@@ -715,10 +716,9 @@ class InstallationManager
     /**
      * @return void
      */
-    private function markForNotification(PackageInterface $package): void
+    public function reset(): void
     {
-        if ($package->getNotificationUrl()) {
-            $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
-        }
+        $this->notifiablePackages = array();
+        FileDownloader::$downloadMetadata = array();
     }
 }

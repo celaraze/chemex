@@ -31,9 +31,9 @@ class EmptyArrayDimFetchPass extends CodeCleanerPass
     }
 
     /**
+     * @param Node $node
      * @throws FatalErrorException if the user used empty empty array dim fetch outside of assignment
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

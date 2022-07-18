@@ -28,19 +28,18 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
-     * Register of the National Economy
+     * Register of the National Economy, local entity number
      *
      * @see http://pl.wikipedia.org/wiki/REGON
      *
-     * @return string 9 digit number
+     * @return string 14 digit number
      */
-    public static function regon()
+    public static function regonLocal()
     {
-        $weights = [8, 9, 2, 3, 4, 5, 6, 7];
-        $regionNumber = self::numberBetween(0, 49) * 2 + 1;
-        $result = [(int) ($regionNumber / 10), $regionNumber % 10];
+        $weights = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];
+        $result = str_split(static::regon());
 
-        for ($i = 2, $size = count($weights); $i < $size; ++$i) {
+        for ($i = count($result), $size = count($weights); $i < $size; ++$i) {
             $result[$i] = static::randomDigit();
         }
         $checksum = 0;
@@ -59,18 +58,19 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
-     * Register of the National Economy, local entity number
+     * Register of the National Economy
      *
      * @see http://pl.wikipedia.org/wiki/REGON
      *
-     * @return string 14 digit number
+     * @return string 9 digit number
      */
-    public static function regonLocal()
+    public static function regon()
     {
-        $weights = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];
-        $result = str_split(static::regon());
+        $weights = [8, 9, 2, 3, 4, 5, 6, 7];
+        $regionNumber = self::numberBetween(0, 49) * 2 + 1;
+        $result = [(int)($regionNumber / 10), $regionNumber % 10];
 
-        for ($i = count($result), $size = count($weights); $i < $size; ++$i) {
+        for ($i = 2, $size = count($weights); $i < $size; ++$i) {
             $result[$i] = static::randomDigit();
         }
         $checksum = 0;

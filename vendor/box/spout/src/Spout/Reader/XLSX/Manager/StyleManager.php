@@ -113,6 +113,18 @@ class StyleManager
     }
 
     /**
+     * @return array The styles attributes
+     */
+    protected function getStylesAttributes()
+    {
+        if (!isset($this->stylesAttributes)) {
+            $this->extractRelevantInfo();
+        }
+
+        return $this->stylesAttributes;
+    }
+
+    /**
      * Reads the styles.xml file and extract the relevant information from the file.
      *
      * @return void
@@ -149,7 +161,7 @@ class StyleManager
     {
         while ($xmlReader->read()) {
             if ($xmlReader->isPositionedOnStartingNode(self::XML_NODE_NUM_FMT)) {
-                $numFmtId = (int) ($xmlReader->getAttribute(self::XML_ATTRIBUTE_NUM_FMT_ID));
+                $numFmtId = (int)($xmlReader->getAttribute(self::XML_ATTRIBUTE_NUM_FMT_ID));
                 $formatCode = $xmlReader->getAttribute(self::XML_ATTRIBUTE_FORMAT_CODE);
                 $this->customNumberFormats[$numFmtId] = $formatCode;
             } elseif ($xmlReader->isPositionedOnEndingNode(self::XML_NODE_NUM_FMTS)) {
@@ -172,13 +184,13 @@ class StyleManager
         while ($xmlReader->read()) {
             if ($xmlReader->isPositionedOnStartingNode(self::XML_NODE_XF)) {
                 $numFmtId = $xmlReader->getAttribute(self::XML_ATTRIBUTE_NUM_FMT_ID);
-                $normalizedNumFmtId = ($numFmtId !== null) ? (int) $numFmtId : null;
+                $normalizedNumFmtId = ($numFmtId !== null) ? (int)$numFmtId : null;
 
                 $applyNumberFormat = $xmlReader->getAttribute(self::XML_ATTRIBUTE_APPLY_NUMBER_FORMAT);
-                $normalizedApplyNumberFormat = ($applyNumberFormat !== null) ? (bool) $applyNumberFormat : null;
+                $normalizedApplyNumberFormat = ($applyNumberFormat !== null) ? (bool)$applyNumberFormat : null;
 
                 $this->stylesAttributes[] = [
-                    self::XML_ATTRIBUTE_NUM_FMT_ID          => $normalizedNumFmtId,
+                    self::XML_ATTRIBUTE_NUM_FMT_ID => $normalizedNumFmtId,
                     self::XML_ATTRIBUTE_APPLY_NUMBER_FORMAT => $normalizedApplyNumberFormat,
                 ];
             } elseif ($xmlReader->isPositionedOnEndingNode(self::XML_NODE_CELL_XFS)) {
@@ -186,30 +198,6 @@ class StyleManager
                 break;
             }
         }
-    }
-
-    /**
-     * @return array The custom number formats
-     */
-    protected function getCustomNumberFormats()
-    {
-        if (!isset($this->customNumberFormats)) {
-            $this->extractRelevantInfo();
-        }
-
-        return $this->customNumberFormats;
-    }
-
-    /**
-     * @return array The styles attributes
-     */
-    protected function getStylesAttributes()
-    {
-        if (!isset($this->stylesAttributes)) {
-            $this->extractRelevantInfo();
-        }
-
-        return $this->stylesAttributes;
     }
 
     /**
@@ -265,6 +253,18 @@ class StyleManager
 
         // Using isset here because it is way faster than array_key_exists...
         return (isset($customNumberFormats[$numFmtId])) ? $customNumberFormats[$numFmtId] : null;
+    }
+
+    /**
+     * @return array The custom number formats
+     */
+    protected function getCustomNumberFormats()
+    {
+        if (!isset($this->customNumberFormats)) {
+            $this->extractRelevantInfo();
+        }
+
+        return $this->customNumberFormats;
     }
 
     /**

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Timer;
 
 use function array_pop;
@@ -21,7 +22,7 @@ final class Timer
 
     public function start(): void
     {
-        $this->startTimes[] = (float) hrtime(true);
+        $this->startTimes[] = (float)hrtime(true);
     }
 
     /**
@@ -35,6 +36,6 @@ final class Timer
             );
         }
 
-        return Duration::fromNanoseconds((float) hrtime(true) - array_pop($this->startTimes));
+        return Duration::fromNanoseconds((float)hrtime(true) - array_pop($this->startTimes));
     }
 }

@@ -42,7 +42,7 @@ class Address extends \Faker\Provider\Address
         'Nicaragua', 'Niger', 'Nigeria', 'Niue', 'Norfolk (Îles)', 'Norvège', 'Nouvelle Calédonie', 'Nouvelle-Zélande', 'Oman', 'Ouganda', 'Ouzbékistan', 'Pakistan', 'Palau', 'Panama', 'Papouasie-Nouvelle-Guinée', 'Paraguay', 'Pays-Bas', 'Philippines', 'Pitcairn (Îles)', 'Pologne', 'Polynésie française', 'Porto Rico', 'Portugal', 'Pérou', 'Qatar', 'Roumanie', 'Royaume-Uni', 'Russie', 'Rwanda', 'Rép. Dém. du Congo', 'République centrafricaine', 'République Dominicaine', 'République tchèque', 'Réunion (La)', 'Sahara Occidental', 'Saint Pierre et Miquelon', 'Saint Vincent et les Grenadines', 'Saint-Kitts et Nevis', 'Saint-Marin (Rép. de)', 'Sainte Hélène', 'Sainte Lucie', 'Samoa', 'Samoa', 'Seychelles', 'Sierra Leone', 'Singapour', 'Slovaquie', 'Slovénie', 'Somalie', 'Soudan', 'Sri Lanka', 'Suisse', 'Suriname', 'Suède', 'Svalbard et Jan Mayen (Îles)', 'Swaziland', 'Syrie', 'São Tomé et Príncipe (Rép.)', 'Sénégal', 'Tadjikistan', 'Taiwan', 'Tanzanie', 'Tchad',
         'Territoire britannique de l\'océan Indien', 'Territoires français du sud', 'Thailande', 'Timor', 'Togo', 'Tokelau', 'Tonga', 'Trinité et Tobago', 'Tunisie', 'Turkménistan', 'Turks et Caïques (Îles)', 'Turquie', 'Tuvalu', 'Ukraine', 'Uruguay', 'Vanuatu', 'Vatican (Etat du)', 'Venezuela', 'Vierges (Îles)', 'Vierges britanniques (Îles)', 'Vietnam', 'Wallis et Futuna (Îles)', 'Yemen', 'Yougoslavie', 'Zambie', 'Zaïre', 'Zimbabwe',
     ];
-
+    protected static $secondaryAddressFormats = ['Apt. ###', 'Suite ###', 'Étage ###', 'Bât. ###', 'Chambre ###'];
     private static $regions = [
         'Alsace', 'Aquitaine', 'Auvergne', 'Bourgogne', 'Bretagne', 'Centre', 'Champagne-Ardenne',
         'Corse', 'Franche-Comté', 'Île-de-France', 'Languedoc-Roussillon', 'Limousin',
@@ -51,7 +51,6 @@ class Address extends \Faker\Provider\Address
         'Guadeloupe', 'Martinique', 'Guyane', 'Réunion', 'Saint-Pierre-et-Miquelon', 'Mayotte',
         'Saint-Barthélémy', 'Saint-Martin', 'Wallis-et-Futuna', 'Polynésie française', 'Nouvelle-Calédonie',
     ];
-
     private static $departments = [
         ['01' => 'Ain'], ['02' => 'Aisne'], ['03' => 'Allier'], ['04' => 'Alpes-de-Haute-Provence'], ['05' => 'Hautes-Alpes'],
         ['06' => 'Alpes-Maritimes'], ['07' => 'Ardèche'], ['08' => 'Ardennes'], ['09' => 'Ariège'], ['10' => 'Aube'],
@@ -75,8 +74,6 @@ class Address extends \Faker\Provider\Address
         ['971' => 'Guadeloupe'], ['972' => 'Martinique'], ['973' => 'Guyane'], ['974' => 'La Réunion'], ['976' => 'Mayotte'],
     ];
 
-    protected static $secondaryAddressFormats = ['Apt. ###', 'Suite ###', 'Étage ###', 'Bât. ###', 'Chambre ###'];
-
     /**
      * @example 'Appt. 350'
      */
@@ -96,9 +93,9 @@ class Address extends \Faker\Provider\Address
     /**
      * Randomly returns a french region.
      *
+     * @return string
      * @example 'Guadeloupe'
      *
-     * @return string
      */
     public static function region()
     {
@@ -106,23 +103,11 @@ class Address extends \Faker\Provider\Address
     }
 
     /**
-     * Randomly returns a french department ('departmentNumber' => 'departmentName').
-     *
-     * @example array('2B' => 'Haute-Corse')
-     *
-     * @return array
-     */
-    public static function department()
-    {
-        return static::randomElement(static::$departments);
-    }
-
-    /**
      * Randomly returns a french department name.
      *
+     * @return string
      * @example 'Ardèche'
      *
-     * @return string
      */
     public static function departmentName()
     {
@@ -132,11 +117,23 @@ class Address extends \Faker\Provider\Address
     }
 
     /**
+     * Randomly returns a french department ('departmentNumber' => 'departmentName').
+     *
+     * @return array
+     * @example array('2B' => 'Haute-Corse')
+     *
+     */
+    public static function department()
+    {
+        return static::randomElement(static::$departments);
+    }
+
+    /**
      * Randomly returns a french department number.
      *
+     * @return string
      * @example '59'
      *
-     * @return string
      */
     public static function departmentNumber()
     {

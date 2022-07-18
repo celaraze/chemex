@@ -18,12 +18,10 @@ Install the latest version with:
 $ composer require composer/semver
 ```
 
-
 Requirements
 ------------
 
 * PHP 5.3.2 is required but using the latest version of PHP is highly recommended.
-
 
 Version Comparison
 ------------------
@@ -37,7 +35,8 @@ Basic usage
 
 ### Comparator
 
-The [`Composer\Semver\Comparator`](https://github.com/composer/semver/blob/main/src/Comparator.php) class provides the following methods for comparing versions:
+The [`Composer\Semver\Comparator`](https://github.com/composer/semver/blob/main/src/Comparator.php) class provides the
+following methods for comparing versions:
 
 * greaterThan($v1, $v2)
 * greaterThanOrEqualTo($v1, $v2)
@@ -56,7 +55,8 @@ Comparator::greaterThan('1.25.0', '1.24.0'); // 1.25.0 > 1.24.0
 
 ### Semver
 
-The [`Composer\Semver\Semver`](https://github.com/composer/semver/blob/main/src/Semver.php) class provides the following methods:
+The [`Composer\Semver\Semver`](https://github.com/composer/semver/blob/main/src/Semver.php) class provides the following
+methods:
 
 * satisfies($version, $constraints)
 * satisfiedBy(array $versions, $constraint)

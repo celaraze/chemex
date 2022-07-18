@@ -28,7 +28,7 @@ final class Str
     /**
      * Convert a string to UTF-8 from the given encoding.
      *
-     * @param string      $input
+     * @param string $input
      * @param string|null $encoding
      *
      * @return \GrahamCampbell\ResultType\Result<string,string>
@@ -73,8 +73,8 @@ final class Str
     /**
      * Grab the specified substring of the input.
      *
-     * @param string   $input
-     * @param int      $start
+     * @param string $input
+     * @param int $start
      * @param int|null $length
      *
      * @return string

@@ -70,7 +70,7 @@ final class DateTimeValueResolver implements ArgumentValueResolverInterface
             }
         } else {
             if (false !== filter_var($value, \FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])) {
-                $value = '@'.$value;
+                $value = '@' . $value;
             }
             try {
                 $date = new $class($value);

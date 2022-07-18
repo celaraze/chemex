@@ -32,8 +32,8 @@ abstract class ECDSA extends PublicKey
             '5.6' => '5.6.0',
         );
 
-        if (isset($minVersions[PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION]) &&
-            version_compare(PHP_VERSION, $minVersions[PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION], '<')) {
+        if (isset($minVersions[PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION]) &&
+            version_compare(PHP_VERSION, $minVersions[PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION], '<')) {
             return false;
         }
 
@@ -92,17 +92,17 @@ abstract class ECDSA extends PublicKey
     }
 
     /**
+     * Returns the ECDSA curve supported in this signer.
+     *
+     * @return string
+     */
+    abstract protected function getSupportedECDSACurve();
+
+    /**
      * {@inheritdoc}
      */
     protected function getSupportedPrivateKeyType()
     {
         return defined('OPENSSL_KEYTYPE_EC') ? OPENSSL_KEYTYPE_EC : false;
     }
-
-    /**
-     * Returns the ECDSA curve supported in this signer.
-     *
-     * @return string
-     */
-    abstract protected function getSupportedECDSACurve();
 }

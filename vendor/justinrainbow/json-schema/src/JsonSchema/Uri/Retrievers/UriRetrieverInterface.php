@@ -21,9 +21,9 @@ interface UriRetrieverInterface
      *
      * @param string $uri URI that resolves to a JSON schema
      *
+     * @return mixed string|null
      * @throws \JsonSchema\Exception\ResourceNotFoundException
      *
-     * @return mixed string|null
      */
     public function retrieve($uri);
 

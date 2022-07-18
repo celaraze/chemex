@@ -13,7 +13,6 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Schema\PostgreSQLSchemaManager;
 use Doctrine\DBAL\VersionAwarePlatformDriver;
 use Doctrine\Deprecations\Deprecation;
-
 use function assert;
 use function preg_match;
 use function version_compare;
@@ -38,7 +37,7 @@ abstract class AbstractPostgreSQLDriver implements VersionAwarePlatformDriver
         $majorVersion = $versionParts['major'];
         $minorVersion = $versionParts['minor'] ?? 0;
         $patchVersion = $versionParts['patch'] ?? 0;
-        $version      = $majorVersion . '.' . $minorVersion . '.' . $patchVersion;
+        $version = $majorVersion . '.' . $minorVersion . '.' . $patchVersion;
 
         if (version_compare($version, '10.0', '>=')) {
             return new PostgreSQL100Platform();
@@ -48,7 +47,7 @@ abstract class AbstractPostgreSQLDriver implements VersionAwarePlatformDriver
             'doctrine/dbal',
             'https://github.com/doctrine/dbal/pull/5060',
             'PostgreSQL 9 support is deprecated and will be removed in DBAL 4.'
-                . ' Consider upgrading to Postgres 10 or later.'
+            . ' Consider upgrading to Postgres 10 or later.'
         );
 
         return new PostgreSQL94Platform();

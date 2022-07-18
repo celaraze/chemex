@@ -14,10 +14,10 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
 use Composer\Config;
-use Composer\Pcre\Preg;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author BohwaZ <http://bohwaz.net/>
@@ -34,6 +34,36 @@ class FossilDriver extends VcsDriver
     protected $repoFile = null;
     /** @var string */
     protected $checkoutDir;
+
+    /**
+     * @inheritDoc
+     */
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
+    {
+        if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
+            return true;
+        }
+
+        if (Preg::isMatch('!/fossil/|\.fossil!', $url)) {
+            return true;
+        }
+
+        // local filesystem
+        if (Filesystem::isLocalPath($url)) {
+            $url = Filesystem::getPlatformPath($url);
+            if (!is_dir($url)) {
+                return false;
+            }
+
+            $process = new ProcessExecutor($io);
+            // check whether there is a fossil repo in that path
+            if ($process->execute('fossil info', $output, $url) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * @inheritDoc
@@ -89,13 +119,13 @@ class FossilDriver extends VcsDriver
         $fs->ensureDirectoryExists($this->checkoutDir);
 
         if (!is_writable(dirname($this->checkoutDir))) {
-            throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$this->checkoutDir.'" directory is not writable by the current user.');
+            throw new \RuntimeException('Can not clone ' . $this->url . ' to access package information. The "' . $this->checkoutDir . '" directory is not writable by the current user.');
         }
 
         // update the repo if it is a valid fossil repository
         if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute('fossil info', $output, $this->checkoutDir)) {
             if (0 !== $this->process->execute('fossil pull', $output, $this->checkoutDir)) {
-                $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                $this->io->writeError('<error>Failed to update ' . $this->url . ', package information from this repository may be outdated (' . $this->process->getErrorOutput() . ')</error>');
             }
         } else {
             // clean up directory and do a fresh clone into it
@@ -107,77 +137,15 @@ class FossilDriver extends VcsDriver
             if (0 !== $this->process->execute(sprintf('fossil clone -- %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
                 $output = $this->process->getErrorOutput();
 
-                throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
+                throw new \RuntimeException('Failed to clone ' . $this->url . ' to repository ' . $this->repoFile . "\n\n" . $output);
             }
 
             if (0 !== $this->process->execute(sprintf('fossil open --nested -- %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
-                throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
+                throw new \RuntimeException('Failed to open repository ' . $this->repoFile . ' in ' . $this->checkoutDir . "\n\n" . $output);
             }
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getRootIdentifier(): string
-    {
-        if (null === $this->rootIdentifier) {
-            $this->rootIdentifier = 'trunk';
-        }
-
-        return $this->rootIdentifier;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getUrl(): string
-    {
-        return $this->url;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSource(string $identifier): array
-    {
-        return array('type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDist(string $identifier): ?array
-    {
-        return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFileContent(string $file, string $identifier): ?string
-    {
-        $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
-        $this->process->execute($command, $content, $this->checkoutDir);
-
-        if (!trim($content)) {
-            return null;
-        }
-
-        return $content;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getChangeDate(string $identifier): ?\DateTimeImmutable
-    {
-        $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
-        list(, $date) = explode(' ', trim($output), 3);
-
-        return new \DateTimeImmutable($date, new \DateTimeZone('UTC'));
     }
 
     /**
@@ -222,30 +190,62 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
+    public function getRootIdentifier(): string
     {
-        if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
-            return true;
+        if (null === $this->rootIdentifier) {
+            $this->rootIdentifier = 'trunk';
         }
 
-        if (Preg::isMatch('!/fossil/|\.fossil!', $url)) {
-            return true;
+        return $this->rootIdentifier;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSource(string $identifier): array
+    {
+        return array('type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDist(string $identifier): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFileContent(string $file, string $identifier): ?string
+    {
+        $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $this->process->execute($command, $content, $this->checkoutDir);
+
+        if (!trim($content)) {
+            return null;
         }
 
-        // local filesystem
-        if (Filesystem::isLocalPath($url)) {
-            $url = Filesystem::getPlatformPath($url);
-            if (!is_dir($url)) {
-                return false;
-            }
+        return $content;
+    }
 
-            $process = new ProcessExecutor($io);
-            // check whether there is a fossil repo in that path
-            if ($process->execute('fossil info', $output, $url) === 0) {
-                return true;
-            }
-        }
+    /**
+     * @inheritDoc
+     */
+    public function getChangeDate(string $identifier): ?\DateTimeImmutable
+    {
+        $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
+        list(, $date) = explode(' ', trim($output), 3);
 
-        return false;
+        return new \DateTimeImmutable($date, new \DateTimeZone('UTC'));
     }
 }

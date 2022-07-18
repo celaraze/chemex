@@ -26,14 +26,6 @@ final class RequestAttributeValueSame extends Constraint
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return sprintf('has attribute "%s" with value "%s"', $this->name, $this->value);
-    }
-
-    /**
      * @param Request $request
      *
      * {@inheritdoc}
@@ -50,6 +42,14 @@ final class RequestAttributeValueSame extends Constraint
      */
     protected function failureDescription($request): string
     {
-        return 'the Request '.$this->toString();
+        return 'the Request ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return sprintf('has attribute "%s" with value "%s"', $this->name, $this->value);
     }
 }

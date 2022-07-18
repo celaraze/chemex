@@ -10,7 +10,6 @@ use Doctrine\DBAL\Driver\API\OCI;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\OracleSchemaManager;
-
 use function assert;
 
 /**
@@ -50,6 +49,6 @@ abstract class AbstractOracleDriver implements Driver
      */
     protected function getEasyConnectString(array $params)
     {
-        return (string) EasyConnectString::fromConnectionParameters($params);
+        return (string)EasyConnectString::fromConnectionParameters($params);
     }
 }

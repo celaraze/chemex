@@ -217,7 +217,8 @@ $search->where([
 
 #### Where Starts With
 
-We could also perform a search for all objects beginning with the common name of 'John' using the `starts_with` operator:
+We could also perform a search for all objects beginning with the common name of 'John' using the `starts_with`
+operator:
 
 ```php
 $results = $provider->search()->where('cn', 'starts_with', 'John')->get();
@@ -319,8 +320,10 @@ $results = $search
             ->get();
 ```
 
-This query would return no results. Since we're already defining that the common name (`cn`) must equal `John Doe`, applying
-the `orWhere()` does not amount to 'Look for an object with the common name as "John Doe" OR "Suzy Doe"'. This query would
+This query would return no results. Since we're already defining that the common name (`cn`) must equal `John Doe`,
+applying
+the `orWhere()` does not amount to 'Look for an object with the common name as "John Doe" OR "Suzy Doe"'. This query
+would
 actually amount to 'Look for an object with the common name that <b>equals</b> "John Doe" OR "Suzy Doe"
 
 To solve the above problem, we would use `orWhere()` for both fields. For example:

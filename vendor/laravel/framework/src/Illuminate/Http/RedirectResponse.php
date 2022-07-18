@@ -33,27 +33,9 @@ class RedirectResponse extends BaseRedirectResponse
     protected $session;
 
     /**
-     * Flash a piece of data to the session.
-     *
-     * @param  string|array  $key
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function with($key, $value = null)
-    {
-        $key = is_array($key) ? $key : [$key => $value];
-
-        foreach ($key as $k => $v) {
-            $this->session->flash($k, $v);
-        }
-
-        return $this;
-    }
-
-    /**
      * Add multiple cookies to the response.
      *
-     * @param  array  $cookies
+     * @param array $cookies
      * @return $this
      */
     public function withCookies(array $cookies)
@@ -68,13 +50,23 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Flash an array of input to the session.
      *
-     * @param  array|null  $input
+     * @return $this
+     */
+    public function onlyInput()
+    {
+        return $this->withInput($this->request->only(func_get_args()));
+    }
+
+    /**
+     * Flash an array of input to the session.
+     *
+     * @param array|null $input
      * @return $this
      */
     public function withInput(array $input = null)
     {
         $this->session->flashInput($this->removeFilesFromInput(
-            ! is_null($input) ? $input : $this->request->input()
+            !is_null($input) ? $input : $this->request->input()
         ));
 
         return $this;
@@ -83,7 +75,7 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Remove all uploaded files form the given input array.
      *
-     * @param  array  $input
+     * @param array $input
      * @return array
      */
     protected function removeFilesFromInput(array $input)
@@ -106,16 +98,6 @@ class RedirectResponse extends BaseRedirectResponse
      *
      * @return $this
      */
-    public function onlyInput()
-    {
-        return $this->withInput($this->request->only(func_get_args()));
-    }
-
-    /**
-     * Flash an array of input to the session.
-     *
-     * @return $this
-     */
     public function exceptInput()
     {
         return $this->withInput($this->request->except(func_get_args()));
@@ -124,8 +106,8 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Flash a container of errors to the session.
      *
-     * @param  \Illuminate\Contracts\Support\MessageProvider|array|string  $provider
-     * @param  string  $key
+     * @param \Illuminate\Contracts\Support\MessageProvider|array|string $provider
+     * @param string $key
      * @return $this
      */
     public function withErrors($provider, $key = 'default')
@@ -134,7 +116,7 @@ class RedirectResponse extends BaseRedirectResponse
 
         $errors = $this->session->get('errors', new ViewErrorBag);
 
-        if (! $errors instanceof ViewErrorBag) {
+        if (!$errors instanceof ViewErrorBag) {
             $errors = new ViewErrorBag;
         }
 
@@ -148,7 +130,7 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Parse the given errors into an appropriate value.
      *
-     * @param  \Illuminate\Contracts\Support\MessageProvider|array|string  $provider
+     * @param \Illuminate\Contracts\Support\MessageProvider|array|string $provider
      * @return \Illuminate\Support\MessageBag
      */
     protected function parseErrors($provider)
@@ -157,19 +139,19 @@ class RedirectResponse extends BaseRedirectResponse
             return $provider->getMessageBag();
         }
 
-        return new MessageBag((array) $provider);
+        return new MessageBag((array)$provider);
     }
 
     /**
      * Add a fragment identifier to the URL.
      *
-     * @param  string  $fragment
+     * @param string $fragment
      * @return $this
      */
     public function withFragment($fragment)
     {
         return $this->withoutFragment()
-                ->setTargetUrl($this->getTargetUrl().'#'.Str::after($fragment, '#'));
+            ->setTargetUrl($this->getTargetUrl() . '#' . Str::after($fragment, '#'));
     }
 
     /**
@@ -205,7 +187,7 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Set the request instance.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      */
     public function setRequest(Request $request)
@@ -226,7 +208,7 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Set the session store instance.
      *
-     * @param  \Illuminate\Session\Store  $session
+     * @param \Illuminate\Session\Store $session
      * @return void
      */
     public function setSession(SessionStore $session)
@@ -237,8 +219,8 @@ class RedirectResponse extends BaseRedirectResponse
     /**
      * Dynamically bind flash data in the session.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      *
      * @throws \BadMethodCallException
@@ -254,5 +236,23 @@ class RedirectResponse extends BaseRedirectResponse
         }
 
         static::throwBadMethodCallException($method);
+    }
+
+    /**
+     * Flash a piece of data to the session.
+     *
+     * @param string|array $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function with($key, $value = null)
+    {
+        $key = is_array($key) ? $key : [$key => $value];
+
+        foreach ($key as $k => $v) {
+            $this->session->flash($k, $v);
+        }
+
+        return $this;
     }
 }

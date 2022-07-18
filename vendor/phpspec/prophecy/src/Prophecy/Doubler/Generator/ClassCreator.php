@@ -36,7 +36,7 @@ class ClassCreator
     /**
      * Creates class.
      *
-     * @param string         $classname
+     * @param string $classname
      * @param Node\ClassNode $class
      *
      * @return mixed

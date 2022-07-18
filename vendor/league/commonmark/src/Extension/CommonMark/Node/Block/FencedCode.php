@@ -36,7 +36,7 @@ final class FencedCode extends AbstractBlock implements StringContainerInterface
         parent::__construct();
 
         $this->length = $length;
-        $this->char   = $char;
+        $this->char = $char;
         $this->offset = $offset;
     }
 
@@ -45,17 +45,17 @@ final class FencedCode extends AbstractBlock implements StringContainerInterface
         return $this->info;
     }
 
+    public function setInfo(string $info): void
+    {
+        $this->info = $info;
+    }
+
     /**
      * @return string[]
      */
     public function getInfoWords(): array
     {
         return \preg_split('/\s+/', $this->info ?? '') ?: [];
-    }
-
-    public function setInfo(string $info): void
-    {
-        $this->info = $info;
     }
 
     public function getLiteral(): string

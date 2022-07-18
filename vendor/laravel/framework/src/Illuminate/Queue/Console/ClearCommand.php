@@ -16,13 +16,6 @@ class ClearCommand extends Command
     use ConfirmableTrait;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'queue:clear';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -32,7 +25,12 @@ class ClearCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:clear';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'queue:clear';
     /**
      * The console command description.
      *
@@ -47,12 +45,12 @@ class ClearCommand extends Command
      */
     public function handle()
     {
-        if (! $this->confirmToProceed()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 
         $connection = $this->argument('connection')
-                        ?: $this->laravel['config']['queue.default'];
+            ?: $this->laravel['config']['queue.default'];
 
         // We need to get the right queue for the connection which is set in the queue
         // configuration file for the application. We will pull it based on the set
@@ -64,9 +62,9 @@ class ClearCommand extends Command
         if ($queue instanceof ClearableQueue) {
             $count = $queue->clear($queueName);
 
-            $this->line('<info>Cleared '.$count.' jobs from the ['.$queueName.'] queue</info> ');
+            $this->line('<info>Cleared ' . $count . ' jobs from the [' . $queueName . '] queue</info> ');
         } else {
-            $this->line('<error>Clearing queues is not supported on ['.(new ReflectionClass($queue))->getShortName().']</error> ');
+            $this->line('<error>Clearing queues is not supported on [' . (new ReflectionClass($queue))->getShortName() . ']</error> ');
         }
 
         return 0;
@@ -75,7 +73,7 @@ class ClearCommand extends Command
     /**
      * Get the queue name to clear.
      *
-     * @param  string  $connection
+     * @param string $connection
      * @return string
      */
     protected function getQueue($connection)

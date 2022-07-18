@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection\DocBlock\Tags\Formatter;
 
 use phpDocumentor\Reflection\DocBlock\Tag;
 use phpDocumentor\Reflection\DocBlock\Tags\Formatter;
-
 use function trim;
 
 class PassthroughFormatter implements Formatter

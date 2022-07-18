@@ -53,11 +53,11 @@ final class EsmtpTransportFactory extends AbstractTransportFactory
         }
 
         if (null !== ($restartThreshold = $dsn->getOption('restart_threshold'))) {
-            $transport->setRestartThreshold((int) $restartThreshold, (int) $dsn->getOption('restart_threshold_sleep', 0));
+            $transport->setRestartThreshold((int)$restartThreshold, (int)$dsn->getOption('restart_threshold_sleep', 0));
         }
 
         if (null !== ($pingThreshold = $dsn->getOption('ping_threshold'))) {
-            $transport->setPingThreshold((int) $pingThreshold);
+            $transport->setPingThreshold((int)$pingThreshold);
         }
 
         return $transport;

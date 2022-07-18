@@ -29,9 +29,9 @@ final class HtmlDecorator implements NodeRendererInterface
      */
     public function __construct(NodeRendererInterface $inner, string $tag, array $attributes = [], bool $selfClosing = false)
     {
-        $this->inner       = $inner;
-        $this->tag         = $tag;
-        $this->attributes  = $attributes;
+        $this->inner = $inner;
+        $this->tag = $tag;
+        $this->attributes = $attributes;
         $this->selfClosing = $selfClosing;
     }
 

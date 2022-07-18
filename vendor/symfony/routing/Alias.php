@@ -76,7 +76,7 @@ class Alias
 
     public function isDeprecated(): bool
     {
-        return (bool) $this->deprecation;
+        return (bool)$this->deprecation;
     }
 
     /**

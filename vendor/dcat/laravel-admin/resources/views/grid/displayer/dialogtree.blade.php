@@ -8,7 +8,9 @@
 
 <template>
     <template id="dialog-tree-tpl">
-        <div class="jstree-wrapper p-1" style="border:0"><div class="da-tree" style="margin-top:10px"></div></div>
+        <div class="jstree-wrapper p-1" style="border:0">
+            <div class="da-tree" style="margin-top:10px"></div>
+        </div>
     </template>
 </template>
 
@@ -53,7 +55,7 @@
                 content: tpl,
                 title: title,
                 success: function (a, idx) {
-                    var tree = $('#layui-layer'+idx).find('.da-tree');
+                    var tree = $('#layui-layer' + idx).find('.da-tree');
 
                     tree.on("loaded.jstree", function () {
                         tree.jstree('open_all');
@@ -88,10 +90,10 @@
                 }
 
                 nodes.push({
-                    'id'     : v[idColumn],
-                    'text'   : v[textColumn] || null,
-                    'parent' : parentId,
-                    'state'  : v['state'],
+                    'id': v[idColumn],
+                    'text': v[textColumn] || null,
+                    'parent': parentId,
+                    'state': v['state'],
                 });
             }
 
@@ -106,6 +108,12 @@
     var area = {!! json_encode($area) !!};
 
     $('.grid-dialog-tree').off('click').on('click', function () {
-        resolveDialogTree.call(this, {config: options, nodes: nodes, area: area, rootParentId: '{!! $rootParentId !!}', columns: {!! json_encode($columnNames) !!}});
+        resolveDialogTree.call(this, {
+            config: options,
+            nodes: nodes,
+            area: area,
+            rootParentId: '{!! $rootParentId !!}',
+            columns: {!! json_encode($columnNames) !!}
+        });
     });
 </script>

@@ -61,25 +61,23 @@ class Configuration
      * @see https://github.com/mockery/mockery/issues/268
      */
     protected $_reflectionCacheEnabled = true;
-
-    public function __construct()
-    {
-        $this->_quickDefinitionsConfiguration = new QuickDefinitionsConfiguration();
-    }
-
     /**
      * Custom object formatters
      *
      * @var array
      */
     protected $_objectFormatters = array();
-
     /**
      * Default argument matchers
      *
      * @var array
      */
     protected $_defaultMatchers = array();
+
+    public function __construct()
+    {
+        $this->_quickDefinitionsConfiguration = new QuickDefinitionsConfiguration();
+    }
 
     /**
      * Set boolean to allow/prevent mocking of non-existent methods
@@ -88,7 +86,7 @@ class Configuration
      */
     public function allowMockingNonExistentMethods($flag = true)
     {
-        $this->_allowMockingNonExistentMethod = (bool) $flag;
+        $this->_allowMockingNonExistentMethod = (bool)$flag;
     }
 
     /**
@@ -112,7 +110,7 @@ class Configuration
     {
         @trigger_error(sprintf("The %s method is deprecated and will be removed in a future version of Mockery", __METHOD__), E_USER_DEPRECATED);
 
-        $this->_allowMockingMethodsUnnecessarily = (bool) $flag;
+        $this->_allowMockingMethodsUnnecessarily = (bool)$flag;
     }
 
     /**
@@ -174,14 +172,14 @@ class Configuration
         return $this->_internalClassParamMap;
     }
 
-    public function setConstantsMap(array $map)
-    {
-        $this->_constantsMap = $map;
-    }
-
     public function getConstantsMap()
     {
         return $this->_constantsMap;
+    }
+
+    public function setConstantsMap(array $map)
+    {
+        $this->_constantsMap = $map;
     }
 
     /**
@@ -259,7 +257,7 @@ class Configuration
         ) {
             throw new \InvalidArgumentException(
                 "Matcher class must be either Hamcrest matcher or extend \Mockery\Matcher\MatcherAbstract, " .
-                  "'$matcherClass' given."
+                "'$matcherClass' given."
             );
         }
         $this->_defaultMatchers[$class] = $matcherClass;

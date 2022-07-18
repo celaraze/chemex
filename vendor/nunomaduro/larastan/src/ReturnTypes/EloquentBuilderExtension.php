@@ -33,18 +33,13 @@ final class EloquentBuilderExtension implements DynamicMethodReturnTypeExtension
         $this->reflectionProvider = $reflectionProvider;
     }
 
-    public function getClass(): string
-    {
-        return EloquentBuilder::class;
-    }
-
     public function isMethodSupported(MethodReflection $methodReflection): bool
     {
         $builderReflection = $this->reflectionProvider->getClass(EloquentBuilder::class);
 
         // Don't handle dynamic wheres
         if (Str::startsWith($methodReflection->getName(), 'where') &&
-            ! $builderReflection->hasNativeMethod($methodReflection->getName())
+            !$builderReflection->hasNativeMethod($methodReflection->getName())
         ) {
             return false;
         }
@@ -57,18 +52,24 @@ final class EloquentBuilderExtension implements DynamicMethodReturnTypeExtension
 
         $templateTypeMap = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap();
 
-        if (! $templateTypeMap->getType('TModelClass') instanceof ObjectType) {
+        if (!$templateTypeMap->getType('TModelClass') instanceof ObjectType) {
             return false;
         }
 
         return $builderReflection->hasNativeMethod($methodReflection->getName());
     }
 
+    public function getClass(): string
+    {
+        return EloquentBuilder::class;
+    }
+
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $returnType = ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants())->getReturnType();
         $templateTypeMap = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap();
 

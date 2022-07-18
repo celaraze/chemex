@@ -7,14 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
-use function get_class;
-use function is_object;
-use function sprintf;
 use PHPUnit\Framework\Exception;
 use ReflectionClass;
 use ReflectionException;
+use function get_class;
+use function is_object;
+use function sprintf;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -32,17 +33,6 @@ class ClassHasAttribute extends Constraint
     }
 
     /**
-     * Returns a string representation of the constraint.
-     */
-    public function toString(): string
-    {
-        return sprintf(
-            'has attribute "%s"',
-            $this->attributeName
-        );
-    }
-
-    /**
      * Evaluates the constraint for parameter $other. Returns true if the
      * constraint is met, false otherwise.
      *
@@ -56,7 +46,7 @@ class ClassHasAttribute extends Constraint
         } catch (ReflectionException $e) {
             throw new Exception(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -78,6 +68,17 @@ class ClassHasAttribute extends Constraint
             is_object($other) ? 'object of ' : '',
             is_object($other) ? get_class($other) : $other,
             $this->toString()
+        );
+    }
+
+    /**
+     * Returns a string representation of the constraint.
+     */
+    public function toString(): string
+    {
+        return sprintf(
+            'has attribute "%s"',
+            $this->attributeName
         );
     }
 

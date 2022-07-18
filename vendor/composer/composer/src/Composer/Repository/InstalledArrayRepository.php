@@ -23,7 +23,7 @@ class InstalledArrayRepository extends WritableArrayRepository implements Instal
 {
     public function getRepoName(): string
     {
-        return 'installed '.parent::getRepoName();
+        return 'installed ' . parent::getRepoName();
     }
 
     /**

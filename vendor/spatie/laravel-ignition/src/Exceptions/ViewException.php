@@ -13,6 +13,12 @@ class ViewException extends ErrorException implements ProvidesFlareContext
 
     protected string $view = '';
 
+    /** @return array<string, mixed> */
+    public function getViewData(): array
+    {
+        return $this->viewData;
+    }
+
     /**
      * @param array<string, mixed> $data
      *
@@ -23,20 +29,9 @@ class ViewException extends ErrorException implements ProvidesFlareContext
         $this->viewData = $data;
     }
 
-    /** @return array<string, mixed> */
-    public function getViewData(): array
-    {
-        return $this->viewData;
-    }
-
     public function setView(string $path): void
     {
         $this->view = $path;
-    }
-
-    protected function dumpViewData(mixed $variable): string
-    {
-        return (new HtmlDumper())->dumpVariable($variable);
     }
 
     /** @return array<string, mixed> */
@@ -51,5 +46,10 @@ class ViewException extends ErrorException implements ProvidesFlareContext
         $context['view']['data'] = array_map([$this, 'dumpViewData'], $this->viewData);
 
         return $context;
+    }
+
+    protected function dumpViewData(mixed $variable): string
+    {
+        return (new HtmlDumper())->dumpVariable($variable);
     }
 }

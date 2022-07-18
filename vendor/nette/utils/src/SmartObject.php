@@ -21,120 +21,118 @@ use Nette\Utils\ObjectHelpers;
  */
 trait SmartObject
 {
-	/**
-	 * @throws MemberAccessException
-	 */
-	public function __call(string $name, array $args)
-	{
-		$class = static::class;
+    /**
+     * @throws MemberAccessException
+     */
+    public static function __callStatic(string $name, array $args)
+    {
+        ObjectHelpers::strictStaticCall(static::class, $name);
+    }
 
-		if (ObjectHelpers::hasProperty($class, $name) === 'event') { // calling event handlers
-			$handlers = $this->$name ?? null;
-			if (is_iterable($handlers)) {
-				foreach ($handlers as $handler) {
-					$handler(...$args);
-				}
-			} elseif ($handlers !== null) {
-				throw new UnexpectedValueException("Property $class::$$name must be iterable or null, " . gettype($handlers) . ' given.');
-			}
-		} else {
-			ObjectHelpers::strictCall($class, $name);
-		}
-	}
+    /**
+     * @throws MemberAccessException
+     */
+    public function __call(string $name, array $args)
+    {
+        $class = static::class;
 
+        if (ObjectHelpers::hasProperty($class, $name) === 'event') { // calling event handlers
+            $handlers = $this->$name ?? null;
+            if (is_iterable($handlers)) {
+                foreach ($handlers as $handler) {
+                    $handler(...$args);
+                }
+            } elseif ($handlers !== null) {
+                throw new UnexpectedValueException("Property $class::$$name must be iterable or null, " . gettype($handlers) . ' given.');
+            }
+        } else {
+            ObjectHelpers::strictCall($class, $name);
+        }
+    }
 
-	/**
-	 * @throws MemberAccessException
-	 */
-	public static function __callStatic(string $name, array $args)
-	{
-		ObjectHelpers::strictStaticCall(static::class, $name);
-	}
+    /**
+     * @return mixed
+     * @throws MemberAccessException if the property is not defined.
+     */
+    public function &__get(string $name)
+    {
+        $class = static::class;
 
+        if ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property getter
+            if (!($prop & 0b0001)) {
+                throw new MemberAccessException("Cannot read a write-only property $class::\$$name.");
+            }
 
-	/**
-	 * @return mixed
-	 * @throws MemberAccessException if the property is not defined.
-	 */
-	public function &__get(string $name)
-	{
-		$class = static::class;
+            $m = ($prop & 0b0010 ? 'get' : 'is') . ucfirst($name);
+            if ($prop & 0b10000) {
+                $trace = debug_backtrace(0, 1)[0]; // suppose this method is called from __call()
+                $loc = isset($trace['file'], $trace['line'])
+                    ? " in $trace[file] on line $trace[line]"
+                    : '';
+                trigger_error("Property $class::\$$name is deprecated, use $class::$m() method$loc.", E_USER_DEPRECATED);
+            }
 
-		if ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property getter
-			if (!($prop & 0b0001)) {
-				throw new MemberAccessException("Cannot read a write-only property $class::\$$name.");
-			}
-
-			$m = ($prop & 0b0010 ? 'get' : 'is') . ucfirst($name);
-			if ($prop & 0b10000) {
-				$trace = debug_backtrace(0, 1)[0]; // suppose this method is called from __call()
-				$loc = isset($trace['file'], $trace['line'])
-					? " in $trace[file] on line $trace[line]"
-					: '';
-				trigger_error("Property $class::\$$name is deprecated, use $class::$m() method$loc.", E_USER_DEPRECATED);
-			}
-
-			if ($prop & 0b0100) { // return by reference
-				return $this->$m();
-			} else {
-				$val = $this->$m();
-				return $val;
-			}
-		} else {
-			ObjectHelpers::strictGet($class, $name);
-		}
-	}
+            if ($prop & 0b0100) { // return by reference
+                return $this->$m();
+            } else {
+                $val = $this->$m();
+                return $val;
+            }
+        } else {
+            ObjectHelpers::strictGet($class, $name);
+        }
+    }
 
 
-	/**
-	 * @param  mixed  $value
-	 * @return void
-	 * @throws MemberAccessException if the property is not defined or is read-only
-	 */
-	public function __set(string $name, $value)
-	{
-		$class = static::class;
+    /**
+     * @param mixed $value
+     * @return void
+     * @throws MemberAccessException if the property is not defined or is read-only
+     */
+    public function __set(string $name, $value)
+    {
+        $class = static::class;
 
-		if (ObjectHelpers::hasProperty($class, $name)) { // unsetted property
-			$this->$name = $value;
+        if (ObjectHelpers::hasProperty($class, $name)) { // unsetted property
+            $this->$name = $value;
 
-		} elseif ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property setter
-			if (!($prop & 0b1000)) {
-				throw new MemberAccessException("Cannot write to a read-only property $class::\$$name.");
-			}
+        } elseif ($prop = ObjectHelpers::getMagicProperties($class)[$name] ?? null) { // property setter
+            if (!($prop & 0b1000)) {
+                throw new MemberAccessException("Cannot write to a read-only property $class::\$$name.");
+            }
 
-			$m = 'set' . ucfirst($name);
-			if ($prop & 0b10000) {
-				$trace = debug_backtrace(0, 1)[0]; // suppose this method is called from __call()
-				$loc = isset($trace['file'], $trace['line'])
-					? " in $trace[file] on line $trace[line]"
-					: '';
-				trigger_error("Property $class::\$$name is deprecated, use $class::$m() method$loc.", E_USER_DEPRECATED);
-			}
+            $m = 'set' . ucfirst($name);
+            if ($prop & 0b10000) {
+                $trace = debug_backtrace(0, 1)[0]; // suppose this method is called from __call()
+                $loc = isset($trace['file'], $trace['line'])
+                    ? " in $trace[file] on line $trace[line]"
+                    : '';
+                trigger_error("Property $class::\$$name is deprecated, use $class::$m() method$loc.", E_USER_DEPRECATED);
+            }
 
-			$this->$m($value);
+            $this->$m($value);
 
-		} else {
-			ObjectHelpers::strictSet($class, $name);
-		}
-	}
-
-
-	/**
-	 * @return void
-	 * @throws MemberAccessException
-	 */
-	public function __unset(string $name)
-	{
-		$class = static::class;
-		if (!ObjectHelpers::hasProperty($class, $name)) {
-			throw new MemberAccessException("Cannot unset the property $class::\$$name.");
-		}
-	}
+        } else {
+            ObjectHelpers::strictSet($class, $name);
+        }
+    }
 
 
-	public function __isset(string $name): bool
-	{
-		return isset(ObjectHelpers::getMagicProperties(static::class)[$name]);
-	}
+    /**
+     * @return void
+     * @throws MemberAccessException
+     */
+    public function __unset(string $name)
+    {
+        $class = static::class;
+        if (!ObjectHelpers::hasProperty($class, $name)) {
+            throw new MemberAccessException("Cannot unset the property $class::\$$name.");
+        }
+    }
+
+
+    public function __isset(string $name): bool
+    {
+        return isset(ObjectHelpers::getMagicProperties(static::class)[$name]);
+    }
 }

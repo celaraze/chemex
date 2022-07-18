@@ -98,9 +98,9 @@ class StreamedResponse extends Response
     /**
      * {@inheritdoc}
      *
+     * @return $this
      * @throws \LogicException when the content is not null
      *
-     * @return $this
      */
     public function setContent(?string $content): static
     {

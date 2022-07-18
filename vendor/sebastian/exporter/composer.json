@@ -1,7 +1,10 @@
 {
     "name": "sebastian/exporter",
     "description": "Provides the functionality to export PHP variables for visualization",
-    "keywords": ["exporter","export"],
+    "keywords": [
+        "exporter",
+        "export"
+    ],
     "homepage": "https://www.github.com/sebastianbergmann/exporter",
     "license": "BSD-3-Clause",
     "authors": [

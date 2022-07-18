@@ -36,7 +36,7 @@ class Exact extends CountValidatorAbstract
             $because = $this->_expectation->getExceptionMessage();
 
             $exception = new Mockery\Exception\InvalidCountException(
-                'Method ' . (string) $this->_expectation
+                'Method ' . (string)$this->_expectation
                 . ' from ' . $this->_expectation->getMock()->mockery_getName()
                 . ' should be called' . PHP_EOL
                 . ' exactly ' . $this->_limit . ' times but called ' . $n
@@ -44,7 +44,7 @@ class Exact extends CountValidatorAbstract
                 . ($because ? ' Because ' . $this->_expectation->getExceptionMessage() : '')
             );
             $exception->setMock($this->_expectation->getMock())
-                ->setMethodName((string) $this->_expectation)
+                ->setMethodName((string)$this->_expectation)
                 ->setExpectedCountComparative('=')
                 ->setExpectedCount($this->_limit)
                 ->setActualCount($n);

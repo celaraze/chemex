@@ -16,7 +16,7 @@ class LazyLoadingViolationSolutionProvider implements HasSolutionsForThrowable
             return true;
         }
 
-        if (! $previous = $throwable->getPrevious()) {
+        if (!$previous = $throwable->getPrevious()) {
             return false;
         }
 

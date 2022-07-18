@@ -29,13 +29,9 @@ abstract class AbstractBlock extends Node
 
     protected ?int $endLine = null;
 
-    protected function setParent(?Node $node = null): void
+    public function getStartLine(): ?int
     {
-        if ($node && ! $node instanceof self) {
-            throw new \InvalidArgumentException('Parent of block must also be block (cannot be inline)');
-        }
-
-        parent::setParent($node);
+        return $this->startLine;
     }
 
     public function setStartLine(?int $startLine): void
@@ -46,9 +42,9 @@ abstract class AbstractBlock extends Node
         }
     }
 
-    public function getStartLine(): ?int
+    public function getEndLine(): ?int
     {
-        return $this->startLine;
+        return $this->endLine;
     }
 
     public function setEndLine(?int $endLine): void
@@ -56,8 +52,12 @@ abstract class AbstractBlock extends Node
         $this->endLine = $endLine;
     }
 
-    public function getEndLine(): ?int
+    protected function setParent(?Node $node = null): void
     {
-        return $this->endLine;
+        if ($node && !$node instanceof self) {
+            throw new \InvalidArgumentException('Parent of block must also be block (cannot be inline)');
+        }
+
+        parent::setParent($node);
     }
 }

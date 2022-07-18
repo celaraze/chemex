@@ -23,8 +23,8 @@ class Composer
      */
     public static function loader()
     {
-        if (! static::$loader) {
-            static::$loader = include base_path().'/vendor/autoload.php';
+        if (!static::$loader) {
+            static::$loader = include base_path() . '/vendor/autoload.php';
         }
 
         return static::$loader;
@@ -40,13 +40,35 @@ class Composer
     }
 
     /**
-     * @param  null|string  $packageName
-     * @param  null|string  $lockFile
+     * @param null|string $path
+     * @return array
+     */
+    public static function fromJson(?string $path)
+    {
+        if (isset(static::$files[$path])) {
+            return static::$files[$path];
+        }
+
+        if (!$path || !is_file($path)) {
+            return static::$files[$path] = [];
+        }
+
+        try {
+            return static::$files[$path] = (array)json_decode(app('files')->get($path), true);
+        } catch (\Throwable $e) {
+        }
+
+        return static::$files[$path] = [];
+    }
+
+    /**
+     * @param null|string $packageName
+     * @param null|string $lockFile
      * @return null
      */
     public static function getVersion(?string $packageName, ?string $lockFile = null)
     {
-        if (! $packageName) {
+        if (!$packageName) {
             return null;
         }
 
@@ -58,27 +80,5 @@ class Composer
             })->first();
 
         return $content['version'] ?? null;
-    }
-
-    /**
-     * @param  null|string  $path
-     * @return array
-     */
-    public static function fromJson(?string $path)
-    {
-        if (isset(static::$files[$path])) {
-            return static::$files[$path];
-        }
-
-        if (! $path || ! is_file($path)) {
-            return static::$files[$path] = [];
-        }
-
-        try {
-            return static::$files[$path] = (array) json_decode(app('files')->get($path), true);
-        } catch (\Throwable $e) {
-        }
-
-        return static::$files[$path] = [];
     }
 }

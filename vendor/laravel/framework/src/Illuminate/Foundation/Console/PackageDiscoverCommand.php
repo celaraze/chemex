@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class PackageDiscoverCommand extends Command
 {
     /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'package:discover';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class PackageDiscoverCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'package:discover';
-
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'package:discover';
     /**
      * The console command description.
      *
@@ -37,7 +35,7 @@ class PackageDiscoverCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Foundation\PackageManifest  $manifest
+     * @param \Illuminate\Foundation\PackageManifest $manifest
      * @return void
      */
     public function handle(PackageManifest $manifest)

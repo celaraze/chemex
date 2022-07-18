@@ -553,9 +553,9 @@ class File extends Base
     /**
      * Get a random file extension (without a dot)
      *
+     * @return string
      * @example avi
      *
-     * @return string
      */
     public static function fileExtension()
     {
@@ -569,7 +569,7 @@ class File extends Base
      *
      * @param string $sourceDirectory The directory to look for random file taking
      * @param string $targetDirectory
-     * @param bool   $fullPath        Whether to have the full path or just the filename
+     * @param bool $fullPath Whether to have the full path or just the filename
      *
      * @return string
      */

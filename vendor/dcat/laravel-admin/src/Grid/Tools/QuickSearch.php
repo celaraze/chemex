@@ -36,15 +36,7 @@ class QuickSearch extends AbstractTool
     protected $autoSubmit = true;
 
     /**
-     * @return string
-     */
-    public function getQueryName()
-    {
-        return $this->parent->makeName($this->queryName);
-    }
-
-    /**
-     * @param  int  $width
+     * @param int $width
      * @return $this
      */
     public function width(int $width)
@@ -57,7 +49,7 @@ class QuickSearch extends AbstractTool
     /**
      * Set placeholder.
      *
-     * @param  string  $text
+     * @param string $text
      * @return $this
      */
     public function placeholder(?string $text = '')
@@ -68,27 +60,7 @@ class QuickSearch extends AbstractTool
     }
 
     /**
-     * @return string
-     */
-    public function value()
-    {
-        return trim(request($this->getQueryName()) ?? '');
-    }
-
-    /**
-     * @return string
-     */
-    public function formAction()
-    {
-        return Helper::fullUrlWithoutQuery([
-            $this->getQueryName(),
-            $this->parent->model()->getPageName(),
-            '_pjax',
-        ]);
-    }
-
-    /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function auto(bool $value = true)
@@ -106,12 +78,12 @@ class QuickSearch extends AbstractTool
         $this->setupScript();
 
         $data = [
-            'action'      => $this->formAction(),
-            'key'         => $this->getQueryName(),
-            'value'       => $this->value(),
+            'action' => $this->formAction(),
+            'key' => $this->getQueryName(),
+            'value' => $this->value(),
             'placeholder' => $this->placeholder ?: trans('admin.search'),
-            'width'       => $this->width,
-            'auto'        => $this->autoSubmit,
+            'width' => $this->width,
+            'auto' => $this->autoSubmit,
         ];
 
         return view($this->view, $data);
@@ -172,5 +144,33 @@ class QuickSearch extends AbstractTool
 JS;
 
         Admin::script($script);
+    }
+
+    /**
+     * @return string
+     */
+    public function formAction()
+    {
+        return Helper::fullUrlWithoutQuery([
+            $this->getQueryName(),
+            $this->parent->model()->getPageName(),
+            '_pjax',
+        ]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getQueryName()
+    {
+        return $this->parent->makeName($this->queryName);
+    }
+
+    /**
+     * @return string
+     */
+    public function value()
+    {
+        return trim(request($this->getQueryName()) ?? '');
     }
 }

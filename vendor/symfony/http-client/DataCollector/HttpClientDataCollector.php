@@ -56,36 +56,6 @@ final class HttpClientDataCollector extends DataCollector implements LateDataCol
         }
     }
 
-    public function lateCollect()
-    {
-        foreach ($this->clients as $client) {
-            $client->reset();
-        }
-    }
-
-    public function getClients(): array
-    {
-        return $this->data['clients'] ?? [];
-    }
-
-    public function getRequestCount(): int
-    {
-        return $this->data['request_count'] ?? 0;
-    }
-
-    public function getErrorCount(): int
-    {
-        return $this->data['error_count'] ?? 0;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getName(): string
-    {
-        return 'http_client';
-    }
-
     public function reset()
     {
         $this->data = [
@@ -185,7 +155,7 @@ final class HttpClientDataCollector extends DataCollector implements LateDataCol
             $port = parse_url($url, \PHP_URL_PORT) ?: (str_starts_with('http:', $url) ? 80 : 443);
             foreach ($trace['options']['resolve'] as $host => $ip) {
                 if (null !== $ip) {
-                    $command[] = '--resolve '.escapeshellarg("$host:$port:$ip");
+                    $command[] = '--resolve ' . escapeshellarg("$host:$port:$ip");
                 }
             }
         }
@@ -193,18 +163,18 @@ final class HttpClientDataCollector extends DataCollector implements LateDataCol
         $dataArg = [];
 
         if ($json = $trace['options']['json'] ?? null) {
-            $dataArg[] = '--data '.escapeshellarg(self::jsonEncode($json));
+            $dataArg[] = '--data ' . escapeshellarg(self::jsonEncode($json));
         } elseif ($body = $trace['options']['body'] ?? null) {
             if (\is_string($body)) {
                 try {
-                    $dataArg[] = '--data '.escapeshellarg($body);
+                    $dataArg[] = '--data ' . escapeshellarg($body);
                 } catch (\ValueError) {
                     return null;
                 }
             } elseif (\is_array($body)) {
                 $body = explode('&', self::normalizeBody($body));
                 foreach ($body as $value) {
-                    $dataArg[] = '--data '.escapeshellarg(urldecode($value));
+                    $dataArg[] = '--data ' . escapeshellarg(urldecode($value));
                 }
             } else {
                 return null;
@@ -231,7 +201,7 @@ final class HttpClientDataCollector extends DataCollector implements LateDataCol
                 continue;
             }
 
-            $command[] = '--header '.escapeshellarg($line);
+            $command[] = '--header ' . escapeshellarg($line);
         }
 
         if (null !== $dataArg) {
@@ -239,5 +209,35 @@ final class HttpClientDataCollector extends DataCollector implements LateDataCol
         }
 
         return implode(" \\\n  ", $command);
+    }
+
+    public function lateCollect()
+    {
+        foreach ($this->clients as $client) {
+            $client->reset();
+        }
+    }
+
+    public function getClients(): array
+    {
+        return $this->data['clients'] ?? [];
+    }
+
+    public function getRequestCount(): int
+    {
+        return $this->data['request_count'] ?? 0;
+    }
+
+    public function getErrorCount(): int
+    {
+        return $this->data['error_count'] ?? 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName(): string
+    {
+        return 'http_client';
     }
 }

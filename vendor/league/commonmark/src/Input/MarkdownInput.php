@@ -35,7 +35,7 @@ class MarkdownInput implements MarkdownInputInterface
 
     public function __construct(string $content, int $lineOffset = 0)
     {
-        if (! \mb_check_encoding($content, 'UTF-8')) {
+        if (!\mb_check_encoding($content, 'UTF-8')) {
             throw new UnexpectedEncodingException('Unexpected encoding - UTF-8 or ASCII was expected');
         }
 
@@ -44,7 +44,7 @@ class MarkdownInput implements MarkdownInputInterface
             $content = \substr($content, 3);
         }
 
-        $this->content    = $content;
+        $this->content = $content;
         $this->lineOffset = $lineOffset;
     }
 
@@ -68,15 +68,6 @@ class MarkdownInput implements MarkdownInputInterface
         }
     }
 
-    public function getLineCount(): int
-    {
-        $this->splitLinesIfNeeded();
-
-        \assert($this->lineCount !== null);
-
-        return $this->lineCount;
-    }
-
     private function splitLinesIfNeeded(): void
     {
         if ($this->lines !== null) {
@@ -98,5 +89,14 @@ class MarkdownInput implements MarkdownInputInterface
         }
 
         $this->lineCount = \count($this->lines);
+    }
+
+    public function getLineCount(): int
+    {
+        $this->splitLinesIfNeeded();
+
+        \assert($this->lineCount !== null);
+
+        return $this->lineCount;
     }
 }

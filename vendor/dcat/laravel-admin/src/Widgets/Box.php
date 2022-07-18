@@ -27,13 +27,14 @@ class Box extends Widget
     }
 
     /**
-     * Set content padding.
+     * Set box title.
      *
-     * @param  string  $padding
+     * @param string $title
+     * @return $this
      */
-    public function padding(string $padding)
+    public function title($title)
     {
-        $this->padding = 'padding:'.$padding;
+        $this->title = $title;
 
         return $this;
     }
@@ -41,7 +42,7 @@ class Box extends Widget
     /**
      * Set box content.
      *
-     * @param  string  $content
+     * @param string $content
      * @return $this
      */
     public function content($content)
@@ -56,14 +57,13 @@ class Box extends Widget
     }
 
     /**
-     * Set box title.
+     * Set content padding.
      *
-     * @param  string  $title
-     * @return $this
+     * @param string $padding
      */
-    public function title($title)
+    public function padding(string $padding)
     {
-        $this->title = $title;
+        $this->padding = 'padding:' . $padding;
 
         return $this;
     }
@@ -95,24 +95,7 @@ class Box extends Widget
     }
 
     /**
-     * Set box style.
-     *
-     * @param  string  $styles
-     * @return $this|Box
-     */
-    public function style($styles)
-    {
-        $styles = array_map(function ($style) {
-            return 'box-'.$style;
-        }, (array) $styles);
-
-        $this->class = $this->class.' '.implode(' ', $styles);
-
-        return $this;
-    }
-
-    /**
-     * @param  string|Renderable|\Closure  $content
+     * @param string|Renderable|\Closure $content
      * @return $this
      */
     public function tool($content)
@@ -133,6 +116,23 @@ class Box extends Widget
     }
 
     /**
+     * Set box style.
+     *
+     * @param string $styles
+     * @return $this|Box
+     */
+    public function style($styles)
+    {
+        $styles = array_map(function ($style) {
+            return 'box-' . $style;
+        }, (array)$styles);
+
+        $this->class = $this->class . ' ' . implode(' ', $styles);
+
+        return $this;
+    }
+
+    /**
      * Variables in view.
      *
      * @return array
@@ -140,11 +140,11 @@ class Box extends Widget
     public function defaultVariables()
     {
         return [
-            'title'      => $this->title,
-            'content'    => $this->toString($this->content),
-            'tools'      => $this->tools,
+            'title' => $this->title,
+            'content' => $this->toString($this->content),
+            'tools' => $this->tools,
             'attributes' => $this->formatHtmlAttributes(),
-            'padding'    => $this->padding,
+            'padding' => $this->padding,
         ];
     }
 }

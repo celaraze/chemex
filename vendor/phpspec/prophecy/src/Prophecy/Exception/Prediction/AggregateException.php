@@ -21,10 +21,10 @@ class AggregateException extends \RuntimeException implements PredictionExceptio
     public function append(PredictionException $exception)
     {
         $message = $exception->getMessage();
-        $message = strtr($message, array("\n" => "\n  "))."\n";
+        $message = strtr($message, array("\n" => "\n  ")) . "\n";
         $message = empty($this->exceptions) ? $message : "\n" . $message;
 
-        $this->message      = rtrim($this->message.$message);
+        $this->message = rtrim($this->message . $message);
         $this->exceptions[] = $exception;
     }
 
@@ -36,16 +36,16 @@ class AggregateException extends \RuntimeException implements PredictionExceptio
         return $this->exceptions;
     }
 
-    public function setObjectProphecy(ObjectProphecy $objectProphecy)
-    {
-        $this->objectProphecy = $objectProphecy;
-    }
-
     /**
      * @return ObjectProphecy
      */
     public function getObjectProphecy()
     {
         return $this->objectProphecy;
+    }
+
+    public function setObjectProphecy(ObjectProphecy $objectProphecy)
+    {
+        $this->objectProphecy = $objectProphecy;
     }
 }

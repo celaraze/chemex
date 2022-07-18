@@ -38,7 +38,7 @@ class InvalidMethodCallAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application seems to contain invalid method calls to methods that either do not exist or "
-            ."do not match the method signature or scope.";
+            . "do not match the method signature or scope.";
     }
 
     /**

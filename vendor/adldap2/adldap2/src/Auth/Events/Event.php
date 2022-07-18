@@ -31,8 +31,8 @@ abstract class Event
      * Constructor.
      *
      * @param ConnectionInterface $connection
-     * @param string              $username
-     * @param string              $password
+     * @param string $username
+     * @param string $password
      */
     public function __construct(ConnectionInterface $connection, $username, $password)
     {

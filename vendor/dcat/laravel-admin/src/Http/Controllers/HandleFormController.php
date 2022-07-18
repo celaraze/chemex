@@ -19,7 +19,7 @@ class HandleFormController
     {
         $form = $this->resolveForm($request);
 
-        if (! $form->passesAuthorization()) {
+        if (!$form->passesAuthorization()) {
             return $form->failedAuthorization();
         }
 
@@ -34,6 +34,43 @@ class HandleFormController
         return $this->sendResponse($form->handle($input));
     }
 
+    /**
+     * @param Request $request
+     * @return Form
+     *
+     * @throws AdminException
+     */
+    protected function resolveForm(Request $request)
+    {
+        if (!$request->has(Form::REQUEST_NAME)) {
+            throw new AdminException('Invalid form request.');
+        }
+
+        $formClass = $request->get(Form::REQUEST_NAME);
+
+        if (!class_exists($formClass)) {
+            throw new AdminException("Form [{$formClass}] does not exist.");
+        }
+
+        /** @var Form $form */
+        $form = app($formClass);
+
+        if (!method_exists($form, 'handle')) {
+            throw new AdminException("Form method {$formClass}::handle() does not exist.");
+        }
+
+        return $form;
+    }
+
+    protected function sendResponse($response)
+    {
+        if ($response instanceof JsonResponse) {
+            return $response->send();
+        }
+
+        return $response;
+    }
+
     public function uploadFile(Request $request)
     {
         $form = $this->resolveForm($request);
@@ -44,7 +81,7 @@ class HandleFormController
     }
 
     /**
-     * @param  Request  $request
+     * @param Request $request
      * @param $form
      * @return File
      */
@@ -52,7 +89,7 @@ class HandleFormController
     {
         $column = $this->uploader()->upload_column ?: $request->get('_column');
 
-        if (! $relation = $request->get('_relation')) {
+        if (!$relation = $request->get('_relation')) {
             return $form->field($column);
         }
 
@@ -60,7 +97,7 @@ class HandleFormController
 
         $relationField = $form->field($relation);
 
-        if (! $relationField) {
+        if (!$relationField) {
             return;
         }
 
@@ -83,42 +120,5 @@ class HandleFormController
         $field->deleteFile($request->key);
 
         return $this->responseDeleted();
-    }
-
-    /**
-     * @param  Request  $request
-     * @return Form
-     *
-     * @throws AdminException
-     */
-    protected function resolveForm(Request $request)
-    {
-        if (! $request->has(Form::REQUEST_NAME)) {
-            throw new AdminException('Invalid form request.');
-        }
-
-        $formClass = $request->get(Form::REQUEST_NAME);
-
-        if (! class_exists($formClass)) {
-            throw new AdminException("Form [{$formClass}] does not exist.");
-        }
-
-        /** @var Form $form */
-        $form = app($formClass);
-
-        if (! method_exists($form, 'handle')) {
-            throw new AdminException("Form method {$formClass}::handle() does not exist.");
-        }
-
-        return $form;
-    }
-
-    protected function sendResponse($response)
-    {
-        if ($response instanceof JsonResponse) {
-            return $response->send();
-        }
-
-        return $response;
     }
 }

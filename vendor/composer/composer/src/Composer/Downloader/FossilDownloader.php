@@ -12,16 +12,40 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 
 /**
  * @author BohwaZ <http://bohwaz.net/>
  */
 class FossilDownloader extends VcsDownloader
 {
+    /**
+     * @inheritDoc
+     */
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
+    {
+        if (!$this->hasMetadataRepository($path)) {
+            return null;
+        }
+
+        $this->process->execute('fossil changes', $output, realpath($path));
+
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function hasMetadataRepository(string $path): bool
+    {
+        return is_file($path . '/.fslckout') || is_file($path . '/_FOSSIL_');
+    }
+
     /**
      * @inheritDoc
      */
@@ -41,7 +65,7 @@ class FossilDownloader extends VcsDownloader
         $url = ProcessExecutor::escape($url);
         $ref = ProcessExecutor::escape($package->getSourceReference());
         $repoFile = $path . '.fossil';
-        $this->io->writeError("Cloning ".$package->getSourceReference());
+        $this->io->writeError("Cloning " . $package->getSourceReference());
         $command = sprintf('fossil clone -- %s %s', $url, ProcessExecutor::escape($repoFile));
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
@@ -67,10 +91,10 @@ class FossilDownloader extends VcsDownloader
         $this->config->prohibitUrlByConfig($url, $this->io);
 
         $ref = ProcessExecutor::escape($target->getSourceReference());
-        $this->io->writeError(" Updating to ".$target->getSourceReference());
+        $this->io->writeError(" Updating to " . $target->getSourceReference());
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new \RuntimeException('The .fslckout file is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .fslckout file is missing from ' . $path . ', see https://getcomposer.org/commit-deps for more information');
         }
 
         $command = sprintf('fossil pull && fossil up %s', $ref);
@@ -79,22 +103,6 @@ class FossilDownloader extends VcsDownloader
         }
 
         return \React\Promise\resolve(null);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLocalChanges(PackageInterface $package, string $path): ?string
-    {
-        if (!$this->hasMetadataRepository($path)) {
-            return null;
-        }
-
-        $this->process->execute('fossil changes', $output, realpath($path));
-
-        $output = trim($output);
-
-        return strlen($output) > 0 ? $output : null;
     }
 
     /**
@@ -119,13 +127,5 @@ class FossilDownloader extends VcsDownloader
         }
 
         return $log;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function hasMetadataRepository(string $path): bool
-    {
-        return is_file($path . '/.fslckout') || is_file($path . '/_FOSSIL_');
     }
 }

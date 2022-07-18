@@ -42,11 +42,11 @@ class AppCommand extends InstallCommand
         $app = Helper::slug($namespace = $this->argument('name'));
 
         $files->put(
-            $config = config_path($app.'.php'),
+            $config = config_path($app . '.php'),
             str_replace(
                 ['DummyNamespace', 'DummyApp'],
                 [$namespace, $app],
-                $files->get(__DIR__.'/stubs/config.stub')
+                $files->get(__DIR__ . '/stubs/config.stub')
             )
         );
 

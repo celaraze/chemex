@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject;
 
-use function array_diff;
-use function array_merge;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use function array_diff;
+use function array_merge;
 
 /**
  * @psalm-template MockedType
@@ -103,8 +104,8 @@ final class MockBuilder
      */
     public function __construct(TestCase $testCase, $type)
     {
-        $this->testCase  = $testCase;
-        $this->type      = $type;
+        $this->testCase = $testCase;
+        $this->type = $type;
         $this->generator = new Generator;
     }
 
@@ -200,32 +201,14 @@ final class MockBuilder
     }
 
     /**
-     * Specifies the subset of methods to mock. Default is to mock none of them.
-     *
-     * @deprecated https://github.com/sebastianbergmann/phpunit/pull/3687
-     *
-     * @return $this
-     */
-    public function setMethods(?array $methods = null): self
-    {
-        if ($methods === null) {
-            $this->methods = $methods;
-        } else {
-            $this->methods = array_merge($this->methods ?? [], $methods);
-        }
-
-        return $this;
-    }
-
-    /**
      * Specifies the subset of methods to mock, requiring each to exist in the class.
      *
      * @param string[] $methods
      *
-     * @throws CannotUseOnlyMethodsException
+     * @return $this
      * @throws ReflectionException
      *
-     * @return $this
+     * @throws CannotUseOnlyMethodsException
      */
     public function onlyMethods(array $methods): self
     {
@@ -241,7 +224,7 @@ final class MockBuilder
         } catch (\ReflectionException $e) {
             throw new ReflectionException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -263,11 +246,11 @@ final class MockBuilder
      *
      * @param string[] $methods
      *
-     * @throws CannotUseAddMethodsException
+     * @return $this
      * @throws ReflectionException
      * @throws RuntimeException
      *
-     * @return $this
+     * @throws CannotUseAddMethodsException
      */
     public function addMethods(array $methods): self
     {
@@ -283,7 +266,7 @@ final class MockBuilder
         } catch (\ReflectionException $e) {
             throw new ReflectionException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -315,6 +298,24 @@ final class MockBuilder
                 $methods
             )
         );
+    }
+
+    /**
+     * Specifies the subset of methods to mock. Default is to mock none of them.
+     *
+     * @deprecated https://github.com/sebastianbergmann/phpunit/pull/3687
+     *
+     * @return $this
+     */
+    public function setMethods(?array $methods = null): self
+    {
+        if ($methods === null) {
+            $this->methods = $methods;
+        } else {
+            $this->methods = array_merge($this->methods ?? [], $methods);
+        }
+
+        return $this;
     }
 
     /**
@@ -457,7 +458,7 @@ final class MockBuilder
     public function disableProxyingToOriginalMethods(): self
     {
         $this->callOriginalMethods = false;
-        $this->proxyTarget         = null;
+        $this->proxyTarget = null;
 
         return $this;
     }

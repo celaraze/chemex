@@ -11,13 +11,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ScheduleFinishCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'schedule:finish {id} {code=0}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -27,7 +20,12 @@ class ScheduleFinishCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'schedule:finish';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'schedule:finish {id} {code=0}';
     /**
      * The console command description.
      *
@@ -45,7 +43,7 @@ class ScheduleFinishCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     public function handle(Schedule $schedule)

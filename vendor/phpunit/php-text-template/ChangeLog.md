@@ -34,10 +34,14 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 
 ### Removed
 
-* Removed support for PHP 5.3, PHP 5.4, PHP 5.5, PHP 5.6, PHP 7.0, PHP 7.1, and PHP 7.2 
+* Removed support for PHP 5.3, PHP 5.4, PHP 5.5, PHP 5.6, PHP 7.0, PHP 7.1, and PHP 7.2
 
 [2.0.4]: https://github.com/sebastianbergmann/php-text-template/compare/2.0.3...2.0.4
+
 [2.0.3]: https://github.com/sebastianbergmann/php-text-template/compare/2.0.2...2.0.3
+
 [2.0.2]: https://github.com/sebastianbergmann/php-text-template/compare/2.0.1...2.0.2
+
 [2.0.1]: https://github.com/sebastianbergmann/php-text-template/compare/2.0.0...2.0.1
+
 [2.0.0]: https://github.com/sebastianbergmann/php-text-template/compare/1.2.1...2.0.0

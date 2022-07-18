@@ -17,6 +17,18 @@ class RequestContextProvider implements ContextProvider
         $this->request = $request ?? Request::createFromGlobals();
     }
 
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'request' => $this->getRequest(),
+            'request_data' => $this->getRequestData(),
+            'headers' => $this->getHeaders(),
+            'cookies' => $this->getCookies(),
+            'session' => $this->getSession(),
+        ];
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -27,6 +39,18 @@ class RequestContextProvider implements ContextProvider
             'ip' => $this->request->getClientIp(),
             'method' => $this->request->getMethod(),
             'useragent' => $this->request->headers->get('User-Agent'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getRequestData(): array
+    {
+        return [
+            'queryString' => $this->request->query->all(),
+            'body' => $this->request->request->all(),
+            'files' => $this->getFiles(),
         ];
     }
 
@@ -54,7 +78,7 @@ class RequestContextProvider implements ContextProvider
                 return $this->mapFiles($file);
             }
 
-            if (! $file instanceof UploadedFile) {
+            if (!$file instanceof UploadedFile) {
                 return;
             }
 
@@ -81,30 +105,17 @@ class RequestContextProvider implements ContextProvider
     /**
      * @return array<string, mixed>
      */
-    public function getSession(): array
+    public function getHeaders(): array
     {
-        try {
-            $session = $this->request->getSession();
-        } catch (Throwable $exception) {
-            $session = [];
-        }
+        /** @var array<string, list<string|null>> $headers */
+        $headers = $this->request->headers->all();
 
-        return $session ? $this->getValidSessionData($session) : [];
-    }
-
-    protected function getValidSessionData($session): array
-    {
-        if (! method_exists($session, 'all')) {
-            return [];
-        }
-
-        try {
-            json_encode($session->all());
-        } catch (Throwable $e) {
-            return [];
-        }
-
-        return $session->all();
+        return array_filter(
+            array_map(
+                fn(array $header) => $header[0],
+                $headers
+            )
+        );
     }
 
     /**
@@ -118,40 +129,29 @@ class RequestContextProvider implements ContextProvider
     /**
      * @return array<string, mixed>
      */
-    public function getHeaders(): array
+    public function getSession(): array
     {
-        /** @var array<string, list<string|null>> $headers */
-        $headers = $this->request->headers->all();
+        try {
+            $session = $this->request->getSession();
+        } catch (Throwable $exception) {
+            $session = [];
+        }
 
-        return array_filter(
-            array_map(
-                fn (array $header) => $header[0],
-                $headers
-            )
-        );
+        return $session ? $this->getValidSessionData($session) : [];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getRequestData(): array
+    protected function getValidSessionData($session): array
     {
-        return [
-            'queryString' => $this->request->query->all(),
-            'body' => $this->request->request->all(),
-            'files' => $this->getFiles(),
-        ];
-    }
+        if (!method_exists($session, 'all')) {
+            return [];
+        }
 
-    /** @return array<string, mixed> */
-    public function toArray(): array
-    {
-        return [
-            'request' => $this->getRequest(),
-            'request_data' => $this->getRequestData(),
-            'headers' => $this->getHeaders(),
-            'cookies' => $this->getCookies(),
-            'session' => $this->getSession(),
-        ];
+        try {
+            json_encode($session->all());
+        } catch (Throwable $e) {
+            return [];
+        }
+
+        return $session->all();
     }
 }

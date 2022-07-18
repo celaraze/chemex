@@ -53,12 +53,12 @@ export default class Orderable {
         $.put({
             url: _this.options.url.replace(':key', key),
             data: {_orderable: direction},
-            success: function(data){
+            success: function (data) {
                 Dcat.loading(false);
 
                 _this._req = 0;
 
-                if (! data.status) {
+                if (!data.status) {
                     return data.data.message && Dcat.warning(data.data.message);
                 }
 
@@ -91,7 +91,7 @@ export default class Orderable {
                             all.unshift(v)
                         });
 
-                        all.forEach(function(v) {
+                        all.forEach(function (v) {
                             nextRow.after(v)
                         });
 

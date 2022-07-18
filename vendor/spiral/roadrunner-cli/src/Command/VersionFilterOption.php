@@ -11,11 +11,11 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Spiral\RoadRunner\Console\Repository\ReleaseInterface;
 use Spiral\RoadRunner\Console\Repository\ReleasesCollection;
 use Spiral\RoadRunner\Console\Repository\RepositoryInterface;
 use Spiral\RoadRunner\Version as RoadRunnerVersion;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -32,36 +32,6 @@ class VersionFilterOption extends Option
     }
 
     /**
-     * {@inheritDoc}
-     */
-    protected function getDescription(): string
-    {
-        return 'Required version of RoadRunner binaries';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function default(): string
-    {
-        return RoadRunnerVersion::constraint();
-    }
-
-    /**
-     * @param ReleasesCollection $releases
-     * @return string
-     */
-    public function choices(ReleasesCollection $releases): string
-    {
-        $versions = $releases
-            ->map(static fn(ReleaseInterface $release): string => $release->getVersion())
-            ->toArray()
-        ;
-
-        return \implode(', ', \array_unique($versions));
-    }
-
-    /**
      * @param InputInterface $input
      * @param StyleInterface $io
      * @param RepositoryInterface $repo
@@ -73,8 +43,7 @@ class VersionFilterOption extends Option
 
         // All available releases
         $available = $repo->getReleases()
-            ->sortByVersion()
-        ;
+            ->sortByVersion();
 
         // With constraints
         $filtered = $available->satisfies($constraint);
@@ -99,5 +68,34 @@ class VersionFilterOption extends Option
 
             throw new \UnexpectedValueException(\implode("\n", [$header, $footer]));
         }
+    }
+
+    /**
+     * @param ReleasesCollection $releases
+     * @return string
+     */
+    public function choices(ReleasesCollection $releases): string
+    {
+        $versions = $releases
+            ->map(static fn(ReleaseInterface $release): string => $release->getVersion())
+            ->toArray();
+
+        return \implode(', ', \array_unique($versions));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDescription(): string
+    {
+        return 'Required version of RoadRunner binaries';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function default(): string
+    {
+        return RoadRunnerVersion::constraint();
     }
 }

@@ -29,12 +29,12 @@ final class HttpClientPass implements CompilerPassInterface
         }
 
         foreach ($container->findTaggedServiceIds('http_client.client') as $id => $tags) {
-            $container->register('.debug.'.$id, TraceableHttpClient::class)
-                ->setArguments([new Reference('.debug.'.$id.'.inner'), new Reference('debug.stopwatch', ContainerInterface::IGNORE_ON_INVALID_REFERENCE)])
+            $container->register('.debug.' . $id, TraceableHttpClient::class)
+                ->setArguments([new Reference('.debug.' . $id . '.inner'), new Reference('debug.stopwatch', ContainerInterface::IGNORE_ON_INVALID_REFERENCE)])
                 ->addTag('kernel.reset', ['method' => 'reset'])
                 ->setDecoratedService($id);
             $container->getDefinition('data_collector.http_client')
-                ->addMethodCall('registerClient', [$id, new Reference('.debug.'.$id)]);
+                ->addMethodCall('registerClient', [$id, new Reference('.debug.' . $id)]);
         }
     }
 }

@@ -21,15 +21,6 @@ class Date extends Text
         return $this;
     }
 
-    protected function prepareInputValue($value)
-    {
-        if ($value === '') {
-            $value = null;
-        }
-
-        return $value;
-    }
-
     public function render()
     {
         $this->options['format'] = $this->format;
@@ -48,5 +39,14 @@ JS;
             ->defaultAttribute('style', 'width: 200px;flex:none');
 
         return parent::render();
+    }
+
+    protected function prepareInputValue($value)
+    {
+        if ($value === '') {
+            $value = null;
+        }
+
+        return $value;
     }
 }

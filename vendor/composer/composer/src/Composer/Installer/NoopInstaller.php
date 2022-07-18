@@ -12,8 +12,8 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Does not install anything but marks packages installed in the repo
@@ -82,7 +82,7 @@ class NoopInstaller implements InstallerInterface
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+            throw new \InvalidArgumentException('Package is not installed: ' . $initial);
         }
 
         $repo->removePackage($initial);
@@ -99,7 +99,7 @@ class NoopInstaller implements InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$package);
+            throw new \InvalidArgumentException('Package is not installed: ' . $package);
         }
         $repo->removePackage($package);
 
@@ -113,6 +113,6 @@ class NoopInstaller implements InstallerInterface
     {
         $targetDir = $package->getTargetDir();
 
-        return $package->getPrettyName() . ($targetDir ? '/'.$targetDir : '');
+        return $package->getPrettyName() . ($targetDir ? '/' . $targetDir : '');
     }
 }

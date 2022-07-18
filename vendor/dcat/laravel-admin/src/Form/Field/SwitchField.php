@@ -7,14 +7,20 @@ use Dcat\Admin\Form\Field;
 
 class SwitchField extends Field
 {
-    public function primary()
-    {
-        return $this->color(Admin::color()->primary());
-    }
-
     public function green()
     {
         return $this->color(Admin::color()->success());
+    }
+
+    /**
+     * Set color of the switcher.
+     *
+     * @param string $color
+     * @return $this
+     */
+    public function color($color)
+    {
+        return $this->attribute('data-color', $color);
     }
 
     public function custom()
@@ -43,18 +49,7 @@ class SwitchField extends Field
     }
 
     /**
-     * Set color of the switcher.
-     *
-     * @param  string  $color
-     * @return $this
-     */
-    public function color($color)
-    {
-        return $this->attribute('data-color', $color);
-    }
-
-    /**
-     * @param  string  $color
+     * @param string $color
      * @return $this
      */
     public function secondary($color)
@@ -65,26 +60,9 @@ class SwitchField extends Field
     /**
      * @return $this
      */
-    public function small()
-    {
-        return $this->attribute('data-size', 'small');
-    }
-
-    /**
-     * @return $this
-     */
     public function large()
     {
         return $this->attribute('data-size', 'large');
-    }
-
-    /**
-     * @param  mixed  $value
-     * @return int
-     */
-    protected function prepareInputValue($value)
-    {
-        return $value ? 1 : 0;
     }
 
     public function render()
@@ -99,8 +77,30 @@ class SwitchField extends Field
         $this->attribute('name', $this->getElementName());
         $this->attribute('value', 1);
         $this->attribute('type', 'checkbox');
-        $this->attribute('data-plugin', $this->getFormElementId().'switchery');
+        $this->attribute('data-plugin', $this->getFormElementId() . 'switchery');
 
         return parent::render();
+    }
+
+    /**
+     * @return $this
+     */
+    public function small()
+    {
+        return $this->attribute('data-size', 'small');
+    }
+
+    public function primary()
+    {
+        return $this->color(Admin::color()->primary());
+    }
+
+    /**
+     * @param mixed $value
+     * @return int
+     */
+    protected function prepareInputValue($value)
+    {
+        return $value ? 1 : 0;
     }
 }

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'weekdays' => ['lahadi', 'tɛɛnɛɛ', 'talata', 'alaba', 'aimisa', 'aijima', 'siɓiti'],
     'weekdays_short' => ['lahadi', 'tɛɛnɛɛ', 'talata', 'alaba', 'aimisa', 'aijima', 'siɓiti'],
     'weekdays_min' => ['lahadi', 'tɛɛnɛɛ', 'talata', 'alaba', 'aimisa', 'aijima', 'siɓiti'],

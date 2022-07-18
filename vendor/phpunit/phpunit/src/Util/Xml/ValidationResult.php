@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\Xml;
 
 use function sprintf;
@@ -24,6 +25,11 @@ final class ValidationResult
      */
     private $validationErrors = [];
 
+    private function __construct(array $validationErrors)
+    {
+        $this->validationErrors = $validationErrors;
+    }
+
     /**
      * @psalm-param array<int,\LibXMLError> $errors
      */
@@ -40,11 +46,6 @@ final class ValidationResult
         }
 
         return new self($validationErrors);
-    }
-
-    private function __construct(array $validationErrors)
-    {
-        $this->validationErrors = $validationErrors;
     }
 
     public function hasValidationErrors(): bool

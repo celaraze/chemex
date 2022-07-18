@@ -1,6 +1,7 @@
 ## Working With Distinguished Names
 
-Working with DN strings are a pain, but they're about to get easier. Adldap includes a DN builder for easily modifying and
+Working with DN strings are a pain, but they're about to get easier. Adldap includes a DN builder for easily modifying
+and
 creating DN strings.
 
 > **Note**: All values inserted into DN methods are escaped. You do not need to escape **any** values before hand.
@@ -12,7 +13,7 @@ To create a new DN, construct a new `Adldap\Models\Attributes\DistinguishedName`
 ```php
 $dn = new Adldap\Models\Attributes\DistinguishedName();
 ```
-    
+
 You can also pass in a current DN string and start modifying it:
 
 ```php
@@ -20,7 +21,7 @@ $currentDn = 'cn=John Doe,ou=Accounting,dc=corp,dc=acme,dc=org';
 
 $dn = new Adldap\Models\Attributes\DistinguishedName($currentDn);
 ```
-    
+
 #### Adding / Removing a Domain Component
 
 ```php
@@ -63,7 +64,8 @@ $dn->setBase($base);
 
 #### Creating a DN From A Model
 
-When you're creating a new LDAP record, you'll need to create a distinguished name as well. Let's go through an example of
+When you're creating a new LDAP record, you'll need to create a distinguished name as well. Let's go through an example
+of
 creating a new user.
 
 ```php
@@ -74,7 +76,8 @@ $user->setFirstName('John');
 $user->setLastName('Doe');
 ```
 
-So we've set the basic information on the user, but we run into trouble when we want to put the user into a certain container
+So we've set the basic information on the user, but we run into trouble when we want to put the user into a certain
+container
 (such as 'Accounting') which is done through the DN. Let's go through this example:
 
 ```php
@@ -93,8 +96,8 @@ echo $dn->get();
 // so you can also just echo the object itself
 echo $dn;
 ```
-    
-Now we've built a DN, and all we have to do is set it on the new user:    
+
+Now we've built a DN, and all we have to do is set it on the new user:
 
 ```php
 $user->setDn($dn);

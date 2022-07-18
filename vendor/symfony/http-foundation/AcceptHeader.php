@@ -42,6 +42,19 @@ class AcceptHeader
     }
 
     /**
+     * Adds an item.
+     *
+     * @return $this
+     */
+    public function add(AcceptHeaderItem $item): static
+    {
+        $this->items[$item->getValue()] = $item;
+        $this->sorted = false;
+
+        return $this;
+    }
+
+    /**
      * Builds an AcceptHeader instance from a string.
      */
     public static function fromString(?string $headerValue): self
@@ -82,20 +95,7 @@ class AcceptHeader
      */
     public function get(string $value): ?AcceptHeaderItem
     {
-        return $this->items[$value] ?? $this->items[explode('/', $value)[0].'/*'] ?? $this->items['*/*'] ?? $this->items['*'] ?? null;
-    }
-
-    /**
-     * Adds an item.
-     *
-     * @return $this
-     */
-    public function add(AcceptHeaderItem $item): static
-    {
-        $this->items[$item->getValue()] = $item;
-        $this->sorted = false;
-
-        return $this;
+        return $this->items[$value] ?? $this->items[explode('/', $value)[0] . '/*'] ?? $this->items['*/*'] ?? $this->items['*'] ?? null;
     }
 
     /**
@@ -108,26 +108,6 @@ class AcceptHeader
         $this->sort();
 
         return $this->items;
-    }
-
-    /**
-     * Filters items on their value using given regex.
-     */
-    public function filter(string $pattern): self
-    {
-        return new self(array_filter($this->items, function (AcceptHeaderItem $item) use ($pattern) {
-            return preg_match($pattern, $item->getValue());
-        }));
-    }
-
-    /**
-     * Returns first item.
-     */
-    public function first(): ?AcceptHeaderItem
-    {
-        $this->sort();
-
-        return !empty($this->items) ? reset($this->items) : null;
     }
 
     /**
@@ -149,5 +129,25 @@ class AcceptHeader
 
             $this->sorted = true;
         }
+    }
+
+    /**
+     * Filters items on their value using given regex.
+     */
+    public function filter(string $pattern): self
+    {
+        return new self(array_filter($this->items, function (AcceptHeaderItem $item) use ($pattern) {
+            return preg_match($pattern, $item->getValue());
+        }));
+    }
+
+    /**
+     * Returns first item.
+     */
+    public function first(): ?AcceptHeaderItem
+    {
+        $this->sort();
+
+        return !empty($this->items) ? reset($this->items) : null;
     }
 }

@@ -72,7 +72,7 @@ class Tools implements Renderable
     /**
      * Tools constructor.
      *
-     * @param  Panel  $panel
+     * @param Panel $panel
      */
     public function __construct(Panel $panel)
     {
@@ -85,7 +85,7 @@ class Tools implements Renderable
     /**
      * Append a tools.
      *
-     * @param  string|\Closure|AbstractTool|Renderable|Htmlable  $tool
+     * @param string|\Closure|AbstractTool|Renderable|Htmlable $tool
      * @return $this
      */
     public function append($tool)
@@ -93,21 +93,6 @@ class Tools implements Renderable
         $this->prepareTool($tool);
 
         $this->appends->push($tool);
-
-        return $this;
-    }
-
-    /**
-     * Prepend a tool.
-     *
-     * @param  string|\Closure|AbstractTool|Renderable|Htmlable  $tool
-     * @return $this
-     */
-    public function prepend($tool)
-    {
-        $this->prepareTool($tool);
-
-        $this->prepends->push($tool);
 
         return $this;
     }
@@ -121,6 +106,146 @@ class Tools implements Renderable
         if ($tool instanceof AbstractTool) {
             $tool->setParent($this->panel->parent());
         }
+    }
+
+    /**
+     * Prepend a tool.
+     *
+     * @param string|\Closure|AbstractTool|Renderable|Htmlable $tool
+     * @return $this
+     */
+    public function prepend($tool)
+    {
+        $this->prepareTool($tool);
+
+        $this->prepends->push($tool);
+
+        return $this;
+    }
+
+    /**
+     * Disable `list` tool.
+     *
+     * @return $this
+     */
+    public function disableList(bool $disable = true)
+    {
+        $this->showList = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * Disable `delete` tool.
+     *
+     * @return $this
+     */
+    public function disableDelete(bool $disable = true)
+    {
+        $this->showDelete = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * Disable `edit` tool.
+     *
+     * @return $this
+     */
+    public function disableEdit(bool $disable = true)
+    {
+        $this->showEdit = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $disable
+     * @return $this
+     */
+    public function disableQuickEdit(bool $disable = true)
+    {
+        $this->showQuickEdit = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * @param string $width
+     * @param string $height
+     * @return $this
+     */
+    public function showQuickEdit(?string $width = null, ?string $height = null)
+    {
+        $this->showQuickEdit = true;
+        $this->showEdit = false;
+
+        $width && ($this->dialogFormDimensions[0] = $width);
+        $height && ($this->dialogFormDimensions[1] = $height);
+
+        return $this;
+    }
+
+    /**
+     * Render tools.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $output = $this->renderCustomTools($this->prepends);
+
+        foreach ($this->tools as $tool) {
+            $renderMethod = 'render' . ucfirst($tool);
+            $output .= $this->$renderMethod();
+        }
+
+        return $output . $this->renderCustomTools($this->appends);
+    }
+
+    /**
+     * Render custom tools.
+     *
+     * @param Collection $tools
+     * @return mixed
+     */
+    protected function renderCustomTools($tools)
+    {
+        return $tools->map([Helper::class, 'render'])->implode(' ');
+    }
+
+    /**
+     * Render `list` tool.
+     *
+     * @return string
+     */
+    protected function renderList()
+    {
+        if (!$this->showList) {
+            return;
+        }
+
+        $list = trans('admin.list');
+
+        return <<<HTML
+<div class="btn-group pull-right btn-mini" style="margin-right: 5px">
+    <a href="{$this->getListPath()}" class="btn btn-sm btn-primary ">
+        <i class="feather icon-list"></i><span class="d-none d-sm-inline"> {$list}</span>
+    </a>
+</div>
+HTML;
+    }
+
+    /**
+     * Get request path for resource list.
+     *
+     * @return string
+     */
+    protected function getListPath()
+    {
+        $url = $this->resource();
+
+        return url()->isValidUrl($url) ? $url : '/' . trim($url, '/');
     }
 
     /**
@@ -138,134 +263,13 @@ class Tools implements Renderable
     }
 
     /**
-     * Disable `list` tool.
-     *
-     * @return $this
-     */
-    public function disableList(bool $disable = true)
-    {
-        $this->showList = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * Disable `delete` tool.
-     *
-     * @return $this
-     */
-    public function disableDelete(bool $disable = true)
-    {
-        $this->showDelete = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * Disable `edit` tool.
-     *
-     * @return $this
-     */
-    public function disableEdit(bool $disable = true)
-    {
-        $this->showEdit = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * @param  bool  $disable
-     * @return $this
-     */
-    public function disableQuickEdit(bool $disable = true)
-    {
-        $this->showQuickEdit = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * @param  string  $width
-     * @param  string  $height
-     * @return $this
-     */
-    public function showQuickEdit(?string $width = null, ?string $height = null)
-    {
-        $this->showQuickEdit = true;
-        $this->showEdit = false;
-
-        $width && ($this->dialogFormDimensions[0] = $width);
-        $height && ($this->dialogFormDimensions[1] = $height);
-
-        return $this;
-    }
-
-    /**
-     * Get request path for resource list.
-     *
-     * @return string
-     */
-    protected function getListPath()
-    {
-        $url = $this->resource();
-
-        return url()->isValidUrl($url) ? $url : '/'.trim($url, '/');
-    }
-
-    /**
-     * Get request path for edit.
-     *
-     * @return string
-     */
-    protected function getEditPath()
-    {
-        $key = $this->panel->parent()->getKey();
-
-        return $this->getListPath().'/'.$key.'/edit';
-    }
-
-    /**
-     * Get request path for delete.
-     *
-     * @return string
-     */
-    protected function getDeletePath()
-    {
-        $key = $this->panel->parent()->getKey();
-
-        return $this->getListPath().'/'.$key;
-    }
-
-    /**
-     * Render `list` tool.
-     *
-     * @return string
-     */
-    protected function renderList()
-    {
-        if (! $this->showList) {
-            return;
-        }
-
-        $list = trans('admin.list');
-
-        return <<<HTML
-<div class="btn-group pull-right btn-mini" style="margin-right: 5px">
-    <a href="{$this->getListPath()}" class="btn btn-sm btn-primary ">
-        <i class="feather icon-list"></i><span class="d-none d-sm-inline"> {$list}</span>
-    </a>
-</div>
-HTML;
-    }
-
-    /**
      * Render `edit` tool.
      *
      * @return string
      */
     protected function renderEdit()
     {
-        if (! $this->showQuickEdit && ! $this->showEdit) {
+        if (!$this->showQuickEdit && !$this->showEdit) {
             return;
         }
 
@@ -283,7 +287,7 @@ EOF;
         }
 
         if ($this->showQuickEdit) {
-            $id = 'show-edit-'.Str::random(8);
+            $id = 'show-edit-' . Str::random(8);
             [$width, $height] = $this->dialogFormDimensions;
 
             Form::dialog($edit)
@@ -302,13 +306,25 @@ HTML;
     }
 
     /**
+     * Get request path for edit.
+     *
+     * @return string
+     */
+    protected function getEditPath()
+    {
+        $key = $this->panel->parent()->getKey();
+
+        return $this->getListPath() . '/' . $key . '/edit';
+    }
+
+    /**
      * Render `delete` tool.
      *
      * @return string
      */
     protected function renderDelete()
     {
-        if (! $this->showDelete) {
+        if (!$this->showDelete) {
             return;
         }
 
@@ -324,30 +340,14 @@ HTML;
     }
 
     /**
-     * Render custom tools.
-     *
-     * @param  Collection  $tools
-     * @return mixed
-     */
-    protected function renderCustomTools($tools)
-    {
-        return $tools->map([Helper::class, 'render'])->implode(' ');
-    }
-
-    /**
-     * Render tools.
+     * Get request path for delete.
      *
      * @return string
      */
-    public function render()
+    protected function getDeletePath()
     {
-        $output = $this->renderCustomTools($this->prepends);
+        $key = $this->panel->parent()->getKey();
 
-        foreach ($this->tools as $tool) {
-            $renderMethod = 'render'.ucfirst($tool);
-            $output .= $this->$renderMethod();
-        }
-
-        return $output.$this->renderCustomTools($this->appends);
+        return $this->getListPath() . '/' . $key;
     }
 }

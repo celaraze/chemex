@@ -30,13 +30,13 @@ final class Pattern
         return $this->pattern;
     }
 
-    public function getRegex(): string
-    {
-        return $this->regex;
-    }
-
     public function matches(string $word): bool
     {
         return preg_match($this->getRegex(), $word) === 1;
+    }
+
+    public function getRegex(): string
+    {
+        return $this->regex;
     }
 }

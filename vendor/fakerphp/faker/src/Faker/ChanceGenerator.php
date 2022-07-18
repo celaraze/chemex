@@ -12,9 +12,9 @@ use Faker\Extension\Extension;
  */
 class ChanceGenerator
 {
+    protected $default;
     private $generator;
     private $weight;
-    protected $default;
 
     /**
      * @param Extension|Generator $generator
@@ -47,7 +47,7 @@ class ChanceGenerator
 
     /**
      * @param string $name
-     * @param array  $arguments
+     * @param array $arguments
      */
     public function __call($name, $arguments)
     {

@@ -28,10 +28,10 @@ class RedirectResponseMethodsClassReflectionExtension implements Reflection\Meth
 
     public function getMethod(
         Reflection\ClassReflection $classReflection,
-        string $methodName
-    ): Reflection\MethodReflection {
-        return new class($classReflection, $methodName) implements Reflection\MethodReflection
-        {
+        string                     $methodName
+    ): Reflection\MethodReflection
+    {
+        return new class($classReflection, $methodName) implements Reflection\MethodReflection {
             /** @var Reflection\ClassReflection */
             private $classReflection;
 
@@ -86,8 +86,7 @@ class RedirectResponseMethodsClassReflectionExtension implements Reflection\Meth
                         TemplateTypeMap::createEmpty(),
                         TemplateTypeMap::createEmpty(),
                         [
-                            new class implements ParameterReflection
-                            {
+                            new class implements ParameterReflection {
                                 public function getName(): string
                                 {
                                     return 'dynamic-with';

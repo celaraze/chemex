@@ -29,20 +29,55 @@ class MemoryDataCollector extends DataCollector implements LateDataCollectorInte
     /**
      * {@inheritdoc}
      */
-    public function collect(Request $request, Response $response, \Throwable $exception = null)
-    {
-        $this->updateMemoryUsage();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function reset()
     {
         $this->data = [
             'memory' => 0,
             'memory_limit' => $this->convertToBytes(ini_get('memory_limit')),
         ];
+    }
+
+    private function convertToBytes(string $memoryLimit): int|float
+    {
+        if ('-1' === $memoryLimit) {
+            return -1;
+        }
+
+        $memoryLimit = strtolower($memoryLimit);
+        $max = strtolower(ltrim($memoryLimit, '+'));
+        if (str_starts_with($max, '0x')) {
+            $max = \intval($max, 16);
+        } elseif (str_starts_with($max, '0')) {
+            $max = \intval($max, 8);
+        } else {
+            $max = (int)$max;
+        }
+
+        switch (substr($memoryLimit, -1)) {
+            case 't':
+                $max *= 1024;
+            case 'g':
+                $max *= 1024;
+            case 'm':
+                $max *= 1024;
+            case 'k':
+                $max *= 1024;
+        }
+
+        return $max;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function collect(Request $request, Response $response, \Throwable $exception = null)
+    {
+        $this->updateMemoryUsage();
+    }
+
+    public function updateMemoryUsage()
+    {
+        $this->data['memory'] = memory_get_peak_usage(true);
     }
 
     /**
@@ -63,42 +98,11 @@ class MemoryDataCollector extends DataCollector implements LateDataCollectorInte
         return $this->data['memory_limit'];
     }
 
-    public function updateMemoryUsage()
-    {
-        $this->data['memory'] = memory_get_peak_usage(true);
-    }
-
     /**
      * {@inheritdoc}
      */
     public function getName(): string
     {
         return 'memory';
-    }
-
-    private function convertToBytes(string $memoryLimit): int|float
-    {
-        if ('-1' === $memoryLimit) {
-            return -1;
-        }
-
-        $memoryLimit = strtolower($memoryLimit);
-        $max = strtolower(ltrim($memoryLimit, '+'));
-        if (str_starts_with($max, '0x')) {
-            $max = \intval($max, 16);
-        } elseif (str_starts_with($max, '0')) {
-            $max = \intval($max, 8);
-        } else {
-            $max = (int) $max;
-        }
-
-        switch (substr($memoryLimit, -1)) {
-            case 't': $max *= 1024;
-            case 'g': $max *= 1024;
-            case 'm': $max *= 1024;
-            case 'k': $max *= 1024;
-        }
-
-        return $max;
     }
 }

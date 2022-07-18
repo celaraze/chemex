@@ -37,10 +37,10 @@ abstract class NamespaceAwarePass extends CodeCleanerPass
     }
 
     /**
+     * @param Node $node
      * @todo should this be final? Extending classes should be sure to either use
      * leaveNode or call parent::enterNode() when overloading
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

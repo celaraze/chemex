@@ -15,7 +15,7 @@
 //     color: #FFF;
 //     padding-right: 0.5em;
 //     margin: auto 0.5em auto -1.5em;
-// }        
+// }
 // #toast-container > .toast-warning .toast-message:before {
 //     content: "\f06a";
 // }
@@ -31,24 +31,24 @@
 
 
 #toast-container {
-  // Background color
-  .toast {
-    background-color: $primary;
-  }
+    // Background color
+    .toast {
+        background-color: $primary;
+    }
 
-  .toast-success {
-    background-color: $success;
-  }
+    .toast-success {
+        background-color: $success;
+    }
 
-  .toast-error {
-    background-color: $danger;
-  }
+    .toast-error {
+        background-color: $danger;
+    }
 
-  .toast-info {
-    background-color: $info;
-  }
+    .toast-info {
+        background-color: $info;
+    }
 
-  .toast-warning {
-    background-color: $warning;
-  }
+    .toast-warning {
+        background-color: $warning;
+    }
 }

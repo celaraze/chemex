@@ -23,7 +23,7 @@ class HeadingStartParser implements BlockStartParserInterface
 {
     public function tryStart(Cursor $cursor, MarkdownParserStateInterface $parserState): ?BlockStart
     {
-        if ($cursor->isIndented() || ! \in_array($cursor->getNextNonSpaceCharacter(), ['#', '-', '='], true)) {
+        if ($cursor->isIndented() || !\in_array($cursor->getNextNonSpaceCharacter(), ['#', '-', '='], true)) {
             return BlockStart::none();
         }
 
@@ -51,7 +51,7 @@ class HeadingStartParser implements BlockStartParserInterface
     private static function getAtxHeader(Cursor $cursor): ?HeadingParser
     {
         $match = RegexHelper::matchFirst('/^#{1,6}(?:[ \t]+|$)/', $cursor->getRemainder());
-        if (! $match) {
+        if (!$match) {
             return null;
         }
 
@@ -59,8 +59,8 @@ class HeadingStartParser implements BlockStartParserInterface
         $cursor->advanceBy(\strlen($match[0]));
 
         $level = \strlen(\trim($match[0]));
-        $str   = $cursor->getRemainder();
-        $str   = \preg_replace('/^[ \t]*#+[ \t]*$/', '', $str);
+        $str = $cursor->getRemainder();
+        $str = \preg_replace('/^[ \t]*#+[ \t]*$/', '', $str);
         \assert(\is_string($str));
         $str = \preg_replace('/[ \t]+#+[ \t]*$/', '', $str);
         \assert(\is_string($str));

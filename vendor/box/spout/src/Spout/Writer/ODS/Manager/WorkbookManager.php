@@ -29,14 +29,6 @@ class WorkbookManager extends WorkbookManagerAbstract
     protected $styleManager;
 
     /**
-     * @return int Maximum number of rows/columns a sheet can contain
-     */
-    protected function getMaxRowsPerWorksheet()
-    {
-        return self::$maxRowsPerWorksheet;
-    }
-
-    /**
      * @param Sheet $sheet
      * @return string The file path where the data for the given sheet will be stored
      */
@@ -45,6 +37,14 @@ class WorkbookManager extends WorkbookManagerAbstract
         $sheetsContentTempFolder = $this->fileSystemHelper->getSheetsContentTempFolder();
 
         return $sheetsContentTempFolder . '/sheet' . $sheet->getIndex() . '.xml';
+    }
+
+    /**
+     * @return int Maximum number of rows/columns a sheet can contain
+     */
+    protected function getMaxRowsPerWorksheet()
+    {
+        return self::$maxRowsPerWorksheet;
     }
 
     /**

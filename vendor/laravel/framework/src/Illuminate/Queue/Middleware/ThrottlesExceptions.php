@@ -67,8 +67,8 @@ class ThrottlesExceptions
     /**
      * Create a new middleware instance.
      *
-     * @param  int  $maxAttempts
-     * @param  int  $decayMinutes
+     * @param int $maxAttempts
+     * @param int $decayMinutes
      * @return void
      */
     public function __construct($maxAttempts = 10, $decayMinutes = 10)
@@ -80,8 +80,8 @@ class ThrottlesExceptions
     /**
      * Process the job.
      *
-     * @param  mixed  $job
-     * @param  callable  $next
+     * @param mixed $job
+     * @param callable $next
      * @return mixed
      */
     public function handle($job, $next)
@@ -97,7 +97,7 @@ class ThrottlesExceptions
 
             $this->limiter->clear($jobKey);
         } catch (Throwable $throwable) {
-            if ($this->whenCallback && ! call_user_func($this->whenCallback, $throwable)) {
+            if ($this->whenCallback && !call_user_func($this->whenCallback, $throwable)) {
                 throw $throwable;
             }
 
@@ -108,9 +108,37 @@ class ThrottlesExceptions
     }
 
     /**
+     * Get the cache key associated for the rate limiter.
+     *
+     * @param mixed $job
+     * @return string
+     */
+    protected function getKey($job)
+    {
+        if ($this->key) {
+            return $this->prefix . $this->key;
+        } elseif ($this->byJob) {
+            return $this->prefix . $job->job->uuid();
+        }
+
+        return $this->prefix . md5(get_class($job));
+    }
+
+    /**
+     * Get the number of seconds that should elapse before the job is retried.
+     *
+     * @param string $key
+     * @return int
+     */
+    protected function getTimeUntilNextRetry($key)
+    {
+        return $this->limiter->availableIn($key) + 3;
+    }
+
+    /**
      * Specify a callback that should determine if rate limiting behavior should apply.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function when(callable $callback)
@@ -123,7 +151,7 @@ class ThrottlesExceptions
     /**
      * Set the prefix of the rate limiter key.
      *
-     * @param  string  $prefix
+     * @param string $prefix
      * @return $this
      */
     public function withPrefix(string $prefix)
@@ -136,7 +164,7 @@ class ThrottlesExceptions
     /**
      * Specify the number of minutes a job should be delayed when it is released (before it has reached its max exceptions).
      *
-     * @param  int  $backoff
+     * @param int $backoff
      * @return $this
      */
     public function backoff($backoff)
@@ -147,26 +175,9 @@ class ThrottlesExceptions
     }
 
     /**
-     * Get the cache key associated for the rate limiter.
-     *
-     * @param  mixed  $job
-     * @return string
-     */
-    protected function getKey($job)
-    {
-        if ($this->key) {
-            return $this->prefix.$this->key;
-        } elseif ($this->byJob) {
-            return $this->prefix.$job->job->uuid();
-        }
-
-        return $this->prefix.md5(get_class($job));
-    }
-
-    /**
      * Set the value that the rate limiter should be keyed by.
      *
-     * @param  string  $key
+     * @param string $key
      * @return $this
      */
     public function by($key)
@@ -186,16 +197,5 @@ class ThrottlesExceptions
         $this->byJob = true;
 
         return $this;
-    }
-
-    /**
-     * Get the number of seconds that should elapse before the job is retried.
-     *
-     * @param  string  $key
-     * @return int
-     */
-    protected function getTimeUntilNextRetry($key)
-    {
-        return $this->limiter->availableIn($key) + 3;
     }
 }

@@ -2,7 +2,12 @@
     "name": "symfony/polyfill-ctype",
     "type": "library",
     "description": "Symfony polyfill for ctype functions",
-    "keywords": ["polyfill", "compatibility", "portable", "ctype"],
+    "keywords": [
+        "polyfill",
+        "compatibility",
+        "portable",
+        "ctype"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -22,8 +27,12 @@
         "ext-ctype": "*"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Polyfill\\Ctype\\": "" },
-        "files": [ "bootstrap.php" ]
+        "psr-4": {
+            "Symfony\\Polyfill\\Ctype\\": ""
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "suggest": {
         "ext-ctype": "For best performance"

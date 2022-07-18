@@ -25,8 +25,8 @@ class CellHelper
      * The mapping is zero based, so that A1 maps to 0, B2 maps to 1, Z13 to 25 and AA4 to 26.
      *
      * @param string $cellIndex The Excel cell index ('A1', 'BC13', ...)
-     * @throws \Box\Spout\Common\Exception\InvalidArgumentException When the given cell index is invalid
      * @return int
+     * @throws \Box\Spout\Common\Exception\InvalidArgumentException When the given cell index is invalid
      */
     public static function getColumnIndexFromCellIndex($cellIndex)
     {

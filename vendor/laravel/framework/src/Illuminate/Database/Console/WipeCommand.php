@@ -13,13 +13,6 @@ class WipeCommand extends Command
     use ConfirmableTrait;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'db:wipe';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -29,7 +22,12 @@ class WipeCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'db:wipe';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'db:wipe';
     /**
      * The console command description.
      *
@@ -44,7 +42,7 @@ class WipeCommand extends Command
      */
     public function handle()
     {
-        if (! $this->confirmToProceed()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 
@@ -70,42 +68,42 @@ class WipeCommand extends Command
     }
 
     /**
-     * Drop all of the database tables.
-     *
-     * @param  string  $database
-     * @return void
-     */
-    protected function dropAllTables($database)
-    {
-        $this->laravel['db']->connection($database)
-                    ->getSchemaBuilder()
-                    ->dropAllTables();
-    }
-
-    /**
      * Drop all of the database views.
      *
-     * @param  string  $database
+     * @param string $database
      * @return void
      */
     protected function dropAllViews($database)
     {
         $this->laravel['db']->connection($database)
-                    ->getSchemaBuilder()
-                    ->dropAllViews();
+            ->getSchemaBuilder()
+            ->dropAllViews();
+    }
+
+    /**
+     * Drop all of the database tables.
+     *
+     * @param string $database
+     * @return void
+     */
+    protected function dropAllTables($database)
+    {
+        $this->laravel['db']->connection($database)
+            ->getSchemaBuilder()
+            ->dropAllTables();
     }
 
     /**
      * Drop all of the database types.
      *
-     * @param  string  $database
+     * @param string $database
      * @return void
      */
     protected function dropAllTypes($database)
     {
         $this->laravel['db']->connection($database)
-                    ->getSchemaBuilder()
-                    ->dropAllTypes();
+            ->getSchemaBuilder()
+            ->dropAllTypes();
     }
 
     /**

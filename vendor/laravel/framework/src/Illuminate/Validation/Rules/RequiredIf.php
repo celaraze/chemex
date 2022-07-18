@@ -16,12 +16,12 @@ class RequiredIf
     /**
      * Create a new required validation rule based on a condition.
      *
-     * @param  callable|bool  $condition
+     * @param callable|bool $condition
      * @return void
      */
     public function __construct($condition)
     {
-        if (! is_string($condition)) {
+        if (!is_string($condition)) {
             $this->condition = $condition;
         } else {
             throw new InvalidArgumentException('The provided condition must be a callable or boolean.');

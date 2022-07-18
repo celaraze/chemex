@@ -7,8 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Runner;
 
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Util\FileLoader;
+use ReflectionClass;
+use ReflectionException;
 use function array_diff;
 use function array_values;
 use function basename;
@@ -18,10 +23,6 @@ use function sprintf;
 use function stripos;
 use function strlen;
 use function substr;
-use PHPUnit\Framework\TestCase;
-use PHPUnit\Util\FileLoader;
-use ReflectionClass;
-use ReflectionException;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -36,7 +37,7 @@ final class StandardTestSuiteLoader implements TestSuiteLoader
     public function load(string $suiteClassFile): ReflectionClass
     {
         $suiteClassName = basename($suiteClassFile, '.php');
-        $loadedClasses  = get_declared_classes();
+        $loadedClasses = get_declared_classes();
 
         if (!class_exists($suiteClassName, false)) {
             /* @noinspection UnusedFunctionResultInspection */
@@ -74,7 +75,7 @@ final class StandardTestSuiteLoader implements TestSuiteLoader
         } catch (ReflectionException $e) {
             throw new Exception(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -91,7 +92,7 @@ final class StandardTestSuiteLoader implements TestSuiteLoader
             } catch (ReflectionException $e) {
                 throw new Exception(
                     $e->getMessage(),
-                    (int) $e->getCode(),
+                    (int)$e->getCode(),
                     $e
                 );
             }
@@ -105,11 +106,6 @@ final class StandardTestSuiteLoader implements TestSuiteLoader
         throw $this->exceptionFor($suiteClassName, $suiteClassFile);
     }
 
-    public function reload(ReflectionClass $aClass): ReflectionClass
-    {
-        return $aClass;
-    }
-
     private function exceptionFor(string $className, string $filename): Exception
     {
         return new Exception(
@@ -119,5 +115,10 @@ final class StandardTestSuiteLoader implements TestSuiteLoader
                 $filename
             )
         );
+    }
+
+    public function reload(ReflectionClass $aClass): ReflectionClass
+    {
+        return $aClass;
     }
 }

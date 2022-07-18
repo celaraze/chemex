@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/nb.php', [
+return array_replace_recursive(require __DIR__ . '/nb.php', [
     'formats' => [
         'LL' => 'D. MMM YYYY',
         'LLL' => 'D. MMMM YYYY, HH:mm',

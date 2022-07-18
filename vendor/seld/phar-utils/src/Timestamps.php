@@ -76,7 +76,7 @@ class Timestamps
             $this->contents = substr_replace($this->contents, pack('L', $timestamp), $pos, 4);
 
             // skip timestamp, compressed file size, crc32 checksum and file flags
-            $pos += 4*4;
+            $pos += 4 * 4;
 
             $metadataLength = $this->readUint($pos, 4);
             $pos += 4 + $metadataLength;
@@ -89,11 +89,18 @@ class Timestamps
         }
     }
 
+    private function readUint($pos, $bytes)
+    {
+        $res = unpack('V', substr($this->contents, $pos, $bytes));
+
+        return $res[1];
+    }
+
     /**
      * Saves the updated phar file, optionally with an updated signature.
      *
-     * @param  string $path
-     * @param  int $signatureAlgo One of Phar::MD5, Phar::SHA1, Phar::SHA256 or Phar::SHA512
+     * @param string $path
+     * @param int $signatureAlgo One of Phar::MD5, Phar::SHA1, Phar::SHA256 or Phar::SHA512
      * @return bool
      */
     public function save($path, $signatureAlgo)
@@ -108,7 +115,7 @@ class Timestamps
         );
 
         if (!isset($algos[$signatureAlgo])) {
-            throw new \UnexpectedValueException('Invalid hash algorithm given: '.$signatureAlgo.' expected one of Phar::MD5, Phar::SHA1, Phar::SHA256 or Phar::SHA512');
+            throw new \UnexpectedValueException('Invalid hash algorithm given: ' . $signatureAlgo . ' expected one of Phar::MD5, Phar::SHA1, Phar::SHA256 or Phar::SHA512');
         }
         $algo = $algos[$signatureAlgo];
 
@@ -123,13 +130,6 @@ class Timestamps
         $this->contents = substr($this->contents, 0, $pos) . $signature;
 
         return file_put_contents($path, $this->contents);
-    }
-
-    private function readUint($pos, $bytes)
-    {
-        $res = unpack('V', substr($this->contents, $pos, $bytes));
-
-        return $res[1];
     }
 
     /**
@@ -171,11 +171,11 @@ class Timestamps
             $pos += 4 + $filenameLength;
 
             // skip filesize and timestamp
-            $pos += 2*4;
+            $pos += 2 * 4;
 
             $compressedSizes += $this->readUint($pos, 4);
             // skip compressed file size, crc32 checksum and file flags
-            $pos += 3*4;
+            $pos += 3 * 4;
 
             $metadataLength = $this->readUint($pos, 4);
             $pos += 4 + $metadataLength;

@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Schema;
 
 use Doctrine\Deprecations\Deprecation;
-
 use function in_array;
 
 /**
@@ -24,7 +23,7 @@ class ColumnDiff
     public $fromColumn;
 
     /**
-     * @param string   $oldColumnName
+     * @param string $oldColumnName
      * @param string[] $changedProperties
      */
     public function __construct(
@@ -32,7 +31,8 @@ class ColumnDiff
         Column $column,
         array $changedProperties = [],
         ?Column $fromColumn = null
-    ) {
+    )
+    {
         if ($fromColumn === null) {
             Deprecation::triggerIfCalledFromOutside(
                 'doctrine/dbal',
@@ -42,10 +42,10 @@ class ColumnDiff
             );
         }
 
-        $this->oldColumnName     = $oldColumnName;
-        $this->column            = $column;
+        $this->oldColumnName = $oldColumnName;
+        $this->column = $column;
         $this->changedProperties = $changedProperties;
-        $this->fromColumn        = $fromColumn;
+        $this->fromColumn = $fromColumn;
     }
 
     /**

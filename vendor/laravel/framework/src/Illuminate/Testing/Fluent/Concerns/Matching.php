@@ -10,10 +10,25 @@ use PHPUnit\Framework\Assert as PHPUnit;
 trait Matching
 {
     /**
+     * Asserts that all properties match their expected values.
+     *
+     * @param array $bindings
+     * @return $this
+     */
+    public function whereAll(array $bindings): self
+    {
+        foreach ($bindings as $key => $value) {
+            $this->where($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Asserts that the property matches the expected value.
      *
-     * @param  string  $key
-     * @param  mixed|\Closure  $expected
+     * @param string $key
+     * @param mixed|\Closure $expected
      * @return $this
      */
     public function where(string $key, $expected): self
@@ -48,15 +63,60 @@ trait Matching
     }
 
     /**
-     * Asserts that all properties match their expected values.
+     * Ensure that the given prop exists.
      *
-     * @param  array  $bindings
+     * @param string $key
+     * @param null $value
+     * @param \Closure|null $scope
      * @return $this
      */
-    public function whereAll(array $bindings): self
+    abstract public function has(string $key, $value = null, Closure $scope = null);
+
+    /**
+     * Retrieve a prop within the current scope using "dot" notation.
+     *
+     * @param string|null $key
+     * @return mixed
+     */
+    abstract protected function prop(string $key = null);
+
+    /**
+     * Compose the absolute "dot" path to the given key.
+     *
+     * @param string $key
+     * @return string
+     */
+    abstract protected function dotPath(string $key = ''): string;
+
+    /**
+     * Ensures that all properties are sorted the same way, recursively.
+     *
+     * @param mixed $value
+     * @return void
+     */
+    protected function ensureSorted(&$value): void
+    {
+        if (!is_array($value)) {
+            return;
+        }
+
+        foreach ($value as &$arg) {
+            $this->ensureSorted($arg);
+        }
+
+        ksort($value);
+    }
+
+    /**
+     * Asserts that all properties are of their expected types.
+     *
+     * @param array $bindings
+     * @return $this
+     */
+    public function whereAllType(array $bindings): self
     {
         foreach ($bindings as $key => $value) {
-            $this->where($key, $value);
+            $this->whereType($key, $value);
         }
 
         return $this;
@@ -65,8 +125,8 @@ trait Matching
     /**
      * Asserts that the property is of the expected type.
      *
-     * @param  string  $key
-     * @param  string|array  $expected
+     * @param string $key
+     * @param string|array $expected
      * @return $this
      */
     public function whereType(string $key, $expected): self
@@ -75,7 +135,7 @@ trait Matching
 
         $actual = $this->prop($key);
 
-        if (! is_array($expected)) {
+        if (!is_array($expected)) {
             $expected = explode('|', $expected);
         }
 
@@ -89,25 +149,10 @@ trait Matching
     }
 
     /**
-     * Asserts that all properties are of their expected types.
-     *
-     * @param  array  $bindings
-     * @return $this
-     */
-    public function whereAllType(array $bindings): self
-    {
-        foreach ($bindings as $key => $value) {
-            $this->whereType($key, $value);
-        }
-
-        return $this;
-    }
-
-    /**
      * Asserts that the property contains the expected values.
      *
-     * @param  string  $key
-     * @param  mixed  $expected
+     * @param string $key
+     * @param mixed $expected
      * @return $this
      */
     public function whereContains(string $key, $expected)
@@ -145,49 +190,4 @@ trait Matching
 
         return $this;
     }
-
-    /**
-     * Ensures that all properties are sorted the same way, recursively.
-     *
-     * @param  mixed  $value
-     * @return void
-     */
-    protected function ensureSorted(&$value): void
-    {
-        if (! is_array($value)) {
-            return;
-        }
-
-        foreach ($value as &$arg) {
-            $this->ensureSorted($arg);
-        }
-
-        ksort($value);
-    }
-
-    /**
-     * Compose the absolute "dot" path to the given key.
-     *
-     * @param  string  $key
-     * @return string
-     */
-    abstract protected function dotPath(string $key = ''): string;
-
-    /**
-     * Ensure that the given prop exists.
-     *
-     * @param  string  $key
-     * @param  null  $value
-     * @param  \Closure|null  $scope
-     * @return $this
-     */
-    abstract public function has(string $key, $value = null, Closure $scope = null);
-
-    /**
-     * Retrieve a prop within the current scope using "dot" notation.
-     *
-     * @param  string|null  $key
-     * @return mixed
-     */
-    abstract protected function prop(string $key = null);
 }

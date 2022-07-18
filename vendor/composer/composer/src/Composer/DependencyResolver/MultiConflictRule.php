@@ -40,19 +40,11 @@ class MultiConflictRule extends Rule
     }
 
     /**
-     * @return int[]
-     */
-    public function getLiterals(): array
-    {
-        return $this->literals;
-    }
-
-    /**
      * @inheritDoc
      */
     public function getHash()
     {
-        $data = unpack('ihash', md5('c:'.implode(',', $this->literals), true));
+        $data = unpack('ihash', md5('c:' . implode(',', $this->literals), true));
 
         return $data['hash'];
     }
@@ -62,7 +54,7 @@ class MultiConflictRule extends Rule
      *
      * Ignores whether either of the rules is disabled.
      *
-     * @param  Rule $rule The rule to check against
+     * @param Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
     public function equals(Rule $rule): bool
@@ -72,6 +64,14 @@ class MultiConflictRule extends Rule
         }
 
         return false;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getLiterals(): array
+    {
+        return $this->literals;
     }
 
     /**

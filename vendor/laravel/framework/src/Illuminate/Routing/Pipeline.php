@@ -18,7 +18,7 @@ class Pipeline extends BasePipeline
     /**
      * Handles the value returned from each pipe before passing it to the next.
      *
-     * @param  mixed  $carry
+     * @param mixed $carry
      * @return mixed
      */
     protected function handleCarry($carry)
@@ -31,16 +31,16 @@ class Pipeline extends BasePipeline
     /**
      * Handle the given exception.
      *
-     * @param  mixed  $passable
-     * @param  \Throwable  $e
+     * @param mixed $passable
+     * @param \Throwable $e
      * @return mixed
      *
      * @throws \Throwable
      */
     protected function handleException($passable, Throwable $e)
     {
-        if (! $this->container->bound(ExceptionHandler::class) ||
-            ! $passable instanceof Request) {
+        if (!$this->container->bound(ExceptionHandler::class) ||
+            !$passable instanceof Request) {
             throw $e;
         }
 

@@ -31,7 +31,8 @@ class PrintableNewAnonClassNode extends Expr
     public function __construct(
         array $attrGroups, array $args, Node\Name $extends = null, array $implements,
         array $stmts, array $attributes
-    ) {
+    )
+    {
         parent::__construct($attributes);
         $this->attrGroups = $attrGroups;
         $this->args = $args;
@@ -40,7 +41,8 @@ class PrintableNewAnonClassNode extends Expr
         $this->stmts = $stmts;
     }
 
-    public static function fromNewNode(Expr\New_ $newNode) {
+    public static function fromNewNode(Expr\New_ $newNode)
+    {
         $class = $newNode->class;
         assert($class instanceof Node\Stmt\Class_);
         // We don't assert that $class->name is null here, to allow consumers to assign unique names
@@ -51,11 +53,13 @@ class PrintableNewAnonClassNode extends Expr
         );
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_PrintableNewAnonClass';
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['attrGroups', 'args', 'extends', 'implements', 'stmts'];
     }
 }

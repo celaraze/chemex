@@ -13,7 +13,8 @@
     position: absolute;
     top: 35px;
     right: 0;
-    right: -1px\0;
+    right: -1px \0
+;
     overflow: auto;
     line-height: 1.6;
     display: none;
@@ -21,7 +22,7 @@
 }
 
 .editormd {
-    
+
     .CodeMirror {
         z-index: 10;
         float: left;
@@ -31,12 +32,12 @@
         line-height: 1.6;
         margin-top: 35px;
 
-		pre {
-			font-size: 14px;
+        pre {
+            font-size: 14px;
             padding: 0 12px;
-		}
+        }
     }
-    
+
     .CodeMirror-linenumbers {
         padding: 0 5px;
     }
@@ -45,16 +46,16 @@
         background: #70B7FF;
     }
 
-    .CodeMirror-focused .CodeMirror-selected { 
-        background: #70B7FF; 
+    .CodeMirror-focused .CodeMirror-selected {
+        background: #70B7FF;
     }
 
     .CodeMirror, .CodeMirror-scroll, #{$prefix}preview {
-        -webkit-overflow-scrolling : touch;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .styled-background { 
-        background-color: #ff7; 
+    .styled-background {
+        background-color: #ff7;
     }
 
     .CodeMirror-focused .cm-matchhighlight {
@@ -62,16 +63,16 @@
         background-position: bottom;
         background-repeat: repeat-x;
     }
-    
-    .CodeMirror-empty { 
+
+    .CodeMirror-empty {
         //outline: 1px solid #c22;
-        
-        &.CodeMirror-focused { 
+
+        &.CodeMirror-focused {
             outline: none;
         }
     }
-    
-    .CodeMirror pre.CodeMirror-placeholder { 
+
+    .CodeMirror pre.CodeMirror-placeholder {
         color: #999;
     }
 

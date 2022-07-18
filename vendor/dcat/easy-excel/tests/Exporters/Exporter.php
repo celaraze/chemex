@@ -8,6 +8,18 @@ trait Exporter
 {
     protected $tempFiles = [];
 
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        // 删除临时文件
+        foreach ($this->tempFiles as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+    }
+
     protected function assertSingleSheet(string $file, $key, array $compares)
     {
         // 读取
@@ -21,9 +33,9 @@ trait Exporter
     }
 
     /**
-     * @param  string  $storePath
-     * @param  array  $users1
-     * @param  array  $users2
+     * @param string $storePath
+     * @param array $users1
+     * @param array $users2
      *
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
@@ -45,20 +57,8 @@ trait Exporter
 
     protected function generateTempFilePath(string $type)
     {
-        return $this->tempFiles[] = __DIR__.'/../resources/'
-            .uniqid(microtime(true).mt_rand(0, 1000))
-            .'.'.$type;
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        // 删除临时文件
-        foreach ($this->tempFiles as $file) {
-            if (is_file($file)) {
-                @unlink($file);
-            }
-        }
+        return $this->tempFiles[] = __DIR__ . '/../resources/'
+            . uniqid(microtime(true) . mt_rand(0, 1000))
+            . '.' . $type;
     }
 }

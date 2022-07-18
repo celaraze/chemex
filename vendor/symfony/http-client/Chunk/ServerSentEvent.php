@@ -43,9 +43,15 @@ final class ServerSentEvent extends DataChunk implements ChunkInterface
             $i += 1 + (' ' === ($line[1 + $i] ?? ''));
 
             switch ($field) {
-                case 'id': $this->id = substr($line, $i); break;
-                case 'event': $this->type = substr($line, $i); break;
-                case 'data': $this->data .= ('' === $this->data ? '' : "\n").substr($line, $i); break;
+                case 'id':
+                    $this->id = substr($line, $i);
+                    break;
+                case 'event':
+                    $this->type = substr($line, $i);
+                    break;
+                case 'data':
+                    $this->data .= ('' === $this->data ? '' : "\n") . substr($line, $i);
+                    break;
                 case 'retry':
                     $retry = substr($line, $i);
 

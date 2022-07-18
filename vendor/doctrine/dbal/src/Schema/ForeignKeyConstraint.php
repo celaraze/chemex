@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Schema;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function array_keys;
 use function array_map;
 use function strrpos;
@@ -56,19 +55,20 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     /**
      * Initializes the foreign key constraint.
      *
-     * @param string[]     $localColumnNames   Names of the referencing table columns.
-     * @param Table|string $foreignTableName   Referenced table.
-     * @param string[]     $foreignColumnNames Names of the referenced table columns.
-     * @param string|null  $name               Name of the foreign key constraint.
-     * @param mixed[]      $options            Options associated with the foreign key constraint.
+     * @param string[] $localColumnNames Names of the referencing table columns.
+     * @param Table|string $foreignTableName Referenced table.
+     * @param string[] $foreignColumnNames Names of the referenced table columns.
+     * @param string|null $name Name of the foreign key constraint.
+     * @param mixed[] $options Options associated with the foreign key constraint.
      */
     public function __construct(
         array $localColumnNames,
-        $foreignTableName,
+              $foreignTableName,
         array $foreignColumnNames,
-        $name = null,
+              $name = null,
         array $options = []
-    ) {
+    )
+    {
         if ($name !== null) {
             $this->_setName($name);
         }
@@ -82,7 +82,7 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
         }
 
         $this->_foreignColumnNames = $this->createIdentifierMap($foreignColumnNames);
-        $this->_options            = $options;
+        $this->_options = $options;
     }
 
     /**
@@ -105,9 +105,9 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
      * Returns the name of the referencing table
      * the foreign key constraint is associated with.
      *
+     * @return string
      * @deprecated Use the table that contains the foreign key as part of its {@see Table::$_fkConstraints} instead.
      *
-     * @return string
      */
     public function getLocalTableName()
     {
@@ -115,14 +115,24 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     }
 
     /**
+     * @return Table
+     * @deprecated Use the table that contains the foreign key as part of its {@see Table::$_fkConstraints} instead.
+     *
+     */
+    public function getLocalTable()
+    {
+        return $this->_localTable;
+    }
+
+    /**
      * Sets the Table instance of the referencing table
      * the foreign key constraint is associated with.
-     *
-     * @deprecated Use the table that contains the foreign key as part of its {@see Table::$_fkConstraints} instead.
      *
      * @param Table $table Instance of the referencing table.
      *
      * @return void
+     * @deprecated Use the table that contains the foreign key as part of its {@see Table::$_fkConstraints} instead.
+     *
      */
     public function setLocalTable(Table $table)
     {
@@ -130,13 +140,13 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     }
 
     /**
-     * @deprecated Use the table that contains the foreign key as part of its {@see Table::$_fkConstraints} instead.
+     * Returns unquoted representation of local table column names for comparison with other FK
      *
-     * @return Table
+     * @return string[]
      */
-    public function getLocalTable()
+    public function getUnquotedLocalColumns()
     {
-        return $this->_localTable;
+        return array_map([$this, 'trimQuotes'], $this->getLocalColumns());
     }
 
     /**
@@ -148,6 +158,48 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     public function getLocalColumns()
     {
         return array_keys($this->_localColumnNames);
+    }
+
+    /**
+     * Returns unquoted representation of foreign table column names for comparison with other FK
+     *
+     * @return string[]
+     */
+    public function getUnquotedForeignColumns()
+    {
+        return array_map([$this, 'trimQuotes'], $this->getForeignColumns());
+    }
+
+    /**
+     * Returns the names of the referenced table columns
+     * the foreign key constraint is associated with.
+     *
+     * @return string[]
+     */
+    public function getForeignColumns()
+    {
+        return array_keys($this->_foreignColumnNames);
+    }
+
+    /**
+     * Returns the quoted representation of the referencing table column names
+     * the foreign key constraint is associated with.
+     *
+     * But only if they were defined with one or the referencing table column name
+     * is a keyword reserved by the platform.
+     * Otherwise the plain unquoted value as inserted is returned.
+     *
+     * @param AbstractPlatform $platform The platform to use for quotation.
+     *
+     * @return string[]
+     * @deprecated Use {@see getQuotedLocalColumns()} instead.
+     *
+     * @see getQuotedLocalColumns
+     *
+     */
+    public function getQuotedColumns(AbstractPlatform $platform)
+    {
+        return $this->getQuotedLocalColumns($platform);
     }
 
     /**
@@ -174,59 +226,6 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     }
 
     /**
-     * Returns unquoted representation of local table column names for comparison with other FK
-     *
-     * @return string[]
-     */
-    public function getUnquotedLocalColumns()
-    {
-        return array_map([$this, 'trimQuotes'], $this->getLocalColumns());
-    }
-
-    /**
-     * Returns unquoted representation of foreign table column names for comparison with other FK
-     *
-     * @return string[]
-     */
-    public function getUnquotedForeignColumns()
-    {
-        return array_map([$this, 'trimQuotes'], $this->getForeignColumns());
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @deprecated Use {@see getLocalColumns()} instead.
-     *
-     * @see getLocalColumns
-     */
-    public function getColumns()
-    {
-        return $this->getLocalColumns();
-    }
-
-    /**
-     * Returns the quoted representation of the referencing table column names
-     * the foreign key constraint is associated with.
-     *
-     * But only if they were defined with one or the referencing table column name
-     * is a keyword reserved by the platform.
-     * Otherwise the plain unquoted value as inserted is returned.
-     *
-     * @deprecated Use {@see getQuotedLocalColumns()} instead.
-     *
-     * @see getQuotedLocalColumns
-     *
-     * @param AbstractPlatform $platform The platform to use for quotation.
-     *
-     * @return string[]
-     */
-    public function getQuotedColumns(AbstractPlatform $platform)
-    {
-        return $this->getQuotedLocalColumns($platform);
-    }
-
-    /**
      * Returns the name of the referenced table
      * the foreign key constraint is associated with.
      *
@@ -244,7 +243,7 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
      */
     public function getUnqualifiedForeignTableName()
     {
-        $name     = $this->_foreignTableName->getName();
+        $name = $this->_foreignTableName->getName();
         $position = strrpos($name, '.');
 
         if ($position !== false) {
@@ -269,17 +268,6 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     public function getQuotedForeignTableName(AbstractPlatform $platform)
     {
         return $this->_foreignTableName->getQuotedName($platform);
-    }
-
-    /**
-     * Returns the names of the referenced table columns
-     * the foreign key constraint is associated with.
-     *
-     * @return string[]
-     */
-    public function getForeignColumns()
-    {
-        return array_keys($this->_foreignColumnNames);
     }
 
     /**
@@ -352,17 +340,6 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
     }
 
     /**
-     * Returns the referential action for DELETE operations
-     * on the referenced table the foreign key constraint is associated with.
-     *
-     * @return string|null
-     */
-    public function onDelete()
-    {
-        return $this->onEvent('onDelete');
-    }
-
-    /**
      * Returns the referential action for a given database operation
      * on the referenced table the foreign key constraint is associated with.
      *
@@ -379,6 +356,17 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
         }
 
         return null;
+    }
+
+    /**
+     * Returns the referential action for DELETE operations
+     * on the referenced table the foreign key constraint is associated with.
+     *
+     * @return string|null
+     */
+    public function onDelete()
+    {
+        return $this->onEvent('onDelete');
     }
 
     /**
@@ -402,5 +390,17 @@ class ForeignKeyConstraint extends AbstractAsset implements Constraint
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @deprecated Use {@see getLocalColumns()} instead.
+     *
+     * @see getLocalColumns
+     */
+    public function getColumns()
+    {
+        return $this->getLocalColumns();
     }
 }

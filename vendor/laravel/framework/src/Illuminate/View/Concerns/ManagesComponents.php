@@ -46,10 +46,26 @@ trait ManagesComponents
     protected $slotStack = [];
 
     /**
+     * Get the first view that actually exists from the given list, and start a component.
+     *
+     * @param array $names
+     * @param array $data
+     * @return void
+     */
+    public function startComponentFirst(array $names, array $data = [])
+    {
+        $name = Arr::first($names, function ($item) {
+            return $this->exists($item);
+        });
+
+        $this->startComponent($name, $data);
+    }
+
+    /**
      * Start a component rendering process.
      *
-     * @param  \Illuminate\Contracts\View\View|\Illuminate\Contracts\Support\Htmlable|\Closure|string  $view
-     * @param  array  $data
+     * @param \Illuminate\Contracts\View\View|\Illuminate\Contracts\Support\Htmlable|\Closure|string $view
+     * @param array $data
      * @return void
      */
     public function startComponent($view, array $data = [])
@@ -64,19 +80,13 @@ trait ManagesComponents
     }
 
     /**
-     * Get the first view that actually exists from the given list, and start a component.
+     * Get the index for the current component.
      *
-     * @param  array  $names
-     * @param  array  $data
-     * @return void
+     * @return int
      */
-    public function startComponentFirst(array $names, array $data = [])
+    protected function currentComponent()
     {
-        $name = Arr::first($names, function ($item) {
-            return $this->exists($item);
-        });
-
-        $this->startComponent($name, $data);
+        return count($this->componentStack) - 1;
     }
 
     /**
@@ -132,8 +142,8 @@ trait ManagesComponents
     /**
      * Get an item from the component data that exists above the current component.
      *
-     * @param  string  $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed $default
      * @return mixed|null
      */
     public function getConsumableComponentData($key, $default = null)
@@ -162,9 +172,9 @@ trait ManagesComponents
     /**
      * Start the slot rendering process.
      *
-     * @param  string  $name
-     * @param  string|null  $content
-     * @param  array  $attributes
+     * @param string $name
+     * @param string|null $content
+     * @param array $attributes
      * @return void
      */
     public function slot($name, $content = null, $attributes = [])
@@ -196,16 +206,6 @@ trait ManagesComponents
         $this->slots[$this->currentComponent()][$currentName] = new ComponentSlot(
             trim(ob_get_clean()), $currentAttributes
         );
-    }
-
-    /**
-     * Get the index for the current component.
-     *
-     * @return int
-     */
-    protected function currentComponent()
-    {
-        return count($this->componentStack) - 1;
     }
 
     /**

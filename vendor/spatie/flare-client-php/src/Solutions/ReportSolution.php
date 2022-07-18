@@ -31,7 +31,7 @@ class ReportSolution
             'title' => $this->solution->getSolutionTitle(),
             'description' => $this->solution->getSolutionDescription(),
             'links' => $this->solution->getDocumentationLinks(),
-            /** @phpstan-ignore-next-line  */
+            /** @phpstan-ignore-next-line */
             'action_description' => $isRunnable ? $this->solution->getSolutionActionDescription() : null,
             'is_runnable' => $isRunnable,
         ];

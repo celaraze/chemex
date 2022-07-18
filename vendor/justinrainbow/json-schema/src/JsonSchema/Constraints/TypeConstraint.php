@@ -26,14 +26,14 @@ class TypeConstraint extends Constraint
      */
     public static $wording = array(
         'integer' => 'an integer',
-        'number'  => 'a number',
+        'number' => 'a number',
         'boolean' => 'a boolean',
-        'object'  => 'an object',
-        'array'   => 'an array',
-        'string'  => 'a string',
-        'null'    => 'a null',
-        'any'     => null, // validation of 'any' is always true so is not needed in message wording
-        0         => null, // validation of a false-y value is always true, so not needed as well
+        'object' => 'an object',
+        'array' => 'an array',
+        'string' => 'a string',
+        'null' => 'a null',
+        'any' => null, // validation of 'any' is always true so is not needed in message wording
+        0 => null, // validation of a false-y value is always true, so not needed as well
     );
 
     /**
@@ -70,10 +70,10 @@ class TypeConstraint extends Constraint
      * of $isValid to true, if at least one $type mateches the type of $value or the value
      * passed as $isValid is already true.
      *
-     * @param mixed $value             Value to validate
-     * @param array $type              TypeConstraints to check agains
+     * @param mixed $value Value to validate
+     * @param array $type TypeConstraints to check agains
      * @param array $validTypesWording An array of wordings of the valid types of the array $type
-     * @param bool  $isValid           The current validation value
+     * @param bool $isValid The current validation value
      * @param $path
      */
     protected function validateTypesArray(&$value, array $type, &$validTypesWording, &$isValid, $path)
@@ -88,7 +88,7 @@ class TypeConstraint extends Constraint
                     $subSchema->type = $tp;
                     $validator->check($value, $subSchema, $path, null);
                     $error = $validator->getErrors();
-                    $isValid = !(bool) $error;
+                    $isValid = !(bool)$error;
                     $validTypesWording[] = self::$wording['object'];
                 }
             } else {
@@ -99,29 +99,6 @@ class TypeConstraint extends Constraint
                 }
             }
         }
-    }
-
-    /**
-     * Implodes the given array like implode() with turned around parameters and with the
-     * difference, that, if $listEnd isn't false, the last element delimiter is $listEnd instead of
-     * $delimiter.
-     *
-     * @param array  $elements  The elements to implode
-     * @param string $delimiter The delimiter to use
-     * @param bool   $listEnd   The last delimiter to use (defaults to $delimiter)
-     *
-     * @return string
-     */
-    protected function implodeWith(array $elements, $delimiter = ', ', $listEnd = false)
-    {
-        if ($listEnd === false || !isset($elements[1])) {
-            return implode($delimiter, $elements);
-        }
-        $lastElement  = array_slice($elements, -1);
-        $firsElements = join($delimiter, array_slice($elements, 0, -1));
-        $implodedElements = array_merge(array($firsElements), $lastElement);
-
-        return join(" $listEnd ", $implodedElements);
     }
 
     /**
@@ -147,12 +124,12 @@ class TypeConstraint extends Constraint
     /**
      * Verifies that a given value is of a certain type
      *
-     * @param mixed  $value Value to validate
-     * @param string $type  TypeConstraint to check against
-     *
-     * @throws InvalidArgumentException
+     * @param mixed $value Value to validate
+     * @param string $type TypeConstraint to check against
      *
      * @return bool
+     * @throws InvalidArgumentException
+     *
      */
     protected function validateType(&$value, $type)
     {
@@ -214,21 +191,10 @@ class TypeConstraint extends Constraint
         throw new InvalidArgumentException((is_object($value) ? 'object' : $value) . ' is an invalid type for ' . $type);
     }
 
-    /**
-     * Converts a value to boolean. For example, "true" becomes true.
-     *
-     * @param $value The value to convert to boolean
-     *
-     * @return bool|mixed
-     */
-    protected function toBoolean($value)
+    protected function toInteger($value)
     {
-        if ($value === 'true') {
-            return true;
-        }
-
-        if ($value === 'false') {
-            return false;
+        if (is_numeric($value) && (int)$value == $value) {
+            return (int)$value; // cast to number
         }
 
         return $value;
@@ -250,12 +216,46 @@ class TypeConstraint extends Constraint
         return $value;
     }
 
-    protected function toInteger($value)
+    /**
+     * Converts a value to boolean. For example, "true" becomes true.
+     *
+     * @param $value The value to convert to boolean
+     *
+     * @return bool|mixed
+     */
+    protected function toBoolean($value)
     {
-        if (is_numeric($value) && (int) $value == $value) {
-            return (int) $value; // cast to number
+        if ($value === 'true') {
+            return true;
+        }
+
+        if ($value === 'false') {
+            return false;
         }
 
         return $value;
+    }
+
+    /**
+     * Implodes the given array like implode() with turned around parameters and with the
+     * difference, that, if $listEnd isn't false, the last element delimiter is $listEnd instead of
+     * $delimiter.
+     *
+     * @param array $elements The elements to implode
+     * @param string $delimiter The delimiter to use
+     * @param bool $listEnd The last delimiter to use (defaults to $delimiter)
+     *
+     * @return string
+     */
+    protected function implodeWith(array $elements, $delimiter = ', ', $listEnd = false)
+    {
+        if ($listEnd === false || !isset($elements[1])) {
+            return implode($delimiter, $elements);
+        }
+        $lastElement = array_slice($elements, -1);
+        $firsElements = join($delimiter, array_slice($elements, 0, -1));
+        $implodedElements = array_merge(array($firsElements), $lastElement);
+
+        return join(" $listEnd ", $implodedElements);
     }
 }

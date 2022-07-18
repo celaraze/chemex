@@ -132,46 +132,6 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
     }
 
     /**
-     * Register a format definition
-     *
-     * @param Style $style
-     */
-    protected function registerFormat(Style $style)
-    {
-        $styleId = $style->getId();
-
-        $format = $style->getFormat();
-        if ($format) {
-            $isFormatRegistered = isset($this->registeredFormats[$format]);
-
-            // We need to track the already registered format definitions
-            if ($isFormatRegistered) {
-                $registeredStyleId = $this->registeredFormats[$format];
-                $registeredFormatId = $this->styleIdToFormatsMappingTable[$registeredStyleId];
-                $this->styleIdToFormatsMappingTable[$styleId] = $registeredFormatId;
-            } else {
-                $this->registeredFormats[$format] = $styleId;
-
-                $id = self::$builtinNumFormatToIdMapping[$format] ?? $this->formatIndex++;
-                $this->styleIdToFormatsMappingTable[$styleId] = $id;
-            }
-        } else {
-            // The formatId maps a style to a format declaration
-            // When there is no format definition - we default to 0 ( General )
-            $this->styleIdToFormatsMappingTable[$styleId] = 0;
-        }
-    }
-
-    /**
-     * @param int $styleId
-     * @return int|null Format ID associated to the given style ID
-     */
-    public function getFormatIdForStyleId($styleId)
-    {
-        return $this->styleIdToFormatsMappingTable[$styleId] ?? null;
-    }
-
-    /**
      * Register a fill definition
      *
      * @param Style $style
@@ -204,14 +164,34 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
     }
 
     /**
-     * @param int $styleId
-     * @return int|null Fill ID associated to the given style ID
+     * Register a format definition
+     *
+     * @param Style $style
      */
-    public function getFillIdForStyleId($styleId)
+    protected function registerFormat(Style $style)
     {
-        return (isset($this->styleIdToFillMappingTable[$styleId])) ?
-            $this->styleIdToFillMappingTable[$styleId] :
-            null;
+        $styleId = $style->getId();
+
+        $format = $style->getFormat();
+        if ($format) {
+            $isFormatRegistered = isset($this->registeredFormats[$format]);
+
+            // We need to track the already registered format definitions
+            if ($isFormatRegistered) {
+                $registeredStyleId = $this->registeredFormats[$format];
+                $registeredFormatId = $this->styleIdToFormatsMappingTable[$registeredStyleId];
+                $this->styleIdToFormatsMappingTable[$styleId] = $registeredFormatId;
+            } else {
+                $this->registeredFormats[$format] = $styleId;
+
+                $id = self::$builtinNumFormatToIdMapping[$format] ?? $this->formatIndex++;
+                $this->styleIdToFormatsMappingTable[$styleId] = $id;
+            }
+        } else {
+            // The formatId maps a style to a format declaration
+            // When there is no format definition - we default to 0 ( General )
+            $this->styleIdToFormatsMappingTable[$styleId] = 0;
+        }
     }
 
     /**
@@ -241,6 +221,26 @@ class StyleRegistry extends \Box\Spout\Writer\Common\Manager\Style\StyleRegistry
             // If no border should be applied - the mapping is the default border: 0
             $this->styleIdToBorderMappingTable[$styleId] = 0;
         }
+    }
+
+    /**
+     * @param int $styleId
+     * @return int|null Format ID associated to the given style ID
+     */
+    public function getFormatIdForStyleId($styleId)
+    {
+        return $this->styleIdToFormatsMappingTable[$styleId] ?? null;
+    }
+
+    /**
+     * @param int $styleId
+     * @return int|null Fill ID associated to the given style ID
+     */
+    public function getFillIdForStyleId($styleId)
+    {
+        return (isset($this->styleIdToFillMappingTable[$styleId])) ?
+            $this->styleIdToFillMappingTable[$styleId] :
+            null;
     }
 
     /**

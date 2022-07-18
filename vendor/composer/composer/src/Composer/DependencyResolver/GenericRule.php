@@ -34,14 +34,6 @@ class GenericRule extends Rule
     }
 
     /**
-     * @return int[]
-     */
-    public function getLiterals(): array
-    {
-        return $this->literals;
-    }
-
-    /**
      * @inheritDoc
      */
     public function getHash()
@@ -56,12 +48,20 @@ class GenericRule extends Rule
      *
      * Ignores whether either of the rules is disabled.
      *
-     * @param  Rule $rule The rule to check against
+     * @param Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
     public function equals(Rule $rule): bool
     {
         return $this->literals === $rule->getLiterals();
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getLiterals(): array
+    {
+        return $this->literals;
     }
 
     /**

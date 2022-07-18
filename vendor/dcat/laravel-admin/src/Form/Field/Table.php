@@ -13,7 +13,7 @@ class Table extends ArrayField
 
     public function render()
     {
-        if (! $this->shouldRender()) {
+        if (!$this->shouldRender()) {
             return '';
         }
 

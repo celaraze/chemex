@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Types;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function date_create;
 
 /**
@@ -13,14 +12,6 @@ use function date_create;
  */
 class DateTimeType extends Type implements PhpDateTimeMappingType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
-    {
-        return Types::DATETIME_MUTABLE;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -43,6 +34,14 @@ class DateTimeType extends Type implements PhpDateTimeMappingType
         }
 
         throw ConversionException::conversionFailedInvalidType($value, $this->getName(), ['null', 'DateTime']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return Types::DATETIME_MUTABLE;
     }
 
     /**

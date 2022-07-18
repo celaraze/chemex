@@ -15,8 +15,8 @@ namespace Composer\DependencyResolver;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -43,122 +43,72 @@ class RuleSetGenerator
     }
 
     /**
-     * Creates a new rule for the requirements of a package
-     *
-     * This rule is of the form (-A|B|C), where B and C are the providers of
-     * one requirement of the package A.
-     *
-     * @param  BasePackage $package The package with a requirement
-     * @param  BasePackage[] $providers The providers of the requirement
-     * @param  Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
-     * @param  mixed $reasonData Any data, e.g. the requirement name, that goes with the reason
-     * @return Rule|null The generated rule or null if tautological
-     *
-     * @phpstan-param ReasonData $reasonData
+     * @return RuleSet
      */
-    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
+    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
-        $literals = array(-$package->id);
+        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
-        foreach ($providers as $provider) {
-            // self fulfilling rule?
-            if ($provider === $package) {
-                return null;
-            }
-            $literals[] = $provider->id;
-        }
+        $this->addRulesForRequest($request, $platformRequirementFilter);
 
-        return new GenericRule($literals, $reason, $reasonData);
+        $this->addRulesForRootAliases($platformRequirementFilter);
+
+        $this->addConflictRules($platformRequirementFilter);
+
+        // Remove references to packages
+        $this->addedMap = $this->addedPackagesByNames = array();
+
+        $rules = $this->rules;
+
+        $this->rules = new RuleSet;
+
+        return $rules;
     }
 
     /**
-     * Creates a rule to install at least one of a set of packages
-     *
-     * The rule is (A|B|C) with A, B and C different packages. If the given
-     * set of packages is empty an impossible rule is generated.
-     *
-     * @param  BasePackage[] $packages   The set of packages to choose from
-     * @param  Rule::RULE_*  $reason     A RULE_* constant describing the reason for
-     *                                   generating this rule
-     * @param  mixed         $reasonData Additional data like the root require or fix request info
-     * @return Rule          The generated rule
-     *
-     * @phpstan-param ReasonData $reasonData
-     */
-    protected function createInstallOneOfRule(array $packages, $reason, $reasonData): Rule
-    {
-        $literals = array();
-        foreach ($packages as $package) {
-            $literals[] = $package->id;
-        }
-
-        return new GenericRule($literals, $reason, $reasonData);
-    }
-
-    /**
-     * Creates a rule for two conflicting packages
-     *
-     * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
-     * and B the provider.
-     *
-     * @param BasePackage $issuer The package declaring the conflict
-     * @param BasePackage $provider The package causing the conflict
-     * @param Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
-     * @param mixed $reasonData Any data, e.g. the package name, that goes with the reason
-     * @return ?Rule The generated rule
-     *
-     * @phpstan-param ReasonData $reasonData
-     */
-    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null): ?Rule
-    {
-        // ignore self conflict
-        if ($issuer === $provider) {
-            return null;
-        }
-
-        return new Rule2Literals(-$issuer->id, -$provider->id, $reason, $reasonData);
-    }
-
-    /**
-     * @param BasePackage[] $packages
-     * @param Rule::RULE_* $reason A RULE_* constant
-     * @param mixed $reasonData
-     * @return Rule
-     *
-     * @phpstan-param ReasonData $reasonData
-     */
-    protected function createMultiConflictRule(array $packages, $reason, $reasonData): Rule
-    {
-        $literals = array();
-        foreach ($packages as $package) {
-            $literals[] = -$package->id;
-        }
-
-        if (\count($literals) == 2) {
-            return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
-        }
-
-        return new MultiConflictRule($literals, $reason, $reasonData);
-    }
-
-    /**
-     * Adds a rule unless it duplicates an existing one of any type
-     *
-     * To be able to directly pass in the result of one of the rule creation
-     * methods null is allowed which will not insert a rule.
-     *
-     * @param RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
-     * @param Rule $newRule The rule about to be added
-     *
      * @return void
      */
-    private function addRule($type, Rule $newRule = null): void
+    protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
-        if (!$newRule) {
-            return;
+        foreach ($request->getFixedPackages() as $package) {
+            if ($package->id == -1) {
+                // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
+                if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {
+                    continue;
+                }
+
+                // otherwise, looks like a bug
+                throw new \LogicException("Fixed package " . $package->getPrettyString() . " was not added to solver pool.");
+            }
+
+            $this->addRulesForPackage($package, $platformRequirementFilter);
+
+            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
+                'package' => $package,
+            ));
+            $this->addRule(RuleSet::TYPE_REQUEST, $rule);
         }
 
-        $this->rules->add($newRule, $type);
+        foreach ($request->getRequires() as $packageName => $constraint) {
+            if ($platformRequirementFilter->isIgnored($packageName)) {
+                continue;
+            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
+            }
+
+            $packages = $this->pool->whatProvides($packageName, $constraint);
+            if ($packages) {
+                foreach ($packages as $package) {
+                    $this->addRulesForPackage($package, $platformRequirementFilter);
+                }
+
+                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, array(
+                    'packageName' => $packageName,
+                    'constraint' => $constraint,
+                ));
+                $this->addRule(RuleSet::TYPE_REQUEST, $rule);
+            }
+        }
     }
 
     /**
@@ -216,6 +166,97 @@ class RuleSetGenerator
     }
 
     /**
+     * Adds a rule unless it duplicates an existing one of any type
+     *
+     * To be able to directly pass in the result of one of the rule creation
+     * methods null is allowed which will not insert a rule.
+     *
+     * @param RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
+     * @param Rule $newRule The rule about to be added
+     *
+     * @return void
+     */
+    private function addRule($type, Rule $newRule = null): void
+    {
+        if (!$newRule) {
+            return;
+        }
+
+        $this->rules->add($newRule, $type);
+    }
+
+    /**
+     * Creates a new rule for the requirements of a package
+     *
+     * This rule is of the form (-A|B|C), where B and C are the providers of
+     * one requirement of the package A.
+     *
+     * @param BasePackage $package The package with a requirement
+     * @param BasePackage[] $providers The providers of the requirement
+     * @param Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
+     * @param mixed $reasonData Any data, e.g. the requirement name, that goes with the reason
+     * @return Rule|null The generated rule or null if tautological
+     *
+     * @phpstan-param ReasonData $reasonData
+     */
+    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
+    {
+        $literals = array(-$package->id);
+
+        foreach ($providers as $provider) {
+            // self fulfilling rule?
+            if ($provider === $package) {
+                return null;
+            }
+            $literals[] = $provider->id;
+        }
+
+        return new GenericRule($literals, $reason, $reasonData);
+    }
+
+    /**
+     * Creates a rule to install at least one of a set of packages
+     *
+     * The rule is (A|B|C) with A, B and C different packages. If the given
+     * set of packages is empty an impossible rule is generated.
+     *
+     * @param BasePackage[] $packages The set of packages to choose from
+     * @param Rule::RULE_*  $reason     A RULE_* constant describing the reason for
+     *                                   generating this rule
+     * @param mixed $reasonData Additional data like the root require or fix request info
+     * @return Rule          The generated rule
+     *
+     * @phpstan-param ReasonData $reasonData
+     */
+    protected function createInstallOneOfRule(array $packages, $reason, $reasonData): Rule
+    {
+        $literals = array();
+        foreach ($packages as $package) {
+            $literals[] = $package->id;
+        }
+
+        return new GenericRule($literals, $reason, $reasonData);
+    }
+
+    /**
+     * @return void
+     */
+    protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter): void
+    {
+        foreach ($this->pool->getPackages() as $package) {
+            // ensure that rules for root alias packages and aliases of packages which were loaded are also loaded
+            // even if the alias itself isn't required, otherwise a package could be installed without its alias which
+            // leads to unexpected behavior
+            if (!isset($this->addedMap[$package->id]) &&
+                $package instanceof AliasPackage &&
+                ($package->isRootPackageAlias() || isset($this->addedMap[$package->getAliasOf()->id]))
+            ) {
+                $this->addRulesForPackage($package, $platformRequirementFilter);
+            }
+        }
+    }
+
+    /**
      * @return void
      */
     protected function addConflictRules(PlatformRequirementFilterInterface $platformRequirementFilter): void
@@ -257,89 +298,48 @@ class RuleSetGenerator
     }
 
     /**
-     * @return void
+     * Creates a rule for two conflicting packages
+     *
+     * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
+     * and B the provider.
+     *
+     * @param BasePackage $issuer The package declaring the conflict
+     * @param BasePackage $provider The package causing the conflict
+     * @param Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
+     * @param mixed $reasonData Any data, e.g. the package name, that goes with the reason
+     * @return ?Rule The generated rule
+     *
+     * @phpstan-param ReasonData $reasonData
      */
-    protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
+    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null): ?Rule
     {
-        foreach ($request->getFixedPackages() as $package) {
-            if ($package->id == -1) {
-                // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
-                if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {
-                    continue;
-                }
-
-                // otherwise, looks like a bug
-                throw new \LogicException("Fixed package ".$package->getPrettyString()." was not added to solver pool.");
-            }
-
-            $this->addRulesForPackage($package, $platformRequirementFilter);
-
-            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
-                'package' => $package,
-            ));
-            $this->addRule(RuleSet::TYPE_REQUEST, $rule);
+        // ignore self conflict
+        if ($issuer === $provider) {
+            return null;
         }
 
-        foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($platformRequirementFilter->isIgnored($packageName)) {
-                continue;
-            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
-                $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
-            }
-
-            $packages = $this->pool->whatProvides($packageName, $constraint);
-            if ($packages) {
-                foreach ($packages as $package) {
-                    $this->addRulesForPackage($package, $platformRequirementFilter);
-                }
-
-                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, array(
-                    'packageName' => $packageName,
-                    'constraint' => $constraint,
-                ));
-                $this->addRule(RuleSet::TYPE_REQUEST, $rule);
-            }
-        }
+        return new Rule2Literals(-$issuer->id, -$provider->id, $reason, $reasonData);
     }
 
     /**
-     * @return void
+     * @param BasePackage[] $packages
+     * @param Rule::RULE_* $reason A RULE_* constant
+     * @param mixed $reasonData
+     * @return Rule
+     *
+     * @phpstan-param ReasonData $reasonData
      */
-    protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter): void
+    protected function createMultiConflictRule(array $packages, $reason, $reasonData): Rule
     {
-        foreach ($this->pool->getPackages() as $package) {
-            // ensure that rules for root alias packages and aliases of packages which were loaded are also loaded
-            // even if the alias itself isn't required, otherwise a package could be installed without its alias which
-            // leads to unexpected behavior
-            if (!isset($this->addedMap[$package->id]) &&
-                $package instanceof AliasPackage &&
-                ($package->isRootPackageAlias() || isset($this->addedMap[$package->getAliasOf()->id]))
-            ) {
-                $this->addRulesForPackage($package, $platformRequirementFilter);
-            }
+        $literals = array();
+        foreach ($packages as $package) {
+            $literals[] = -$package->id;
         }
-    }
 
-    /**
-     * @return RuleSet
-     */
-    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
-    {
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
+        if (\count($literals) == 2) {
+            return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
+        }
 
-        $this->addRulesForRequest($request, $platformRequirementFilter);
-
-        $this->addRulesForRootAliases($platformRequirementFilter);
-
-        $this->addConflictRules($platformRequirementFilter);
-
-        // Remove references to packages
-        $this->addedMap = $this->addedPackagesByNames = array();
-
-        $rules = $this->rules;
-
-        $this->rules = new RuleSet;
-
-        return $rules;
+        return new MultiConflictRule($literals, $reason, $reasonData);
     }
 }

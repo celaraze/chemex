@@ -47,7 +47,7 @@ class ProtocolNodeLibrary extends ProtocolNode
     public function reach(string $queue = null)
     {
         $withComposer = \class_exists('Composer\Autoload\ClassLoader', false) ||
-            ('cli' === \PHP_SAPI && \file_exists(__DIR__.DS.'..'.DS.'..'.DS.'..'.DS.'..'.DS.'autoload.php'));
+            ('cli' === \PHP_SAPI && \file_exists(__DIR__ . DS . '..' . DS . '..' . DS . '..' . DS . '..' . DS . 'autoload.php'));
 
         if ($withComposer) {
             return parent::reach($queue);
@@ -58,7 +58,7 @@ class ProtocolNodeLibrary extends ProtocolNode
 
             if (false !== $pos = \strpos($queue, '/')) {
                 $head = \substr($head, 0, $pos);
-                $queue = \DIRECTORY_SEPARATOR.\substr($queue, $pos + 1);
+                $queue = \DIRECTORY_SEPARATOR . \substr($queue, $pos + 1);
             } else {
                 $queue = null;
             }
@@ -66,10 +66,10 @@ class ProtocolNodeLibrary extends ProtocolNode
             $out = [];
 
             foreach (\explode(';', $this->_reach) as $part) {
-                $out[] = "\r".$part.\strtolower($head).$queue;
+                $out[] = "\r" . $part . \strtolower($head) . $queue;
             }
 
-            $out[] = "\r".\dirname(__DIR__, 5).$queue;
+            $out[] = "\r" . \dirname(__DIR__, 5) . $queue;
 
             return \implode(';', $out);
         }
@@ -80,7 +80,7 @@ class ProtocolNodeLibrary extends ProtocolNode
             $pos = \strrpos(\rtrim($part, \DIRECTORY_SEPARATOR), \DIRECTORY_SEPARATOR) + 1;
             $head = \substr($part, 0, $pos);
             $tail = \substr($part, $pos);
-            $out[] = $head.\strtolower($tail);
+            $out[] = $head . \strtolower($tail);
         }
 
         $this->_reach = \implode(';', $out);

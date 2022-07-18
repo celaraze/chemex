@@ -10,7 +10,6 @@ use Doctrine\Deprecations\Deprecation;
 use PDO;
 use PDOException;
 use PDOStatement;
-
 use function assert;
 
 final class Connection implements ServerInfoAwareConnection
@@ -123,11 +122,6 @@ final class Connection implements ServerInfoAwareConnection
         return $this->connection->rollBack();
     }
 
-    public function getNativeConnection(): PDO
-    {
-        return $this->connection;
-    }
-
     /**
      * @deprecated Call {@see getNativeConnection()} instead.
      */
@@ -141,5 +135,10 @@ final class Connection implements ServerInfoAwareConnection
         );
 
         return $this->getNativeConnection();
+    }
+
+    public function getNativeConnection(): PDO
+    {
+        return $this->connection;
     }
 }

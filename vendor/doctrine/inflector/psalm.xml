@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <psalm
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     errorLevel="7"
     resolveFromConfigFile="true"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
     <projectFiles>
-        <directory name="lib/Doctrine/Inflector" />
+        <directory name="lib/Doctrine/Inflector"/>
         <ignoreFiles>
-            <directory name="vendor" />
+            <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
 </psalm>

@@ -33,7 +33,7 @@ class FoundationServiceProvider extends AggregateServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../Exceptions/views' => $this->app->resourcePath('views/errors/'),
+                __DIR__ . '/../Exceptions/views' => $this->app->resourcePath('views/errors/'),
             ], 'laravel-errors');
         }
     }
@@ -104,7 +104,7 @@ class FoundationServiceProvider extends AggregateServiceProvider
      */
     protected function registerExceptionTracking()
     {
-        if (! $this->app->runningUnitTests()) {
+        if (!$this->app->runningUnitTests()) {
             return;
         }
 
@@ -116,7 +116,7 @@ class FoundationServiceProvider extends AggregateServiceProvider
         $this->app->make('events')->listen(MessageLogged::class, function ($event) {
             if (isset($event->context['exception'])) {
                 $this->app->make(LoggedExceptionCollection::class)
-                        ->push($event->context['exception']);
+                    ->push($event->context['exception']);
             }
         });
     }
@@ -132,7 +132,7 @@ class FoundationServiceProvider extends AggregateServiceProvider
 
         $this->app->bind(
             MaintenanceModeContract::class,
-            fn () => $this->app->make(MaintenanceModeManager::class)->driver()
+            fn() => $this->app->make(MaintenanceModeManager::class)->driver()
         );
     }
 }

@@ -14,10 +14,10 @@ class RedisLock extends Lock
     /**
      * Create a new lock instance.
      *
-     * @param  \Illuminate\Redis\Connections\Connection  $redis
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
+     * @param \Illuminate\Redis\Connections\Connection $redis
+     * @param string $name
+     * @param int $seconds
+     * @param string|null $owner
      * @return void
      */
     public function __construct($redis, $name, $seconds, $owner = null)
@@ -48,7 +48,7 @@ class RedisLock extends Lock
      */
     public function release()
     {
-        return (bool) $this->redis->eval(LuaScripts::releaseLock(), 1, $this->name, $this->owner);
+        return (bool)$this->redis->eval(LuaScripts::releaseLock(), 1, $this->name, $this->owner);
     }
 
     /**
@@ -62,16 +62,6 @@ class RedisLock extends Lock
     }
 
     /**
-     * Returns the owner value written into the driver for this lock.
-     *
-     * @return string
-     */
-    protected function getCurrentOwner()
-    {
-        return $this->redis->get($this->name);
-    }
-
-    /**
      * Get the name of the Redis connection being used to manage the lock.
      *
      * @return string
@@ -79,5 +69,15 @@ class RedisLock extends Lock
     public function getConnectionName()
     {
         return $this->redis->getName();
+    }
+
+    /**
+     * Returns the owner value written into the driver for this lock.
+     *
+     * @return string
+     */
+    protected function getCurrentOwner()
+    {
+        return $this->redis->get($this->name);
     }
 }

@@ -23,8 +23,8 @@ class ComponentSlot implements Htmlable
     /**
      * Create a new slot instance.
      *
-     * @param  string  $contents
-     * @param  array  $attributes
+     * @param string $contents
+     * @param array $attributes
      * @return void
      */
     public function __construct($contents = '', $attributes = [])
@@ -37,7 +37,7 @@ class ComponentSlot implements Htmlable
     /**
      * Set the extra attributes that the slot should make available.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      * @return $this
      */
     public function withAttributes(array $attributes)
@@ -48,13 +48,13 @@ class ComponentSlot implements Htmlable
     }
 
     /**
-     * Get the slot's HTML string.
+     * Determine if the slot is not empty.
      *
-     * @return string
+     * @return bool
      */
-    public function toHtml()
+    public function isNotEmpty()
     {
-        return $this->contents;
+        return !$this->isEmpty();
     }
 
     /**
@@ -68,16 +68,6 @@ class ComponentSlot implements Htmlable
     }
 
     /**
-     * Determine if the slot is not empty.
-     *
-     * @return bool
-     */
-    public function isNotEmpty()
-    {
-        return ! $this->isEmpty();
-    }
-
-    /**
      * Get the slot's HTML string.
      *
      * @return string
@@ -85,5 +75,15 @@ class ComponentSlot implements Htmlable
     public function __toString()
     {
         return $this->toHtml();
+    }
+
+    /**
+     * Get the slot's HTML string.
+     *
+     * @return string
+     */
+    public function toHtml()
+    {
+        return $this->contents;
     }
 }

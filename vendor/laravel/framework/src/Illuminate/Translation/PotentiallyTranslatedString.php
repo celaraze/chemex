@@ -30,8 +30,8 @@ class PotentiallyTranslatedString implements Stringable
     /**
      * Create a new potentially translated string.
      *
-     * @param  string  $string
-     * @param  \Illuminate\Contracts\Translation\Translator  $translator
+     * @param string $string
+     * @param \Illuminate\Contracts\Translation\Translator $translator
      */
     public function __construct($string, $translator)
     {
@@ -43,8 +43,8 @@ class PotentiallyTranslatedString implements Stringable
     /**
      * Translate the string.
      *
-     * @param  array  $replace
-     * @param  string|null  $locale
+     * @param array $replace
+     * @param string|null $locale
      * @return $this
      */
     public function translate($replace = [], $locale = null)
@@ -57,9 +57,9 @@ class PotentiallyTranslatedString implements Stringable
     /**
      * Translates the string based on a count.
      *
-     * @param  \Countable|int|array  $number
-     * @param  array  $replace
-     * @param  string|null  $locale
+     * @param \Countable|int|array $number
+     * @param array $replace
+     * @param string|null $locale
      * @return $this
      */
     public function translateChoice($number, array $replace = [], $locale = null)
@@ -96,6 +96,6 @@ class PotentiallyTranslatedString implements Stringable
      */
     public function toString()
     {
-        return (string) $this;
+        return (string)$this;
     }
 }

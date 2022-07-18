@@ -1,4 +1,3 @@
-
-    public function {method_name}({arguments})
-    {
-    }
+public function {method_name}({arguments})
+{
+}

@@ -20,10 +20,10 @@
 
 namespace Mockery\Generator\StringManipulation\Pass;
 
-use Mockery\Generator\MockConfiguration;
-use Mockery\Generator\TargetClassInterface;
 use Mockery\Generator\Method;
+use Mockery\Generator\MockConfiguration;
 use Mockery\Generator\Parameter;
+use Mockery\Generator\TargetClassInterface;
 
 class MagicMethodTypeHintsPass implements Pass
 {
@@ -78,7 +78,8 @@ class MagicMethodTypeHintsPass implements Pass
      */
     public function getMagicMethods(
         TargetClassInterface $class = null
-    ) {
+    )
+    {
         if (is_null($class)) {
             return array();
         }
@@ -121,9 +122,21 @@ class MagicMethodTypeHintsPass implements Pass
     private function isMethodWithinCode($code, Method $method)
     {
         return preg_match(
-            $this->getDeclarationRegex($method->getName()),
-            $code
-        ) == 1;
+                $this->getDeclarationRegex($method->getName()),
+                $code
+            ) == 1;
+    }
+
+    /**
+     * Returns a regex string used to match the
+     * declaration of some method.
+     *
+     * @param string $methodName
+     * @return string
+     */
+    private function getDeclarationRegex($methodName)
+    {
+        return "/public\s+(?:static\s+)?function\s+$methodName\s*\(.*\)\s*(?=\{)/i";
     }
 
     /**
@@ -163,13 +176,14 @@ class MagicMethodTypeHintsPass implements Pass
      * Gets the declaration code, as a string, for the passed method.
      *
      * @param Method $method
-     * @param array  $namedParameters
+     * @param array $namedParameters
      * @return string
      */
     private function getMethodDeclaration(
         Method $method,
-        array $namedParameters
-    ) {
+        array  $namedParameters
+    )
+    {
         $declaration = 'public';
         $declaration .= $method->isStatic() ? ' static' : '';
         $declaration .= ' function ' . $method->getName() . '(';
@@ -196,17 +210,5 @@ class MagicMethodTypeHintsPass implements Pass
         $typeHint = $param->getTypeHint();
 
         return $typeHint === null ? '' : sprintf('%s ', $typeHint);
-    }
-
-    /**
-     * Returns a regex string used to match the
-     * declaration of some method.
-     *
-     * @param string $methodName
-     * @return string
-     */
-    private function getDeclarationRegex($methodName)
-    {
-        return "/public\s+(?:static\s+)?function\s+$methodName\s*\(.*\)\s*(?=\{)/i";
     }
 }

@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 /**
  * Tests for the presence of both a key and value inside an array.
  */
+
 use Hamcrest\Description;
 use Hamcrest\Matcher;
 use Hamcrest\TypeSafeMatcher;
@@ -12,7 +14,6 @@ use Hamcrest\Util;
 /**
  * @namespace
  */
-
 class IsArrayContainingKeyValuePair extends TypeSafeMatcher
 {
 
@@ -25,6 +26,28 @@ class IsArrayContainingKeyValuePair extends TypeSafeMatcher
 
         $this->_keyMatcher = $keyMatcher;
         $this->_valueMatcher = $valueMatcher;
+    }
+
+    /**
+     * Test if an array has both an key and value in parity with each other.
+     *
+     * @factory hasEntry
+     */
+    public static function hasKeyValuePair($key, $value)
+    {
+        return new self(
+            Util::wrapValueWithIsEqual($key),
+            Util::wrapValueWithIsEqual($value)
+        );
+    }
+
+    public function describeTo(Description $description)
+    {
+        $description->appendText('array containing [')
+            ->appendDescriptionOf($this->_keyMatcher)
+            ->appendText(' => ')
+            ->appendDescriptionOf($this->_valueMatcher)
+            ->appendText(']');
     }
 
     protected function matchesSafely($array)
@@ -42,8 +65,7 @@ class IsArrayContainingKeyValuePair extends TypeSafeMatcher
     {
         //Not using appendValueList() so that keys can be shown
         $mismatchDescription->appendText('array was ')
-                                                ->appendText('[')
-                                                ;
+            ->appendText('[');
         $loop = false;
         foreach ($array as $key => $value) {
             if ($loop) {
@@ -53,28 +75,5 @@ class IsArrayContainingKeyValuePair extends TypeSafeMatcher
             $loop = true;
         }
         $mismatchDescription->appendText(']');
-    }
-
-    public function describeTo(Description $description)
-    {
-        $description->appendText('array containing [')
-                                ->appendDescriptionOf($this->_keyMatcher)
-                                ->appendText(' => ')
-                                ->appendDescriptionOf($this->_valueMatcher)
-                                ->appendText(']')
-                                ;
-    }
-
-    /**
-     * Test if an array has both an key and value in parity with each other.
-     *
-     * @factory hasEntry
-     */
-    public static function hasKeyValuePair($key, $value)
-    {
-        return new self(
-            Util::wrapValueWithIsEqual($key),
-            Util::wrapValueWithIsEqual($value)
-        );
     }
 }

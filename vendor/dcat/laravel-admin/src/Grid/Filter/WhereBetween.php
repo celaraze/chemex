@@ -7,10 +7,15 @@ use Illuminate\Support\Arr;
 class WhereBetween extends Between
 {
     /**
+     * Input value from presenter.
+     *
+     * @var mixed
+     */
+    public $input;
+    /**
      * {@inheritdoc}
      */
     protected $view = 'admin::filter.between';
-
     /**
      * Query closure.
      *
@@ -19,18 +24,11 @@ class WhereBetween extends Between
     protected $where;
 
     /**
-     * Input value from presenter.
-     *
-     * @var mixed
-     */
-    public $input;
-
-    /**
      * Where constructor.
      *
-     * @param  string  $column
-     * @param  \Closure  $query
-     * @param  string  $label
+     * @param string $column
+     * @param \Closure $query
+     * @param string $label
      */
     public function __construct($column, \Closure $query, $label = '')
     {
@@ -42,7 +40,7 @@ class WhereBetween extends Between
     /**
      * Get condition of this filter.
      *
-     * @param  array  $inputs
+     * @param array $inputs
      * @return array|mixed|void
      */
     public function condition($inputs)
@@ -50,8 +48,8 @@ class WhereBetween extends Between
         $value = Arr::get($inputs, $this->column) ?: [];
 
         if (
-            ! $value
-            || (! isset($value['start']) && ! isset($value['end']))
+            !$value
+            || (!isset($value['start']) && !isset($value['end']))
         ) {
             return;
         }

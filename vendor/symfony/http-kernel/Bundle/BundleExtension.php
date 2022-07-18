@@ -31,18 +31,9 @@ class BundleExtension extends Extension implements PrependExtensionInterface
 
     public function __construct(
         private ConfigurableExtensionInterface $subject,
-        private string $alias,
-    ) {
-    }
-
-    public function getConfiguration(array $config, ContainerBuilder $container): ?ConfigurationInterface
+        private string                         $alias,
+    )
     {
-        return new Configuration($this->subject, $container, $this->getAlias());
-    }
-
-    public function getAlias(): string
-    {
-        return $this->alias;
     }
 
     public function prepend(ContainerBuilder $container): void
@@ -63,5 +54,15 @@ class BundleExtension extends Extension implements PrependExtensionInterface
         };
 
         $this->executeConfiguratorCallback($container, $callback, $this->subject);
+    }
+
+    public function getConfiguration(array $config, ContainerBuilder $container): ?ConfigurationInterface
+    {
+        return new Configuration($this->subject, $container, $this->getAlias());
+    }
+
+    public function getAlias(): string
+    {
+        return $this->alias;
     }
 }

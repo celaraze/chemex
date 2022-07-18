@@ -13,7 +13,7 @@ class PostgresBuilder extends Builder
     /**
      * Create a database in the schema.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function createDatabase($name)
@@ -26,7 +26,7 @@ class PostgresBuilder extends Builder
     /**
      * Drop a database from the schema if the database exists.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function dropDatabaseIfExists($name)
@@ -39,165 +39,24 @@ class PostgresBuilder extends Builder
     /**
      * Determine if the given table exists.
      *
-     * @param  string  $table
+     * @param string $table
      * @return bool
      */
     public function hasTable($table)
     {
         [$database, $schema, $table] = $this->parseSchemaAndTable($table);
 
-        $table = $this->connection->getTablePrefix().$table;
+        $table = $this->connection->getTablePrefix() . $table;
 
         return count($this->connection->select(
-            $this->grammar->compileTableExists(), [$database, $schema, $table]
-        )) > 0;
-    }
-
-    /**
-     * Drop all tables from the database.
-     *
-     * @return void
-     */
-    public function dropAllTables()
-    {
-        $tables = [];
-
-        $excludedTables = $this->grammar->escapeNames(
-            $this->connection->getConfig('dont_drop') ?? ['spatial_ref_sys']
-        );
-
-        foreach ($this->getAllTables() as $row) {
-            $row = (array) $row;
-
-            if (empty(array_intersect($this->grammar->escapeNames($row), $excludedTables))) {
-                $tables[] = $row['qualifiedname'] ?? reset($row);
-            }
-        }
-
-        if (empty($tables)) {
-            return;
-        }
-
-        $this->connection->statement(
-            $this->grammar->compileDropAllTables($tables)
-        );
-    }
-
-    /**
-     * Drop all views from the database.
-     *
-     * @return void
-     */
-    public function dropAllViews()
-    {
-        $views = [];
-
-        foreach ($this->getAllViews() as $row) {
-            $row = (array) $row;
-
-            $views[] = $row['qualifiedname'] ?? reset($row);
-        }
-
-        if (empty($views)) {
-            return;
-        }
-
-        $this->connection->statement(
-            $this->grammar->compileDropAllViews($views)
-        );
-    }
-
-    /**
-     * Drop all types from the database.
-     *
-     * @return void
-     */
-    public function dropAllTypes()
-    {
-        $types = [];
-
-        foreach ($this->getAllTypes() as $row) {
-            $row = (array) $row;
-
-            $types[] = reset($row);
-        }
-
-        if (empty($types)) {
-            return;
-        }
-
-        $this->connection->statement(
-            $this->grammar->compileDropAllTypes($types)
-        );
-    }
-
-    /**
-     * Get all of the table names for the database.
-     *
-     * @return array
-     */
-    public function getAllTables()
-    {
-        return $this->connection->select(
-            $this->grammar->compileGetAllTables(
-                $this->parseSearchPath(
-                    $this->connection->getConfig('search_path') ?: $this->connection->getConfig('schema')
-                )
-            )
-        );
-    }
-
-    /**
-     * Get all of the view names for the database.
-     *
-     * @return array
-     */
-    public function getAllViews()
-    {
-        return $this->connection->select(
-            $this->grammar->compileGetAllViews(
-                $this->parseSearchPath(
-                    $this->connection->getConfig('search_path') ?: $this->connection->getConfig('schema')
-                )
-            )
-        );
-    }
-
-    /**
-     * Get all of the type names for the database.
-     *
-     * @return array
-     */
-    public function getAllTypes()
-    {
-        return $this->connection->select(
-            $this->grammar->compileGetAllTypes()
-        );
-    }
-
-    /**
-     * Get the column listing for a given table.
-     *
-     * @param  string  $table
-     * @return array
-     */
-    public function getColumnListing($table)
-    {
-        [$database, $schema, $table] = $this->parseSchemaAndTable($table);
-
-        $table = $this->connection->getTablePrefix().$table;
-
-        $results = $this->connection->select(
-            $this->grammar->compileColumnListing(), [$database, $schema, $table]
-        );
-
-        return $this->connection->getPostProcessor()->processColumnListing($results);
+                $this->grammar->compileTableExists(), [$database, $schema, $table]
+            )) > 0;
     }
 
     /**
      * Parse the database object reference and extract the database, schema, and table.
      *
-     * @param  string  $reference
+     * @param string $reference
      * @return array
      */
     protected function parseSchemaAndTable($reference)
@@ -234,7 +93,7 @@ class PostgresBuilder extends Builder
     /**
      * Parse the "search_path" configuration value into an array.
      *
-     * @param  string|array|null  $searchPath
+     * @param string|array|null $searchPath
      * @return array
      */
     protected function parseSearchPath($searchPath)
@@ -244,5 +103,146 @@ class PostgresBuilder extends Builder
                 ? $this->connection->getConfig('username')
                 : $schema;
         }, $this->baseParseSearchPath($searchPath));
+    }
+
+    /**
+     * Drop all tables from the database.
+     *
+     * @return void
+     */
+    public function dropAllTables()
+    {
+        $tables = [];
+
+        $excludedTables = $this->grammar->escapeNames(
+            $this->connection->getConfig('dont_drop') ?? ['spatial_ref_sys']
+        );
+
+        foreach ($this->getAllTables() as $row) {
+            $row = (array)$row;
+
+            if (empty(array_intersect($this->grammar->escapeNames($row), $excludedTables))) {
+                $tables[] = $row['qualifiedname'] ?? reset($row);
+            }
+        }
+
+        if (empty($tables)) {
+            return;
+        }
+
+        $this->connection->statement(
+            $this->grammar->compileDropAllTables($tables)
+        );
+    }
+
+    /**
+     * Get all of the table names for the database.
+     *
+     * @return array
+     */
+    public function getAllTables()
+    {
+        return $this->connection->select(
+            $this->grammar->compileGetAllTables(
+                $this->parseSearchPath(
+                    $this->connection->getConfig('search_path') ?: $this->connection->getConfig('schema')
+                )
+            )
+        );
+    }
+
+    /**
+     * Drop all views from the database.
+     *
+     * @return void
+     */
+    public function dropAllViews()
+    {
+        $views = [];
+
+        foreach ($this->getAllViews() as $row) {
+            $row = (array)$row;
+
+            $views[] = $row['qualifiedname'] ?? reset($row);
+        }
+
+        if (empty($views)) {
+            return;
+        }
+
+        $this->connection->statement(
+            $this->grammar->compileDropAllViews($views)
+        );
+    }
+
+    /**
+     * Get all of the view names for the database.
+     *
+     * @return array
+     */
+    public function getAllViews()
+    {
+        return $this->connection->select(
+            $this->grammar->compileGetAllViews(
+                $this->parseSearchPath(
+                    $this->connection->getConfig('search_path') ?: $this->connection->getConfig('schema')
+                )
+            )
+        );
+    }
+
+    /**
+     * Drop all types from the database.
+     *
+     * @return void
+     */
+    public function dropAllTypes()
+    {
+        $types = [];
+
+        foreach ($this->getAllTypes() as $row) {
+            $row = (array)$row;
+
+            $types[] = reset($row);
+        }
+
+        if (empty($types)) {
+            return;
+        }
+
+        $this->connection->statement(
+            $this->grammar->compileDropAllTypes($types)
+        );
+    }
+
+    /**
+     * Get all of the type names for the database.
+     *
+     * @return array
+     */
+    public function getAllTypes()
+    {
+        return $this->connection->select(
+            $this->grammar->compileGetAllTypes()
+        );
+    }
+
+    /**
+     * Get the column listing for a given table.
+     *
+     * @param string $table
+     * @return array
+     */
+    public function getColumnListing($table)
+    {
+        [$database, $schema, $table] = $this->parseSchemaAndTable($table);
+
+        $table = $this->connection->getTablePrefix() . $table;
+
+        $results = $this->connection->select(
+            $this->grammar->compileColumnListing(), [$database, $schema, $table]
+        );
+
+        return $this->connection->getPostProcessor()->processColumnListing($results);
     }
 }

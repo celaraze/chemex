@@ -21,7 +21,7 @@ class HostnameProcessor implements ProcessorInterface
 
     public function __construct()
     {
-        self::$host = (string) gethostname();
+        self::$host = (string)gethostname();
     }
 
     /**

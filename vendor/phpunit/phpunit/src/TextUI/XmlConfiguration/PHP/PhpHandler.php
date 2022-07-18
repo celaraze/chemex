@@ -7,9 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use const PATH_SEPARATOR;
 use function constant;
 use function define;
 use function defined;
@@ -18,6 +18,7 @@ use function implode;
 use function ini_get;
 use function ini_set;
 use function putenv;
+use const PATH_SEPARATOR;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -63,7 +64,7 @@ final class PhpHandler
             $value = $iniSetting->value();
 
             if (defined($value)) {
-                $value = (string) constant($value);
+                $value = (string)constant($value);
             }
 
             ini_set($iniSetting->name(), $value);
@@ -93,17 +94,10 @@ final class PhpHandler
         }
     }
 
-    private function handleVariables(string $target, VariableCollection $variables): void
-    {
-        foreach ($variables as $variable) {
-            $GLOBALS[$target][$variable->name()] = $variable->value();
-        }
-    }
-
     private function handleEnvVariables(VariableCollection $variables): void
     {
         foreach ($variables as $variable) {
-            $name  = $variable->name();
+            $name = $variable->name();
             $value = $variable->value();
             $force = $variable->force();
 
@@ -116,6 +110,13 @@ final class PhpHandler
             if ($force || !isset($_ENV[$name])) {
                 $_ENV[$name] = $value;
             }
+        }
+    }
+
+    private function handleVariables(string $target, VariableCollection $variables): void
+    {
+        foreach ($variables as $variable) {
+            $GLOBALS[$target][$variable->name()] = $variable->value();
         }
     }
 }

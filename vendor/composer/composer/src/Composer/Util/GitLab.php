@@ -12,10 +12,10 @@
 
 namespace Composer\Util;
 
-use Composer\IO\IOInterface;
 use Composer\Config;
-use Composer\Factory;
 use Composer\Downloader\TransportException;
+use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 
 /**
@@ -35,10 +35,10 @@ class GitLab
     /**
      * Constructor.
      *
-     * @param IOInterface     $io             The IO instance
-     * @param Config          $config         The composer configuration
-     * @param ProcessExecutor $process        Process instance, injectable for mocking
-     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param IOInterface $io The IO instance
+     * @param Config $config The composer configuration
+     * @param ProcessExecutor $process Process instance, injectable for mocking
+     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {
@@ -95,7 +95,7 @@ class GitLab
 
             // Composer expects the GitLab token to be stored as username and 'private-token' or 'gitlab-ci-token' to be stored as password
             // Detect cases where this is reversed and resolve automatically resolve it
-            if (in_array($username, array('private-token', 'gitlab-ci-token',  'oauth2'), true)) {
+            if (in_array($username, array('private-token', 'gitlab-ci-token', 'oauth2'), true)) {
                 $this->io->setAuthentication($originUrl, $password, $username);
             } else {
                 $this->io->setAuthentication($originUrl, $username, $password);
@@ -110,14 +110,14 @@ class GitLab
     /**
      * Authorizes a GitLab domain interactively via OAuth.
      *
-     * @param string $scheme    Scheme used in the origin URL
+     * @param string $scheme Scheme used in the origin URL
      * @param string $originUrl The host this GitLab instance is located at
-     * @param string $message   The reason this authorization is required
-     *
-     * @throws \RuntimeException
-     * @throws TransportException|\Exception
+     * @param string $message The reason this authorization is required
      *
      * @return bool true on success
+     * @throws TransportException|\Exception
+     *
+     * @throws \RuntimeException
      */
     public function authorizeOAuthInteractively(string $scheme, string $originUrl, string $message = null): bool
     {
@@ -126,7 +126,7 @@ class GitLab
         }
 
         $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('To revoke access to this token you can visit '.$scheme.'://'.$originUrl.'/-/profile/personal_access_tokens');
+        $this->io->writeError('To revoke access to this token you can visit ' . $scheme . '://' . $originUrl . '/-/profile/personal_access_tokens');
 
         $attemptCounter = 0;
 
@@ -148,8 +148,8 @@ class GitLab
                         $this->io->writeError('Maximum number of login attempts exceeded. Please try again later.');
                     }
 
-                    $this->io->writeError('You can also manually create a personal access token enabling the "read_api" scope at '.$scheme.'://'.$originUrl.'/profile/personal_access_tokens');
-                    $this->io->writeError('Add it using "composer config --global --auth gitlab-token.'.$originUrl.' <token>"');
+                    $this->io->writeError('You can also manually create a personal access token enabling the "read_api" scope at ' . $scheme . '://' . $originUrl . '/profile/personal_access_tokens');
+                    $this->io->writeError('Add it using "composer config --global --auth gitlab-token.' . $originUrl . ' <token>"');
 
                     continue;
                 }
@@ -160,7 +160,7 @@ class GitLab
             $this->io->setAuthentication($originUrl, $response['access_token'], 'oauth2');
 
             // store value in user config in auth file
-            $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl, $response['access_token']);
+            $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.' . $originUrl, $response['access_token']);
 
             return true;
         }
@@ -198,7 +198,7 @@ class GitLab
             ),
         );
 
-        $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
+        $token = $this->httpDownloader->get($scheme . '://' . $apiUrl . '/oauth/token', $options)->decodeJson();
 
         $this->io->writeError('Token successfully created');
 

@@ -1,4 +1,3 @@
-
 export default class Color {
     constructor(Dcat) {
         let colors = Dcat.config.colors || {},

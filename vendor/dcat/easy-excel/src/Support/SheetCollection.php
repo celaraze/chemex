@@ -22,7 +22,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Create a new collection.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return void
      */
     public function __construct($items = [])
@@ -33,8 +33,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Create a new collection by invoking the callback a given amount of times.
      *
-     * @param  int  $number
-     * @param  callable  $callback
+     * @param int $number
+     * @param callable $callback
      * @return static
      */
     public static function times($number, callable $callback = null)
@@ -51,19 +51,24 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Get all of the items in the collection.
+     * Run a map over each of the items.
      *
-     * @return array
+     * @param callable $callback
+     * @return static
      */
-    public function all()
+    public function map(callable $callback)
     {
-        return $this->items;
+        $keys = array_keys($this->items);
+
+        $items = array_map($callback, $this->items, $keys);
+
+        return new static(array_combine($keys, $items));
     }
 
     /**
      * Get the average value of a given key.
      *
-     * @param  callable|string|null  $callback
+     * @param callable|string|null $callback
      * @return mixed
      */
     public function avg($callback = null)
@@ -73,7 +78,7 @@ class SheetCollection implements ArrayAccess, Enumerable
         $items = $this->map(function ($value) use ($callback) {
             return $callback($value);
         })->filter(function ($value) {
-            return ! is_null($value);
+            return !is_null($value);
         });
 
         if ($count = $items->count()) {
@@ -82,16 +87,41 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Run a filter over each of the items.
+     *
+     * @param callable|null $callback
+     * @return static
+     */
+    public function filter(callable $callback = null)
+    {
+        if ($callback) {
+            return new static(Arr::where($this->items, $callback));
+        }
+
+        return new static(array_filter($this->items));
+    }
+
+    /**
+     * Count the number of items in the collection.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->items);
+    }
+
+    /**
      * Get the median of a given key.
      *
-     * @param  string|array|null  $key
+     * @param string|array|null $key
      * @return mixed
      */
     public function median($key = null)
     {
         $values = (isset($key) ? $this->pluck($key) : $this)
             ->filter(function ($item) {
-                return ! is_null($item);
+                return !is_null($item);
             })->sort()->values();
 
         $count = $values->count();
@@ -100,7 +130,7 @@ class SheetCollection implements ArrayAccess, Enumerable
             return;
         }
 
-        $middle = (int) ($count / 2);
+        $middle = (int)($count / 2);
 
         if ($count % 2) {
             return $values->get($middle);
@@ -112,9 +142,75 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Reset the keys on the underlying array.
+     *
+     * @return static
+     */
+    public function values()
+    {
+        return new static(array_values($this->items));
+    }
+
+    /**
+     * Sort through each item with a callback.
+     *
+     * @param callable|null $callback
+     * @return static
+     */
+    public function sort(callable $callback = null)
+    {
+        $items = $this->items;
+
+        $callback
+            ? uasort($items, $callback)
+            : asort($items);
+
+        return new static($items);
+    }
+
+    /**
+     * Get the values of a given key.
+     *
+     * @param string|array $value
+     * @param string|null $key
+     * @return static
+     */
+    public function pluck($value, $key = null)
+    {
+        return new static(Arr::pluck($this->items, $value, $key));
+    }
+
+    /**
+     * Get an item from the collection by key.
+     *
+     * @param mixed $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        if ($this->offsetExists($key)) {
+            return $this->items[$key];
+        }
+
+        return value($default);
+    }
+
+    /**
+     * Determine if an item exists at an offset.
+     *
+     * @param mixed $key
+     * @return bool
+     */
+    public function offsetExists($key)
+    {
+        return array_key_exists($key, $this->items);
+    }
+
+    /**
      * Get the mode of a given key.
      *
-     * @param  string|array|null  $key
+     * @param string|array|null $key
      * @return array|null
      */
     public function mode($key = null)
@@ -141,6 +237,38 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Get the last item from the collection.
+     *
+     * @param callable|null $callback
+     * @param mixed $default
+     * @return mixed
+     */
+    public function last(callable $callback = null, $default = null)
+    {
+        return Arr::last($this->items, $callback, $default);
+    }
+
+    /**
+     * Get all of the items in the collection.
+     *
+     * @return array
+     */
+    public function all()
+    {
+        return $this->items;
+    }
+
+    /**
+     * Get the keys of the collection items.
+     *
+     * @return static
+     */
+    public function keys()
+    {
+        return new static(array_keys($this->items));
+    }
+
+    /**
      * Collapse the collection of items into a single array.
      *
      * @return static
@@ -153,9 +281,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Determine if an item exists in the collection.
      *
-     * @param  mixed  $key
-     * @param  mixed  $operator
-     * @param  mixed  $value
+     * @param mixed $key
+     * @param mixed $operator
+     * @param mixed $value
      * @return bool
      */
     public function contains($key, $operator = null, $value = null)
@@ -174,9 +302,21 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Get the first item from the collection passing the given truth test.
+     *
+     * @param callable|null $callback
+     * @param mixed $default
+     * @return mixed
+     */
+    public function first(callable $callback = null, $default = null)
+    {
+        return Arr::first($this->items, $callback, $default);
+    }
+
+    /**
      * Cross join with the given lists, returning all possible permutations.
      *
-     * @param  mixed  ...$lists
+     * @param mixed ...$lists
      * @return static
      */
     public function crossJoin(...$lists)
@@ -189,7 +329,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection that are not present in the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function diff($items)
@@ -200,8 +340,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection that are not present in the given items.
      *
-     * @param  mixed  $items
-     * @param  callable  $callback
+     * @param mixed $items
+     * @param callable $callback
      * @return static
      */
     public function diffUsing($items, callable $callback)
@@ -212,7 +352,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection whose keys and values are not present in the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function diffAssoc($items)
@@ -223,8 +363,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection whose keys and values are not present in the given items.
      *
-     * @param  mixed  $items
-     * @param  callable  $callback
+     * @param mixed $items
+     * @param callable $callback
      * @return static
      */
     public function diffAssocUsing($items, callable $callback)
@@ -235,7 +375,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection whose keys are not present in the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function diffKeys($items)
@@ -246,8 +386,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items in the collection whose keys are not present in the given items.
      *
-     * @param  mixed  $items
-     * @param  callable  $callback
+     * @param mixed $items
+     * @param callable $callback
      * @return static
      */
     public function diffKeysUsing($items, callable $callback)
@@ -256,10 +396,21 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Retrieve duplicate items from the collection using strict comparison.
+     *
+     * @param callable|null $callback
+     * @return static
+     */
+    public function duplicatesStrict($callback = null)
+    {
+        return $this->duplicates($callback, true);
+    }
+
+    /**
      * Retrieve duplicate items from the collection.
      *
-     * @param  callable|null  $callback
-     * @param  bool  $strict
+     * @param callable|null $callback
+     * @param bool $strict
      * @return static
      */
     public function duplicates($callback = null, $strict = false)
@@ -284,20 +435,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Retrieve duplicate items from the collection using strict comparison.
-     *
-     * @param  callable|null  $callback
-     * @return static
-     */
-    public function duplicatesStrict($callback = null)
-    {
-        return $this->duplicates($callback, true);
-    }
-
-    /**
      * Get the comparison function to detect duplicates.
      *
-     * @param  bool  $strict
+     * @param bool $strict
      * @return \Closure
      */
     protected function duplicateComparator($strict)
@@ -314,16 +454,26 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Get and remove the first item from the collection.
+     *
+     * @return mixed
+     */
+    public function shift()
+    {
+        return array_shift($this->items);
+    }
+
+    /**
      * Get all items except for those with the specified keys.
      *
-     * @param  $this|mixed  $keys
+     * @param  $this |mixed  $keys
      * @return static
      */
     public function except($keys)
     {
         if ($keys instanceof Enumerable) {
             $keys = $keys->all();
-        } elseif (! is_array($keys)) {
+        } elseif (!is_array($keys)) {
             $keys = func_get_args();
         }
 
@@ -331,36 +481,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Run a filter over each of the items.
-     *
-     * @param  callable|null  $callback
-     * @return static
-     */
-    public function filter(callable $callback = null)
-    {
-        if ($callback) {
-            return new static(Arr::where($this->items, $callback));
-        }
-
-        return new static(array_filter($this->items));
-    }
-
-    /**
-     * Get the first item from the collection passing the given truth test.
-     *
-     * @param  callable|null  $callback
-     * @param  mixed  $default
-     * @return mixed
-     */
-    public function first(callable $callback = null, $default = null)
-    {
-        return Arr::first($this->items, $callback, $default);
-    }
-
-    /**
      * Get a flattened array of the items in the collection.
      *
-     * @param  int  $depth
+     * @param int $depth
      * @return static
      */
     public function flatten($depth = INF)
@@ -381,12 +504,12 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Remove an item from the collection by key.
      *
-     * @param  string|array  $keys
+     * @param string|array $keys
      * @return $this
      */
     public function forget($keys)
     {
-        foreach ((array) $keys as $key) {
+        foreach ((array)$keys as $key) {
             $this->offsetUnset($key);
         }
 
@@ -394,26 +517,21 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Get an item from the collection by key.
+     * Unset the item at a given offset.
      *
-     * @param  mixed  $key
-     * @param  mixed  $default
-     * @return mixed
+     * @param string $key
+     * @return void
      */
-    public function get($key, $default = null)
+    public function offsetUnset($key)
     {
-        if ($this->offsetExists($key)) {
-            return $this->items[$key];
-        }
-
-        return value($default);
+        unset($this->items[$key]);
     }
 
     /**
      * Group an associative array by a field or using a callback.
      *
-     * @param  array|callable|string  $groupBy
-     * @param  bool  $preserveKeys
+     * @param array|callable|string $groupBy
+     * @param bool $preserveKeys
      * @return static
      */
     public function groupBy($groupBy, $preserveKeys = false)
@@ -431,14 +549,14 @@ class SheetCollection implements ArrayAccess, Enumerable
         foreach ($this->items as $key => $value) {
             $groupKeys = $groupBy($value, $key);
 
-            if (! is_array($groupKeys)) {
+            if (!is_array($groupKeys)) {
                 $groupKeys = [$groupKeys];
             }
 
             foreach ($groupKeys as $groupKey) {
-                $groupKey = is_bool($groupKey) ? (int) $groupKey : $groupKey;
+                $groupKey = is_bool($groupKey) ? (int)$groupKey : $groupKey;
 
-                if (! array_key_exists($groupKey, $results)) {
+                if (!array_key_exists($groupKey, $results)) {
                     $results[$groupKey] = new static;
                 }
 
@@ -448,7 +566,7 @@ class SheetCollection implements ArrayAccess, Enumerable
 
         $result = new static($results);
 
-        if (! empty($nextGroups)) {
+        if (!empty($nextGroups)) {
             return $result->map->groupBy($nextGroups, $preserveKeys);
         }
 
@@ -456,9 +574,25 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Set the item at a given offset.
+     *
+     * @param mixed $key
+     * @param mixed $value
+     * @return void
+     */
+    public function offsetSet($key, $value)
+    {
+        if (is_null($key)) {
+            $this->items[] = $value;
+        } else {
+            $this->items[$key] = $value;
+        }
+    }
+
+    /**
      * Key an associative array by a field or using a callback.
      *
-     * @param  callable|string  $keyBy
+     * @param callable|string $keyBy
      * @return static
      */
     public function keyBy($keyBy)
@@ -471,7 +605,7 @@ class SheetCollection implements ArrayAccess, Enumerable
             $resolvedKey = $keyBy($item, $key);
 
             if (is_object($resolvedKey)) {
-                $resolvedKey = (string) $resolvedKey;
+                $resolvedKey = (string)$resolvedKey;
             }
 
             $results[$resolvedKey] = $item;
@@ -483,7 +617,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Determine if an item exists in the collection by key.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return bool
      */
     public function has($key)
@@ -491,7 +625,7 @@ class SheetCollection implements ArrayAccess, Enumerable
         $keys = is_array($key) ? $key : func_get_args();
 
         foreach ($keys as $value) {
-            if (! $this->offsetExists($value)) {
+            if (!$this->offsetExists($value)) {
                 return false;
             }
         }
@@ -500,27 +634,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Concatenate values of a given key as a string.
-     *
-     * @param  string  $value
-     * @param  string  $glue
-     * @return string
-     */
-    public function implode($value, $glue = null)
-    {
-        $first = $this->first();
-
-        if (is_array($first) || is_object($first)) {
-            return implode($glue, $this->pluck($value)->all());
-        }
-
-        return implode($value, $this->items);
-    }
-
-    /**
      * Intersect the collection with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function intersect($items)
@@ -531,7 +647,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Intersect the collection with the given items by key.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function intersectByKeys($items)
@@ -542,20 +658,10 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Determine if the collection is empty or not.
-     *
-     * @return bool
-     */
-    public function isEmpty()
-    {
-        return empty($this->items);
-    }
-
-    /**
      * Join all items from the collection using a string. The final items can use a separate glue string.
      *
-     * @param  string  $glue
-     * @param  string  $finalGlue
+     * @param string $glue
+     * @param string $finalGlue
      * @return string
      */
     public function join($glue, $finalGlue = '')
@@ -578,56 +684,35 @@ class SheetCollection implements ArrayAccess, Enumerable
 
         $finalItem = $collection->pop();
 
-        return $collection->implode($glue).$finalGlue.$finalItem;
+        return $collection->implode($glue) . $finalGlue . $finalItem;
     }
 
     /**
-     * Get the keys of the collection items.
+     * Concatenate values of a given key as a string.
      *
-     * @return static
+     * @param string $value
+     * @param string $glue
+     * @return string
      */
-    public function keys()
+    public function implode($value, $glue = null)
     {
-        return new static(array_keys($this->items));
+        $first = $this->first();
+
+        if (is_array($first) || is_object($first)) {
+            return implode($glue, $this->pluck($value)->all());
+        }
+
+        return implode($value, $this->items);
     }
 
     /**
-     * Get the last item from the collection.
+     * Get and remove the last item from the collection.
      *
-     * @param  callable|null  $callback
-     * @param  mixed  $default
      * @return mixed
      */
-    public function last(callable $callback = null, $default = null)
+    public function pop()
     {
-        return Arr::last($this->items, $callback, $default);
-    }
-
-    /**
-     * Get the values of a given key.
-     *
-     * @param  string|array  $value
-     * @param  string|null  $key
-     * @return static
-     */
-    public function pluck($value, $key = null)
-    {
-        return new static(Arr::pluck($this->items, $value, $key));
-    }
-
-    /**
-     * Run a map over each of the items.
-     *
-     * @param  callable  $callback
-     * @return static
-     */
-    public function map(callable $callback)
-    {
-        $keys = array_keys($this->items);
-
-        $items = array_map($callback, $this->items, $keys);
-
-        return new static(array_combine($keys, $items));
+        return array_pop($this->items);
     }
 
     /**
@@ -635,7 +720,7 @@ class SheetCollection implements ArrayAccess, Enumerable
      *
      * The callback should return an associative array with a single key/value pair.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return static
      */
     public function mapToDictionary(callable $callback)
@@ -649,7 +734,7 @@ class SheetCollection implements ArrayAccess, Enumerable
 
             $value = reset($pair);
 
-            if (! isset($dictionary[$key])) {
+            if (!isset($dictionary[$key])) {
                 $dictionary[$key] = [];
             }
 
@@ -664,7 +749,7 @@ class SheetCollection implements ArrayAccess, Enumerable
      *
      * The callback should return an associative array with a single key/value pair.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return static
      */
     public function mapWithKeys(callable $callback)
@@ -685,7 +770,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Merge the collection with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function merge($items)
@@ -696,7 +781,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Recursively merge the collection with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function mergeRecursive($items)
@@ -707,7 +792,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Create a collection by using this collection for keys and another for its values.
      *
-     * @param  mixed  $values
+     * @param mixed $values
      * @return static
      */
     public function combine($values)
@@ -718,7 +803,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Union the collection with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function union($items)
@@ -729,8 +814,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Create a new collection consisting of every n-th element.
      *
-     * @param  int  $step
-     * @param  int  $offset
+     * @param int $step
+     * @param int $offset
      * @return static
      */
     public function nth($step, $offset = 0)
@@ -753,7 +838,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get the items with the specified keys.
      *
-     * @param  mixed  $keys
+     * @param mixed $keys
      * @return static
      */
     public function only($keys)
@@ -772,20 +857,10 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Get and remove the last item from the collection.
-     *
-     * @return mixed
-     */
-    public function pop()
-    {
-        return array_pop($this->items);
-    }
-
-    /**
      * Push an item onto the beginning of the collection.
      *
-     * @param  mixed  $value
-     * @param  mixed  $key
+     * @param mixed $value
+     * @param mixed $key
      * @return $this
      */
     public function prepend($value, $key = null)
@@ -796,22 +871,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Push an item onto the end of the collection.
-     *
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function push($value)
-    {
-        $this->items[] = $value;
-
-        return $this;
-    }
-
-    /**
      * Push all of the given items onto the collection.
      *
-     * @param  iterable  $source
+     * @param iterable $source
      * @return static
      */
     public function concat($source)
@@ -826,10 +888,23 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Push an item onto the end of the collection.
+     *
+     * @param mixed $value
+     * @return $this
+     */
+    public function push($value)
+    {
+        $this->items[] = $value;
+
+        return $this;
+    }
+
+    /**
      * Get and remove an item from the collection.
      *
-     * @param  mixed  $key
-     * @param  mixed  $default
+     * @param mixed $key
+     * @param mixed $default
      * @return mixed
      */
     public function pull($key, $default = null)
@@ -840,8 +915,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Put an item in the collection by key.
      *
-     * @param  mixed  $key
-     * @param  mixed  $value
+     * @param mixed $key
+     * @param mixed $value
      * @return $this
      */
     public function put($key, $value)
@@ -854,7 +929,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Get one or a specified number of items randomly from the collection.
      *
-     * @param  int|null  $number
+     * @param int|null $number
      * @return static|mixed
      *
      * @throws \InvalidArgumentException
@@ -871,8 +946,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Reduce the collection to a single value.
      *
-     * @param  callable  $callback
-     * @param  mixed  $initial
+     * @param callable $callback
+     * @param mixed $initial
      * @return mixed
      */
     public function reduce(callable $callback, $initial = null)
@@ -883,7 +958,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Replace the collection items with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function replace($items)
@@ -894,7 +969,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Recursively replace the collection items with the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return static
      */
     public function replaceRecursive($items)
@@ -915,13 +990,13 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Search the collection for a given value and return the corresponding key if successful.
      *
-     * @param  mixed  $value
-     * @param  bool  $strict
+     * @param mixed $value
+     * @param bool $strict
      * @return mixed
      */
     public function search($value, $strict = false)
     {
-        if (! $this->useAsCallable($value)) {
+        if (!$this->useAsCallable($value)) {
             return array_search($value, $this->items, $strict);
         }
 
@@ -935,19 +1010,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Get and remove the first item from the collection.
-     *
-     * @return mixed
-     */
-    public function shift()
-    {
-        return array_shift($this->items);
-    }
-
-    /**
      * Shuffle the items in the collection.
      *
-     * @param  int  $seed
+     * @param int $seed
      * @return static
      */
     public function shuffle($seed = null)
@@ -958,7 +1023,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Skip the first {$count} items.
      *
-     * @param  int  $count
+     * @param int $count
      * @return static
      */
     public function skip($count)
@@ -969,8 +1034,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Slice the underlying collection array.
      *
-     * @param  int  $offset
-     * @param  int  $length
+     * @param int $offset
+     * @param int $length
      * @return static
      */
     public function slice($offset, $length = null)
@@ -981,7 +1046,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Split a collection into a certain number of groups.
      *
-     * @param  int  $numberOfGroups
+     * @param int $numberOfGroups
      * @return static
      */
     public function split($numberOfGroups)
@@ -1016,9 +1081,19 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
+     * Determine if the collection is empty or not.
+     *
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return empty($this->items);
+    }
+
+    /**
      * Chunk the collection into chunks of the given size.
      *
-     * @param  int  $size
+     * @param int $size
      * @return static
      */
     public function chunk($size)
@@ -1037,28 +1112,23 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Sort through each item with a callback.
+     * Sort the collection in descending order using the given callback.
      *
-     * @param  callable|null  $callback
+     * @param callable|string $callback
+     * @param int $options
      * @return static
      */
-    public function sort(callable $callback = null)
+    public function sortByDesc($callback, $options = SORT_REGULAR)
     {
-        $items = $this->items;
-
-        $callback
-            ? uasort($items, $callback)
-            : asort($items);
-
-        return new static($items);
+        return $this->sortBy($callback, $options, true);
     }
 
     /**
      * Sort the collection using the given callback.
      *
-     * @param  callable|string  $callback
-     * @param  int  $options
-     * @param  bool  $descending
+     * @param callable|string $callback
+     * @param int $options
+     * @param bool $descending
      * @return static
      */
     public function sortBy($callback, $options = SORT_REGULAR, $descending = false)
@@ -1088,22 +1158,21 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Sort the collection in descending order using the given callback.
+     * Sort the collection keys in descending order.
      *
-     * @param  callable|string  $callback
-     * @param  int  $options
+     * @param int $options
      * @return static
      */
-    public function sortByDesc($callback, $options = SORT_REGULAR)
+    public function sortKeysDesc($options = SORT_REGULAR)
     {
-        return $this->sortBy($callback, $options, true);
+        return $this->sortKeys($options, true);
     }
 
     /**
      * Sort the collection keys.
      *
-     * @param  int  $options
-     * @param  bool  $descending
+     * @param int $options
+     * @param bool $descending
      * @return static
      */
     public function sortKeys($options = SORT_REGULAR, $descending = false)
@@ -1116,22 +1185,11 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Sort the collection keys in descending order.
-     *
-     * @param  int  $options
-     * @return static
-     */
-    public function sortKeysDesc($options = SORT_REGULAR)
-    {
-        return $this->sortKeys($options, true);
-    }
-
-    /**
      * Splice a portion of the underlying collection array.
      *
-     * @param  int  $offset
-     * @param  int|null  $length
-     * @param  mixed  $replacement
+     * @param int $offset
+     * @param int|null $length
+     * @param mixed $replacement
      * @return static
      */
     public function splice($offset, $length = null, $replacement = [])
@@ -1146,7 +1204,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Take the first or last {$limit} items.
      *
-     * @param  int  $limit
+     * @param int $limit
      * @return static
      */
     public function take($limit)
@@ -1161,7 +1219,7 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Transform each item in the collection using a callback.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function transform(callable $callback)
@@ -1172,22 +1230,12 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Reset the keys on the underlying array.
-     *
-     * @return static
-     */
-    public function values()
-    {
-        return new static(array_values($this->items));
-    }
-
-    /**
      * Zip the collection together with one or more arrays.
      *
      * e.g. new Collection([1, 2, 3])->zip([4, 5, 6]);
      *      => [[1, 4], [2, 5], [3, 6]]
      *
-     * @param  mixed  ...$items
+     * @param mixed ...$items
      * @return static
      */
     public function zip($items)
@@ -1206,8 +1254,8 @@ class SheetCollection implements ArrayAccess, Enumerable
     /**
      * Pad collection to the specified length with a value.
      *
-     * @param  int  $size
-     * @param  mixed  $value
+     * @param int $size
+     * @param mixed $value
      * @return static
      */
     public function pad($size, $value)
@@ -1226,19 +1274,9 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Count the number of items in the collection.
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->items);
-    }
-
-    /**
      * Add an item to the collection.
      *
-     * @param  mixed  $item
+     * @param mixed $item
      * @return $this
      */
     public function add($item)
@@ -1259,51 +1297,13 @@ class SheetCollection implements ArrayAccess, Enumerable
     }
 
     /**
-     * Determine if an item exists at an offset.
-     *
-     * @param  mixed  $key
-     * @return bool
-     */
-    public function offsetExists($key)
-    {
-        return array_key_exists($key, $this->items);
-    }
-
-    /**
      * Get an item at a given offset.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return mixed
      */
     public function offsetGet($key)
     {
         return $this->items[$key];
-    }
-
-    /**
-     * Set the item at a given offset.
-     *
-     * @param  mixed  $key
-     * @param  mixed  $value
-     * @return void
-     */
-    public function offsetSet($key, $value)
-    {
-        if (is_null($key)) {
-            $this->items[] = $value;
-        } else {
-            $this->items[$key] = $value;
-        }
-    }
-
-    /**
-     * Unset the item at a given offset.
-     *
-     * @param  string  $key
-     * @return void
-     */
-    public function offsetUnset($key)
-    {
-        unset($this->items[$key]);
     }
 }

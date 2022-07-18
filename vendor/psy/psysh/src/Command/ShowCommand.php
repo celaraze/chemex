@@ -106,41 +106,6 @@ HELP
         throw new RuntimeException('Not enough arguments (missing: "target")');
     }
 
-    private function writeCodeContext(InputInterface $input, OutputInterface $output)
-    {
-        try {
-            list($target, $reflector) = $this->getTargetAndReflector($input->getArgument('target'));
-        } catch (UnexpectedTargetException $e) {
-            // If we didn't get a target and Reflector, maybe we got a filename?
-            $target = $e->getTarget();
-            if (\is_string($target) && \is_file($target) && $code = @\file_get_contents($target)) {
-                $file = \realpath($target);
-                if ($file !== $this->context->get('__file')) {
-                    $this->context->setCommandScopeVariables([
-                        '__file' => $file,
-                        '__dir'  => \dirname($file),
-                    ]);
-                }
-
-                $output->page(CodeFormatter::formatCode($code));
-
-                return;
-            } else {
-                throw $e;
-            }
-        }
-
-        // Set some magic local variables
-        $this->setCommandScopeVariables($reflector);
-
-        try {
-            $output->page(CodeFormatter::format($reflector));
-        } catch (RuntimeException $e) {
-            $output->writeln(SignatureFormatter::format($reflector));
-            throw $e;
-        }
-    }
-
     private function writeExceptionContext(InputInterface $input, OutputInterface $output)
     {
         $exception = $this->context->getLastException();
@@ -157,7 +122,7 @@ HELP
                 $index = 0;
             }
         } else {
-            $index = \max(0, (int) $input->getOption('ex') - 1);
+            $index = \max(0, (int)$input->getOption('ex') - 1);
         }
 
         $trace = $exception->getTrace();
@@ -198,13 +163,13 @@ HELP
     private function replaceCwd(string $file): string
     {
         if ($cwd = \getcwd()) {
-            $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR).\DIRECTORY_SEPARATOR;
+            $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         }
 
         if ($cwd === false) {
             return $file;
         } else {
-            return \preg_replace('/^'.\preg_quote($cwd, '/').'/', '', $file);
+            return \preg_replace('/^' . \preg_quote($cwd, '/') . '/', '', $file);
         }
     }
 
@@ -237,6 +202,13 @@ HELP
         $endLine = $line + 5;
 
         $output->write(CodeFormatter::formatCode($code, $startLine, $endLine, $line), false);
+    }
+
+    private function extractEvalFileAndLine(string $file)
+    {
+        if (\preg_match('/(.*)\\((\\d+)\\) : eval\\(\\)\'d code$/', $file, $matches)) {
+            return [$matches[1], $matches[2]];
+        }
     }
 
     private function setCommandScopeVariablesFromContext(array $context)
@@ -290,10 +262,38 @@ HELP
         $this->context->setCommandScopeVariables($vars);
     }
 
-    private function extractEvalFileAndLine(string $file)
+    private function writeCodeContext(InputInterface $input, OutputInterface $output)
     {
-        if (\preg_match('/(.*)\\((\\d+)\\) : eval\\(\\)\'d code$/', $file, $matches)) {
-            return [$matches[1], $matches[2]];
+        try {
+            list($target, $reflector) = $this->getTargetAndReflector($input->getArgument('target'));
+        } catch (UnexpectedTargetException $e) {
+            // If we didn't get a target and Reflector, maybe we got a filename?
+            $target = $e->getTarget();
+            if (\is_string($target) && \is_file($target) && $code = @\file_get_contents($target)) {
+                $file = \realpath($target);
+                if ($file !== $this->context->get('__file')) {
+                    $this->context->setCommandScopeVariables([
+                        '__file' => $file,
+                        '__dir' => \dirname($file),
+                    ]);
+                }
+
+                $output->page(CodeFormatter::formatCode($code));
+
+                return;
+            } else {
+                throw $e;
+            }
+        }
+
+        // Set some magic local variables
+        $this->setCommandScopeVariables($reflector);
+
+        try {
+            $output->page(CodeFormatter::format($reflector));
+        } catch (RuntimeException $e) {
+            $output->writeln(SignatureFormatter::format($reflector));
+            throw $e;
         }
     }
 }

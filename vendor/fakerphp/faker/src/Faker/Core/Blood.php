@@ -21,6 +21,15 @@ final class Blood implements Extension\BloodExtension
      */
     private $bloodRhFactors = ['+', '-'];
 
+    public function bloodGroup(): string
+    {
+        return sprintf(
+            '%s%s',
+            $this->bloodType(),
+            $this->bloodRh()
+        );
+    }
+
     public function bloodType(): string
     {
         return Extension\Helper::randomElement($this->bloodTypes);
@@ -29,14 +38,5 @@ final class Blood implements Extension\BloodExtension
     public function bloodRh(): string
     {
         return Extension\Helper::randomElement($this->bloodRhFactors);
-    }
-
-    public function bloodGroup(): string
-    {
-        return sprintf(
-            '%s%s',
-            $this->bloodType(),
-            $this->bloodRh()
-        );
     }
 }

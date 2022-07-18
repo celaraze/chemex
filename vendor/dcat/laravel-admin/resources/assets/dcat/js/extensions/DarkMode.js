@@ -1,4 +1,3 @@
-
 export default class DarkMode {
     constructor(Dcat) {
         this.options = {
@@ -15,8 +14,12 @@ export default class DarkMode {
     }
 
     // 暗黑模式切换按钮
-    initSwitcher (selector) {
-        var storage = localStorage || {setItem:function () {}, getItem: function () {}},
+    initSwitcher(selector) {
+        var storage = localStorage || {
+                setItem: function () {
+                }, getItem: function () {
+                }
+            },
             darkMode = this,
             key = 'dcat-admin-theme-mode',
             icon = '.dark-mode-switcher i';
@@ -88,7 +91,7 @@ export default class DarkMode {
         }
 
         $body.removeClass(cls.dark);
-        if (! options.sidebar_dark) {
+        if (!options.sidebar_dark) {
             $sidebar.addClass(cls.sidebarLight).removeClass(cls.sidebarDark);
         }
 

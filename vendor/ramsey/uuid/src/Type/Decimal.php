@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Type;
 
 use Ramsey\Uuid\Exception\InvalidArgumentException;
 use ValueError;
-
 use function is_numeric;
 use function sprintf;
 
@@ -44,50 +43,19 @@ final class Decimal implements NumberInterface
      */
     private $isNegative = false;
 
-    /**
-     * @param mixed $value The decimal value to store
-     */
-    public function __construct($value)
-    {
-        $value = (string) $value;
-
-        if (!is_numeric($value)) {
-            throw new InvalidArgumentException(
-                'Value must be a signed decimal or a string containing only '
-                . 'digits 0-9 and, optionally, a decimal point or sign (+ or -)'
-            );
-        }
-
-        // Remove the leading +-symbol.
-        if (strpos($value, '+') === 0) {
-            $value = substr($value, 1);
-        }
-
-        // For cases like `-0` or `-0.0000`, convert the value to `0`.
-        if (abs((float) $value) === 0.0) {
-            $value = '0';
-        }
-
-        if (strpos($value, '-') === 0) {
-            $this->isNegative = true;
-        }
-
-        $this->value = $value;
-    }
-
     public function isNegative(): bool
     {
         return $this->isNegative;
     }
 
-    public function toString(): string
-    {
-        return $this->value;
-    }
-
     public function __toString(): string
     {
         return $this->toString();
+    }
+
+    public function toString(): string
+    {
+        return $this->value;
     }
 
     public function jsonSerialize(): string
@@ -109,6 +77,20 @@ final class Decimal implements NumberInterface
     }
 
     /**
+     * @param array{string: string} $data
+     */
+    public function __unserialize(array $data): void
+    {
+        // @codeCoverageIgnoreStart
+        if (!isset($data['string'])) {
+            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
+        }
+        // @codeCoverageIgnoreEnd
+
+        $this->unserialize($data['string']);
+    }
+
+    /**
      * Constructs the object from a serialized string representation
      *
      * @param string $serialized The serialized string representation of the object
@@ -122,16 +104,33 @@ final class Decimal implements NumberInterface
     }
 
     /**
-     * @param array{string: string} $data
+     * @param mixed $value The decimal value to store
      */
-    public function __unserialize(array $data): void
+    public function __construct($value)
     {
-        // @codeCoverageIgnoreStart
-        if (!isset($data['string'])) {
-            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
-        }
-        // @codeCoverageIgnoreEnd
+        $value = (string)$value;
 
-        $this->unserialize($data['string']);
+        if (!is_numeric($value)) {
+            throw new InvalidArgumentException(
+                'Value must be a signed decimal or a string containing only '
+                . 'digits 0-9 and, optionally, a decimal point or sign (+ or -)'
+            );
+        }
+
+        // Remove the leading +-symbol.
+        if (strpos($value, '+') === 0) {
+            $value = substr($value, 1);
+        }
+
+        // For cases like `-0` or `-0.0000`, convert the value to `0`.
+        if (abs((float)$value) === 0.0) {
+            $value = '0';
+        }
+
+        if (strpos($value, '-') === 0) {
+            $this->isNegative = true;
+        }
+
+        $this->value = $value;
     }
 }

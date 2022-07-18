@@ -22,8 +22,8 @@ class PackageSorter
      *
      * Packages of equal weight are sorted alphabetically
      *
-     * @param  PackageInterface[] $packages
-     * @param  array<string, int> $weights Pre-set weights for some packages to give them more (negative number) or less (positive) weight offsets
+     * @param PackageInterface[] $packages
+     * @param array<string, int> $weights Pre-set weights for some packages to give them more (negative number) or less (positive) weight offsets
      * @return PackageInterface[] sorted array
      */
     public static function sortPackages(array $packages, array $weights = array()): array

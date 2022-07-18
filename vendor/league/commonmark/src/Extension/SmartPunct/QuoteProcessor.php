@@ -34,8 +34,24 @@ final class QuoteProcessor implements DelimiterProcessorInterface
     private function __construct(string $char, string $opener, string $closer)
     {
         $this->normalizedCharacter = $char;
-        $this->openerCharacter     = $opener;
-        $this->closerCharacter     = $closer;
+        $this->openerCharacter = $opener;
+        $this->closerCharacter = $closer;
+    }
+
+    /**
+     * Create a double-quote processor
+     */
+    public static function createDoubleQuoteProcessor(string $opener = Quote::DOUBLE_QUOTE_OPENER, string $closer = Quote::DOUBLE_QUOTE_CLOSER): self
+    {
+        return new self(Quote::DOUBLE_QUOTE, $opener, $closer);
+    }
+
+    /**
+     * Create a single-quote processor
+     */
+    public static function createSingleQuoteProcessor(string $opener = Quote::SINGLE_QUOTE_OPENER, string $closer = Quote::SINGLE_QUOTE_CLOSER): self
+    {
+        return new self(Quote::SINGLE_QUOTE, $opener, $closer);
     }
 
     public function getOpeningCharacter(): string
@@ -62,21 +78,5 @@ final class QuoteProcessor implements DelimiterProcessorInterface
     {
         $opener->insertAfter(new Quote($this->openerCharacter));
         $closer->insertBefore(new Quote($this->closerCharacter));
-    }
-
-    /**
-     * Create a double-quote processor
-     */
-    public static function createDoubleQuoteProcessor(string $opener = Quote::DOUBLE_QUOTE_OPENER, string $closer = Quote::DOUBLE_QUOTE_CLOSER): self
-    {
-        return new self(Quote::DOUBLE_QUOTE, $opener, $closer);
-    }
-
-    /**
-     * Create a single-quote processor
-     */
-    public static function createSingleQuoteProcessor(string $opener = Quote::SINGLE_QUOTE_OPENER, string $closer = Quote::SINGLE_QUOTE_CLOSER): self
-    {
-        return new self(Quote::SINGLE_QUOTE, $opener, $closer);
     }
 }

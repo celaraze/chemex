@@ -2,10 +2,10 @@
 
 namespace PhpParser\NodeVisitor;
 
-use function array_pop;
-use function count;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use function array_pop;
+use function count;
 
 /**
  * Visitor that connects a child node to its parent node.

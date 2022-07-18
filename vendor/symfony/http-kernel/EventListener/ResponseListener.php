@@ -33,6 +33,13 @@ class ResponseListener implements EventSubscriberInterface
         $this->addContentLanguageHeader = $addContentLanguageHeader;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::RESPONSE => 'onKernelResponse',
+        ];
+    }
+
     /**
      * Filters the Response.
      */
@@ -57,12 +64,5 @@ class ResponseListener implements EventSubscriberInterface
         }
 
         $response->prepare($event->getRequest());
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::RESPONSE => 'onKernelResponse',
-        ];
     }
 }

@@ -30,19 +30,6 @@ abstract class AbstractPart
         return $this->headers;
     }
 
-    public function getPreparedHeaders(): Headers
-    {
-        $headers = clone $this->headers;
-        $headers->setHeaderBody('Parameterized', 'Content-Type', $this->getMediaType().'/'.$this->getMediaSubtype());
-
-        return $headers;
-    }
-
-    public function toString(): string
-    {
-        return $this->getPreparedHeaders()->toString()."\r\n".$this->bodyToString();
-    }
-
     public function toIterable(): iterable
     {
         yield $this->getPreparedHeaders()->toString();
@@ -50,16 +37,29 @@ abstract class AbstractPart
         yield from $this->bodyToIterable();
     }
 
-    public function asDebugString(): string
+    public function toString(): string
     {
-        return $this->getMediaType().'/'.$this->getMediaSubtype();
+        return $this->getPreparedHeaders()->toString() . "\r\n" . $this->bodyToString();
     }
+
+    public function getPreparedHeaders(): Headers
+    {
+        $headers = clone $this->headers;
+        $headers->setHeaderBody('Parameterized', 'Content-Type', $this->getMediaType() . '/' . $this->getMediaSubtype());
+
+        return $headers;
+    }
+
+    abstract public function getMediaType(): string;
+
+    abstract public function getMediaSubtype(): string;
 
     abstract public function bodyToString(): string;
 
     abstract public function bodyToIterable(): iterable;
 
-    abstract public function getMediaType(): string;
-
-    abstract public function getMediaSubtype(): string;
+    public function asDebugString(): string
+    {
+        return $this->getMediaType() . '/' . $this->getMediaSubtype();
+    }
 }

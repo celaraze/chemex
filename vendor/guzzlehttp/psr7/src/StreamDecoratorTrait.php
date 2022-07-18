@@ -37,6 +37,16 @@ trait StreamDecoratorTrait
         throw new \UnexpectedValueException("$name not found on class");
     }
 
+    /**
+     * Implement in subclasses to dynamically create streams when requested.
+     *
+     * @throws \BadMethodCallException
+     */
+    protected function createStream(): StreamInterface
+    {
+        throw new \BadMethodCallException('Not implemented');
+    }
+
     public function __toString(): string
     {
         try {
@@ -48,9 +58,19 @@ trait StreamDecoratorTrait
             if (\PHP_VERSION_ID >= 70400) {
                 throw $e;
             }
-            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string) $e), E_USER_ERROR);
+            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string)$e), E_USER_ERROR);
             return '';
         }
+    }
+
+    public function isSeekable(): bool
+    {
+        return $this->stream->isSeekable();
+    }
+
+    public function seek($offset, $whence = SEEK_SET): void
+    {
+        $this->stream->seek($offset, $whence);
     }
 
     public function getContents(): string
@@ -118,19 +138,9 @@ trait StreamDecoratorTrait
         return $this->stream->isWritable();
     }
 
-    public function isSeekable(): bool
-    {
-        return $this->stream->isSeekable();
-    }
-
     public function rewind(): void
     {
         $this->seek(0);
-    }
-
-    public function seek($offset, $whence = SEEK_SET): void
-    {
-        $this->stream->seek($offset, $whence);
     }
 
     public function read($length): string
@@ -141,15 +151,5 @@ trait StreamDecoratorTrait
     public function write($string): int
     {
         return $this->stream->write($string);
-    }
-
-    /**
-     * Implement in subclasses to dynamically create streams when requested.
-     *
-     * @throws \BadMethodCallException
-     */
-    protected function createStream(): StreamInterface
-    {
-        throw new \BadMethodCallException('Not implemented');
     }
 }

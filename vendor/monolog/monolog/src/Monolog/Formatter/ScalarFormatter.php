@@ -35,7 +35,7 @@ class ScalarFormatter extends NormalizerFormatter
     }
 
     /**
-     * @param  mixed                      $value
+     * @param mixed $value
      * @return scalar|null
      */
     protected function normalizeValue($value)

@@ -38,7 +38,7 @@ class NoModelMakeRule implements Rule
     protected $reflectionProvider;
 
     /**
-     * @param  ReflectionProvider  $reflectionProvider
+     * @param ReflectionProvider $reflectionProvider
      */
     public function __construct(ReflectionProvider $reflectionProvider)
     {
@@ -54,15 +54,15 @@ class NoModelMakeRule implements Rule
     }
 
     /**
-     * @param  Node  $node
-     * @param  Scope  $scope
+     * @param Node $node
+     * @param Scope $scope
      * @return array<int, RuleError>
      */
     public function processNode(Node $node, Scope $scope): array
     {
         /** @var StaticCall $node due to @see getNodeType() */
         $name = $node->name;
-        if (! $name instanceof Identifier) {
+        if (!$name instanceof Identifier) {
             return [];
         }
 
@@ -70,7 +70,7 @@ class NoModelMakeRule implements Rule
             return [];
         }
 
-        if (! $this->isCalledOnModel($node, $scope)) {
+        if (!$this->isCalledOnModel($node, $scope)) {
             return [];
         }
 
@@ -86,8 +86,8 @@ class NoModelMakeRule implements Rule
     /**
      * Was the expression called on a Model instance?
      *
-     * @param  StaticCall  $call
-     * @param  Scope  $scope
+     * @param StaticCall $call
+     * @param Scope $scope
      * @return bool
      */
     protected function isCalledOnModel(StaticCall $call, Scope $scope): bool
@@ -98,11 +98,11 @@ class NoModelMakeRule implements Rule
         } elseif ($class instanceof Expr) {
             $exprType = $scope->getType($class);
 
-            if (! $exprType instanceof ConstantStringType) {
+            if (!$exprType instanceof ConstantStringType) {
                 return false;
             }
 
-            if (! $exprType->isClassString()) {
+            if (!$exprType->isClassString()) {
                 return false;
             }
 

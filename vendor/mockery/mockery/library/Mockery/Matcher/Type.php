@@ -38,7 +38,7 @@ class Type extends MatcherAbstract
         if (function_exists($function)) {
             return $function($actual);
         } elseif (is_string($this->_expected)
-        && (class_exists($this->_expected) || interface_exists($this->_expected))) {
+            && (class_exists($this->_expected) || interface_exists($this->_expected))) {
             return $actual instanceof $this->_expected;
         }
         return false;

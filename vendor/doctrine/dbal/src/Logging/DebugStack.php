@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Logging;
 
 use Doctrine\Deprecations\Deprecation;
-
 use function microtime;
 
 /**
@@ -47,7 +46,7 @@ class DebugStack implements SQLLogger
      */
     public function startQuery($sql, ?array $params = null, ?array $types = null)
     {
-        if (! $this->enabled) {
+        if (!$this->enabled) {
             return;
         }
 
@@ -66,7 +65,7 @@ class DebugStack implements SQLLogger
      */
     public function stopQuery()
     {
-        if (! $this->enabled) {
+        if (!$this->enabled) {
             return;
         }
 

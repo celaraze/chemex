@@ -22,7 +22,7 @@ class RefreshButton implements Renderable
      */
     public function render()
     {
-        if (! $this->display) {
+        if (!$this->display) {
             return;
         }
 

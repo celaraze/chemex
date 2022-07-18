@@ -68,18 +68,6 @@ class ValidClassNamePass extends NamespaceAwarePass
         }
     }
 
-    /**
-     * @param Node $node
-     */
-    public function leaveNode(Node $node)
-    {
-        if (self::isConditional($node)) {
-            $this->conditionalScopes--;
-
-            return;
-        }
-    }
-
     private static function isConditional(Node $node): bool
     {
         return $node instanceof If_ ||
@@ -104,33 +92,12 @@ class ValidClassNamePass extends NamespaceAwarePass
     }
 
     /**
-     * Validate an interface definition statement.
-     *
-     * @param Interface_ $stmt
-     */
-    protected function validateInterfaceStatement(Interface_ $stmt)
-    {
-        $this->ensureCanDefine($stmt, self::INTERFACE_TYPE);
-        $this->ensureInterfacesExist($stmt->extends, $stmt);
-    }
-
-    /**
-     * Validate a trait definition statement.
-     *
-     * @param Trait_ $stmt
-     */
-    protected function validateTraitStatement(Trait_ $stmt)
-    {
-        $this->ensureCanDefine($stmt, self::TRAIT_TYPE);
-    }
-
-    /**
      * Ensure that no class, interface or trait name collides with a new definition.
      *
+     * @param Stmt $stmt
+     * @param string $scopeType
      * @throws FatalErrorException
      *
-     * @param Stmt   $stmt
-     * @param string $scopeType
      */
     protected function ensureCanDefine(Stmt $stmt, string $scopeType = self::CLASS_TYPE)
     {
@@ -161,124 +128,6 @@ class ValidClassNamePass extends NamespaceAwarePass
     }
 
     /**
-     * Ensure that a referenced class exists.
-     *
-     * @throws FatalErrorException
-     *
-     * @param string $name
-     * @param Stmt   $stmt
-     */
-    protected function ensureClassExists(string $name, Stmt $stmt)
-    {
-        if (!$this->classExists($name)) {
-            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
-        }
-    }
-
-    /**
-     * Ensure that a referenced class _or interface_ exists.
-     *
-     * @throws FatalErrorException
-     *
-     * @param string $name
-     * @param Stmt   $stmt
-     */
-    protected function ensureClassOrInterfaceExists(string $name, Stmt $stmt)
-    {
-        if (!$this->classExists($name) && !$this->interfaceExists($name)) {
-            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
-        }
-    }
-
-    /**
-     * Ensure that a referenced class _or trait_ exists.
-     *
-     * @throws FatalErrorException
-     *
-     * @param string $name
-     * @param Stmt   $stmt
-     */
-    protected function ensureClassOrTraitExists(string $name, Stmt $stmt)
-    {
-        if (!$this->classExists($name) && !$this->traitExists($name)) {
-            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
-        }
-    }
-
-    /**
-     * Ensure that a statically called method exists.
-     *
-     * @throws FatalErrorException
-     *
-     * @param string $class
-     * @param string $name
-     * @param Stmt   $stmt
-     */
-    protected function ensureMethodExists(string $class, string $name, Stmt $stmt)
-    {
-        $this->ensureClassOrTraitExists($class, $stmt);
-
-        // let's pretend all calls to self, parent and static are valid
-        if (\in_array(\strtolower($class), ['self', 'parent', 'static'])) {
-            return;
-        }
-
-        // ... and all calls to classes defined right now
-        if ($this->findInScope($class) === self::CLASS_TYPE) {
-            return;
-        }
-
-        // if method name is an expression, give it a pass for now
-        if ($name instanceof Expr) {
-            return;
-        }
-
-        if (!\method_exists($class, $name) && !\method_exists($class, '__callStatic')) {
-            throw $this->createError(\sprintf('Call to undefined method %s::%s()', $class, $name), $stmt);
-        }
-    }
-
-    /**
-     * Ensure that a referenced interface exists.
-     *
-     * @throws FatalErrorException
-     *
-     * @param Interface_[] $interfaces
-     * @param Stmt         $stmt
-     */
-    protected function ensureInterfacesExist(array $interfaces, Stmt $stmt)
-    {
-        foreach ($interfaces as $interface) {
-            /** @var string $name */
-            $name = $this->getFullyQualifiedName($interface);
-            if (!$this->interfaceExists($name)) {
-                throw $this->createError(\sprintf('Interface \'%s\' not found', $name), $stmt);
-            }
-        }
-    }
-
-    /**
-     * Get a symbol type key for storing in the scope name cache.
-     *
-     * @deprecated No longer used. Scope type should be passed into ensureCanDefine directly.
-     * @codeCoverageIgnore
-     *
-     * @param Stmt $stmt
-     *
-     * @return string
-     */
-    protected function getScopeType(Stmt $stmt): string
-    {
-        if ($stmt instanceof Class_) {
-            return self::CLASS_TYPE;
-        } elseif ($stmt instanceof Interface_) {
-            return self::INTERFACE_TYPE;
-        } elseif ($stmt instanceof Trait_) {
-            return self::TRAIT_TYPE;
-        }
-    }
-
-    /**
      * Check whether a class exists, or has been defined in the current code snippet.
      *
      * Gives `self`, `static` and `parent` a free pass.
@@ -297,6 +146,21 @@ class ValidClassNamePass extends NamespaceAwarePass
         }
 
         return \class_exists($name) || $this->findInScope($name) === self::CLASS_TYPE;
+    }
+
+    /**
+     * Find a symbol in the current code snippet scope.
+     *
+     * @param string $name
+     *
+     * @return string|null
+     */
+    protected function findInScope(string $name)
+    {
+        $name = \strtolower($name);
+        if (isset($this->currentScope[$name])) {
+            return $this->currentScope[$name];
+        }
     }
 
     /**
@@ -324,30 +188,166 @@ class ValidClassNamePass extends NamespaceAwarePass
     }
 
     /**
-     * Find a symbol in the current code snippet scope.
-     *
-     * @param string $name
-     *
-     * @return string|null
-     */
-    protected function findInScope(string $name)
-    {
-        $name = \strtolower($name);
-        if (isset($this->currentScope[$name])) {
-            return $this->currentScope[$name];
-        }
-    }
-
-    /**
      * Error creation factory.
      *
      * @param string $msg
-     * @param Stmt   $stmt
+     * @param Stmt $stmt
      *
      * @return FatalErrorException
      */
     protected function createError(string $msg, Stmt $stmt): FatalErrorException
     {
         return new FatalErrorException($msg, 0, \E_ERROR, null, $stmt->getLine());
+    }
+
+    /**
+     * Ensure that a referenced class exists.
+     *
+     * @param string $name
+     * @param Stmt $stmt
+     * @throws FatalErrorException
+     *
+     */
+    protected function ensureClassExists(string $name, Stmt $stmt)
+    {
+        if (!$this->classExists($name)) {
+            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
+        }
+    }
+
+    /**
+     * Ensure that a referenced interface exists.
+     *
+     * @param Interface_[] $interfaces
+     * @param Stmt $stmt
+     * @throws FatalErrorException
+     *
+     */
+    protected function ensureInterfacesExist(array $interfaces, Stmt $stmt)
+    {
+        foreach ($interfaces as $interface) {
+            /** @var string $name */
+            $name = $this->getFullyQualifiedName($interface);
+            if (!$this->interfaceExists($name)) {
+                throw $this->createError(\sprintf('Interface \'%s\' not found', $name), $stmt);
+            }
+        }
+    }
+
+    /**
+     * Validate an interface definition statement.
+     *
+     * @param Interface_ $stmt
+     */
+    protected function validateInterfaceStatement(Interface_ $stmt)
+    {
+        $this->ensureCanDefine($stmt, self::INTERFACE_TYPE);
+        $this->ensureInterfacesExist($stmt->extends, $stmt);
+    }
+
+    /**
+     * Validate a trait definition statement.
+     *
+     * @param Trait_ $stmt
+     */
+    protected function validateTraitStatement(Trait_ $stmt)
+    {
+        $this->ensureCanDefine($stmt, self::TRAIT_TYPE);
+    }
+
+    /**
+     * @param Node $node
+     */
+    public function leaveNode(Node $node)
+    {
+        if (self::isConditional($node)) {
+            $this->conditionalScopes--;
+
+            return;
+        }
+    }
+
+    /**
+     * Ensure that a referenced class _or interface_ exists.
+     *
+     * @param string $name
+     * @param Stmt $stmt
+     * @throws FatalErrorException
+     *
+     */
+    protected function ensureClassOrInterfaceExists(string $name, Stmt $stmt)
+    {
+        if (!$this->classExists($name) && !$this->interfaceExists($name)) {
+            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
+        }
+    }
+
+    /**
+     * Ensure that a statically called method exists.
+     *
+     * @param string $class
+     * @param string $name
+     * @param Stmt $stmt
+     * @throws FatalErrorException
+     *
+     */
+    protected function ensureMethodExists(string $class, string $name, Stmt $stmt)
+    {
+        $this->ensureClassOrTraitExists($class, $stmt);
+
+        // let's pretend all calls to self, parent and static are valid
+        if (\in_array(\strtolower($class), ['self', 'parent', 'static'])) {
+            return;
+        }
+
+        // ... and all calls to classes defined right now
+        if ($this->findInScope($class) === self::CLASS_TYPE) {
+            return;
+        }
+
+        // if method name is an expression, give it a pass for now
+        if ($name instanceof Expr) {
+            return;
+        }
+
+        if (!\method_exists($class, $name) && !\method_exists($class, '__callStatic')) {
+            throw $this->createError(\sprintf('Call to undefined method %s::%s()', $class, $name), $stmt);
+        }
+    }
+
+    /**
+     * Ensure that a referenced class _or trait_ exists.
+     *
+     * @param string $name
+     * @param Stmt $stmt
+     * @throws FatalErrorException
+     *
+     */
+    protected function ensureClassOrTraitExists(string $name, Stmt $stmt)
+    {
+        if (!$this->classExists($name) && !$this->traitExists($name)) {
+            throw $this->createError(\sprintf('Class \'%s\' not found', $name), $stmt);
+        }
+    }
+
+    /**
+     * Get a symbol type key for storing in the scope name cache.
+     *
+     * @param Stmt $stmt
+     *
+     * @return string
+     * @deprecated No longer used. Scope type should be passed into ensureCanDefine directly.
+     * @codeCoverageIgnore
+     *
+     */
+    protected function getScopeType(Stmt $stmt): string
+    {
+        if ($stmt instanceof Class_) {
+            return self::CLASS_TYPE;
+        } elseif ($stmt instanceof Interface_) {
+            return self::INTERFACE_TYPE;
+        } elseif ($stmt instanceof Trait_) {
+            return self::TRAIT_TYPE;
+        }
     }
 }

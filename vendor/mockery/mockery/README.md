@@ -182,7 +182,8 @@ $book = $double->find(123);
 A detailed explanation of declaring expectations on method calls, please
 read the documentation, the [Expectation declarations](http://docs.mockery.io/en/latest/reference/expectations.html)
 section. After that, you can also learn about the new `allows` and `expects` methods
-in the [Alternative shouldReceive syntax](http://docs.mockery.io/en/latest/reference/alternative_should_receive_syntax.html)
+in
+the [Alternative shouldReceive syntax](http://docs.mockery.io/en/latest/reference/alternative_should_receive_syntax.html)
 section.
 
 It is worth mentioning that one way of setting up expectations is no better or worse
@@ -283,9 +284,11 @@ Mockery 1.3 was the last version to support HHVM 3 and PHP 5. There is no suppor
 at `padraic/mockery`, it is now at `mockery/mockery`. While your
 existing repositories will redirect transparently for any operations, take some
 time to transition to the new URL.
+
 ```sh
 $ git remote set-url upstream https://github.com/mockery/mockery.git
 ```
+
 Replace `upstream` with the name of the remote you use locally; `upstream` is commonly
 used but you may be using something else. Run `git remote -v` to see what you're actually
 using.

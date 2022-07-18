@@ -15,7 +15,7 @@ class WithGeneratorTest extends TestCase
      */
     public function testStore()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $storePath = $this->generateTempFilePath('xlsx');
 
@@ -44,9 +44,16 @@ class WithGeneratorTest extends TestCase
         $this->assertSheets($storePath, $users1, $users2);
     }
 
+    protected function makeGenerator(array $values)
+    {
+        while ($value = array_shift($values)) {
+            yield $value;
+        }
+    }
+
     public function testRaw()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $storePath = $this->generateTempFilePath('xlsx');
 
@@ -81,12 +88,5 @@ class WithGeneratorTest extends TestCase
 
         // 对比
         $this->assertSheets($storePath, $users1, $users2);
-    }
-
-    protected function makeGenerator(array $values)
-    {
-        while ($value = array_shift($values)) {
-            yield $value;
-        }
     }
 }

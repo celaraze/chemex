@@ -8,7 +8,6 @@ use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Schema\Sequence;
 use Doctrine\DBAL\Schema\Table;
 use SplObjectStorage;
-
 use function assert;
 use function strlen;
 
@@ -33,6 +32,13 @@ class DropSchemaSqlCollector extends AbstractVisitor
     {
         $this->platform = $platform;
         $this->initializeQueries();
+    }
+
+    private function initializeQueries(): void
+    {
+        $this->constraints = new SplObjectStorage();
+        $this->sequences = new SplObjectStorage();
+        $this->tables = new SplObjectStorage();
     }
 
     /**
@@ -81,7 +87,7 @@ class DropSchemaSqlCollector extends AbstractVisitor
         foreach ($this->constraints as $fkConstraint) {
             assert($fkConstraint instanceof ForeignKeyConstraint);
             $localTable = $this->constraints[$fkConstraint];
-            $sql[]      = $this->platform->getDropForeignKeySQL($fkConstraint, $localTable);
+            $sql[] = $this->platform->getDropForeignKeySQL($fkConstraint, $localTable);
         }
 
         foreach ($this->sequences as $sequence) {
@@ -95,12 +101,5 @@ class DropSchemaSqlCollector extends AbstractVisitor
         }
 
         return $sql;
-    }
-
-    private function initializeQueries(): void
-    {
-        $this->constraints = new SplObjectStorage();
-        $this->sequences   = new SplObjectStorage();
-        $this->tables      = new SplObjectStorage();
     }
 }

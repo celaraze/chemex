@@ -33,7 +33,7 @@ interface DownloaderInterface
     /**
      * This should do any network-related tasks to prepare for an upcoming install/update
      *
-     * @param  string $path download path
+     * @param string $path download path
      * @return PromiseInterface
      */
     public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;
@@ -46,10 +46,10 @@ interface DownloaderInterface
      * user prompts should happen in the prepare step rather. In case of failure, cleanup() will be called so that changes can
      * be undone as much as possible.
      *
-     * @param  string                $type        one of install/update/uninstall
-     * @param  PackageInterface      $package     package instance
-     * @param  string                $path        download path
-     * @param  PackageInterface      $prevPackage previous package instance in case of an update
+     * @param string $type one of install/update/uninstall
+     * @param PackageInterface $package package instance
+     * @param string $path download path
+     * @param PackageInterface $prevPackage previous package instance in case of an update
      * @return PromiseInterface
      */
     public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;
@@ -57,8 +57,8 @@ interface DownloaderInterface
     /**
      * Installs specific package into specific folder.
      *
-     * @param  PackageInterface      $package package instance
-     * @param  string                $path    download path
+     * @param PackageInterface $package package instance
+     * @param string $path download path
      * @return PromiseInterface
      */
     public function install(PackageInterface $package, string $path): PromiseInterface;
@@ -66,9 +66,9 @@ interface DownloaderInterface
     /**
      * Updates specific package in specific folder from initial to target version.
      *
-     * @param  PackageInterface      $initial initial package
-     * @param  PackageInterface      $target  updated package
-     * @param  string                $path    download path
+     * @param PackageInterface $initial initial package
+     * @param PackageInterface $target updated package
+     * @param string $path download path
      * @return PromiseInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface;
@@ -76,8 +76,8 @@ interface DownloaderInterface
     /**
      * Removes specific package from specific folder.
      *
-     * @param  PackageInterface      $package package instance
-     * @param  string                $path    download path
+     * @param PackageInterface $package package instance
+     * @param string $path download path
      * @return PromiseInterface
      */
     public function remove(PackageInterface $package, string $path): PromiseInterface;
@@ -89,10 +89,10 @@ interface DownloaderInterface
      * or if any package failed any operation. This is to give all installers a change to cleanup things
      * they did previously, so you need to keep track of changes applied in the installer/downloader themselves.
      *
-     * @param  string                $type        one of install/update/uninstall
-     * @param  PackageInterface      $package     package instance
-     * @param  string                $path        download path
-     * @param  PackageInterface      $prevPackage previous package instance in case of an update
+     * @param string $type one of install/update/uninstall
+     * @param PackageInterface $package package instance
+     * @param string $path download path
+     * @param PackageInterface $prevPackage previous package instance in case of an update
      * @return PromiseInterface
      */
     public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;

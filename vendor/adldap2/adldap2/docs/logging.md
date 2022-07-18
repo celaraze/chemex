@@ -10,7 +10,7 @@ By default, all of Adldap2's [events](events.md) will call the logger you have s
 
 To register a logger call `Adldap::setLogger()`. The logger must implement the `Psr\Log\LoggerInterface`.
 
->**Note**: Be sure to set the logger prior to creating a new `Adldap` instance. This
+> **Note**: Be sure to set the logger prior to creating a new `Adldap` instance. This
 > ensures all events throughout the lifecycle of the request use your logger.
 
 ```php
@@ -27,7 +27,8 @@ $ad->addProvider($config);
 
 ## Disabling Logging
 
-If you need to disable the event logger after a certain set of operations, simply pass in `null` and logging will be disabled:
+If you need to disable the event logger after a certain set of operations, simply pass in `null` and logging will be
+disabled:
 
 ```php
 use Adldap\Adldap;

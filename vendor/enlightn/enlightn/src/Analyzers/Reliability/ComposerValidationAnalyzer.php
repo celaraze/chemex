@@ -36,7 +36,7 @@ class ComposerValidationAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application's composer.json file is not valid. Run the composer validate command "
-            ."to view more details.";
+            . "to view more details.";
     }
 
     /**
@@ -47,7 +47,7 @@ class ComposerValidationAnalyzer extends ReliabilityAnalyzer
      */
     public function handle(Composer $composer)
     {
-        if (! Str::contains($composer->runCommand(['validate']), 'is valid')) {
+        if (!Str::contains($composer->runCommand(['validate']), 'is valid')) {
             $this->markFailed();
         }
     }

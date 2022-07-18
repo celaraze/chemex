@@ -39,34 +39,12 @@ final class HtmlRenderer implements DocumentRendererInterface, ChildNodeRenderer
     {
         $this->environment->dispatch(new DocumentPreRenderEvent($document, 'html'));
 
-        $output = new RenderedContent($document, (string) $this->renderNode($document));
+        $output = new RenderedContent($document, (string)$this->renderNode($document));
 
         $event = new DocumentRenderedEvent($output);
         $this->environment->dispatch($event);
 
         return $event->getOutput();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function renderNodes(iterable $nodes): string
-    {
-        $output = '';
-
-        $isFirstItem = true;
-
-        foreach ($nodes as $node) {
-            if (! $isFirstItem && $node instanceof AbstractBlock) {
-                $output .= $this->getBlockSeparator();
-            }
-
-            $output .= $this->renderNode($node);
-
-            $isFirstItem = false;
-        }
-
-        return $output;
     }
 
     /**
@@ -86,6 +64,28 @@ final class HtmlRenderer implements DocumentRendererInterface, ChildNodeRenderer
         }
 
         throw new \RuntimeException('Unable to find corresponding renderer for node type ' . \get_class($node));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function renderNodes(iterable $nodes): string
+    {
+        $output = '';
+
+        $isFirstItem = true;
+
+        foreach ($nodes as $node) {
+            if (!$isFirstItem && $node instanceof AbstractBlock) {
+                $output .= $this->getBlockSeparator();
+            }
+
+            $output .= $this->renderNode($node);
+
+            $isFirstItem = false;
+        }
+
+        return $output;
     }
 
     public function getBlockSeparator(): string

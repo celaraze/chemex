@@ -22,7 +22,7 @@ trait InteractsWithRenderApi
     /**
      * 监听异步渲染完成事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onLoad(string $script)
@@ -30,6 +30,27 @@ trait InteractsWithRenderApi
         $this->loadScript .= ";{$script}";
 
         return $this;
+    }
+
+    protected function getRenderableScript()
+    {
+        if (!$this->getRenderable()) {
+            return;
+        }
+
+        $url = $this->renderable->getUrl();
+
+        return <<<JS
+target.on('{$this->target}:load', function () {
+    Dcat.helpers.asyncRender('{$url}', function (html) {
+        body.html(html);
+
+        {$this->loadScript}
+
+        target.trigger('{$this->target}:loaded');
+    });
+});
+JS;
     }
 
     public function getRenderable()
@@ -42,26 +63,5 @@ trait InteractsWithRenderApi
         $this->renderable = $renderable;
 
         return $this;
-    }
-
-    protected function getRenderableScript()
-    {
-        if (! $this->getRenderable()) {
-            return;
-        }
-
-        $url = $this->renderable->getUrl();
-
-        return <<<JS
-target.on('{$this->target}:load', function () {
-    Dcat.helpers.asyncRender('{$url}', function (html) {
-        body.html(html);
-        
-        {$this->loadScript}
-        
-        target.trigger('{$this->target}:loaded');
-    });
-});
-JS;
     }
 }

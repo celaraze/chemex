@@ -7,7 +7,7 @@ interface SignerInterface
     /**
      * Signs the $input with the $key, after hashing it.
      *
-     * @param string          $input
+     * @param string $input
      * @param resource|string $key
      *
      * @return string|null
@@ -19,8 +19,8 @@ interface SignerInterface
      * given public $key.
      *
      * @param resource|string $key
-     * @param string          $signature
-     * @param string          $input
+     * @param string $signature
+     * @param string $input
      *
      * @return bool
      */

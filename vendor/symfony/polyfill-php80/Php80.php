@@ -28,14 +28,22 @@ final class Php80
     public static function get_debug_type($value): string
     {
         switch (true) {
-            case null === $value: return 'null';
-            case \is_bool($value): return 'bool';
-            case \is_string($value): return 'string';
-            case \is_array($value): return 'array';
-            case \is_int($value): return 'int';
-            case \is_float($value): return 'float';
-            case \is_object($value): break;
-            case $value instanceof \__PHP_Incomplete_Class: return '__PHP_Incomplete_Class';
+            case null === $value:
+                return 'null';
+            case \is_bool($value):
+                return 'bool';
+            case \is_string($value):
+                return 'string';
+            case \is_array($value):
+                return 'array';
+            case \is_int($value):
+                return 'int';
+            case \is_float($value):
+                return 'float';
+            case \is_object($value):
+                break;
+            case $value instanceof \__PHP_Incomplete_Class:
+                return '__PHP_Incomplete_Class';
             default:
                 if (null === $type = @get_resource_type($value)) {
                     return 'unknown';
@@ -54,7 +62,7 @@ final class Php80
             return $class;
         }
 
-        return (get_parent_class($class) ?: key(class_implements($class)) ?: 'class').'@anonymous';
+        return (get_parent_class($class) ?: key(class_implements($class)) ?: 'class') . '@anonymous';
     }
 
     public static function get_resource_id($res): int
@@ -63,7 +71,7 @@ final class Php80
             throw new \TypeError(sprintf('Argument 1 passed to get_resource_id() must be of the type resource, %s given', get_debug_type($res)));
         }
 
-        return (int) $res;
+        return (int)$res;
     }
 
     public static function preg_last_error_msg(): string

@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection\Types;
 use ArrayIterator;
 use IteratorAggregate;
 use phpDocumentor\Reflection\Type;
-
 use function array_key_exists;
 use function implode;
 
@@ -52,6 +51,50 @@ abstract class AggregatedType implements Type, IteratorAggregate
     }
 
     /**
+     * @psalm-suppress ImpureMethodCall
+     */
+    private function add(Type $type): void
+    {
+        if ($type instanceof self) {
+            foreach ($type->getIterator() as $subType) {
+                $this->add($subType);
+            }
+
+            return;
+        }
+
+        // if the type is duplicate; do not add it
+        if ($this->contains($type)) {
+            return;
+        }
+
+        $this->types[] = $type;
+    }
+
+    /**
+     * @return ArrayIterator<int, Type>
+     */
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->types);
+    }
+
+    /**
+     * Tests if this compound type contains the given type.
+     */
+    public function contains(Type $type): bool
+    {
+        foreach ($this->types as $typePart) {
+            // if the type is duplicate; do not add it
+            if ((string)$typePart === (string)$type) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the type at the given index.
      */
     public function get(int $index): ?Type
@@ -72,54 +115,10 @@ abstract class AggregatedType implements Type, IteratorAggregate
     }
 
     /**
-     * Tests if this compound type contains the given type.
-     */
-    public function contains(Type $type): bool
-    {
-        foreach ($this->types as $typePart) {
-            // if the type is duplicate; do not add it
-            if ((string) $typePart === (string) $type) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns a rendered output of the Type as it would be used in a DocBlock.
      */
     public function __toString(): string
     {
         return implode($this->token, $this->types);
-    }
-
-    /**
-     * @return ArrayIterator<int, Type>
-     */
-    public function getIterator(): ArrayIterator
-    {
-        return new ArrayIterator($this->types);
-    }
-
-    /**
-     * @psalm-suppress ImpureMethodCall
-     */
-    private function add(Type $type): void
-    {
-        if ($type instanceof self) {
-            foreach ($type->getIterator() as $subType) {
-                $this->add($subType);
-            }
-
-            return;
-        }
-
-        // if the type is duplicate; do not add it
-        if ($this->contains($type)) {
-            return;
-        }
-
-        $this->types[] = $type;
     }
 }

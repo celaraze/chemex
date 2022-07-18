@@ -23,7 +23,8 @@ class XliffFileDumper extends FileDumper
 {
     public function __construct(
         private string $extension = 'xlf',
-    ) {
+    )
+    {
     }
 
     /**
@@ -50,14 +51,6 @@ class XliffFileDumper extends FileDumper
         }
 
         throw new InvalidArgumentException(sprintf('No support implemented for dumping XLIFF version "%s".', $xliffVersion));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getExtension(): string
-    {
-        return $this->extension;
     }
 
     private function dumpXliff1(string $defaultLocale, MessageCatalogue $messages, ?string $domain, array $options = [])
@@ -143,6 +136,11 @@ class XliffFileDumper extends FileDumper
         return $dom->saveXML();
     }
 
+    private function hasMetadataArrayInfo(string $key, array $metadata = null): bool
+    {
+        return is_iterable($metadata[$key] ?? null);
+    }
+
     private function dumpXliff2(string $defaultLocale, MessageCatalogue $messages, ?string $domain)
     {
         $dom = new \DOMDocument('1.0', 'utf-8');
@@ -156,9 +154,9 @@ class XliffFileDumper extends FileDumper
 
         $xliffFile = $xliff->appendChild($dom->createElement('file'));
         if (str_ends_with($domain, MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
-            $xliffFile->setAttribute('id', substr($domain, 0, -\strlen(MessageCatalogue::INTL_DOMAIN_SUFFIX)).'.'.$messages->getLocale());
+            $xliffFile->setAttribute('id', substr($domain, 0, -\strlen(MessageCatalogue::INTL_DOMAIN_SUFFIX)) . '.' . $messages->getLocale());
         } else {
-            $xliffFile->setAttribute('id', $domain.'.'.$messages->getLocale());
+            $xliffFile->setAttribute('id', $domain . '.' . $messages->getLocale());
         }
 
         if ($catalogueMetadata = $messages->getCatalogueMetadata('', $domain) ?? []) {
@@ -220,8 +218,11 @@ class XliffFileDumper extends FileDumper
         return $dom->saveXML();
     }
 
-    private function hasMetadataArrayInfo(string $key, array $metadata = null): bool
+    /**
+     * {@inheritdoc}
+     */
+    protected function getExtension(): string
     {
-        return is_iterable($metadata[$key] ?? null);
+        return $this->extension;
     }
 }

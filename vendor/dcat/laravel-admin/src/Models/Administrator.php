@@ -29,7 +29,7 @@ class Administrator extends Model implements AuthenticatableContract
     /**
      * Create a new Eloquent model instance.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -57,7 +57,7 @@ class Administrator extends Model implements AuthenticatableContract
         $avatar = $this->avatar;
 
         if ($avatar) {
-            if (! URL::isValidUrl($avatar)) {
+            if (!URL::isValidUrl($avatar)) {
                 $avatar = Storage::disk(config('admin.upload.disk'))->url($avatar);
             }
 
@@ -84,7 +84,7 @@ class Administrator extends Model implements AuthenticatableContract
     /**
      * 判断是否允许查看菜单.
      *
-     * @param  array|Menu  $menu
+     * @param array|Menu $menu
      * @return bool
      */
     public function canSeeMenu($menu)

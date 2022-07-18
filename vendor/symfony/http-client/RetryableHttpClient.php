@@ -119,7 +119,7 @@ class RetryableHttpClient implements HttpClientInterface, ResetInterface
             $delay = $this->getDelayFromHeader($context->getHeaders()) ?? $this->strategy->getDelay($context, !$exception && $chunk->isLast() ? $content : null, $exception);
             ++$retryCount;
 
-            $this->logger->info('Try #{count} after {delay}ms'.($exception ? ': '.$exception->getMessage() : ', status code: '.$context->getStatusCode()), [
+            $this->logger->info('Try #{count} after {delay}ms' . ($exception ? ': ' . $exception->getMessage() : ', status code: ' . $context->getStatusCode()), [
                 'count' => $retryCount,
                 'delay' => $delay,
             ]);
@@ -132,21 +132,6 @@ class RetryableHttpClient implements HttpClientInterface, ResetInterface
                 $context->passthru();
             }
         });
-    }
-
-    private function getDelayFromHeader(array $headers): ?int
-    {
-        if (null !== $after = $headers['retry-after'][0] ?? null) {
-            if (is_numeric($after)) {
-                return (int) $after * 1000;
-            }
-
-            if (false !== $time = strtotime($after)) {
-                return max(0, $time - time()) * 1000;
-            }
-        }
-
-        return null;
     }
 
     private function passthru(AsyncContext $context, ?ChunkInterface $firstChunk, string &$content, ChunkInterface $lastChunk): \Generator
@@ -165,5 +150,20 @@ class RetryableHttpClient implements HttpClientInterface, ResetInterface
         }
 
         yield $lastChunk;
+    }
+
+    private function getDelayFromHeader(array $headers): ?int
+    {
+        if (null !== $after = $headers['retry-after'][0] ?? null) {
+            if (is_numeric($after)) {
+                return (int)$after * 1000;
+            }
+
+            if (false !== $time = strtotime($after)) {
+                return max(0, $time - time()) * 1000;
+            }
+        }
+
+        return null;
     }
 }

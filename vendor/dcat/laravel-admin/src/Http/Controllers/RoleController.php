@@ -17,6 +17,85 @@ class RoleController extends AdminController
         return trans('admin.roles');
     }
 
+    public function form()
+    {
+        $with = ['permissions'];
+
+        if ($bindMenu = config('admin.menu.role_bind_menu', true)) {
+            $with[] = 'menus';
+        }
+
+        return Form::make(Role::with($with), function (Form $form) use ($bindMenu) {
+            $roleTable = config('admin.database.roles_table');
+            $connection = config('admin.database.connection');
+
+            $id = $form->getKey();
+
+            $form->display('id', 'ID');
+
+            $form->text('slug', trans('admin.slug'))
+                ->required()
+                ->creationRules(['required', "unique:{$connection}.{$roleTable}"])
+                ->updateRules(['required', "unique:{$connection}.{$roleTable},slug,$id"]);
+
+            $form->text('name', trans('admin.name'))->required();
+
+            $form->tree('permissions')
+                ->nodes(function () {
+                    $permissionModel = config('admin.database.permissions_model');
+                    $permissionModel = new $permissionModel();
+
+                    return $permissionModel->allNodes();
+                })
+                ->customFormat(function ($v) {
+                    if (!$v) {
+                        return [];
+                    }
+
+                    return array_column($v, 'id');
+                });
+
+            if ($bindMenu) {
+                $form->tree('menus', trans('admin.menu'))
+                    ->treeState(false)
+                    ->setTitleColumn('title')
+                    ->nodes(function () {
+                        $model = config('admin.database.menu_model');
+
+                        return (new $model())->allNodes();
+                    })
+                    ->customFormat(function ($v) {
+                        if (!$v) {
+                            return [];
+                        }
+
+                        return array_column($v, 'id');
+                    });
+            }
+
+            $form->display('created_at', trans('admin.created_at'));
+            $form->display('updated_at', trans('admin.updated_at'));
+
+            $roleModel = config('admin.database.roles_model');
+            if ($id == $roleModel::ADMINISTRATOR_ID) {
+                $form->disableDeleteButton();
+            }
+        })->saved(function () {
+            $model = config('admin.database.menu_model');
+            (new $model())->flushCache();
+        });
+    }
+
+    public function destroy($id)
+    {
+        $roleModel = config('admin.database.roles_model');
+        if (in_array($roleModel::ADMINISTRATOR_ID, Helper::array($id))) {
+            Permission::error();
+        }
+
+        return parent::destroy($id);
+    }
+
     protected function grid()
     {
         return new Grid(new Role(), function (Grid $grid) {
@@ -71,84 +150,5 @@ class RoleController extends AdminController
                 $show->disableDeleteButton();
             }
         });
-    }
-
-    public function form()
-    {
-        $with = ['permissions'];
-
-        if ($bindMenu = config('admin.menu.role_bind_menu', true)) {
-            $with[] = 'menus';
-        }
-
-        return Form::make(Role::with($with), function (Form $form) use ($bindMenu) {
-            $roleTable = config('admin.database.roles_table');
-            $connection = config('admin.database.connection');
-
-            $id = $form->getKey();
-
-            $form->display('id', 'ID');
-
-            $form->text('slug', trans('admin.slug'))
-                ->required()
-                ->creationRules(['required', "unique:{$connection}.{$roleTable}"])
-                ->updateRules(['required', "unique:{$connection}.{$roleTable},slug,$id"]);
-
-            $form->text('name', trans('admin.name'))->required();
-
-            $form->tree('permissions')
-                ->nodes(function () {
-                    $permissionModel = config('admin.database.permissions_model');
-                    $permissionModel = new $permissionModel();
-
-                    return $permissionModel->allNodes();
-                })
-                ->customFormat(function ($v) {
-                    if (! $v) {
-                        return [];
-                    }
-
-                    return array_column($v, 'id');
-                });
-
-            if ($bindMenu) {
-                $form->tree('menus', trans('admin.menu'))
-                    ->treeState(false)
-                    ->setTitleColumn('title')
-                    ->nodes(function () {
-                        $model = config('admin.database.menu_model');
-
-                        return (new $model())->allNodes();
-                    })
-                    ->customFormat(function ($v) {
-                        if (! $v) {
-                            return [];
-                        }
-
-                        return array_column($v, 'id');
-                    });
-            }
-
-            $form->display('created_at', trans('admin.created_at'));
-            $form->display('updated_at', trans('admin.updated_at'));
-
-            $roleModel = config('admin.database.roles_model');
-            if ($id == $roleModel::ADMINISTRATOR_ID) {
-                $form->disableDeleteButton();
-            }
-        })->saved(function () {
-            $model = config('admin.database.menu_model');
-            (new $model())->flushCache();
-        });
-    }
-
-    public function destroy($id)
-    {
-        $roleModel = config('admin.database.roles_model');
-        if (in_array($roleModel::ADMINISTRATOR_ID, Helper::array($id))) {
-            Permission::error();
-        }
-
-        return parent::destroy($id);
     }
 }

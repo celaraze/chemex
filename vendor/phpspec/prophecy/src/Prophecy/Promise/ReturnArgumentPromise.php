@@ -12,8 +12,8 @@
 namespace Prophecy\Promise;
 
 use Prophecy\Exception\InvalidArgumentException;
-use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  * Return argument promise.
@@ -48,7 +48,7 @@ class ReturnArgumentPromise implements PromiseInterface
     /**
      * Returns nth argument if has one, null otherwise.
      *
-     * @param array          $args
+     * @param array $args
      * @param ObjectProphecy $object
      * @param MethodProphecy $method
      *

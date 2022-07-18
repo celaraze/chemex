@@ -30,7 +30,7 @@ class ClosureValidationRule implements RuleContract
     /**
      * Create a new Closure based validation rule.
      *
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return void
      */
     public function __construct($callback)
@@ -41,8 +41,8 @@ class ClosureValidationRule implements RuleContract
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      * @return bool
      */
     public function passes($attribute, $value)
@@ -55,7 +55,7 @@ class ClosureValidationRule implements RuleContract
             $this->message = $message;
         });
 
-        return ! $this->failed;
+        return !$this->failed;
     }
 
     /**

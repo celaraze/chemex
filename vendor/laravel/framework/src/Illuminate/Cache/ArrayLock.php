@@ -16,10 +16,10 @@ class ArrayLock extends Lock
     /**
      * Create a new lock instance.
      *
-     * @param  \Illuminate\Cache\ArrayStore  $store
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
+     * @param \Illuminate\Cache\ArrayStore $store
+     * @param string $name
+     * @param int $seconds
+     * @param string|null $owner
      * @return void
      */
     public function __construct($store, $name, $seconds, $owner = null)
@@ -67,27 +67,17 @@ class ArrayLock extends Lock
      */
     public function release()
     {
-        if (! $this->exists()) {
+        if (!$this->exists()) {
             return false;
         }
 
-        if (! $this->isOwnedByCurrentProcess()) {
+        if (!$this->isOwnedByCurrentProcess()) {
             return false;
         }
 
         $this->forceRelease();
 
         return true;
-    }
-
-    /**
-     * Returns the owner value written into the driver for this lock.
-     *
-     * @return string
-     */
-    protected function getCurrentOwner()
-    {
-        return $this->store->locks[$this->name]['owner'];
     }
 
     /**
@@ -98,5 +88,15 @@ class ArrayLock extends Lock
     public function forceRelease()
     {
         unset($this->store->locks[$this->name]);
+    }
+
+    /**
+     * Returns the owner value written into the driver for this lock.
+     *
+     * @return string
+     */
+    protected function getCurrentOwner()
+    {
+        return $this->store->locks[$this->name]['owner'];
     }
 }

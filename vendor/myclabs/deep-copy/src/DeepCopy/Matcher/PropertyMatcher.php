@@ -18,7 +18,7 @@ class PropertyMatcher implements Matcher
     private $property;
 
     /**
-     * @param string $class    Class name
+     * @param string $class Class name
      * @param string $property Property name
      */
     public function __construct($class, $property)

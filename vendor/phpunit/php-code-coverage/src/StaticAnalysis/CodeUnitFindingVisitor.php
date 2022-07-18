@@ -7,11 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
-use function implode;
-use function rtrim;
-use function trim;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
@@ -28,6 +26,9 @@ use PhpParser\Node\UnionType;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use SebastianBergmann\Complexity\CyclomaticComplexityCalculatingVisitor;
+use function implode;
+use function rtrim;
+use function trim;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -82,53 +83,82 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         $this->processFunction($node);
     }
 
-    /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
-     */
-    public function classes(): array
+    private function processClass(Class_ $node): void
     {
-        return $this->classes;
+        $name = $node->name->toString();
+        $namespacedName = $node->namespacedName->toString();
+
+        $this->classes[$namespacedName] = [
+            'name' => $name,
+            'namespacedName' => $namespacedName,
+            'namespace' => $this->namespace($namespacedName, $name),
+            'startLine' => $node->getStartLine(),
+            'endLine' => $node->getEndLine(),
+            'methods' => [],
+        ];
     }
 
-    /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
-     */
-    public function traits(): array
+    private function namespace(string $namespacedName, string $name): string
     {
-        return $this->traits;
+        return trim(rtrim($namespacedName, $name), '\\');
     }
 
-    /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, signature: string, startLine: int, endLine: int, ccn: int}>
-     */
-    public function functions(): array
+    private function processTrait(Trait_ $node): void
     {
-        return $this->functions;
+        $name = $node->name->toString();
+        $namespacedName = $node->namespacedName->toString();
+
+        $this->traits[$namespacedName] = [
+            'name' => $name,
+            'namespacedName' => $namespacedName,
+            'namespace' => $this->namespace($namespacedName, $name),
+            'startLine' => $node->getStartLine(),
+            'endLine' => $node->getEndLine(),
+            'methods' => [],
+        ];
     }
 
-    /**
-     * @psalm-param ClassMethod|Function_ $node
-     */
-    private function cyclomaticComplexity(Node $node): int
+    private function processMethod(ClassMethod $node): void
     {
-        assert($node instanceof ClassMethod || $node instanceof Function_);
+        $parentNode = $node->getAttribute('parent');
 
-        $nodes = $node->getStmts();
-
-        if ($nodes === null) {
-            return 0;
+        if ($parentNode instanceof Interface_) {
+            return;
         }
 
-        $traverser = new NodeTraverser;
+        assert($parentNode instanceof Class_ || $parentNode instanceof Trait_ || $parentNode instanceof Enum_);
+        assert(isset($parentNode->name));
+        assert(isset($parentNode->namespacedName));
+        assert($parentNode->namespacedName instanceof Name);
 
-        $cyclomaticComplexityCalculatingVisitor = new CyclomaticComplexityCalculatingVisitor;
+        $parentName = $parentNode->name->toString();
+        $parentNamespacedName = $parentNode->namespacedName->toString();
 
-        $traverser->addVisitor($cyclomaticComplexityCalculatingVisitor);
+        if ($parentNode instanceof Class_) {
+            $storage = &$this->classes;
+        } else {
+            $storage = &$this->traits;
+        }
 
-        /* @noinspection UnusedFunctionResultInspection */
-        $traverser->traverse($nodes);
+        if (!isset($storage[$parentNamespacedName])) {
+            $storage[$parentNamespacedName] = [
+                'name' => $parentName,
+                'namespacedName' => $parentNamespacedName,
+                'namespace' => $this->namespace($parentNamespacedName, $parentName),
+                'startLine' => $parentNode->getStartLine(),
+                'endLine' => $parentNode->getEndLine(),
+                'methods' => [],
+            ];
+        }
 
-        return $cyclomaticComplexityCalculatingVisitor->cyclomaticComplexity();
+        $storage[$parentNamespacedName]['methods'][$node->name->toString()] = [
+            'methodName' => $node->name->toString(),
+            'signature' => $this->signature($node),
+            'visibility' => $this->visibility($node),
+            'startLine' => $node->getStartLine(),
+            'endLine' => $node->getEndLine(),
+            'ccn' => $this->cyclomaticComplexity($node),
+        ];
     }
 
     /**
@@ -138,7 +168,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     {
         assert($node instanceof ClassMethod || $node instanceof Function_);
 
-        $signature  = ($node->returnsByRef() ? '&' : '') . $node->name->toString() . '(';
+        $signature = ($node->returnsByRef() ? '&' : '') . $node->name->toString() . '(';
         $parameters = [];
 
         foreach ($node->getParams() as $parameter) {
@@ -186,117 +216,6 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         return $type->toString();
     }
 
-    private function visibility(ClassMethod $node): string
-    {
-        if ($node->isPrivate()) {
-            return 'private';
-        }
-
-        if ($node->isProtected()) {
-            return 'protected';
-        }
-
-        return 'public';
-    }
-
-    private function processClass(Class_ $node): void
-    {
-        $name           = $node->name->toString();
-        $namespacedName = $node->namespacedName->toString();
-
-        $this->classes[$namespacedName] = [
-            'name'           => $name,
-            'namespacedName' => $namespacedName,
-            'namespace'      => $this->namespace($namespacedName, $name),
-            'startLine'      => $node->getStartLine(),
-            'endLine'        => $node->getEndLine(),
-            'methods'        => [],
-        ];
-    }
-
-    private function processTrait(Trait_ $node): void
-    {
-        $name           = $node->name->toString();
-        $namespacedName = $node->namespacedName->toString();
-
-        $this->traits[$namespacedName] = [
-            'name'           => $name,
-            'namespacedName' => $namespacedName,
-            'namespace'      => $this->namespace($namespacedName, $name),
-            'startLine'      => $node->getStartLine(),
-            'endLine'        => $node->getEndLine(),
-            'methods'        => [],
-        ];
-    }
-
-    private function processMethod(ClassMethod $node): void
-    {
-        $parentNode = $node->getAttribute('parent');
-
-        if ($parentNode instanceof Interface_) {
-            return;
-        }
-
-        assert($parentNode instanceof Class_ || $parentNode instanceof Trait_ || $parentNode instanceof Enum_);
-        assert(isset($parentNode->name));
-        assert(isset($parentNode->namespacedName));
-        assert($parentNode->namespacedName instanceof Name);
-
-        $parentName           = $parentNode->name->toString();
-        $parentNamespacedName = $parentNode->namespacedName->toString();
-
-        if ($parentNode instanceof Class_) {
-            $storage = &$this->classes;
-        } else {
-            $storage = &$this->traits;
-        }
-
-        if (!isset($storage[$parentNamespacedName])) {
-            $storage[$parentNamespacedName] = [
-                'name'           => $parentName,
-                'namespacedName' => $parentNamespacedName,
-                'namespace'      => $this->namespace($parentNamespacedName, $parentName),
-                'startLine'      => $parentNode->getStartLine(),
-                'endLine'        => $parentNode->getEndLine(),
-                'methods'        => [],
-            ];
-        }
-
-        $storage[$parentNamespacedName]['methods'][$node->name->toString()] = [
-            'methodName' => $node->name->toString(),
-            'signature'  => $this->signature($node),
-            'visibility' => $this->visibility($node),
-            'startLine'  => $node->getStartLine(),
-            'endLine'    => $node->getEndLine(),
-            'ccn'        => $this->cyclomaticComplexity($node),
-        ];
-    }
-
-    private function processFunction(Function_ $node): void
-    {
-        assert(isset($node->name));
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
-        $name           = $node->name->toString();
-        $namespacedName = $node->namespacedName->toString();
-
-        $this->functions[$namespacedName] = [
-            'name'           => $name,
-            'namespacedName' => $namespacedName,
-            'namespace'      => $this->namespace($namespacedName, $name),
-            'signature'      => $this->signature($node),
-            'startLine'      => $node->getStartLine(),
-            'endLine'        => $node->getEndLine(),
-            'ccn'            => $this->cyclomaticComplexity($node),
-        ];
-    }
-
-    private function namespace(string $namespacedName, string $name): string
-    {
-        return trim(rtrim($namespacedName, $name), '\\');
-    }
-
     /**
      * @psalm-param UnionType|IntersectionType $type
      */
@@ -319,5 +238,87 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         }
 
         return implode($separator, $types);
+    }
+
+    private function visibility(ClassMethod $node): string
+    {
+        if ($node->isPrivate()) {
+            return 'private';
+        }
+
+        if ($node->isProtected()) {
+            return 'protected';
+        }
+
+        return 'public';
+    }
+
+    /**
+     * @psalm-param ClassMethod|Function_ $node
+     */
+    private function cyclomaticComplexity(Node $node): int
+    {
+        assert($node instanceof ClassMethod || $node instanceof Function_);
+
+        $nodes = $node->getStmts();
+
+        if ($nodes === null) {
+            return 0;
+        }
+
+        $traverser = new NodeTraverser;
+
+        $cyclomaticComplexityCalculatingVisitor = new CyclomaticComplexityCalculatingVisitor;
+
+        $traverser->addVisitor($cyclomaticComplexityCalculatingVisitor);
+
+        /* @noinspection UnusedFunctionResultInspection */
+        $traverser->traverse($nodes);
+
+        return $cyclomaticComplexityCalculatingVisitor->cyclomaticComplexity();
+    }
+
+    private function processFunction(Function_ $node): void
+    {
+        assert(isset($node->name));
+        assert(isset($node->namespacedName));
+        assert($node->namespacedName instanceof Name);
+
+        $name = $node->name->toString();
+        $namespacedName = $node->namespacedName->toString();
+
+        $this->functions[$namespacedName] = [
+            'name' => $name,
+            'namespacedName' => $namespacedName,
+            'namespace' => $this->namespace($namespacedName, $name),
+            'signature' => $this->signature($node),
+            'startLine' => $node->getStartLine(),
+            'endLine' => $node->getEndLine(),
+            'ccn' => $this->cyclomaticComplexity($node),
+        ];
+    }
+
+    /**
+     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     */
+    public function classes(): array
+    {
+        return $this->classes;
+    }
+
+    /**
+     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     */
+    public function traits(): array
+    {
+        return $this->traits;
+    }
+
+    /**
+     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, signature: string, startLine: int, endLine: int, ccn: int}>
+     */
+    public function functions(): array
+    {
+        return $this->functions;
     }
 }

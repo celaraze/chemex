@@ -46,7 +46,7 @@ class CutStub extends Stub
             case 'unknown type':
             case 'resource (closed)':
                 $this->type = self::TYPE_RESOURCE;
-                $this->handle = (int) $value;
+                $this->handle = (int)$value;
                 if ('Unknown' === $this->class = @get_resource_type($value)) {
                     $this->class = 'Closed';
                 }

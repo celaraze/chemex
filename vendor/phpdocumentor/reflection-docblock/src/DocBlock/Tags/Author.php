@@ -14,11 +14,9 @@ declare(strict_types=1);
 namespace phpDocumentor\Reflection\DocBlock\Tags;
 
 use InvalidArgumentException;
-
 use function filter_var;
 use function preg_match;
 use function trim;
-
 use const FILTER_VALIDATE_EMAIL;
 
 /**
@@ -44,8 +42,24 @@ final class Author extends BaseTag implements Factory\StaticMethod
             throw new InvalidArgumentException('The author tag does not have a valid e-mail address');
         }
 
-        $this->authorName  = $authorName;
+        $this->authorName = $authorName;
         $this->authorEmail = $authorEmail;
+    }
+
+    /**
+     * Attempts to create a new Author object based on the tag body.
+     */
+    public static function create(string $body): ?self
+    {
+        $splitTagContent = preg_match('/^([^\<]*)(?:\<([^\>]*)\>)?$/u', $body, $matches);
+        if (!$splitTagContent) {
+            return null;
+        }
+
+        $authorName = trim($matches[1]);
+        $email = isset($matches[2]) ? trim($matches[2]) : '';
+
+        return new static($authorName, $email);
     }
 
     /**
@@ -82,21 +96,5 @@ final class Author extends BaseTag implements Factory\StaticMethod
         $authorName = $this->authorName;
 
         return $authorName . ($authorEmail !== '' ? ($authorName !== '' ? ' ' : '') . $authorEmail : '');
-    }
-
-    /**
-     * Attempts to create a new Author object based on the tag body.
-     */
-    public static function create(string $body): ?self
-    {
-        $splitTagContent = preg_match('/^([^\<]*)(?:\<([^\>]*)\>)?$/u', $body, $matches);
-        if (!$splitTagContent) {
-            return null;
-        }
-
-        $authorName = trim($matches[1]);
-        $email      = isset($matches[2]) ? trim($matches[2]) : '';
-
-        return new static($authorName, $email);
     }
 }

@@ -14,9 +14,9 @@ final class HeaderProcessor
      *
      * @param string[] $headers
      *
+     * @return array{0:string, 1:int, 2:?string, 3:array}
      * @throws \RuntimeException
      *
-     * @return array{0:string, 1:int, 2:?string, 3:array}
      */
     public static function parseHeaders(array $headers): array
     {
@@ -37,6 +37,6 @@ final class HeaderProcessor
             throw new \RuntimeException('HTTP status code missing from header data');
         }
 
-        return [$version, (int) $status, $parts[2] ?? null, Utils::headersFromLines($headers)];
+        return [$version, (int)$status, $parts[2] ?? null, Utils::headersFromLines($headers)];
     }
 }

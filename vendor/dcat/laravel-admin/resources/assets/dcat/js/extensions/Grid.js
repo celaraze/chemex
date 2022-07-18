@@ -1,4 +1,3 @@
-
 let defaultName = '_def_';
 
 export default class Grid {
@@ -30,7 +29,8 @@ export default class Grid {
 
 class AsyncGrid {
     constructor(options) {
-        let nullFun = function () {};
+        let nullFun = function () {
+        };
 
         options = $.extend({
             selector: null,
@@ -90,10 +90,10 @@ class AsyncGrid {
         }
 
         if (url.indexOf(reqName) === -1) {
-            url += '&'+reqName+'=1';
+            url += '&' + reqName + '=1';
         }
 
-        history.pushState({}, '', url.replace(reqName+'=1', ''));
+        history.pushState({}, '', url.replace(reqName + '=1', ''));
 
         $box.data('current', url);
 
@@ -138,7 +138,7 @@ class AsyncGrid {
                     action += '?';
                 }
 
-                self.render(action+'&'+$(this).serialize());
+                self.render(action + '&' + $(this).serialize());
 
                 return false;
             });

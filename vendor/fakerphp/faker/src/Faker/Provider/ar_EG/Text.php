@@ -4,11 +4,6 @@ namespace Faker\Provider\ar_EG;
 
 class Text extends \Faker\Provider\Text
 {
-    protected static function validStart($word)
-    {
-        return preg_match('/^\p{Arabic}/u', $word);
-    }
-
     /**
      * License: Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
      *
@@ -28,4 +23,9 @@ class Text extends \Faker\Provider\Text
 
 وفي الليلة الثالثة قالت لها أختها دنيا زاد : يا أختي أتمي لنا حديثك فقالت حبًا وكرامة بلغني أيها الملك السعيد أن التاجر أقبل على الشيوخ وشكرهم هنوه بالسلامة ورجع كل واحد إلى بلده وما هذه بأعجب من حكاية الصياد فقال لها الملك: وما حكاية الصياد؟يا ناس اقرأو الكتب فالكتب مشوقة و اتمنى ان تقرأوا القصة التالية لانها مشوقة .
 EOT;
+
+    protected static function validStart($word)
+    {
+        return preg_match('/^\p{Arabic}/u', $word);
+    }
 }

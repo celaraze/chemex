@@ -41,6 +41,16 @@ final class Success extends Result
     }
 
     /**
+     * Get the success option value.
+     *
+     * @return \PhpOption\Option<T>
+     */
+    public function success()
+    {
+        return Some::create($this->value);
+    }
+
+    /**
      * Create a new error value.
      *
      * @template S
@@ -52,16 +62,6 @@ final class Success extends Result
     public static function create($value)
     {
         return new self($value);
-    }
-
-    /**
-     * Get the success option value.
-     *
-     * @return \PhpOption\Option<T>
-     */
-    public function success()
-    {
-        return Some::create($this->value);
     }
 
     /**

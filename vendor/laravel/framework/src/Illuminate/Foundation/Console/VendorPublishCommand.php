@@ -19,37 +19,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class VendorPublishCommand extends Command
 {
     /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
-
-    /**
-     * The provider to publish.
-     *
-     * @var string
-     */
-    protected $provider = null;
-
-    /**
-     * The tags to publish.
-     *
-     * @var array
-     */
-    protected $tags = [];
-
-    /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'vendor:publish {--force : Overwrite any existing files}
-                    {--all : Publish assets for all service providers without prompt}
-                    {--provider= : The service provider that has assets you want to publish}
-                    {--tag=* : One or many tags that have assets you want to publish}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -59,7 +28,33 @@ class VendorPublishCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'vendor:publish';
-
+    /**
+     * The filesystem instance.
+     *
+     * @var \Illuminate\Filesystem\Filesystem
+     */
+    protected $files;
+    /**
+     * The provider to publish.
+     *
+     * @var string
+     */
+    protected $provider = null;
+    /**
+     * The tags to publish.
+     *
+     * @var array
+     */
+    protected $tags = [];
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'vendor:publish {--force : Overwrite any existing files}
+                    {--all : Publish assets for all service providers without prompt}
+                    {--provider= : The service provider that has assets you want to publish}
+                    {--tag=* : One or many tags that have assets you want to publish}';
     /**
      * The console command description.
      *
@@ -70,7 +65,7 @@ class VendorPublishCommand extends Command
     /**
      * Create a new command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -108,10 +103,10 @@ class VendorPublishCommand extends Command
         }
 
         [$this->provider, $this->tags] = [
-            $this->option('provider'), (array) $this->option('tag'),
+            $this->option('provider'), (array)$this->option('tag'),
         ];
 
-        if (! $this->provider && ! $this->tags) {
+        if (!$this->provider && !$this->tags) {
             $this->promptForProviderOrTag();
         }
     }
@@ -152,7 +147,7 @@ class VendorPublishCommand extends Command
     /**
      * Parse the answer that was given via the prompt.
      *
-     * @param  string  $choice
+     * @param string $choice
      * @return void
      */
     protected function parseChoice($choice)
@@ -169,7 +164,7 @@ class VendorPublishCommand extends Command
     /**
      * Publishes the assets for a tag.
      *
-     * @param  string  $tag
+     * @param string $tag
      * @return mixed
      */
     protected function publishTag($tag)
@@ -185,7 +180,7 @@ class VendorPublishCommand extends Command
         }
 
         if ($published === false) {
-            $this->comment('No publishable resources for tag ['.$tag.'].');
+            $this->comment('No publishable resources for tag [' . $tag . '].');
         } else {
             $this->laravel['events']->dispatch(new VendorTagPublished($tag, $pathsToPublish));
         }
@@ -194,7 +189,7 @@ class VendorPublishCommand extends Command
     /**
      * Get all of the paths to publish.
      *
-     * @param  string  $tag
+     * @param string $tag
      * @return array
      */
     protected function pathsToPublish($tag)
@@ -207,8 +202,8 @@ class VendorPublishCommand extends Command
     /**
      * Publish the given item from and to the given location.
      *
-     * @param  string  $from
-     * @param  string  $to
+     * @param string $from
+     * @param string $to
      * @return void
      */
     protected function publishItem($from, $to)
@@ -225,13 +220,13 @@ class VendorPublishCommand extends Command
     /**
      * Publish the file to the given path.
      *
-     * @param  string  $from
-     * @param  string  $to
+     * @param string $from
+     * @param string $to
      * @return void
      */
     protected function publishFile($from, $to)
     {
-        if (! $this->files->exists($to) || $this->option('force')) {
+        if (!$this->files->exists($to) || $this->option('force')) {
             $this->createParentDirectory(dirname($to));
 
             $this->files->copy($from, $to);
@@ -241,10 +236,40 @@ class VendorPublishCommand extends Command
     }
 
     /**
+     * Create the directory to house the published files if needed.
+     *
+     * @param string $directory
+     * @return void
+     */
+    protected function createParentDirectory($directory)
+    {
+        if (!$this->files->isDirectory($directory)) {
+            $this->files->makeDirectory($directory, 0755, true);
+        }
+    }
+
+    /**
+     * Write a status message to the console.
+     *
+     * @param string $from
+     * @param string $to
+     * @param string $type
+     * @return void
+     */
+    protected function status($from, $to, $type)
+    {
+        $from = str_replace(base_path(), '', realpath($from));
+
+        $to = str_replace(base_path(), '', realpath($to));
+
+        $this->line('<info>Copied ' . $type . '</info> <comment>[' . $from . ']</comment> <info>To</info> <comment>[' . $to . ']</comment>');
+    }
+
+    /**
      * Publish the directory to the given directory.
      *
-     * @param  string  $from
-     * @param  string  $to
+     * @param string $from
+     * @param string $to
      * @return void
      */
     protected function publishDirectory($from, $to)
@@ -262,7 +287,7 @@ class VendorPublishCommand extends Command
     /**
      * Move all the files in the given MountManager.
      *
-     * @param  \League\Flysystem\MountManager  $manager
+     * @param \League\Flysystem\MountManager $manager
      * @return void
      */
     protected function moveManagedFiles($manager)
@@ -270,39 +295,9 @@ class VendorPublishCommand extends Command
         foreach ($manager->listContents('from://', true) as $file) {
             $path = Str::after($file['path'], 'from://');
 
-            if ($file['type'] === 'file' && (! $manager->fileExists('to://'.$path) || $this->option('force'))) {
-                $manager->write('to://'.$path, $manager->read($file['path']));
+            if ($file['type'] === 'file' && (!$manager->fileExists('to://' . $path) || $this->option('force'))) {
+                $manager->write('to://' . $path, $manager->read($file['path']));
             }
         }
-    }
-
-    /**
-     * Create the directory to house the published files if needed.
-     *
-     * @param  string  $directory
-     * @return void
-     */
-    protected function createParentDirectory($directory)
-    {
-        if (! $this->files->isDirectory($directory)) {
-            $this->files->makeDirectory($directory, 0755, true);
-        }
-    }
-
-    /**
-     * Write a status message to the console.
-     *
-     * @param  string  $from
-     * @param  string  $to
-     * @param  string  $type
-     * @return void
-     */
-    protected function status($from, $to, $type)
-    {
-        $from = str_replace(base_path(), '', realpath($from));
-
-        $to = str_replace(base_path(), '', realpath($to));
-
-        $this->line('<info>Copied '.$type.'</info> <comment>['.$from.']</comment> <info>To</info> <comment>['.$to.']</comment>');
     }
 }

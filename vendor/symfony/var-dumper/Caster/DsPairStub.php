@@ -21,8 +21,8 @@ class DsPairStub extends Stub
     public function __construct(string|int $key, mixed $value)
     {
         $this->value = [
-            Caster::PREFIX_VIRTUAL.'key' => $key,
-            Caster::PREFIX_VIRTUAL.'value' => $value,
+            Caster::PREFIX_VIRTUAL . 'key' => $key,
+            Caster::PREFIX_VIRTUAL . 'value' => $value,
         ];
     }
 }

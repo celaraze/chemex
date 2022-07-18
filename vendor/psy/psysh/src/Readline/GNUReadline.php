@@ -28,18 +28,19 @@ class GNUReadline implements Readline
     protected $eraseDups;
 
     /**
-     * GNU Readline is supported iff `readline_list_history` is defined. PHP
-     * decided it would be awesome to swap out GNU Readline for Libedit, but
-     * they ended up shipping an incomplete implementation. So we've got this.
+     * GNU Readline constructor.
      *
-     * NOTE: As of PHP 7.4, PHP sometimes has history support in the Libedit
-     * wrapper, so that will use the GNUReadline implementation as well!
-     *
-     * @return bool
+     * @param string|false $historyFile
+     * @param int $historySize
+     * @param bool $eraseDups
      */
-    public static function isSupported(): bool
+    public function __construct($historyFile = null, $historySize = 0, $eraseDups = false)
     {
-        return \function_exists('readline') && \function_exists('readline_list_history');
+        $this->historyFile = ($historyFile !== null) ? $historyFile : false;
+        $this->historySize = $historySize;
+        $this->eraseDups = $eraseDups;
+
+        \readline_info('readline_name', 'psysh');
     }
 
     /**
@@ -55,19 +56,18 @@ class GNUReadline implements Readline
     }
 
     /**
-     * GNU Readline constructor.
+     * GNU Readline is supported iff `readline_list_history` is defined. PHP
+     * decided it would be awesome to swap out GNU Readline for Libedit, but
+     * they ended up shipping an incomplete implementation. So we've got this.
      *
-     * @param string|false $historyFile
-     * @param int          $historySize
-     * @param bool         $eraseDups
+     * NOTE: As of PHP 7.4, PHP sometimes has history support in the Libedit
+     * wrapper, so that will use the GNUReadline implementation as well!
+     *
+     * @return bool
      */
-    public function __construct($historyFile = null, $historySize = 0, $eraseDups = false)
+    public static function isSupported(): bool
     {
-        $this->historyFile = ($historyFile !== null) ? $historyFile : false;
-        $this->historySize = $historySize;
-        $this->eraseDups = $eraseDups;
-
-        \readline_info('readline_name', 'psysh');
+        return \function_exists('readline') && \function_exists('readline_list_history');
     }
 
     /**
@@ -80,53 +80,6 @@ class GNUReadline implements Readline
         }
 
         return $res;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clearHistory(): bool
-    {
-        if ($res = \readline_clear_history()) {
-            $this->writeHistory();
-        }
-
-        return $res;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function listHistory(): array
-    {
-        return \readline_list_history();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function readHistory(): bool
-    {
-        \readline_read_history();
-        \readline_clear_history();
-
-        return \readline_read_history($this->historyFile);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function readline(string $prompt = null)
-    {
-        return \readline($prompt);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function redisplay()
-    {
-        \readline_redisplay();
     }
 
     /**
@@ -175,5 +128,52 @@ class GNUReadline implements Readline
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listHistory(): array
+    {
+        return \readline_list_history();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearHistory(): bool
+    {
+        if ($res = \readline_clear_history()) {
+            $this->writeHistory();
+        }
+
+        return $res;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readHistory(): bool
+    {
+        \readline_read_history();
+        \readline_clear_history();
+
+        return \readline_read_history($this->historyFile);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readline(string $prompt = null)
+    {
+        return \readline($prompt);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function redisplay()
+    {
+        \readline_redisplay();
     }
 }

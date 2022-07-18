@@ -24,7 +24,7 @@ final class Embed extends AbstractBlock
     {
         parent::__construct();
 
-        $this->url       = $url;
+        $this->url = $url;
         $this->embedCode = $embedCode;
     }
 

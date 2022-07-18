@@ -20,9 +20,9 @@ class ArgumentNode
 {
     private $name;
     private $default;
-    private $optional    = false;
+    private $optional = false;
     private $byReference = false;
-    private $isVariadic  = false;
+    private $isVariadic = false;
 
     /** @var ArgumentTypeNode */
     private $typeNode;
@@ -41,19 +41,29 @@ class ArgumentNode
         return $this->name;
     }
 
+    public function getTypeNode(): ArgumentTypeNode
+    {
+        return $this->typeNode;
+    }
+
     public function setTypeNode(ArgumentTypeNode $typeNode)
     {
         $this->typeNode = $typeNode;
     }
 
-    public function getTypeNode() : ArgumentTypeNode
-    {
-        return $this->typeNode;
-    }
-
     public function hasDefault()
     {
         return $this->isOptional() && !$this->isVariadic();
+    }
+
+    public function isOptional()
+    {
+        return $this->optional;
+    }
+
+    public function isVariadic()
+    {
+        return $this->isVariadic;
     }
 
     public function getDefault()
@@ -64,12 +74,7 @@ class ArgumentNode
     public function setDefault($default = null)
     {
         $this->optional = true;
-        $this->default  = $default;
-    }
-
-    public function isOptional()
-    {
-        return $this->optional;
+        $this->default = $default;
     }
 
     public function setAsPassedByReference($byReference = true)
@@ -87,14 +92,9 @@ class ArgumentNode
         $this->isVariadic = $isVariadic;
     }
 
-    public function isVariadic()
-    {
-        return $this->isVariadic;
-    }
-
     /**
-     * @deprecated use getArgumentTypeNode instead
      * @return string|null
+     * @deprecated use getArgumentTypeNode instead
      */
     public function getTypeHint()
     {
@@ -104,8 +104,8 @@ class ArgumentNode
     }
 
     /**
-     * @deprecated use setArgumentTypeNode instead
      * @param string|null $typeHint
+     * @deprecated use setArgumentTypeNode instead
      */
     public function setTypeHint($typeHint = null)
     {
@@ -113,8 +113,8 @@ class ArgumentNode
     }
 
     /**
-     * @deprecated use getArgumentTypeNode instead
      * @return bool
+     * @deprecated use getArgumentTypeNode instead
      */
     public function isNullable()
     {
@@ -122,8 +122,8 @@ class ArgumentNode
     }
 
     /**
-     * @deprecated use getArgumentTypeNode instead
      * @param bool $isNullable
+     * @deprecated use getArgumentTypeNode instead
      */
     public function setAsNullable($isNullable = true)
     {

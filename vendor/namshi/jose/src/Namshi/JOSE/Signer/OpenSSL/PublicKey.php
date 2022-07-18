@@ -28,29 +28,10 @@ abstract class PublicKey implements SignerInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function verify($key, $signature, $input)
-    {
-        $keyResource = $this->getKeyResource($key);
-        if (!$this->supportsKey($keyResource)) {
-            throw new InvalidArgumentException('Invalid key supplied.');
-        }
-
-        $result = openssl_verify($input, $signature, $keyResource, $this->getHashingAlgorithm());
-
-        if ($result === -1) {
-            throw new RuntimeException('Unknown error during verification.');
-        }
-
-        return (bool) $result;
-    }
-
-    /**
      * Converts a string representation of a key into an OpenSSL resource.
      *
      * @param string|resource $key
-     * @param string          $password
+     * @param string $password
      *
      * @return resource OpenSSL key resource
      */
@@ -83,6 +64,13 @@ abstract class PublicKey implements SignerInterface
     }
 
     /**
+     * Returns the private key type supported in this signer.
+     *
+     * @return string
+     */
+    abstract protected function getSupportedPrivateKeyType();
+
+    /**
      * Returns the hashing algorithm used in this signer.
      *
      * @return string
@@ -90,9 +78,21 @@ abstract class PublicKey implements SignerInterface
     abstract protected function getHashingAlgorithm();
 
     /**
-     * Returns the private key type supported in this signer.
-     *
-     * @return string
+     * {@inheritdoc}
      */
-    abstract protected function getSupportedPrivateKeyType();
+    public function verify($key, $signature, $input)
+    {
+        $keyResource = $this->getKeyResource($key);
+        if (!$this->supportsKey($keyResource)) {
+            throw new InvalidArgumentException('Invalid key supplied.');
+        }
+
+        $result = openssl_verify($input, $signature, $keyResource, $this->getHashingAlgorithm());
+
+        if ($result === -1) {
+            throw new RuntimeException('Unknown error during verification.');
+        }
+
+        return (bool)$result;
+    }
 }

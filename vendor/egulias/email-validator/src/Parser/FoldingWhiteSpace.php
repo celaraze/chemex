@@ -1,17 +1,18 @@
 <?php
+
 namespace Egulias\EmailValidator\Parser;
 
 use Egulias\EmailValidator\EmailLexer;
-use Egulias\EmailValidator\Warning\CFWSNearAt;
 use Egulias\EmailValidator\Result\InvalidEmail;
-use Egulias\EmailValidator\Warning\CFWSWithFWS;
-use Egulias\EmailValidator\Result\Reason\CRNoLF;
 use Egulias\EmailValidator\Result\Reason\AtextAfterCFWS;
 use Egulias\EmailValidator\Result\Reason\CRLFAtTheEnd;
 use Egulias\EmailValidator\Result\Reason\CRLFX2;
+use Egulias\EmailValidator\Result\Reason\CRNoLF;
 use Egulias\EmailValidator\Result\Reason\ExpectingCTEXT;
 use Egulias\EmailValidator\Result\Result;
 use Egulias\EmailValidator\Result\ValidEmail;
+use Egulias\EmailValidator\Warning\CFWSNearAt;
+use Egulias\EmailValidator\Warning\CFWSWithFWS;
 
 class  FoldingWhiteSpace extends PartParser
 {
@@ -23,7 +24,7 @@ class  FoldingWhiteSpace extends PartParser
         EmailLexer::CRLF
     ];
 
-    public function parse() : Result
+    public function parse(): Result
     {
         if (!$this->isFWS()) {
             return new ValidEmail();
@@ -40,7 +41,7 @@ class  FoldingWhiteSpace extends PartParser
             return new InvalidEmail(new CRNoLF(), $this->lexer->token['value']);
         }
 
-        if ($this->lexer->isNextToken(EmailLexer::GENERIC) && $previous['type']  !== EmailLexer::S_AT) {
+        if ($this->lexer->isNextToken(EmailLexer::GENERIC) && $previous['type'] !== EmailLexer::S_AT) {
             return new InvalidEmail(new AtextAfterCFWS(), $this->lexer->token['value']);
         }
 
@@ -48,7 +49,7 @@ class  FoldingWhiteSpace extends PartParser
             return new InvalidEmail(new ExpectingCTEXT(), $this->lexer->token['value']);
         }
 
-        if ($this->lexer->isNextToken(EmailLexer::S_AT) || $previous['type']  === EmailLexer::S_AT) {
+        if ($this->lexer->isNextToken(EmailLexer::S_AT) || $previous['type'] === EmailLexer::S_AT) {
             $this->warnings[CFWSNearAt::CODE] = new CFWSNearAt();
         } else {
             $this->warnings[CFWSWithFWS::CODE] = new CFWSWithFWS();
@@ -57,7 +58,16 @@ class  FoldingWhiteSpace extends PartParser
         return new ValidEmail();
     }
 
-    protected function checkCRLFInFWS() : Result
+    protected function isFWS(): bool
+    {
+        if ($this->escaped()) {
+            return false;
+        }
+
+        return in_array($this->lexer->token['type'], self::FWS_TYPES);
+    }
+
+    protected function checkCRLFInFWS(): Result
     {
         if ($this->lexer->token['type'] !== EmailLexer::CRLF) {
             return new ValidEmail();
@@ -73,14 +83,5 @@ class  FoldingWhiteSpace extends PartParser
         }
 
         return new ValidEmail();
-    }
-     
-    protected function isFWS() : bool
-    {
-        if ($this->escaped()) {
-            return false;
-        }
-
-        return in_array($this->lexer->token['type'], self::FWS_TYPES);
     }
 }

@@ -17,13 +17,6 @@ use Symfony\Component\Console\Terminal;
 class ScheduleListCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'schedule:list {--timezone= : The timezone that times should be displayed in}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -33,7 +26,18 @@ class ScheduleListCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'schedule:list';
-
+    /**
+     * The terminal width resolver callback.
+     *
+     * @var \Closure|null
+     */
+    protected static $terminalWidthResolver;
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'schedule:list {--timezone= : The timezone that times should be displayed in}';
     /**
      * The console command description.
      *
@@ -42,16 +46,20 @@ class ScheduleListCommand extends Command
     protected $description = 'List the scheduled commands';
 
     /**
-     * The terminal width resolver callback.
+     * Set a callback that should be used when resolving the terminal width.
      *
-     * @var \Closure|null
+     * @param \Closure|null $resolver
+     * @return void
      */
-    protected static $terminalWidthResolver;
+    public static function resolveTerminalWidthUsing($resolver)
+    {
+        static::$terminalWidthResolver = $resolver;
+    }
 
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      *
      * @throws \Exception
@@ -78,7 +86,7 @@ class ScheduleListCommand extends Command
             $command = $event->command;
             $description = $event->description;
 
-            if (! $this->output->isVerbose()) {
+            if (!$this->output->isVerbose()) {
                 $command = str_replace([Application::phpBinary(), Application::artisanBinary()], [
                     'php',
                     preg_replace("#['\"]#", '', Application::artisanBinary()),
@@ -90,7 +98,7 @@ class ScheduleListCommand extends Command
                     $command = $event->description;
                     $description = '';
                 } else {
-                    $command = 'Closure at: '.$this->getClosureLocation($event);
+                    $command = 'Closure at: ' . $this->getClosureLocation($event);
                 }
             }
 
@@ -110,7 +118,7 @@ class ScheduleListCommand extends Command
             $hasMutex = $event->mutex->exists($event) ? 'Has Mutex › ' : '';
 
             $dots = str_repeat('.', max(
-                $terminalWidth - mb_strlen($expression.$command.$nextDueDateLabel.$nextDueDate.$hasMutex) - 8, 0
+                $terminalWidth - mb_strlen($expression . $command . $nextDueDateLabel . $nextDueDate . $hasMutex) - 8, 0
             ));
 
             // Highlight the parameters...
@@ -138,64 +146,6 @@ class ScheduleListCommand extends Command
     }
 
     /**
-     * Gets the spacing to be used on each event row.
-     *
-     * @param  \Illuminate\Support\Collection  $events
-     * @return array<int, int>
-     */
-    private function getCronExpressionSpacing($events)
-    {
-        $rows = $events->map(fn ($event) => array_map('mb_strlen', explode(' ', $event->expression)));
-
-        return collect($rows[0] ?? [])->keys()->map(fn ($key) => $rows->max($key));
-    }
-
-    /**
-     * Formats the cron expression based on the spacing provided.
-     *
-     * @param  string  $expression
-     * @param  array<int, int>  $spacing
-     * @return string
-     */
-    private function formatCronExpression($expression, $spacing)
-    {
-        $expressions = explode(' ', $expression);
-
-        return collect($spacing)
-            ->map(fn ($length, $index) => str_pad($expressions[$index], $length))
-            ->implode(' ');
-    }
-
-    /**
-     * Get the file and line number for the event closure.
-     *
-     * @param  \Illuminate\Console\Scheduling\CallbackEvent  $event
-     * @return string
-     */
-    private function getClosureLocation(CallbackEvent $event)
-    {
-        $callback = tap((new ReflectionClass($event))->getProperty('callback'))
-                        ->setAccessible(true)
-                        ->getValue($event);
-
-        if ($callback instanceof Closure) {
-            $function = new ReflectionFunction($callback);
-
-            return sprintf(
-                '%s:%s',
-                str_replace($this->laravel->basePath().DIRECTORY_SEPARATOR, '', $function->getFileName() ?: ''),
-                $function->getStartLine()
-            );
-        }
-
-        if (is_array($callback)) {
-            return sprintf('%s::%s', $callback[0]::class, $callback[1]);
-        }
-
-        return sprintf('%s::__invoke', $callback::class);
-    }
-
-    /**
      * Get the terminal width.
      *
      * @return int
@@ -208,13 +158,60 @@ class ScheduleListCommand extends Command
     }
 
     /**
-     * Set a callback that should be used when resolving the terminal width.
+     * Gets the spacing to be used on each event row.
      *
-     * @param  \Closure|null  $resolver
-     * @return void
+     * @param \Illuminate\Support\Collection $events
+     * @return array<int, int>
      */
-    public static function resolveTerminalWidthUsing($resolver)
+    private function getCronExpressionSpacing($events)
     {
-        static::$terminalWidthResolver = $resolver;
+        $rows = $events->map(fn($event) => array_map('mb_strlen', explode(' ', $event->expression)));
+
+        return collect($rows[0] ?? [])->keys()->map(fn($key) => $rows->max($key));
+    }
+
+    /**
+     * Formats the cron expression based on the spacing provided.
+     *
+     * @param string $expression
+     * @param array<int, int> $spacing
+     * @return string
+     */
+    private function formatCronExpression($expression, $spacing)
+    {
+        $expressions = explode(' ', $expression);
+
+        return collect($spacing)
+            ->map(fn($length, $index) => str_pad($expressions[$index], $length))
+            ->implode(' ');
+    }
+
+    /**
+     * Get the file and line number for the event closure.
+     *
+     * @param \Illuminate\Console\Scheduling\CallbackEvent $event
+     * @return string
+     */
+    private function getClosureLocation(CallbackEvent $event)
+    {
+        $callback = tap((new ReflectionClass($event))->getProperty('callback'))
+            ->setAccessible(true)
+            ->getValue($event);
+
+        if ($callback instanceof Closure) {
+            $function = new ReflectionFunction($callback);
+
+            return sprintf(
+                '%s:%s',
+                str_replace($this->laravel->basePath() . DIRECTORY_SEPARATOR, '', $function->getFileName() ?: ''),
+                $function->getStartLine()
+            );
+        }
+
+        if (is_array($callback)) {
+            return sprintf('%s::%s', $callback[0]::class, $callback[1]);
+        }
+
+        return sprintf('%s::__invoke', $callback::class);
     }
 }

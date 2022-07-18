@@ -22,9 +22,9 @@ use Composer\Pcre\Preg;
 class ComposerMirror
 {
     /**
-     * @param string      $mirrorUrl
-     * @param string      $packageName
-     * @param string      $version
+     * @param string $mirrorUrl
+     * @param string $packageName
+     * @param string $version
      * @param string|null $reference
      * @param string|null $type
      * @param string|null $prettyVersion
@@ -49,31 +49,6 @@ class ComposerMirror
     }
 
     /**
-     * @param string      $mirrorUrl
-     * @param string      $packageName
-     * @param string      $url
-     * @param string|null $type
-     *
-     * @return string
-     */
-    public static function processGitUrl(string $mirrorUrl, string $packageName, string $url, ?string $type): string
-    {
-        if (Preg::isMatch('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
-            $url = 'gh-'.$match[1].'/'.$match[2];
-        } elseif (Preg::isMatch('#^https://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?/?$#', $url, $match)) {
-            $url = 'bb-'.$match[1].'/'.$match[2];
-        } else {
-            $url = Preg::replace('{[^a-z0-9_.-]}i', '-', trim($url, '/'));
-        }
-
-        return str_replace(
-            array('%package%', '%normalizedUrl%', '%type%'),
-            array($packageName, $url, $type),
-            $mirrorUrl
-        );
-    }
-
-    /**
      * @param string $mirrorUrl
      * @param string $packageName
      * @param string $url
@@ -84,5 +59,30 @@ class ComposerMirror
     public static function processHgUrl(string $mirrorUrl, string $packageName, string $url, string $type): string
     {
         return self::processGitUrl($mirrorUrl, $packageName, $url, $type);
+    }
+
+    /**
+     * @param string $mirrorUrl
+     * @param string $packageName
+     * @param string $url
+     * @param string|null $type
+     *
+     * @return string
+     */
+    public static function processGitUrl(string $mirrorUrl, string $packageName, string $url, ?string $type): string
+    {
+        if (Preg::isMatch('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
+            $url = 'gh-' . $match[1] . '/' . $match[2];
+        } elseif (Preg::isMatch('#^https://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?/?$#', $url, $match)) {
+            $url = 'bb-' . $match[1] . '/' . $match[2];
+        } else {
+            $url = Preg::replace('{[^a-z0-9_.-]}i', '-', trim($url, '/'));
+        }
+
+        return str_replace(
+            array('%package%', '%normalizedUrl%', '%type%'),
+            array($packageName, $url, $type),
+            $mirrorUrl
+        );
     }
 }

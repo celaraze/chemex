@@ -41,9 +41,10 @@ class ContainerArrayAccessDynamicMethodReturnTypeExtension implements DynamicMet
 
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $args = $methodCall->getArgs();
 
         if (count($args) === 0) {
@@ -52,7 +53,7 @@ class ContainerArrayAccessDynamicMethodReturnTypeExtension implements DynamicMet
 
         $argType = $scope->getType($args[0]->value);
 
-        if (! $argType instanceof ConstantStringType) {
+        if (!$argType instanceof ConstantStringType) {
             return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
         }
 

@@ -34,6 +34,11 @@ class DebugFormatterHelper extends Helper
         return sprintf("%s<bg=blue;fg=white> %s </> <fg=blue>%s</>\n", $this->getBorder($id), $prefix, $message);
     }
 
+    private function getBorder(string $id): string
+    {
+        return sprintf('<bg=%s> </>', self::COLORS[$this->started[$id]['border']]);
+    }
+
     /**
      * Adds progress to a formatting session.
      */
@@ -84,11 +89,6 @@ class DebugFormatterHelper extends Helper
         unset($this->started[$id]['out'], $this->started[$id]['err']);
 
         return $message;
-    }
-
-    private function getBorder(string $id): string
-    {
-        return sprintf('<bg=%s> </>', self::COLORS[$this->started[$id]['border']]);
     }
 
     /**

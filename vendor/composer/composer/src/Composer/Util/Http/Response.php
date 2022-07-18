@@ -31,10 +31,10 @@ class Response
     private $body;
 
     /**
-     * @param Request  $request
-     * @param int      $code
+     * @param Request $request
+     * @param int $code
      * @param list<string> $headers
-     * @param null|string  $body
+     * @param null|string $body
      */
     public function __construct(array $request, ?int $code, array $headers, ?string $body)
     {
@@ -42,7 +42,7 @@ class Response
             throw new \LogicException('url key missing from request array');
         }
         $this->request = $request;
-        $this->code = (int) $code;
+        $this->code = (int)$code;
         $this->headers = $headers;
         $this->body = $body;
     }
@@ -81,12 +81,29 @@ class Response
     }
 
     /**
-     * @param  string  $name
+     * @param string $name
      * @return ?string
      */
     public function getHeader(string $name): ?string
     {
         return self::findHeaderValue($this->headers, $name);
+    }
+
+    /**
+     * @param string[] $headers array of returned headers like from getLastHeaders()
+     * @param string $name header name (case insensitive)
+     * @return string|null
+     */
+    public static function findHeaderValue(array $headers, string $name): ?string
+    {
+        $value = null;
+        foreach ($headers as $header) {
+            if (Preg::isMatch('{^' . preg_quote($name) . ':\s*(.+?)\s*$}i', $header, $match)) {
+                $value = $match[1];
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -113,22 +130,5 @@ class Response
     {
         /** @phpstan-ignore-next-line */
         $this->request = $this->code = $this->headers = $this->body = null;
-    }
-
-    /**
-     * @param  string[]    $headers array of returned headers like from getLastHeaders()
-     * @param  string      $name    header name (case insensitive)
-     * @return string|null
-     */
-    public static function findHeaderValue(array $headers, string $name): ?string
-    {
-        $value = null;
-        foreach ($headers as $header) {
-            if (Preg::isMatch('{^'.preg_quote($name).':\s*(.+?)\s*$}i', $header, $match)) {
-                $value = $match[1];
-            }
-        }
-
-        return $value;
     }
 }

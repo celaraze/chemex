@@ -15,7 +15,6 @@ This library needs PHP 5.5+ and the library OpenSSL.
 
 It has been tested using `PHP5.5` to `PHP7.0` and `HHVM`.
 
-
 ## Installation
 
 You can install the library directly from
@@ -84,7 +83,8 @@ if ($jws->isValid($public_key, 'RS256')) {
 }
 ```
 
-> PROTIP: you can omit the second argument of the isValid() method, so jose will try to validate the token with the algorithm specified in the token's header, though this might expose you to some security issues.
+> PROTIP: you can omit the second argument of the isValid() method, so jose will try to validate the token with the
+> algorithm specified in the token's header, though this might expose you to some security issues.
 >
 > For now we recommend to always explicitely set the algorithm you want to use to validate tokens.
 
@@ -92,8 +92,9 @@ if ($jws->isValid($public_key, 'RS256')) {
 
 You may find that you need to use this library in an environment where
 [PHP's wrappers for OpenSSL](http://php.net/manual/en/ref.openssl.php)
-do not work, or OpenSSL simply is not installed.  This library uses
-OpenSSL to encrypt by default, but you can specify that you want to use [PHPSecLib](http://phpseclib.sourceforge.net/) for a pure PHP
+do not work, or OpenSSL simply is not installed. This library uses
+OpenSSL to encrypt by default, but you can specify that you want to use [PHPSecLib](http://phpseclib.sourceforge.net/)
+for a pure PHP
 implementation of RSA encryption.
 
 In these cases, simply add the optional `'SecLib'` parameter when
@@ -103,7 +104,7 @@ constructing a JWS:
 $jws = new JWS(array('alg' => 'RS256'), 'SecLib');
 ```
 
-You can now use the PHPSecLib implementation of RSA signing.  If you use
+You can now use the PHPSecLib implementation of RSA signing. If you use
 a password protected private key, you can still submit the private key
 to use for signing as a string, as long as you pass the password as the
 second parameter into the `sign` method:
@@ -122,7 +123,8 @@ $jws = JWS::load($tokenString, false, $encoder, 'SecLib');
 
 In order to [validate the JWS](https://github.com/namshi/jose/blob/master/src/Namshi/JOSE/SimpleJWS.php#L43),
 the signature is first [verified](https://github.com/namshi/jose/blob/master/src/Namshi/JOSE/JWS.php#L113)
-with a public key and then we will check whether the [token is expired](https://github.com/namshi/jose/blob/master/src/Namshi/JOSE/SimpleJWS.php#L55).
+with a public key and then we will check whether
+the [token is expired](https://github.com/namshi/jose/blob/master/src/Namshi/JOSE/SimpleJWS.php#L55).
 
 To give a JWS a TTL, just use the standard `exp` value in the payload:
 
@@ -148,7 +150,9 @@ you probably don't want to do. Proceed with caution :)
 
 **Unsecure JWSes are disabled by default since version 2.2.2. You should **not**
 use previous versions other than 2.2.2 as they have a security
-vulnerability. More info [here](http://tech.namshi.com/blog/2015/02/19/update-your-namshi-slash-jose-installations-as-a-security-vulnerability-was-found/).**
+vulnerability. More
+info [here](http://tech.namshi.com/blog/2015/02/19/update-your-namshi-slash-jose-installations-as-a-security-vulnerability-was-found/)
+.**
 
 ## Using a custom encoder
 
@@ -158,27 +162,33 @@ Likewise, `JWS::load()` accepts such an implementation as a second argument.
 
 ## Implementation Specifics
 
-The library provides a base JWT Class that implements what is needed just for JSON Web Tokens. The JWS Class then extends
-the JWT class and adds the implementation for signing and verifying using JSON Web Signatures. The SimpleJWS class extends
+The library provides a base JWT Class that implements what is needed just for JSON Web Tokens. The JWS Class then
+extends
+the JWT class and adds the implementation for signing and verifying using JSON Web Signatures. The SimpleJWS class
+extends
 the base JWS class and adds validation of a TTL and inclusion of automatic claims.
 
 ## Major Versions
 
 ### 2.x.x to 3.x.x
 
-Introduced the ability to specify an encryption engine. Added support of PHPSecLib to the existing OpenSSL implementation.
+Introduced the ability to specify an encryption engine. Added support of PHPSecLib to the existing OpenSSL
+implementation.
 
 ### 3.x.x to 4.x.x - Not Backwards Compatible
 
-Added the ability to set custom properties in the header. Moved automatic inclusion of certain claims into an SimpleJWS class from the base JWS class.
+Added the ability to set custom properties in the header. Moved automatic inclusion of certain claims into an SimpleJWS
+class from the base JWS class.
 
 ### 6.x.x - Not Backwards Compatible
 
 #### 6.1.x
+
 - Dropped support for PHP 5.4
 - phpseclib 2.0
 
 #### 6.0.x
+
 - Dropped support for PHP 5.3
 - Don't escape slashes when generating signin input.
   This may render tokens generated with earlier versions of Jose incompatible.
@@ -191,7 +201,8 @@ Moved phpseclib and the openssl extension as suggested dependencies.
 
 ## Tests
 
-Tests are written using PHPUnit for this library. After doing composer install you can execute the following command to run tests:
+Tests are written using PHPUnit for this library. After doing composer install you can execute the following command to
+run tests:
 
 ```
 ./vendor/bin/phpunit

@@ -11,26 +11,27 @@ use Illuminate\Support\Fluent;
 class Relation extends Field
 {
     /**
+     * @var int
+     */
+    public $width = 12;
+    /**
      * Relation name.
      *
      * @var string
      */
     protected $name;
-
     /**
      * Relation panel builder.
      *
      * @var \Closure
      */
     protected $builder;
-
     /**
      * Relation panel title.
      *
      * @var string
      */
     protected $title;
-
     /**
      * Parent model.
      *
@@ -39,16 +40,11 @@ class Relation extends Field
     protected $model;
 
     /**
-     * @var int
-     */
-    public $width = 12;
-
-    /**
      * Relation constructor.
      *
-     * @param  string  $name
-     * @param  \Closure  $builder
-     * @param  string  $title
+     * @param string $name
+     * @param \Closure $builder
+     * @param string $title
      */
     public function __construct($name, $builder, $title = '')
     {
@@ -60,7 +56,7 @@ class Relation extends Field
     /**
      * Set parent model for relation.
      *
-     * @param  Fluent|Model  $model
+     * @param Fluent|Model $model
      * @return $this|Fluent
      */
     public function model($model = null)
@@ -75,7 +71,7 @@ class Relation extends Field
     }
 
     /**
-     * @param  int  $width
+     * @param int $width
      * @return $this
      */
     public function width(int $width, int $_ = 2)

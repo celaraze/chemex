@@ -17,9 +17,19 @@ trait HasNames
     protected $_name;
 
     /**
+     * Get name of grid.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->_name;
+    }
+
+    /**
      * Set name to grid.
      *
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function setName($name)
@@ -31,33 +41,12 @@ trait HasNames
     }
 
     /**
-     * Get name of grid.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->_name;
-    }
-
-    /**
-     * Retrieve an input item from the request.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function getRequestInput($key)
-    {
-        return $this->request->get($this->makeName($key));
-    }
-
-    /**
-     * @param  string  $key
+     * @param string $key
      * @return string
      */
     public function makeName($key)
     {
-        return $this->getNamePrefix().$key;
+        return $this->getNamePrefix() . $key;
     }
 
     /**
@@ -65,11 +54,22 @@ trait HasNames
      */
     public function getNamePrefix()
     {
-        if (! $name = $this->getName()) {
+        if (!$name = $this->getName()) {
             return;
         }
 
-        return $name.'_';
+        return $name . '_';
+    }
+
+    /**
+     * Retrieve an input item from the request.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function getRequestInput($key)
+    {
+        return $this->request->get($this->makeName($key));
     }
 
     /**

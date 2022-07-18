@@ -46,7 +46,7 @@ final class EnumRequirement implements \Stringable
             }
         }
 
-        $this->requirement = implode('|', array_map(static fn ($e) => preg_quote($e->value), $cases));
+        $this->requirement = implode('|', array_map(static fn($e) => preg_quote($e->value), $cases));
     }
 
     public function __toString(): string

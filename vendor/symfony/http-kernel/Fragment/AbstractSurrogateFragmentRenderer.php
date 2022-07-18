@@ -81,11 +81,6 @@ abstract class AbstractSurrogateFragmentRenderer extends RoutableFragmentRendere
         return new Response($tag);
     }
 
-    private function generateSignedFragmentUri(ControllerReference $uri, Request $request): string
-    {
-        return (new FragmentUriGenerator($this->fragmentPath, $this->signer))->generate($uri, $request);
-    }
-
     private function containsNonScalars(array $values): bool
     {
         foreach ($values as $value) {
@@ -97,5 +92,10 @@ abstract class AbstractSurrogateFragmentRenderer extends RoutableFragmentRendere
         }
 
         return false;
+    }
+
+    private function generateSignedFragmentUri(ControllerReference $uri, Request $request): string
+    {
+        return (new FragmentUriGenerator($this->fragmentPath, $this->signer))->generate($uri, $request);
     }
 }

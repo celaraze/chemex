@@ -2,7 +2,12 @@
     "name": "psy/psysh",
     "description": "An interactive shell for modern PHP.",
     "type": "library",
-    "keywords": ["console", "interactive", "shell", "repl"],
+    "keywords": [
+        "console",
+        "interactive",
+        "shell",
+        "repl"
+    ],
     "homepage": "http://psysh.org",
     "license": "MIT",
     "authors": [
@@ -30,7 +35,9 @@
         "ext-pdo-sqlite": "The doc command requires SQLite to work."
     },
     "autoload": {
-        "files": ["src/functions.php"],
+        "files": [
+            "src/functions.php"
+        ],
         "psr-4": {
             "Psy\\": "src/"
         }
@@ -40,7 +47,9 @@
             "Psy\\Test\\": "test/"
         }
     },
-    "bin": ["bin/psysh"],
+    "bin": [
+        "bin/psysh"
+    ],
     "config": {
         "allow-plugins": {
             "bamarni/composer-bin-plugin": true

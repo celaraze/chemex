@@ -108,10 +108,10 @@ class Person extends \Faker\Provider\Person
      *
      * @example 1111111111118
      *
-     * @param string|null $gender      Person::GENDER_MALE or Person::GENDER_FEMALE
+     * @param string|null $gender Person::GENDER_MALE or Person::GENDER_FEMALE
      * @param string|null $dateOfBirth (1800-2099) 'Y-m-d', 'Y-m', 'Y'  I.E. '1981-06-16', '2085-03', '1900'
-     * @param string|null $county      county code where the CNP was issued
-     * @param bool|null   $isResident  flag if the person resides in Romania
+     * @param string|null $county county code where the CNP was issued
+     * @param bool|null $isResident flag if the person resides in Romania
      *
      * @return string 13 digits CNP code
      */
@@ -135,11 +135,10 @@ class Person extends \Faker\Provider\Person
             $countyCode = static::$cnpCountyCodes[$county];
         }
 
-        $cnp = (string) $this->getGenderDigit($date, $gender, $isResident)
+        $cnp = (string)$this->getGenderDigit($date, $gender, $isResident)
             . $date->format('ymd')
             . $countyCode
-            . static::numerify('##%')
-        ;
+            . static::numerify('##%');
 
         $checksum = $this->getChecksumDigit($cnp);
 
@@ -193,7 +192,7 @@ class Person extends \Faker\Provider\Person
     /**
      * https://ro.wikipedia.org/wiki/Cod_numeric_personal#S
      *
-     * @param bool   $isResident
+     * @param bool $isResident
      * @param string $gender
      *
      * @return int
@@ -241,7 +240,7 @@ class Person extends \Faker\Provider\Person
         $checksum = 0;
 
         foreach (range(0, 11) as $digit) {
-            $checksum += (int) substr($value, $digit, 1) * (int) substr($checkNumber, $digit, 1);
+            $checksum += (int)substr($value, $digit, 1) * (int)substr($checkNumber, $digit, 1);
         }
         $checksum = $checksum % 11;
 

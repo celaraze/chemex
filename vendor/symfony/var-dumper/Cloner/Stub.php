@@ -29,7 +29,7 @@ class Stub
 
     public const ARRAY_ASSOC = 1;
     public const ARRAY_INDEXED = 2;
-
+    private static array $defaultProperties = [];
     public $type = self::TYPE_REF;
     public $class = '';
     public $value;
@@ -38,8 +38,6 @@ class Stub
     public $refCount = 0;
     public $position = 0;
     public $attr = [];
-
-    private static array $defaultProperties = [];
 
     /**
      * @internal

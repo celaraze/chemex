@@ -48,8 +48,7 @@ class DumpAutoloadCommand extends BaseCommand
 
 Read more at https://getcomposer.org/doc/03-cli.md#dump-autoload-dumpautoload-
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -94,9 +93,9 @@ EOT
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 
         if ($authoritative) {
-            $this->getIO()->write('<info>Generated optimized autoload files (authoritative) containing '. $numberOfClasses .' classes</info>');
+            $this->getIO()->write('<info>Generated optimized autoload files (authoritative) containing ' . $numberOfClasses . ' classes</info>');
         } elseif ($optimize) {
-            $this->getIO()->write('<info>Generated optimized autoload files containing '. $numberOfClasses .' classes</info>');
+            $this->getIO()->write('<info>Generated optimized autoload files containing ' . $numberOfClasses . ' classes</info>');
         } else {
             $this->getIO()->write('<info>Generated autoload files</info>');
         }

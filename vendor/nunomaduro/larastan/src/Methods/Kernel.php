@@ -30,19 +30,20 @@ final class Kernel
     /**
      * Kernel constructor.
      *
-     * @param  PhpMethodReflectionFactory  $methodReflectionFactory
+     * @param PhpMethodReflectionFactory $methodReflectionFactory
      */
     public function __construct(
         PhpMethodReflectionFactory $methodReflectionFactory,
-        ReflectionProvider $reflectionProvider
-    ) {
+        ReflectionProvider         $reflectionProvider
+    )
+    {
         $this->methodReflectionFactory = $methodReflectionFactory;
         $this->reflectionProvider = $reflectionProvider;
     }
 
     /**
-     * @param  ClassReflection  $classReflection
-     * @param  string  $methodName
+     * @param ClassReflection $classReflection
+     * @param string $methodName
      * @return PassableContract
      */
     public function handle(ClassReflection $classReflection, string $methodName): PassableContract

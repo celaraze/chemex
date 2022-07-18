@@ -8,7 +8,7 @@ interface DispatcherInterface
      * Register an event listener with the dispatcher.
      *
      * @param string|array $events
-     * @param mixed        $listener
+     * @param mixed $listener
      *
      * @return void
      */
@@ -27,7 +27,7 @@ interface DispatcherInterface
      * Fire an event until the first non-null response is returned.
      *
      * @param string|object $event
-     * @param mixed         $payload
+     * @param mixed $payload
      *
      * @return array|null
      */
@@ -37,8 +37,8 @@ interface DispatcherInterface
      * Fire an event and call the listeners.
      *
      * @param string|object $event
-     * @param mixed         $payload
-     * @param bool          $halt
+     * @param mixed $payload
+     * @param bool $halt
      *
      * @return mixed
      */
@@ -48,8 +48,8 @@ interface DispatcherInterface
      * Fire an event and call the listeners.
      *
      * @param string|object $event
-     * @param mixed         $payload
-     * @param bool          $halt
+     * @param mixed $payload
+     * @param bool $halt
      *
      * @return array|null
      */

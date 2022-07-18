@@ -56,7 +56,7 @@ class HhvmDetector
             if ($hhvmPath !== null) {
                 $this->processExecutor = $this->processExecutor ?? new ProcessExecutor();
                 $exitCode = $this->processExecutor->execute(
-                    ProcessExecutor::escape($hhvmPath).
+                    ProcessExecutor::escape($hhvmPath) .
                     ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
                     self::$hhvmVersion
                 );

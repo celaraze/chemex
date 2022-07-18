@@ -1,5 +1,5 @@
 <style>
-    .fonticon-container>.fonticon-wrap {
+    .fonticon-container > .fonticon-wrap {
         float: left;
         width: 60px;
         height: 60px;
@@ -9,11 +9,13 @@
         margin-right: 1rem;
         margin-bottom: 1.5rem;
     }
-    .fonticon-container>.fonticon-wrap>i {
+
+    .fonticon-container > .fonticon-wrap > i {
         font-size: 2.28rem;
         transition: all .2s ease-in-out;
     }
-    .fonticon-container>.fonticon-classname, .fonticon-container>.fonticon-unit {
+
+    .fonticon-container > .fonticon-classname, .fonticon-container > .fonticon-unit {
         display: block;
         font-size: 1.5rem;
         line-height: 1.2;

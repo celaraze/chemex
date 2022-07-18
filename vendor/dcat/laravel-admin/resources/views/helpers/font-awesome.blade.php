@@ -72,7 +72,9 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-battery-quarter"></i> fa fa-battery-quarter</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-battery-three-quarters"></i> fa fa-battery-three-quarters</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-battery-three-quarters"></i> fa
+                fa-battery-three-quarters
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-black-tie"></i> fa fa-black-tie</div>
 
@@ -154,7 +156,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-industry"></i> fa fa-industry</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-internet-explorer"></i> fa fa-internet-explorer</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-internet-explorer"></i> fa fa-internet-explorer
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-map"></i> fa fa-map</div>
 
@@ -172,7 +175,9 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-odnoklassniki"></i> fa fa-odnoklassniki</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-odnoklassniki-square"></i> fa fa-odnoklassniki-square</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-odnoklassniki-square"></i> fa
+                fa-odnoklassniki-square
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-opencart"></i> fa fa-opencart</div>
 
@@ -227,7 +232,7 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-facebook-official"></i> fa-facebook-official</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-forumbee "></i> fa-forumbee </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-forumbee "></i> fa-forumbee</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-heartbeat"></i> fa-heartbeat</div>
 
@@ -241,19 +246,19 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mars-stroke"></i> fa-mars-stroke</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mars-stroke-h "></i> fa-mars-stroke-h </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mars-stroke-h "></i> fa-mars-stroke-h</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mars-stroke-v"></i> fa-mars-stroke-v</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-medium "></i> fa-medium </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-medium "></i> fa-medium</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mercury"></i> fa-mercury</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-motorcycle"></i> fa-motorcycle</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-neuter "></i> fa-neuter </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-neuter "></i> fa-neuter</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-pinterest-p "></i> fa-pinterest-p </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-pinterest-p "></i> fa-pinterest-p</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-sellsy"></i> fa-sellsy</div>
 
@@ -290,7 +295,7 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-venus-double"></i> fa-venus-double</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-venus-mars "></i> fa-venus-mars </div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-venus-mars "></i> fa-venus-mars</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-viacoin"></i> fa-viacoin</div>
 
@@ -375,7 +380,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-slideshare"></i> fa-slideshare</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-soccer-ball-o"></i> fa-soccer-ball-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-soccer-ball-o"></i> fa-soccer-ball-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-off"></i> fa-toggle-off</div>
@@ -410,12 +416,14 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-asterisk"></i> fa-asterisk</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-automobile"></i> fa-automobile <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-automobile"></i> fa-automobile <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ban"></i> fa-ban</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-bank"></i> fa-bank <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-bank"></i> fa-bank <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-bar-chart-o"></i> fa-bar-chart-o</div>
@@ -452,7 +460,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-bullseye"></i> fa-bullseye</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cab"></i> fa-cab <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cab"></i> fa-cab <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-calendar"></i> fa-calendar</div>
@@ -465,11 +474,14 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-car"></i> fa-car</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-down"></i> fa-caret-square-o-down</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-down"></i> fa-caret-square-o-down
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-left"></i> fa-caret-square-o-left</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-left"></i> fa-caret-square-o-left
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-right"></i> fa-caret-square-o-right</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-right"></i> fa-caret-square-o-right
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-up"></i> fa-caret-square-o-up</div>
 
@@ -535,7 +547,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cutlery"></i> fa-cutlery</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-dashboard"></i> fa-dashboard <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-dashboard"></i> fa-dashboard <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-database"></i> fa-database</div>
@@ -546,7 +559,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-download"></i> fa-download</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-edit"></i> fa-edit <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-edit"></i> fa-edit <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ellipsis-h"></i> fa-ellipsis-h</div>
@@ -567,11 +581,13 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-exclamation-circle"></i> fa-exclamation-circle</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-exclamation-triangle"></i> fa-exclamation-triangle</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-exclamation-triangle"></i> fa-exclamation-triangle
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-external-link"></i> fa-external-link</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-external-link-square"></i> fa-external-link-square</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-external-link-square"></i> fa-external-link-square
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-eye"></i> fa-eye</div>
 
@@ -593,27 +609,32 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-image-o"></i> fa-file-image-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-movie-o"></i> fa-file-movie-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-movie-o"></i> fa-file-movie-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-pdf-o"></i> fa-file-pdf-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-photo-o"></i> fa-file-photo-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-photo-o"></i> fa-file-photo-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-picture-o"></i> fa-file-picture-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-picture-o"></i> fa-file-picture-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-powerpoint-o"></i> fa-file-powerpoint-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-sound-o"></i> fa-file-sound-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-sound-o"></i> fa-file-sound-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-video-o"></i> fa-file-video-o</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-word-o"></i> fa-file-word-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-zip-o"></i> fa-file-zip-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-zip-o"></i> fa-file-zip-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-film"></i> fa-film</div>
@@ -649,7 +670,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-gavel"></i> fa-gavel</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-gear"></i> fa-gear <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-gear"></i> fa-gear <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-gears"></i> fa-gears <span class="text-muted">(alias)</span>
@@ -687,7 +709,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-info-circle"></i> fa-info-circle</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-institution"></i> fa-institution <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-institution"></i> fa-institution <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-key"></i> fa-key</div>
@@ -709,12 +732,14 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-level-up"></i> fa-level-up</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-life-bouy"></i> fa-life-bouy <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-life-bouy"></i> fa-life-bouy <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-life-ring"></i> fa-life-ring</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-life-saver"></i> fa-life-saver <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-life-saver"></i> fa-life-saver <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-lightbulb-o"></i> fa-lightbulb-o</div>
@@ -727,13 +752,16 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-magnet"></i> fa-magnet</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-forward"></i> fa-mail-forward <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-forward"></i> fa-mail-forward <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-reply"></i> fa-mail-reply <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-reply"></i> fa-mail-reply <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-reply-all"></i> fa-mail-reply-all <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mail-reply-all"></i> fa-mail-reply-all <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-male"></i> fa-male</div>
@@ -756,14 +784,16 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mobile"></i> fa-mobile</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mobile-phone"></i> fa-mobile-phone <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mobile-phone"></i> fa-mobile-phone <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-money"></i> fa-money</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-moon-o"></i> fa-moon-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mortar-board"></i> fa-mortar-board <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-mortar-board"></i> fa-mortar-board <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-music"></i> fa-music</div>
@@ -847,7 +877,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-search-plus"></i> fa-search-plus</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-send"></i> fa-send <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-send"></i> fa-send <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-send-o"></i> fa-send-o <span class="text-muted">(alias)</span>
@@ -893,7 +924,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-sort-desc"></i> fa-sort-desc</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-sort-down"></i> fa-sort-down <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-sort-down"></i> fa-sort-down <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-sort-numeric-asc"></i> fa-sort-numeric-asc</div>
@@ -917,10 +949,12 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half"></i> fa-star-half</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half-empty"></i> fa-star-half-empty <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half-empty"></i> fa-star-half-empty <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half-full"></i> fa-star-half-full <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half-full"></i> fa-star-half-full <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-star-half-o"></i> fa-star-half-o</div>
@@ -968,16 +1002,20 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-tint"></i> fa-tint</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-down"></i> fa-toggle-down <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-down"></i> fa-toggle-down <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-left"></i> fa-toggle-left <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-left"></i> fa-toggle-left <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-right"></i> fa-toggle-right <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-right"></i> fa-toggle-right <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-up"></i> fa-toggle-up <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-up"></i> fa-toggle-up <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-trash-o"></i> fa-trash-o</div>
@@ -1042,22 +1080,26 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-image-o"></i> fa-file-image-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-movie-o"></i> fa-file-movie-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-movie-o"></i> fa-file-movie-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-o"></i> fa-file-o</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-pdf-o"></i> fa-file-pdf-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-photo-o"></i> fa-file-photo-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-photo-o"></i> fa-file-photo-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-picture-o"></i> fa-file-picture-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-picture-o"></i> fa-file-picture-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-powerpoint-o"></i> fa-file-powerpoint-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-sound-o"></i> fa-file-sound-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-sound-o"></i> fa-file-sound-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-text"></i> fa-file-text</div>
@@ -1068,7 +1110,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-word-o"></i> fa-file-word-o</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-zip-o"></i> fa-file-zip-o <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-file-zip-o"></i> fa-file-zip-o <span
+                    class="text-muted">(alias)</span>
             </div>
 
         </div>
@@ -1083,16 +1126,26 @@
         </div>
 
         <div class="row icon-list-demo">
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-circle-o-notch" style="width: auto;margin-right: 10px;"></i> fa-circle-o-notch</div>
-
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-cog" style="width: auto;margin-right: 10px;"></i> fa-cog</div>
-
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-gear" style="width: auto;margin-right: 10px;"></i> fa-gear <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-circle-o-notch"
+                                                       style="width: auto;margin-right: 10px;"></i> fa-circle-o-notch
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-refresh" style="width: auto;margin-right: 10px;"></i> fa-refresh</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-cog"
+                                                       style="width: auto;margin-right: 10px;"></i> fa-cog
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-spinner" style="width: auto;margin-right: 10px;"></i> fa-spinner</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-gear"
+                                                       style="width: auto;margin-right: 10px;"></i> fa-gear <span
+                    class="text-muted">(alias)</span>
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-refresh"
+                                                       style="width: auto;margin-right: 10px;"></i> fa-refresh
+            </div>
+
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-spin fa-spinner"
+                                                       style="width: auto;margin-right: 10px;"></i> fa-spinner
+            </div>
 
         </div>
     </section>
@@ -1101,7 +1154,6 @@
         <h4 class="page-header header-title">Form Control Icons</h4>
 
         <div class="row icon-list-demo">
-
 
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-check-square"></i> fa-check-square</div>
@@ -1135,13 +1187,13 @@
         <div class="row icon-list-demo">
 
 
-
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-bitcoin"></i> fa-bitcoin <span class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-btc"></i> fa-btc</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cny"></i> fa-cny <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cny"></i> fa-cny <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-dollar"></i> fa-dollar <span class="text-muted">(alias)</span>
@@ -1149,7 +1201,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-eur"></i> fa-eur</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-euro"></i> fa-euro <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-euro"></i> fa-euro <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-gbp"></i> fa-gbp</div>
@@ -1162,7 +1215,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-money"></i> fa-money</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rmb"></i> fa-rmb <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rmb"></i> fa-rmb <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rouble"></i> fa-rouble <span class="text-muted">(alias)</span>
@@ -1178,15 +1232,18 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-try"></i> fa-try</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-turkish-lira"></i> fa-turkish-lira <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-turkish-lira"></i> fa-turkish-lira <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-usd"></i> fa-usd</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-won"></i> fa-won <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-won"></i> fa-won <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-yen"></i> fa-yen <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-yen"></i> fa-yen <span
+                    class="text-muted">(alias)</span>
             </div>
 
         </div>
@@ -1197,7 +1254,6 @@
         <h4 class="page-header header-title">Text Editor Icons</h4>
 
         <div class="row icon-list-demo">
-
 
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-align-center"></i> fa-align-center</div>
@@ -1219,10 +1275,12 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-columns"></i> fa-columns</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-copy"></i> fa-copy <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-copy"></i> fa-copy <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cut"></i> fa-cut <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-cut"></i> fa-cut <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-dedent"></i> fa-dedent <span class="text-muted">(alias)</span>
@@ -1271,13 +1329,16 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-repeat"></i> fa-repeat</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rotate-left"></i> fa-rotate-left <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rotate-left"></i> fa-rotate-left <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rotate-right"></i> fa-rotate-right <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rotate-right"></i> fa-rotate-right <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-save"></i> fa-save <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-save"></i> fa-save <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-scissors"></i> fa-scissors</div>
@@ -1318,7 +1379,6 @@
         <div class="row icon-list-demo">
 
 
-
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-angle-double-down"></i> fa-angle-double-down</div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-angle-double-left"></i> fa-angle-double-left</div>
@@ -1339,11 +1399,14 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-left"></i> fa-arrow-circle-left</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-down"></i> fa-arrow-circle-o-down</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-down"></i> fa-arrow-circle-o-down
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-left"></i> fa-arrow-circle-o-left</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-left"></i> fa-arrow-circle-o-left
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-right"></i> fa-arrow-circle-o-right</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-right"></i> fa-arrow-circle-o-right
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrow-circle-o-up"></i> fa-arrow-circle-o-up</div>
 
@@ -1375,19 +1438,25 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-up"></i> fa-caret-up</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-left"></i> fa-caret-square-o-left</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-left"></i> fa-caret-square-o-left
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-right"></i> fa-caret-square-o-right</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-right"></i> fa-caret-square-o-right
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-up"></i> fa-caret-square-o-up</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-down"></i> fa-caret-square-o-down</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-caret-square-o-down"></i> fa-caret-square-o-down
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-down"></i> fa-chevron-circle-down</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-down"></i> fa-chevron-circle-down
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-left"></i> fa-chevron-circle-left</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-left"></i> fa-chevron-circle-left
+            </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-right"></i> fa-chevron-circle-right</div>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-right"></i> fa-chevron-circle-right
+            </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-chevron-circle-up"></i> fa-chevron-circle-up</div>
 
@@ -1415,16 +1484,20 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-long-arrow-up"></i> fa-long-arrow-up</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-down"></i> fa-toggle-down <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-down"></i> fa-toggle-down <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-left"></i> fa-toggle-left <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-left"></i> fa-toggle-left <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-right"></i> fa-toggle-right <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-right"></i> fa-toggle-right <span
+                    class="text-muted">(alias)</span>
             </div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-up"></i> fa-toggle-up <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-toggle-up"></i> fa-toggle-up <span
+                    class="text-muted">(alias)</span>
             </div>
 
         </div>
@@ -1435,7 +1508,6 @@
         <h4 class="page-header header-title">Video Player Icons</h4>
 
         <div class="row icon-list-demo">
-
 
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-arrows-alt"></i> fa-arrows-alt</div>
@@ -1480,7 +1552,9 @@
         <div class="alert alert-success">
             <ul class="margin-bottom-none padding-left-lg">
                 <li>All brand icons are trademarks of their respective owners.</li>
-                <li>The use of these trademarks does not indicate endorsement of the trademark holder by Font Awesome, nor vice versa.</li>
+                <li>The use of these trademarks does not indicate endorsement of the trademark holder by Font Awesome,
+                    nor vice versa.
+                </li>
             </ul>
 
         </div>
@@ -1531,7 +1605,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-foursquare"></i> fa-foursquare</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ge"></i> fa-ge <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ge"></i> fa-ge <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-git"></i> fa-git</div>
@@ -1584,7 +1659,8 @@
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-qq"></i> fa-qq</div>
 
-            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ra"></i> fa-ra <span class="text-muted">(alias)</span>
+            <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-ra"></i> fa-ra <span
+                    class="text-muted">(alias)</span>
             </div>
 
             <div class="col-sm-6 col-md-4 col-lg-3"><i class="fa fa-rebel"></i> fa-rebel</div>

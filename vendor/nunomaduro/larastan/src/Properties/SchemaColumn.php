@@ -25,17 +25,18 @@ final class SchemaColumn
     public $options;
 
     /**
-     * @param  string  $name
-     * @param  string  $readableType
-     * @param  bool  $nullable
-     * @param  string[]|null  $options
+     * @param string $name
+     * @param string $readableType
+     * @param bool $nullable
+     * @param string[]|null $options
      */
     public function __construct(
         string $name,
         string $readableType,
-        bool $nullable = false,
+        bool   $nullable = false,
         ?array $options = null
-    ) {
+    )
+    {
         $this->name = $name;
         $this->readableType = $readableType;
         $this->writeableType = $readableType;

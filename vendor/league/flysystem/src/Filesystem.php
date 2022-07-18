@@ -23,12 +23,20 @@ class Filesystem implements FilesystemOperator
 
     public function __construct(
         FilesystemAdapter $adapter,
-        array $config = [],
-        PathNormalizer $pathNormalizer = null
-    ) {
+        array             $config = [],
+        PathNormalizer    $pathNormalizer = null
+    )
+    {
         $this->adapter = $adapter;
         $this->config = new Config($config);
         $this->pathNormalizer = $pathNormalizer ?: new WhitespacePathNormalizer();
+    }
+
+    public function has(string $location): bool
+    {
+        $path = $this->pathNormalizer->normalizePath($location);
+
+        return $this->adapter->fileExists($path) || $this->adapter->directoryExists($path);
     }
 
     public function fileExists(string $location): bool
@@ -39,13 +47,6 @@ class Filesystem implements FilesystemOperator
     public function directoryExists(string $location): bool
     {
         return $this->adapter->directoryExists($this->pathNormalizer->normalizePath($location));
-    }
-
-    public function has(string $location): bool
-    {
-        $path = $this->pathNormalizer->normalizePath($location);
-
-        return $this->adapter->fileExists($path) || $this->adapter->directoryExists($path);
     }
 
     public function write(string $location, string $contents, array $config = []): void
@@ -67,6 +68,32 @@ class Filesystem implements FilesystemOperator
             $contents,
             $this->config->extend($config)
         );
+    }
+
+    /**
+     * @param mixed $contents
+     */
+    private function assertIsResource($contents): void
+    {
+        if (is_resource($contents) === false) {
+            throw new InvalidStreamProvided(
+                "Invalid stream provided, expected stream resource, received " . gettype($contents)
+            );
+        } elseif ($type = get_resource_type($contents) !== 'stream') {
+            throw new InvalidStreamProvided(
+                "Invalid stream provided, expected stream resource, received resource of type " . $type
+            );
+        }
+    }
+
+    /**
+     * @param resource $resource
+     */
+    private function rewindStream($resource): void
+    {
+        if (ftell($resource) !== 0 && stream_get_meta_data($resource)['seekable']) {
+            rewind($resource);
+        }
     }
 
     public function read(string $location): string
@@ -145,31 +172,5 @@ class Filesystem implements FilesystemOperator
     public function visibility(string $path): string
     {
         return $this->adapter->visibility($this->pathNormalizer->normalizePath($path))->visibility();
-    }
-
-    /**
-     * @param mixed $contents
-     */
-    private function assertIsResource($contents): void
-    {
-        if (is_resource($contents) === false) {
-            throw new InvalidStreamProvided(
-                "Invalid stream provided, expected stream resource, received " . gettype($contents)
-            );
-        } elseif ($type = get_resource_type($contents) !== 'stream') {
-            throw new InvalidStreamProvided(
-                "Invalid stream provided, expected stream resource, received resource of type " . $type
-            );
-        }
-    }
-
-    /**
-     * @param resource $resource
-     */
-    private function rewindStream($resource): void
-    {
-        if (ftell($resource) !== 0 && stream_get_meta_data($resource)['seekable']) {
-            rewind($resource);
-        }
     }
 }

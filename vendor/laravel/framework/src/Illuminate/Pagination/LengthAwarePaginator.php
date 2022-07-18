@@ -30,11 +30,11 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     /**
      * Create a new paginator instance.
      *
-     * @param  mixed  $items
-     * @param  int  $total
-     * @param  int  $perPage
-     * @param  int|null  $currentPage
-     * @param  array  $options  (path, query, fragment, pageName)
+     * @param mixed $items
+     * @param int $total
+     * @param int $perPage
+     * @param int|null $currentPage
+     * @param array $options (path, query, fragment, pageName)
      * @return void
      */
     public function __construct($items, $total, $perPage, $currentPage = null, array $options = [])
@@ -46,8 +46,8 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
         }
 
         $this->total = $total;
-        $this->perPage = (int) $perPage;
-        $this->lastPage = max((int) ceil($total / $perPage), 1);
+        $this->perPage = (int)$perPage;
+        $this->lastPage = max((int)ceil($total / $perPage), 1);
         $this->path = $this->path !== '/' ? rtrim($this->path, '/') : $this->path;
         $this->currentPage = $this->setCurrentPage($currentPage, $this->pageName);
         $this->items = $items instanceof Collection ? $items : Collection::make($items);
@@ -56,22 +56,22 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     /**
      * Get the current page for the request.
      *
-     * @param  int  $currentPage
-     * @param  string  $pageName
+     * @param int $currentPage
+     * @param string $pageName
      * @return int
      */
     protected function setCurrentPage($currentPage, $pageName)
     {
         $currentPage = $currentPage ?: static::resolveCurrentPage($pageName);
 
-        return $this->isValidPageNumber($currentPage) ? (int) $currentPage : 1;
+        return $this->isValidPageNumber($currentPage) ? (int)$currentPage : 1;
     }
 
     /**
      * Render the paginator using the given view.
      *
-     * @param  string|null  $view
-     * @param  array  $data
+     * @param string|null $view
+     * @param array $data
      * @return \Illuminate\Contracts\Support\Htmlable
      */
     public function links($view = null, $data = [])
@@ -82,8 +82,8 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     /**
      * Render the paginator using the given view.
      *
-     * @param  string|null  $view
-     * @param  array  $data
+     * @param string|null $view
+     * @param array $data
      * @return \Illuminate\Contracts\Support\Htmlable
      */
     public function render($view = null, $data = [])
@@ -92,36 +92,6 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
             'paginator' => $this,
             'elements' => $this->elements(),
         ]));
-    }
-
-    /**
-     * Get the paginator links as a collection (for JSON responses).
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function linkCollection()
-    {
-        return collect($this->elements())->flatMap(function ($item) {
-            if (! is_array($item)) {
-                return [['url' => null, 'label' => '...', 'active' => false]];
-            }
-
-            return collect($item)->map(function ($url, $page) {
-                return [
-                    'url' => $url,
-                    'label' => (string) $page,
-                    'active' => $this->currentPage() === $page,
-                ];
-            });
-        })->prepend([
-            'url' => $this->previousPageUrl(),
-            'label' => function_exists('__') ? __('pagination.previous') : 'Previous',
-            'active' => false,
-        ])->push([
-            'url' => $this->nextPageUrl(),
-            'label' => function_exists('__') ? __('pagination.next') : 'Next',
-            'active' => false,
-        ]);
     }
 
     /**
@@ -143,45 +113,24 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     }
 
     /**
-     * Get the total number of items being paginated.
+     * Convert the object to its JSON representation.
      *
-     * @return int
+     * @param int $options
+     * @return string
      */
-    public function total()
+    public function toJson($options = 0)
     {
-        return $this->total;
+        return json_encode($this->jsonSerialize(), $options);
     }
 
     /**
-     * Determine if there are more items in the data source.
+     * Convert the object into something JSON serializable.
      *
-     * @return bool
+     * @return array
      */
-    public function hasMorePages()
+    public function jsonSerialize(): array
     {
-        return $this->currentPage() < $this->lastPage();
-    }
-
-    /**
-     * Get the URL for the next page.
-     *
-     * @return string|null
-     */
-    public function nextPageUrl()
-    {
-        if ($this->hasMorePages()) {
-            return $this->url($this->currentPage() + 1);
-        }
-    }
-
-    /**
-     * Get the last page.
-     *
-     * @return int
-     */
-    public function lastPage()
-    {
-        return $this->lastPage;
+        return $this->toArray();
     }
 
     /**
@@ -209,23 +158,74 @@ class LengthAwarePaginator extends AbstractPaginator implements Arrayable, Array
     }
 
     /**
-     * Convert the object into something JSON serializable.
+     * Get the last page.
      *
-     * @return array
+     * @return int
      */
-    public function jsonSerialize(): array
+    public function lastPage()
     {
-        return $this->toArray();
+        return $this->lastPage;
     }
 
     /**
-     * Convert the object to its JSON representation.
+     * Get the paginator links as a collection (for JSON responses).
      *
-     * @param  int  $options
-     * @return string
+     * @return \Illuminate\Support\Collection
      */
-    public function toJson($options = 0)
+    public function linkCollection()
     {
-        return json_encode($this->jsonSerialize(), $options);
+        return collect($this->elements())->flatMap(function ($item) {
+            if (!is_array($item)) {
+                return [['url' => null, 'label' => '...', 'active' => false]];
+            }
+
+            return collect($item)->map(function ($url, $page) {
+                return [
+                    'url' => $url,
+                    'label' => (string)$page,
+                    'active' => $this->currentPage() === $page,
+                ];
+            });
+        })->prepend([
+            'url' => $this->previousPageUrl(),
+            'label' => function_exists('__') ? __('pagination.previous') : 'Previous',
+            'active' => false,
+        ])->push([
+            'url' => $this->nextPageUrl(),
+            'label' => function_exists('__') ? __('pagination.next') : 'Next',
+            'active' => false,
+        ]);
+    }
+
+    /**
+     * Get the URL for the next page.
+     *
+     * @return string|null
+     */
+    public function nextPageUrl()
+    {
+        if ($this->hasMorePages()) {
+            return $this->url($this->currentPage() + 1);
+        }
+    }
+
+    /**
+     * Determine if there are more items in the data source.
+     *
+     * @return bool
+     */
+    public function hasMorePages()
+    {
+        return $this->currentPage() < $this->lastPage();
+    }
+
+    /**
+     * Get the total number of items being paginated.
+     *
+     * @return int
+     */
+    public function total()
+    {
+        return $this->total;
     }
 }

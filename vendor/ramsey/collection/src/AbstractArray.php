@@ -16,7 +16,6 @@ namespace Ramsey\Collection;
 
 use ArrayIterator;
 use Traversable;
-
 use function serialize;
 use function unserialize;
 
@@ -126,11 +125,11 @@ abstract class AbstractArray implements ArrayInterface
     /**
      * Returns a serialized string representation of this array object.
      *
-     * @deprecated The Serializable interface will go away in PHP 9.
-     *
+     * @return string a PHP serialized string.
      * @link http://php.net/manual/en/serializable.serialize.php Serializable::serialize()
      *
-     * @return string a PHP serialized string.
+     * @deprecated The Serializable interface will go away in PHP 9.
+     *
      */
     public function serialize(): string
     {
@@ -153,13 +152,13 @@ abstract class AbstractArray implements ArrayInterface
     /**
      * Converts a serialized string representation into an instance object.
      *
-     * @deprecated The Serializable interface will go away in PHP 9.
-     *
-     * @link http://php.net/manual/en/serializable.unserialize.php Serializable::unserialize()
-     *
      * @param string $serialized A PHP serialized string to unserialize.
      *
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+     * @link http://php.net/manual/en/serializable.unserialize.php Serializable::unserialize()
+     *
+     * @deprecated The Serializable interface will go away in PHP 9.
+     *
      */
     public function unserialize($serialized): void
     {

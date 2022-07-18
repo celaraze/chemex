@@ -32,7 +32,7 @@ trait PacksPhpRedisValues
     /**
      * Prepares the given values to be used with the `eval` command, including serialization and compression.
      *
-     * @param  array<int|string,string>  $values
+     * @param array<int|string,string> $values
      * @return array<int|string,string>
      */
     public function pack(array $values): array
@@ -47,7 +47,7 @@ trait PacksPhpRedisValues
 
         if ($this->compressed()) {
             if ($this->supportsLzf() && $this->lzfCompressed()) {
-                if (! function_exists('lzf_compress')) {
+                if (!function_exists('lzf_compress')) {
                     throw new RuntimeException("'lzf' extension required to call 'lzf_compress'.");
                 }
 
@@ -55,7 +55,7 @@ trait PacksPhpRedisValues
                     return \lzf_compress($this->client->_serialize($value));
                 };
             } elseif ($this->supportsZstd() && $this->zstdCompressed()) {
-                if (! function_exists('zstd_compress')) {
+                if (!function_exists('zstd_compress')) {
                     throw new RuntimeException("'zstd' extension required to call 'zstd_compress'.");
                 }
 
@@ -83,50 +83,6 @@ trait PacksPhpRedisValues
     }
 
     /**
-     * Determine if compression is enabled.
-     *
-     * @return bool
-     */
-    public function compressed(): bool
-    {
-        return defined('Redis::OPT_COMPRESSION') &&
-               $this->client->getOption(Redis::OPT_COMPRESSION) !== Redis::COMPRESSION_NONE;
-    }
-
-    /**
-     * Determine if LZF compression is enabled.
-     *
-     * @return bool
-     */
-    public function lzfCompressed(): bool
-    {
-        return defined('Redis::COMPRESSION_LZF') &&
-               $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZF;
-    }
-
-    /**
-     * Determine if ZSTD compression is enabled.
-     *
-     * @return bool
-     */
-    public function zstdCompressed(): bool
-    {
-        return defined('Redis::COMPRESSION_ZSTD') &&
-               $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_ZSTD;
-    }
-
-    /**
-     * Determine if LZ4 compression is enabled.
-     *
-     * @return bool
-     */
-    public function lz4Compressed(): bool
-    {
-        return defined('Redis::COMPRESSION_LZ4') &&
-               $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZ4;
-    }
-
-    /**
      * Determine if the current PhpRedis extension version supports packing.
      *
      * @return bool
@@ -138,6 +94,30 @@ trait PacksPhpRedisValues
         }
 
         return $this->supportsPacking;
+    }
+
+    /**
+     * Determine if the PhpRedis extension version is at least the given version.
+     *
+     * @param string $version
+     * @return bool
+     */
+    protected function phpRedisVersionAtLeast(string $version): bool
+    {
+        $phpredisVersion = phpversion('redis');
+
+        return $phpredisVersion !== false && version_compare($phpredisVersion, $version, '>=');
+    }
+
+    /**
+     * Determine if compression is enabled.
+     *
+     * @return bool
+     */
+    public function compressed(): bool
+    {
+        return defined('Redis::OPT_COMPRESSION') &&
+            $this->client->getOption(Redis::OPT_COMPRESSION) !== Redis::COMPRESSION_NONE;
     }
 
     /**
@@ -155,6 +135,17 @@ trait PacksPhpRedisValues
     }
 
     /**
+     * Determine if LZF compression is enabled.
+     *
+     * @return bool
+     */
+    public function lzfCompressed(): bool
+    {
+        return defined('Redis::COMPRESSION_LZF') &&
+            $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZF;
+    }
+
+    /**
      * Determine if the current PhpRedis extension version supports Zstd compression.
      *
      * @return bool
@@ -169,15 +160,24 @@ trait PacksPhpRedisValues
     }
 
     /**
-     * Determine if the PhpRedis extension version is at least the given version.
+     * Determine if ZSTD compression is enabled.
      *
-     * @param  string  $version
      * @return bool
      */
-    protected function phpRedisVersionAtLeast(string $version): bool
+    public function zstdCompressed(): bool
     {
-        $phpredisVersion = phpversion('redis');
+        return defined('Redis::COMPRESSION_ZSTD') &&
+            $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_ZSTD;
+    }
 
-        return $phpredisVersion !== false && version_compare($phpredisVersion, $version, '>=');
+    /**
+     * Determine if LZ4 compression is enabled.
+     *
+     * @return bool
+     */
+    public function lz4Compressed(): bool
+    {
+        return defined('Redis::COMPRESSION_LZ4') &&
+            $this->client->getOption(Redis::OPT_COMPRESSION) === Redis::COMPRESSION_LZ4;
     }
 }

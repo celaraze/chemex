@@ -50,11 +50,11 @@ abstract class AbstractField implements FieldInterface
     /**
      * Check to see if a field is satisfied by a value.
      *
-     * @internal
      * @param int $dateValue Date value to check
      * @param string $value Value to test
      *
      * @return bool
+     * @internal
      */
     public function isSatisfied(int $dateValue, string $value): bool
     {
@@ -66,29 +66,16 @@ abstract class AbstractField implements FieldInterface
             return $this->isInRange($dateValue, $value);
         }
 
-        return '*' === $value || $dateValue === (int) $value;
-    }
-
-    /**
-     * Check if a value is a range.
-     *
-     * @internal
-     * @param string $value Value to test
-     *
-     * @return bool
-     */
-    public function isRange(string $value): bool
-    {
-        return false !== strpos($value, '-');
+        return '*' === $value || $dateValue === (int)$value;
     }
 
     /**
      * Check if a value is an increments of ranges.
      *
-     * @internal
      * @param string $value Value to test
      *
      * @return bool
+     * @internal
      */
     public function isIncrementsOfRanges(string $value): bool
     {
@@ -96,36 +83,13 @@ abstract class AbstractField implements FieldInterface
     }
 
     /**
-     * Test if a value is within a range.
-     *
-     * @internal
-     * @param int $dateValue Set date value
-     * @param string $value Value to test
-     *
-     * @return bool
-     */
-    public function isInRange(int $dateValue, $value): bool
-    {
-        $parts = array_map(
-            function ($value) {
-                $value = trim($value);
-
-                return $this->convertLiterals($value);
-            },
-            explode('-', $value, 2)
-        );
-
-        return $dateValue >= $parts[0] && $dateValue <= $parts[1];
-    }
-
-    /**
      * Test if a value is within an increments of ranges (offset[-to]/step size).
      *
-     * @internal
      * @param int $dateValue Set date value
      * @param string $value Value to test
      *
      * @return bool
+     * @internal
      */
     public function isInIncrementsOfRanges(int $dateValue, string $value): bool
     {
@@ -146,9 +110,9 @@ abstract class AbstractField implements FieldInterface
 
         // Generate the requested small range
         $rangeChunks = explode('-', $range, 2);
-        $rangeStart = (int) $rangeChunks[0];
+        $rangeStart = (int)$rangeChunks[0];
         $rangeEnd = $rangeChunks[1] ?? $rangeStart;
-        $rangeEnd = (int) $rangeEnd;
+        $rangeEnd = (int)$rangeEnd;
 
         if ($rangeStart < $this->rangeStart || $rangeStart > $this->rangeEnd || $rangeStart > $rangeEnd) {
             throw new \OutOfRangeException('Invalid range start requested');
@@ -170,13 +134,68 @@ abstract class AbstractField implements FieldInterface
             $thisRange = [$this->fullRange[$step % \count($this->fullRange)]];
         } else {
             if ($step > ($rangeEnd - $rangeStart)) {
-                $thisRange[$rangeStart] = (int) $rangeStart;
+                $thisRange[$rangeStart] = (int)$rangeStart;
             } else {
-                $thisRange = range($rangeStart, $rangeEnd, (int) $step);
+                $thisRange = range($rangeStart, $rangeEnd, (int)$step);
             }
         }
 
         return \in_array($dateValue, $thisRange, true);
+    }
+
+    /**
+     * Check if a value is a range.
+     *
+     * @param string $value Value to test
+     *
+     * @return bool
+     * @internal
+     */
+    public function isRange(string $value): bool
+    {
+        return false !== strpos($value, '-');
+    }
+
+    /**
+     * Test if a value is within a range.
+     *
+     * @param int $dateValue Set date value
+     * @param string $value Value to test
+     *
+     * @return bool
+     * @internal
+     */
+    public function isInRange(int $dateValue, $value): bool
+    {
+        $parts = array_map(
+            function ($value) {
+                $value = trim($value);
+
+                return $this->convertLiterals($value);
+            },
+            explode('-', $value, 2)
+        );
+
+        return $dateValue >= $parts[0] && $dateValue <= $parts[1];
+    }
+
+    /**
+     * Convert literal.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    protected function convertLiterals(string $value): string
+    {
+        if (\count($this->literals)) {
+            $key = array_search(strtoupper($value), $this->literals, true);
+            if (false !== $key) {
+                return (string)$key;
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -222,7 +241,7 @@ abstract class AbstractField implements FieldInterface
                 $values = [$this->fullRange[$stepSize % \count($this->fullRange)]];
             } else {
                 for ($i = $offset; $i <= $to; $i += $stepSize) {
-                    $values[] = (int) $i;
+                    $values[] = (int)$i;
                 }
             }
             sort($values);
@@ -231,25 +250,6 @@ abstract class AbstractField implements FieldInterface
         }
 
         return $values;
-    }
-
-    /**
-     * Convert literal.
-     *
-     * @param string $value
-     *
-     * @return string
-     */
-    protected function convertLiterals(string $value): string
-    {
-        if (\count($this->literals)) {
-            $key = array_search(strtoupper($value), $this->literals, true);
-            if (false !== $key) {
-                return (string) $key;
-            }
-        }
-
-        return $value;
     }
 
     /**
@@ -315,9 +315,24 @@ abstract class AbstractField implements FieldInterface
         }
 
         // We should have a numeric by now, so coerce this into an integer
-        $value = (int) $value;
+        $value = (int)$value;
 
         return \in_array($value, $this->fullRange, true);
+    }
+
+    protected function setTimeHour(DateTimeInterface $date, bool $invert, int $originalTimestamp): DateTimeInterface
+    {
+        $date = $date->setTime((int)$date->format('H'), ($invert ? 59 : 0));
+
+        // setTime caused the offset to change, moving time in the wrong direction
+        $actualTimestamp = $date->format('U');
+        if ((!$invert) && ($actualTimestamp <= $originalTimestamp)) {
+            $date = $this->timezoneSafeModify($date, "+1 hour");
+        } elseif ($invert && ($actualTimestamp >= $originalTimestamp)) {
+            $date = $this->timezoneSafeModify($date, "-1 hour");
+        }
+
+        return $date;
     }
 
     protected function timezoneSafeModify(DateTimeInterface $dt, string $modification): DateTimeInterface
@@ -327,20 +342,5 @@ abstract class AbstractField implements FieldInterface
         $dt = $dt->modify($modification);
         $dt = $dt->setTimezone($timezone);
         return $dt;
-    }
-
-    protected function setTimeHour(DateTimeInterface $date, bool $invert, int $originalTimestamp): DateTimeInterface
-    {
-        $date = $date->setTime((int)$date->format('H'), ($invert ? 59 : 0));
-
-        // setTime caused the offset to change, moving time in the wrong direction
-        $actualTimestamp = $date->format('U');
-        if ((! $invert) && ($actualTimestamp <= $originalTimestamp)) {
-            $date = $this->timezoneSafeModify($date, "+1 hour");
-        } elseif ($invert && ($actualTimestamp >= $originalTimestamp)) {
-            $date = $this->timezoneSafeModify($date, "-1 hour");
-        }
-
-        return $date;
     }
 }

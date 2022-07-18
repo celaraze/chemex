@@ -11,7 +11,7 @@
         <div>
             <div class="text-muted pull-right">{!! $options['description'] !!} </div>
 
-            <h2 class="main-content m-b-10" >
+            <h2 class="main-content m-b-10">
                 {!! $options['content']['left'] !!}&nbsp;
             </h2>
         </div>

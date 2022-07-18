@@ -65,7 +65,7 @@ class Exporter implements Contracts\Exporter
      *    ];
      * });
      *
-     * @param  array|\Closure|\Generator|Contracts\Exporters\ChunkQuery  $data
+     * @param array|\Closure|\Generator|Contracts\Exporters\ChunkQuery $data
      * @return $this
      */
     public function data($data)
@@ -80,7 +80,7 @@ class Exporter implements Contracts\Exporter
     }
 
     /**
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function row(callable $callback)
@@ -91,7 +91,7 @@ class Exporter implements Contracts\Exporter
     }
 
     /**
-     * @param  Style  $style
+     * @param Style $style
      * @return $this
      */
     public function headingStyle($style)
@@ -120,7 +120,7 @@ class Exporter implements Contracts\Exporter
      *     }
      * ]);
      *
-     * @param  callable|callable[]  $callbacks
+     * @param callable|callable[] $callbacks
      * @return $this
      */
     public function chunk($callbacks)
@@ -131,7 +131,7 @@ class Exporter implements Contracts\Exporter
     /**
      * 下载导出文件.
      *
-     * @param  string|null  $fileName
+     * @param string|null $fileName
      * @return void
      */
     public function download(string $fileName)
@@ -153,10 +153,51 @@ class Exporter implements Contracts\Exporter
     }
 
     /**
+     * @param string $path
+     * @param string $factory
+     * @return WriterInterface
+     */
+    protected function makeWriter(?string $path = null, string $factory = null)
+    {
+        $factory = $factory ?: WriterFactory::class;
+
+        /* @var WriterInterface $writer */
+        if ($this->type) {
+            $writer = $factory::createFromType($this->type);
+        } else {
+            $writer = $factory::createFromFile($path);
+        }
+
+        $this->configure($writer);
+
+        return $this->writer = $writer;
+    }
+
+    /**
+     * @return void
+     */
+    protected function removeHttpHeaders()
+    {
+        if (!headers_sent()) {
+            header_remove();
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function releaseResources()
+    {
+        if ($this->writer) {
+            $this->writer->close();
+        }
+    }
+
+    /**
      * 存储导出文件.
      *
-     * @param  string  $filePath
-     * @param  array  $diskConfig
+     * @param string $filePath
+     * @param array $diskConfig
      * @return bool
      *
      * @throws \Box\Spout\Common\Exception\IOException
@@ -165,7 +206,7 @@ class Exporter implements Contracts\Exporter
     {
         try {
             $filePath = $this->prepareFileName($filePath);
-            if (! ($filesystem = $this->filesystem())) {
+            if (!($filesystem = $this->filesystem())) {
                 return $this->storeInLocal($filePath);
             }
             if (empty($this->type)) {
@@ -182,6 +223,24 @@ class Exporter implements Contracts\Exporter
 
             throw $e;
         }
+    }
+
+    /**
+     * @param string $filePath
+     * @return bool
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     */
+    protected function storeInLocal(string $filePath)
+    {
+        /* @var \Box\Spout\Writer\WriterInterface $writer */
+        $writer = $this->makeWriter($filePath);
+
+        $writer->openToFile($filePath);
+
+        $this->writeSheets($writer)->close();
+
+        return true;
     }
 
     /**
@@ -206,65 +265,6 @@ class Exporter implements Contracts\Exporter
             $this->releaseResources();
 
             throw $e;
-        }
-    }
-
-    /**
-     * @param  string  $filePath
-     * @return bool
-     *
-     * @throws \Box\Spout\Common\Exception\IOException
-     */
-    protected function storeInLocal(string $filePath)
-    {
-        /* @var \Box\Spout\Writer\WriterInterface $writer */
-        $writer = $this->makeWriter($filePath);
-
-        $writer->openToFile($filePath);
-
-        $this->writeSheets($writer)->close();
-
-        return true;
-    }
-
-    /**
-     * @param  string  $path
-     * @param  string  $factory
-     * @return WriterInterface
-     */
-    protected function makeWriter(?string $path = null, string $factory = null)
-    {
-        $factory = $factory ?: WriterFactory::class;
-
-        /* @var WriterInterface $writer */
-        if ($this->type) {
-            $writer = $factory::createFromType($this->type);
-        } else {
-            $writer = $factory::createFromFile($path);
-        }
-
-        $this->configure($writer);
-
-        return $this->writer = $writer;
-    }
-
-    /**
-     * @return void
-     */
-    protected function releaseResources()
-    {
-        if ($this->writer) {
-            $this->writer->close();
-        }
-    }
-
-    /**
-     * @return void
-     */
-    protected function removeHttpHeaders()
-    {
-        if (! headers_sent()) {
-            header_remove();
         }
     }
 }

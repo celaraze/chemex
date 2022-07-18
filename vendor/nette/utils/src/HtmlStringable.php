@@ -12,10 +12,10 @@ namespace Nette;
 
 interface HtmlStringable
 {
-	/**
-	 * Returns string in HTML format
-	 */
-	function __toString(): string;
+    /**
+     * Returns string in HTML format
+     */
+    function __toString(): string;
 }
 
 

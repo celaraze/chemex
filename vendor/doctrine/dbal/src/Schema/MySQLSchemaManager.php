@@ -6,7 +6,6 @@ use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\MariaDb1027Platform;
 use Doctrine\DBAL\Platforms\MySQL;
 use Doctrine\DBAL\Types\Type;
-
 use function array_change_key_case;
 use function array_shift;
 use function assert;
@@ -17,7 +16,6 @@ use function strpos;
 use function strtok;
 use function strtolower;
 use function strtr;
-
 use const CASE_LOWER;
 
 /**
@@ -46,6 +44,64 @@ class MySQLSchemaManager extends AbstractSchemaManager
         // Internally, MariaDB escapes single quotes using the standard syntax
         "''" => "'",
     ];
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listTableDetails($name)
+    {
+        $table = parent::listTableDetails($name);
+
+        $sql = $this->_platform->getListTableMetadataSQL($name);
+
+        $tableOptions = $this->_conn->fetchAssociative($sql);
+
+        if ($tableOptions === false) {
+            return $table;
+        }
+
+        $table->addOption('engine', $tableOptions['ENGINE']);
+
+        if ($tableOptions['TABLE_COLLATION'] !== null) {
+            $table->addOption('collation', $tableOptions['TABLE_COLLATION']);
+        }
+
+        $table->addOption('charset', $tableOptions['CHARACTER_SET_NAME']);
+
+        if ($tableOptions['AUTO_INCREMENT'] !== null) {
+            $table->addOption('autoincrement', $tableOptions['AUTO_INCREMENT']);
+        }
+
+        $table->addOption('comment', $tableOptions['TABLE_COMMENT']);
+        $table->addOption('create_options', $this->parseCreateOptions($tableOptions['CREATE_OPTIONS']));
+
+        return $table;
+    }
+
+    /**
+     * @return string[]|true[]
+     */
+    private function parseCreateOptions(?string $string): array
+    {
+        $options = [];
+
+        if ($string === null || $string === '') {
+            return $options;
+        }
+
+        foreach (explode(' ', $string) as $pair) {
+            $parts = explode('=', $pair, 2);
+
+            $options[$parts[0]] = $parts[1] ?? true;
+        }
+
+        return $options;
+    }
+
+    public function createComparator(): Comparator
+    {
+        return new MySQL\Comparator($this->getDatabasePlatform());
+    }
 
     /**
      * {@inheritdoc}
@@ -95,7 +151,7 @@ class MySQLSchemaManager extends AbstractSchemaManager
 
             // Ignore prohibited prefix `length` for spatial index
             if (strpos($v['index_type'], 'SPATIAL') === false) {
-                $v['length'] = isset($v['sub_part']) ? (int) $v['sub_part'] : null;
+                $v['length'] = isset($v['sub_part']) ? (int)$v['sub_part'] : null;
             }
 
             $tableIndexes[$k] = $v;
@@ -127,18 +183,18 @@ class MySQLSchemaManager extends AbstractSchemaManager
 
         $fixed = null;
 
-        if (! isset($tableColumn['name'])) {
+        if (!isset($tableColumn['name'])) {
             $tableColumn['name'] = '';
         }
 
-        $scale     = null;
+        $scale = null;
         $precision = null;
 
         $type = $this->_platform->getDoctrineTypeMapping($dbType);
 
         // In cases where not connected to a database DESCRIBE $table does not return 'Comment'
         if (isset($tableColumn['comment'])) {
-            $type                   = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
+            $type = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
             $tableColumn['comment'] = $this->removeDoctrineTypeFromComment($tableColumn['comment'], $type);
         }
 
@@ -161,8 +217,8 @@ class MySQLSchemaManager extends AbstractSchemaManager
                     ) === 1
                 ) {
                     $precision = $match[1];
-                    $scale     = $match[2];
-                    $length    = null;
+                    $scale = $match[2];
+                    $length = null;
                 }
 
                 break;
@@ -209,22 +265,22 @@ class MySQLSchemaManager extends AbstractSchemaManager
         }
 
         $options = [
-            'length'        => $length !== null ? (int) $length : null,
-            'unsigned'      => strpos($tableColumn['type'], 'unsigned') !== false,
-            'fixed'         => (bool) $fixed,
-            'default'       => $columnDefault,
-            'notnull'       => $tableColumn['null'] !== 'YES',
-            'scale'         => null,
-            'precision'     => null,
+            'length' => $length !== null ? (int)$length : null,
+            'unsigned' => strpos($tableColumn['type'], 'unsigned') !== false,
+            'fixed' => (bool)$fixed,
+            'default' => $columnDefault,
+            'notnull' => $tableColumn['null'] !== 'YES',
+            'scale' => null,
+            'precision' => null,
             'autoincrement' => strpos($tableColumn['extra'], 'auto_increment') !== false,
-            'comment'       => isset($tableColumn['comment']) && $tableColumn['comment'] !== ''
+            'comment' => isset($tableColumn['comment']) && $tableColumn['comment'] !== ''
                 ? $tableColumn['comment']
                 : null,
         ];
 
         if ($scale !== null && $precision !== null) {
-            $options['scale']     = (int) $scale;
-            $options['precision'] = (int) $precision;
+            $options['scale'] = (int)$scale;
+            $options['precision'] = (int)$precision;
         }
 
         $column = new Column($tableColumn['field'], Type::getType($type), $options);
@@ -288,12 +344,12 @@ class MySQLSchemaManager extends AbstractSchemaManager
         $list = [];
         foreach ($tableForeignKeys as $value) {
             $value = array_change_key_case($value, CASE_LOWER);
-            if (! isset($list[$value['constraint_name']])) {
-                if (! isset($value['delete_rule']) || $value['delete_rule'] === 'RESTRICT') {
+            if (!isset($list[$value['constraint_name']])) {
+                if (!isset($value['delete_rule']) || $value['delete_rule'] === 'RESTRICT') {
                     $value['delete_rule'] = null;
                 }
 
-                if (! isset($value['update_rule']) || $value['update_rule'] === 'RESTRICT') {
+                if (!isset($value['update_rule']) || $value['update_rule'] === 'RESTRICT') {
                     $value['update_rule'] = null;
                 }
 
@@ -307,7 +363,7 @@ class MySQLSchemaManager extends AbstractSchemaManager
                 ];
             }
 
-            $list[$value['constraint_name']]['local'][]   = $value['column_name'];
+            $list[$value['constraint_name']]['local'][] = $value['column_name'];
             $list[$value['constraint_name']]['foreign'][] = $value['referenced_column_name'];
         }
 
@@ -326,63 +382,5 @@ class MySQLSchemaManager extends AbstractSchemaManager
         }
 
         return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function listTableDetails($name)
-    {
-        $table = parent::listTableDetails($name);
-
-        $sql = $this->_platform->getListTableMetadataSQL($name);
-
-        $tableOptions = $this->_conn->fetchAssociative($sql);
-
-        if ($tableOptions === false) {
-            return $table;
-        }
-
-        $table->addOption('engine', $tableOptions['ENGINE']);
-
-        if ($tableOptions['TABLE_COLLATION'] !== null) {
-            $table->addOption('collation', $tableOptions['TABLE_COLLATION']);
-        }
-
-        $table->addOption('charset', $tableOptions['CHARACTER_SET_NAME']);
-
-        if ($tableOptions['AUTO_INCREMENT'] !== null) {
-            $table->addOption('autoincrement', $tableOptions['AUTO_INCREMENT']);
-        }
-
-        $table->addOption('comment', $tableOptions['TABLE_COMMENT']);
-        $table->addOption('create_options', $this->parseCreateOptions($tableOptions['CREATE_OPTIONS']));
-
-        return $table;
-    }
-
-    public function createComparator(): Comparator
-    {
-        return new MySQL\Comparator($this->getDatabasePlatform());
-    }
-
-    /**
-     * @return string[]|true[]
-     */
-    private function parseCreateOptions(?string $string): array
-    {
-        $options = [];
-
-        if ($string === null || $string === '') {
-            return $options;
-        }
-
-        foreach (explode(' ', $string) as $pair) {
-            $parts = explode('=', $pair, 2);
-
-            $options[$parts[0]] = $parts[1] ?? true;
-        }
-
-        return $options;
     }
 }

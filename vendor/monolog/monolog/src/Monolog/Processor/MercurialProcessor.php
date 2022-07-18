@@ -24,10 +24,10 @@ use Psr\Log\LogLevel;
  */
 class MercurialProcessor implements ProcessorInterface
 {
-    /** @var Level */
-    private $level;
     /** @var array{branch: string, revision: string}|array<never>|null */
     private static $cache = null;
+    /** @var Level */
+    private $level;
 
     /**
      * @param int|string $level The minimum logging level at which this Processor will be triggered

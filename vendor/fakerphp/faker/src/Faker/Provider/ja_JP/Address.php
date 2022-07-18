@@ -68,6 +68,17 @@ class Address extends \Faker\Provider\Address
     ];
 
     /**
+     * @example 1112222
+     */
+    public static function postcode()
+    {
+        $postcode1 = static::postcode1();
+        $postcode2 = static::postcode2();
+
+        return $postcode1 . $postcode2;
+    }
+
+    /**
      * @example 111
      */
     public static function postcode1()
@@ -81,17 +92,6 @@ class Address extends \Faker\Provider\Address
     public static function postcode2()
     {
         return self::numberBetween(1000, 9999);
-    }
-
-    /**
-     * @example 1112222
-     */
-    public static function postcode()
-    {
-        $postcode1 = static::postcode1();
-        $postcode2 = static::postcode2();
-
-        return $postcode1 . $postcode2;
     }
 
     /**
@@ -125,7 +125,7 @@ class Address extends \Faker\Provider\Address
 
     public static function buildingNumber()
     {
-        return (string) self::numberBetween(101, 110);
+        return (string)self::numberBetween(101, 110);
     }
 
     public function secondaryAddress()

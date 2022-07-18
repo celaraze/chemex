@@ -38,6 +38,15 @@ final class Architecture
     }
 
     /**
+     * @param string $value
+     * @return bool
+     */
+    public static function isValid(string $value): bool
+    {
+        return \in_array($value, self::all(), true);
+    }
+
+    /**
      * @return array<string, ArchitectureType>
      */
     public static function all(): array
@@ -50,14 +59,5 @@ final class Architecture
 
         /** @psalm-var array<string, ArchitectureType> $values */
         return $values;
-    }
-
-    /**
-     * @param string $value
-     * @return bool
-     */
-    public static function isValid(string $value): bool
-    {
-        return \in_array($value, self::all(), true);
     }
 }

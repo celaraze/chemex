@@ -21,9 +21,20 @@ trait CustomClaims
     protected $customClaims = [];
 
     /**
+     * Alias to set the custom claims.
+     *
+     * @param array $customClaims
+     * @return $this
+     */
+    public function claims(array $customClaims)
+    {
+        return $this->customClaims($customClaims);
+    }
+
+    /**
      * Set the custom claims.
      *
-     * @param  array  $customClaims
+     * @param array $customClaims
      * @return $this
      */
     public function customClaims(array $customClaims)
@@ -31,17 +42,6 @@ trait CustomClaims
         $this->customClaims = $customClaims;
 
         return $this;
-    }
-
-    /**
-     * Alias to set the custom claims.
-     *
-     * @param  array  $customClaims
-     * @return $this
-     */
-    public function claims(array $customClaims)
-    {
-        return $this->customClaims($customClaims);
     }
 
     /**

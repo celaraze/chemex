@@ -23,9 +23,6 @@ use Psy\Shell;
  */
 class ProcessForker extends AbstractListener
 {
-    private $savegame;
-    private $up;
-
     private static $pcntlFunctions = [
         'pcntl_fork',
         'pcntl_signal_dispatch',
@@ -33,11 +30,12 @@ class ProcessForker extends AbstractListener
         'pcntl_waitpid',
         'pcntl_wexitstatus',
     ];
-
     private static $posixFunctions = [
         'posix_getpid',
         'posix_kill',
     ];
+    private $savegame;
+    private $up;
 
     /**
      * Process forker is supported if pcntl and posix extensions are available.
@@ -71,6 +69,11 @@ class ProcessForker extends AbstractListener
         return self::checkDisabledFunctions(self::$pcntlFunctions);
     }
 
+    private static function checkDisabledFunctions(array $functions): array
+    {
+        return \array_values(\array_intersect($functions, \array_map('strtolower', \array_map('trim', \explode(',', \ini_get('disable_functions'))))));
+    }
+
     /**
      * Verify that all required posix functions are, in fact, available.
      */
@@ -91,11 +94,6 @@ class ProcessForker extends AbstractListener
     public static function disabledPosixFunctions()
     {
         return self::checkDisabledFunctions(self::$posixFunctions);
-    }
-
-    private static function checkDisabledFunctions(array $functions): array
-    {
-        return \array_values(\array_intersect($functions, \array_map('strtolower', \array_map('trim', \explode(',', \ini_get('disable_functions'))))));
     }
 
     /**
@@ -182,6 +180,35 @@ class ProcessForker extends AbstractListener
     }
 
     /**
+     * Create a savegame fork.
+     *
+     * The savegame contains the current execution state, and can be resumed in
+     * the event that the worker dies unexpectedly (for example, by encountering
+     * a PHP fatal error).
+     */
+    private function createSavegame()
+    {
+        // the current process will become the savegame
+        $this->savegame = \posix_getpid();
+
+        $pid = \pcntl_fork();
+        if ($pid < 0) {
+            throw new \RuntimeException('Unable to create savegame fork');
+        } elseif ($pid > 0) {
+            // we're the savegame now... let's wait and see what happens
+            \pcntl_waitpid($pid, $status);
+
+            // worker exited cleanly, let's bail
+            if (!\pcntl_wexitstatus($status)) {
+                \posix_kill(\posix_getpid(), \SIGKILL);
+            }
+
+            // worker didn't exit cleanly, we'll need to have another go
+            $this->createSavegame();
+        }
+    }
+
+    /**
      * Clean up old savegames at the end of each loop iteration.
      *
      * @param Shell $shell
@@ -209,35 +236,6 @@ class ProcessForker extends AbstractListener
             \fclose($this->up);
 
             \posix_kill(\posix_getpid(), \SIGKILL);
-        }
-    }
-
-    /**
-     * Create a savegame fork.
-     *
-     * The savegame contains the current execution state, and can be resumed in
-     * the event that the worker dies unexpectedly (for example, by encountering
-     * a PHP fatal error).
-     */
-    private function createSavegame()
-    {
-        // the current process will become the savegame
-        $this->savegame = \posix_getpid();
-
-        $pid = \pcntl_fork();
-        if ($pid < 0) {
-            throw new \RuntimeException('Unable to create savegame fork');
-        } elseif ($pid > 0) {
-            // we're the savegame now... let's wait and see what happens
-            \pcntl_waitpid($pid, $status);
-
-            // worker exited cleanly, let's bail
-            if (!\pcntl_wexitstatus($status)) {
-                \posix_kill(\posix_getpid(), \SIGKILL);
-            }
-
-            // worker didn't exit cleanly, we'll need to have another go
-            $this->createSavegame();
         }
     }
 

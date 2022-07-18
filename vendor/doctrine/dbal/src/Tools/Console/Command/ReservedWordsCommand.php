@@ -23,7 +23,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use function array_keys;
 use function assert;
 use function count;
@@ -45,16 +44,16 @@ class ReservedWordsCommand extends Command
         $this->connectionProvider = $connectionProvider;
 
         $this->keywordLists = [
-            'db2'        => new DB2Keywords(),
+            'db2' => new DB2Keywords(),
             'mariadb102' => new MariaDb102Keywords(),
-            'mysql'      => new MySQLKeywords(),
-            'mysql57'    => new MySQL57Keywords(),
-            'mysql80'    => new MySQL80Keywords(),
-            'oracle'     => new OracleKeywords(),
-            'pgsql'      => new PostgreSQL94Keywords(),
-            'pgsql100'   => new PostgreSQL100Keywords(),
-            'sqlite'     => new SQLiteKeywords(),
-            'sqlserver'  => new SQLServer2012Keywords(),
+            'mysql' => new MySQLKeywords(),
+            'mysql57' => new MySQL57Keywords(),
+            'mysql80' => new MySQL80Keywords(),
+            'oracle' => new OracleKeywords(),
+            'pgsql' => new PostgreSQL94Keywords(),
+            'pgsql100' => new PostgreSQL100Keywords(),
+            'sqlite' => new SQLiteKeywords(),
+            'sqlserver' => new SQLServer2012Keywords(),
         ];
     }
 
@@ -69,7 +68,7 @@ class ReservedWordsCommand extends Command
     /**
      * If you want to add or replace a keywords list use this command.
      *
-     * @param string                    $name
+     * @param string $name
      * @param class-string<KeywordList> $class
      *
      * @return void
@@ -80,7 +79,7 @@ class ReservedWordsCommand extends Command
             'doctrine/dbal',
             'https://github.com/doctrine/dbal/issues/4510',
             'ReservedWordsCommand::setKeywordListClass() is deprecated,'
-                . ' use ReservedWordsCommand::setKeywordList() instead.'
+            . ' use ReservedWordsCommand::setKeywordList() instead.'
         );
 
         $this->keywordLists[$name] = new $class();
@@ -90,18 +89,18 @@ class ReservedWordsCommand extends Command
     protected function configure()
     {
         $this
-        ->setName('dbal:reserved-words')
-        ->setDescription('Checks if the current database contains identifiers that are reserved.')
-        ->setDefinition([
-            new InputOption('connection', null, InputOption::VALUE_REQUIRED, 'The named database connection'),
-            new InputOption(
-                'list',
-                'l',
-                InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
-                'Keyword-List name.'
-            ),
-        ])
-        ->setHelp(<<<EOT
+            ->setName('dbal:reserved-words')
+            ->setDescription('Checks if the current database contains identifiers that are reserved.')
+            ->setDefinition([
+                new InputOption('connection', null, InputOption::VALUE_REQUIRED, 'The named database connection'),
+                new InputOption(
+                    'list',
+                    'l',
+                    InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+                    'Keyword-List name.'
+                ),
+            ])
+            ->setHelp(<<<EOT
 Checks if the current database contains tables and columns
 with names that are identifiers in this dialect or in other SQL dialects.
 
@@ -127,7 +126,7 @@ The following keyword lists are currently shipped with Doctrine:
     * sqlite
     * sqlserver
 EOT
-        );
+            );
     }
 
     /**
@@ -145,7 +144,7 @@ EOT
 
         if (is_string($keywordLists)) {
             $keywordLists = [$keywordLists];
-        } elseif (! is_array($keywordLists)) {
+        } elseif (!is_array($keywordLists)) {
             $keywordLists = [];
         }
 
@@ -155,7 +154,7 @@ EOT
 
         $keywords = [];
         foreach ($keywordLists as $keywordList) {
-            if (! isset($this->keywordLists[$keywordList])) {
+            if (!isset($this->keywordLists[$keywordList])) {
                 throw new InvalidArgumentException(
                     "There exists no keyword list with name '" . $keywordList . "'. " .
                     'Known lists: ' . implode(', ', array_keys($this->keywordLists))
@@ -170,7 +169,7 @@ EOT
             true
         );
 
-        $schema  = $conn->getSchemaManager()->createSchema();
+        $schema = $conn->getSchemaManager()->createSchema();
         $visitor = new ReservedKeywordsValidator($keywords);
         $schema->visit($visitor);
 

@@ -47,7 +47,7 @@ final class AsIsNormalizerStrategy implements NormalizerStrategyInterface
             $newListBlock->setEndLine($listItemToAdd->getEndLine());
             $this->lastListItem->appendChild($newListBlock);
             $this->parentListBlock = $newListBlock;
-            $this->lastListItem    = null;
+            $this->lastListItem = null;
 
             $this->parentLevel++;
         }

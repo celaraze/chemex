@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
+use ReflectionClass;
+use ReflectionException;
 use function assert;
 use function class_exists;
 use function is_iterable;
-use ReflectionClass;
-use ReflectionException;
 
 final class IterableType extends Type
 {
@@ -54,7 +55,7 @@ final class IterableType extends Type
             } catch (ReflectionException $e) {
                 throw new RuntimeException(
                     $e->getMessage(),
-                    (int) $e->getCode(),
+                    (int)$e->getCode(),
                     $e
                 );
                 // @codeCoverageIgnoreEnd
@@ -62,6 +63,11 @@ final class IterableType extends Type
         }
 
         return false;
+    }
+
+    public function isIterable(): bool
+    {
+        return true;
     }
 
     public function name(): string
@@ -72,10 +78,5 @@ final class IterableType extends Type
     public function allowsNull(): bool
     {
         return $this->allowsNull;
-    }
-
-    public function isIterable(): bool
-    {
-        return true;
     }
 }

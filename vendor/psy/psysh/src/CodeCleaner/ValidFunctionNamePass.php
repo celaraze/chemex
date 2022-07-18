@@ -32,9 +32,9 @@ class ValidFunctionNamePass extends NamespaceAwarePass
     /**
      * Store newly defined function names on the way in, to allow recursion.
      *
+     * @param Node $node
      * @throws FatalErrorException if a function is redefined in a non-conditional scope
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {
@@ -59,6 +59,14 @@ class ValidFunctionNamePass extends NamespaceAwarePass
         }
     }
 
+    private static function isConditional(Node $node)
+    {
+        return $node instanceof If_ ||
+            $node instanceof While_ ||
+            $node instanceof Do_ ||
+            $node instanceof Switch_;
+    }
+
     /**
      * @param Node $node
      */
@@ -67,13 +75,5 @@ class ValidFunctionNamePass extends NamespaceAwarePass
         if (self::isConditional($node)) {
             $this->conditionalScopes--;
         }
-    }
-
-    private static function isConditional(Node $node)
-    {
-        return $node instanceof If_ ||
-            $node instanceof While_ ||
-            $node instanceof Do_ ||
-            $node instanceof Switch_;
     }
 }

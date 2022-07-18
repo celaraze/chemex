@@ -52,9 +52,9 @@ final class CompleteCommand extends Command
     {
         // must be set before the parent constructor, as the property value is used in configure()
         $this->completionOutputs = $completionOutputs + [
-            'bash' => BashCompletionOutput::class,
-            'fish' => FishCompletionOutput::class,
-        ];
+                'bash' => BashCompletionOutput::class,
+                'fish' => FishCompletionOutput::class,
+            ];
 
         parent::__construct();
     }
@@ -62,11 +62,10 @@ final class CompleteCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('shell', 's', InputOption::VALUE_REQUIRED, 'The shell type ("'.implode('", "', array_keys($this->completionOutputs)).'")')
+            ->addOption('shell', 's', InputOption::VALUE_REQUIRED, 'The shell type ("' . implode('", "', array_keys($this->completionOutputs)) . '")')
             ->addOption('input', 'i', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'An array of input tokens (e.g. COMP_WORDS or argv)')
             ->addOption('current', 'c', InputOption::VALUE_REQUIRED, 'The index of the "input" array that the cursor is in (e.g. COMP_CWORD)')
-            ->addOption('symfony', 'S', InputOption::VALUE_REQUIRED, 'The version of the completion script')
-        ;
+            ->addOption('symfony', 'S', InputOption::VALUE_REQUIRED, 'The version of the completion script');
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output)
@@ -102,11 +101,11 @@ final class CompleteCommand extends Command
 
             $this->log([
                 '',
-                '<comment>'.date('Y-m-d H:i:s').'</>',
+                '<comment>' . date('Y-m-d H:i:s') . '</>',
                 '<info>Input:</> <comment>("|" indicates the cursor position)</>',
-                '  '.(string) $completionInput,
+                '  ' . (string)$completionInput,
                 '<info>Command:</>',
-                '  '.(string) implode(' ', $_SERVER['argv']),
+                '  ' . (string)implode(' ', $_SERVER['argv']),
                 '<info>Messages:</>',
             ]);
 
@@ -129,16 +128,16 @@ final class CompleteCommand extends Command
                 $completionInput->bind($command->getDefinition());
 
                 if (CompletionInput::TYPE_OPTION_NAME === $completionInput->getCompletionType()) {
-                    $this->log('  Completing option names for the <comment>'.\get_class($command instanceof LazyCommand ? $command->getCommand() : $command).'</> command.');
+                    $this->log('  Completing option names for the <comment>' . \get_class($command instanceof LazyCommand ? $command->getCommand() : $command) . '</> command.');
 
                     $suggestions->suggestOptions($command->getDefinition()->getOptions());
                 } else {
                     $this->log([
-                        '  Completing using the <comment>'.\get_class($command instanceof LazyCommand ? $command->getCommand() : $command).'</> class.',
-                        '  Completing <comment>'.$completionInput->getCompletionType().'</> for <comment>'.$completionInput->getCompletionName().'</>',
+                        '  Completing using the <comment>' . \get_class($command instanceof LazyCommand ? $command->getCommand() : $command) . '</> class.',
+                        '  Completing <comment>' . $completionInput->getCompletionType() . '</> for <comment>' . $completionInput->getCompletionName() . '</>',
                     ]);
                     if (null !== $compval = $completionInput->getCompletionValue()) {
-                        $this->log('  Current value: <comment>'.$compval.'</>');
+                        $this->log('  Current value: <comment>' . $compval . '</>');
                     }
 
                     $command->complete($completionInput, $suggestions);
@@ -150,9 +149,11 @@ final class CompleteCommand extends Command
 
             $this->log('<info>Suggestions:</>');
             if ($options = $suggestions->getOptionSuggestions()) {
-                $this->log('  --'.implode(' --', array_map(function ($o) { return $o->getName(); }, $options)));
+                $this->log('  --' . implode(' --', array_map(function ($o) {
+                        return $o->getName();
+                    }, $options)));
             } elseif ($values = $suggestions->getValueSuggestions()) {
-                $this->log('  '.implode(' ', $values));
+                $this->log('  ' . implode(' ', $values));
             } else {
                 $this->log('  <comment>No suggestions were provided</>');
             }
@@ -161,7 +162,7 @@ final class CompleteCommand extends Command
         } catch (\Throwable $e) {
             $this->log([
                 '<error>Error!</error>',
-                (string) $e,
+                (string)$e,
             ]);
 
             if ($output->isDebug()) {
@@ -181,7 +182,7 @@ final class CompleteCommand extends Command
             throw new \RuntimeException('The "--current" option must be set and it must be an integer.');
         }
 
-        $completionInput = CompletionInput::fromTokens($input->getOption('input'), (int) $currentIndex);
+        $completionInput = CompletionInput::fromTokens($input->getOption('input'), (int)$currentIndex);
 
         try {
             $completionInput->bind($this->getApplication()->getDefinition());
@@ -189,6 +190,16 @@ final class CompleteCommand extends Command
         }
 
         return $completionInput;
+    }
+
+    private function log($messages): void
+    {
+        if (!$this->isDebug) {
+            return;
+        }
+
+        $commandName = basename($_SERVER['argv'][0]);
+        file_put_contents(sys_get_temp_dir() . '/sf_' . $commandName . '.log', implode(\PHP_EOL, (array)$messages) . \PHP_EOL, \FILE_APPEND);
     }
 
     private function findCommand(CompletionInput $completionInput, OutputInterface $output): ?Command
@@ -204,15 +215,5 @@ final class CompleteCommand extends Command
         }
 
         return null;
-    }
-
-    private function log($messages): void
-    {
-        if (!$this->isDebug) {
-            return;
-        }
-
-        $commandName = basename($_SERVER['argv'][0]);
-        file_put_contents(sys_get_temp_dir().'/sf_'.$commandName.'.log', implode(\PHP_EOL, (array) $messages).\PHP_EOL, \FILE_APPEND);
     }
 }

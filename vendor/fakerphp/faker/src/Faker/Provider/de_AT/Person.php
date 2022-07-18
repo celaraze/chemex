@@ -134,19 +134,19 @@ class Person extends \Faker\Provider\Person
         $birthDateString = $birthdate->format('dmy');
 
         do {
-            $consecutiveNumber = (string) self::numberBetween(100, 999);
+            $consecutiveNumber = (string)self::numberBetween(100, 999);
 
             $verificationNumber = (
-                (int) $consecutiveNumber[0] * 3
-                    + (int) $consecutiveNumber[1] * 7
-                    + (int) $consecutiveNumber[2] * 9
-                    + (int) $birthDateString[0] * 5
-                    + (int) $birthDateString[1] * 8
-                    + (int) $birthDateString[2] * 4
-                    + (int) $birthDateString[3] * 2
-                    + (int) $birthDateString[4] * 1
-                    + (int) $birthDateString[5] * 6
-            ) % 11;
+                    (int)$consecutiveNumber[0] * 3
+                    + (int)$consecutiveNumber[1] * 7
+                    + (int)$consecutiveNumber[2] * 9
+                    + (int)$birthDateString[0] * 5
+                    + (int)$birthDateString[1] * 8
+                    + (int)$birthDateString[2] * 4
+                    + (int)$birthDateString[3] * 2
+                    + (int)$birthDateString[4] * 1
+                    + (int)$birthDateString[5] * 6
+                ) % 11;
         } while ($verificationNumber == 10);
 
         return sprintf('%s%s%s', $consecutiveNumber, $verificationNumber, $birthDateString);

@@ -107,109 +107,80 @@ class NoProxyPattern
     }
 
     /**
-     * Returns true if the url is matched by a rule
+     * Splits the hostname into host and port components
      *
-     * @param int      $index
-     * @param string   $hostName
-     * @param stdClass $url
-     *
-     * @return bool
-     */
-    protected function match(int $index, string $hostName, stdClass $url): bool
-    {
-        if (!$rule = $this->getRule($index, $hostName)) {
-            // Data must have been misformatted
-            return false;
-        }
-
-        if ($rule->ipdata) {
-            // Match ipdata first
-            if (!$url->ipdata) {
-                return false;
-            }
-
-            if ($rule->ipdata->netmask) {
-                return $this->matchRange($rule->ipdata, $url->ipdata);
-            }
-
-            $match = $rule->ipdata->ip === $url->ipdata->ip;
-        } else {
-            // Match host and port
-            $haystack = substr($url->name, -strlen($rule->name));
-            $match = stripos($haystack, $rule->name) === 0;
-        }
-
-        if ($match && $rule->port) {
-            $match = $rule->port === $url->port;
-        }
-
-        return $match;
-    }
-
-    /**
-     * Returns true if the target ip is in the network range
-     *
-     * @param stdClass $network
-     * @param stdClass $target
-     *
-     * @return bool
-     */
-    protected function matchRange(stdClass $network, stdClass $target): bool
-    {
-        $net = unpack('C*', $network->ip);
-        $mask = unpack('C*', $network->netmask);
-        $ip = unpack('C*', $target->ip);
-        if (false === $net) {
-            throw new \RuntimeException('Could not parse network IP '.$network->ip);
-        }
-        if (false === $mask) {
-            throw new \RuntimeException('Could not parse netmask '.$network->netmask);
-        }
-        if (false === $ip) {
-            throw new \RuntimeException('Could not parse target IP '.$target->ip);
-        }
-
-        for ($i = 1; $i < 17; ++$i) {
-            if (($net[$i] & $mask[$i]) !== ($ip[$i] & $mask[$i])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Finds or creates rule data for a hostname
-     *
-     * @param int    $index
      * @param string $hostName
      *
-     * @return null|stdClass Null if the hostname is invalid
+     * @return mixed[] host, port, if there was error
      */
-    private function getRule(int $index, string $hostName): ?stdClass
+    private function splitHostPort(string $hostName): array
     {
-        if (array_key_exists($index, $this->rules)) {
-            return $this->rules[$index];
+        // host, port, err
+        $error = array('', '', true);
+        $port = 0;
+        $ip6 = '';
+
+        // Check for square-bracket notation
+        if ($hostName[0] === '[') {
+            $index = strpos($hostName, ']');
+
+            // The smallest ip6 address is ::
+            if (false === $index || $index < 3) {
+                return $error;
+            }
+
+            $ip6 = substr($hostName, 1, $index - 1);
+            $hostName = substr($hostName, $index + 1);
+
+            if (strpbrk($hostName, '[]') !== false || substr_count($hostName, ':') > 1) {
+                return $error;
+            }
         }
 
-        $this->rules[$index] = null;
-        list($host, $port, $err) = $this->splitHostPort($hostName);
+        if (substr_count($hostName, ':') === 1) {
+            $index = strpos($hostName, ':');
+            $port = substr($hostName, $index + 1);
+            $hostName = substr($hostName, 0, $index);
 
-        if ($err || !$this->ipCheckData($host, $ipdata, true)) {
-            return null;
+            if (!$this->validateInt($port, 1, 65535)) {
+                return $error;
+            }
+
+            $port = (int)$port;
         }
 
-        $this->rules[$index] = $this->makeData($host, $port, $ipdata);
+        $host = $ip6 . $hostName;
 
-        return $this->rules[$index];
+        return array($host, $port, false);
+    }
+
+    /**
+     * Wrapper around filter_var FILTER_VALIDATE_INT
+     *
+     * @param string $int
+     * @param int $min
+     * @param int $max
+     *
+     * @return bool
+     */
+    private function validateInt(string $int, int $min, int $max): bool
+    {
+        $options = array(
+            'options' => array(
+                'min_range' => $min,
+                'max_range' => $max,
+            ),
+        );
+
+        return false !== filter_var($int, FILTER_VALIDATE_INT, $options);
     }
 
     /**
      * Creates an object containing IP data if the host is an IP address
      *
-     * @param string        $host
-     * @param null|stdClass $ipdata      Set by method if IP address found
-     * @param bool          $allowPrefix Whether a CIDR prefix-length is expected
+     * @param string $host
+     * @param null|stdClass $ipdata Set by method if IP address found
+     * @param bool $allowPrefix Whether a CIDR prefix-length is expected
      *
      * @return bool False if the host contains invalid data
      */
@@ -227,7 +198,7 @@ class NoProxyPattern
             if (!$allowPrefix || !$this->validateInt($prefix, 0, 128)) {
                 return false;
             }
-            $prefix = (int) $prefix;
+            $prefix = (int)$prefix;
             $modified = true;
         }
 
@@ -272,66 +243,10 @@ class NoProxyPattern
     }
 
     /**
-     * Returns the binary network mask mapped to IPv6
-     *
-     * @param int $prefix CIDR prefix-length
-     * @param int $size   Byte size of in_addr
-     *
-     * @return string
-     */
-    private function ipGetMask(int $prefix, int $size): string
-    {
-        $mask = '';
-
-        if ($ones = floor($prefix / 8)) {
-            $mask = str_repeat(chr(255), (int) $ones);
-        }
-
-        if ($remainder = $prefix % 8) {
-            $mask .= chr(0xff ^ (0xff >> $remainder));
-        }
-
-        $mask = str_pad($mask, $size, chr(0));
-
-        return $this->ipMapTo6($mask, $size);
-    }
-
-    /**
-     * Calculates and returns the network and mask
-     *
-     * @param string $rangeIp IP in_addr
-     * @param int    $size    Byte size of in_addr
-     * @param int    $prefix  CIDR prefix-length
-     *
-     * @return string[] network in_addr, binary mask
-     */
-    private function ipGetNetwork(string $rangeIp, int $size, int $prefix): array
-    {
-        $netmask = $this->ipGetMask($prefix, $size);
-
-        // Get the network from the address and mask
-        $mask = unpack('C*', $netmask);
-        $ip = unpack('C*', $rangeIp);
-        $net = '';
-        if (false === $mask) {
-            throw new \RuntimeException('Could not parse netmask '.$netmask);
-        }
-        if (false === $ip) {
-            throw new \RuntimeException('Could not parse range IP '.$rangeIp);
-        }
-
-        for ($i = 1; $i < 17; ++$i) {
-            $net .= chr($ip[$i] & $mask[$i]);
-        }
-
-        return array($net, $netmask);
-    }
-
-    /**
      * Maps an IPv4 address to IPv6
      *
      * @param string $binary in_addr
-     * @param int    $size   Byte size of in_addr
+     * @param int $size Byte size of in_addr
      *
      * @return string Mapped or existing in_addr
      */
@@ -346,17 +261,91 @@ class NoProxyPattern
     }
 
     /**
+     * Calculates and returns the network and mask
+     *
+     * @param string $rangeIp IP in_addr
+     * @param int $size Byte size of in_addr
+     * @param int $prefix CIDR prefix-length
+     *
+     * @return string[] network in_addr, binary mask
+     */
+    private function ipGetNetwork(string $rangeIp, int $size, int $prefix): array
+    {
+        $netmask = $this->ipGetMask($prefix, $size);
+
+        // Get the network from the address and mask
+        $mask = unpack('C*', $netmask);
+        $ip = unpack('C*', $rangeIp);
+        $net = '';
+        if (false === $mask) {
+            throw new \RuntimeException('Could not parse netmask ' . $netmask);
+        }
+        if (false === $ip) {
+            throw new \RuntimeException('Could not parse range IP ' . $rangeIp);
+        }
+
+        for ($i = 1; $i < 17; ++$i) {
+            $net .= chr($ip[$i] & $mask[$i]);
+        }
+
+        return array($net, $netmask);
+    }
+
+    /**
+     * Returns the binary network mask mapped to IPv6
+     *
+     * @param int $prefix CIDR prefix-length
+     * @param int $size Byte size of in_addr
+     *
+     * @return string
+     */
+    private function ipGetMask(int $prefix, int $size): string
+    {
+        $mask = '';
+
+        if ($ones = floor($prefix / 8)) {
+            $mask = str_repeat(chr(255), (int)$ones);
+        }
+
+        if ($remainder = $prefix % 8) {
+            $mask .= chr(0xff ^ (0xff >> $remainder));
+        }
+
+        $mask = str_pad($mask, $size, chr(0));
+
+        return $this->ipMapTo6($mask, $size);
+    }
+
+    /**
+     * Creates an ip data object
+     *
+     * @param string $ip in_addr
+     * @param int $size Byte size of in_addr
+     * @param null|string $netmask Network mask
+     *
+     * @return stdClass
+     */
+    private function makeIpData(string $ip, int $size, ?string $netmask): stdClass
+    {
+        return (object)array(
+            'ip' => $ip,
+            'size' => $size,
+            'netmask' => $netmask,
+        );
+    }
+
+    /**
      * Creates a rule data object
      *
-     * @param string        $host
-     * @param int           $port
+     * @param string $host
+     * @param int $port
      * @param null|stdClass $ipdata
      *
      * @return stdClass
      */
     private function makeData(string $host, int $port, ?stdClass $ipdata): stdClass
     {
-        return (object) array(
+        return (object)array(
             'host' => $host,
             'name' => '.' . ltrim($host, '.'),
             'port' => $port,
@@ -365,89 +354,100 @@ class NoProxyPattern
     }
 
     /**
-     * Creates an ip data object
+     * Returns true if the url is matched by a rule
      *
-     * @param string      $ip      in_addr
-     * @param int         $size    Byte size of in_addr
-     * @param null|string $netmask Network mask
-     *
-     * @return stdClass
-     */
-    private function makeIpData(string $ip, int $size, ?string $netmask): stdClass
-    {
-        return (object) array(
-            'ip' => $ip,
-            'size' => $size,
-            'netmask' => $netmask,
-        );
-    }
-
-    /**
-     * Splits the hostname into host and port components
-     *
+     * @param int $index
      * @param string $hostName
-     *
-     * @return mixed[] host, port, if there was error
-     */
-    private function splitHostPort(string $hostName): array
-    {
-        // host, port, err
-        $error = array('', '', true);
-        $port = 0;
-        $ip6 = '';
-
-        // Check for square-bracket notation
-        if ($hostName[0] === '[') {
-            $index = strpos($hostName, ']');
-
-            // The smallest ip6 address is ::
-            if (false === $index || $index < 3) {
-                return $error;
-            }
-
-            $ip6 = substr($hostName, 1, $index - 1);
-            $hostName = substr($hostName, $index + 1);
-
-            if (strpbrk($hostName, '[]') !== false || substr_count($hostName, ':') > 1) {
-                return $error;
-            }
-        }
-
-        if (substr_count($hostName, ':') === 1) {
-            $index = strpos($hostName, ':');
-            $port = substr($hostName, $index + 1);
-            $hostName = substr($hostName, 0, $index);
-
-            if (!$this->validateInt($port, 1, 65535)) {
-                return $error;
-            }
-
-            $port = (int) $port;
-        }
-
-        $host = $ip6 . $hostName;
-
-        return array($host, $port, false);
-    }
-
-    /**
-     * Wrapper around filter_var FILTER_VALIDATE_INT
-     *
-     * @param string $int
-     * @param int    $min
-     * @param int    $max
+     * @param stdClass $url
      *
      * @return bool
      */
-    private function validateInt(string $int, int $min, int $max): bool
+    protected function match(int $index, string $hostName, stdClass $url): bool
     {
-        $options = array(
-            'options' => array(
-                'min_range' => $min,
-                'max_range' => $max,
-            ),
-        );
+        if (!$rule = $this->getRule($index, $hostName)) {
+            // Data must have been misformatted
+            return false;
+        }
 
-        return false !== filter_var($int, FILTER_VALIDATE_INT, $options);
+        if ($rule->ipdata) {
+            // Match ipdata first
+            if (!$url->ipdata) {
+                return false;
+            }
+
+            if ($rule->ipdata->netmask) {
+                return $this->matchRange($rule->ipdata, $url->ipdata);
+            }
+
+            $match = $rule->ipdata->ip === $url->ipdata->ip;
+        } else {
+            // Match host and port
+            $haystack = substr($url->name, -strlen($rule->name));
+            $match = stripos($haystack, $rule->name) === 0;
+        }
+
+        if ($match && $rule->port) {
+            $match = $rule->port === $url->port;
+        }
+
+        return $match;
+    }
+
+    /**
+     * Finds or creates rule data for a hostname
+     *
+     * @param int $index
+     * @param string $hostName
+     *
+     * @return null|stdClass Null if the hostname is invalid
+     */
+    private function getRule(int $index, string $hostName): ?stdClass
+    {
+        if (array_key_exists($index, $this->rules)) {
+            return $this->rules[$index];
+        }
+
+        $this->rules[$index] = null;
+        list($host, $port, $err) = $this->splitHostPort($hostName);
+
+        if ($err || !$this->ipCheckData($host, $ipdata, true)) {
+            return null;
+        }
+
+        $this->rules[$index] = $this->makeData($host, $port, $ipdata);
+
+        return $this->rules[$index];
+    }
+
+    /**
+     * Returns true if the target ip is in the network range
+     *
+     * @param stdClass $network
+     * @param stdClass $target
+     *
+     * @return bool
+     */
+    protected function matchRange(stdClass $network, stdClass $target): bool
+    {
+        $net = unpack('C*', $network->ip);
+        $mask = unpack('C*', $network->netmask);
+        $ip = unpack('C*', $target->ip);
+        if (false === $net) {
+            throw new \RuntimeException('Could not parse network IP ' . $network->ip);
+        }
+        if (false === $mask) {
+            throw new \RuntimeException('Could not parse netmask ' . $network->netmask);
+        }
+        if (false === $ip) {
+            throw new \RuntimeException('Could not parse target IP ' . $target->ip);
+        }
+
+        for ($i = 1; $i < 17; ++$i) {
+            if (($net[$i] & $mask[$i]) !== ($ip[$i] & $mask[$i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

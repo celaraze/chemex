@@ -10,31 +10,31 @@ class Menu
 {
     protected static $helperNodes = [
         [
-            'id'        => 1,
-            'title'     => 'Helpers',
-            'icon'      => 'fa fa-keyboard-o',
-            'uri'       => '',
+            'id' => 1,
+            'title' => 'Helpers',
+            'icon' => 'fa fa-keyboard-o',
+            'uri' => '',
             'parent_id' => 0,
         ],
         [
-            'id'        => 2,
-            'title'     => 'Extensions',
-            'icon'      => '',
-            'uri'       => 'auth/extensions',
+            'id' => 2,
+            'title' => 'Extensions',
+            'icon' => '',
+            'uri' => 'auth/extensions',
             'parent_id' => 1,
         ],
         [
-            'id'        => 3,
-            'title'     => 'Scaffold',
-            'icon'      => '',
-            'uri'       => 'helpers/scaffold',
+            'id' => 3,
+            'title' => 'Scaffold',
+            'icon' => '',
+            'uri' => 'helpers/scaffold',
             'parent_id' => 1,
         ],
         [
-            'id'        => 4,
-            'title'     => 'Icons',
-            'icon'      => '',
-            'uri'       => 'helpers/icons',
+            'id' => 4,
+            'title' => 'Icons',
+            'icon' => '',
+            'uri' => 'helpers/icons',
             'parent_id' => 1,
         ],
     ];
@@ -43,7 +43,7 @@ class Menu
 
     public function register()
     {
-        if (! admin_has_default_section(Admin::SECTION['LEFT_SIDEBAR_MENU'])) {
+        if (!admin_has_default_section(Admin::SECTION['LEFT_SIDEBAR_MENU'])) {
             admin_inject_default_section(Admin::SECTION['LEFT_SIDEBAR_MENU'], function () {
                 $menuModel = config('admin.database.menu_model');
 
@@ -57,23 +57,9 @@ class Menu
     }
 
     /**
-     * 增加菜单节点.
-     *
-     * @param  array  $nodes
-     * @param  int  $priority
-     * @return void
-     */
-    public function add(array $nodes = [], int $priority = 10)
-    {
-        admin_inject_section(Admin::SECTION['LEFT_SIDEBAR_MENU_BOTTOM'], function () use (&$nodes) {
-            return $this->toHtml($nodes);
-        }, true, $priority);
-    }
-
-    /**
      * 转化为HTML.
      *
-     * @param  array  $nodes
+     * @param array $nodes
      * @return string
      *
      * @throws \Throwable
@@ -90,9 +76,34 @@ class Menu
     }
 
     /**
+     * 渲染视图.
+     *
+     * @param array $item
+     * @return string
+     */
+    public function render($item)
+    {
+        return view($this->view, ['item' => &$item, 'builder' => $this])->render();
+    }
+
+    /**
+     * 增加菜单节点.
+     *
+     * @param array $nodes
+     * @param int $priority
+     * @return void
+     */
+    public function add(array $nodes = [], int $priority = 10)
+    {
+        admin_inject_section(Admin::SECTION['LEFT_SIDEBAR_MENU_BOTTOM'], function () use (&$nodes) {
+            return $this->toHtml($nodes);
+        }, true, $priority);
+    }
+
+    /**
      * 设置菜单视图.
      *
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function view(string $view)
@@ -103,21 +114,10 @@ class Menu
     }
 
     /**
-     * 渲染视图.
-     *
-     * @param  array  $item
-     * @return string
-     */
-    public function render($item)
-    {
-        return view($this->view, ['item' => &$item, 'builder' => $this])->render();
-    }
-
-    /**
      * 判断是否选中.
      *
-     * @param  array  $item
-     * @param  null|string  $path
+     * @param array $item
+     * @param null|string $path
      * @return bool
      */
     public function isActive($item, ?string $path = null)
@@ -138,7 +138,7 @@ class Menu
             if ($path == trim($this->getPath($v['uri']), '/')) {
                 return true;
             }
-            if (! empty($v['children'])) {
+            if (!empty($v['children'])) {
                 if ($this->isActive($v, $path)) {
                     return true;
                 }
@@ -149,65 +149,38 @@ class Menu
     }
 
     /**
+     * @param string $uri
+     * @return string
+     */
+    public function getPath($uri)
+    {
+        return $uri
+            ? (url()->isValidUrl($uri) ? $uri : admin_base_path($uri))
+            : $uri;
+    }
+
+    /**
      * 判断节点是否可见.
      *
-     * @param  array  $item
+     * @param array $item
      * @return bool
      */
     public function visible($item)
     {
         if (
-            ! $this->checkPermission($item)
-            || ! $this->checkExtension($item)
-            || ! $this->userCanSeeMenu($item)
+            !$this->checkPermission($item)
+            || !$this->checkExtension($item)
+            || !$this->userCanSeeMenu($item)
         ) {
             return false;
         }
 
         $show = $item['show'] ?? null;
-        if ($show !== null && ! $show) {
+        if ($show !== null && !$show) {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * 判断扩展是否启用.
-     *
-     * @param $item
-     * @return bool
-     */
-    protected function checkExtension($item)
-    {
-        $extension = $item['extension'] ?? null;
-
-        if (! $extension) {
-            return true;
-        }
-
-        if (! $extension = Admin::extension($extension)) {
-            return false;
-        }
-
-        return $extension->enabled();
-    }
-
-    /**
-     * 判断用户.
-     *
-     * @param  array|\Dcat\Admin\Models\Menu  $item
-     * @return bool
-     */
-    protected function userCanSeeMenu($item)
-    {
-        $user = Admin::user();
-
-        if (! $user || ! method_exists($user, 'canSeeMenu')) {
-            return true;
-        }
-
-        return $user->canSeeMenu($item);
     }
 
     /**
@@ -222,13 +195,13 @@ class Menu
         $roles = array_column(Helper::array($item['roles'] ?? []), 'slug');
         $permissions = array_column(Helper::array($item['permissions'] ?? []), 'slug');
 
-        if (! $permissionIds && ! $roles && ! $permissions) {
+        if (!$permissionIds && !$roles && !$permissions) {
             return true;
         }
 
         $user = Admin::user();
 
-        if (! $user || $user->visible($roles)) {
+        if (!$user || $user->visible($roles)) {
             return true;
         }
 
@@ -242,12 +215,50 @@ class Menu
     }
 
     /**
-     * @param  string  $text
+     * 判断扩展是否启用.
+     *
+     * @param $item
+     * @return bool
+     */
+    protected function checkExtension($item)
+    {
+        $extension = $item['extension'] ?? null;
+
+        if (!$extension) {
+            return true;
+        }
+
+        if (!$extension = Admin::extension($extension)) {
+            return false;
+        }
+
+        return $extension->enabled();
+    }
+
+    /**
+     * 判断用户.
+     *
+     * @param array|\Dcat\Admin\Models\Menu $item
+     * @return bool
+     */
+    protected function userCanSeeMenu($item)
+    {
+        $user = Admin::user();
+
+        if (!$user || !method_exists($user, 'canSeeMenu')) {
+            return true;
+        }
+
+        return $user->canSeeMenu($item);
+    }
+
+    /**
+     * @param string $text
      * @return string
      */
     public function translate($text)
     {
-        $titleTranslation = 'menu.titles.'.trim(str_replace(' ', '_', strtolower($text)));
+        $titleTranslation = 'menu.titles.' . trim(str_replace(' ', '_', strtolower($text)));
 
         if (Lang::has($titleTranslation)) {
             return __($titleTranslation);
@@ -257,18 +268,7 @@ class Menu
     }
 
     /**
-     * @param  string  $uri
-     * @return string
-     */
-    public function getPath($uri)
-    {
-        return $uri
-            ? (url()->isValidUrl($uri) ? $uri : admin_base_path($uri))
-            : $uri;
-    }
-
-    /**
-     * @param  string  $uri
+     * @param string $uri
      * @return string
      */
     public function getUrl($uri)

@@ -54,46 +54,6 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * Generate prepared last name for further processing.
-     *
-     * @return string
-     */
-    public function lastName()
-    {
-        $name = static::firstNameMale();
-
-        if (substr($name, -2) === 'ur') {
-            $name = substr($name, 0, strlen($name) - 2);
-        }
-
-        if (substr($name, -1) !== 's') {
-            $name .= 's';
-        }
-
-        return $name;
-    }
-
-    /**
-     * Randomly return an Icelandic last name for a woman.
-     *
-     * @return string
-     */
-    public function lastNameMale()
-    {
-        return $this->lastName() . 'son';
-    }
-
-    /**
-     * Randomly return an Icelandic last name for a man.
-     *
-     * @return string
-     */
-    public function lastNameFemale()
-    {
-        return $this->lastName() . 'dóttir';
-    }
-
-    /**
      * Return a random Icelandic Kennitala (Social Security number).
      *
      * @see http://en.wikipedia.org/wiki/Kennitala
@@ -138,5 +98,45 @@ class Person extends \Faker\Provider\Person
         }
 
         return sprintf('%s-%s', $birthdate->format('dmy'), $lastFour);
+    }
+
+    /**
+     * Randomly return an Icelandic last name for a woman.
+     *
+     * @return string
+     */
+    public function lastNameMale()
+    {
+        return $this->lastName() . 'son';
+    }
+
+    /**
+     * Generate prepared last name for further processing.
+     *
+     * @return string
+     */
+    public function lastName()
+    {
+        $name = static::firstNameMale();
+
+        if (substr($name, -2) === 'ur') {
+            $name = substr($name, 0, strlen($name) - 2);
+        }
+
+        if (substr($name, -1) !== 's') {
+            $name .= 's';
+        }
+
+        return $name;
+    }
+
+    /**
+     * Randomly return an Icelandic last name for a man.
+     *
+     * @return string
+     */
+    public function lastNameFemale()
+    {
+        return $this->lastName() . 'dóttir';
     }
 }

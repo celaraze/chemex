@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 use function is_array;
@@ -28,16 +29,6 @@ abstract class TraversableContains extends Constraint
     }
 
     /**
-     * Returns a string representation of the constraint.
-     *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    public function toString(): string
-    {
-        return 'contains ' . $this->exporter()->export($this->value);
-    }
-
-    /**
      * Returns the description of the failure.
      *
      * The beginning of failure messages is "Failed asserting that" in most
@@ -54,6 +45,16 @@ abstract class TraversableContains extends Constraint
             is_array($other) ? 'an array' : 'a traversable',
             $this->toString()
         );
+    }
+
+    /**
+     * Returns a string representation of the constraint.
+     *
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function toString(): string
+    {
+        return 'contains ' . $this->exporter()->export($this->value);
     }
 
     protected function value()

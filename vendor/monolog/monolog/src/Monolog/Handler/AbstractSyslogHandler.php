@@ -11,9 +11,9 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Logger;
 
 /**
  * Common syslog functionality
@@ -31,13 +31,13 @@ abstract class AbstractSyslogHandler extends AbstractProcessingHandler
      * @phpstan-var array<Level, int>
      */
     protected $logLevels = [
-        Logger::DEBUG     => LOG_DEBUG,
-        Logger::INFO      => LOG_INFO,
-        Logger::NOTICE    => LOG_NOTICE,
-        Logger::WARNING   => LOG_WARNING,
-        Logger::ERROR     => LOG_ERR,
-        Logger::CRITICAL  => LOG_CRIT,
-        Logger::ALERT     => LOG_ALERT,
+        Logger::DEBUG => LOG_DEBUG,
+        Logger::INFO => LOG_INFO,
+        Logger::NOTICE => LOG_NOTICE,
+        Logger::WARNING => LOG_WARNING,
+        Logger::ERROR => LOG_ERR,
+        Logger::CRITICAL => LOG_CRIT,
+        Logger::ALERT => LOG_ALERT,
         Logger::EMERGENCY => LOG_EMERG,
     ];
 
@@ -46,17 +46,17 @@ abstract class AbstractSyslogHandler extends AbstractProcessingHandler
      * @var array<string, int>
      */
     protected $facilities = [
-        'auth'     => LOG_AUTH,
+        'auth' => LOG_AUTH,
         'authpriv' => LOG_AUTHPRIV,
-        'cron'     => LOG_CRON,
-        'daemon'   => LOG_DAEMON,
-        'kern'     => LOG_KERN,
-        'lpr'      => LOG_LPR,
-        'mail'     => LOG_MAIL,
-        'news'     => LOG_NEWS,
-        'syslog'   => LOG_SYSLOG,
-        'user'     => LOG_USER,
-        'uucp'     => LOG_UUCP,
+        'cron' => LOG_CRON,
+        'daemon' => LOG_DAEMON,
+        'kern' => LOG_KERN,
+        'lpr' => LOG_LPR,
+        'mail' => LOG_MAIL,
+        'news' => LOG_NEWS,
+        'syslog' => LOG_SYSLOG,
+        'user' => LOG_USER,
+        'uucp' => LOG_UUCP,
     ];
 
     /**
@@ -90,7 +90,7 @@ abstract class AbstractSyslogHandler extends AbstractProcessingHandler
         if (is_string($facility) && array_key_exists(strtolower($facility), $this->facilities)) {
             $facility = $this->facilities[strtolower($facility)];
         } elseif (!in_array($facility, array_values($this->facilities), true)) {
-            throw new \UnexpectedValueException('Unknown facility value "'.$facility.'" given');
+            throw new \UnexpectedValueException('Unknown facility value "' . $facility . '" given');
         }
 
         $this->facility = $facility;

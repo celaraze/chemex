@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ConfigClearCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'config:clear';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class ConfigClearCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'config:clear';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'config:clear';
     /**
      * The console command description.
      *
@@ -44,7 +42,7 @@ class ConfigClearCommand extends Command
     /**
      * Create a new config clear command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)

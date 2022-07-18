@@ -220,7 +220,7 @@ interface ConnectionInterface
      *
      * @link http://php.net/manual/en/function.ldap-set-option.php
      *
-     * @param int   $option
+     * @param int $option
      * @param mixed $value
      *
      * @return mixed
@@ -253,7 +253,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-start-tls.php
      *
      * @param string|array $hostname
-     * @param int          $port
+     * @param int $port
      *
      * @return mixed
      */
@@ -278,7 +278,7 @@ interface ConnectionInterface
      *
      * @param string $username
      * @param string $password
-     * @param bool   $sasl
+     * @param bool $sasl
      *
      * @throws ConnectionException If starting TLS fails.
      *
@@ -304,10 +304,10 @@ interface ConnectionInterface
      *
      * @param string $dn
      * @param string $filter
-     * @param array  $fields
-     * @param bool   $onlyAttributes
-     * @param int    $size
-     * @param int    $time
+     * @param array $fields
+     * @param bool $onlyAttributes
+     * @param int $size
+     * @param int $time
      *
      * @return mixed
      */
@@ -321,9 +321,9 @@ interface ConnectionInterface
      * @param string $dn
      * @param $filter
      * @param array $fields
-     * @param bool  $onlyAttributes
-     * @param int   $size
-     * @param int   $time
+     * @param bool $onlyAttributes
+     * @param int $size
+     * @param int $time
      *
      * @return mixed
      */
@@ -336,10 +336,10 @@ interface ConnectionInterface
      *
      * @param string $dn
      * @param string $filter
-     * @param array  $attributes
-     * @param bool   $onlyAttributes
-     * @param int    $size
-     * @param int    $time
+     * @param array $attributes
+     * @param bool $onlyAttributes
+     * @param int $size
+     * @param int $time
      *
      * @return mixed
      */
@@ -351,7 +351,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-add.php
      *
      * @param string $dn
-     * @param array  $entry
+     * @param array $entry
      *
      * @return bool
      */
@@ -376,7 +376,7 @@ interface ConnectionInterface
      * @param string $dn
      * @param string $newRdn
      * @param string $newParent
-     * @param bool   $deleteOldRdn
+     * @param bool $deleteOldRdn
      *
      * @return bool
      */
@@ -388,7 +388,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-modify.php
      *
      * @param string $dn
-     * @param array  $entry
+     * @param array $entry
      *
      * @return bool
      */
@@ -400,7 +400,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-modify-batch.php
      *
      * @param string $dn
-     * @param array  $values
+     * @param array $values
      *
      * @return mixed
      */
@@ -412,7 +412,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-mod-add.php
      *
      * @param string $dn
-     * @param array  $entry
+     * @param array $entry
      *
      * @return mixed
      */
@@ -424,7 +424,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-mod-replace.php
      *
      * @param string $dn
-     * @param array  $entry
+     * @param array $entry
      *
      * @return mixed
      */
@@ -436,7 +436,7 @@ interface ConnectionInterface
      * @link http://php.net/manual/en/function.ldap-mod-del.php
      *
      * @param string $dn
-     * @param array  $entry
+     * @param array $entry
      *
      * @return mixed
      */
@@ -447,8 +447,8 @@ interface ConnectionInterface
      *
      * @link http://php.net/manual/en/function.ldap-control-paged-result.php
      *
-     * @param int    $pageSize
-     * @param bool   $isCritical
+     * @param int $pageSize
+     * @param bool $isCritical
      * @param string $cookie
      *
      * @return mixed

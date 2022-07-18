@@ -8,7 +8,6 @@ use Doctrine\DBAL\Driver\SQLSrv\Exception\Error;
 use Doctrine\DBAL\Driver\Statement as DriverStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Deprecations\Deprecation;
-
 use function is_float;
 use function is_int;
 use function sprintf;
@@ -26,9 +25,9 @@ final class Connection implements ServerInfoAwareConnection
     private $connection;
 
     /**
+     * @param resource $connection
      * @internal The connection can be only instantiated by its driver.
      *
-     * @param resource $connection
      */
     public function __construct($connection)
     {
@@ -43,16 +42,6 @@ final class Connection implements ServerInfoAwareConnection
         $serverInfo = sqlsrv_server_info($this->connection);
 
         return $serverInfo['SQLServerVersion'];
-    }
-
-    public function prepare(string $sql): DriverStatement
-    {
-        return new Statement($this->connection, $sql);
-    }
-
-    public function query(string $sql): ResultInterface
-    {
-        return $this->prepare($sql)->execute();
     }
 
     /**
@@ -109,9 +98,19 @@ final class Connection implements ServerInfoAwareConnection
         return $result->fetchOne();
     }
 
+    public function prepare(string $sql): DriverStatement
+    {
+        return new Statement($this->connection, $sql);
+    }
+
+    public function query(string $sql): ResultInterface
+    {
+        return $this->prepare($sql)->execute();
+    }
+
     public function beginTransaction(): bool
     {
-        if (! sqlsrv_begin_transaction($this->connection)) {
+        if (!sqlsrv_begin_transaction($this->connection)) {
             throw Error::new();
         }
 
@@ -120,7 +119,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function commit(): bool
     {
-        if (! sqlsrv_commit($this->connection)) {
+        if (!sqlsrv_commit($this->connection)) {
             throw Error::new();
         }
 
@@ -129,7 +128,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function rollBack(): bool
     {
-        if (! sqlsrv_rollback($this->connection)) {
+        if (!sqlsrv_rollback($this->connection)) {
             throw Error::new();
         }
 

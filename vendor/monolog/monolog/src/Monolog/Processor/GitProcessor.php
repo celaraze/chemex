@@ -25,10 +25,10 @@ use Psr\Log\LogLevel;
  */
 class GitProcessor implements ProcessorInterface
 {
-    /** @var int */
-    private $level;
     /** @var array{branch: string, commit: string}|array<never>|null */
     private static $cache = null;
+    /** @var int */
+    private $level;
 
     /**
      * @param string|int $level The minimum logging level at which this Processor will be triggered

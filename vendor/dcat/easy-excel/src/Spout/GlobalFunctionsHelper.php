@@ -14,6 +14,6 @@ class GlobalFunctionsHelper extends Helper
 
         $basename = end($path);
 
-        return $suffix ? str_replace('.'.$suffix, '', $basename) : $basename;
+        return $suffix ? str_replace('.' . $suffix, '', $basename) : $basename;
     }
 }

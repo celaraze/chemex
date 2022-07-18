@@ -6,7 +6,6 @@ namespace Lcobucci\JWT\Encoding;
 use DateTimeImmutable;
 use Lcobucci\JWT\ClaimsFormatter;
 use Lcobucci\JWT\Token\RegisteredClaims;
-
 use function array_key_exists;
 
 final class UnixTimestampDates implements ClaimsFormatter
@@ -15,7 +14,7 @@ final class UnixTimestampDates implements ClaimsFormatter
     public function formatClaims(array $claims): array
     {
         foreach (RegisteredClaims::DATE_CLAIMS as $claim) {
-            if (! array_key_exists($claim, $claims)) {
+            if (!array_key_exists($claim, $claims)) {
                 continue;
             }
 

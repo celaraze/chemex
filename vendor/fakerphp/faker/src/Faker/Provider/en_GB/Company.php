@@ -38,6 +38,19 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
+     * Branch traders
+     * 12 digits (as for 9 digits, followed by a block of 3 digits)
+     */
+    private static function generateBranchTraderVatNumber(): string
+    {
+        return sprintf(
+            '%s %d',
+            static::generateStandardVatNumber(),
+            static::randomNumber(3, true)
+        );
+    }
+
+    /**
      * Standard
      * 9 digits (block of 3, block of 4, block of 2)
      *
@@ -60,45 +73,6 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
-     * Health authorities
-     * the letters HA then 3 digits from 500 to 999 (e.g. GBHA599)
-     */
-    private static function generateHealthAuthorityVatNumber(): string
-    {
-        return sprintf(
-            '%sHA%d',
-            static::VAT_PREFIX,
-            static::numberBetween(500, 999)
-        );
-    }
-
-    /**
-     * Branch traders
-     * 12 digits (as for 9 digits, followed by a block of 3 digits)
-     */
-    private static function generateBranchTraderVatNumber(): string
-    {
-        return sprintf(
-            '%s %d',
-            static::generateStandardVatNumber(),
-            static::randomNumber(3, true)
-        );
-    }
-
-    /**
-     * Government departments
-     * the letters GD then 3 digits from 000 to 499 (e.g. GBGD001)
-     */
-    private static function generateGovernmentVatNumber(): string
-    {
-        return sprintf(
-            '%sGD%s',
-            static::VAT_PREFIX,
-            str_pad((string) static::numberBetween(0, 499), 3, '0', STR_PAD_LEFT)
-        );
-    }
-
-    /**
      * Apply a Modulus97 algorithm to an input
      *
      * @see https://library.croneri.co.uk/cch_uk/bvr/43-600
@@ -114,8 +88,8 @@ class Company extends \Faker\Provider\Company
         $sum = 0;
 
         foreach ($digits as $digit) {
-            $sum += (int) $digit * $multiplier;
-            --$multiplier ;
+            $sum += (int)$digit * $multiplier;
+            --$multiplier;
         }
 
         if ($use9755) {
@@ -127,6 +101,32 @@ class Company extends \Faker\Provider\Company
         }
         $sum = $sum * -1;
 
-        return str_pad((string) $sum, 2, '0', STR_PAD_LEFT);
+        return str_pad((string)$sum, 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Government departments
+     * the letters GD then 3 digits from 000 to 499 (e.g. GBGD001)
+     */
+    private static function generateGovernmentVatNumber(): string
+    {
+        return sprintf(
+            '%sGD%s',
+            static::VAT_PREFIX,
+            str_pad((string)static::numberBetween(0, 499), 3, '0', STR_PAD_LEFT)
+        );
+    }
+
+    /**
+     * Health authorities
+     * the letters HA then 3 digits from 500 to 999 (e.g. GBHA599)
+     */
+    private static function generateHealthAuthorityVatNumber(): string
+    {
+        return sprintf(
+            '%sHA%d',
+            static::VAT_PREFIX,
+            static::numberBetween(500, 999)
+        );
     }
 }

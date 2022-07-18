@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
+use PHPUnit\Framework\Error\Error;
+use Throwable;
 use function get_class;
 use function sprintf;
 use function trim;
-use PHPUnit\Framework\Error\Error;
-use Throwable;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -34,40 +35,6 @@ final class TestFailure
      * @var string
      */
     private $testName;
-
-    /**
-     * Returns a description for an exception.
-     */
-    public static function exceptionToString(Throwable $e): string
-    {
-        if ($e instanceof SelfDescribing) {
-            $buffer = $e->toString();
-
-            if ($e instanceof ExpectationFailedException && $e->getComparisonFailure()) {
-                $buffer .= $e->getComparisonFailure()->getDiff();
-            }
-
-            if ($e instanceof PHPTAssertionFailedError) {
-                $buffer .= $e->getDiff();
-            }
-
-            if (!empty($buffer)) {
-                $buffer = trim($buffer) . "\n";
-            }
-
-            return $buffer;
-        }
-
-        if ($e instanceof Error) {
-            return $e->getMessage() . "\n";
-        }
-
-        if ($e instanceof ExceptionWrapper) {
-            return $e->getClassName() . ': ' . $e->getMessage() . "\n";
-        }
-
-        return get_class($e) . ': ' . $e->getMessage() . "\n";
-    }
 
     /**
      * Constructs a TestFailure with the given test and exception.
@@ -108,6 +75,40 @@ final class TestFailure
     }
 
     /**
+     * Returns a description for an exception.
+     */
+    public static function exceptionToString(Throwable $e): string
+    {
+        if ($e instanceof SelfDescribing) {
+            $buffer = $e->toString();
+
+            if ($e instanceof ExpectationFailedException && $e->getComparisonFailure()) {
+                $buffer .= $e->getComparisonFailure()->getDiff();
+            }
+
+            if ($e instanceof PHPTAssertionFailedError) {
+                $buffer .= $e->getDiff();
+            }
+
+            if (!empty($buffer)) {
+                $buffer = trim($buffer) . "\n";
+            }
+
+            return $buffer;
+        }
+
+        if ($e instanceof Error) {
+            return $e->getMessage() . "\n";
+        }
+
+        if ($e instanceof ExceptionWrapper) {
+            return $e->getClassName() . ': ' . $e->getMessage() . "\n";
+        }
+
+        return get_class($e) . ': ' . $e->getMessage() . "\n";
+    }
+
+    /**
      * Returns the name of the failing test (including data set, if any).
      */
     public function getTestName(): string
@@ -129,19 +130,19 @@ final class TestFailure
     }
 
     /**
-     * Gets the thrown exception.
-     */
-    public function thrownException(): Throwable
-    {
-        return $this->thrownException;
-    }
-
-    /**
      * Returns the exception's message.
      */
     public function exceptionMessage(): string
     {
         return $this->thrownException()->getMessage();
+    }
+
+    /**
+     * Gets the thrown exception.
+     */
+    public function thrownException(): Throwable
+    {
+        return $this->thrownException;
     }
 
     /**

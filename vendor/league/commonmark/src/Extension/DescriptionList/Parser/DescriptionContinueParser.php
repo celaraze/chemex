@@ -28,7 +28,7 @@ final class DescriptionContinueParser extends AbstractBlockContinueParser
 
     public function __construct(bool $tight, int $indentation)
     {
-        $this->block       = new Description($tight);
+        $this->block = new Description($tight);
         $this->indentation = $indentation;
     }
 

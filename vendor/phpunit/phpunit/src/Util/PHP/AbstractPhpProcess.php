@@ -7,10 +7,19 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\PHP;
 
-use const DIRECTORY_SEPARATOR;
-use const PHP_SAPI;
+use __PHP_Incomplete_Class;
+use ErrorException;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Exception;
+use PHPUnit\Framework\SyntheticError;
+use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestFailure;
+use PHPUnit\Framework\TestResult;
+use SebastianBergmann\Environment\Runtime;
 use function array_keys;
 use function array_merge;
 use function assert;
@@ -25,16 +34,8 @@ use function strrpos;
 use function substr;
 use function trim;
 use function unserialize;
-use __PHP_Incomplete_Class;
-use ErrorException;
-use PHPUnit\Framework\AssertionFailedError;
-use PHPUnit\Framework\Exception;
-use PHPUnit\Framework\SyntheticError;
-use PHPUnit\Framework\Test;
-use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\TestFailure;
-use PHPUnit\Framework\TestResult;
-use SebastianBergmann\Environment\Runtime;
+use const DIRECTORY_SEPARATOR;
+use const PHP_SAPI;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -71,6 +72,11 @@ abstract class AbstractPhpProcess
      */
     protected $timeout = 0;
 
+    public function __construct()
+    {
+        $this->runtime = new Runtime;
+    }
+
     public static function factory(): self
     {
         if (DIRECTORY_SEPARATOR === '\\') {
@@ -78,11 +84,6 @@ abstract class AbstractPhpProcess
         }
 
         return new DefaultPhpProcess;
-    }
-
-    public function __construct()
-    {
-        $this->runtime = new Runtime;
     }
 
     /**
@@ -104,6 +105,14 @@ abstract class AbstractPhpProcess
     }
 
     /**
+     * Returns the input string to be sent via STDIN.
+     */
+    public function getStdin(): string
+    {
+        return $this->stdin;
+    }
+
+    /**
      * Sets the input string to be sent via STDIN.
      */
     public function setStdin(string $stdin): void
@@ -112,11 +121,11 @@ abstract class AbstractPhpProcess
     }
 
     /**
-     * Returns the input string to be sent via STDIN.
+     * Returns the string of arguments to pass to the php job.
      */
-    public function getStdin(): string
+    public function getArgs(): string
     {
-        return $this->stdin;
+        return $this->args;
     }
 
     /**
@@ -128,11 +137,11 @@ abstract class AbstractPhpProcess
     }
 
     /**
-     * Returns the string of arguments to pass to the php job.
+     * Returns the array of environment variables to start the child process with.
      */
-    public function getArgs(): string
+    public function getEnv(): array
     {
-        return $this->args;
+        return $this->env;
     }
 
     /**
@@ -146,11 +155,11 @@ abstract class AbstractPhpProcess
     }
 
     /**
-     * Returns the array of environment variables to start the child process with.
+     * Returns the amount of seconds to wait before timing out.
      */
-    public function getEnv(): array
+    public function getTimeout(): int
     {
-        return $this->env;
+        return $this->timeout;
     }
 
     /**
@@ -159,14 +168,6 @@ abstract class AbstractPhpProcess
     public function setTimeout(int $timeout): void
     {
         $this->timeout = $timeout;
-    }
-
-    /**
-     * Returns the amount of seconds to wait before timing out.
-     */
-    public function getTimeout(): int
-    {
-        return $this->timeout;
     }
 
     /**
@@ -189,71 +190,9 @@ abstract class AbstractPhpProcess
     }
 
     /**
-     * Returns the command based into the configurations.
-     */
-    public function getCommand(array $settings, string $file = null): string
-    {
-        $command = $this->runtime->getBinary();
-
-        if ($this->runtime->hasPCOV()) {
-            $settings = array_merge(
-                $settings,
-                $this->runtime->getCurrentSettings(
-                    array_keys(ini_get_all('pcov'))
-                )
-            );
-        } elseif ($this->runtime->hasXdebug()) {
-            $settings = array_merge(
-                $settings,
-                $this->runtime->getCurrentSettings(
-                    array_keys(ini_get_all('xdebug'))
-                )
-            );
-        }
-
-        $command .= $this->settingsToParameters($settings);
-
-        if (PHP_SAPI === 'phpdbg') {
-            $command .= ' -qrr';
-
-            if (!$file) {
-                $command .= 's=';
-            }
-        }
-
-        if ($file) {
-            $command .= ' ' . escapeshellarg($file);
-        }
-
-        if ($this->args) {
-            if (!$file) {
-                $command .= ' --';
-            }
-            $command .= ' ' . $this->args;
-        }
-
-        if ($this->stderrRedirection) {
-            $command .= ' 2>&1';
-        }
-
-        return $command;
-    }
-
-    /**
      * Runs a single job (PHP code) using a separate PHP process.
      */
     abstract public function runJob(string $job, array $settings = []): array;
-
-    protected function settingsToParameters(array $settings): string
-    {
-        $buffer = '';
-
-        foreach ($settings as $setting) {
-            $buffer .= ' -d ' . escapeshellarg($setting);
-        }
-
-        return $buffer;
-    }
 
     /**
      * Processes the TestResult object from an isolated process.
@@ -272,11 +211,10 @@ abstract class AbstractPhpProcess
             );
         } else {
             set_error_handler(
-                /**
-                 * @throws ErrorException
-                 */
-                static function ($errno, $errstr, $errfile, $errline): void
-                {
+            /**
+             * @throws ErrorException
+             */
+                static function ($errno, $errstr, $errfile, $errline): void {
                     throw new ErrorException($errstr, $errno, $errno, $errfile, $errline);
                 }
             );
@@ -326,13 +264,13 @@ abstract class AbstractPhpProcess
                     );
                 }
 
-                $time           = $childResult->time();
+                $time = $childResult->time();
                 $notImplemented = $childResult->notImplemented();
-                $risky          = $childResult->risky();
-                $skipped        = $childResult->skipped();
-                $errors         = $childResult->errors();
-                $warnings       = $childResult->warnings();
-                $failures       = $childResult->failures();
+                $risky = $childResult->risky();
+                $skipped = $childResult->skipped();
+                $errors = $childResult->errors();
+                $warnings = $childResult->warnings();
+                $failures = $childResult->failures();
 
                 if (!empty($notImplemented)) {
                     $result->addError(
@@ -393,8 +331,8 @@ abstract class AbstractPhpProcess
         if ($exception instanceof __PHP_Incomplete_Class) {
             $exceptionArray = [];
 
-            foreach ((array) $exception as $key => $value) {
-                $key                  = substr($key, strrpos($key, "\0") + 1);
+            foreach ((array)$exception as $key => $value) {
+                $key = substr($key, strrpos($key, "\0") + 1);
                 $exceptionArray[$key] = $value;
             }
 
@@ -412,5 +350,67 @@ abstract class AbstractPhpProcess
         }
 
         return $exception;
+    }
+
+    /**
+     * Returns the command based into the configurations.
+     */
+    public function getCommand(array $settings, string $file = null): string
+    {
+        $command = $this->runtime->getBinary();
+
+        if ($this->runtime->hasPCOV()) {
+            $settings = array_merge(
+                $settings,
+                $this->runtime->getCurrentSettings(
+                    array_keys(ini_get_all('pcov'))
+                )
+            );
+        } elseif ($this->runtime->hasXdebug()) {
+            $settings = array_merge(
+                $settings,
+                $this->runtime->getCurrentSettings(
+                    array_keys(ini_get_all('xdebug'))
+                )
+            );
+        }
+
+        $command .= $this->settingsToParameters($settings);
+
+        if (PHP_SAPI === 'phpdbg') {
+            $command .= ' -qrr';
+
+            if (!$file) {
+                $command .= 's=';
+            }
+        }
+
+        if ($file) {
+            $command .= ' ' . escapeshellarg($file);
+        }
+
+        if ($this->args) {
+            if (!$file) {
+                $command .= ' --';
+            }
+            $command .= ' ' . $this->args;
+        }
+
+        if ($this->stderrRedirection) {
+            $command .= ' 2>&1';
+        }
+
+        return $command;
+    }
+
+    protected function settingsToParameters(array $settings): string
+    {
+        $buffer = '';
+
+        foreach ($settings as $setting) {
+            $buffer .= ' -d ' . escapeshellarg($setting);
+        }
+
+        return $buffer;
     }
 }

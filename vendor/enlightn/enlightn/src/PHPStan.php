@@ -41,8 +41,8 @@ class PHPStan
     /**
      * Create a new PHPStan manager instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  string|null  $rootPath
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param string|null $rootPath
      * @return void
      */
     public function __construct(Filesystem $files, $rootPath = null)
@@ -59,7 +59,7 @@ class PHPStan
      */
     public function parseAnalysis($search)
     {
-        if (! isset($this->result['files'])) {
+        if (!isset($this->result['files'])) {
             return [];
         }
 
@@ -75,12 +75,12 @@ class PHPStan
     /**
      * Parse the PHPStan analysis and get the results matching the pattern.
      *
-     * @param  string|array  $pattern
+     * @param string|array $pattern
      * @return array
      */
     public function match($pattern)
     {
-        if (! isset($this->result['files'])) {
+        if (!isset($this->result['files'])) {
             return [];
         }
 
@@ -96,15 +96,15 @@ class PHPStan
     /**
      * Run the PHPStan analysis and get the output
      *
-     * @param  string|array  $paths
-     * @param  string|null  $configPath
+     * @param string|array $paths
+     * @param string|null $configPath
      * @return $this
      */
     public function start($paths, $configPath = null)
     {
-        $configPath = $configPath ?? $this->configPath ?? (__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'phpstan.neon');
+        $configPath = $configPath ?? $this->configPath ?? (__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'phpstan.neon');
 
-        $options = ['analyse', '--configuration='.$configPath, '--error-format=json', '--no-progress'];
+        $options = ['analyse', '--configuration=' . $configPath, '--error-format=json', '--no-progress'];
 
         foreach (Arr::wrap($paths) as $path) {
             $options[] = $path;
@@ -118,21 +118,42 @@ class PHPStan
     /**
      * Run any PHPStan command and get the output
      *
-     * @param  array  $options
-     * @param  bool  $includeErrorOutput
+     * @param array $options
+     * @param bool $includeErrorOutput
      * @return string
      */
     public function runCommand(array $options = [], $includeErrorOutput = true)
     {
         $phpStan = $this->findPHPStan();
 
-        $command = array_merge((array) $phpStan, $options);
+        $command = array_merge((array)$phpStan, $options);
 
         $process = $this->getProcess($command);
 
         $process->run();
 
-        return $process->getOutput().($includeErrorOutput ? $process->getErrorOutput() : '');
+        return $process->getOutput() . ($includeErrorOutput ? $process->getErrorOutput() : '');
+    }
+
+    /**
+     * Get the PHPStan command for the environment.
+     *
+     * @return array
+     */
+    protected function findPHPStan()
+    {
+        return [$this->rootPath . '/vendor/bin/phpstan'];
+    }
+
+    /**
+     * Get a new Symfony process instance.
+     *
+     * @param array $command
+     * @return \Symfony\Component\Process\Process
+     */
+    protected function getProcess(array $command)
+    {
+        return (new Process($command, $this->rootPath))->setTimeout(null);
     }
 
     /**
@@ -149,30 +170,9 @@ class PHPStan
     }
 
     /**
-     * Get the PHPStan command for the environment.
-     *
-     * @return array
-     */
-    protected function findPHPStan()
-    {
-        return [$this->rootPath.'/vendor/bin/phpstan'];
-    }
-
-    /**
-     * Get a new Symfony process instance.
-     *
-     * @param  array  $command
-     * @return \Symfony\Component\Process\Process
-     */
-    protected function getProcess(array $command)
-    {
-        return (new Process($command, $this->rootPath))->setTimeout(null);
-    }
-
-    /**
      * Set the root path used by the class.
      *
-     * @param  string  $path
+     * @param string $path
      * @return $this
      */
     public function setRootPath(string $path)

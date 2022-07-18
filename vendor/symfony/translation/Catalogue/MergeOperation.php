@@ -34,7 +34,7 @@ class MergeOperation extends AbstractOperation
             'new' => [],
             'obsolete' => [],
         ];
-        $intlDomain = $domain.MessageCatalogueInterface::INTL_DOMAIN_SUFFIX;
+        $intlDomain = $domain . MessageCatalogueInterface::INTL_DOMAIN_SUFFIX;
 
         foreach ($this->target->getCatalogueMetadata('', $domain) ?? [] as $key => $value) {
             if (null === $this->result->getCatalogueMetadata($key, $domain)) {

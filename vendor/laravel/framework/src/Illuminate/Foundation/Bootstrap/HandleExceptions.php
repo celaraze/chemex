@@ -29,9 +29,19 @@ class HandleExceptions
     protected static $app;
 
     /**
+     * Clear the local application instance from memory.
+     *
+     * @return void
+     */
+    public static function forgetApp()
+    {
+        static::$app = null;
+    }
+
+    /**
      * Bootstrap the given application.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param \Illuminate\Contracts\Foundation\Application $app
      * @return void
      */
     public function bootstrap(Application $app)
@@ -48,19 +58,31 @@ class HandleExceptions
 
         register_shutdown_function($this->forwardsTo('handleShutdown'));
 
-        if (! $app->environment('testing')) {
+        if (!$app->environment('testing')) {
             ini_set('display_errors', 'Off');
         }
     }
 
     /**
+     * Forward a method call to the given method if an application instance exists.
+     *
+     * @return callable
+     */
+    protected function forwardsTo($method)
+    {
+        return fn(...$arguments) => static::$app
+            ? $this->{$method}(...$arguments)
+            : false;
+    }
+
+    /**
      * Report PHP deprecations, or convert PHP errors to ErrorException instances.
      *
-     * @param  int  $level
-     * @param  string  $message
-     * @param  string  $file
-     * @param  int  $line
-     * @param  array  $context
+     * @param int $level
+     * @param string $message
+     * @param string $file
+     * @param int $line
+     * @param array $context
      * @return void
      *
      * @throws \ErrorException
@@ -77,33 +99,29 @@ class HandleExceptions
     }
 
     /**
-     * Reports a deprecation to the "deprecations" logger.
+     * Determine if the error level is a deprecation.
      *
-     * @param  string  $message
-     * @param  string  $file
-     * @param  int  $line
-     * @return void
-     *
-     * @deprecated Use handleDeprecationError instead.
+     * @param int $level
+     * @return bool
      */
-    public function handleDeprecation($message, $file, $line)
+    protected function isDeprecation($level)
     {
-        $this->handleDeprecationError($message, $file, $line);
+        return in_array($level, [E_DEPRECATED, E_USER_DEPRECATED]);
     }
 
     /**
      * Reports a deprecation to the "deprecations" logger.
      *
-     * @param  string  $message
-     * @param  string  $file
-     * @param  int  $line
-     * @param  int  $level
+     * @param string $message
+     * @param string $file
+     * @param int $line
+     * @param int $level
      * @return void
      */
     public function handleDeprecationError($message, $file, $line, $level = E_DEPRECATED)
     {
-        if (! class_exists(LogManager::class)
-            || ! static::$app->hasBeenBootstrapped()
+        if (!class_exists(LogManager::class)
+            || !static::$app->hasBeenBootstrapped()
             || static::$app->runningUnitTests()
         ) {
             return;
@@ -121,7 +139,7 @@ class HandleExceptions
 
         with($logger->channel('deprecations'), function ($log) use ($message, $file, $line, $level, $options) {
             if ($options['trace'] ?? false) {
-                $log->warning((string) new ErrorException($message, 0, $level, $file, $line));
+                $log->warning((string)new ErrorException($message, 0, $level, $file, $line));
             } else {
                 $log->warning(sprintf('%s in %s on line %s',
                     $message, $file, $line
@@ -172,13 +190,53 @@ class HandleExceptions
     }
 
     /**
+     * Reports a deprecation to the "deprecations" logger.
+     *
+     * @param string $message
+     * @param string $file
+     * @param int $line
+     * @return void
+     *
+     * @deprecated Use handleDeprecationError instead.
+     */
+    public function handleDeprecation($message, $file, $line)
+    {
+        $this->handleDeprecationError($message, $file, $line);
+    }
+
+    /**
+     * Handle the PHP shutdown event.
+     *
+     * @return void
+     */
+    public function handleShutdown()
+    {
+        self::$reservedMemory = null;
+
+        if (!is_null($error = error_get_last()) && $this->isFatal($error['type'])) {
+            $this->handleException($this->fatalErrorFromPhpError($error, 0));
+        }
+    }
+
+    /**
+     * Determine if the error type is fatal.
+     *
+     * @param int $type
+     * @return bool
+     */
+    protected function isFatal($type)
+    {
+        return in_array($type, [E_COMPILE_ERROR, E_CORE_ERROR, E_ERROR, E_PARSE]);
+    }
+
+    /**
      * Handle an uncaught exception from the application.
      *
      * Note: Most exceptions can be handled via the try / catch block in
      * the HTTP and Console kernels. But, fatal error exceptions must
      * be handled differently since they are not normal exceptions.
      *
-     * @param  \Throwable  $e
+     * @param \Throwable $e
      * @return void
      */
     public function handleException(Throwable $e)
@@ -199,88 +257,6 @@ class HandleExceptions
     }
 
     /**
-     * Render an exception to the console.
-     *
-     * @param  \Throwable  $e
-     * @return void
-     */
-    protected function renderForConsole(Throwable $e)
-    {
-        $this->getExceptionHandler()->renderForConsole(new ConsoleOutput, $e);
-    }
-
-    /**
-     * Render an exception as an HTTP response and send it.
-     *
-     * @param  \Throwable  $e
-     * @return void
-     */
-    protected function renderHttpResponse(Throwable $e)
-    {
-        $this->getExceptionHandler()->render(static::$app['request'], $e)->send();
-    }
-
-    /**
-     * Handle the PHP shutdown event.
-     *
-     * @return void
-     */
-    public function handleShutdown()
-    {
-        self::$reservedMemory = null;
-
-        if (! is_null($error = error_get_last()) && $this->isFatal($error['type'])) {
-            $this->handleException($this->fatalErrorFromPhpError($error, 0));
-        }
-    }
-
-    /**
-     * Create a new fatal error instance from an error array.
-     *
-     * @param  array  $error
-     * @param  int|null  $traceOffset
-     * @return \Symfony\Component\ErrorHandler\Error\FatalError
-     */
-    protected function fatalErrorFromPhpError(array $error, $traceOffset = null)
-    {
-        return new FatalError($error['message'], 0, $error, $traceOffset);
-    }
-
-    /**
-     * Forward a method call to the given method if an application instance exists.
-     *
-     * @return callable
-     */
-    protected function forwardsTo($method)
-    {
-        return fn (...$arguments) => static::$app
-            ? $this->{$method}(...$arguments)
-            : false;
-    }
-
-    /**
-     * Determine if the error level is a deprecation.
-     *
-     * @param  int  $level
-     * @return bool
-     */
-    protected function isDeprecation($level)
-    {
-        return in_array($level, [E_DEPRECATED, E_USER_DEPRECATED]);
-    }
-
-    /**
-     * Determine if the error type is fatal.
-     *
-     * @param  int  $type
-     * @return bool
-     */
-    protected function isFatal($type)
-    {
-        return in_array($type, [E_COMPILE_ERROR, E_CORE_ERROR, E_ERROR, E_PARSE]);
-    }
-
-    /**
      * Get an instance of the exception handler.
      *
      * @return \Illuminate\Contracts\Debug\ExceptionHandler
@@ -291,12 +267,36 @@ class HandleExceptions
     }
 
     /**
-     * Clear the local application instance from memory.
+     * Render an exception to the console.
      *
+     * @param \Throwable $e
      * @return void
      */
-    public static function forgetApp()
+    protected function renderForConsole(Throwable $e)
     {
-        static::$app = null;
+        $this->getExceptionHandler()->renderForConsole(new ConsoleOutput, $e);
+    }
+
+    /**
+     * Render an exception as an HTTP response and send it.
+     *
+     * @param \Throwable $e
+     * @return void
+     */
+    protected function renderHttpResponse(Throwable $e)
+    {
+        $this->getExceptionHandler()->render(static::$app['request'], $e)->send();
+    }
+
+    /**
+     * Create a new fatal error instance from an error array.
+     *
+     * @param array $error
+     * @param int|null $traceOffset
+     * @return \Symfony\Component\ErrorHandler\Error\FatalError
+     */
+    protected function fatalErrorFromPhpError(array $error, $traceOffset = null)
+    {
+        return new FatalError($error['message'], 0, $error, $traceOffset);
     }
 }

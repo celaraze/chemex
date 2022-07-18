@@ -35,7 +35,7 @@ final class FootnoteStartParser implements BlockStartParserInterface
             $cursor->getNextNonSpacePosition()
         );
 
-        if (! $match) {
+        if (!$match) {
             return BlockStart::none();
         }
 
@@ -48,7 +48,7 @@ final class FootnoteStartParser implements BlockStartParserInterface
             return BlockStart::none();
         }
 
-        $reference      = new Reference($matches[1], $matches[1], $matches[1]);
+        $reference = new Reference($matches[1], $matches[1], $matches[1]);
         $footnoteParser = new FootnoteParser($reference);
 
         return BlockStart::of($footnoteParser)->at($cursor);

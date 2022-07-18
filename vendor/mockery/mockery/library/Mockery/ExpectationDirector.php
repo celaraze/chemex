@@ -107,25 +107,6 @@ class ExpectationDirector
     }
 
     /**
-     * Verify all expectations of the director
-     *
-     * @throws \Mockery\CountValidator\Exception
-     * @return void
-     */
-    public function verify()
-    {
-        if (!empty($this->_expectations)) {
-            foreach ($this->_expectations as $exp) {
-                $exp->verify();
-            }
-        } else {
-            foreach ($this->_defaults as $exp) {
-                $exp->verify();
-            }
-        }
-    }
-
-    /**
      * Attempt to locate an expectation matching the provided args
      *
      * @param array $args
@@ -144,25 +125,6 @@ class ExpectationDirector
         }
 
         return $expectation;
-    }
-
-    /**
-     * Make the given expectation a default for all others assuming it was
-     * correctly created last
-     *
-     * @param \Mockery\Expectation $expectation
-     */
-    public function makeExpectationDefault(\Mockery\Expectation $expectation)
-    {
-        $last = end($this->_expectations);
-        if ($last === $expectation) {
-            array_pop($this->_expectations);
-            array_unshift($this->_defaults, $expectation);
-        } else {
-            throw new \Mockery\Exception(
-                'Cannot turn a previously defined expectation into a default'
-            );
-        }
     }
 
     /**
@@ -187,6 +149,54 @@ class ExpectationDirector
     }
 
     /**
+     * Verify all expectations of the director
+     *
+     * @return void
+     * @throws \Mockery\CountValidator\Exception
+     */
+    public function verify()
+    {
+        if (!empty($this->_expectations)) {
+            foreach ($this->_expectations as $exp) {
+                $exp->verify();
+            }
+        } else {
+            foreach ($this->_defaults as $exp) {
+                $exp->verify();
+            }
+        }
+    }
+
+    /**
+     * Make the given expectation a default for all others assuming it was
+     * correctly created last
+     *
+     * @param \Mockery\Expectation $expectation
+     */
+    public function makeExpectationDefault(\Mockery\Expectation $expectation)
+    {
+        $last = end($this->_expectations);
+        if ($last === $expectation) {
+            array_pop($this->_expectations);
+            array_unshift($this->_defaults, $expectation);
+        } else {
+            throw new \Mockery\Exception(
+                'Cannot turn a previously defined expectation into a default'
+            );
+        }
+    }
+
+    /**
+     * Return the number of expectations assigned to this director.
+     *
+     * @return int
+     */
+    public function getExpectationCount()
+    {
+        return count($this->getExpectations()) ?: count($this->getDefaultExpectations());
+    }
+
+    /**
      * Return all expectations assigned to this director
      *
      * @return array
@@ -204,15 +214,5 @@ class ExpectationDirector
     public function getDefaultExpectations()
     {
         return $this->_defaults;
-    }
-
-    /**
-     * Return the number of expectations assigned to this director.
-     *
-     * @return int
-     */
-    public function getExpectationCount()
-    {
-        return count($this->getExpectations()) ?: count($this->getDefaultExpectations());
     }
 }

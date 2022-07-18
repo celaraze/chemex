@@ -45,7 +45,7 @@ class BroadcastEvent implements ShouldQueue
     /**
      * Create a new job handler instance.
      *
-     * @param  mixed  $event
+     * @param mixed $event
      * @return void
      */
     public function __construct($event)
@@ -60,13 +60,13 @@ class BroadcastEvent implements ShouldQueue
     /**
      * Handle the queued job.
      *
-     * @param  \Illuminate\Contracts\Broadcasting\Factory  $manager
+     * @param \Illuminate\Contracts\Broadcasting\Factory $manager
      * @return void
      */
     public function handle(BroadcastingFactory $manager)
     {
         $name = method_exists($this->event, 'broadcastAs')
-                ? $this->event->broadcastAs() : get_class($this->event);
+            ? $this->event->broadcastAs() : get_class($this->event);
 
         $channels = Arr::wrap($this->event->broadcastOn());
 
@@ -75,8 +75,8 @@ class BroadcastEvent implements ShouldQueue
         }
 
         $connections = method_exists($this->event, 'broadcastConnections')
-                            ? $this->event->broadcastConnections()
-                            : [null];
+            ? $this->event->broadcastConnections()
+            : [null];
 
         $payload = $this->getPayloadFromEvent($this->event);
 
@@ -90,13 +90,13 @@ class BroadcastEvent implements ShouldQueue
     /**
      * Get the payload for the given event.
      *
-     * @param  mixed  $event
+     * @param mixed $event
      * @return array
      */
     protected function getPayloadFromEvent($event)
     {
         if (method_exists($event, 'broadcastWith') &&
-            ! is_null($payload = $event->broadcastWith())) {
+            !is_null($payload = $event->broadcastWith())) {
             return array_merge($payload, ['socket' => data_get($event, 'socket')]);
         }
 
@@ -114,7 +114,7 @@ class BroadcastEvent implements ShouldQueue
     /**
      * Format the given value for a property.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return mixed
      */
     protected function formatProperty($value)

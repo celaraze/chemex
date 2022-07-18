@@ -11,8 +11,6 @@
 
 namespace Monolog;
 
-use ArrayAccess;
-
 /**
  * Monolog log record interface for forward compatibility with Monolog 3.0
  *

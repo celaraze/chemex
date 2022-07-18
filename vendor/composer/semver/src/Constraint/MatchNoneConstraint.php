@@ -40,21 +40,21 @@ class MatchNoneConstraint implements ConstraintInterface
     /**
      * {@inheritDoc}
      */
-    public function setPrettyString($prettyString)
-    {
-        $this->prettyString = $prettyString;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getPrettyString()
     {
         if ($this->prettyString) {
             return $this->prettyString;
         }
 
-        return (string) $this;
+        return (string)$this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setPrettyString($prettyString)
+    {
+        $this->prettyString = $prettyString;
     }
 
     /**

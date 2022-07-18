@@ -17,8 +17,8 @@ class MinifyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:minify {name} 
-        {--color= : Theme color code} 
+    protected $signature = 'admin:minify {name}
+        {--color= : Theme color code}
         {--publish : Publish assets files}';
 
     /**
@@ -33,9 +33,9 @@ class MinifyCommand extends Command
      */
     protected $colors = [
         self::DEFAULT => '',
-        'blue'        => '#6d8be6',
-        'blue-light'  => '#62a8ea',
-        'green'       => '#4e9876',
+        'blue' => '#6d8be6',
+        'blue-light' => '#62a8ea',
+        'green' => '#4e9876',
     ];
 
     /**
@@ -53,7 +53,7 @@ class MinifyCommand extends Command
      */
     public function handle()
     {
-        $this->packagePath = realpath(__DIR__.'/../..');
+        $this->packagePath = realpath(__DIR__ . '/../..');
         $this->files = $this->laravel['files'];
 
         $name = $this->argument('name');
@@ -97,13 +97,96 @@ class MinifyCommand extends Command
     }
 
     /**
-     * 发布静态资源.
+     * 获取颜色.
+     *
+     * @param string $name
+     * @return string
      */
-    protected function publishAssets()
+    protected function getColor($name)
     {
-        $options = ['--provider' => 'Dcat\Admin\AdminServiceProvider', '--force' => true, '--tag' => 'dcat-admin-assets'];
+        if ($name === static::DEFAULT) {
+            return '';
+        }
 
-        $this->call('vendor:publish', $options);
+        INPUT_COLOR:
+
+        $color = $this->option('color');
+
+        if (!$color && isset($this->colors[$name])) {
+            return $this->colors[$name];
+        }
+
+        if (!$color) {
+            $color = $this->formatColor($this->ask('Please enter a color code(hex)'));
+        }
+
+        if (!$color) {
+            goto INPUT_COLOR;
+        }
+
+        return $this->formatColor($color);
+    }
+
+    /**
+     * @param string $color
+     * @return string
+     */
+    protected function formatColor($color)
+    {
+        if ($color && !Str::startsWith($color, '#')) {
+            $color = "#$color";
+        }
+
+        return $color;
+    }
+
+    /**
+     * 备份文件.
+     */
+    protected function backupFiles()
+    {
+        if (!is_file($this->getMixBakFile())) {
+            $this->files->copy($this->getMixFile(), $this->getMixBakFile());
+        } else {
+            $this->files->delete($this->getMixFile());
+            $this->files->copy($this->getMixBakFile(), $this->getMixFile());
+        }
+
+        if (!is_file($this->getColorBakFile())) {
+            $this->files->copy($this->getColorFile(), $this->getColorBakFile());
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getMixBakFile()
+    {
+        return str_replace('.js', '.bak.js', $this->getMixFile());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getMixFile()
+    {
+        return $this->packagePath . '/webpack.mix.js';
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getColorBakFile()
+    {
+        return str_replace('.scss', '.bak.scss', $this->getColorFile());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getColorFile()
+    {
+        return $this->packagePath . '/resources/assets/dcat/sass/theme/_primary.scss';
     }
 
     /**
@@ -127,20 +210,46 @@ class MinifyCommand extends Command
     }
 
     /**
-     * 备份文件.
+     * 安装依赖.
      */
-    protected function backupFiles()
+    protected function npmInstall()
     {
-        if (! is_file($this->getMixBakFile())) {
-            $this->files->copy($this->getMixFile(), $this->getMixBakFile());
-        } else {
-            $this->files->delete($this->getMixFile());
-            $this->files->copy($this->getMixBakFile(), $this->getMixFile());
+        if (is_dir($this->packagePath . '/node_modules')) {
+            return;
         }
 
-        if (! is_file($this->getColorBakFile())) {
-            $this->files->copy($this->getColorFile(), $this->getColorBakFile());
-        }
+        $this->info('npm install...');
+
+        $this->runProcess("cd {$this->packagePath} && npm install");
+    }
+
+    /**
+     * 执行命令.
+     *
+     * @param string $command
+     * @param int $timeout
+     */
+    protected function runProcess($command, $timeout = 1800)
+    {
+        $process = Helper::process($command, $timeout);
+
+        $process->run(function ($type, $data) {
+            if ($type === Process::ERR) {
+                $this->warn($data);
+            } else {
+                $this->info($data);
+            }
+        });
+    }
+
+    /**
+     * 发布静态资源.
+     */
+    protected function publishAssets()
+    {
+        $options = ['--provider' => 'Dcat\Admin\AdminServiceProvider', '--force' => true, '--tag' => 'dcat-admin-assets'];
+
+        $this->call('vendor:publish', $options);
     }
 
     /**
@@ -165,114 +274,5 @@ class MinifyCommand extends Command
             $this->files->copy($colorBakFile, $colorFile);
             $this->files->delete($colorBakFile);
         }
-    }
-
-    /**
-     * @return string
-     */
-    protected function getMixFile()
-    {
-        return $this->packagePath.'/webpack.mix.js';
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getMixBakFile()
-    {
-        return str_replace('.js', '.bak.js', $this->getMixFile());
-    }
-
-    /**
-     * @return string
-     */
-    protected function getColorFile()
-    {
-        return $this->packagePath.'/resources/assets/dcat/sass/theme/_primary.scss';
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getColorBakFile()
-    {
-        return str_replace('.scss', '.bak.scss', $this->getColorFile());
-    }
-
-    /**
-     * 安装依赖.
-     */
-    protected function npmInstall()
-    {
-        if (is_dir($this->packagePath.'/node_modules')) {
-            return;
-        }
-
-        $this->info('npm install...');
-
-        $this->runProcess("cd {$this->packagePath} && npm install");
-    }
-
-    /**
-     * 获取颜色.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function getColor($name)
-    {
-        if ($name === static::DEFAULT) {
-            return '';
-        }
-
-        INPUT_COLOR:
-
-        $color = $this->option('color');
-
-        if (! $color && isset($this->colors[$name])) {
-            return $this->colors[$name];
-        }
-
-        if (! $color) {
-            $color = $this->formatColor($this->ask('Please enter a color code(hex)'));
-        }
-
-        if (! $color) {
-            goto INPUT_COLOR;
-        }
-
-        return $this->formatColor($color);
-    }
-
-    /**
-     * @param  string  $color
-     * @return string
-     */
-    protected function formatColor($color)
-    {
-        if ($color && ! Str::startsWith($color, '#')) {
-            $color = "#$color";
-        }
-
-        return $color;
-    }
-
-    /**
-     * 执行命令.
-     *
-     * @param  string  $command
-     * @param  int  $timeout
-     */
-    protected function runProcess($command, $timeout = 1800)
-    {
-        $process = Helper::process($command, $timeout);
-
-        $process->run(function ($type, $data) {
-            if ($type === Process::ERR) {
-                $this->warn($data);
-            } else {
-                $this->info($data);
-            }
-        });
     }
 }

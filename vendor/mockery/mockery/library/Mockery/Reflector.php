@@ -62,67 +62,6 @@ class Reflector
     }
 
     /**
-     * Compute the string representation for the return type.
-     *
-     * @param \ReflectionParameter $param
-     * @param bool $withoutNullable
-     *
-     * @return string|null
-     */
-    public static function getReturnType(\ReflectionMethod $method, $withoutNullable = false)
-    {
-        $type = $method->getReturnType();
-
-        if (is_null($type) && method_exists($method, 'getTentativeReturnType')) {
-            $type = $method->getTentativeReturnType();
-        }
-
-        if (is_null($type)) {
-            return null;
-        }
-
-        $typeHint = self::typeToString($type, $method->getDeclaringClass());
-
-        return (!$withoutNullable && $type->allowsNull()) ? self::formatNullableType($typeHint) : $typeHint;
-    }
-
-    /**
-     * Compute the string representation for the simplest return type.
-     *
-     * @param \ReflectionParameter $param
-     *
-     * @return string|null
-     */
-    public static function getSimplestReturnType(\ReflectionMethod $method)
-    {
-        $type = $method->getReturnType();
-
-        if (is_null($type) && method_exists($method, 'getTentativeReturnType')) {
-            $type = $method->getTentativeReturnType();
-        }
-
-        if (is_null($type) || $type->allowsNull()) {
-            return null;
-        }
-
-        $typeInformation = self::getTypeInformation($type, $method->getDeclaringClass());
-
-        // return the first primitive type hint
-        foreach ($typeInformation as $info) {
-            if ($info['isPrimitive']) {
-                return $info['typeHint'];
-            }
-        }
-
-        // if no primitive type, return the first type
-        foreach ($typeInformation as $info) {
-            return $info['typeHint'];
-        }
-
-        return null;
-    }
-
-    /**
      * Get the string representation of the given type.
      *
      * @param \ReflectionType $type
@@ -140,7 +79,7 @@ class Reflector
     /**
      * Get the string representation of the given type.
      *
-     * @param \ReflectionType  $type
+     * @param \ReflectionType $type
      * @param \ReflectionClass $declaringClass
      *
      * @return list<array{typeHint: string, isPrimitive: bool}>
@@ -220,5 +159,66 @@ class Reflector
         }
 
         return $typeHint === 'mixed' ? 'mixed' : sprintf('%s|null', $typeHint);
+    }
+
+    /**
+     * Compute the string representation for the simplest return type.
+     *
+     * @param \ReflectionParameter $param
+     *
+     * @return string|null
+     */
+    public static function getSimplestReturnType(\ReflectionMethod $method)
+    {
+        $type = $method->getReturnType();
+
+        if (is_null($type) && method_exists($method, 'getTentativeReturnType')) {
+            $type = $method->getTentativeReturnType();
+        }
+
+        if (is_null($type) || $type->allowsNull()) {
+            return null;
+        }
+
+        $typeInformation = self::getTypeInformation($type, $method->getDeclaringClass());
+
+        // return the first primitive type hint
+        foreach ($typeInformation as $info) {
+            if ($info['isPrimitive']) {
+                return $info['typeHint'];
+            }
+        }
+
+        // if no primitive type, return the first type
+        foreach ($typeInformation as $info) {
+            return $info['typeHint'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Compute the string representation for the return type.
+     *
+     * @param \ReflectionParameter $param
+     * @param bool $withoutNullable
+     *
+     * @return string|null
+     */
+    public static function getReturnType(\ReflectionMethod $method, $withoutNullable = false)
+    {
+        $type = $method->getReturnType();
+
+        if (is_null($type) && method_exists($method, 'getTentativeReturnType')) {
+            $type = $method->getTentativeReturnType();
+        }
+
+        if (is_null($type)) {
+            return null;
+        }
+
+        $typeHint = self::typeToString($type, $method->getDeclaringClass());
+
+        return (!$withoutNullable && $type->allowsNull()) ? self::formatNullableType($typeHint) : $typeHint;
     }
 }

@@ -99,15 +99,6 @@ class DebugClassLoader
         '__debugInfo' => 'array',
         '__serialize' => 'array',
     ];
-
-    /**
-     * @var callable
-     */
-    private $classLoader;
-    private bool $isFinder;
-    private array $loaded = [];
-    private array $patchTypes = [];
-
     private static int $caseCheck;
     private static array $checkedClasses = [];
     private static array $final = [];
@@ -123,6 +114,13 @@ class DebugClassLoader
     private static array $returnTypes = [];
     private static array $methodTraits = [];
     private static array $fileOffsets = [];
+    /**
+     * @var callable
+     */
+    private $classLoader;
+    private bool $isFinder;
+    private array $loaded = [];
+    private array $patchTypes = [];
 
     public function __construct(callable $classLoader)
     {
@@ -131,7 +129,7 @@ class DebugClassLoader
         parse_str(getenv('SYMFONY_PATCH_TYPE_DECLARATIONS') ?: '', $this->patchTypes);
         $this->patchTypes += [
             'force' => null,
-            'php' => \PHP_MAJOR_VERSION.'.'.\PHP_MINOR_VERSION,
+            'php' => \PHP_MAJOR_VERSION . '.' . \PHP_MINOR_VERSION,
             'deprecations' => true,
         ];
 
@@ -145,7 +143,7 @@ class DebugClassLoader
             $dir = substr($file, 0, 1 + $i);
             $file = substr($file, 1 + $i);
             $test = strtoupper($file) === $file ? strtolower($file) : strtoupper($file);
-            $test = realpath($dir.$test);
+            $test = realpath($dir . $test);
 
             if (false === $test || false === $i) {
                 // filesystem is case sensitive
@@ -161,11 +159,6 @@ class DebugClassLoader
                 self::$caseCheck = 0;
             }
         }
-    }
-
-    public function getClassLoader(): callable
-    {
-        return $this->classLoader;
     }
 
     /**
@@ -216,6 +209,11 @@ class DebugClassLoader
         }
     }
 
+    public function getClassLoader(): callable
+    {
+        return $this->classLoader;
+    }
+
     public static function checkClasses(): bool
     {
         if (!\is_array($functions = spl_autoload_functions())) {
@@ -261,43 +259,6 @@ class DebugClassLoader
         }
 
         return true;
-    }
-
-    public function findFile(string $class): ?string
-    {
-        return $this->isFinder ? ($this->classLoader[0]->findFile($class) ?: null) : null;
-    }
-
-    /**
-     * Loads the given class or interface.
-     *
-     * @throws \RuntimeException
-     */
-    public function loadClass(string $class): void
-    {
-        $e = error_reporting(error_reporting() | \E_PARSE | \E_ERROR | \E_CORE_ERROR | \E_COMPILE_ERROR);
-
-        try {
-            if ($this->isFinder && !isset($this->loaded[$class])) {
-                $this->loaded[$class] = true;
-                if (!$file = $this->classLoader[0]->findFile($class) ?: '') {
-                    // no-op
-                } elseif (\function_exists('opcache_is_script_cached') && @opcache_is_script_cached($file)) {
-                    include $file;
-
-                    return;
-                } elseif (false === include $file) {
-                    return;
-                }
-            } else {
-                ($this->classLoader)($class);
-                $file = '';
-            }
-        } finally {
-            error_reporting($e);
-        }
-
-        $this->checkClass($class, $file);
     }
 
     private function checkClass(string $class, string $file = null): void
@@ -358,11 +319,11 @@ class DebugClassLoader
         }
         $deprecations = [];
 
-        $className = str_contains($class, "@anonymous\0") ? (get_parent_class($class) ?: key(class_implements($class)) ?: 'class').'@anonymous' : $class;
+        $className = str_contains($class, "@anonymous\0") ? (get_parent_class($class) ?: key(class_implements($class)) ?: 'class') . '@anonymous' : $class;
 
         // Don't trigger deprecations for classes in the same vendor
         if ($class !== $className) {
-            $vendor = preg_match('/^namespace ([^;\\\\\s]++)[;\\\\]/m', @file_get_contents($refl->getFileName()), $vendor) ? $vendor[1].'\\' : '';
+            $vendor = preg_match('/^namespace ([^;\\\\\s]++)[;\\\\]/m', @file_get_contents($refl->getFileName()), $vendor) ? $vendor[1] . '\\' : '';
             $vendorLen = \strlen($vendor);
         } elseif (2 > $vendorLen = 1 + (strpos($class, '\\') ?: strpos($class, '_'))) {
             $vendorLen = 0;
@@ -381,13 +342,13 @@ class DebugClassLoader
 
             foreach (['final', 'deprecated', 'internal'] as $annotation) {
                 if (null !== $description = $doc[$annotation][0] ?? null) {
-                    self::${$annotation}[$class] = '' !== $description ? ' '.$description.(preg_match('/[.!]$/', $description) ? '' : '.') : '.';
+                    self::${$annotation}[$class] = '' !== $description ? ' ' . $description . (preg_match('/[.!]$/', $description) ? '' : '.') : '.';
                 }
             }
 
             if ($refl->isInterface() && isset($doc['method'])) {
                 foreach ($doc['method'] as $name => [$static, $returnType, $signature, $description]) {
-                    self::$method[$class][] = [$class, $static, $returnType, $name.$signature, $description];
+                    self::$method[$class][] = [$class, $static, $returnType, $name . $signature, $description];
 
                     if ('' !== $returnType) {
                         $this->setReturnType($returnType, $refl->name, $name, $refl->getFileName(), $parent);
@@ -447,7 +408,7 @@ class DebugClassLoader
                         }
                         $realName = substr($name, 0, strpos($name, '('));
                         if (!$refl->hasMethod($realName) || !($methodRefl = $refl->getMethod($realName))->isPublic() || ($static && !$methodRefl->isStatic()) || (!$static && $methodRefl->isStatic())) {
-                            $deprecations[] = sprintf('Class "%s" should implement method "%s::%s%s"%s', $className, ($static ? 'static ' : '').$interface, $name, $returnType ? ': '.$returnType : '', null === $description ? '.' : ': '.$description);
+                            $deprecations[] = sprintf('Class "%s" should implement method "%s::%s%s"%s', $className, ($static ? 'static ' : '') . $interface, $name, $returnType ? ': ' . $returnType : '', null === $description ? '.' : ': ' . $description);
                         }
                     }
                 }
@@ -484,12 +445,12 @@ class DebugClassLoader
                     $returnType = explode('|', $returnType);
                     foreach ($returnType as $i => $t) {
                         if ('?' !== $t && !isset(self::BUILTIN_RETURN_TYPES[$t])) {
-                            $returnType[$i] = '\\'.$t;
+                            $returnType[$i] = '\\' . $t;
                         }
                     }
                     $returnType = implode('|', $returnType);
 
-                    self::$returnTypes[$class] += [$method => [$returnType, str_starts_with($returnType, '?') ? substr($returnType, 1).'|null' : $returnType, $use, '']];
+                    self::$returnTypes[$class] += [$method => [$returnType, str_starts_with($returnType, '?') ? substr($returnType, 1) . '|null' : $returnType, $use, '']];
                 }
             }
         }
@@ -543,21 +504,20 @@ class DebugClassLoader
 
             $forcePatchTypes = $this->patchTypes['force'];
 
-            if ($canAddReturnType = null !== $forcePatchTypes && !str_contains($method->getFileName(), \DIRECTORY_SEPARATOR.'vendor'.\DIRECTORY_SEPARATOR)) {
+            if ($canAddReturnType = null !== $forcePatchTypes && !str_contains($method->getFileName(), \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR)) {
                 if ('void' !== (self::MAGIC_METHODS[$method->name] ?? 'void')) {
                     $this->patchTypes['force'] = $forcePatchTypes ?: 'docblock';
                 }
 
-                $canAddReturnType = 2 === (int) $forcePatchTypes
-                    || false !== stripos($method->getFileName(), \DIRECTORY_SEPARATOR.'Tests'.\DIRECTORY_SEPARATOR)
+                $canAddReturnType = 2 === (int)$forcePatchTypes
+                    || false !== stripos($method->getFileName(), \DIRECTORY_SEPARATOR . 'Tests' . \DIRECTORY_SEPARATOR)
                     || $refl->isFinal()
                     || $method->isFinal()
                     || $method->isPrivate()
                     || ('.' === (self::$internal[$class] ?? null) && !$refl->isAbstract())
                     || '.' === (self::$final[$class] ?? null)
                     || '' === ($doc['final'][0] ?? null)
-                    || '' === ($doc['internal'][0] ?? null)
-                ;
+                    || '' === ($doc['internal'][0] ?? null);
             }
 
             if (null !== ($returnType = self::$returnTypes[$class][$method->name] ?? null) && 'docblock' === $this->patchTypes['force'] && !$method->hasReturnType() && isset(TentativeTypes::RETURN_TYPES[$returnType[2]][$method->name])) {
@@ -607,7 +567,7 @@ class DebugClassLoader
 
             foreach (['final', 'internal'] as $annotation) {
                 if (null !== $description = $doc[$annotation][0] ?? null) {
-                    self::${$annotation.'Methods'}[$class][$method->name] = [$class, '' !== $description ? ' '.$description.(preg_match('/[[:punct:]]$/', $description) ? '' : '.') : '.'];
+                    self::${$annotation . 'Methods'}[$class][$method->name] = [$class, '' !== $description ? ' ' . $description . (preg_match('/[[:punct:]]$/', $description) ? '' : '.') : '.'];
                     $finalOrInternal = true;
                 }
             }
@@ -623,7 +583,7 @@ class DebugClassLoader
             }
             foreach ($doc['param'] as $parameterName => $parameterType) {
                 if (!isset($definedParameters[$parameterName])) {
-                    self::$annotatedParameters[$class][$method->name][$parameterName] = sprintf('The "%%s::%s()" method will require a new "%s$%s" argument in the next major version of its %s "%s", not defining it is deprecated.', $method->name, $parameterType ? $parameterType.' ' : '', $parameterName, interface_exists($className) ? 'interface' : 'parent class', $className);
+                    self::$annotatedParameters[$class][$method->name][$parameterName] = sprintf('The "%%s::%s()" method will require a new "%s$%s" argument in the next major version of its %s "%s", not defining it is deprecated.', $method->name, $parameterType ? $parameterType . ' ' : '', $parameterName, interface_exists($className) ? 'interface' : 'parent class', $className);
                 }
             }
         }
@@ -643,7 +603,7 @@ class DebugClassLoader
                 foreach ($parentAndOwnInterfaces as $use) {
                     if (isset(self::${$type}[$use][$r->name]) && !isset($doc['deprecated']) && ('finalConstants' === $type || substr($use, 0, strrpos($use, '\\')) !== substr($use, 0, strrpos($class, '\\')))) {
                         $msg = 'finalConstants' === $type ? '%s" constant' : '$%s" property';
-                        $deprecations[] = sprintf('The "%s::'.$msg.' is considered final. You should not override it in "%s".', self::${$type}[$use][$r->name], $r->name, $class);
+                        $deprecations[] = sprintf('The "%s::' . $msg . ' is considered final. You should not override it in "%s".', self::${$type}[$use][$r->name], $r->name, $class);
                     }
                 }
 
@@ -656,135 +616,118 @@ class DebugClassLoader
         return $deprecations;
     }
 
-    public function checkCase(\ReflectionClass $refl, string $file, string $class): ?array
-    {
-        $real = explode('\\', $class.strrchr($file, '.'));
-        $tail = explode(\DIRECTORY_SEPARATOR, str_replace('/', \DIRECTORY_SEPARATOR, $file));
-
-        $i = \count($tail) - 1;
-        $j = \count($real) - 1;
-
-        while (isset($tail[$i], $real[$j]) && $tail[$i] === $real[$j]) {
-            --$i;
-            --$j;
-        }
-
-        array_splice($tail, 0, $i + 1);
-
-        if (!$tail) {
-            return null;
-        }
-
-        $tail = \DIRECTORY_SEPARATOR.implode(\DIRECTORY_SEPARATOR, $tail);
-        $tailLen = \strlen($tail);
-        $real = $refl->getFileName();
-
-        if (2 === self::$caseCheck) {
-            $real = $this->darwinRealpath($real);
-        }
-
-        if (0 === substr_compare($real, $tail, -$tailLen, $tailLen, true)
-            && 0 !== substr_compare($real, $tail, -$tailLen, $tailLen, false)
-        ) {
-            return [substr($tail, -$tailLen + 1), substr($real, -$tailLen + 1), substr($real, 0, -$tailLen + 1)];
-        }
-
-        return null;
-    }
-
     /**
-     * `realpath` on MacOSX doesn't normalize the case of characters.
+     * @param \ReflectionClass|\ReflectionMethod|\ReflectionProperty $reflector
      */
-    private function darwinRealpath(string $real): string
+    private function parsePhpDoc(\Reflector $reflector): array
     {
-        $i = 1 + strrpos($real, '/');
-        $file = substr($real, $i);
-        $real = substr($real, 0, $i);
+        if (!$doc = $reflector->getDocComment()) {
+            return [];
+        }
 
-        if (isset(self::$darwinCache[$real])) {
-            $kDir = $real;
-        } else {
-            $kDir = strtolower($real);
+        $tagName = '';
+        $tagContent = '';
 
-            if (isset(self::$darwinCache[$kDir])) {
-                $real = self::$darwinCache[$kDir][0];
-            } else {
-                $dir = getcwd();
+        $tags = [];
 
-                if (!@chdir($real)) {
-                    return $real.$file;
+        foreach (explode("\n", substr($doc, 3, -2)) as $line) {
+            $line = ltrim($line);
+            $line = ltrim($line, '*');
+
+            if ('' === $line = trim($line)) {
+                if ('' !== $tagName) {
+                    $tags[$tagName][] = $tagContent;
+                }
+                $tagName = $tagContent = '';
+                continue;
+            }
+
+            if ('@' === $line[0]) {
+                if ('' !== $tagName) {
+                    $tags[$tagName][] = $tagContent;
+                    $tagContent = '';
                 }
 
-                $real = getcwd().'/';
-                chdir($dir);
-
-                $dir = $real;
-                $k = $kDir;
-                $i = \strlen($dir) - 1;
-                while (!isset(self::$darwinCache[$k])) {
-                    self::$darwinCache[$k] = [$dir, []];
-                    self::$darwinCache[$dir] = &self::$darwinCache[$k];
-
-                    while ('/' !== $dir[--$i]) {
-                    }
-                    $k = substr($k, 0, ++$i);
-                    $dir = substr($dir, 0, $i--);
+                if (preg_match('{^@([-a-zA-Z0-9_:]++)(\s|$)}', $line, $m)) {
+                    $tagName = $m[1];
+                    $tagContent = str_replace("\t", ' ', ltrim(substr($line, 2 + \strlen($tagName))));
+                } else {
+                    $tagName = '';
                 }
+            } elseif ('' !== $tagName) {
+                $tagContent .= ' ' . str_replace("\t", ' ', $line);
             }
         }
 
-        $dirFiles = self::$darwinCache[$kDir][1];
-
-        if (!isset($dirFiles[$file]) && str_ends_with($file, ') : eval()\'d code')) {
-            // Get the file name from "file_name.php(123) : eval()'d code"
-            $file = substr($file, 0, strrpos($file, '(', -17));
+        if ('' !== $tagName) {
+            $tags[$tagName][] = $tagContent;
         }
 
-        if (isset($dirFiles[$file])) {
-            return $real.$dirFiles[$file];
-        }
+        foreach ($tags['method'] ?? [] as $i => $method) {
+            unset($tags['method'][$i]);
 
-        $kFile = strtolower($file);
+            $parts = preg_split('{(\s++|\((?:[^()]*+|(?R))*\)(?: *: *[^ ]++)?|<(?:[^<>]*+|(?R))*>|\{(?:[^{}]*+|(?R))*\})}', $method, -1, \PREG_SPLIT_DELIM_CAPTURE);
+            $returnType = '';
+            $static = 'static' === $parts[0];
 
-        if (!isset($dirFiles[$kFile])) {
-            foreach (scandir($real, 2) as $f) {
-                if ('.' !== $f[0]) {
-                    $dirFiles[$f] = $f;
-                    if ($f === $file) {
-                        $kFile = $k = $file;
-                    } elseif ($f !== $k = strtolower($f)) {
-                        $dirFiles[$k] = $f;
-                    }
+            for ($i = $static ? 2 : 0; null !== $p = $parts[$i] ?? null; $i += 2) {
+                if (\in_array($p, ['', '|', '&', 'callable'], true) || \in_array(substr($returnType, -1), ['|', '&'], true)) {
+                    $returnType .= trim($parts[$i - 1] ?? '') . $p;
+                    continue;
                 }
-            }
-            self::$darwinCache[$kDir][1] = $dirFiles;
-        }
 
-        return $real.$dirFiles[$kFile];
-    }
+                $signature = '(' === ($parts[$i + 1][0] ?? '(') ? $parts[$i + 1] ?? '()' : null;
 
-    /**
-     * `class_implements` includes interfaces from the parents so we have to manually exclude them.
-     *
-     * @return string[]
-     */
-    private function getOwnInterfaces(string $class, ?string $parent): array
-    {
-        $ownInterfaces = class_implements($class, false);
+                if (null === $signature && '' === $returnType) {
+                    $returnType = $p;
+                    continue;
+                }
 
-        if ($parent) {
-            foreach (class_implements($parent, false) as $interface) {
-                unset($ownInterfaces[$interface]);
-            }
-        }
+                if ($static && 2 === $i) {
+                    $static = false;
+                    $returnType = 'static';
+                }
 
-        foreach ($ownInterfaces as $interface) {
-            foreach (class_implements($interface) as $interface) {
-                unset($ownInterfaces[$interface]);
+                if (\in_array($description = trim(implode('', \array_slice($parts, 2 + $i))), ['', '.'], true)) {
+                    $description = null;
+                } elseif (!preg_match('/[.!]$/', $description)) {
+                    $description .= '.';
+                }
+
+                $tags['method'][$p] = [$static, $returnType, $signature ?? '()', $description];
+                break;
             }
         }
 
-        return $ownInterfaces;
+        foreach ($tags['param'] ?? [] as $i => $param) {
+            unset($tags['param'][$i]);
+
+            if (\strlen($param) !== strcspn($param, '<{(')) {
+                $param = preg_replace('{\(([^()]*+|(?R))*\)(?: *: *[^ ]++)?|<([^<>]*+|(?R))*>|\{([^{}]*+|(?R))*\}}', '', $param);
+            }
+
+            if (false === $i = strpos($param, '$')) {
+                continue;
+            }
+
+            $type = 0 === $i ? '' : rtrim(substr($param, 0, $i), ' &');
+            $param = substr($param, 1 + $i, (strpos($param, ' ', $i) ?: (1 + $i + \strlen($param))) - $i - 1);
+
+            $tags['param'][$param] = $type;
+        }
+
+        foreach (['var', 'return'] as $k) {
+            if (null === $v = $tags[$k][0] ?? null) {
+                continue;
+            }
+            if (\strlen($v) !== strcspn($v, '<{(')) {
+                $v = preg_replace('{\(([^()]*+|(?R))*\)(?: *: *[^ ]++)?|<([^<>]*+|(?R))*>|\{([^{}]*+|(?R))*\}}', '', $v);
+            }
+
+            $tags[$k] = substr($v, 0, strpos($v, ' ') ?: \strlen($v)) ?: null;
+        }
+
+        return $tags;
     }
 
     private function setReturnType(string $types, string $class, string $method, string $filename, ?string $parent, \ReflectionType $returnType = null): void
@@ -883,9 +826,9 @@ class DebugClassLoader
     {
         if (isset(self::SPECIAL_RETURN_TYPES[$lcType = strtolower($type)])) {
             if ('parent' === $lcType = self::SPECIAL_RETURN_TYPES[$lcType]) {
-                $lcType = null !== $parent ? '\\'.$parent : 'parent';
+                $lcType = null !== $parent ? '\\' . $parent : 'parent';
             } elseif ('self' === $lcType) {
-                $lcType = '\\'.$class;
+                $lcType = '\\' . $class;
             }
 
             return $lcType;
@@ -902,11 +845,35 @@ class DebugClassLoader
             $type = $returnType->getName();
 
             if ('mixed' !== $type) {
-                return isset(self::SPECIAL_RETURN_TYPES[$type]) ? $type : '\\'.$type;
+                return isset(self::SPECIAL_RETURN_TYPES[$type]) ? $type : '\\' . $type;
             }
         }
 
         return 'array';
+    }
+
+    /**
+     * `class_implements` includes interfaces from the parents so we have to manually exclude them.
+     *
+     * @return string[]
+     */
+    private function getOwnInterfaces(string $class, ?string $parent): array
+    {
+        $ownInterfaces = class_implements($class, false);
+
+        if ($parent) {
+            foreach (class_implements($parent, false) as $interface) {
+                unset($ownInterfaces[$interface]);
+            }
+        }
+
+        foreach ($ownInterfaces as $interface) {
+            foreach (class_implements($interface) as $interface) {
+                unset($ownInterfaces[$interface]);
+            }
+        }
+
+        return $ownInterfaces;
     }
 
     /**
@@ -962,7 +929,7 @@ class DebugClassLoader
         foreach ($returnType as $i => $type) {
             if (preg_match('/((?:\[\])+)$/', $type, $m)) {
                 $type = substr($type, 0, -\strlen($m[1]));
-                $format = '%s'.$m[1];
+                $format = '%s' . $m[1];
             } else {
                 $format = null;
             }
@@ -980,9 +947,9 @@ class DebugClassLoader
                 $alias = $p ? substr($type, 0, $p) : $type;
 
                 if (isset($declaringUseMap[$alias])) {
-                    $type = '\\'.$declaringUseMap[$alias].($p ? substr($type, $p) : '');
+                    $type = '\\' . $declaringUseMap[$alias] . ($p ? substr($type, $p) : '');
                 } else {
-                    $type = '\\'.$declaringNamespace.$type;
+                    $type = '\\' . $declaringNamespace . $type;
                 }
 
                 $p = strrpos($type, '\\', 1);
@@ -991,18 +958,18 @@ class DebugClassLoader
             $alias = substr($type, 1 + $p);
             $type = substr($type, 1);
 
-            if (!isset($useMap[$alias]) && (class_exists($c = $namespace.$alias) || interface_exists($c) || trait_exists($c))) {
+            if (!isset($useMap[$alias]) && (class_exists($c = $namespace . $alias) || interface_exists($c) || trait_exists($c))) {
                 $useMap[$alias] = $c;
             }
 
             if (!isset($useMap[$alias])) {
                 $useStatements[$file][2][$alias] = $type;
-                $code[$useOffset] = "use $type;\n".$code[$useOffset];
+                $code[$useOffset] = "use $type;\n" . $code[$useOffset];
                 ++$fileOffset;
             } elseif ($useMap[$alias] !== $type) {
                 $alias .= 'FIXME';
                 $useStatements[$file][2][$alias] = $type;
-                $code[$useOffset] = "use $type as $alias;\n".$code[$useOffset];
+                $code[$useOffset] = "use $type as $alias;\n" . $code[$useOffset];
                 ++$fileOffset;
             }
 
@@ -1010,14 +977,14 @@ class DebugClassLoader
         }
 
         if ('docblock' === $this->patchTypes['force'] || ('object' === $normalizedType && '7.1' === $this->patchTypes['php'])) {
-            $returnType = implode($glue, $returnType).($nullable ? '|null' : '');
+            $returnType = implode($glue, $returnType) . ($nullable ? '|null' : '');
 
             if (str_contains($code[$startLine], '#[')) {
                 --$startLine;
             }
 
             if ($method->getDocComment()) {
-                $code[$startLine] = "     * @return $returnType\n".$code[$startLine];
+                $code[$startLine] = "     * @return $returnType\n" . $code[$startLine];
             } else {
                 $code[$startLine] .= <<<EOTXT
     /**
@@ -1054,7 +1021,7 @@ EOTXT;
             }
 
             if (str_starts_with($file[$i], 'namespace ')) {
-                $namespace = substr($file[$i], \strlen('namespace '), -2).'\\';
+                $namespace = substr($file[$i], \strlen('namespace '), -2) . '\\';
                 $useOffset = $i + 2;
             }
 
@@ -1126,117 +1093,147 @@ EOTXT;
         }
     }
 
-    /**
-     * @param \ReflectionClass|\ReflectionMethod|\ReflectionProperty $reflector
-     */
-    private function parsePhpDoc(\Reflector $reflector): array
+    public function checkCase(\ReflectionClass $refl, string $file, string $class): ?array
     {
-        if (!$doc = $reflector->getDocComment()) {
-            return [];
+        $real = explode('\\', $class . strrchr($file, '.'));
+        $tail = explode(\DIRECTORY_SEPARATOR, str_replace('/', \DIRECTORY_SEPARATOR, $file));
+
+        $i = \count($tail) - 1;
+        $j = \count($real) - 1;
+
+        while (isset($tail[$i], $real[$j]) && $tail[$i] === $real[$j]) {
+            --$i;
+            --$j;
         }
 
-        $tagName = '';
-        $tagContent = '';
+        array_splice($tail, 0, $i + 1);
 
-        $tags = [];
-
-        foreach (explode("\n", substr($doc, 3, -2)) as $line) {
-            $line = ltrim($line);
-            $line = ltrim($line, '*');
-
-            if ('' === $line = trim($line)) {
-                if ('' !== $tagName) {
-                    $tags[$tagName][] = $tagContent;
-                }
-                $tagName = $tagContent = '';
-                continue;
-            }
-
-            if ('@' === $line[0]) {
-                if ('' !== $tagName) {
-                    $tags[$tagName][] = $tagContent;
-                    $tagContent = '';
-                }
-
-                if (preg_match('{^@([-a-zA-Z0-9_:]++)(\s|$)}', $line, $m)) {
-                    $tagName = $m[1];
-                    $tagContent = str_replace("\t", ' ', ltrim(substr($line, 2 + \strlen($tagName))));
-                } else {
-                    $tagName = '';
-                }
-            } elseif ('' !== $tagName) {
-                $tagContent .= ' '.str_replace("\t", ' ', $line);
-            }
+        if (!$tail) {
+            return null;
         }
 
-        if ('' !== $tagName) {
-            $tags[$tagName][] = $tagContent;
+        $tail = \DIRECTORY_SEPARATOR . implode(\DIRECTORY_SEPARATOR, $tail);
+        $tailLen = \strlen($tail);
+        $real = $refl->getFileName();
+
+        if (2 === self::$caseCheck) {
+            $real = $this->darwinRealpath($real);
         }
 
-        foreach ($tags['method'] ?? [] as $i => $method) {
-            unset($tags['method'][$i]);
+        if (0 === substr_compare($real, $tail, -$tailLen, $tailLen, true)
+            && 0 !== substr_compare($real, $tail, -$tailLen, $tailLen, false)
+        ) {
+            return [substr($tail, -$tailLen + 1), substr($real, -$tailLen + 1), substr($real, 0, -$tailLen + 1)];
+        }
 
-            $parts = preg_split('{(\s++|\((?:[^()]*+|(?R))*\)(?: *: *[^ ]++)?|<(?:[^<>]*+|(?R))*>|\{(?:[^{}]*+|(?R))*\})}', $method, -1, \PREG_SPLIT_DELIM_CAPTURE);
-            $returnType = '';
-            $static = 'static' === $parts[0];
+        return null;
+    }
 
-            for ($i = $static ? 2 : 0; null !== $p = $parts[$i] ?? null; $i += 2) {
-                if (\in_array($p, ['', '|', '&', 'callable'], true) || \in_array(substr($returnType, -1), ['|', '&'], true)) {
-                    $returnType .= trim($parts[$i - 1] ?? '').$p;
-                    continue;
+    /**
+     * `realpath` on MacOSX doesn't normalize the case of characters.
+     */
+    private function darwinRealpath(string $real): string
+    {
+        $i = 1 + strrpos($real, '/');
+        $file = substr($real, $i);
+        $real = substr($real, 0, $i);
+
+        if (isset(self::$darwinCache[$real])) {
+            $kDir = $real;
+        } else {
+            $kDir = strtolower($real);
+
+            if (isset(self::$darwinCache[$kDir])) {
+                $real = self::$darwinCache[$kDir][0];
+            } else {
+                $dir = getcwd();
+
+                if (!@chdir($real)) {
+                    return $real . $file;
                 }
 
-                $signature = '(' === ($parts[$i + 1][0] ?? '(') ? $parts[$i + 1] ?? '()' : null;
+                $real = getcwd() . '/';
+                chdir($dir);
 
-                if (null === $signature && '' === $returnType) {
-                    $returnType = $p;
-                    continue;
+                $dir = $real;
+                $k = $kDir;
+                $i = \strlen($dir) - 1;
+                while (!isset(self::$darwinCache[$k])) {
+                    self::$darwinCache[$k] = [$dir, []];
+                    self::$darwinCache[$dir] = &self::$darwinCache[$k];
+
+                    while ('/' !== $dir[--$i]) {
+                    }
+                    $k = substr($k, 0, ++$i);
+                    $dir = substr($dir, 0, $i--);
                 }
-
-                if ($static && 2 === $i) {
-                    $static = false;
-                    $returnType = 'static';
-                }
-
-                if (\in_array($description = trim(implode('', \array_slice($parts, 2 + $i))), ['', '.'], true)) {
-                    $description = null;
-                } elseif (!preg_match('/[.!]$/', $description)) {
-                    $description .= '.';
-                }
-
-                $tags['method'][$p] = [$static, $returnType, $signature ?? '()', $description];
-                break;
             }
         }
 
-        foreach ($tags['param'] ?? [] as $i => $param) {
-            unset($tags['param'][$i]);
+        $dirFiles = self::$darwinCache[$kDir][1];
 
-            if (\strlen($param) !== strcspn($param, '<{(')) {
-                $param = preg_replace('{\(([^()]*+|(?R))*\)(?: *: *[^ ]++)?|<([^<>]*+|(?R))*>|\{([^{}]*+|(?R))*\}}', '', $param);
-            }
-
-            if (false === $i = strpos($param, '$')) {
-                continue;
-            }
-
-            $type = 0 === $i ? '' : rtrim(substr($param, 0, $i), ' &');
-            $param = substr($param, 1 + $i, (strpos($param, ' ', $i) ?: (1 + $i + \strlen($param))) - $i - 1);
-
-            $tags['param'][$param] = $type;
+        if (!isset($dirFiles[$file]) && str_ends_with($file, ') : eval()\'d code')) {
+            // Get the file name from "file_name.php(123) : eval()'d code"
+            $file = substr($file, 0, strrpos($file, '(', -17));
         }
 
-        foreach (['var', 'return'] as $k) {
-            if (null === $v = $tags[$k][0] ?? null) {
-                continue;
-            }
-            if (\strlen($v) !== strcspn($v, '<{(')) {
-                $v = preg_replace('{\(([^()]*+|(?R))*\)(?: *: *[^ ]++)?|<([^<>]*+|(?R))*>|\{([^{}]*+|(?R))*\}}', '', $v);
-            }
-
-            $tags[$k] = substr($v, 0, strpos($v, ' ') ?: \strlen($v)) ?: null;
+        if (isset($dirFiles[$file])) {
+            return $real . $dirFiles[$file];
         }
 
-        return $tags;
+        $kFile = strtolower($file);
+
+        if (!isset($dirFiles[$kFile])) {
+            foreach (scandir($real, 2) as $f) {
+                if ('.' !== $f[0]) {
+                    $dirFiles[$f] = $f;
+                    if ($f === $file) {
+                        $kFile = $k = $file;
+                    } elseif ($f !== $k = strtolower($f)) {
+                        $dirFiles[$k] = $f;
+                    }
+                }
+            }
+            self::$darwinCache[$kDir][1] = $dirFiles;
+        }
+
+        return $real . $dirFiles[$kFile];
+    }
+
+    /**
+     * Loads the given class or interface.
+     *
+     * @throws \RuntimeException
+     */
+    public function loadClass(string $class): void
+    {
+        $e = error_reporting(error_reporting() | \E_PARSE | \E_ERROR | \E_CORE_ERROR | \E_COMPILE_ERROR);
+
+        try {
+            if ($this->isFinder && !isset($this->loaded[$class])) {
+                $this->loaded[$class] = true;
+                if (!$file = $this->classLoader[0]->findFile($class) ?: '') {
+                    // no-op
+                } elseif (\function_exists('opcache_is_script_cached') && @opcache_is_script_cached($file)) {
+                    include $file;
+
+                    return;
+                } elseif (false === include $file) {
+                    return;
+                }
+            } else {
+                ($this->classLoader)($class);
+                $file = '';
+            }
+        } finally {
+            error_reporting($e);
+        }
+
+        $this->checkClass($class, $file);
+    }
+
+    public function findFile(string $class): ?string
+    {
+        return $this->isFinder ? ($this->classLoader[0]->findFile($class) ?: null) : null;
     }
 }

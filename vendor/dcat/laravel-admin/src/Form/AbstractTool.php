@@ -8,31 +8,56 @@ use Dcat\Admin\Form;
 abstract class AbstractTool extends Action
 {
     /**
-     * @var Form
-     */
-    protected $parent;
-
-    /**
-     * @var string
-     */
-    protected $style = 'btn btn-sm btn-primary';
-
-    /**
      * Whether the action should only allow in creation page.
      *
      * @var bool
      */
     public $allowOnlyCreating = false;
-
     /**
      * Whether the action should only allow in edit page.
      *
      * @var bool
      */
     public $allowOnlyEditing = false;
+    /**
+     * @var Form
+     */
+    protected $parent;
+    /**
+     * @var string
+     */
+    protected $style = 'btn btn-sm btn-primary';
 
     /**
-     * @param  Form  $form
+     * @param mixed ...$params
+     * @return $this
+     */
+    public static function allowOnlyCreating(...$params)
+    {
+        $tool = static::make(...$params);
+
+        $tool->allowOnlyCreating = true;
+        $tool->allowOnlyEditing = false;
+
+        return $tool;
+    }
+
+    /**
+     * @param mixed ...$params
+     * @return $this
+     */
+    public static function allowOnlyEditing(...$params)
+    {
+        $tool = static::make(...$params);
+
+        $tool->allowOnlyEditing = true;
+        $tool->allowOnlyCreating = false;
+
+        return $tool;
+    }
+
+    /**
+     * @param Form $form
      * @return void
      */
     public function setForm(Form $form)
@@ -57,11 +82,11 @@ abstract class AbstractTool extends Action
      */
     public function render()
     {
-        if ($this->allowOnlyEditing && ! $this->parent->isEditing()) {
+        if ($this->allowOnlyEditing && !$this->parent->isEditing()) {
             return '';
         }
 
-        if ($this->allowOnlyCreating && ! $this->parent->isCreating()) {
+        if ($this->allowOnlyCreating && !$this->parent->isCreating()) {
             return '';
         }
 
@@ -76,33 +101,5 @@ abstract class AbstractTool extends Action
         $this->addHtmlClass($this->style);
 
         parent::setupHtmlAttributes();
-    }
-
-    /**
-     * @param  mixed  ...$params
-     * @return $this
-     */
-    public static function allowOnlyCreating(...$params)
-    {
-        $tool = static::make(...$params);
-
-        $tool->allowOnlyCreating = true;
-        $tool->allowOnlyEditing = false;
-
-        return $tool;
-    }
-
-    /**
-     * @param  mixed  ...$params
-     * @return $this
-     */
-    public static function allowOnlyEditing(...$params)
-    {
-        $tool = static::make(...$params);
-
-        $tool->allowOnlyEditing = true;
-        $tool->allowOnlyCreating = false;
-
-        return $tool;
     }
 }

@@ -17,21 +17,24 @@ class Const_ extends NodeAbstract
     /**
      * Constructs a const node for use in class const and const statements.
      *
-     * @param string|Identifier $name       Name
-     * @param Expr              $value      Value
-     * @param array             $attributes Additional attributes
+     * @param string|Identifier $name Name
+     * @param Expr $value Value
+     * @param array $attributes Additional attributes
      */
-    public function __construct($name, Expr $value, array $attributes = []) {
+    public function __construct($name, Expr $value, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->name = \is_string($name) ? new Identifier($name) : $name;
         $this->value = $value;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['name', 'value'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Const';
     }
 }

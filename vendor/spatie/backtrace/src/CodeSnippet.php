@@ -28,7 +28,7 @@ class CodeSnippet
 
     public function get(string $fileName): array
     {
-        if (! file_exists($fileName)) {
+        if (!file_exists($fileName)) {
             return [];
         }
 

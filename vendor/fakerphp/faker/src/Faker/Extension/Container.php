@@ -34,12 +34,12 @@ final class Container implements ContainerInterface
     /**
      * @param string $id
      *
-     * @throws \InvalidArgumentException
+     * @return Extension
      * @throws \RuntimeException
      * @throws ContainerException
      * @throws NotInContainerException
      *
-     * @return Extension
+     * @throws \InvalidArgumentException
      */
     public function get($id)
     {

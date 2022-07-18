@@ -45,7 +45,7 @@ class Illuminate implements Storage
     /**
      * Constructor.
      *
-     * @param  \Illuminate\Contracts\Cache\Repository  $cache
+     * @param \Illuminate\Contracts\Cache\Repository $cache
      * @return void
      */
     public function __construct(CacheContract $cache)
@@ -56,9 +56,9 @@ class Illuminate implements Storage
     /**
      * Add a new item into storage.
      *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  int  $minutes
+     * @param string $key
+     * @param mixed $value
+     * @param int $minutes
      * @return void
      */
     public function add($key, $value, $minutes)
@@ -72,50 +72,6 @@ class Illuminate implements Storage
         }
 
         $this->cache()->put($key, $value, $minutes);
-    }
-
-    /**
-     * Add a new item into storage forever.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return void
-     */
-    public function forever($key, $value)
-    {
-        $this->cache()->forever($key, $value);
-    }
-
-    /**
-     * Get an item from storage.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    public function get($key)
-    {
-        return $this->cache()->get($key);
-    }
-
-    /**
-     * Remove an item from storage.
-     *
-     * @param  string  $key
-     * @return bool
-     */
-    public function destroy($key)
-    {
-        return $this->cache()->forget($key);
-    }
-
-    /**
-     * Remove all items associated with the tag.
-     *
-     * @return void
-     */
-    public function flush()
-    {
-        $this->cache()->flush();
     }
 
     /**
@@ -134,16 +90,6 @@ class Illuminate implements Storage
         }
 
         return $this->cache;
-    }
-
-    /**
-     * Set the laravel version.
-     */
-    public function setLaravelVersion($version)
-    {
-        $this->laravelVersion = $version;
-
-        return $this;
     }
 
     /**
@@ -174,5 +120,59 @@ class Illuminate implements Storage
                 $this->supportsTags = false;
             }
         }
+    }
+
+    /**
+     * Add a new item into storage forever.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    public function forever($key, $value)
+    {
+        $this->cache()->forever($key, $value);
+    }
+
+    /**
+     * Get an item from storage.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function get($key)
+    {
+        return $this->cache()->get($key);
+    }
+
+    /**
+     * Remove an item from storage.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function destroy($key)
+    {
+        return $this->cache()->forget($key);
+    }
+
+    /**
+     * Remove all items associated with the tag.
+     *
+     * @return void
+     */
+    public function flush()
+    {
+        $this->cache()->flush();
+    }
+
+    /**
+     * Set the laravel version.
+     */
+    public function setLaravelVersion($version)
+    {
+        $this->laravelVersion = $version;
+
+        return $this;
     }
 }

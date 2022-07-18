@@ -46,48 +46,31 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * 设置请求结果是否成功.
+     * 设置返回数据.
      *
-     * @param  bool  $status
+     * @param array $value
      * @return $this
      */
-    public function status(bool $status)
+    public function data(array $value)
     {
-        $this->status = $status;
+        $this->data = array_merge($this->data, $value);
 
         return $this;
     }
 
     /**
-     * 设置 HTTP 状态码.
-     *
-     * @param  int  $statusCode
+     * @param mixed ...$params
      * @return $this
      */
-    public function statusCode(int $statusCode)
+    public static function make(...$params)
     {
-        $this->statusCode = $statusCode;
-
-        return $this;
-    }
-
-    /**
-     * 设置提示信息.
-     *
-     * @param  string  $message
-     * @return $this
-     */
-    public function message(?string $message)
-    {
-        $this->data['message'] = $message;
-
-        return $this;
+        return new static(...$params);
     }
 
     /**
      * 显示 成功 提示弹窗.
      *
-     * @param  string  $message
+     * @param string $message
      * @return $this
      */
     public function success(?string $message)
@@ -98,7 +81,49 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * @param  string  $message
+     * 设置请求结果是否成功.
+     *
+     * @param bool $status
+     * @return $this
+     */
+    public function status(bool $status)
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * 显示弹窗信息.
+     *
+     * @param string $type
+     * @param string $message
+     * @return $this
+     */
+    protected function show(?string $type, ?string $message = null)
+    {
+        if ($message) {
+            $this->message($message);
+        }
+
+        return $this->data(['type' => $type]);
+    }
+
+    /**
+     * 设置提示信息.
+     *
+     * @param string $message
+     * @return $this
+     */
+    public function message(?string $message)
+    {
+        $this->data['message'] = $message;
+
+        return $this;
+    }
+
+    /**
+     * @param string $message
      * @return $this
      */
     public function info(?string $message)
@@ -107,26 +132,12 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * @param  string  $message
+     * @param string $message
      * @return $this
      */
     public function warning(?string $message)
     {
         return $this->show('warning', $message);
-    }
-
-    /**
-     * 显示 错误 信息弹窗.
-     *
-     * @param  string  $message
-     * @param  bool  $alert
-     * @return $this
-     */
-    public function error(?string $message)
-    {
-        $this->status(false);
-
-        return $this->show('error', $message);
     }
 
     /**
@@ -143,7 +154,7 @@ class JsonResponse implements Arrayable
     /**
      * 显示确认弹窗.
      *
-     * @param  bool  $alert
+     * @param bool $alert
      * @return $this
      */
     public function alert(bool $alert = true)
@@ -154,7 +165,7 @@ class JsonResponse implements Arrayable
     /**
      * 显示弹窗描述信息.
      *
-     * @param  string  $detail
+     * @param string $detail
      * @return $this
      */
     public function detail(?string $detail)
@@ -163,34 +174,7 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * 显示弹窗信息.
-     *
-     * @param  string  $type
-     * @param  string  $message
-     * @return $this
-     */
-    protected function show(?string $type, ?string $message = null)
-    {
-        if ($message) {
-            $this->message($message);
-        }
-
-        return $this->data(['type' => $type]);
-    }
-
-    /**
-     * 跳转.
-     *
-     * @param  string  $url
-     * @return $this
-     */
-    public function redirect(?string $url)
-    {
-        return $this->then(['action' => 'redirect', 'value' => admin_url($url)]);
-    }
-
-    /**
-     * @param  string|null  $url
+     * @param string|null $url
      * @return $this
      */
     public function redirectToIntended(?string $url)
@@ -201,18 +185,29 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * Location 跳转.
+     * 跳转.
      *
-     * @param  string  $location  不传则刷新当前页面
+     * @param string $url
      * @return $this
      */
-    public function location(?string $location = null)
+    public function redirect(?string $url)
     {
-        return $this->then(['action' => 'location', 'value' => $location ? admin_url($location) : null]);
+        return $this->then(['action' => 'redirect', 'value' => admin_url($url)]);
     }
 
     /**
-     * @param  string|null  $url
+     * @param array $value
+     * @return $this
+     */
+    protected function then(array $value)
+    {
+        $this->data['then'] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $url
      * @return $this
      */
     public function locationToIntended(?string $url)
@@ -223,9 +218,20 @@ class JsonResponse implements Arrayable
     }
 
     /**
+     * Location 跳转.
+     *
+     * @param string $location 不传则刷新当前页面
+     * @return $this
+     */
+    public function location(?string $location = null)
+    {
+        return $this->then(['action' => 'location', 'value' => $location ? admin_url($location) : null]);
+    }
+
+    /**
      * 下载.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function download($url)
@@ -246,7 +252,7 @@ class JsonResponse implements Arrayable
     /**
      * 执行JS代码.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function script($script)
@@ -255,33 +261,9 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * @param  array  $value
-     * @return $this
-     */
-    protected function then(array $value)
-    {
-        $this->data['then'] = $value;
-
-        return $this;
-    }
-
-    /**
-     * 设置返回数据.
-     *
-     * @param  array  $value
-     * @return $this
-     */
-    public function data(array $value)
-    {
-        $this->data = array_merge($this->data, $value);
-
-        return $this;
-    }
-
-    /**
      * 返回 HTML.
      *
-     * @param  string  $html
+     * @param string $html
      * @return $this
      */
     public function html($html)
@@ -292,16 +274,22 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * 设置其他字段.
+     * 响应异常.
      *
-     * @param  array  $options
+     * @param \Throwable $exception
      * @return $this
      */
-    public function options(array $options)
+    public function withException(\Throwable $exception)
     {
-        $this->options = array_merge($this->options, $options);
+        if ($exception instanceof ValidationException) {
+            return $this->withValidation($exception->errors());
+        }
 
-        return $this;
+        return $this
+            ->status(false)
+            ->error(
+                sprintf('[%s] %s', get_class($exception), $exception->getMessage())
+            );
     }
 
     /**
@@ -327,29 +315,50 @@ class JsonResponse implements Arrayable
     }
 
     /**
-     * 响应异常.
+     * 设置其他字段.
      *
-     * @param  \Throwable  $exception
+     * @param array $options
      * @return $this
      */
-    public function withException(\Throwable $exception)
+    public function options(array $options)
     {
-        if ($exception instanceof ValidationException) {
-            return $this->withValidation($exception->errors());
-        }
+        $this->options = array_merge($this->options, $options);
 
-        return $this
-            ->status(false)
-            ->error(
-                sprintf('[%s] %s', get_class($exception), $exception->getMessage())
-            );
+        return $this;
+    }
+
+    /**
+     * 设置 HTTP 状态码.
+     *
+     * @param int $statusCode
+     * @return $this
+     */
+    public function statusCode(int $statusCode)
+    {
+        $this->statusCode = $statusCode;
+
+        return $this;
+    }
+
+    /**
+     * 显示 错误 信息弹窗.
+     *
+     * @param string $message
+     * @param bool $alert
+     * @return $this
+     */
+    public function error(?string $message)
+    {
+        $this->status(false);
+
+        return $this->show('error', $message);
     }
 
     /**
      * Flash a piece of data to the session.
      *
-     * @param  string|array  $key
-     * @param  mixed  $value
+     * @param string|array $key
+     * @param mixed $value
      * @return $this
      */
     public function with($key, $value = null)
@@ -361,6 +370,14 @@ class JsonResponse implements Arrayable
         }
 
         return $this;
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function send()
+    {
+        return response()->json($this->toArray(), $this->statusCode);
     }
 
     /**
@@ -377,14 +394,6 @@ class JsonResponse implements Arrayable
         return $data + $this->options;
     }
 
-    /**
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function send()
-    {
-        return response()->json($this->toArray(), $this->statusCode);
-    }
-
     public function __call($method, $arguments)
     {
         if (Str::endsWith($method, 'If')) {
@@ -398,14 +407,5 @@ class JsonResponse implements Arrayable
         }
 
         throw new AdminException(sprintf('Call to undefined method "%s"', $method));
-    }
-
-    /**
-     * @param  mixed  ...$params
-     * @return $this
-     */
-    public static function make(...$params)
-    {
-        return new static(...$params);
     }
 }

@@ -31,8 +31,8 @@ class NPM
     /**
      * Create a new PHPStan manager instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  string|null  $rootPath
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param string|null $rootPath
      * @return void
      */
     public function __construct(Filesystem $files, $rootPath = null)
@@ -58,7 +58,7 @@ class NPM
         return collect($auditResult['metadata']['vulnerabilities']
             ?? $auditResult['data']['vulnerabilities'] ?? [])
             ->filter(function ($_, $type) {
-                return ! in_array($type, ['total', 'info']);
+                return !in_array($type, ['total', 'info']);
             })->sum();
     }
 
@@ -70,7 +70,7 @@ class NPM
      */
     public function audit($excludeDev = true)
     {
-        $options = ($excludeDev && ! $this->isYarn) ? ['audit', '--production', '--json'] : ['audit', '--json'];
+        $options = ($excludeDev && !$this->isYarn) ? ['audit', '--production', '--json'] : ['audit', '--json'];
 
         return json_decode($this->runCommand($options, true), true) ?? [];
     }
@@ -78,8 +78,8 @@ class NPM
     /**
      * Run any npm or yarn command and get the output.
      *
-     * @param  array  $options
-     * @param  bool  $includeErrorOutput
+     * @param array $options
+     * @param bool $includeErrorOutput
      * @return string|null
      */
     public function runCommand(array $options = [], $includeErrorOutput = true)
@@ -90,13 +90,13 @@ class NPM
             return null;
         }
 
-        $command = array_merge((array) $npm, $options);
+        $command = array_merge((array)$npm, $options);
 
         $process = $this->getProcess($command);
 
         $process->run();
 
-        return $process->getOutput().($includeErrorOutput ? $process->getErrorOutput() : '');
+        return $process->getOutput() . ($includeErrorOutput ? $process->getErrorOutput() : '');
     }
 
     /**
@@ -106,7 +106,7 @@ class NPM
      */
     public function findNpmOrYarn()
     {
-        if (! $this->files->exists($this->rootPath.'/package.json')) {
+        if (!$this->files->exists($this->rootPath . '/package.json')) {
             return [];
         }
 
@@ -133,14 +133,14 @@ class NPM
     {
         return is_executable(trim(shell_exec(
             strpos(PHP_OS, 'WIN') === 0 ? 'where ' : 'command -v '
-            .$command
+                . $command
         )));
     }
 
     /**
      * Get a new Symfony process instance.
      *
-     * @param  array  $command
+     * @param array $command
      * @return \Symfony\Component\Process\Process
      */
     protected function getProcess(array $command)
@@ -151,7 +151,7 @@ class NPM
     /**
      * Set the root path used by the class.
      *
-     * @param  string  $path
+     * @param string $path
      * @return $this
      */
     public function setRootPath(string $path)

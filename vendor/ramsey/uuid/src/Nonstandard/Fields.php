@@ -19,7 +19,6 @@ use Ramsey\Uuid\Fields\SerializableFieldsTrait;
 use Ramsey\Uuid\Rfc4122\FieldsInterface;
 use Ramsey\Uuid\Rfc4122\VariantTrait;
 use Ramsey\Uuid\Type\Hexadecimal;
-
 use function bin2hex;
 use function dechex;
 use function hexdec;
@@ -27,7 +26,6 @@ use function sprintf;
 use function str_pad;
 use function strlen;
 use function substr;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -96,21 +94,6 @@ final class Fields implements FieldsInterface
         return new Hexadecimal(bin2hex(substr($this->bytes, 10)));
     }
 
-    public function getTimeHiAndVersion(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 6, 2)));
-    }
-
-    public function getTimeLow(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 0, 4)));
-    }
-
-    public function getTimeMid(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 4, 2)));
-    }
-
     public function getTimestamp(): Hexadecimal
     {
         return new Hexadecimal(sprintf(
@@ -119,6 +102,21 @@ final class Fields implements FieldsInterface
             $this->getTimeMid()->toString(),
             $this->getTimeLow()->toString()
         ));
+    }
+
+    public function getTimeHiAndVersion(): Hexadecimal
+    {
+        return new Hexadecimal(bin2hex(substr($this->bytes, 6, 2)));
+    }
+
+    public function getTimeMid(): Hexadecimal
+    {
+        return new Hexadecimal(bin2hex(substr($this->bytes, 4, 2)));
+    }
+
+    public function getTimeLow(): Hexadecimal
+    {
+        return new Hexadecimal(bin2hex(substr($this->bytes, 0, 4)));
     }
 
     public function getVersion(): ?int

@@ -45,30 +45,10 @@ class Env
     }
 
     /**
-     * Get the environment repository instance.
-     *
-     * @return \Dotenv\Repository\RepositoryInterface
-     */
-    public static function getRepository()
-    {
-        if (static::$repository === null) {
-            $builder = RepositoryBuilder::createWithDefaultAdapters();
-
-            if (static::$putenv) {
-                $builder = $builder->addAdapter(PutenvAdapter::class);
-            }
-
-            static::$repository = $builder->immutable()->make();
-        }
-
-        return static::$repository;
-    }
-
-    /**
      * Gets the value of an environment variable.
      *
-     * @param  string  $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed $default
      * @return mixed
      */
     public static function get($key, $default = null)
@@ -96,6 +76,26 @@ class Env
 
                 return $value;
             })
-            ->getOrCall(fn () => value($default));
+            ->getOrCall(fn() => value($default));
+    }
+
+    /**
+     * Get the environment repository instance.
+     *
+     * @return \Dotenv\Repository\RepositoryInterface
+     */
+    public static function getRepository()
+    {
+        if (static::$repository === null) {
+            $builder = RepositoryBuilder::createWithDefaultAdapters();
+
+            if (static::$putenv) {
+                $builder = $builder->addAdapter(PutenvAdapter::class);
+            }
+
+            static::$repository = $builder->immutable()->make();
+        }
+
+        return static::$repository;
     }
 }

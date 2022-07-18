@@ -11,12 +11,12 @@
 
 namespace Monolog\Handler;
 
-use Elastica\Document;
-use Monolog\Formatter\FormatterInterface;
-use Monolog\Formatter\ElasticaFormatter;
-use Monolog\Logger;
 use Elastica\Client;
+use Elastica\Document;
 use Elastica\Exception\ExceptionInterface;
+use Monolog\Formatter\ElasticaFormatter;
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Logger;
 
 /**
  * Elastic Search handler
@@ -47,7 +47,7 @@ class ElasticaHandler extends AbstractProcessingHandler
     protected $options = [];
 
     /**
-     * @param Client  $client  Elastica Client object
+     * @param Client $client Elastica Client object
      * @param mixed[] $options Handler configuration
      */
     public function __construct(Client $client, array $options = [], $level = Logger::DEBUG, bool $bubble = true)
@@ -56,20 +56,12 @@ class ElasticaHandler extends AbstractProcessingHandler
         $this->client = $client;
         $this->options = array_merge(
             [
-                'index'          => 'monolog',      // Elastic index name
-                'type'           => 'record',       // Elastic document type
-                'ignore_error'   => false,          // Suppress Elastica exceptions
+                'index' => 'monolog',      // Elastic index name
+                'type' => 'record',       // Elastic document type
+                'ignore_error' => false,          // Suppress Elastica exceptions
             ],
             $options
         );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function write(array $record): void
-    {
-        $this->bulkSend([$record['formatted']]);
     }
 
     /**
@@ -90,14 +82,6 @@ class ElasticaHandler extends AbstractProcessingHandler
     public function getOptions(): array
     {
         return $this->options;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getDefaultFormatter(): FormatterInterface
-    {
-        return new ElasticaFormatter($this->options['index'], $this->options['type']);
     }
 
     /**
@@ -125,5 +109,21 @@ class ElasticaHandler extends AbstractProcessingHandler
                 throw new \RuntimeException("Error sending messages to Elasticsearch", 0, $e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record): void
+    {
+        $this->bulkSend([$record['formatted']]);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultFormatter(): FormatterInterface
+    {
+        return new ElasticaFormatter($this->options['index'], $this->options['type']);
     }
 }

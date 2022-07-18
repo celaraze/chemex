@@ -9,7 +9,6 @@ use Doctrine\DBAL\Driver\API\SQLite;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\SqliteSchemaManager;
-
 use function assert;
 
 /**

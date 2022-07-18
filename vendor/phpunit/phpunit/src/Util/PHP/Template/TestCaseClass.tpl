@@ -40,67 +40,67 @@ function __phpunit_run_isolated_test()
 
         $codeCoverage = new CodeCoverage(
             (new Selector)->{driverMethod}($filter),
-            $filter
-        );
+$filter
+);
 
-        if ({cachesStaticAnalysis}) {
-            $codeCoverage->cacheStaticAnalysis(unserialize('{codeCoverageCacheDirectory}'));
-        }
+if ({cachesStaticAnalysis}) {
+$codeCoverage->cacheStaticAnalysis(unserialize('{codeCoverageCacheDirectory}'));
+}
 
-        $result->setCodeCoverage($codeCoverage);
-    }
+$result->setCodeCoverage($codeCoverage);
+}
 
-    $result->beStrictAboutTestsThatDoNotTestAnything({isStrictAboutTestsThatDoNotTestAnything});
-    $result->beStrictAboutOutputDuringTests({isStrictAboutOutputDuringTests});
-    $result->enforceTimeLimit({enforcesTimeLimit});
-    $result->beStrictAboutTodoAnnotatedTests({isStrictAboutTodoAnnotatedTests});
-    $result->beStrictAboutResourceUsageDuringSmallTests({isStrictAboutResourceUsageDuringSmallTests});
+$result->beStrictAboutTestsThatDoNotTestAnything({isStrictAboutTestsThatDoNotTestAnything});
+$result->beStrictAboutOutputDuringTests({isStrictAboutOutputDuringTests});
+$result->enforceTimeLimit({enforcesTimeLimit});
+$result->beStrictAboutTodoAnnotatedTests({isStrictAboutTodoAnnotatedTests});
+$result->beStrictAboutResourceUsageDuringSmallTests({isStrictAboutResourceUsageDuringSmallTests});
 
-    $test = new {className}('{name}', unserialize('{data}'), '{dataName}');
-    $test->setDependencyInput(unserialize('{dependencyInput}'));
-    $test->setInIsolation(TRUE);
+$test = new {className}('{name}', unserialize('{data}'), '{dataName}');
+$test->setDependencyInput(unserialize('{dependencyInput}'));
+$test->setInIsolation(TRUE);
 
-    ob_end_clean();
-    $test->run($result);
-    $output = '';
-    if (!$test->hasExpectationOnOutput()) {
-        $output = $test->getActualOutput();
-    }
+ob_end_clean();
+$test->run($result);
+$output = '';
+if (!$test->hasExpectationOnOutput()) {
+$output = $test->getActualOutput();
+}
 
-    ini_set('xdebug.scream', '0');
-    @rewind(STDOUT); /* @ as not every STDOUT target stream is rewindable */
-    if ($stdout = @stream_get_contents(STDOUT)) {
-        $output = $stdout . $output;
-        $streamMetaData = stream_get_meta_data(STDOUT);
-        if (!empty($streamMetaData['stream_type']) && 'STDIO' === $streamMetaData['stream_type']) {
-            @ftruncate(STDOUT, 0);
-            @rewind(STDOUT);
-        }
-    }
+ini_set('xdebug.scream', '0');
+@rewind(STDOUT); /* @ as not every STDOUT target stream is rewindable */
+if ($stdout = @stream_get_contents(STDOUT)) {
+$output = $stdout . $output;
+$streamMetaData = stream_get_meta_data(STDOUT);
+if (!empty($streamMetaData['stream_type']) && 'STDIO' === $streamMetaData['stream_type']) {
+@ftruncate(STDOUT, 0);
+@rewind(STDOUT);
+}
+}
 
-    print serialize(
-      [
-        'testResult'    => $test->getResult(),
-        'numAssertions' => $test->getNumAssertions(),
-        'result'        => $result,
-        'output'        => $output
-      ]
-    );
+print serialize(
+[
+'testResult'    => $test->getResult(),
+'numAssertions' => $test->getNumAssertions(),
+'result'        => $result,
+'output'        => $output
+]
+);
 }
 
 $configurationFilePath = '{configurationFilePath}';
 
 if ('' !== $configurationFilePath) {
-    $configuration = (new Loader)->load($configurationFilePath);
+$configuration = (new Loader)->load($configurationFilePath);
 
-    (new PhpHandler)->handle($configuration->php());
+(new PhpHandler)->handle($configuration->php());
 
-    unset($configuration);
+unset($configuration);
 }
 
 function __phpunit_error_handler($errno, $errstr, $errfile, $errline)
 {
-   return true;
+return true;
 }
 
 set_error_handler('__phpunit_error_handler');
@@ -112,8 +112,8 @@ set_error_handler('__phpunit_error_handler');
 restore_error_handler();
 
 if (isset($GLOBALS['__PHPUNIT_BOOTSTRAP'])) {
-    require_once $GLOBALS['__PHPUNIT_BOOTSTRAP'];
-    unset($GLOBALS['__PHPUNIT_BOOTSTRAP']);
+require_once $GLOBALS['__PHPUNIT_BOOTSTRAP'];
+unset($GLOBALS['__PHPUNIT_BOOTSTRAP']);
 }
 
 __phpunit_run_isolated_test();

@@ -73,7 +73,7 @@ class AttributeNode extends AbstractNode
 
     public function __toString(): string
     {
-        $attribute = $this->namespace ? $this->namespace.'|'.$this->attribute : $this->attribute;
+        $attribute = $this->namespace ? $this->namespace . '|' . $this->attribute : $this->attribute;
 
         return 'exists' === $this->operator
             ? sprintf('%s[%s[%s]]', $this->getNodeName(), $this->selector, $attribute)

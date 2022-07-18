@@ -35,9 +35,9 @@ final class CursorState
     private array $state;
 
     /**
+     * @param array<int, mixed> $state
      * @internal
      *
-     * @param array<int, mixed> $state
      */
     public function __construct(array $state)
     {
@@ -45,9 +45,9 @@ final class CursorState
     }
 
     /**
+     * @return array<int, mixed>
      * @internal
      *
-     * @return array<int, mixed>
      */
     public function toArray(): array
     {

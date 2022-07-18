@@ -21,29 +21,29 @@ class ConstantEnumerator extends Enumerator
 {
     // Because `Json` is ugly.
     private static $categoryLabels = [
-        'libxml'   => 'libxml',
-        'openssl'  => 'OpenSSL',
-        'pcre'     => 'PCRE',
-        'sqlite3'  => 'SQLite3',
-        'curl'     => 'cURL',
-        'dom'      => 'DOM',
-        'ftp'      => 'FTP',
-        'gd'       => 'GD',
-        'gmp'      => 'GMP',
-        'iconv'    => 'iconv',
-        'json'     => 'JSON',
-        'ldap'     => 'LDAP',
+        'libxml' => 'libxml',
+        'openssl' => 'OpenSSL',
+        'pcre' => 'PCRE',
+        'sqlite3' => 'SQLite3',
+        'curl' => 'cURL',
+        'dom' => 'DOM',
+        'ftp' => 'FTP',
+        'gd' => 'GD',
+        'gmp' => 'GMP',
+        'iconv' => 'iconv',
+        'json' => 'JSON',
+        'ldap' => 'LDAP',
         'mbstring' => 'mbstring',
-        'odbc'     => 'ODBC',
-        'pcntl'    => 'PCNTL',
-        'pgsql'    => 'pgsql',
-        'posix'    => 'POSIX',
-        'mysqli'   => 'mysqli',
-        'soap'     => 'SOAP',
-        'exif'     => 'EXIF',
-        'sysvmsg'  => 'sysvmsg',
-        'xml'      => 'XML',
-        'xsl'      => 'XSL',
+        'odbc' => 'ODBC',
+        'pcntl' => 'PCNTL',
+        'pgsql' => 'pgsql',
+        'posix' => 'POSIX',
+        'mysqli' => 'mysqli',
+        'soap' => 'SOAP',
+        'exif' => 'EXIF',
+        'sysvmsg' => 'sysvmsg',
+        'xml' => 'XML',
+        'xsl' => 'XSL',
     ];
 
     /**
@@ -89,7 +89,7 @@ class ConstantEnumerator extends Enumerator
 
         if ($category) {
             $caseCategory = \array_key_exists($category, self::$categoryLabels) ? self::$categoryLabels[$category] : \ucfirst($category);
-            $label = $caseCategory.' Constants';
+            $label = $caseCategory . ' Constants';
             $ret[$label] = $this->getConstants($category);
         }
 
@@ -98,7 +98,7 @@ class ConstantEnumerator extends Enumerator
         }
 
         if ($reflector !== null) {
-            $prefix = \strtolower($reflector->getName()).'\\';
+            $prefix = \strtolower($reflector->getName()) . '\\';
 
             foreach ($ret as $key => $names) {
                 foreach (\array_keys($names) as $name) {
@@ -163,7 +163,7 @@ class ConstantEnumerator extends Enumerator
         foreach ($names as $name) {
             if ($this->showItem($name)) {
                 $ret[$name] = [
-                    'name'  => $name,
+                    'name' => $name,
                     'style' => self::IS_CONSTANT,
                     'value' => $this->presentRef($constants[$name]),
                 ];

@@ -45,7 +45,7 @@ final class Dumper
                     null === $var => 'null',
                     true === $var => 'true',
                     false === $var => 'false',
-                    \is_string($var) => '"'.$var.'"',
+                    \is_string($var) => '"' . $var . '"',
                     default => rtrim(print_r($var, true)),
                 };
             };

@@ -30,7 +30,7 @@ final class IndentedCodeParser extends AbstractBlockContinueParser
 
     public function __construct()
     {
-        $this->block   = new IndentedCode();
+        $this->block = new IndentedCode();
         $this->strings = new ArrayCollection();
     }
 
@@ -65,7 +65,7 @@ final class IndentedCodeParser extends AbstractBlockContinueParser
     {
         $reversed = \array_reverse($this->strings->toArray(), true);
         foreach ($reversed as $index => $line) {
-            if ($line !== '' && $line !== "\n" && ! \preg_match('/^(\n *)$/', $line)) {
+            if ($line !== '' && $line !== "\n" && !\preg_match('/^(\n *)$/', $line)) {
                 break;
             }
 
@@ -73,7 +73,7 @@ final class IndentedCodeParser extends AbstractBlockContinueParser
         }
 
         $fixed = \array_reverse($reversed);
-        $tmp   = \implode("\n", $fixed);
+        $tmp = \implode("\n", $fixed);
         if (\substr($tmp, -1) !== "\n") {
             $tmp .= "\n";
         }

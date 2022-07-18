@@ -38,18 +38,6 @@ final class Some extends Option
         $this->value = $value;
     }
 
-    /**
-     * @template U
-     *
-     * @param U $value
-     *
-     * @return Some<U>
-     */
-    public static function create($value): self
-    {
-        return new self($value);
-    }
-
     public function isDefined(): bool
     {
         return true;
@@ -120,6 +108,18 @@ final class Some extends Option
         }
 
         return None::create();
+    }
+
+    /**
+     * @template U
+     *
+     * @param U $value
+     *
+     * @return Some<U>
+     */
+    public static function create($value): self
+    {
+        return new self($value);
     }
 
     public function filterNot($callable)

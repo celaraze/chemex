@@ -6,7 +6,6 @@ namespace Doctrine\DBAL\SQL\Parser\Exception;
 
 use Doctrine\DBAL\SQL\Parser\Exception;
 use RuntimeException;
-
 use function preg_last_error;
 use function preg_last_error_msg;
 

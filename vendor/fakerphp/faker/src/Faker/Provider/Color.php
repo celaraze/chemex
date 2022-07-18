@@ -40,19 +40,9 @@ class Color extends Base
     ];
 
     /**
-     * @example '#fa3cc2'
-     *
      * @return string
-     */
-    public static function hexColor()
-    {
-        return '#' . str_pad(dechex(self::numberBetween(1, 16777215)), 6, '0', STR_PAD_LEFT);
-    }
-
-    /**
      * @example '#ff0044'
      *
-     * @return string
      */
     public static function safeHexColor()
     {
@@ -62,9 +52,29 @@ class Color extends Base
     }
 
     /**
+     * @return string
+     * @example 'rgb(0,255,122)'
+     *
+     */
+    public static function rgbCssColor()
+    {
+        return 'rgb(' . static::rgbColor() . ')';
+    }
+
+    /**
+     * @return string
+     * @example '0,255,122'
+     *
+     */
+    public static function rgbColor()
+    {
+        return implode(',', static::rgbColorAsArray());
+    }
+
+    /**
+     * @return array
      * @example 'array(0,255,122)'
      *
-     * @return array
      */
     public static function rgbColorAsArray()
     {
@@ -78,29 +88,19 @@ class Color extends Base
     }
 
     /**
-     * @example '0,255,122'
-     *
      * @return string
+     * @example '#fa3cc2'
+     *
      */
-    public static function rgbColor()
+    public static function hexColor()
     {
-        return implode(',', static::rgbColorAsArray());
+        return '#' . str_pad(dechex(self::numberBetween(1, 16777215)), 6, '0', STR_PAD_LEFT);
     }
 
     /**
-     * @example 'rgb(0,255,122)'
-     *
      * @return string
-     */
-    public static function rgbCssColor()
-    {
-        return 'rgb(' . static::rgbColor() . ')';
-    }
-
-    /**
      * @example 'rgba(0,255,122,0.8)'
      *
-     * @return string
      */
     public static function rgbaCssColor()
     {
@@ -108,9 +108,9 @@ class Color extends Base
     }
 
     /**
+     * @return string
      * @example 'blue'
      *
-     * @return string
      */
     public static function safeColorName()
     {
@@ -118,9 +118,9 @@ class Color extends Base
     }
 
     /**
+     * @return string
      * @example 'NavajoWhite'
      *
-     * @return string
      */
     public static function colorName()
     {
@@ -128,9 +128,9 @@ class Color extends Base
     }
 
     /**
+     * @return string
      * @example '340,50,20'
      *
-     * @return string
      */
     public static function hslColor()
     {
@@ -143,9 +143,9 @@ class Color extends Base
     }
 
     /**
+     * @return array
      * @example array(340, 50, 20)
      *
-     * @return array
      */
     public static function hslColorAsArray()
     {

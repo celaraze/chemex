@@ -23,9 +23,9 @@ class FishCompletionOutput implements CompletionOutputInterface
     {
         $values = $suggestions->getValueSuggestions();
         foreach ($suggestions->getOptionSuggestions() as $option) {
-            $values[] = '--'.$option->getName();
+            $values[] = '--' . $option->getName();
             if ($option->isNegatable()) {
-                $values[] = '--no-'.$option->getName();
+                $values[] = '--no-' . $option->getName();
             }
         }
         $output->write(implode("\n", $values));

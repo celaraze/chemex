@@ -41,11 +41,11 @@ class RelationExistenceRule implements Rule
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier) {
+        if (!$node->name instanceof Node\Identifier) {
             return [];
         }
 
-        if (! in_array($node->name->name, [
+        if (!in_array($node->name->name, [
             'has',
             'orHas',
             'doesntHave',
@@ -68,7 +68,7 @@ class RelationExistenceRule implements Rule
 
         $valueType = $scope->getType($args[0]->value);
 
-        if (! $valueType instanceof ConstantStringType) {
+        if (!$valueType instanceof ConstantStringType) {
             return [];
         }
 
@@ -83,7 +83,7 @@ class RelationExistenceRule implements Rule
                 return [];
             }
 
-            if (! $modelReflection->hasMethod($relationName)) {
+            if (!$modelReflection->hasMethod($relationName)) {
                 return [
                     $this->getRuleError($relationName, $modelReflection, $node),
                 ];
@@ -91,7 +91,7 @@ class RelationExistenceRule implements Rule
 
             $relationMethod = $modelReflection->getMethod($relationName, $scope);
 
-            if (! (new ObjectType(Relation::class))->isSuperTypeOf(ParametersAcceptorSelector::selectSingle($relationMethod->getVariants())->getReturnType())->yes()) {
+            if (!(new ObjectType(Relation::class))->isSuperTypeOf(ParametersAcceptorSelector::selectSingle($relationMethod->getVariants())->getReturnType())->yes()) {
                 return [
                     $this->getRuleError($relationName, $modelReflection, $node),
                 ];
@@ -129,10 +129,11 @@ class RelationExistenceRule implements Rule
     }
 
     private function getRuleError(
-        string $relationName,
+        string                              $relationName,
         \PHPStan\Reflection\ClassReflection $modelReflection,
-        Node $node
-    ): \PHPStan\Rules\RuleError {
+        Node                                $node
+    ): \PHPStan\Rules\RuleError
+    {
         return RuleErrorBuilder::message(sprintf("Relation '%s' is not found in %s model.", $relationName,
             $modelReflection->getName()))
             ->identifier('rules.relationExistence')

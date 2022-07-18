@@ -24,9 +24,9 @@ class Address extends Base
     protected static $country = [];
 
     /**
+     * @return string
      * @example 'town'
      *
-     * @return string
      */
     public static function citySuffix()
     {
@@ -34,9 +34,9 @@ class Address extends Base
     }
 
     /**
+     * @return string
      * @example 'Avenue'
      *
-     * @return string
      */
     public static function streetSuffix()
     {
@@ -44,9 +44,9 @@ class Address extends Base
     }
 
     /**
+     * @return string
      * @example '791'
      *
-     * @return string
      */
     public static function buildingNumber()
     {
@@ -54,45 +54,9 @@ class Address extends Base
     }
 
     /**
-     * @example 'Sashabury'
-     *
      * @return string
-     */
-    public function city()
-    {
-        $format = static::randomElement(static::$cityFormats);
-
-        return $this->generator->parse($format);
-    }
-
-    /**
-     * @example 'Crist Parks'
-     *
-     * @return string
-     */
-    public function streetName()
-    {
-        $format = static::randomElement(static::$streetNameFormats);
-
-        return $this->generator->parse($format);
-    }
-
-    /**
-     * @example '791 Crist Parks'
-     *
-     * @return string
-     */
-    public function streetAddress()
-    {
-        $format = static::randomElement(static::$streetAddressFormats);
-
-        return $this->generator->parse($format);
-    }
-
-    /**
      * @example 86039-9874
      *
-     * @return string
      */
     public static function postcode()
     {
@@ -100,21 +64,9 @@ class Address extends Base
     }
 
     /**
-     * @example '791 Crist Parks, Sashabury, IL 86039-9874'
-     *
      * @return string
-     */
-    public function address()
-    {
-        $format = static::randomElement(static::$addressFormats);
-
-        return $this->generator->parse($format);
-    }
-
-    /**
      * @example 'Japan'
      *
-     * @return string
      */
     public static function country()
     {
@@ -122,14 +74,27 @@ class Address extends Base
     }
 
     /**
-     * Uses signed degrees format (returns a float number between -90 and 90)
+     * @return float[]
+     * @example array('77.147489', '86.211205')
      *
-     * @example '77.147489'
+     */
+    public static function localCoordinates()
+    {
+        return [
+            'latitude' => static::latitude(),
+            'longitude' => static::longitude(),
+        ];
+    }
+
+    /**
+     * Uses signed degrees format (returns a float number between -90 and 90)
      *
      * @param float|int $min
      * @param float|int $max
      *
      * @return float
+     * @example '77.147489'
+     *
      */
     public static function latitude($min = -90, $max = 90)
     {
@@ -139,12 +104,12 @@ class Address extends Base
     /**
      * Uses signed degrees format (returns a float number between -180 and 180)
      *
-     * @example '86.211205'
-     *
      * @param float|int $min
      * @param float|int $max
      *
      * @return float
+     * @example '86.211205'
+     *
      */
     public static function longitude($min = -180, $max = 180)
     {
@@ -152,15 +117,50 @@ class Address extends Base
     }
 
     /**
-     * @example array('77.147489', '86.211205')
+     * @return string
+     * @example 'Sashabury'
      *
-     * @return float[]
      */
-    public static function localCoordinates()
+    public function city()
     {
-        return [
-            'latitude' => static::latitude(),
-            'longitude' => static::longitude(),
-        ];
+        $format = static::randomElement(static::$cityFormats);
+
+        return $this->generator->parse($format);
+    }
+
+    /**
+     * @return string
+     * @example 'Crist Parks'
+     *
+     */
+    public function streetName()
+    {
+        $format = static::randomElement(static::$streetNameFormats);
+
+        return $this->generator->parse($format);
+    }
+
+    /**
+     * @return string
+     * @example '791 Crist Parks'
+     *
+     */
+    public function streetAddress()
+    {
+        $format = static::randomElement(static::$streetAddressFormats);
+
+        return $this->generator->parse($format);
+    }
+
+    /**
+     * @return string
+     * @example '791 Crist Parks, Sashabury, IL 86039-9874'
+     *
+     */
+    public function address()
+    {
+        $format = static::randomElement(static::$addressFormats);
+
+        return $this->generator->parse($format);
     }
 }

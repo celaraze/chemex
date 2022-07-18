@@ -13,38 +13,6 @@ use Symfony\Component\Process\Process;
 class ServeCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'serve';
-
-    /**
-     * The name of the console command.
-     *
-     * This name is used to identify the command during lazy loading.
-     *
-     * @var string|null
-     *
-     * @deprecated
-     */
-    protected static $defaultName = 'serve';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Serve the application on the PHP development server';
-
-    /**
-     * The current port offset.
-     *
-     * @var int
-     */
-    protected $portOffset = 0;
-
-    /**
      * The environment variables that should be passed from host machine to the PHP server process.
      *
      * @var string[]
@@ -59,6 +27,34 @@ class ServeCommand extends Command
         'XDEBUG_MODE',
         'XDEBUG_SESSION',
     ];
+    /**
+     * The name of the console command.
+     *
+     * This name is used to identify the command during lazy loading.
+     *
+     * @var string|null
+     *
+     * @deprecated
+     */
+    protected static $defaultName = 'serve';
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'serve';
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Serve the application on the PHP development server';
+    /**
+     * The current port offset.
+     *
+     * @var int
+     */
+    protected $portOffset = 0;
 
     /**
      * Execute the console command.
@@ -72,14 +68,14 @@ class ServeCommand extends Command
         $this->line("<info>Starting Laravel development server:</info> http://{$this->host()}:{$this->port()}");
 
         $environmentFile = $this->option('env')
-                            ? base_path('.env').'.'.$this->option('env')
-                            : base_path('.env');
+            ? base_path('.env') . '.' . $this->option('env')
+            : base_path('.env');
 
         $hasEnvironment = file_exists($environmentFile);
 
         $environmentLastModified = $hasEnvironment
-                            ? filemtime($environmentFile)
-                            : now()->addDays(30)->getTimestamp();
+            ? filemtime($environmentFile)
+            : now()->addDays(30)->getTimestamp();
 
         $process = $this->startProcess($hasEnvironment);
 
@@ -88,7 +84,7 @@ class ServeCommand extends Command
                 clearstatcache(false, $environmentFile);
             }
 
-            if (! $this->option('no-reload') &&
+            if (!$this->option('no-reload') &&
                 $hasEnvironment &&
                 filemtime($environmentFile) > $environmentLastModified) {
                 $environmentLastModified = filemtime($environmentFile);
@@ -115,15 +111,60 @@ class ServeCommand extends Command
     }
 
     /**
+     * Get the host for the command.
+     *
+     * @return string
+     */
+    protected function host()
+    {
+        [$host,] = $this->getHostAndPort();
+
+        return $host;
+    }
+
+    /**
+     * Get the host and port from the host option string.
+     *
+     * @return array
+     */
+    protected function getHostAndPort()
+    {
+        $hostParts = explode(':', $this->input->getOption('host'));
+
+        return [
+            $hostParts[0],
+            $hostParts[1] ?? null,
+        ];
+    }
+
+    /**
+     * Get the port for the command.
+     *
+     * @return string
+     */
+    protected function port()
+    {
+        $port = $this->input->getOption('port');
+
+        if (is_null($port)) {
+            [, $port] = $this->getHostAndPort();
+        }
+
+        $port = $port ?: 8000;
+
+        return $port + $this->portOffset;
+    }
+
+    /**
      * Start a new server process.
      *
-     * @param  bool  $hasEnvironment
+     * @param bool $hasEnvironment
      * @return \Symfony\Component\Process\Process
      */
     protected function startProcess($hasEnvironment)
     {
         $process = new Process($this->serverCommand(), public_path(), collect($_ENV)->mapWithKeys(function ($value, $key) use ($hasEnvironment) {
-            if ($this->option('no-reload') || ! $hasEnvironment) {
+            if ($this->option('no-reload') || !$hasEnvironment) {
                 return [$key => $value];
             }
 
@@ -146,58 +187,13 @@ class ServeCommand extends Command
     {
         $server = file_exists(base_path('server.php'))
             ? base_path('server.php')
-            : __DIR__.'/../resources/server.php';
+            : __DIR__ . '/../resources/server.php';
 
         return [
             (new PhpExecutableFinder)->find(false),
             '-S',
-            $this->host().':'.$this->port(),
+            $this->host() . ':' . $this->port(),
             $server,
-        ];
-    }
-
-    /**
-     * Get the host for the command.
-     *
-     * @return string
-     */
-    protected function host()
-    {
-        [$host, ] = $this->getHostAndPort();
-
-        return $host;
-    }
-
-    /**
-     * Get the port for the command.
-     *
-     * @return string
-     */
-    protected function port()
-    {
-        $port = $this->input->getOption('port');
-
-        if (is_null($port)) {
-            [, $port] = $this->getHostAndPort();
-        }
-
-        $port = $port ?: 8000;
-
-        return $port + $this->portOffset;
-    }
-
-    /**
-     * Get the host and port from the host option string.
-     *
-     * @return array
-     */
-    protected function getHostAndPort()
-    {
-        $hostParts = explode(':', $this->input->getOption('host'));
-
-        return [
-            $hostParts[0],
-            $hostParts[1] ?? null,
         ];
     }
 
@@ -209,7 +205,7 @@ class ServeCommand extends Command
     protected function canTryAnotherPort()
     {
         return is_null($this->input->getOption('port')) &&
-               ($this->input->getOption('tries') > $this->portOffset);
+            ($this->input->getOption('tries') > $this->portOffset);
     }
 
     /**

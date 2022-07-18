@@ -19,7 +19,7 @@ class Collection extends IlluminateCollection
     /**
      * Create a new collection.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return void
      */
     public function __construct($items = [])
@@ -28,11 +28,39 @@ class Collection extends IlluminateCollection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getArrayableItems($items)
+    {
+        return $this->sanitizeClaims($items);
+    }
+
+    /**
+     * Ensure that the given claims array is keyed by the claim name.
+     *
+     * @param mixed $items
+     * @return array
+     */
+    private function sanitizeClaims($items)
+    {
+        $claims = [];
+        foreach ($items as $key => $value) {
+            if (!is_string($key) && $value instanceof Claim) {
+                $key = $value->getName();
+            }
+
+            $claims[$key] = $value;
+        }
+
+        return $claims;
+    }
+
+    /**
      * Get a Claim instance by it's unique name.
      *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @param  mixed  $default
+     * @param string $name
+     * @param callable $callback
+     * @param mixed $default
      * @return \Tymon\JWTAuth\Claims\Claim
      */
     public function getByClaimName($name, callable $callback = null, $default = null)
@@ -45,7 +73,7 @@ class Collection extends IlluminateCollection
     /**
      * Validate each claim under a given context.
      *
-     * @param  string  $context
+     * @param string $context
      * @return $this
      */
     public function validate($context = 'payload')
@@ -55,7 +83,7 @@ class Collection extends IlluminateCollection
 
         $this->each(function ($claim) use ($context, $args) {
             call_user_func_array(
-                [$claim, 'validate'.Str::ucfirst($context)],
+                [$claim, 'validate' . Str::ucfirst($context)],
                 $args
             );
         });
@@ -66,7 +94,7 @@ class Collection extends IlluminateCollection
     /**
      * Determine if the Collection contains all of the given keys.
      *
-     * @param  mixed  $claims
+     * @param mixed $claims
      * @return bool
      */
     public function hasAllClaims($claims)
@@ -84,33 +112,5 @@ class Collection extends IlluminateCollection
         return $this->map(function (Claim $claim) {
             return $claim->getValue();
         })->toArray();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getArrayableItems($items)
-    {
-        return $this->sanitizeClaims($items);
-    }
-
-    /**
-     * Ensure that the given claims array is keyed by the claim name.
-     *
-     * @param  mixed  $items
-     * @return array
-     */
-    private function sanitizeClaims($items)
-    {
-        $claims = [];
-        foreach ($items as $key => $value) {
-            if (! is_string($key) && $value instanceof Claim) {
-                $key = $value->getName();
-            }
-
-            $claims[$key] = $value;
-        }
-
-        return $claims;
     }
 }

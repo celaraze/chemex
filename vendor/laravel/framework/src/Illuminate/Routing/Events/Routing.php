@@ -14,7 +14,7 @@ class Routing
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      */
     public function __construct($request)

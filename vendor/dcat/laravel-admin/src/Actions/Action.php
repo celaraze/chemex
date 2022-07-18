@@ -61,7 +61,7 @@ abstract class Action implements Renderable
     /**
      * Action constructor.
      *
-     * @param  string  $title
+     * @param string $title
      */
     public function __construct($title = null)
     {
@@ -71,9 +71,18 @@ abstract class Action implements Renderable
     }
 
     /**
+     * @param mixed ...$params
+     * @return $this
+     */
+    public static function make(...$params)
+    {
+        return new static(...$params);
+    }
+
+    /**
      * 是否禁用动作.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disable(bool $disable = true)
@@ -81,14 +90,6 @@ abstract class Action implements Renderable
         $this->disabled = $disable;
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function allowed()
-    {
-        return ! $this->disabled;
     }
 
     /**
@@ -104,7 +105,7 @@ abstract class Action implements Renderable
     /**
      * 设置主键.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return $this
      */
     public function setKey($key)
@@ -117,85 +118,9 @@ abstract class Action implements Renderable
     /**
      * @return string
      */
-    protected function getElementClass()
+    public function __toString()
     {
-        return ltrim($this->selector(), '.');
-    }
-
-    /**
-     * 获取动作标题.
-     *
-     * @return string
-     */
-    public function title()
-    {
-        return $this->title;
-    }
-
-    /**
-     * @return mixed|string
-     */
-    public function selector()
-    {
-        return $this->selector ?: ($this->selector = $this->makeSelector());
-    }
-
-    /**
-     * 生成选择器.
-     *
-     * @param  string  $prefix
-     * @return string
-     */
-    public function makeSelector()
-    {
-        return '.act-'.Str::random();
-    }
-
-    /**
-     * @param  string|array  $class
-     * @return $this
-     */
-    public function addHtmlClass($class)
-    {
-        $this->htmlClasses = array_merge($this->htmlClasses, (array) $class);
-
-        return $this;
-    }
-
-    /**
-     * 需要执行的JS代码.
-     *
-     * @return string|void
-     */
-    protected function script()
-    {
-    }
-
-    /**
-     * @return string
-     */
-    protected function html()
-    {
-        $this->defaultHtmlAttribute('href', 'javascript:void(0)');
-
-        return <<<HTML
-<a {$this->formatHtmlAttributes()}>{$this->title()}</a>
-HTML;
-    }
-
-    /**
-     * @return void
-     */
-    protected function prepareHandler()
-    {
-        if (
-            ! $this->allowHandler
-            || ! method_exists($this, 'handle')
-        ) {
-            return;
-        }
-
-        $this->addHandlerScript();
+        return Helper::render($this->render());
     }
 
     /**
@@ -203,7 +128,7 @@ HTML;
      */
     public function render()
     {
-        if (! $this->allowed()) {
+        if (!$this->allowed()) {
             return '';
         }
 
@@ -219,11 +144,26 @@ HTML;
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    protected function formatHtmlClasses()
+    public function allowed()
     {
-        return implode(' ', array_unique($this->htmlClasses));
+        return !$this->disabled;
+    }
+
+    /**
+     * @return void
+     */
+    protected function prepareHandler()
+    {
+        if (
+            !$this->allowHandler
+            || !method_exists($this, 'handle')
+        ) {
+            return;
+        }
+
+        $this->addHandlerScript();
     }
 
     /**
@@ -248,19 +188,79 @@ HTML;
     }
 
     /**
-     * @return string
+     * @param string|array $class
+     * @return $this
      */
-    public function __toString()
+    public function addHtmlClass($class)
     {
-        return Helper::render($this->render());
+        $this->htmlClasses = array_merge($this->htmlClasses, (array)$class);
+
+        return $this;
     }
 
     /**
-     * @param  mixed  ...$params
-     * @return $this
+     * @return string
      */
-    public static function make(...$params)
+    protected function getElementClass()
     {
-        return new static(...$params);
+        return ltrim($this->selector(), '.');
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function selector()
+    {
+        return $this->selector ?: ($this->selector = $this->makeSelector());
+    }
+
+    /**
+     * 生成选择器.
+     *
+     * @param string $prefix
+     * @return string
+     */
+    public function makeSelector()
+    {
+        return '.act-' . Str::random();
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatHtmlClasses()
+    {
+        return implode(' ', array_unique($this->htmlClasses));
+    }
+
+    /**
+     * 需要执行的JS代码.
+     *
+     * @return string|void
+     */
+    protected function script()
+    {
+    }
+
+    /**
+     * @return string
+     */
+    protected function html()
+    {
+        $this->defaultHtmlAttribute('href', 'javascript:void(0)');
+
+        return <<<HTML
+<a {$this->formatHtmlAttributes()}>{$this->title()}</a>
+HTML;
+    }
+
+    /**
+     * 获取动作标题.
+     *
+     * @return string
+     */
+    public function title()
+    {
+        return $this->title;
     }
 }

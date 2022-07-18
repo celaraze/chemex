@@ -12,19 +12,19 @@
 
 namespace Composer\Repository;
 
-use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
+use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Request;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -84,7 +84,7 @@ class RepositorySet
      * aliases, pinned references and other special cases.
      *
      * @param string $minimumStability
-     * @param int[]  $stabilityFlags   an array of package name => BasePackage::STABILITY_* value
+     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param array[] $rootAliases
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
@@ -111,6 +111,26 @@ class RepositorySet
                 unset($this->rootRequires[$name]);
             }
         }
+    }
+
+    /**
+     * @param array[] $aliases
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     *
+     * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
+     */
+    private static function getRootAliasesPerPackage(array $aliases): array
+    {
+        $normalizedAliases = array();
+
+        foreach ($aliases as $alias) {
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
+                'alias' => $alias['alias'],
+                'alias_normalized' => $alias['alias_normalized'],
+            );
+        }
+
+        return $normalizedAliases;
     }
 
     /**
@@ -164,9 +184,9 @@ class RepositorySet
      *
      * Returned in the order of repositories, matching priority
      *
-     * @param  string                   $name
-     * @param  ConstraintInterface|null $constraint
-     * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
+     * @param string $name
+     * @param ConstraintInterface|null $constraint
+     * @param int $flags any of the ALLOW_* constants from this class to tweak what is returned
      * @return BasePackage[]
      */
     public function findPackages(string $name, ConstraintInterface $constraint = null, int $flags = 0): array
@@ -211,7 +231,19 @@ class RepositorySet
     }
 
     /**
-     * @param  string   $packageName
+     * Check for each given package name whether it would be accepted by this RepositorySet in the given $stability
+     *
+     * @param string[] $names
+     * @param string $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
+     * @return bool
+     */
+    public function isPackageAcceptable(array $names, string $stability): bool
+    {
+        return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
+    }
+
+    /**
+     * @param string $packageName
      *
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
      * @phpstan-return array<string, array{name: string, description: string, type: string}>
@@ -226,38 +258,6 @@ class RepositorySet
         }
 
         return $providers;
-    }
-
-    /**
-     * Check for each given package name whether it would be accepted by this RepositorySet in the given $stability
-     *
-     * @param  string[] $names
-     * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
-     * @return bool
-     */
-    public function isPackageAcceptable(array $names, string $stability): bool
-    {
-        return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
-    }
-
-    /**
-     * Create a pool for dependency resolution from the packages in this repository set.
-     *
-     * @return Pool
-     */
-    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null): Pool
-    {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer);
-
-        foreach ($this->repositories as $repo) {
-            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
-                throw new \LogicException('The pool can not accept packages from an installed repository');
-            }
-        }
-
-        $this->locked = true;
-
-        return $poolBuilder->buildPool($this->repositories, $request);
     }
 
     /**
@@ -331,22 +331,22 @@ class RepositorySet
     }
 
     /**
-     * @param array[] $aliases
-     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * Create a pool for dependency resolution from the packages in this repository set.
      *
-     * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
+     * @return Pool
      */
-    private static function getRootAliasesPerPackage(array $aliases): array
+    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null): Pool
     {
-        $normalizedAliases = array();
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer);
 
-        foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = array(
-                'alias' => $alias['alias'],
-                'alias_normalized' => $alias['alias_normalized'],
-            );
+        foreach ($this->repositories as $repo) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
         }
 
-        return $normalizedAliases;
+        $this->locked = true;
+
+        return $poolBuilder->buildPool($this->repositories, $request);
     }
 }

@@ -24,16 +24,9 @@ trait ParsesLogConfiguration
     ];
 
     /**
-     * Get fallback log channel name.
-     *
-     * @return string
-     */
-    abstract protected function getFallbackChannelName();
-
-    /**
      * Parse the string level into a Monolog constant.
      *
-     * @param  array  $config
+     * @param array $config
      * @return int
      *
      * @throws \InvalidArgumentException
@@ -52,7 +45,7 @@ trait ParsesLogConfiguration
     /**
      * Parse the action level from the given configuration.
      *
-     * @param  array  $config
+     * @param array $config
      * @return int
      */
     protected function actionLevel(array $config)
@@ -69,11 +62,18 @@ trait ParsesLogConfiguration
     /**
      * Extract the log channel from the given configuration.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function parseChannel(array $config)
     {
         return $config['name'] ?? $this->getFallbackChannelName();
     }
+
+    /**
+     * Get fallback log channel name.
+     *
+     * @return string
+     */
+    abstract protected function getFallbackChannelName();
 }

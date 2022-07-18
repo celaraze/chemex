@@ -26,21 +26,13 @@ class Validator
     }
 
     /**
-     * Checks if each rule passes validation.
+     * Adds a rule to the validator.
      *
-     * If all rules pass, authentication is granted.
-     *
-     * @return bool
+     * @param Rule $rule
      */
-    public function passes()
+    public function addRule(Rule $rule)
     {
-        foreach ($this->rules as $rule) {
-            if (! $rule->isValid()) {
-                return false;
-            }
-        }
-
-        return true;
+        $this->rules[] = $rule;
     }
 
     /**
@@ -50,16 +42,24 @@ class Validator
      */
     public function fails()
     {
-        return ! $this->passes();
+        return !$this->passes();
     }
 
     /**
-     * Adds a rule to the validator.
+     * Checks if each rule passes validation.
      *
-     * @param Rule $rule
+     * If all rules pass, authentication is granted.
+     *
+     * @return bool
      */
-    public function addRule(Rule $rule)
+    public function passes()
     {
-        $this->rules[] = $rule;
+        foreach ($this->rules as $rule) {
+            if (!$rule->isValid()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

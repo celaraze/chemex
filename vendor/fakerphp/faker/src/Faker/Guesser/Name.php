@@ -14,7 +14,7 @@ class Name
     }
 
     /**
-     * @param string   $name
+     * @param string $name
      * @param int|null $size Length of field, if known
      *
      * @return callable|null

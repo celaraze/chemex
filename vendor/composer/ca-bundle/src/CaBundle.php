@@ -61,7 +61,7 @@ class CaBundle
      * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
      * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      *
-     * @param  LoggerInterface $logger optional logger for information about which CA files were loaded
+     * @param LoggerInterface $logger optional logger for information about which CA files were loaded
      * @return string          path to a CA bundle file or directory
      */
     public static function getSystemCaRootBundlePath(LoggerInterface $logger = null)
@@ -97,7 +97,7 @@ class CaBundle
             '/usr/local/etc/openssl@1.1/cert.pem', // OS X homebrew, openssl@1.1 package
         );
 
-        foreach($otherLocations as $location) {
+        foreach ($otherLocations as $location) {
             $otherLocations[] = dirname($location);
         }
 
@@ -117,44 +117,70 @@ class CaBundle
     }
 
     /**
-     * Returns the path to the bundled CA file
-     *
-     * In case you don't want to trust the user or the system, you can use this directly
-     *
-     * @return string path to a CA bundle file
+     * @param string $name
+     * @return string|false
      */
-    public static function getBundledCaBundlePath()
+    private static function getEnvVariable($name)
     {
-        $caBundleFile = __DIR__.'/../res/cacert.pem';
-
-        // cURL does not understand 'phar://' paths
-        // see https://github.com/composer/ca-bundle/issues/10
-        if (0 === strpos($caBundleFile, 'phar://')) {
-            $tempCaBundleFile = tempnam(sys_get_temp_dir(), 'openssl-ca-bundle-');
-            if (false === $tempCaBundleFile) {
-                throw new \RuntimeException('Could not create a temporary file to store the bundled CA file');
-            }
-
-            file_put_contents(
-                $tempCaBundleFile,
-                file_get_contents($caBundleFile)
-            );
-
-            register_shutdown_function(function() use ($tempCaBundleFile) {
-                @unlink($tempCaBundleFile);
-            });
-
-            $caBundleFile = $tempCaBundleFile;
+        if (isset($_SERVER[$name])) {
+            return (string)$_SERVER[$name];
         }
 
-        return $caBundleFile;
+        if (PHP_SAPI === 'cli' && ($value = getenv($name)) !== false && $value !== null) {
+            return (string)$value;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string|false $certFile
+     * @param LoggerInterface|null $logger
+     * @return bool
+     */
+    private static function caFileUsable($certFile, LoggerInterface $logger = null)
+    {
+        return $certFile
+            && static::isFile($certFile, $logger)
+            && static::isReadable($certFile, $logger)
+            && static::validateCaFile($certFile, $logger);
+    }
+
+    /**
+     * @param string $certFile
+     * @param LoggerInterface|null $logger
+     * @return bool
+     */
+    private static function isFile($certFile, LoggerInterface $logger = null)
+    {
+        $isFile = @is_file($certFile);
+        if (!$isFile && $logger) {
+            $logger->debug(sprintf('Checked CA file %s does not exist or it is not a file.', $certFile));
+        }
+
+        return $isFile;
+    }
+
+    /**
+     * @param string $certFileOrDir
+     * @param LoggerInterface|null $logger
+     * @return bool
+     */
+    private static function isReadable($certFileOrDir, LoggerInterface $logger = null)
+    {
+        $isReadable = @is_readable($certFileOrDir);
+        if (!$isReadable && $logger) {
+            $logger->debug(sprintf('Checked file or directory %s is not readable.', $certFileOrDir));
+        }
+
+        return $isReadable;
     }
 
     /**
      * Validates a CA file using opensl_x509_parse only if it is safe to use
      *
-     * @param string          $filename
-     * @param LoggerInterface $logger   optional logger for information about which CA files were loaded
+     * @param string $filename
+     * @param LoggerInterface $logger optional logger for information about which CA files were loaded
      *
      * @return bool
      */
@@ -186,14 +212,14 @@ class CaBundle
                 // regex extraction failed
                 $isValid = false;
             } else {
-                $isValid = (bool) openssl_x509_parse($contents);
+                $isValid = (bool)openssl_x509_parse($contents);
             }
         } else {
             $isValid = false;
         }
 
         if ($logger) {
-            $logger->debug('Checked CA file '.realpath($filename).': '.($isValid ? 'valid' : 'invalid'));
+            $logger->debug('Checked CA file ' . realpath($filename) . ': ' . ($isValid ? 'valid' : 'invalid'));
         }
 
         return self::$caFileValidity[$filename] = $isValid;
@@ -222,7 +248,7 @@ class CaBundle
         // PHP 5.4.0 - PHP 5.4.22
         // PHP 5.5.0 - PHP 5.5.6
         if (
-               (PHP_VERSION_ID < 50400 && PHP_VERSION_ID >= 50328)
+            (PHP_VERSION_ID < 50400 && PHP_VERSION_ID >= 50328)
             || (PHP_VERSION_ID < 50500 && PHP_VERSION_ID >= 50423)
             || PHP_VERSION_ID >= 50507
         ) {
@@ -236,10 +262,10 @@ class CaBundle
         }
 
         $compareDistroVersionPrefix = function ($prefix, $fixedVersion) {
-            $regex = '{^'.preg_quote($prefix).'([0-9]+)$}';
+            $regex = '{^' . preg_quote($prefix) . '([0-9]+)$}';
 
             if (preg_match($regex, PHP_VERSION, $m)) {
-                return ((int) $m[1]) >= $fixedVersion;
+                return ((int)$m[1]) >= $fixedVersion;
             }
 
             return false;
@@ -276,7 +302,7 @@ $info = openssl_x509_parse(base64_decode('%s'));
 var_dump(PHP_VERSION, $info['issuer']['emailAddress'], $info['validFrom_time_t']);
 
 EOT;
-        $script = '<'."?php\n".sprintf($script, $cert);
+        $script = '<' . "?php\n" . sprintf($script, $cert);
 
         try {
             $process = new PhpProcess($script);
@@ -306,49 +332,8 @@ EOT;
     }
 
     /**
-     * Resets the static caches
-     * @return void
-     */
-    public static function reset()
-    {
-        self::$caFileValidity = array();
-        self::$caPath = null;
-        self::$useOpensslParse = null;
-    }
-
-    /**
-     * @param  string $name
-     * @return string|false
-     */
-    private static function getEnvVariable($name)
-    {
-        if (isset($_SERVER[$name])) {
-            return (string) $_SERVER[$name];
-        }
-
-        if (PHP_SAPI === 'cli' && ($value = getenv($name)) !== false && $value !== null) {
-            return (string) $value;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param  string|false $certFile
-     * @param  LoggerInterface|null $logger
-     * @return bool
-     */
-    private static function caFileUsable($certFile, LoggerInterface $logger = null)
-    {
-        return $certFile
-            && static::isFile($certFile, $logger)
-            && static::isReadable($certFile, $logger)
-            && static::validateCaFile($certFile, $logger);
-    }
-
-    /**
-     * @param  string|false $certDir
-     * @param  LoggerInterface|null $logger
+     * @param string|false $certDir
+     * @param LoggerInterface|null $logger
      * @return bool
      */
     private static function caDirUsable($certDir, LoggerInterface $logger = null)
@@ -360,23 +345,8 @@ EOT;
     }
 
     /**
-     * @param  string $certFile
-     * @param  LoggerInterface|null $logger
-     * @return bool
-     */
-    private static function isFile($certFile, LoggerInterface $logger = null)
-    {
-        $isFile = @is_file($certFile);
-        if (!$isFile && $logger) {
-            $logger->debug(sprintf('Checked CA file %s does not exist or it is not a file.', $certFile));
-        }
-
-        return $isFile;
-    }
-
-    /**
-     * @param  string $certDir
-     * @param  LoggerInterface|null $logger
+     * @param string $certDir
+     * @param LoggerInterface|null $logger
      * @return bool
      */
     private static function isDir($certDir, LoggerInterface $logger = null)
@@ -390,23 +360,8 @@ EOT;
     }
 
     /**
-     * @param  string $certFileOrDir
-     * @param  LoggerInterface|null $logger
-     * @return bool
-     */
-    private static function isReadable($certFileOrDir, LoggerInterface $logger = null)
-    {
-        $isReadable = @is_readable($certFileOrDir);
-        if (!$isReadable && $logger) {
-            $logger->debug(sprintf('Checked file or directory %s is not readable.', $certFileOrDir));
-        }
-
-        return $isReadable;
-    }
-
-    /**
-     * @param  string $pattern
-     * @param  LoggerInterface|null $logger
+     * @param string $pattern
+     * @param LoggerInterface|null $logger
      * @return bool
      */
     private static function glob($pattern, LoggerInterface $logger = null)
@@ -427,5 +382,50 @@ EOT;
         }
 
         return true;
+    }
+
+    /**
+     * Returns the path to the bundled CA file
+     *
+     * In case you don't want to trust the user or the system, you can use this directly
+     *
+     * @return string path to a CA bundle file
+     */
+    public static function getBundledCaBundlePath()
+    {
+        $caBundleFile = __DIR__ . '/../res/cacert.pem';
+
+        // cURL does not understand 'phar://' paths
+        // see https://github.com/composer/ca-bundle/issues/10
+        if (0 === strpos($caBundleFile, 'phar://')) {
+            $tempCaBundleFile = tempnam(sys_get_temp_dir(), 'openssl-ca-bundle-');
+            if (false === $tempCaBundleFile) {
+                throw new \RuntimeException('Could not create a temporary file to store the bundled CA file');
+            }
+
+            file_put_contents(
+                $tempCaBundleFile,
+                file_get_contents($caBundleFile)
+            );
+
+            register_shutdown_function(function () use ($tempCaBundleFile) {
+                @unlink($tempCaBundleFile);
+            });
+
+            $caBundleFile = $tempCaBundleFile;
+        }
+
+        return $caBundleFile;
+    }
+
+    /**
+     * Resets the static caches
+     * @return void
+     */
+    public static function reset()
+    {
+        self::$caFileValidity = array();
+        self::$caPath = null;
+        self::$useOpensslParse = null;
     }
 }

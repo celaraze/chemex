@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-$functions         = require __DIR__ . '/FunctionSignatureMap.php';
+$functions = require __DIR__ . '/FunctionSignatureMap.php';
 $resourceFunctions = [];
 
 foreach ($functions as $function => $arguments) {

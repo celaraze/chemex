@@ -30,9 +30,10 @@ final class UrlExtension implements DynamicFunctionReturnTypeExtension
      */
     public function getTypeFromFunctionCall(
         FunctionReflection $functionReflection,
-        FuncCall $functionCall,
-        Scope $scope
-    ): Type {
+        FuncCall           $functionCall,
+        Scope              $scope
+    ): Type
+    {
         // No path provided, so it returns a UrlGenerator instance
         if (count($functionCall->getArgs()) === 0) {
             return new ObjectType(\Illuminate\Contracts\Routing\UrlGenerator::class);

@@ -28,9 +28,9 @@ class JobQueued
     /**
      * Create a new event instance.
      *
-     * @param  string  $connectionName
-     * @param  string|int|null  $id
-     * @param  \Closure|string|object  $job
+     * @param string $connectionName
+     * @param string|int|null $id
+     * @param \Closure|string|object $job
      * @return void
      */
     public function __construct($connectionName, $id, $job)

@@ -108,9 +108,9 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         $this->config = self::createDefaultConfiguration();
         $this->config->merge($config);
 
-        $this->blockStartParsers   = new PrioritizedList();
-        $this->inlineParsers       = new PrioritizedList();
-        $this->listenerData        = new PrioritizedList();
+        $this->blockStartParsers = new PrioritizedList();
+        $this->inlineParsers = new PrioritizedList();
+        $this->listenerData = new PrioritizedList();
         $this->delimiterProcessors = new DelimiterProcessorCollection();
 
         // Performance optimization: always include a block "parser" that aborts parsing if a line starts with a letter
@@ -118,23 +118,23 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         $this->addBlockStartParser(new SkipLinesStartingWithLettersParser(), 249);
     }
 
-    public function getConfiguration(): ConfigurationInterface
+    public static function createDefaultConfiguration(): Configuration
     {
-        return $this->config->reader();
-    }
-
-    /**
-     * @deprecated Environment::mergeConfig() is deprecated since league/commonmark v2.0 and will be removed in v3.0. Configuration should be set when instantiating the environment instead.
-     *
-     * @param array<string, mixed> $config
-     */
-    public function mergeConfig(array $config): void
-    {
-        @\trigger_error('Environment::mergeConfig() is deprecated since league/commonmark v2.0 and will be removed in v3.0. Configuration should be set when instantiating the environment instead.', \E_USER_DEPRECATED);
-
-        $this->assertUninitialized('Failed to modify configuration.');
-
-        $this->config->merge($config);
+        return new Configuration([
+            'html_input' => Expect::anyOf(HtmlFilter::STRIP, HtmlFilter::ALLOW, HtmlFilter::ESCAPE)->default(HtmlFilter::ALLOW),
+            'allow_unsafe_links' => Expect::bool(true),
+            'max_nesting_level' => Expect::type('int')->default(PHP_INT_MAX),
+            'renderer' => Expect::structure([
+                'block_separator' => Expect::string("\n"),
+                'inner_separator' => Expect::string("\n"),
+                'soft_break' => Expect::string("\n"),
+            ]),
+            'slug_normalizer' => Expect::structure([
+                'instance' => Expect::type(TextNormalizerInterface::class)->default(new SlugNormalizer()),
+                'max_length' => Expect::int()->min(0)->default(255),
+                'unique' => Expect::anyOf(UniqueSlugNormalizerInterface::DISABLED, UniqueSlugNormalizerInterface::PER_ENVIRONMENT, UniqueSlugNormalizerInterface::PER_DOCUMENT)->default(UniqueSlugNormalizerInterface::PER_DOCUMENT),
+            ]),
+        ]);
     }
 
     public function addBlockStartParser(BlockStartParserInterface $parser, int $priority = 0): EnvironmentBuilderInterface
@@ -145,6 +145,92 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         $this->injectEnvironmentAndConfigurationIfNeeded($parser);
 
         return $this;
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    private function assertUninitialized(string $message): void
+    {
+        if ($this->extensionsInitialized) {
+            throw new \RuntimeException($message . ' Extensions have already been initialized.');
+        }
+    }
+
+    private function injectEnvironmentAndConfigurationIfNeeded(object $object): void
+    {
+        if ($object instanceof EnvironmentAwareInterface) {
+            $object->setEnvironment($this);
+        }
+
+        if ($object instanceof ConfigurationAwareInterface) {
+            $object->setConfiguration($this->config->reader());
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @deprecated Instantiate the environment and add the extension yourself
+     *
+     */
+    public static function createCommonMarkEnvironment(array $config = []): Environment
+    {
+        $environment = new self($config);
+        $environment->addExtension(new CommonMarkCoreExtension());
+
+        return $environment;
+    }
+
+    /**
+     * Add a single extension
+     *
+     * @return $this
+     */
+    public function addExtension(ExtensionInterface $extension): EnvironmentBuilderInterface
+    {
+        $this->assertUninitialized('Failed to add extension.');
+
+        $this->extensions[] = $extension;
+        $this->uninitializedExtensions[] = $extension;
+
+        if ($extension instanceof ConfigurableExtensionInterface) {
+            $extension->configureSchema($this->config);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @deprecated Instantiate the environment and add the extension yourself
+     *
+     */
+    public static function createGFMEnvironment(array $config = []): Environment
+    {
+        $environment = new self($config);
+        $environment->addExtension(new CommonMarkCoreExtension());
+        $environment->addExtension(new GithubFlavoredMarkdownExtension());
+
+        return $environment;
+    }
+
+    public function getConfiguration(): ConfigurationInterface
+    {
+        return $this->config->reader();
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @deprecated Environment::mergeConfig() is deprecated since league/commonmark v2.0 and will be removed in v3.0. Configuration should be set when instantiating the environment instead.
+     *
+     */
+    public function mergeConfig(array $config): void
+    {
+        @\trigger_error('Environment::mergeConfig() is deprecated since league/commonmark v2.0 and will be removed in v3.0. Configuration should be set when instantiating the environment instead.', \E_USER_DEPRECATED);
+
+        $this->assertUninitialized('Failed to modify configuration.');
+
+        $this->config->merge($config);
     }
 
     public function addInlineParser(InlineParserInterface $parser, int $priority = 0): EnvironmentBuilderInterface
@@ -170,7 +256,7 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
     {
         $this->assertUninitialized('Failed to add renderer.');
 
-        if (! isset($this->renderersByClass[$nodeClass])) {
+        if (!isset($this->renderersByClass[$nodeClass])) {
             $this->renderersByClass[$nodeClass] = new PrioritizedList();
         }
 
@@ -185,74 +271,11 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
      */
     public function getBlockStartParsers(): iterable
     {
-        if (! $this->extensionsInitialized) {
+        if (!$this->extensionsInitialized) {
             $this->initializeExtensions();
         }
 
         return $this->blockStartParsers->getIterator();
-    }
-
-    public function getDelimiterProcessors(): DelimiterProcessorCollection
-    {
-        if (! $this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
-
-        return $this->delimiterProcessors;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getRenderersForClass(string $nodeClass): iterable
-    {
-        if (! $this->extensionsInitialized) {
-            $this->initializeExtensions();
-        }
-
-        // If renderers are defined for this specific class, return them immediately
-        if (isset($this->renderersByClass[$nodeClass])) {
-            return $this->renderersByClass[$nodeClass];
-        }
-
-        /** @psalm-suppress TypeDoesNotContainType -- Bug: https://github.com/vimeo/psalm/issues/3332 */
-        while (\class_exists($parent ??= $nodeClass) && $parent = \get_parent_class($parent)) {
-            if (! isset($this->renderersByClass[$parent])) {
-                continue;
-            }
-
-            // "Cache" this result to avoid future loops
-            return $this->renderersByClass[$nodeClass] = $this->renderersByClass[$parent];
-        }
-
-        return [];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getExtensions(): iterable
-    {
-        return $this->extensions;
-    }
-
-    /**
-     * Add a single extension
-     *
-     * @return $this
-     */
-    public function addExtension(ExtensionInterface $extension): EnvironmentBuilderInterface
-    {
-        $this->assertUninitialized('Failed to add extension.');
-
-        $this->extensions[]              = $extension;
-        $this->uninitializedExtensions[] = $extension;
-
-        if ($extension instanceof ConfigurableExtensionInterface) {
-            $extension->configureSchema($this->config);
-        }
-
-        return $this;
     }
 
     private function initializeExtensions(): void
@@ -276,42 +299,27 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         }
     }
 
-    private function injectEnvironmentAndConfigurationIfNeeded(object $object): void
+    public function getSlugNormalizer(): TextNormalizerInterface
     {
-        if ($object instanceof EnvironmentAwareInterface) {
-            $object->setEnvironment($this);
+        if ($this->slugNormalizer === null) {
+            $normalizer = $this->config->get('slug_normalizer/instance');
+            \assert($normalizer instanceof TextNormalizerInterface);
+            $this->injectEnvironmentAndConfigurationIfNeeded($normalizer);
+
+            if ($this->config->get('slug_normalizer/unique') !== UniqueSlugNormalizerInterface::DISABLED && !$normalizer instanceof UniqueSlugNormalizer) {
+                $normalizer = new UniqueSlugNormalizer($normalizer);
+            }
+
+            if ($normalizer instanceof UniqueSlugNormalizer) {
+                if ($this->config->get('slug_normalizer/unique') === UniqueSlugNormalizerInterface::PER_DOCUMENT) {
+                    $this->addEventListener(DocumentParsedEvent::class, [$normalizer, 'clearHistory'], -1000);
+                }
+            }
+
+            $this->slugNormalizer = $normalizer;
         }
 
-        if ($object instanceof ConfigurationAwareInterface) {
-            $object->setConfiguration($this->config->reader());
-        }
-    }
-
-    /**
-     * @deprecated Instantiate the environment and add the extension yourself
-     *
-     * @param array<string, mixed> $config
-     */
-    public static function createCommonMarkEnvironment(array $config = []): Environment
-    {
-        $environment = new self($config);
-        $environment->addExtension(new CommonMarkCoreExtension());
-
-        return $environment;
-    }
-
-    /**
-     * @deprecated Instantiate the environment and add the extension yourself
-     *
-     * @param array<string, mixed> $config
-     */
-    public static function createGFMEnvironment(array $config = []): Environment
-    {
-        $environment = new self($config);
-        $environment->addExtension(new CommonMarkCoreExtension());
-        $environment->addExtension(new GithubFlavoredMarkdownExtension());
-
-        return $environment;
+        return $this->slugNormalizer;
     }
 
     public function addEventListener(string $eventClass, callable $listener, int $priority = 0): EnvironmentBuilderInterface
@@ -329,9 +337,53 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         return $this;
     }
 
+    public function getDelimiterProcessors(): DelimiterProcessorCollection
+    {
+        if (!$this->extensionsInitialized) {
+            $this->initializeExtensions();
+        }
+
+        return $this->delimiterProcessors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRenderersForClass(string $nodeClass): iterable
+    {
+        if (!$this->extensionsInitialized) {
+            $this->initializeExtensions();
+        }
+
+        // If renderers are defined for this specific class, return them immediately
+        if (isset($this->renderersByClass[$nodeClass])) {
+            return $this->renderersByClass[$nodeClass];
+        }
+
+        /** @psalm-suppress TypeDoesNotContainType -- Bug: https://github.com/vimeo/psalm/issues/3332 */
+        while (\class_exists($parent ??= $nodeClass) && $parent = \get_parent_class($parent)) {
+            if (!isset($this->renderersByClass[$parent])) {
+                continue;
+            }
+
+            // "Cache" this result to avoid future loops
+            return $this->renderersByClass[$nodeClass] = $this->renderersByClass[$parent];
+        }
+
+        return [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getExtensions(): iterable
+    {
+        return $this->extensions;
+    }
+
     public function dispatch(object $event): object
     {
-        if (! $this->extensionsInitialized) {
+        if (!$this->extensionsInitialized) {
             $this->initializeExtensions();
         }
 
@@ -350,11 +402,6 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         return $event;
     }
 
-    public function setEventDispatcher(EventDispatcherInterface $dispatcher): void
-    {
-        $this->eventDispatcher = $dispatcher;
-    }
-
     /**
      * {@inheritDoc}
      *
@@ -366,12 +413,12 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
             \assert($listenerData instanceof ListenerData);
 
             /** @psalm-suppress ArgumentTypeCoercion */
-            if (! \is_a($event, $listenerData->getEvent())) {
+            if (!\is_a($event, $listenerData->getEvent())) {
                 continue;
             }
 
             yield function (object $event) use ($listenerData) {
-                if (! $this->extensionsInitialized) {
+                if (!$this->extensionsInitialized) {
                     $this->initializeExtensions();
                 }
 
@@ -380,67 +427,20 @@ final class Environment implements EnvironmentInterface, EnvironmentBuilderInter
         }
     }
 
+    public function setEventDispatcher(EventDispatcherInterface $dispatcher): void
+    {
+        $this->eventDispatcher = $dispatcher;
+    }
+
     /**
      * @return iterable<InlineParserInterface>
      */
     public function getInlineParsers(): iterable
     {
-        if (! $this->extensionsInitialized) {
+        if (!$this->extensionsInitialized) {
             $this->initializeExtensions();
         }
 
         return $this->inlineParsers->getIterator();
-    }
-
-    public function getSlugNormalizer(): TextNormalizerInterface
-    {
-        if ($this->slugNormalizer === null) {
-            $normalizer = $this->config->get('slug_normalizer/instance');
-            \assert($normalizer instanceof TextNormalizerInterface);
-            $this->injectEnvironmentAndConfigurationIfNeeded($normalizer);
-
-            if ($this->config->get('slug_normalizer/unique') !== UniqueSlugNormalizerInterface::DISABLED && ! $normalizer instanceof UniqueSlugNormalizer) {
-                $normalizer = new UniqueSlugNormalizer($normalizer);
-            }
-
-            if ($normalizer instanceof UniqueSlugNormalizer) {
-                if ($this->config->get('slug_normalizer/unique') === UniqueSlugNormalizerInterface::PER_DOCUMENT) {
-                    $this->addEventListener(DocumentParsedEvent::class, [$normalizer, 'clearHistory'], -1000);
-                }
-            }
-
-            $this->slugNormalizer = $normalizer;
-        }
-
-        return $this->slugNormalizer;
-    }
-
-    /**
-     * @throws \RuntimeException
-     */
-    private function assertUninitialized(string $message): void
-    {
-        if ($this->extensionsInitialized) {
-            throw new \RuntimeException($message . ' Extensions have already been initialized.');
-        }
-    }
-
-    public static function createDefaultConfiguration(): Configuration
-    {
-        return new Configuration([
-            'html_input' => Expect::anyOf(HtmlFilter::STRIP, HtmlFilter::ALLOW, HtmlFilter::ESCAPE)->default(HtmlFilter::ALLOW),
-            'allow_unsafe_links' => Expect::bool(true),
-            'max_nesting_level' => Expect::type('int')->default(PHP_INT_MAX),
-            'renderer' => Expect::structure([
-                'block_separator' => Expect::string("\n"),
-                'inner_separator' => Expect::string("\n"),
-                'soft_break' => Expect::string("\n"),
-            ]),
-            'slug_normalizer' => Expect::structure([
-                'instance' => Expect::type(TextNormalizerInterface::class)->default(new SlugNormalizer()),
-                'max_length' => Expect::int()->min(0)->default(255),
-                'unique' => Expect::anyOf(UniqueSlugNormalizerInterface::DISABLED, UniqueSlugNormalizerInterface::PER_ENVIRONMENT, UniqueSlugNormalizerInterface::PER_DOCUMENT)->default(UniqueSlugNormalizerInterface::PER_DOCUMENT),
-            ]),
-        ]);
     }
 }

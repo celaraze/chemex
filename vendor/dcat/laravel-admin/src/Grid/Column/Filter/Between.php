@@ -19,7 +19,7 @@ class Between extends Filter
     {
         $this->class = [
             'start' => uniqid('column-filter-start-'),
-            'end'   => uniqid('column-filter-end-'),
+            'end' => uniqid('column-filter-end-'),
         ];
     }
 
@@ -46,6 +46,24 @@ class Between extends Filter
     }
 
     /**
+     * @param string $format
+     * @return $this
+     */
+    protected function setDateFormat($format)
+    {
+        $this->dateFormat = $format;
+
+        $this->requireAssets();
+
+        return $this;
+    }
+
+    protected function requireAssets()
+    {
+        Admin::requireAssets(['moment', 'bootstrap-datetimepicker']);
+    }
+
+    /**
      * Time filter.
      *
      * @return $this
@@ -66,27 +84,14 @@ class Between extends Filter
     }
 
     /**
-     * @param  string  $format
-     * @return $this
-     */
-    protected function setDateFormat($format)
-    {
-        $this->dateFormat = $format;
-
-        $this->requireAssets();
-
-        return $this;
-    }
-
-    /**
      * Add a binding to the query.
      *
-     * @param  mixed  $value
-     * @param  Model  $model
+     * @param mixed $value
+     * @param Model $model
      */
     public function addBinding($value, Model $model)
     {
-        $value = array_filter((array) $value);
+        $value = array_filter((array)$value);
 
         if (empty($value)) {
             return;
@@ -100,47 +105,19 @@ class Between extends Filter
             }, $value);
         }
 
-        if (! isset($value['start'])) {
+        if (!isset($value['start'])) {
             $this->withQuery($model, 'where', ['<=', $value['end']]);
 
             return;
         }
 
-        if (! isset($value['end'])) {
+        if (!isset($value['end'])) {
             $this->withQuery($model, 'where', ['>=', $value['start']]);
 
             return;
         }
 
         $this->withQuery($model, 'whereBetween', [array_values($value)]);
-    }
-
-    protected function addScript()
-    {
-        if (! $this->dateFormat) {
-            return;
-        }
-
-        $options = [
-            'locale'           => config('app.locale'),
-            'allowInputToggle' => true,
-            'format'           => $this->dateFormat,
-            'extraFormats' => ['DD-MM-YYYY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD,MM,YYYY'],
-        ];
-
-        $options = json_encode($options);
-
-        Admin::script(<<<JS
-        $('.{$this->class['start']}').datetimepicker($options);
-        $('.{$this->class['end']}').datetimepicker($options);
-JS
-        );
-//        $('.{$this->class['start']}').on("dp.change", function (e) {
-//            $('.{$this->class['end']}').data("DateTimePicker").minDate(e.date);
-//        });
-//        $('.{$this->class['end']}').on("dp.change", function (e) {
-//            $('.{$this->class['start']}').data("DateTimePicker").maxDate(e.date);
-//        });
     }
 
     /**
@@ -150,7 +127,7 @@ JS
      */
     public function render()
     {
-        if (! $this->shouldDisplay()) {
+        if (!$this->shouldDisplay()) {
             return;
         }
 
@@ -175,20 +152,20 @@ JS;
     </a>
     <ul class="dropdown-menu" role="menu" style="min-width: 180px;padding: 10px;left: -70px;border-radius: 0;font-weight:normal;background:#fff">
         <li class="dropdown-item">
-            <input type="text" 
-                class="form-control input-sm {$this->class['start']}" 
-                name="{$this->getQueryName()}[start]" 
-                placeholder="{$this->trans('between_start')}" 
-                value="{$value['start']}" 
+            <input type="text"
+                class="form-control input-sm {$this->class['start']}"
+                name="{$this->getQueryName()}[start]"
+                placeholder="{$this->trans('between_start')}"
+                value="{$value['start']}"
                 autocomplete="off" />
         </li>
         <li style="margin: 5px;"></li>
         <li class="dropdown-item">
-            <input type="text" 
-                class="form-control input-sm {$this->class['end']}" 
-                name="{$this->getQueryName()}[end]"  
-                placeholder="{$this->trans('between_end')}" 
-                value="{$value['end']}" 
+            <input type="text"
+                class="form-control input-sm {$this->class['end']}"
+                name="{$this->getQueryName()}[end]"
+                placeholder="{$this->trans('between_end')}"
+                value="{$value['end']}"
                 autocomplete="off"/>
         </li>
         {$this->renderFormButtons()}
@@ -198,8 +175,31 @@ JS;
 EOT;
     }
 
-    protected function requireAssets()
+    protected function addScript()
     {
-        Admin::requireAssets(['moment', 'bootstrap-datetimepicker']);
+        if (!$this->dateFormat) {
+            return;
+        }
+
+        $options = [
+            'locale' => config('app.locale'),
+            'allowInputToggle' => true,
+            'format' => $this->dateFormat,
+            'extraFormats' => ['DD-MM-YYYY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD,MM,YYYY'],
+        ];
+
+        $options = json_encode($options);
+
+        Admin::script(<<<JS
+        $('.{$this->class['start']}').datetimepicker($options);
+        $('.{$this->class['end']}').datetimepicker($options);
+JS
+        );
+//        $('.{$this->class['start']}').on("dp.change", function (e) {
+//            $('.{$this->class['end']}').data("DateTimePicker").minDate(e.date);
+//        });
+//        $('.{$this->class['end']}').on("dp.change", function (e) {
+//            $('.{$this->class['start']}').data("DateTimePicker").maxDate(e.date);
+//        });
     }
 }

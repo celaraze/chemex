@@ -8,7 +8,8 @@
         <span class="option d-none"></span>
     </div>
 
-    <input name="{{ $name }}" type="hidden" id="hidden-{{ $id }}" value="{{ implode(',', \Dcat\Admin\Support\Helper::array($value)) }}" />
+    <input name="{{ $name }}" type="hidden" id="hidden-{{ $id }}"
+           value="{{ implode(',', \Dcat\Admin\Support\Helper::array($value)) }}"/>
     <div class="input-group-append">
         {!! $dialog !!}
     </div>

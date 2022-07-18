@@ -14,7 +14,7 @@ class AppendableAttributeValue
     /**
      * Create a new appendable attribute value.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return void
      */
     public function __construct($value)
@@ -29,6 +29,6 @@ class AppendableAttributeValue
      */
     public function __toString()
     {
-        return (string) $this->value;
+        return (string)$this->value;
     }
 }

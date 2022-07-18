@@ -44,7 +44,7 @@
             'solutions' => $viewModel->solutions(),
             'updateConfigEndpoint' => $viewModel->updateConfigEndpoint(),
         ])
-    ?>;
+        ?>;
 </script>
 
 <!-- The noscript representation is for HTTP client like Postman that have JS disabled. -->
@@ -55,7 +55,7 @@
 <div id="app"></div>
 
 <script>
-<?= $viewModel->getAssetContents('ignition.js') ?>
+    <?= $viewModel->getAssetContents('ignition.js') ?>
 </script>
 
 <script>

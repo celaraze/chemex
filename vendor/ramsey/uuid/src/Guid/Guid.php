@@ -51,11 +51,12 @@ use Ramsey\Uuid\Uuid;
 final class Guid extends Uuid
 {
     public function __construct(
-        Fields $fields,
+        Fields                   $fields,
         NumberConverterInterface $numberConverter,
-        CodecInterface $codec,
-        TimeConverterInterface $timeConverter
-    ) {
+        CodecInterface           $codec,
+        TimeConverterInterface   $timeConverter
+    )
+    {
         parent::__construct($fields, $numberConverter, $codec, $timeConverter);
     }
 }

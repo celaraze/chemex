@@ -5,16 +5,8 @@ namespace Dcat\Admin\Traits;
 trait HasAssets
 {
     /**
-     * @return \Dcat\Admin\Layout\Asset
-     */
-    public static function asset()
-    {
-        return app('admin.asset');
-    }
-
-    /**
-     * @param  string|array  $name
-     * @param  array  $params
+     * @param string|array $name
+     * @param array $params
      * @return void
      */
     public static function requireAssets($name, array $params = [])
@@ -23,9 +15,17 @@ trait HasAssets
     }
 
     /**
+     * @return \Dcat\Admin\Layout\Asset
+     */
+    public static function asset()
+    {
+        return app('admin.asset');
+    }
+
+    /**
      * Add css.
      *
-     * @param  string|array  $css
+     * @param string|array $css
      * @return void
      */
     public static function css($css)
@@ -36,8 +36,8 @@ trait HasAssets
     /**
      * Set base css.
      *
-     * @param  array  $css
-     * @param  bool  $merge
+     * @param array $css
+     * @param bool $merge
      */
     public static function baseCss(array $css, bool $merge = true)
     {
@@ -47,7 +47,7 @@ trait HasAssets
     /**
      * Add js.
      *
-     * @param  string|array  $js
+     * @param string|array $js
      * @return void
      */
     public static function js($js)
@@ -58,8 +58,8 @@ trait HasAssets
     /**
      * Add js.
      *
-     * @param  string|array  $js
-     * @param  bool  $merge
+     * @param string|array $js
+     * @param bool $merge
      * @return void
      */
     public static function headerJs($js, bool $merge = true)
@@ -70,8 +70,8 @@ trait HasAssets
     /**
      * Set base js.
      *
-     * @param  array  $js
-     * @param  bool  $merge
+     * @param array $js
+     * @param bool $merge
      */
     public static function baseJs(array $js, bool $merge = true)
     {
@@ -79,8 +79,8 @@ trait HasAssets
     }
 
     /**
-     * @param  string  $script
-     * @param  bool  $direct
+     * @param string $script
+     * @param bool $direct
      * @return void
      */
     public static function script($script, bool $direct = false)
@@ -89,7 +89,7 @@ trait HasAssets
     }
 
     /**
-     * @param  string  $style
+     * @param string $style
      * @return void
      */
     public static function style($style)
@@ -98,7 +98,7 @@ trait HasAssets
     }
 
     /**
-     * @param  string|array  $font
+     * @param string|array $font
      * @return void
      */
     public static function fonts($font)

@@ -84,6 +84,34 @@ class MongoDbSessionHandler extends AbstractSessionHandler
         return true;
     }
 
+    public function gc(int $maxlifetime): int|false
+    {
+        return $this->getCollection()->deleteMany([
+            $this->options['expiry_field'] => ['$lt' => new UTCDateTime()],
+        ])->getDeletedCount();
+    }
+
+    private function getCollection(): Collection
+    {
+        return $this->collection ??= $this->mongo->selectCollection($this->options['database'], $this->options['collection']);
+    }
+
+    public function updateTimestamp(string $sessionId, string $data): bool
+    {
+        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
+        $expiry = new UTCDateTime((time() + (int)$ttl) * 1000);
+
+        $this->getCollection()->updateOne(
+            [$this->options['id_field'] => $sessionId],
+            ['$set' => [
+                $this->options['time_field'] => new UTCDateTime(),
+                $this->options['expiry_field'] => $expiry,
+            ]]
+        );
+
+        return true;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -96,20 +124,13 @@ class MongoDbSessionHandler extends AbstractSessionHandler
         return true;
     }
 
-    public function gc(int $maxlifetime): int|false
-    {
-        return $this->getCollection()->deleteMany([
-            $this->options['expiry_field'] => ['$lt' => new UTCDateTime()],
-        ])->getDeletedCount();
-    }
-
     /**
      * {@inheritdoc}
      */
     protected function doWrite(string $sessionId, string $data): bool
     {
         $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
-        $expiry = new UTCDateTime((time() + (int) $ttl) * 1000);
+        $expiry = new UTCDateTime((time() + (int)$ttl) * 1000);
 
         $fields = [
             $this->options['time_field'] => new UTCDateTime(),
@@ -121,22 +142,6 @@ class MongoDbSessionHandler extends AbstractSessionHandler
             [$this->options['id_field'] => $sessionId],
             ['$set' => $fields],
             ['upsert' => true]
-        );
-
-        return true;
-    }
-
-    public function updateTimestamp(string $sessionId, string $data): bool
-    {
-        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
-        $expiry = new UTCDateTime((time() + (int) $ttl) * 1000);
-
-        $this->getCollection()->updateOne(
-            [$this->options['id_field'] => $sessionId],
-            ['$set' => [
-                $this->options['time_field'] => new UTCDateTime(),
-                $this->options['expiry_field'] => $expiry,
-            ]]
         );
 
         return true;
@@ -157,11 +162,6 @@ class MongoDbSessionHandler extends AbstractSessionHandler
         }
 
         return $dbData[$this->options['data_field']]->getData();
-    }
-
-    private function getCollection(): Collection
-    {
-        return $this->collection ??= $this->mongo->selectCollection($this->options['database'], $this->options['collection']);
     }
 
     protected function getMongo(): Client

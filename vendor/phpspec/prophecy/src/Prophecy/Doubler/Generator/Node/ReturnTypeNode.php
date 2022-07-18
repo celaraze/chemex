@@ -6,6 +6,20 @@ use Prophecy\Exception\Doubler\DoubleException;
 
 final class ReturnTypeNode extends TypeNodeAbstract
 {
+    /**
+     * @deprecated use hasReturnStatement
+     */
+    public function isVoid()
+    {
+        return $this->types == ['void' => 'void'];
+    }
+
+    public function hasReturnStatement(): bool
+    {
+        return $this->types !== ['void' => 'void']
+            && $this->types !== ['never' => 'never'];
+    }
+
     protected function getRealType(string $type): string
     {
         switch ($type) {
@@ -27,19 +41,5 @@ final class ReturnTypeNode extends TypeNodeAbstract
         }
 
         parent::guardIsValidType();
-    }
-
-    /**
-     * @deprecated use hasReturnStatement
-     */
-    public function isVoid()
-    {
-        return $this->types == ['void' => 'void'];
-    }
-
-    public function hasReturnStatement(): bool
-    {
-        return $this->types !== ['void' => 'void']
-            && $this->types !== ['never' => 'never'];
     }
 }

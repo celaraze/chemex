@@ -74,7 +74,10 @@ class Person extends \Faker\Provider\Person
 
     protected static $title = ['Doç. Dr.', 'Dr.', 'Prof. Dr.'];
 
-    public function title($gender = null)
+    /**
+     * replaced by specific unisex Turkish title
+     */
+    public static function titleFemale()
     {
         return static::titleMale();
     }
@@ -88,26 +91,15 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * replaced by specific unisex Turkish title
-     */
-    public static function titleFemale()
-    {
-        return static::titleMale();
-    }
-
-    /**
-     * National Personal Identity number (tc kimlik no)
+     * Checks whether a TCNo has a valid checksum
      *
-     * @see https://en.wikipedia.org/wiki/Turkish_Identification_Number
+     * @param string $tcNo
      *
-     * @return string on format XXXXXXXXXXX
+     * @return bool
      */
-    public function tcNo()
+    public static function tcNoIsValid($tcNo)
     {
-        $randomDigits = static::numerify('#########');
-        $checksum = self::tcNoChecksum($randomDigits);
-
-        return $randomDigits . $checksum;
+        return self::tcNoChecksum(substr($tcNo, 0, -2)) === substr($tcNo, -2, 2);
     }
 
     /**
@@ -122,7 +114,7 @@ class Person extends \Faker\Provider\Person
      */
     public static function tcNoChecksum($identityPrefix)
     {
-        if (strlen((string) $identityPrefix) !== 9) {
+        if (strlen((string)$identityPrefix) !== 9) {
             throw new \InvalidArgumentException('Argument should be an integer and should be 9 digits.');
         }
 
@@ -145,15 +137,23 @@ class Person extends \Faker\Provider\Person
         return $tenthDigit . $eleventhDigit;
     }
 
-    /**
-     * Checks whether a TCNo has a valid checksum
-     *
-     * @param string $tcNo
-     *
-     * @return bool
-     */
-    public static function tcNoIsValid($tcNo)
+    public function title($gender = null)
     {
-        return self::tcNoChecksum(substr($tcNo, 0, -2)) === substr($tcNo, -2, 2);
+        return static::titleMale();
+    }
+
+    /**
+     * National Personal Identity number (tc kimlik no)
+     *
+     * @see https://en.wikipedia.org/wiki/Turkish_Identification_Number
+     *
+     * @return string on format XXXXXXXXXXX
+     */
+    public function tcNo()
+    {
+        $randomDigits = static::numerify('#########');
+        $checksum = self::tcNoChecksum($randomDigits);
+
+        return $randomDigits . $checksum;
     }
 }

@@ -1,5 +1,7 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace PharIo\Version;
 
-class InvalidVersionException extends \InvalidArgumentException implements Exception {
+class InvalidVersionException extends \InvalidArgumentException implements Exception
+{
 }

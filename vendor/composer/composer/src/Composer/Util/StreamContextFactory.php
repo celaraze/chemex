@@ -12,8 +12,8 @@
 
 namespace Composer\Util;
 
-use Composer\Composer;
 use Composer\CaBundle\CaBundle;
+use Composer\Composer;
 use Composer\Downloader\TransportException;
 use Composer\Repository\PlatformRepository;
 use Composer\Util\Http\ProxyManager;
@@ -32,10 +32,10 @@ final class StreamContextFactory
      *
      * @param string $url URL the context is to be used for
      * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string>}} $defaultOptions
-     * @param  mixed[]           $defaultOptions Options to merge with the default
-     * @param  mixed[]           $defaultParams  Parameters to specify on the context
-     * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
+     * @param mixed[] $defaultOptions Options to merge with the default
+     * @param mixed[] $defaultParams Parameters to specify on the context
      * @return resource          Default context
+     * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      */
     public static function getContext(string $url, array $defaultOptions = array(), array $defaultParams = array())
     {
@@ -57,9 +57,9 @@ final class StreamContextFactory
     }
 
     /**
-     * @param string  $url
+     * @param string $url
      * @param mixed[] $options
-     * @param bool    $forCurl When true, will not add proxy values as these are handled separately
+     * @param bool $forCurl When true, will not add proxy values as these are handled separately
      * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl?: mixed[]}
      * @return array formatted as a stream context array
      */
@@ -107,7 +107,7 @@ final class StreamContextFactory
 
         if ($forCurl) {
             $curl = curl_version();
-            $httpVersion = 'cURL '.$curl['version'];
+            $httpVersion = 'cURL ' . $curl['version'];
         } else {
             $httpVersion = 'streams';
         }
@@ -121,12 +121,34 @@ final class StreamContextFactory
                 function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
                 $httpVersion,
-                $platformPhpVersion ? '; Platform-PHP '.$platformPhpVersion : '',
+                $platformPhpVersion ? '; Platform-PHP ' . $platformPhpVersion : '',
                 Platform::getEnv('CI') ? '; CI' : ''
             );
         }
 
         return $options;
+    }
+
+    /**
+     * A bug in PHP prevents the headers from correctly being sent when a content-type header is present and
+     * NOT at the end of the array
+     *
+     * This method fixes the array by moving the content-type header to the end
+     *
+     * @link https://bugs.php.net/bug.php?id=61548
+     * @param string|string[] $header
+     * @return string[]
+     */
+    private static function fixHttpHeaderField($header): array
+    {
+        if (!is_array($header)) {
+            $header = explode("\r\n", $header);
+        }
+        uasort($header, function ($el): int {
+            return stripos($el, 'content-type') === 0 ? 1 : -1;
+        });
+
+        return $header;
     }
 
     /**
@@ -228,27 +250,5 @@ final class StreamContextFactory
         $defaults['ssl']['disable_compression'] = true;
 
         return $defaults;
-    }
-
-    /**
-     * A bug in PHP prevents the headers from correctly being sent when a content-type header is present and
-     * NOT at the end of the array
-     *
-     * This method fixes the array by moving the content-type header to the end
-     *
-     * @link https://bugs.php.net/bug.php?id=61548
-     * @param  string|string[] $header
-     * @return string[]
-     */
-    private static function fixHttpHeaderField($header): array
-    {
-        if (!is_array($header)) {
-            $header = explode("\r\n", $header);
-        }
-        uasort($header, function ($el): int {
-            return stripos($el, 'content-type') === 0 ? 1 : -1;
-        });
-
-        return $header;
     }
 }

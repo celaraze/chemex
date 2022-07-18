@@ -16,15 +16,13 @@ class Scope implements Renderable
     use Macroable;
 
     /**
-     * @var Filter
-     */
-    protected $filter;
-
-    /**
      * @var string
      */
     public $key = '';
-
+    /**
+     * @var Filter
+     */
+    protected $filter;
     /**
      * @var string
      */
@@ -38,9 +36,9 @@ class Scope implements Renderable
     /**
      * Scope constructor.
      *
-     * @param  Filter  $filter
-     * @param  string  $key
-     * @param  string  $label
+     * @param Filter $filter
+     * @param string $key
+     * @param string $label
      */
     public function __construct(Filter $filter, $key, $label = '')
     {
@@ -87,8 +85,8 @@ class Scope implements Renderable
     }
 
     /**
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string $method
+     * @param array $arguments
      * @return $this
      */
     public function __call($method, $arguments)

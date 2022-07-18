@@ -2,27 +2,27 @@
 <head lang="zh">
     <title>设备打印标签</title>
     <style type="text/css">
-        @page{
+        @page {
             size：A4;
         }
 
         .A4 {
             box-sizing: border-box;
-			margin: 0 auto;
-			width: 210mm;
-			height: 300mm;
-			overflow: hidden;
-			word-break:break-all;
+            margin: 0 auto;
+            width: 210mm;
+            height: 300mm;
+            overflow: hidden;
+            word-break: break-all;
         }
 
-        .label-page{
+        .label-page {
             height: 280mm;
             width: 189mm;
             box-sizing: border-box;
             margin: 8mm 12mm 0mm 12mm;
         }
 
-        .label{
+        .label {
             box-sizing: border-box;
             height: 40mm;
             width: 60mm;
@@ -30,7 +30,7 @@
             display: inline-block;
         }
 
-        .label-data{
+        .label-data {
             height: 38mm;
             width: 58mm;
         }
@@ -43,10 +43,11 @@
         }
 
         .qr {
-            position:absolute;
-            right:0;
-            bottom:0
+            position: absolute;
+            right: 0;
+            bottom: 0
         }
+
         .row {
             height: 80%;
             display: flex;
@@ -60,7 +61,7 @@
         .tall-elem {
             font-size: 4px;
             width: 70%;
-            position:relative;
+            position: relative;
         }
 
         .child {
@@ -88,61 +89,61 @@
     }
 </script>
 @php
-$Count = 0;
+    $Count = 0;
 @endphp
 @foreach($data as $row)
 
-@if($loop->index == $Count)
-    <div class="A4">
-        <div class="label-page">
-@endif
+    @if($loop->index == $Count)
+        <div class="A4">
+            <div class="label-page">
+                @endif
 
-<div class="label">
-    <div class="label-data">
-        <div class="assetnumber">
-            <div>{{$row['asset_number']}}</div>
-        </div>
-        <div class="row">
-            <div class="tall-elem" style="line-height: 1.5;">
-                <div class="child" style="margin-bottom:10px;">IT资产管理标签</div>
-                <div class="child">名称：{{$row['name']}}</div>
-                <div class="child">类型：{{$row->category()->value('name')}}</div>
-                <div class="child">部门：{{$row->department()}}</div>
-                <div class="child">人员：{{$row->admin_user()->value('name')}}</div>
+                <div class="label">
+                    <div class="label-data">
+                        <div class="assetnumber">
+                            <div>{{$row['asset_number']}}</div>
+                        </div>
+                        <div class="row">
+                            <div class="tall-elem" style="line-height: 1.5;">
+                                <div class="child" style="margin-bottom:10px;">IT资产管理标签</div>
+                                <div class="child">名称：{{$row['name']}}</div>
+                                <div class="child">类型：{{$row->category()->value('name')}}</div>
+                                <div class="child">部门：{{$row->department()}}</div>
+                                <div class="child">人员：{{$row->admin_user()->value('name')}}</div>
+                            </div>
+                            <div class="elem tall-elem" style="width:60px;">
+                                <div id="qrcode-{{$item}}-{{$row['asset_number']}}" class="qr"></div>
+                                <script type="text/javascript">
+                                    var qrcode = new QRCode(document.getElementById("qrcode-{{$item}}-{{$row['asset_number']}}"), {
+                                        width: 60,
+                                        height: 60,
+                                    });
+
+                                    function makeCode() {
+                                        qrcode.makeCode('{{$item}}:{{$row['asset_number']}}');
+                                    }
+
+                                    makeCode();
+                                    $("#text").on("blur", function () {
+                                        makeCode();
+                                    }).on("keydown", function (e) {
+                                        if (e.keyCode === 13) {
+                                            makeCode();
+                                        }
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if($loop->index == $Count+20)
             </div>
-            <div class="elem tall-elem" style="width:60px;">
-                <div id="qrcode-{{$item}}-{{$row['asset_number']}}" class="qr"></div>
-                <script type="text/javascript">
-                    var qrcode = new QRCode(document.getElementById("qrcode-{{$item}}-{{$row['asset_number']}}"), {
-                        width: 60,
-                        height: 60,
-                    });
-
-                    function makeCode() {
-                        qrcode.makeCode('{{$item}}:{{$row['asset_number']}}');
-                    }
-
-                    makeCode();
-                    $("#text").on("blur", function () {
-                        makeCode();
-                    }).on("keydown", function (e) {
-                        if (e.keyCode === 13) {
-                            makeCode();
-                        }
-                    });
-                </script>
-            </div>
         </div>
-    </div>
-</div>
-
-@if($loop->index == $Count+20)
-        </div>
-    </div>
-    @php
-        $Count = $Count+21;
-    @endphp
-@endif
+        @php
+            $Count = $Count+21;
+        @endphp
+    @endif
 
 @endforeach
 

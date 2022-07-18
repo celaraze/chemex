@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection\DocBlock;
 
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Utils;
-
 use function count;
 use function implode;
 use function ltrim;
@@ -25,7 +24,6 @@ use function strlen;
 use function strpos;
 use function substr;
 use function trim;
-
 use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
@@ -63,13 +61,13 @@ class DescriptionFactory
      */
     public function create(string $contents, ?TypeContext $context = null): Description
     {
-        $tokens   = $this->lex($contents);
-        $count    = count($tokens);
+        $tokens = $this->lex($contents);
+        $count = count($tokens);
         $tagCount = 0;
-        $tags     = [];
+        $tags = [];
 
         for ($i = 1; $i < $count; $i += 2) {
-            $tags[]     = $this->tagFactory->create($tokens[$i], $context);
+            $tags[] = $this->tagFactory->create($tokens[$i], $context);
             $tokens[$i] = '%' . ++$tagCount . '$s';
         }
 

@@ -39,6 +39,33 @@ class Company extends \Faker\Provider\Company
     protected static $companySuffix = ['SPA', 'e figli', 'Group', 's.r.l.'];
 
     /**
+     * Italian VAT number (partita IVA)
+     *
+     * @return string
+     *
+     * @deprecated use {@link \Faker\Provider\it_IT\Company::vat()} instead
+     * @see \Faker\Provider\it_IT\Company::vat()
+     */
+    public static function vatId()
+    {
+        return self::vat();
+    }
+
+    /**
+     * Italian VAT number (partita IVA)
+     *
+     * @see https://it.wikipedia.org/wiki/Partita_IVA
+     *
+     * @return string
+     */
+    public static function vat()
+    {
+        $code = sprintf('%s%03d', static::numerify('#######'), self::numberBetween(1, 121));
+
+        return sprintf('IT%s%d', $code, Luhn::computeCheckDigit($code));
+    }
+
+    /**
      * @example 'Robust full-range hub'
      */
     public function catchPhrase()
@@ -64,32 +91,5 @@ class Company extends \Faker\Provider\Company
         }
 
         return implode(' ', $result);
-    }
-
-    /**
-     * Italian VAT number (partita IVA)
-     *
-     * @see https://it.wikipedia.org/wiki/Partita_IVA
-     *
-     * @return string
-     */
-    public static function vat()
-    {
-        $code = sprintf('%s%03d', static::numerify('#######'), self::numberBetween(1, 121));
-
-        return sprintf('IT%s%d', $code, Luhn::computeCheckDigit($code));
-    }
-
-    /**
-     * Italian VAT number (partita IVA)
-     *
-     * @return string
-     *
-     * @deprecated use {@link \Faker\Provider\it_IT\Company::vat()} instead
-     * @see \Faker\Provider\it_IT\Company::vat()
-     */
-    public static function vatId()
-    {
-        return self::vat();
     }
 }

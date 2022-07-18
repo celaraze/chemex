@@ -29,17 +29,17 @@ class EntityPopulator
         return $this->class;
     }
 
-    public function setColumnFormatters($columnFormatters)
-    {
-        $this->columnFormatters = $columnFormatters;
-    }
-
     /**
      * @return array
      */
     public function getColumnFormatters()
     {
         return $this->columnFormatters;
+    }
+
+    public function setColumnFormatters($columnFormatters)
+    {
+        $this->columnFormatters = $columnFormatters;
     }
 
     public function mergeColumnFormattersWith($columnFormatters)

@@ -27,14 +27,14 @@ class ErrorHandler
     /**
      * Error handler
      *
-     * @param int    $level   Level of the error raised
+     * @param int $level Level of the error raised
      * @param string $message Error message
-     * @param string $file    Filename that the error was raised in
-     * @param int    $line    Line number the error was raised at
+     * @param string $file Filename that the error was raised in
+     * @param int $line Line number the error was raised at
      *
      * @static
-     * @throws \ErrorException
      * @return bool
+     * @throws \ErrorException
      */
     public static function handle(int $level, string $message, string $file, int $line): bool
     {
@@ -46,8 +46,8 @@ class ErrorHandler
         }
 
         if (filter_var(ini_get('xdebug.scream'), FILTER_VALIDATE_BOOLEAN)) {
-            $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be".
-            "\na legitimately suppressed error that you were not supposed to see.";
+            $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be" .
+                "\na legitimately suppressed error that you were not supposed to see.";
         }
 
         if (!$isDeprecationNotice) {
@@ -55,12 +55,12 @@ class ErrorHandler
         }
 
         if (self::$io) {
-            self::$io->writeError('<warning>Deprecation Notice: '.$message.' in '.$file.':'.$line.'</warning>');
+            self::$io->writeError('<warning>Deprecation Notice: ' . $message . ' in ' . $file . ':' . $line . '</warning>');
             if (self::$io->isVerbose()) {
                 self::$io->writeError('<warning>Stack trace:</warning>');
                 self::$io->writeError(array_filter(array_map(function ($a): ?string {
                     if (isset($a['line'], $a['file'])) {
-                        return '<warning> '.$a['file'].':'.$a['line'].'</warning>';
+                        return '<warning> ' . $a['file'] . ':' . $a['line'] . '</warning>';
                     }
 
                     return null;

@@ -14,10 +14,10 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
+use Symfony\Component\Process\Exception\RuntimeException;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -60,12 +60,73 @@ class ProcessExecutor
     }
 
     /**
+     * Escapes a string to be used as a shell argument.
+     *
+     * @param string|false|null $argument The argument that will be escaped
+     *
+     * @return string The escaped argument
+     */
+    public static function escape($argument): string
+    {
+        return self::escapeArgument($argument);
+    }
+
+    /**
+     * Escapes a string to be used as a shell argument for Symfony Process.
+     *
+     * This method expects cmd.exe to be started with the /V:ON option, which
+     * enables delayed environment variable expansion using ! as the delimiter.
+     * If this is not the case, any escaped ^^!var^^! will be transformed to
+     * ^!var^! and introduce two unintended carets.
+     *
+     * Modified from https://github.com/johnstevenson/winbox-args
+     * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
+     *
+     * @param string|false|null $argument
+     *
+     * @return string
+     */
+    private static function escapeArgument($argument): string
+    {
+        if ('' === ($argument = (string)$argument)) {
+            return escapeshellarg($argument);
+        }
+
+        if (!Platform::isWindows()) {
+            return "'" . str_replace("'", "'\\''", $argument) . "'";
+        }
+
+        // New lines break cmd.exe command parsing
+        $argument = strtr($argument, "\n", ' ');
+
+        // In addition to whitespace, commas need quoting to preserve paths
+        $quote = strpbrk($argument, " \t,") !== false;
+        $argument = Preg::replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
+        $meta = $dquotes || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
+
+        if (!$meta && !$quote) {
+            $quote = strpbrk($argument, '^&|<>()') !== false;
+        }
+
+        if ($quote) {
+            $argument = '"' . Preg::replace('/(\\\\*)$/', '$1$1', $argument) . '"';
+        }
+
+        if ($meta) {
+            $argument = Preg::replace('/(["^&|<>()%])/', '^$1', $argument);
+            $argument = Preg::replace('/(!)/', '^^$1', $argument);
+        }
+
+        return $argument;
+    }
+
+    /**
      * runs a process on the commandline
      *
-     * @param  string|list<string> $command the command to execute
-     * @param  mixed   $output  the output will be written into this var if passed by ref
+     * @param string|list<string> $command the command to execute
+     * @param mixed $output the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
-     * @param  null|string $cwd     the working directory
+     * @param null|string $cwd the working directory
      * @return int     statuscode
      */
     public function execute($command, &$output = null, ?string $cwd = null): int
@@ -78,26 +139,10 @@ class ProcessExecutor
     }
 
     /**
-     * runs a process on the commandline in TTY mode
-     *
-     * @param  string|list<string>  $command the command to execute
-     * @param  null|string $cwd     the working directory
-     * @return int     statuscode
-     */
-    public function executeTty($command, ?string $cwd = null): int
-    {
-        if (Platform::isTty()) {
-            return $this->doExecute($command, $cwd, true);
-        }
-
-        return $this->doExecute($command, $cwd, false);
-    }
-
-    /**
-     * @param  string|list<string> $command
-     * @param  null|string $cwd
-     * @param  bool    $tty
-     * @param  mixed   $output
+     * @param string|list<string> $command
+     * @param null|string $cwd
+     * @param bool $tty
+     * @param mixed $output
      * @return int
      */
     private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
@@ -137,10 +182,97 @@ class ProcessExecutor
     }
 
     /**
+     * @param string|list<string> $command
+     */
+    private function outputCommandRun($command, ?string $cwd, bool $async): void
+    {
+        if (null === $this->io || !$this->io->isDebug()) {
+            return;
+        }
+
+        $commandString = is_string($command) ? $command : implode(' ', array_map(self::class . '::escape', $command));
+        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m): string {
+            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
+            if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
+                return '://***:***@';
+            }
+            if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
+                return '://***:***@';
+            }
+
+            return '://' . $m['user'] . ':***@';
+        }, $commandString);
+        $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
+        $this->io->writeError('Executing' . ($async ? ' async' : '') . ' command (' . ($cwd ?: 'CWD') . '): ' . $safeCommand);
+    }
+
+    /**
+     * @return int the timeout in seconds
+     */
+    public static function getTimeout(): int
+    {
+        return static::$timeout;
+    }
+
+    /**
+     * @param int $timeout the timeout in seconds
+     * @return void
+     */
+    public static function setTimeout(int $timeout): void
+    {
+        static::$timeout = $timeout;
+    }
+
+    protected function outputHandler(string $type, string $buffer): void
+    {
+        if ($this->captureOutput) {
+            return;
+        }
+
+        if (null === $this->io) {
+            echo $buffer;
+
+            return;
+        }
+
+        if (Process::ERR === $type) {
+            $this->io->writeErrorRaw($buffer, false);
+        } else {
+            $this->io->writeRaw($buffer, false);
+        }
+    }
+
+    /**
+     * Get any error output from the last command
+     *
+     * @return string
+     */
+    public function getErrorOutput(): string
+    {
+        return $this->errorOutput;
+    }
+
+    /**
+     * runs a process on the commandline in TTY mode
+     *
+     * @param string|list<string> $command the command to execute
+     * @param null|string $cwd the working directory
+     * @return int     statuscode
+     */
+    public function executeTty($command, ?string $cwd = null): int
+    {
+        if (Platform::isTty()) {
+            return $this->doExecute($command, $cwd, true);
+        }
+
+        return $this->doExecute($command, $cwd, false);
+    }
+
+    /**
      * starts a process on the commandline in async mode
      *
-     * @param  string|list<string> $command the command to execute
-     * @param  string              $cwd     the working directory
+     * @param string|list<string> $command the command to execute
+     * @param string $cwd the working directory
      * @return PromiseInterface
      */
     public function executeAsync($command, ?string $cwd = null): PromiseInterface
@@ -209,27 +341,13 @@ class ProcessExecutor
         return $promise;
     }
 
-    protected function outputHandler(string $type, string $buffer): void
+    private function markJobDone(): void
     {
-        if ($this->captureOutput) {
-            return;
-        }
-
-        if (null === $this->io) {
-            echo $buffer;
-
-            return;
-        }
-
-        if (Process::ERR === $type) {
-            $this->io->writeErrorRaw($buffer, false);
-        } else {
-            $this->io->writeRaw($buffer, false);
-        }
+        $this->runningJobs--;
     }
 
     /**
-     * @param  int  $id
+     * @param int $id
      * @return void
      */
     private function startJob(int $id): void
@@ -297,20 +415,10 @@ class ProcessExecutor
     }
 
     /**
-     * @internal
-     *
-     * @return void
-     */
-    public function enableAsync(): void
-    {
-        $this->allowAsync = true;
-    }
-
-    /**
-     * @internal
-     *
      * @param  ?int $index job id
      * @return int         number of active (queued or started) jobs
+     * @internal
+     *
      */
     public function countActiveJobs($index = null): int
     {
@@ -347,132 +455,24 @@ class ProcessExecutor
         return $active;
     }
 
-    private function markJobDone(): void
+    /**
+     * @return void
+     * @internal
+     *
+     */
+    public function enableAsync(): void
     {
-        $this->runningJobs--;
+        $this->allowAsync = true;
     }
 
     /**
-     * @param  null|string  $output
+     * @param null|string $output
      * @return string[]
      */
     public function splitLines(?string $output): array
     {
-        $output = trim((string) $output);
+        $output = trim((string)$output);
 
         return $output === '' ? array() : Preg::split('{\r?\n}', $output);
-    }
-
-    /**
-     * Get any error output from the last command
-     *
-     * @return string
-     */
-    public function getErrorOutput(): string
-    {
-        return $this->errorOutput;
-    }
-
-    /**
-     * @return int the timeout in seconds
-     */
-    public static function getTimeout(): int
-    {
-        return static::$timeout;
-    }
-
-    /**
-     * @param  int  $timeout the timeout in seconds
-     * @return void
-     */
-    public static function setTimeout(int $timeout): void
-    {
-        static::$timeout = $timeout;
-    }
-
-    /**
-     * Escapes a string to be used as a shell argument.
-     *
-     * @param string|false|null $argument The argument that will be escaped
-     *
-     * @return string The escaped argument
-     */
-    public static function escape($argument): string
-    {
-        return self::escapeArgument($argument);
-    }
-
-    /**
-     * @param string|list<string> $command
-     */
-    private function outputCommandRun($command, ?string $cwd, bool $async): void
-    {
-        if (null === $this->io || !$this->io->isDebug()) {
-            return;
-        }
-
-        $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m): string {
-            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
-            if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
-                return '://***:***@';
-            }
-            if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
-                return '://***:***@';
-            }
-
-            return '://'.$m['user'].':***@';
-        }, $commandString);
-        $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
-        $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
-    }
-
-    /**
-     * Escapes a string to be used as a shell argument for Symfony Process.
-     *
-     * This method expects cmd.exe to be started with the /V:ON option, which
-     * enables delayed environment variable expansion using ! as the delimiter.
-     * If this is not the case, any escaped ^^!var^^! will be transformed to
-     * ^!var^! and introduce two unintended carets.
-     *
-     * Modified from https://github.com/johnstevenson/winbox-args
-     * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
-     *
-     * @param string|false|null $argument
-     *
-     * @return string
-     */
-    private static function escapeArgument($argument): string
-    {
-        if ('' === ($argument = (string) $argument)) {
-            return escapeshellarg($argument);
-        }
-
-        if (!Platform::isWindows()) {
-            return "'".str_replace("'", "'\\''", $argument)."'";
-        }
-
-        // New lines break cmd.exe command parsing
-        $argument = strtr($argument, "\n", ' ');
-
-        // In addition to whitespace, commas need quoting to preserve paths
-        $quote = strpbrk($argument, " \t,") !== false;
-        $argument = Preg::replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
-        $meta = $dquotes || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
-
-        if (!$meta && !$quote) {
-            $quote = strpbrk($argument, '^&|<>()') !== false;
-        }
-
-        if ($quote) {
-            $argument = '"'.Preg::replace('/(\\\\*)$/', '$1$1', $argument).'"';
-        }
-
-        if ($meta) {
-            $argument = Preg::replace('/(["^&|<>()%])/', '^$1', $argument);
-            $argument = Preg::replace('/(!)/', '^^$1', $argument);
-        }
-
-        return $argument;
     }
 }

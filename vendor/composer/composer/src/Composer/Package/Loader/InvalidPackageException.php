@@ -27,14 +27,14 @@ class InvalidPackageException extends \Exception
     /**
      * @param string[] $errors
      * @param string[] $warnings
-     * @param mixed[]  $data
+     * @param mixed[] $data
      */
     public function __construct(array $errors, array $warnings, array $data)
     {
         $this->errors = $errors;
         $this->warnings = $warnings;
         $this->data = $data;
-        parent::__construct("Invalid package information: \n".implode("\n", array_merge($errors, $warnings)));
+        parent::__construct("Invalid package information: \n" . implode("\n", array_merge($errors, $warnings)));
     }
 
     /**

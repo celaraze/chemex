@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class RetryBatchCommand extends Command
 {
     /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:retry-batch {id : The ID of the batch whose failed jobs should be retried}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class RetryBatchCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:retry-batch';
-
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:retry-batch {id : The ID of the batch whose failed jobs should be retried}';
     /**
      * The console command description.
      *
@@ -43,7 +41,7 @@ class RetryBatchCommand extends Command
     {
         $batch = $this->laravel[BatchRepository::class]->find($id = $this->argument('id'));
 
-        if (! $batch) {
+        if (!$batch) {
             $this->error("Unable to find a batch with ID [{$id}].");
 
             return 1;

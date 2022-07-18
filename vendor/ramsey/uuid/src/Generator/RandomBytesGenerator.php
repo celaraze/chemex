@@ -37,7 +37,7 @@ class RandomBytesGenerator implements RandomGeneratorInterface
         } catch (Throwable $exception) {
             throw new RandomSourceException(
                 $exception->getMessage(),
-                (int) $exception->getCode(),
+                (int)$exception->getCode(),
                 $exception
             );
         }

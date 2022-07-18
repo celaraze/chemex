@@ -56,7 +56,7 @@ return [
         'sameElse' => 'L',
     ],
     'ordinal' => function ($number) {
-        return $number.($number === 1 ? 'añ' : 'vet');
+        return $number . ($number === 1 ? 'añ' : 'vet');
     },
     'months' => ['Genver', 'C\'hwevrer', 'Meurzh', 'Ebrel', 'Mae', 'Mezheven', 'Gouere', 'Eost', 'Gwengolo', 'Here', 'Du', 'Kerzu'],
     'months_short' => ['Gen', 'C\'hwe', 'Meu', 'Ebr', 'Mae', 'Eve', 'Gou', 'Eos', 'Gwe', 'Her', 'Du', 'Ker'],

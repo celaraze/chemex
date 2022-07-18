@@ -20,6 +20,51 @@ class SheetsTest extends TestCase
         $this->validateArray($sheetsArray);
     }
 
+    protected function makeSheets()
+    {
+        $file = __DIR__ . '/../resources/test-sheets.xlsx';
+
+        $sheets = Excel::xlsx($file)->sheets();
+
+        $this->assertInstanceOf(Sheets::class, $sheets);
+
+        return $sheets;
+    }
+
+    /**
+     * 验证内容是否正确.
+     *
+     * @param array $sheetsArray
+     */
+    protected function validateArray(array $sheetsArray)
+    {
+        $this->assertIsArray($sheetsArray);
+        $this->assertEquals(count($sheetsArray), 2);
+        $this->assertTrue(isset($sheetsArray['name1']));
+        $this->assertTrue(isset($sheetsArray['name2']));
+
+        foreach ($sheetsArray as $name => &$values) {
+            $this->assertIsArray($values);
+            $this->assertEquals(count($values), 30);
+
+            foreach ($values as &$row) {
+                $row = $this->convertDatetimeObjectToString($row);
+            }
+        }
+
+        $users = include __DIR__ . '/../resources/users.php';
+
+        $this->assertEquals(
+            array_values($sheetsArray['name1']),
+            array_slice($users, 0, 30)
+        );
+
+        $this->assertEquals(
+            array_values($sheetsArray['name2']),
+            array_values(array_slice($users, 30, 30))
+        );
+    }
+
     /**
      * @group importer
      */
@@ -76,50 +121,5 @@ class SheetsTest extends TestCase
             $sheet1->getName() => $sheet1->toArray(),
             $sheet2->getName() => $sheet2->toArray(),
         ]);
-    }
-
-    /**
-     * 验证内容是否正确.
-     *
-     * @param  array  $sheetsArray
-     */
-    protected function validateArray(array $sheetsArray)
-    {
-        $this->assertIsArray($sheetsArray);
-        $this->assertEquals(count($sheetsArray), 2);
-        $this->assertTrue(isset($sheetsArray['name1']));
-        $this->assertTrue(isset($sheetsArray['name2']));
-
-        foreach ($sheetsArray as $name => &$values) {
-            $this->assertIsArray($values);
-            $this->assertEquals(count($values), 30);
-
-            foreach ($values as &$row) {
-                $row = $this->convertDatetimeObjectToString($row);
-            }
-        }
-
-        $users = include __DIR__.'/../resources/users.php';
-
-        $this->assertEquals(
-            array_values($sheetsArray['name1']),
-            array_slice($users, 0, 30)
-        );
-
-        $this->assertEquals(
-            array_values($sheetsArray['name2']),
-            array_values(array_slice($users, 30, 30))
-        );
-    }
-
-    protected function makeSheets()
-    {
-        $file = __DIR__.'/../resources/test-sheets.xlsx';
-
-        $sheets = Excel::xlsx($file)->sheets();
-
-        $this->assertInstanceOf(Sheets::class, $sheets);
-
-        return $sheets;
     }
 }

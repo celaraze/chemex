@@ -13,7 +13,7 @@ class Description extends AbstractDisplayer
     {
         return Admin::view('admin::grid.displayer.extensions.description', [
             'value' => $this->value,
-            'row'   => $this->row,
+            'row' => $this->row,
             'settingAction' => $this->resolveSettingForm(),
             'updateAction' => $this->resolveAction(Update::class),
         ]);
@@ -23,7 +23,7 @@ class Description extends AbstractDisplayer
     {
         $extension = Admin::extension()->get($this->getKey());
 
-        if (! method_exists($extension, 'settingForm')) {
+        if (!method_exists($extension, 'settingForm')) {
             return;
         }
 
@@ -39,7 +39,7 @@ class Description extends AbstractDisplayer
     protected function getModalTitle($extension)
     {
         return $extension->settingForm()->title()
-            ?: (trans('admin.setting').' - '.str_replace('.', '/', $this->getKey()));
+            ?: (trans('admin.setting') . ' - ' . str_replace('.', '/', $this->getKey()));
     }
 
     protected function resolveAction($action)

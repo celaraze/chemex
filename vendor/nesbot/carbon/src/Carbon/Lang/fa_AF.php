@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/fa.php', [
+return array_replace_recursive(require __DIR__ . '/fa.php', [
     'meridiem' => ['ق', 'ب'],
     'weekend' => [4, 5],
     'formats' => [

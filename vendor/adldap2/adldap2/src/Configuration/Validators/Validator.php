@@ -27,7 +27,7 @@ abstract class Validator
      * Constructor.
      *
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      */
     public function __construct($key, $value)
     {
@@ -38,9 +38,9 @@ abstract class Validator
     /**
      * Validates the configuration value.
      *
+     * @return bool
      * @throws \Adldap\Configuration\ConfigurationException When the value given fails validation.
      *
-     * @return bool
      */
     abstract public function validate();
 }

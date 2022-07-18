@@ -6,7 +6,8 @@ use PhpParser\Node\Expr\AssignOp;
 
 class Coalesce extends AssignOp
 {
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_AssignOp_Coalesce';
     }
 }

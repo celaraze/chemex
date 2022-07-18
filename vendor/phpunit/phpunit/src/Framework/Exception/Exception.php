@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
-use function array_keys;
-use function get_object_vars;
 use PHPUnit\Util\Filter;
 use RuntimeException;
 use Throwable;
+use function array_keys;
+use function get_object_vars;
 
 /**
  * Base class for all PHPUnit Framework exceptions.

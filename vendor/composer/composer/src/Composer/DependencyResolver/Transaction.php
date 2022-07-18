@@ -12,11 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\DependencyResolver\Operation\OperationInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -55,14 +55,6 @@ class Transaction
         $this->presentPackages = $presentPackages;
         $this->setResultPackageMaps($resultPackages);
         $this->operations = $this->calculateOperations();
-    }
-
-    /**
-     * @return OperationInterface[]
-     */
-    public function getOperations(): array
-    {
-        return $this->operations;
     }
 
     /**
@@ -111,8 +103,8 @@ class Transaction
         $removeAliasMap = array();
         foreach ($this->presentPackages as $package) {
             if ($package instanceof AliasPackage) {
-                $presentAliasMap[$package->getName().'::'.$package->getVersion()] = $package;
-                $removeAliasMap[$package->getName().'::'.$package->getVersion()] = $package;
+                $presentAliasMap[$package->getName() . '::' . $package->getVersion()] = $package;
+                $removeAliasMap[$package->getName() . '::' . $package->getVersion()] = $package;
             } else {
                 $presentPackageMap[$package->getName()] = $package;
                 $removeMap[$package->getName()] = $package;
@@ -150,7 +142,7 @@ class Transaction
                 $processed[spl_object_hash($package)] = true;
 
                 if ($package instanceof AliasPackage) {
-                    $aliasKey = $package->getName().'::'.$package->getVersion();
+                    $aliasKey = $package->getName() . '::' . $package->getVersion();
                     if (isset($presentAliasMap[$aliasKey])) {
                         unset($removeAliasMap[$aliasKey]);
                     } else {
@@ -263,7 +255,7 @@ class Transaction
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param  OperationInterface[] $operations
+     * @param OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
     private function movePluginsToFront(array $operations): array
@@ -340,7 +332,7 @@ class Transaction
      * Removals of packages should be executed before installations in
      * case two packages resolve to the same path (due to custom installers)
      *
-     * @param  OperationInterface[] $operations
+     * @param OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
     private function moveUninstallsToFront(array $operations): array
@@ -354,5 +346,13 @@ class Transaction
         }
 
         return array_merge($uninstOps, $operations);
+    }
+
+    /**
+     * @return OperationInterface[]
+     */
+    public function getOperations(): array
+    {
+        return $this->operations;
     }
 }

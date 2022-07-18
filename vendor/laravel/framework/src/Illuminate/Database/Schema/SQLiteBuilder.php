@@ -9,7 +9,7 @@ class SQLiteBuilder extends Builder
     /**
      * Create a database in the schema.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function createDatabase($name)
@@ -20,7 +20,7 @@ class SQLiteBuilder extends Builder
     /**
      * Drop a database from the schema if the database exists.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function dropDatabaseIfExists($name)
@@ -48,6 +48,16 @@ class SQLiteBuilder extends Builder
         $this->connection->select($this->grammar->compileDisableWriteableSchema());
 
         $this->connection->select($this->grammar->compileRebuild());
+    }
+
+    /**
+     * Empty the database file.
+     *
+     * @return void
+     */
+    public function refreshDatabaseFile()
+    {
+        file_put_contents($this->connection->getDatabaseName(), '');
     }
 
     /**
@@ -88,15 +98,5 @@ class SQLiteBuilder extends Builder
         return $this->connection->select(
             $this->grammar->compileGetAllViews()
         );
-    }
-
-    /**
-     * Empty the database file.
-     *
-     * @return void
-     */
-    public function refreshDatabaseFile()
-    {
-        file_put_contents($this->connection->getDatabaseName(), '');
     }
 }

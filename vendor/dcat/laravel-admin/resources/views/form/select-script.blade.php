@@ -1,13 +1,13 @@
-
 @include('admin::scripts.select')
 
-<script require="@select2?lang={{ config('app.locale') === 'en' ? '' : str_replace('_', '-', config('app.locale')) }}" init="{!! $selector !!}">
+<script require="@select2?lang={{ config('app.locale') === 'en' ? '' : str_replace('_', '-', config('app.locale')) }}"
+        init="{!! $selector !!}">
     var configs = {!! admin_javascript_json($configs) !!};
 
     @yield('admin.select-ajax')
 
     @if(isset($remoteOptions))
-    $.ajax({!! admin_javascript_json($remoteOptions) !!}).done(function(data) {
+    $.ajax({!! admin_javascript_json($remoteOptions) !!}).done(function (data) {
         configs.data = data;
 
         $this.each(function (_, select) {

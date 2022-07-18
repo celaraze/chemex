@@ -40,7 +40,7 @@ class HashManager extends Manager implements Hasher
     /**
      * Get information about the given hashed value.
      *
-     * @param  string  $hashedValue
+     * @param string $hashedValue
      * @return array
      */
     public function info($hashedValue)
@@ -51,8 +51,8 @@ class HashManager extends Manager implements Hasher
     /**
      * Hash the given value.
      *
-     * @param  string  $value
-     * @param  array  $options
+     * @param string $value
+     * @param array $options
      * @return string
      */
     public function make($value, array $options = [])
@@ -63,9 +63,9 @@ class HashManager extends Manager implements Hasher
     /**
      * Check the given plain value against a hash.
      *
-     * @param  string  $value
-     * @param  string  $hashedValue
-     * @param  array  $options
+     * @param string $value
+     * @param string $hashedValue
+     * @param array $options
      * @return bool
      */
     public function check($value, $hashedValue, array $options = [])
@@ -76,8 +76,8 @@ class HashManager extends Manager implements Hasher
     /**
      * Check if the given hash has been hashed using the given options.
      *
-     * @param  string  $hashedValue
-     * @param  array  $options
+     * @param string $hashedValue
+     * @param array $options
      * @return bool
      */
     public function needsRehash($hashedValue, array $options = [])

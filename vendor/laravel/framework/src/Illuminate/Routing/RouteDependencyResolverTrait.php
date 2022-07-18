@@ -14,14 +14,14 @@ trait RouteDependencyResolverTrait
     /**
      * Resolve the object method's type-hinted dependencies.
      *
-     * @param  array  $parameters
-     * @param  object  $instance
-     * @param  string  $method
+     * @param array $parameters
+     * @param object $instance
+     * @param string $method
      * @return array
      */
     protected function resolveClassMethodDependencies(array $parameters, $instance, $method)
     {
-        if (! method_exists($instance, $method)) {
+        if (!method_exists($instance, $method)) {
             return $parameters;
         }
 
@@ -33,8 +33,8 @@ trait RouteDependencyResolverTrait
     /**
      * Resolve the given method's type-hinted dependencies.
      *
-     * @param  array  $parameters
-     * @param  \ReflectionFunctionAbstract  $reflector
+     * @param array $parameters
+     * @param \ReflectionFunctionAbstract $reflector
      * @return array
      */
     public function resolveMethodDependencies(array $parameters, ReflectionFunctionAbstract $reflector)
@@ -52,8 +52,8 @@ trait RouteDependencyResolverTrait
                 $instanceCount++;
 
                 $this->spliceIntoParameters($parameters, $key, $instance);
-            } elseif (! isset($values[$key - $instanceCount]) &&
-                      $parameter->isDefaultValueAvailable()) {
+            } elseif (!isset($values[$key - $instanceCount]) &&
+                $parameter->isDefaultValueAvailable()) {
                 $this->spliceIntoParameters($parameters, $key, $parameter->getDefaultValue());
             }
         }
@@ -64,9 +64,9 @@ trait RouteDependencyResolverTrait
     /**
      * Attempt to transform the given parameter into a class instance.
      *
-     * @param  \ReflectionParameter  $parameter
-     * @param  array  $parameters
-     * @param  object  $skippableValue
+     * @param \ReflectionParameter $parameter
+     * @param array $parameters
+     * @param object $skippableValue
      * @return mixed
      */
     protected function transformDependency(ReflectionParameter $parameter, $parameters, $skippableValue)
@@ -76,7 +76,7 @@ trait RouteDependencyResolverTrait
         // If the parameter has a type-hinted class, we will check to see if it is already in
         // the list of parameters. If it is we will just skip it as it is probably a model
         // binding and we do not want to mess with those; otherwise, we resolve it here.
-        if ($className && ! $this->alreadyInParameters($className, $parameters)) {
+        if ($className && !$this->alreadyInParameters($className, $parameters)) {
             return $parameter->isDefaultValueAvailable() ? null : $this->container->make($className);
         }
 
@@ -86,21 +86,21 @@ trait RouteDependencyResolverTrait
     /**
      * Determine if an object of the given class is in a list of parameters.
      *
-     * @param  string  $class
-     * @param  array  $parameters
+     * @param string $class
+     * @param array $parameters
      * @return bool
      */
     protected function alreadyInParameters($class, array $parameters)
     {
-        return ! is_null(Arr::first($parameters, fn ($value) => $value instanceof $class));
+        return !is_null(Arr::first($parameters, fn($value) => $value instanceof $class));
     }
 
     /**
      * Splice the given value into the parameter list.
      *
-     * @param  array  $parameters
-     * @param  string  $offset
-     * @param  mixed  $value
+     * @param array $parameters
+     * @param string $offset
+     * @param mixed $value
      * @return void
      */
     protected function spliceIntoParameters(array &$parameters, $offset, $value)

@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Internal;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 use Hamcrest\SelfDescribing;
 

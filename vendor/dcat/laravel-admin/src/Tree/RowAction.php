@@ -40,6 +40,11 @@ class RowAction extends Action
         return $this->row;
     }
 
+    public function setRow($row)
+    {
+        $this->row = $row;
+    }
+
     /**
      * 获取资源路径.
      *
@@ -58,10 +63,5 @@ class RowAction extends Action
     public function setParent(Actions $actions)
     {
         $this->actions = $actions;
-    }
-
-    public function setRow($row)
-    {
-        $this->row = $row;
     }
 }

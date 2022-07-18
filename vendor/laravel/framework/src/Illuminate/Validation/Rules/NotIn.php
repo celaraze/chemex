@@ -19,7 +19,7 @@ class NotIn
     /**
      * Create a new "not in" rule instance.
      *
-     * @param  array  $values
+     * @param array $values
      * @return void
      */
     public function __construct(array $values)
@@ -35,9 +35,9 @@ class NotIn
     public function __toString()
     {
         $values = array_map(function ($value) {
-            return '"'.str_replace('"', '""', $value).'"';
+            return '"' . str_replace('"', '""', $value) . '"';
         }, $this->values);
 
-        return $this->rule.':'.implode(',', $values);
+        return $this->rule . ':' . implode(',', $values);
     }
 }

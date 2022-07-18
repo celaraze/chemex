@@ -46,10 +46,29 @@ class VulnerableDependencyAnalyzer extends SecurityAnalyzer
      */
     public function errorMessage()
     {
-        return "Your application has a total of ".count($this->result)." known vulnerabilities in the application "
-            ."dependencies. This can be very dangerous and you must resolve this by either applying patch updates or "
-            ."removing the vulnerable dependencies. The packages which have these vulnerabilities include: "
-            .PHP_EOL.$this->listVulnerablePackages();
+        return "Your application has a total of " . count($this->result) . " known vulnerabilities in the application "
+            . "dependencies. This can be very dangerous and you must resolve this by either applying patch updates or "
+            . "removing the vulnerable dependencies. The packages which have these vulnerabilities include: "
+            . PHP_EOL . $this->listVulnerablePackages();
+    }
+
+    /**
+     * List the vulnerable packages.
+     *
+     * @return string
+     */
+    public function listVulnerablePackages()
+    {
+        try {
+            return collect($this->result)
+                ->map(function ($vulnerability, $package) {
+                    return $package . ' (' . $vulnerability['version'] . '): ' .
+                        collect(data_get($vulnerability, 'advisories.*.title'))
+                            ->join(', ', ' and ');
+                })->values()->implode(PHP_EOL);
+        } catch (Throwable $e) {
+            return json_encode($this->result);
+        }
     }
 
     /**
@@ -69,25 +88,6 @@ class VulnerableDependencyAnalyzer extends SecurityAnalyzer
 
         if (count($this->result) > 0) {
             $this->markFailed();
-        }
-    }
-
-    /**
-     * List the vulnerable packages.
-     *
-     * @return string
-     */
-    public function listVulnerablePackages()
-    {
-        try {
-            return collect($this->result)
-                ->map(function ($vulnerability, $package) {
-                    return $package.' ('.$vulnerability['version'].'): '.
-                        collect(data_get($vulnerability, 'advisories.*.title'))
-                        ->join(', ', ' and ');
-                })->values()->implode(PHP_EOL);
-        } catch (Throwable $e) {
-            return json_encode($this->result);
         }
     }
 }

@@ -20,13 +20,6 @@ final class Connection extends AbstractConnectionMiddleware
         $this->connection = $connection;
     }
 
-    public function prepare(string $sql): StatementInterface
-    {
-        return new Statement(
-            $this->connection->prepare($sql)
-        );
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -45,6 +38,13 @@ final class Connection extends AbstractConnectionMiddleware
         return $this->prepare('SELECT CONVERT(VARCHAR(MAX), current_value) FROM sys.sequences WHERE name = ?')
             ->execute([$name])
             ->fetchOne();
+    }
+
+    public function prepare(string $sql): StatementInterface
+    {
+        return new Statement(
+            $this->connection->prepare($sql)
+        );
     }
 
     public function getNativeConnection(): PDO

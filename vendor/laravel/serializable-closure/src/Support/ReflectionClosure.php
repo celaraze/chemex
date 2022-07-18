@@ -12,6 +12,11 @@ use ReflectionFunction;
 
 class ReflectionClosure extends ReflectionFunction
 {
+    protected static $files = [];
+    protected static $classes = [];
+    protected static $functions = [];
+    protected static $constants = [];
+    protected static $structures = [];
     protected $code;
     protected $tokens;
     protected $hashedName;
@@ -21,36 +26,16 @@ class ReflectionClosure extends ReflectionFunction
     protected $isBindingRequired;
     protected $isShortClosure;
 
-    protected static $files = [];
-    protected static $classes = [];
-    protected static $functions = [];
-    protected static $constants = [];
-    protected static $structures = [];
-
     /**
      * Creates a new reflection closure instance.
      *
-     * @param  \Closure  $closure
-     * @param  string|null  $code
+     * @param \Closure $closure
+     * @param string|null $code
      * @return void
      */
     public function __construct(Closure $closure, $code = null)
     {
         parent::__construct($closure);
-    }
-
-    /**
-     * Checks if the closure is "static".
-     *
-     * @return bool
-     */
-    public function isStatic(): bool
-    {
-        if ($this->isStaticClosure === null) {
-            $this->isStaticClosure = strtolower(substr($this->getCode(), 0, 6)) === 'static';
-        }
-
-        return $this->isStaticClosure;
     }
 
     /**
@@ -90,21 +75,21 @@ class ReflectionClosure extends ReflectionFunction
         $className = null;
 
         if (null !== $className = $this->getClosureScopeClass()) {
-            $className = '\\'.trim($className->getName(), '\\');
+            $className = '\\' . trim($className->getName(), '\\');
         }
 
         $builtin_types = self::getBuiltinTypes();
         $class_keywords = ['self', 'static', 'parent'];
 
         $ns = $this->getClosureNamespaceName();
-        $nsf = $ns == '' ? '' : ($ns[0] == '\\' ? $ns : '\\'.$ns);
+        $nsf = $ns == '' ? '' : ($ns[0] == '\\' ? $ns : '\\' . $ns);
 
         $_file = var_export($fileName, true);
         $_dir = var_export(dirname($fileName), true);
         $_namespace = var_export($ns, true);
         $_class = var_export(trim($className ?: '', '\\'), true);
-        $_function = $ns.($ns == '' ? '' : '\\').'{closure}';
-        $_method = ($className == '' ? '' : trim($className, '\\').'::').$_function;
+        $_function = $ns . ($ns == '' ? '' : '\\') . '{closure}';
+        $_method = ($className == '' ? '' : trim($className, '\\') . '::') . $_function;
         $_function = var_export($_function, true);
         $_method = var_export($_method, true);
         $_trait = null;
@@ -295,10 +280,10 @@ class ReflectionClosure extends ReflectionFunction
                             break;
                         case '}':
                             $code .= '}';
-                            if (--$open === 0 && ! $isShortClosure) {
+                            if (--$open === 0 && !$isShortClosure) {
                                 break 3;
                             } elseif ($inside_structure) {
-                                $inside_structure = ! ($open === $inside_structure_mark);
+                                $inside_structure = !($open === $inside_structure_mark);
                             }
                             break;
                         case '(':
@@ -349,18 +334,18 @@ class ReflectionClosure extends ReflectionFunction
                         case T_COMMENT:
                             if (substr($token[1], 0, 8) === '#trackme') {
                                 $timestamp = time();
-                                $code .= '/**'.PHP_EOL;
-                                $code .= '* Date      : '.date(DATE_W3C, $timestamp).PHP_EOL;
-                                $code .= '* Timestamp : '.$timestamp.PHP_EOL;
-                                $code .= '* Line      : '.($line + 1).PHP_EOL;
-                                $code .= '* File      : '.$_file.PHP_EOL.'*/'.PHP_EOL;
+                                $code .= '/**' . PHP_EOL;
+                                $code .= '* Date      : ' . date(DATE_W3C, $timestamp) . PHP_EOL;
+                                $code .= '* Timestamp : ' . $timestamp . PHP_EOL;
+                                $code .= '* Line      : ' . ($line + 1) . PHP_EOL;
+                                $code .= '* File      : ' . $_file . PHP_EOL . '*/' . PHP_EOL;
                                 $lineAdd += 5;
                             } else {
                                 $code .= $token[1];
                             }
                             break;
                         case T_VARIABLE:
-                            if ($token[1] == '$this' && ! $inside_structure) {
+                            if ($token[1] == '$this' && !$inside_structure) {
                                 $isUsingThisObject = true;
                             }
                             $code .= $token[1];
@@ -410,7 +395,7 @@ class ReflectionClosure extends ReflectionFunction
                         case T_FUNCTION:
                             $code .= $token[1];
                             $state = 'closure_args';
-                            if (! $inside_structure) {
+                            if (!$inside_structure) {
                                 $inside_structure = true;
                                 $inside_structure_mark = $open;
                             }
@@ -428,7 +413,7 @@ class ReflectionClosure extends ReflectionFunction
                                         $struct['start'] <= $startLine &&
                                         $struct['end'] >= $endLine
                                     ) {
-                                        $_trait = ($ns == '' ? '' : $ns.'\\').$struct['name'];
+                                        $_trait = ($ns == '' ? '' : $ns . '\\') . $struct['name'];
                                         break;
                                     }
                                 }
@@ -513,7 +498,7 @@ class ReflectionClosure extends ReflectionFunction
                             if ($lastState === 'closure' && $context === 'root') {
                                 $state = 'ignore_next';
                                 $lastState = 'closure';
-                                $code .= $id_start.$token;
+                                $code .= $id_start . $token;
                             }
 
                             break;
@@ -531,10 +516,10 @@ class ReflectionClosure extends ReflectionFunction
                             }
                             if ($context === 'new' || false !== strpos($id_name, '\\')) {
                                 if ($id_start_ci === 'self' || $id_start_ci === 'static') {
-                                    if (! $inside_structure) {
+                                    if (!$inside_structure) {
                                         $isUsingScope = true;
                                     }
-                                } elseif ($id_start !== '\\' && ! in_array($id_start_ci, $class_keywords)) {
+                                } elseif ($id_start !== '\\' && !in_array($id_start_ci, $class_keywords)) {
                                     if ($classes === null) {
                                         $classes = $this->getClasses();
                                     }
@@ -542,7 +527,7 @@ class ReflectionClosure extends ReflectionFunction
                                         $id_start = $classes[$id_start_ci];
                                     }
                                     if ($id_start[0] !== '\\') {
-                                        $id_start = $nsf.'\\'.$id_start;
+                                        $id_start = $nsf . '\\' . $id_start;
                                     }
                                 }
                             } else {
@@ -552,28 +537,28 @@ class ReflectionClosure extends ReflectionFunction
                                     }
                                     if (isset($functions[$id_start_ci])) {
                                         $id_start = $functions[$id_start_ci];
-                                    } elseif ($nsf !== '\\' && function_exists($nsf.'\\'.$id_start)) {
-                                        $id_start = $nsf.'\\'.$id_start;
+                                    } elseif ($nsf !== '\\' && function_exists($nsf . '\\' . $id_start)) {
+                                        $id_start = $nsf . '\\' . $id_start;
                                         // Cache it to functions array
                                         $functions[$id_start_ci] = $id_start;
                                     }
                                 }
                             }
-                            $code .= $id_start.$id_name.'(';
+                            $code .= $id_start . $id_name . '(';
                             $state = $lastState;
                             break;
                         case T_VARIABLE:
                         case T_DOUBLE_COLON:
                             if ($id_start !== '\\') {
                                 if ($id_start_ci === 'self' || $id_start_ci === 'parent') {
-                                    if (! $inside_structure) {
+                                    if (!$inside_structure) {
                                         $isUsingScope = true;
                                     }
                                 } elseif ($id_start_ci === 'static') {
-                                    if (! $inside_structure) {
+                                    if (!$inside_structure) {
                                         $isUsingScope = $token[0] === T_DOUBLE_COLON;
                                     }
-                                } elseif (! (\PHP_MAJOR_VERSION >= 7 && in_array($id_start_ci, $builtin_types))) {
+                                } elseif (!(\PHP_MAJOR_VERSION >= 7 && in_array($id_start_ci, $builtin_types))) {
                                     if ($classes === null) {
                                         $classes = $this->getClasses();
                                     }
@@ -581,16 +566,16 @@ class ReflectionClosure extends ReflectionFunction
                                         $id_start = $classes[$id_start_ci];
                                     }
                                     if ($id_start[0] !== '\\') {
-                                        $id_start = $nsf.'\\'.$id_start;
+                                        $id_start = $nsf . '\\' . $id_start;
                                     }
                                 }
                             }
 
-                            $code .= $id_start.$id_name.$token[1];
+                            $code .= $id_start . $id_name . $token[1];
                             $state = $token[0] === T_DOUBLE_COLON ? 'ignore_next' : $lastState;
                             break;
                         default:
-                            if ($id_start !== '\\' && ! defined($id_start)) {
+                            if ($id_start !== '\\' && !defined($id_start)) {
                                 if ($constants === null) {
                                     $constants = $this->getConstants();
                                 }
@@ -598,7 +583,7 @@ class ReflectionClosure extends ReflectionFunction
                                     $id_start = $constants[$id_start];
                                 } elseif ($context === 'new') {
                                     if (in_array($id_start_ci, $class_keywords)) {
-                                        if (! $inside_structure) {
+                                        if (!$inside_structure) {
                                             $isUsingScope = true;
                                         }
                                     } else {
@@ -609,7 +594,7 @@ class ReflectionClosure extends ReflectionFunction
                                             $id_start = $classes[$id_start_ci];
                                         }
                                         if ($id_start[0] !== '\\') {
-                                            $id_start = $nsf.'\\'.$id_start;
+                                            $id_start = $nsf . '\\' . $id_start;
                                         }
                                     }
                                 } elseif ($context === 'use' ||
@@ -620,10 +605,10 @@ class ReflectionClosure extends ReflectionFunction
                                     $context === 'root'
                                 ) {
                                     if (in_array($id_start_ci, $class_keywords)) {
-                                        if (! $inside_structure && ! $id_start_ci === 'static') {
+                                        if (!$inside_structure && !$id_start_ci === 'static') {
                                             $isUsingScope = true;
                                         }
-                                    } elseif (! (\PHP_MAJOR_VERSION >= 7 && in_array($id_start_ci, $builtin_types))) {
+                                    } elseif (!(\PHP_MAJOR_VERSION >= 7 && in_array($id_start_ci, $builtin_types))) {
                                         if ($classes === null) {
                                             $classes = $this->getClasses();
                                         }
@@ -631,12 +616,12 @@ class ReflectionClosure extends ReflectionFunction
                                             $id_start = $classes[$id_start_ci];
                                         }
                                         if ($id_start[0] !== '\\') {
-                                            $id_start = $nsf.'\\'.$id_start;
+                                            $id_start = $nsf . '\\' . $id_start;
                                         }
                                     }
                                 }
                             }
-                            $code .= $id_start.$id_name;
+                            $code .= $id_start . $id_name;
                             $state = $lastState;
                             $i--; //reprocess last token
                     }
@@ -651,10 +636,10 @@ class ReflectionClosure extends ReflectionFunction
                             $state = 'id_name';
                             $context = 'extends';
                             $lastState = 'anonymous';
-                        break;
+                            break;
                         case '{':
                             $state = 'closure';
-                            if (! $inside_structure) {
+                            if (!$inside_structure) {
                                 $inside_structure = true;
                                 $inside_structure_mark = $open;
                             }
@@ -695,7 +680,7 @@ class ReflectionClosure extends ReflectionFunction
                 return "#[$name($arguments)]";
             }, $this->getAttributes());
 
-            if (! empty($attributesCode)) {
+            if (!empty($attributesCode)) {
                 $code = implode("\n", array_merge($attributesCode, [$code]));
             }
         }
@@ -731,6 +716,411 @@ class ReflectionClosure extends ReflectionFunction
             default:
                 return ['array', 'callable', 'string', 'int', 'bool', 'float', 'iterable', 'void', 'object'];
         }
+    }
+
+    /**
+     * Returns the namespace associated to the closure.
+     *
+     * @return string
+     */
+    protected function getClosureNamespaceName()
+    {
+        $ns = $this->getNamespaceName();
+
+        // First class callables...
+        if ($this->getName() !== '{closure}' && empty($ns) && !is_null($this->getClosureScopeClass())) {
+            $ns = $this->getClosureScopeClass()->getNamespaceName();
+        }
+
+        return $ns;
+    }
+
+    /**
+     * Get the tokens.
+     *
+     * @return array
+     */
+    protected function getTokens()
+    {
+        if ($this->tokens === null) {
+            $tokens = $this->getFileTokens();
+            $startLine = $this->getStartLine();
+            $endLine = $this->getEndLine();
+            $results = [];
+            $start = false;
+
+            foreach ($tokens as &$token) {
+                if (!is_array($token)) {
+                    if ($start) {
+                        $results[] = $token;
+                    }
+
+                    continue;
+                }
+
+                $line = $token[2];
+
+                if ($line <= $endLine) {
+                    if ($line >= $startLine) {
+                        $start = true;
+                        $results[] = $token;
+                    }
+
+                    continue;
+                }
+
+                break;
+            }
+
+            $this->tokens = $results;
+        }
+
+        return $this->tokens;
+    }
+
+    /**
+     * Get the file tokens.
+     *
+     * @return array
+     */
+    protected function getFileTokens()
+    {
+        $key = $this->getHashedFileName();
+
+        if (!isset(static::$files[$key])) {
+            static::$files[$key] = token_get_all(file_get_contents($this->getFileName()));
+        }
+
+        return static::$files[$key];
+    }
+
+    /**
+     * The the hash of the current file name.
+     *
+     * @return string
+     */
+    protected function getHashedFileName()
+    {
+        if ($this->hashedName === null) {
+            $this->hashedName = sha1($this->getFileName());
+        }
+
+        return $this->hashedName;
+    }
+
+    /**
+     * Parse the given token.
+     *
+     * @param string $token
+     * @return array
+     */
+    protected function parseNameQualified($token)
+    {
+        $pieces = explode('\\', $token);
+
+        $id_start = array_shift($pieces);
+
+        $id_start_ci = strtolower($id_start);
+
+        $id_name = '\\' . implode('\\', $pieces);
+
+        return [$id_start, $id_start_ci, $id_name];
+    }
+
+    /**
+     * Get the structures.
+     *
+     * @return array
+     */
+    protected function getStructures()
+    {
+        $key = $this->getHashedFileName();
+
+        if (!isset(static::$structures[$key])) {
+            $this->fetchItems();
+        }
+
+        return static::$structures[$key];
+    }
+
+    /**
+     * Fetch the items.
+     *
+     * @return void.
+     */
+    protected function fetchItems()
+    {
+        $key = $this->getHashedFileName();
+
+        $classes = [];
+        $functions = [];
+        $constants = [];
+        $structures = [];
+        $tokens = $this->getFileTokens();
+
+        $open = 0;
+        $state = 'start';
+        $lastState = '';
+        $prefix = '';
+        $name = '';
+        $alias = '';
+        $isFunc = $isConst = false;
+
+        $startLine = $endLine = 0;
+        $structType = $structName = '';
+        $structIgnore = false;
+
+        foreach ($tokens as $token) {
+            switch ($state) {
+                case 'start':
+                    switch ($token[0]) {
+                        case T_CLASS:
+                        case T_INTERFACE:
+                        case T_TRAIT:
+                            $state = 'before_structure';
+                            $startLine = $token[2];
+                            $structType = $token[0] == T_CLASS
+                                ? 'class'
+                                : ($token[0] == T_INTERFACE ? 'interface' : 'trait');
+                            break;
+                        case T_USE:
+                            $state = 'use';
+                            $prefix = $name = $alias = '';
+                            $isFunc = $isConst = false;
+                            break;
+                        case T_FUNCTION:
+                            $state = 'structure';
+                            $structIgnore = true;
+                            break;
+                        case T_NEW:
+                            $state = 'new';
+                            break;
+                        case T_OBJECT_OPERATOR:
+                        case T_DOUBLE_COLON:
+                            $state = 'invoke';
+                            break;
+                    }
+                    break;
+                case 'use':
+                    switch ($token[0]) {
+                        case T_FUNCTION:
+                            $isFunc = true;
+                            break;
+                        case T_CONST:
+                            $isConst = true;
+                            break;
+                        case T_NS_SEPARATOR:
+                            $name .= $token[1];
+                            break;
+                        case T_STRING:
+                            $name .= $token[1];
+                            $alias = $token[1];
+                            break;
+                        case T_NAME_QUALIFIED:
+                            $name .= $token[1];
+                            $pieces = explode('\\', $token[1]);
+                            $alias = end($pieces);
+                            break;
+                        case T_AS:
+                            $lastState = 'use';
+                            $state = 'alias';
+                            break;
+                        case '{':
+                            $prefix = $name;
+                            $name = $alias = '';
+                            $state = 'use-group';
+                            break;
+                        case ',':
+                        case ';':
+                            if ($name === '' || $name[0] !== '\\') {
+                                $name = '\\' . $name;
+                            }
+
+                            if ($alias !== '') {
+                                if ($isFunc) {
+                                    $functions[strtolower($alias)] = $name;
+                                } elseif ($isConst) {
+                                    $constants[$alias] = $name;
+                                } else {
+                                    $classes[strtolower($alias)] = $name;
+                                }
+                            }
+                            $name = $alias = '';
+                            $state = $token === ';' ? 'start' : 'use';
+                            break;
+                    }
+                    break;
+                case 'use-group':
+                    switch ($token[0]) {
+                        case T_NS_SEPARATOR:
+                            $name .= $token[1];
+                            break;
+                        case T_NAME_QUALIFIED:
+                            $name .= $token[1];
+                            $pieces = explode('\\', $token[1]);
+                            $alias = end($pieces);
+                            break;
+                        case T_STRING:
+                            $name .= $token[1];
+                            $alias = $token[1];
+                            break;
+                        case T_AS:
+                            $lastState = 'use-group';
+                            $state = 'alias';
+                            break;
+                        case ',':
+                        case '}':
+
+                            if ($prefix === '' || $prefix[0] !== '\\') {
+                                $prefix = '\\' . $prefix;
+                            }
+
+                            if ($alias !== '') {
+                                if ($isFunc) {
+                                    $functions[strtolower($alias)] = $prefix . $name;
+                                } elseif ($isConst) {
+                                    $constants[$alias] = $prefix . $name;
+                                } else {
+                                    $classes[strtolower($alias)] = $prefix . $name;
+                                }
+                            }
+                            $name = $alias = '';
+                            $state = $token === '}' ? 'use' : 'use-group';
+                            break;
+                    }
+                    break;
+                case 'alias':
+                    if ($token[0] === T_STRING) {
+                        $alias = $token[1];
+                        $state = $lastState;
+                    }
+                    break;
+                case 'new':
+                    switch ($token[0]) {
+                        case T_WHITESPACE:
+                        case T_COMMENT:
+                        case T_DOC_COMMENT:
+                            break 2;
+                        case T_CLASS:
+                            $state = 'structure';
+                            $structIgnore = true;
+                            break;
+                        default:
+                            $state = 'start';
+                    }
+                    break;
+                case 'invoke':
+                    switch ($token[0]) {
+                        case T_WHITESPACE:
+                        case T_COMMENT:
+                        case T_DOC_COMMENT:
+                            break 2;
+                        default:
+                            $state = 'start';
+                    }
+                    break;
+                case 'before_structure':
+                    if ($token[0] == T_STRING) {
+                        $structName = $token[1];
+                        $state = 'structure';
+                    }
+                    break;
+                case 'structure':
+                    switch ($token[0]) {
+                        case '{':
+                        case T_CURLY_OPEN:
+                        case T_DOLLAR_OPEN_CURLY_BRACES:
+                            $open++;
+                            break;
+                        case '}':
+                            if (--$open == 0) {
+                                if (!$structIgnore) {
+                                    $structures[] = [
+                                        'type' => $structType,
+                                        'name' => $structName,
+                                        'start' => $startLine,
+                                        'end' => $endLine,
+                                    ];
+                                }
+                                $structIgnore = false;
+                                $state = 'start';
+                            }
+                            break;
+                        default:
+                            if (is_array($token)) {
+                                $endLine = $token[2];
+                            }
+                    }
+                    break;
+            }
+        }
+
+        static::$classes[$key] = $classes;
+        static::$functions[$key] = $functions;
+        static::$constants[$key] = $constants;
+        static::$structures[$key] = $structures;
+    }
+
+    /**
+     * Get the classes.
+     *
+     * @return array
+     */
+    protected function getClasses()
+    {
+        $key = $this->getHashedFileName();
+
+        if (!isset(static::$classes[$key])) {
+            $this->fetchItems();
+        }
+
+        return static::$classes[$key];
+    }
+
+    /**
+     * Get the functions.
+     *
+     * @return array
+     */
+    protected function getFunctions()
+    {
+        $key = $this->getHashedFileName();
+
+        if (!isset(static::$functions[$key])) {
+            $this->fetchItems();
+        }
+
+        return static::$functions[$key];
+    }
+
+    /**
+     * Gets the constants.
+     *
+     * @return array
+     */
+    protected function getConstants()
+    {
+        $key = $this->getHashedFileName();
+
+        if (!isset(static::$constants[$key])) {
+            $this->fetchItems();
+        }
+
+        return static::$constants[$key];
+    }
+
+    /**
+     * Checks if the closure is "static".
+     *
+     * @return bool
+     */
+    public function isStatic(): bool
+    {
+        if ($this->isStaticClosure === null) {
+            $this->isStaticClosure = strtolower(substr($this->getCode(), 0, 6)) === 'static';
+        }
+
+        return $this->isStaticClosure;
     }
 
     /**
@@ -800,396 +1190,5 @@ class ReflectionClosure extends ReflectionFunction
         }
 
         return $this->isScopeRequired;
-    }
-
-    /**
-     * The the hash of the current file name.
-     *
-     * @return string
-     */
-    protected function getHashedFileName()
-    {
-        if ($this->hashedName === null) {
-            $this->hashedName = sha1($this->getFileName());
-        }
-
-        return $this->hashedName;
-    }
-
-    /**
-     * Get the file tokens.
-     *
-     * @return array
-     */
-    protected function getFileTokens()
-    {
-        $key = $this->getHashedFileName();
-
-        if (! isset(static::$files[$key])) {
-            static::$files[$key] = token_get_all(file_get_contents($this->getFileName()));
-        }
-
-        return static::$files[$key];
-    }
-
-    /**
-     * Get the tokens.
-     *
-     * @return array
-     */
-    protected function getTokens()
-    {
-        if ($this->tokens === null) {
-            $tokens = $this->getFileTokens();
-            $startLine = $this->getStartLine();
-            $endLine = $this->getEndLine();
-            $results = [];
-            $start = false;
-
-            foreach ($tokens as &$token) {
-                if (! is_array($token)) {
-                    if ($start) {
-                        $results[] = $token;
-                    }
-
-                    continue;
-                }
-
-                $line = $token[2];
-
-                if ($line <= $endLine) {
-                    if ($line >= $startLine) {
-                        $start = true;
-                        $results[] = $token;
-                    }
-
-                    continue;
-                }
-
-                break;
-            }
-
-            $this->tokens = $results;
-        }
-
-        return $this->tokens;
-    }
-
-    /**
-     * Get the classes.
-     *
-     * @return array
-     */
-    protected function getClasses()
-    {
-        $key = $this->getHashedFileName();
-
-        if (! isset(static::$classes[$key])) {
-            $this->fetchItems();
-        }
-
-        return static::$classes[$key];
-    }
-
-    /**
-     * Get the functions.
-     *
-     * @return array
-     */
-    protected function getFunctions()
-    {
-        $key = $this->getHashedFileName();
-
-        if (! isset(static::$functions[$key])) {
-            $this->fetchItems();
-        }
-
-        return static::$functions[$key];
-    }
-
-    /**
-     * Gets the constants.
-     *
-     * @return array
-     */
-    protected function getConstants()
-    {
-        $key = $this->getHashedFileName();
-
-        if (! isset(static::$constants[$key])) {
-            $this->fetchItems();
-        }
-
-        return static::$constants[$key];
-    }
-
-    /**
-     * Get the structures.
-     *
-     * @return array
-     */
-    protected function getStructures()
-    {
-        $key = $this->getHashedFileName();
-
-        if (! isset(static::$structures[$key])) {
-            $this->fetchItems();
-        }
-
-        return static::$structures[$key];
-    }
-
-    /**
-     * Fetch the items.
-     *
-     * @return void.
-     */
-    protected function fetchItems()
-    {
-        $key = $this->getHashedFileName();
-
-        $classes = [];
-        $functions = [];
-        $constants = [];
-        $structures = [];
-        $tokens = $this->getFileTokens();
-
-        $open = 0;
-        $state = 'start';
-        $lastState = '';
-        $prefix = '';
-        $name = '';
-        $alias = '';
-        $isFunc = $isConst = false;
-
-        $startLine = $endLine = 0;
-        $structType = $structName = '';
-        $structIgnore = false;
-
-        foreach ($tokens as $token) {
-            switch ($state) {
-                case 'start':
-                    switch ($token[0]) {
-                        case T_CLASS:
-                        case T_INTERFACE:
-                        case T_TRAIT:
-                            $state = 'before_structure';
-                            $startLine = $token[2];
-                            $structType = $token[0] == T_CLASS
-                                                    ? 'class'
-                                                    : ($token[0] == T_INTERFACE ? 'interface' : 'trait');
-                            break;
-                        case T_USE:
-                            $state = 'use';
-                            $prefix = $name = $alias = '';
-                            $isFunc = $isConst = false;
-                            break;
-                        case T_FUNCTION:
-                            $state = 'structure';
-                            $structIgnore = true;
-                            break;
-                        case T_NEW:
-                            $state = 'new';
-                            break;
-                        case T_OBJECT_OPERATOR:
-                        case T_DOUBLE_COLON:
-                            $state = 'invoke';
-                            break;
-                    }
-                    break;
-                case 'use':
-                    switch ($token[0]) {
-                        case T_FUNCTION:
-                            $isFunc = true;
-                            break;
-                        case T_CONST:
-                            $isConst = true;
-                            break;
-                        case T_NS_SEPARATOR:
-                            $name .= $token[1];
-                            break;
-                        case T_STRING:
-                            $name .= $token[1];
-                            $alias = $token[1];
-                            break;
-                        case T_NAME_QUALIFIED:
-                            $name .= $token[1];
-                            $pieces = explode('\\', $token[1]);
-                            $alias = end($pieces);
-                            break;
-                        case T_AS:
-                            $lastState = 'use';
-                            $state = 'alias';
-                            break;
-                        case '{':
-                            $prefix = $name;
-                            $name = $alias = '';
-                            $state = 'use-group';
-                            break;
-                        case ',':
-                        case ';':
-                            if ($name === '' || $name[0] !== '\\') {
-                                $name = '\\'.$name;
-                            }
-
-                            if ($alias !== '') {
-                                if ($isFunc) {
-                                    $functions[strtolower($alias)] = $name;
-                                } elseif ($isConst) {
-                                    $constants[$alias] = $name;
-                                } else {
-                                    $classes[strtolower($alias)] = $name;
-                                }
-                            }
-                            $name = $alias = '';
-                            $state = $token === ';' ? 'start' : 'use';
-                            break;
-                    }
-                    break;
-                case 'use-group':
-                    switch ($token[0]) {
-                        case T_NS_SEPARATOR:
-                            $name .= $token[1];
-                            break;
-                        case T_NAME_QUALIFIED:
-                            $name .= $token[1];
-                            $pieces = explode('\\', $token[1]);
-                            $alias = end($pieces);
-                            break;
-                        case T_STRING:
-                            $name .= $token[1];
-                            $alias = $token[1];
-                            break;
-                        case T_AS:
-                            $lastState = 'use-group';
-                            $state = 'alias';
-                            break;
-                        case ',':
-                        case '}':
-
-                            if ($prefix === '' || $prefix[0] !== '\\') {
-                                $prefix = '\\'.$prefix;
-                            }
-
-                            if ($alias !== '') {
-                                if ($isFunc) {
-                                    $functions[strtolower($alias)] = $prefix.$name;
-                                } elseif ($isConst) {
-                                    $constants[$alias] = $prefix.$name;
-                                } else {
-                                    $classes[strtolower($alias)] = $prefix.$name;
-                                }
-                            }
-                            $name = $alias = '';
-                            $state = $token === '}' ? 'use' : 'use-group';
-                            break;
-                    }
-                    break;
-                case 'alias':
-                    if ($token[0] === T_STRING) {
-                        $alias = $token[1];
-                        $state = $lastState;
-                    }
-                    break;
-                case 'new':
-                    switch ($token[0]) {
-                        case T_WHITESPACE:
-                        case T_COMMENT:
-                        case T_DOC_COMMENT:
-                            break 2;
-                        case T_CLASS:
-                            $state = 'structure';
-                            $structIgnore = true;
-                            break;
-                        default:
-                            $state = 'start';
-                    }
-                    break;
-                case 'invoke':
-                    switch ($token[0]) {
-                        case T_WHITESPACE:
-                        case T_COMMENT:
-                        case T_DOC_COMMENT:
-                            break 2;
-                        default:
-                            $state = 'start';
-                    }
-                    break;
-                case 'before_structure':
-                    if ($token[0] == T_STRING) {
-                        $structName = $token[1];
-                        $state = 'structure';
-                    }
-                    break;
-                case 'structure':
-                    switch ($token[0]) {
-                        case '{':
-                        case T_CURLY_OPEN:
-                        case T_DOLLAR_OPEN_CURLY_BRACES:
-                            $open++;
-                            break;
-                        case '}':
-                            if (--$open == 0) {
-                                if (! $structIgnore) {
-                                    $structures[] = [
-                                        'type'  => $structType,
-                                        'name'  => $structName,
-                                        'start' => $startLine,
-                                        'end'   => $endLine,
-                                    ];
-                                }
-                                $structIgnore = false;
-                                $state = 'start';
-                            }
-                            break;
-                        default:
-                            if (is_array($token)) {
-                                $endLine = $token[2];
-                            }
-                    }
-                    break;
-            }
-        }
-
-        static::$classes[$key] = $classes;
-        static::$functions[$key] = $functions;
-        static::$constants[$key] = $constants;
-        static::$structures[$key] = $structures;
-    }
-
-    /**
-     * Returns the namespace associated to the closure.
-     *
-     * @return string
-     */
-    protected function getClosureNamespaceName()
-    {
-        $ns = $this->getNamespaceName();
-
-        // First class callables...
-        if ($this->getName() !== '{closure}' && empty($ns) && ! is_null($this->getClosureScopeClass())) {
-            $ns = $this->getClosureScopeClass()->getNamespaceName();
-        }
-
-        return $ns;
-    }
-
-    /**
-     * Parse the given token.
-     *
-     * @param  string  $token
-     * @return array
-     */
-    protected function parseNameQualified($token)
-    {
-        $pieces = explode('\\', $token);
-
-        $id_start = array_shift($pieces);
-
-        $id_start_ci = strtolower($id_start);
-
-        $id_name = '\\'.implode('\\', $pieces);
-
-        return [$id_start, $id_start_ci, $id_name];
     }
 }

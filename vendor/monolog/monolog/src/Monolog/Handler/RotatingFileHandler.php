@@ -44,10 +44,10 @@ class RotatingFileHandler extends StreamHandler
     protected $dateFormat;
 
     /**
-     * @param string     $filename
-     * @param int        $maxFiles       The maximal amount of files to keep (0 means unlimited)
-     * @param int|null   $filePermission Optional file permissions (default (0644) are only for owner read/write)
-     * @param bool       $useLocking     Try to lock log file before doing any writes
+     * @param string $filename
+     * @param int $maxFiles The maximal amount of files to keep (0 means unlimited)
+     * @param int|null $filePermission Optional file permissions (default (0644) are only for owner read/write)
+     * @param bool $useLocking Try to lock log file before doing any writes
      */
     public function __construct(string $filename, int $maxFiles = 0, $level = Logger::DEBUG, bool $bubble = true, ?int $filePermission = null, bool $useLocking = false)
     {
@@ -60,16 +60,20 @@ class RotatingFileHandler extends StreamHandler
         parent::__construct($this->getTimedFilename(), $level, $bubble, $filePermission, $useLocking);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function close(): void
+    protected function getTimedFilename(): string
     {
-        parent::close();
+        $fileInfo = pathinfo($this->filename);
+        $timedFilename = str_replace(
+            ['{filename}', '{date}'],
+            [$fileInfo['filename'], date($this->dateFormat)],
+            $fileInfo['dirname'] . '/' . $this->filenameFormat
+        );
 
-        if (true === $this->mustRotate) {
-            $this->rotate();
+        if (isset($fileInfo['extension'])) {
+            $timedFilename .= '.' . $fileInfo['extension'];
         }
+
+        return $timedFilename;
     }
 
     /**
@@ -82,47 +86,6 @@ class RotatingFileHandler extends StreamHandler
         if (true === $this->mustRotate) {
             $this->rotate();
         }
-    }
-
-    public function setFilenameFormat(string $filenameFormat, string $dateFormat): self
-    {
-        if (!preg_match('{^[Yy](([/_.-]?m)([/_.-]?d)?)?$}', $dateFormat)) {
-            throw new InvalidArgumentException(
-                'Invalid date format - format must be one of '.
-                'RotatingFileHandler::FILE_PER_DAY ("Y-m-d"), RotatingFileHandler::FILE_PER_MONTH ("Y-m") '.
-                'or RotatingFileHandler::FILE_PER_YEAR ("Y"), or you can set one of the '.
-                'date formats using slashes, underscores and/or dots instead of dashes.'
-            );
-        }
-        if (substr_count($filenameFormat, '{date}') === 0) {
-            throw new InvalidArgumentException(
-                'Invalid filename format - format must contain at least `{date}`, because otherwise rotating is impossible.'
-            );
-        }
-        $this->filenameFormat = $filenameFormat;
-        $this->dateFormat = $dateFormat;
-        $this->url = $this->getTimedFilename();
-        $this->close();
-
-        return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function write(array $record): void
-    {
-        // on the first record written, if the log is new, we should rotate (once per day)
-        if (null === $this->mustRotate) {
-            $this->mustRotate = null === $this->url || !file_exists($this->url);
-        }
-
-        if ($this->nextRotation <= $record['datetime']) {
-            $this->mustRotate = true;
-            $this->close();
-        }
-
-        parent::write($record);
     }
 
     /**
@@ -170,22 +133,6 @@ class RotatingFileHandler extends StreamHandler
         $this->mustRotate = false;
     }
 
-    protected function getTimedFilename(): string
-    {
-        $fileInfo = pathinfo($this->filename);
-        $timedFilename = str_replace(
-            ['{filename}', '{date}'],
-            [$fileInfo['filename'], date($this->dateFormat)],
-            $fileInfo['dirname'] . '/' . $this->filenameFormat
-        );
-
-        if (isset($fileInfo['extension'])) {
-            $timedFilename .= '.'.$fileInfo['extension'];
-        }
-
-        return $timedFilename;
-    }
-
     protected function getGlobPattern(): string
     {
         $fileInfo = pathinfo($this->filename);
@@ -199,9 +146,62 @@ class RotatingFileHandler extends StreamHandler
             $fileInfo['dirname'] . '/' . $this->filenameFormat
         );
         if (isset($fileInfo['extension'])) {
-            $glob .= '.'.$fileInfo['extension'];
+            $glob .= '.' . $fileInfo['extension'];
         }
 
         return $glob;
+    }
+
+    public function setFilenameFormat(string $filenameFormat, string $dateFormat): self
+    {
+        if (!preg_match('{^[Yy](([/_.-]?m)([/_.-]?d)?)?$}', $dateFormat)) {
+            throw new InvalidArgumentException(
+                'Invalid date format - format must be one of ' .
+                'RotatingFileHandler::FILE_PER_DAY ("Y-m-d"), RotatingFileHandler::FILE_PER_MONTH ("Y-m") ' .
+                'or RotatingFileHandler::FILE_PER_YEAR ("Y"), or you can set one of the ' .
+                'date formats using slashes, underscores and/or dots instead of dashes.'
+            );
+        }
+        if (substr_count($filenameFormat, '{date}') === 0) {
+            throw new InvalidArgumentException(
+                'Invalid filename format - format must contain at least `{date}`, because otherwise rotating is impossible.'
+            );
+        }
+        $this->filenameFormat = $filenameFormat;
+        $this->dateFormat = $dateFormat;
+        $this->url = $this->getTimedFilename();
+        $this->close();
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function close(): void
+    {
+        parent::close();
+
+        if (true === $this->mustRotate) {
+            $this->rotate();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record): void
+    {
+        // on the first record written, if the log is new, we should rotate (once per day)
+        if (null === $this->mustRotate) {
+            $this->mustRotate = null === $this->url || !file_exists($this->url);
+        }
+
+        if ($this->nextRotation <= $record['datetime']) {
+            $this->mustRotate = true;
+            $this->close();
+        }
+
+        parent::write($record);
     }
 }

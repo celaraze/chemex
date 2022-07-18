@@ -22,7 +22,7 @@ $transformDiff = function ($input) {
     ]);
 };
 
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'formats' => [
         'L' => 'DD.MM.YYYY',
     ],
@@ -63,15 +63,15 @@ return array_replace_recursive(require __DIR__.'/en.php', [
     'a_second' => ':count sekunt',
 
     'ago' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' ozal';
+        return $transformDiff($time) . ' ozal';
     },
     'from_now' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' soňra';
+        return $transformDiff($time) . ' soňra';
     },
     'after' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' soň';
+        return $transformDiff($time) . ' soň';
     },
     'before' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' öň';
+        return $transformDiff($time) . ' öň';
     },
 ]);

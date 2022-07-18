@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 
 /**
@@ -39,22 +39,22 @@ class FilterRepository implements RepositoryInterface
     {
         if (isset($options['only'])) {
             if (!is_array($options['only'])) {
-                throw new \InvalidArgumentException('"only" key for repository '.$repo->getRepoName().' should be an array');
+                throw new \InvalidArgumentException('"only" key for repository ' . $repo->getRepoName() . ' should be an array');
             }
             $this->only = BasePackage::packageNamesToRegexp($options['only']);
         }
         if (isset($options['exclude'])) {
             if (!is_array($options['exclude'])) {
-                throw new \InvalidArgumentException('"exclude" key for repository '.$repo->getRepoName().' should be an array');
+                throw new \InvalidArgumentException('"exclude" key for repository ' . $repo->getRepoName() . ' should be an array');
             }
             $this->exclude = BasePackage::packageNamesToRegexp($options['exclude']);
         }
         if ($this->exclude && $this->only) {
-            throw new \InvalidArgumentException('Only one of "only" and "exclude" can be specified for repository '.$repo->getRepoName());
+            throw new \InvalidArgumentException('Only one of "only" and "exclude" can be specified for repository ' . $repo->getRepoName());
         }
         if (isset($options['canonical'])) {
             if (!is_bool($options['canonical'])) {
-                throw new \InvalidArgumentException('"canonical" key for repository '.$repo->getRepoName().' should be a boolean');
+                throw new \InvalidArgumentException('"canonical" key for repository ' . $repo->getRepoName() . ' should be a boolean');
             }
             $this->canonical = $options['canonical'];
         }
@@ -95,6 +95,28 @@ class FilterRepository implements RepositoryInterface
         }
 
         return $this->repo->findPackage($name, $constraint);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    private function isAllowed(string $name): bool
+    {
+        if (!$this->only && !$this->exclude) {
+            return true;
+        }
+
+        if ($this->only) {
+            return Preg::isMatch($this->only, $name);
+        }
+
+        if ($this->exclude === null) {
+            return true;
+        }
+
+        return !Preg::isMatch($this->exclude, $name);
     }
 
     /**
@@ -151,21 +173,6 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getPackages(): array
-    {
-        $result = array();
-        foreach ($this->repo->getPackages() as $package) {
-            if ($this->isAllowed($package->getName())) {
-                $result[] = $package;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getProviders($packageName): array
     {
         $result = array();
@@ -191,24 +198,17 @@ class FilterRepository implements RepositoryInterface
     }
 
     /**
-     * @param string $name
-     *
-     * @return bool
+     * @inheritDoc
      */
-    private function isAllowed(string $name): bool
+    public function getPackages(): array
     {
-        if (!$this->only && !$this->exclude) {
-            return true;
+        $result = array();
+        foreach ($this->repo->getPackages() as $package) {
+            if ($this->isAllowed($package->getName())) {
+                $result[] = $package;
+            }
         }
 
-        if ($this->only) {
-            return Preg::isMatch($this->only, $name);
-        }
-
-        if ($this->exclude === null) {
-            return true;
-        }
-
-        return !Preg::isMatch($this->exclude, $name);
+        return $result;
     }
 }

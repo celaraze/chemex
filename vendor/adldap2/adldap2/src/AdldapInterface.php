@@ -2,21 +2,21 @@
 
 namespace Adldap;
 
-use Adldap\Connections\ProviderInterface;
 use Adldap\Connections\ConnectionInterface;
+use Adldap\Connections\ProviderInterface;
 
 interface AdldapInterface
 {
     /**
      * Add a provider by the specified name.
      *
-     * @param mixed               $configuration
-     * @param string              $name
+     * @param mixed $configuration
+     * @param string $name
      * @param ConnectionInterface $connection
      *
+     * @return $this
      * @throws \InvalidArgumentException When an invalid type is given as the configuration argument.
      *
-     * @return $this
      */
     public function addProvider($configuration, $name, ConnectionInterface $connection = null);
 
@@ -32,9 +32,9 @@ interface AdldapInterface
      *
      * @param string $name
      *
+     * @return ProviderInterface
      * @throws AdldapException When the specified provider does not exist.
      *
-     * @return ProviderInterface
      */
     public function getProvider($name);
 
@@ -50,9 +50,9 @@ interface AdldapInterface
     /**
      * Retrieves the first default provider.
      *
+     * @return ProviderInterface
      * @throws AdldapException When no default provider exists.
      *
-     * @return ProviderInterface
      */
     public function getDefaultProvider();
 
@@ -83,7 +83,7 @@ interface AdldapInterface
      * Call methods upon the default provider dynamically.
      *
      * @param string $method
-     * @param array  $parameters
+     * @param array $parameters
      *
      * @return mixed
      */

@@ -84,17 +84,17 @@ class WorkerOptions
     /**
      * Create a new worker options instance.
      *
-     * @param  string  $name
-     * @param  int|int[]  $backoff
-     * @param  int  $memory
-     * @param  int  $timeout
-     * @param  int  $sleep
-     * @param  int  $maxTries
-     * @param  bool  $force
-     * @param  bool  $stopWhenEmpty
-     * @param  int  $maxJobs
-     * @param  int  $maxTime
-     * @param  int  $rest
+     * @param string $name
+     * @param int|int[] $backoff
+     * @param int $memory
+     * @param int $timeout
+     * @param int $sleep
+     * @param int $maxTries
+     * @param bool $force
+     * @param bool $stopWhenEmpty
+     * @param int $maxJobs
+     * @param int $maxTime
+     * @param int $rest
      * @return void
      */
     public function __construct($name = 'default', $backoff = 0, $memory = 128, $timeout = 60, $sleep = 3, $maxTries = 1,

@@ -7,7 +7,8 @@
 
 <img src="https://files.phpclasses.org/graphics/phpclasses/innovation-award-logo.png" height="90px" alt="PHPClasses Innovation Award" align="left"/>
 
-Goridge is high performance PHP-to-Golang codec library which works over native PHP sockets and Golang net/rpc package. The library allows you to call Go service methods from PHP with minimal footprint, structures and `[]byte` support.
+Goridge is high performance PHP-to-Golang codec library which works over native PHP sockets and Golang net/rpc package.
+The library allows you to call Go service methods from PHP with minimal footprint, structures and `[]byte` support.
 
 <br/>
 See https://github.com/spiral/roadrunner - High-performance PHP application server, load-balancer and process manager written in Golang
@@ -15,17 +16,17 @@ See https://github.com/spiral/roadrunner - High-performance PHP application serv
 
 ## Features
 
- - no external dependencies or services, drop-in (64bit PHP version required)
- - sockets over TCP or Unix (ext-sockets is required), standard pipes
- - very fast (300k calls per second on Ryzen 1700X over 20 threads)
- - native `net/rpc` integration, ability to connect to existed application(s)
- - standalone protocol usage
- - structured data transfer using json or msgpack
- - `[]byte` transfer, including big payloads
- - service, message and transport level error handling
- - hackable
- - works on Windows
- - unix sockets powered (also on Windows)
+- no external dependencies or services, drop-in (64bit PHP version required)
+- sockets over TCP or Unix (ext-sockets is required), standard pipes
+- very fast (300k calls per second on Ryzen 1700X over 20 threads)
+- native `net/rpc` integration, ability to connect to existed application(s)
+- standalone protocol usage
+- structured data transfer using json or msgpack
+- `[]byte` transfer, including big payloads
+- service, message and transport level error handling
+- hackable
+- works on Windows
+- unix sockets powered (also on Windows)
 
 ## Installation
 

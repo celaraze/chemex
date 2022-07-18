@@ -40,12 +40,12 @@ class FilePermissionsAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application's project directory permissions are not setup in a secure manner. This may "
-            ."expose your application to be compromised if another account on the same server is vulnerable. "
-            ."This can be even more dangerous if you used shared hosting. All project directories in Laravel "
-            ."should be setup with a max of 775 permissions and most app files should be provided 664 (except "
-            ."executables such as Artisan or your deployment scripts which should be provided 775 permissions). "
-            ."These are the max level of permissions in order to be secure. Your unsafe files or directories "
-            ."include: {$this->unsafeFilesOrDirs}.";
+            . "expose your application to be compromised if another account on the same server is vulnerable. "
+            . "This can be even more dangerous if you used shared hosting. All project directories in Laravel "
+            . "should be setup with a max of 775 permissions and most app files should be provided 664 (except "
+            . "executables such as Artisan or your deployment scripts which should be provided 775 permissions). "
+            . "These are the max level of permissions in order to be secure. Your unsafe files or directories "
+            . "include: {$this->unsafeFilesOrDirs}.";
     }
 
     /**
@@ -76,10 +76,10 @@ class FilePermissionsAnalyzer extends SecurityAnalyzer
             return file_exists($path) && ($allowedPermission < decoct(fileperms($path) & 0777));
         })->keys()->map(function ($path) {
             return Str::contains($path, base_path())
-                ? ('['.trim(Str::after($path, base_path()), '/').']') : '['.$path.']';
+                ? ('[' . trim(Str::after($path, base_path()), '/') . ']') : '[' . $path . ']';
         })->join(', ', ' and ');
 
-        if (! empty($this->unsafeFilesOrDirs)) {
+        if (!empty($this->unsafeFilesOrDirs)) {
             $this->markFailed();
         }
     }

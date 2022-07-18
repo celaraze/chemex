@@ -121,50 +121,12 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
         return $this->traces;
     }
 
-    private function addTraces(Response $response)
-    {
-        $traceString = null;
-
-        if ('full' === $this->options['trace_level']) {
-            $traceString = $this->getLog();
-        }
-
-        if ('short' === $this->options['trace_level'] && $masterId = array_key_first($this->traces)) {
-            $traceString = implode('/', $this->traces[$masterId]);
-        }
-
-        if (null !== $traceString) {
-            $response->headers->add([$this->options['trace_header'] => $traceString]);
-        }
-    }
-
-    /**
-     * Returns a log message for the events of the last request processing.
-     */
-    public function getLog(): string
-    {
-        $log = [];
-        foreach ($this->traces as $request => $traces) {
-            $log[] = sprintf('%s: %s', $request, implode(', ', $traces));
-        }
-
-        return implode('; ', $log);
-    }
-
     /**
      * Gets the Request instance associated with the main request.
      */
     public function getRequest(): Request
     {
         return $this->request;
-    }
-
-    /**
-     * Gets the Kernel instance.
-     */
-    public function getKernel(): HttpKernelInterface
-    {
-        return $this->kernel;
     }
 
     /**
@@ -234,25 +196,16 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Calculates the key we use in the "trace" array for a given request.
      */
-    public function terminate(Request $request, Response $response)
+    private function getTraceKey(Request $request): string
     {
-        if ($this->getKernel() instanceof TerminableInterface) {
-            $this->getKernel()->terminate($request, $response);
+        $path = $request->getPathInfo();
+        if ($qs = $request->getQueryString()) {
+            $path .= '?' . $qs;
         }
-    }
 
-    /**
-     * Forwards the Request to the backend without storing the Response in the cache.
-     *
-     * @param bool $catch Whether to process exceptions
-     */
-    protected function pass(Request $request, bool $catch = false): Response
-    {
-        $this->record($request, 'pass');
-
-        return $this->forward($request, $catch);
+        return $request->getMethod() . ' ' . $path;
     }
 
     /**
@@ -296,144 +249,23 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     }
 
     /**
-     * Lookups a Response from the cache for the given Request.
-     *
-     * When a matching cache entry is found and is fresh, it uses it as the
-     * response without forwarding any request to the backend. When a matching
-     * cache entry is found but is stale, it attempts to "validate" the entry with
-     * the backend using conditional GET. When no matching cache entry is found,
-     * it triggers "miss" processing.
+     * Forwards the Request to the backend without storing the Response in the cache.
      *
      * @param bool $catch Whether to process exceptions
-     *
-     * @throws \Exception
      */
-    protected function lookup(Request $request, bool $catch = false): Response
+    protected function pass(Request $request, bool $catch = false): Response
     {
-        try {
-            $entry = $this->store->lookup($request);
-        } catch (\Exception $e) {
-            $this->record($request, 'lookup-failed');
+        $this->record($request, 'pass');
 
-            if ($this->options['debug']) {
-                throw $e;
-            }
-
-            return $this->pass($request, $catch);
-        }
-
-        if (null === $entry) {
-            $this->record($request, 'miss');
-
-            return $this->fetch($request, $catch);
-        }
-
-        if (!$this->isFreshEnough($request, $entry)) {
-            $this->record($request, 'stale');
-
-            return $this->validate($request, $entry, $catch);
-        }
-
-        if ($entry->headers->hasCacheControlDirective('no-cache')) {
-            return $this->validate($request, $entry, $catch);
-        }
-
-        $this->record($request, 'fresh');
-
-        $entry->headers->set('Age', $entry->getAge());
-
-        return $entry;
+        return $this->forward($request, $catch);
     }
 
     /**
-     * Validates that a cache entry is fresh.
-     *
-     * The original request is used as a template for a conditional
-     * GET request with the backend.
-     *
-     * @param bool $catch Whether to process exceptions
+     * Records that an event took place.
      */
-    protected function validate(Request $request, Response $entry, bool $catch = false): Response
+    private function record(Request $request, string $event)
     {
-        $subRequest = clone $request;
-
-        // send no head requests because we want content
-        if ('HEAD' === $request->getMethod()) {
-            $subRequest->setMethod('GET');
-        }
-
-        // add our cached last-modified validator
-        if ($entry->headers->has('Last-Modified')) {
-            $subRequest->headers->set('If-Modified-Since', $entry->headers->get('Last-Modified'));
-        }
-
-        // Add our cached etag validator to the environment.
-        // We keep the etags from the client to handle the case when the client
-        // has a different private valid entry which is not cached here.
-        $cachedEtags = $entry->getEtag() ? [$entry->getEtag()] : [];
-        $requestEtags = $request->getETags();
-        if ($etags = array_unique(array_merge($cachedEtags, $requestEtags))) {
-            $subRequest->headers->set('If-None-Match', implode(', ', $etags));
-        }
-
-        $response = $this->forward($subRequest, $catch, $entry);
-
-        if (304 == $response->getStatusCode()) {
-            $this->record($request, 'valid');
-
-            // return the response and not the cache entry if the response is valid but not cached
-            $etag = $response->getEtag();
-            if ($etag && \in_array($etag, $requestEtags) && !\in_array($etag, $cachedEtags)) {
-                return $response;
-            }
-
-            $entry = clone $entry;
-            $entry->headers->remove('Date');
-
-            foreach (['Date', 'Expires', 'Cache-Control', 'ETag', 'Last-Modified'] as $name) {
-                if ($response->headers->has($name)) {
-                    $entry->headers->set($name, $response->headers->get($name));
-                }
-            }
-
-            $response = $entry;
-        } else {
-            $this->record($request, 'invalid');
-        }
-
-        if ($response->isCacheable()) {
-            $this->store($request, $response);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Unconditionally fetches a fresh response from the backend and
-     * stores it in the cache if is cacheable.
-     *
-     * @param bool $catch Whether to process exceptions
-     */
-    protected function fetch(Request $request, bool $catch = false): Response
-    {
-        $subRequest = clone $request;
-
-        // send no head requests because we want content
-        if ('HEAD' === $request->getMethod()) {
-            $subRequest->setMethod('GET');
-        }
-
-        // avoid that the backend sends no content
-        $subRequest->headers->remove('If-Modified-Since');
-        $subRequest->headers->remove('If-None-Match');
-
-        $response = $this->forward($subRequest, $catch);
-
-        if ($response->isCacheable()) {
-            $this->store($request, $response);
-        }
-
-        return $response;
+        $this->traces[$this->getTraceKey($request)][] = $event;
     }
 
     /**
@@ -442,7 +274,7 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
      * All backend requests (cache passes, fetches, cache validations)
      * run through this method.
      *
-     * @param bool          $catch Whether to catch exceptions or not
+     * @param bool $catch Whether to catch exceptions or not
      * @param Response|null $entry A Response instance (the stale entry if present, null otherwise)
      *
      * @return Response
@@ -513,6 +345,137 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
         return $response;
     }
 
+    protected function processResponseBody(Request $request, Response $response)
+    {
+        if ($this->surrogate?->needsParsing($response)) {
+            $this->surrogate->process($request, $response);
+        }
+    }
+
+    /**
+     * Checks if the Request includes authorization or other sensitive information
+     * that should cause the Response to be considered private by default.
+     */
+    private function isPrivateRequest(Request $request): bool
+    {
+        foreach ($this->options['private_headers'] as $key) {
+            $key = strtolower(str_replace('HTTP_', '', $key));
+
+            if ('cookie' === $key) {
+                if (\count($request->cookies->all())) {
+                    return true;
+                }
+            } elseif ($request->headers->has($key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Unconditionally fetches a fresh response from the backend and
+     * stores it in the cache if is cacheable.
+     *
+     * @param bool $catch Whether to process exceptions
+     */
+    protected function fetch(Request $request, bool $catch = false): Response
+    {
+        $subRequest = clone $request;
+
+        // send no head requests because we want content
+        if ('HEAD' === $request->getMethod()) {
+            $subRequest->setMethod('GET');
+        }
+
+        // avoid that the backend sends no content
+        $subRequest->headers->remove('If-Modified-Since');
+        $subRequest->headers->remove('If-None-Match');
+
+        $response = $this->forward($subRequest, $catch);
+
+        if ($response->isCacheable()) {
+            $this->store($request, $response);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Writes the Response to the cache.
+     *
+     * @throws \Exception
+     */
+    protected function store(Request $request, Response $response)
+    {
+        try {
+            $this->store->write($request, $response);
+
+            $this->record($request, 'store');
+
+            $response->headers->set('Age', $response->getAge());
+        } catch (\Exception $e) {
+            $this->record($request, 'store-failed');
+
+            if ($this->options['debug']) {
+                throw $e;
+            }
+        }
+
+        // now that the response is cached, release the lock
+        $this->store->unlock($request);
+    }
+
+    /**
+     * Lookups a Response from the cache for the given Request.
+     *
+     * When a matching cache entry is found and is fresh, it uses it as the
+     * response without forwarding any request to the backend. When a matching
+     * cache entry is found but is stale, it attempts to "validate" the entry with
+     * the backend using conditional GET. When no matching cache entry is found,
+     * it triggers "miss" processing.
+     *
+     * @param bool $catch Whether to process exceptions
+     *
+     * @throws \Exception
+     */
+    protected function lookup(Request $request, bool $catch = false): Response
+    {
+        try {
+            $entry = $this->store->lookup($request);
+        } catch (\Exception $e) {
+            $this->record($request, 'lookup-failed');
+
+            if ($this->options['debug']) {
+                throw $e;
+            }
+
+            return $this->pass($request, $catch);
+        }
+
+        if (null === $entry) {
+            $this->record($request, 'miss');
+
+            return $this->fetch($request, $catch);
+        }
+
+        if (!$this->isFreshEnough($request, $entry)) {
+            $this->record($request, 'stale');
+
+            return $this->validate($request, $entry, $catch);
+        }
+
+        if ($entry->headers->hasCacheControlDirective('no-cache')) {
+            return $this->validate($request, $entry, $catch);
+        }
+
+        $this->record($request, 'fresh');
+
+        $entry->headers->set('Age', $entry->getAge());
+
+        return $entry;
+    }
+
     /**
      * Checks whether the cache entry is "fresh enough" to satisfy the Request.
      */
@@ -575,112 +538,6 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
     }
 
     /**
-     * Writes the Response to the cache.
-     *
-     * @throws \Exception
-     */
-    protected function store(Request $request, Response $response)
-    {
-        try {
-            $this->store->write($request, $response);
-
-            $this->record($request, 'store');
-
-            $response->headers->set('Age', $response->getAge());
-        } catch (\Exception $e) {
-            $this->record($request, 'store-failed');
-
-            if ($this->options['debug']) {
-                throw $e;
-            }
-        }
-
-        // now that the response is cached, release the lock
-        $this->store->unlock($request);
-    }
-
-    /**
-     * Restores the Response body.
-     */
-    private function restoreResponseBody(Request $request, Response $response)
-    {
-        if ($response->headers->has('X-Body-Eval')) {
-            ob_start();
-
-            if ($response->headers->has('X-Body-File')) {
-                include $response->headers->get('X-Body-File');
-            } else {
-                eval('; ?>'.$response->getContent().'<?php ;');
-            }
-
-            $response->setContent(ob_get_clean());
-            $response->headers->remove('X-Body-Eval');
-            if (!$response->headers->has('Transfer-Encoding')) {
-                $response->headers->set('Content-Length', \strlen($response->getContent()));
-            }
-        } elseif ($response->headers->has('X-Body-File')) {
-            // Response does not include possibly dynamic content (ESI, SSI), so we need
-            // not handle the content for HEAD requests
-            if (!$request->isMethod('HEAD')) {
-                $response->setContent(file_get_contents($response->headers->get('X-Body-File')));
-            }
-        } else {
-            return;
-        }
-
-        $response->headers->remove('X-Body-File');
-    }
-
-    protected function processResponseBody(Request $request, Response $response)
-    {
-        if ($this->surrogate?->needsParsing($response)) {
-            $this->surrogate->process($request, $response);
-        }
-    }
-
-    /**
-     * Checks if the Request includes authorization or other sensitive information
-     * that should cause the Response to be considered private by default.
-     */
-    private function isPrivateRequest(Request $request): bool
-    {
-        foreach ($this->options['private_headers'] as $key) {
-            $key = strtolower(str_replace('HTTP_', '', $key));
-
-            if ('cookie' === $key) {
-                if (\count($request->cookies->all())) {
-                    return true;
-                }
-            } elseif ($request->headers->has($key)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Records that an event took place.
-     */
-    private function record(Request $request, string $event)
-    {
-        $this->traces[$this->getTraceKey($request)][] = $event;
-    }
-
-    /**
-     * Calculates the key we use in the "trace" array for a given request.
-     */
-    private function getTraceKey(Request $request): string
-    {
-        $path = $request->getPathInfo();
-        if ($qs = $request->getQueryString()) {
-            $path .= '?'.$qs;
-        }
-
-        return $request->getMethod().' '.$path;
-    }
-
-    /**
      * Checks whether the given (cached) response may be served as "stale" when a revalidation
      * is currently in progress.
      */
@@ -707,5 +564,148 @@ class HttpCache implements HttpKernelInterface, TerminableInterface
         }
 
         return $wait < 100;
+    }
+
+    /**
+     * Validates that a cache entry is fresh.
+     *
+     * The original request is used as a template for a conditional
+     * GET request with the backend.
+     *
+     * @param bool $catch Whether to process exceptions
+     */
+    protected function validate(Request $request, Response $entry, bool $catch = false): Response
+    {
+        $subRequest = clone $request;
+
+        // send no head requests because we want content
+        if ('HEAD' === $request->getMethod()) {
+            $subRequest->setMethod('GET');
+        }
+
+        // add our cached last-modified validator
+        if ($entry->headers->has('Last-Modified')) {
+            $subRequest->headers->set('If-Modified-Since', $entry->headers->get('Last-Modified'));
+        }
+
+        // Add our cached etag validator to the environment.
+        // We keep the etags from the client to handle the case when the client
+        // has a different private valid entry which is not cached here.
+        $cachedEtags = $entry->getEtag() ? [$entry->getEtag()] : [];
+        $requestEtags = $request->getETags();
+        if ($etags = array_unique(array_merge($cachedEtags, $requestEtags))) {
+            $subRequest->headers->set('If-None-Match', implode(', ', $etags));
+        }
+
+        $response = $this->forward($subRequest, $catch, $entry);
+
+        if (304 == $response->getStatusCode()) {
+            $this->record($request, 'valid');
+
+            // return the response and not the cache entry if the response is valid but not cached
+            $etag = $response->getEtag();
+            if ($etag && \in_array($etag, $requestEtags) && !\in_array($etag, $cachedEtags)) {
+                return $response;
+            }
+
+            $entry = clone $entry;
+            $entry->headers->remove('Date');
+
+            foreach (['Date', 'Expires', 'Cache-Control', 'ETag', 'Last-Modified'] as $name) {
+                if ($response->headers->has($name)) {
+                    $entry->headers->set($name, $response->headers->get($name));
+                }
+            }
+
+            $response = $entry;
+        } else {
+            $this->record($request, 'invalid');
+        }
+
+        if ($response->isCacheable()) {
+            $this->store($request, $response);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Restores the Response body.
+     */
+    private function restoreResponseBody(Request $request, Response $response)
+    {
+        if ($response->headers->has('X-Body-Eval')) {
+            ob_start();
+
+            if ($response->headers->has('X-Body-File')) {
+                include $response->headers->get('X-Body-File');
+            } else {
+                eval('; ?>' . $response->getContent() . '<?php ;');
+            }
+
+            $response->setContent(ob_get_clean());
+            $response->headers->remove('X-Body-Eval');
+            if (!$response->headers->has('Transfer-Encoding')) {
+                $response->headers->set('Content-Length', \strlen($response->getContent()));
+            }
+        } elseif ($response->headers->has('X-Body-File')) {
+            // Response does not include possibly dynamic content (ESI, SSI), so we need
+            // not handle the content for HEAD requests
+            if (!$request->isMethod('HEAD')) {
+                $response->setContent(file_get_contents($response->headers->get('X-Body-File')));
+            }
+        } else {
+            return;
+        }
+
+        $response->headers->remove('X-Body-File');
+    }
+
+    private function addTraces(Response $response)
+    {
+        $traceString = null;
+
+        if ('full' === $this->options['trace_level']) {
+            $traceString = $this->getLog();
+        }
+
+        if ('short' === $this->options['trace_level'] && $masterId = array_key_first($this->traces)) {
+            $traceString = implode('/', $this->traces[$masterId]);
+        }
+
+        if (null !== $traceString) {
+            $response->headers->add([$this->options['trace_header'] => $traceString]);
+        }
+    }
+
+    /**
+     * Returns a log message for the events of the last request processing.
+     */
+    public function getLog(): string
+    {
+        $log = [];
+        foreach ($this->traces as $request => $traces) {
+            $log[] = sprintf('%s: %s', $request, implode(', ', $traces));
+        }
+
+        return implode('; ', $log);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function terminate(Request $request, Response $response)
+    {
+        if ($this->getKernel() instanceof TerminableInterface) {
+            $this->getKernel()->terminate($request, $response);
+        }
+    }
+
+    /**
+     * Gets the Kernel instance.
+     */
+    public function getKernel(): HttpKernelInterface
+    {
+        return $this->kernel;
     }
 }

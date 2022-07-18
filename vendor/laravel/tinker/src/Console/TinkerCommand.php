@@ -56,7 +56,7 @@ class TinkerCommand extends Command
         $shell->addCommands($this->getCommands());
         $shell->setIncludes($this->argument('include'));
 
-        $path = Env::get('COMPOSER_VENDOR_DIR', $this->getLaravel()->basePath().DIRECTORY_SEPARATOR.'vendor');
+        $path = Env::get('COMPOSER_VENDOR_DIR', $this->getLaravel()->basePath() . DIRECTORY_SEPARATOR . 'vendor');
 
         $path .= '/composer/autoload_classmap.php';
 
@@ -85,6 +85,32 @@ class TinkerCommand extends Command
     }
 
     /**
+     * Get an array of Laravel tailored casters.
+     *
+     * @return array
+     */
+    protected function getCasters()
+    {
+        $casters = [
+            'Illuminate\Support\Collection' => 'Laravel\Tinker\TinkerCaster::castCollection',
+            'Illuminate\Support\HtmlString' => 'Laravel\Tinker\TinkerCaster::castHtmlString',
+            'Illuminate\Support\Stringable' => 'Laravel\Tinker\TinkerCaster::castStringable',
+        ];
+
+        if (class_exists('Illuminate\Database\Eloquent\Model')) {
+            $casters['Illuminate\Database\Eloquent\Model'] = 'Laravel\Tinker\TinkerCaster::castModel';
+        }
+
+        if (class_exists('Illuminate\Foundation\Application')) {
+            $casters['Illuminate\Foundation\Application'] = 'Laravel\Tinker\TinkerCaster::castApplication';
+        }
+
+        $config = $this->getLaravel()->make('config');
+
+        return array_merge($casters, (array)$config->get('tinker.casters', []));
+    }
+
+    /**
      * Get artisan commands to pass through to PsySH.
      *
      * @return array
@@ -108,32 +134,6 @@ class TinkerCommand extends Command
         }
 
         return $commands;
-    }
-
-    /**
-     * Get an array of Laravel tailored casters.
-     *
-     * @return array
-     */
-    protected function getCasters()
-    {
-        $casters = [
-            'Illuminate\Support\Collection' => 'Laravel\Tinker\TinkerCaster::castCollection',
-            'Illuminate\Support\HtmlString' => 'Laravel\Tinker\TinkerCaster::castHtmlString',
-            'Illuminate\Support\Stringable' => 'Laravel\Tinker\TinkerCaster::castStringable',
-        ];
-
-        if (class_exists('Illuminate\Database\Eloquent\Model')) {
-            $casters['Illuminate\Database\Eloquent\Model'] = 'Laravel\Tinker\TinkerCaster::castModel';
-        }
-
-        if (class_exists('Illuminate\Foundation\Application')) {
-            $casters['Illuminate\Foundation\Application'] = 'Laravel\Tinker\TinkerCaster::castApplication';
-        }
-
-        $config = $this->getLaravel()->make('config');
-
-        return array_merge($casters, (array) $config->get('tinker.casters', []));
     }
 
     /**

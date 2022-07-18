@@ -1,6 +1,12 @@
 {
     "name": "phpdocumentor/reflection-common",
-    "keywords": ["phpdoc", "phpDocumentor", "reflection", "static analysis", "FQSEN"],
+    "keywords": [
+        "phpdoc",
+        "phpDocumentor",
+        "reflection",
+        "static analysis",
+        "FQSEN"
+    ],
     "homepage": "http://www.phpdoc.org",
     "description": "Common reflection classes used by phpdocumentor to reflect the code structure",
     "license": "MIT",
@@ -13,10 +19,10 @@
     "require": {
         "php": "^7.2 || ^8.0"
     },
-    "autoload" : {
-      "psr-4" : {
-        "phpDocumentor\\Reflection\\": "src/"
-      }
+    "autoload": {
+        "psr-4": {
+            "phpDocumentor\\Reflection\\": "src/"
+        }
     },
     "require-dev": {
     },

@@ -17,7 +17,7 @@ class ExcludeIf
     /**
      * Create a new exclude validation rule based on a condition.
      *
-     * @param  \Closure|bool  $condition
+     * @param \Closure|bool $condition
      * @return void
      *
      * @throws \InvalidArgumentException

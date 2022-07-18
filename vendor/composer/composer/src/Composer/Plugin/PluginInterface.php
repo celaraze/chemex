@@ -37,7 +37,7 @@ interface PluginInterface
     /**
      * Apply plugin modifications to Composer
      *
-     * @param Composer    $composer
+     * @param Composer $composer
      * @param IOInterface $io
      *
      * @return void
@@ -51,7 +51,7 @@ interface PluginInterface
      * uninstalled, but also before it gets upgraded to a new version
      * so the old one can be deactivated and the new one activated.
      *
-     * @param Composer    $composer
+     * @param Composer $composer
      * @param IOInterface $io
      *
      * @return void
@@ -63,7 +63,7 @@ interface PluginInterface
      *
      * This will be called after deactivate.
      *
-     * @param Composer    $composer
+     * @param Composer $composer
      * @param IOInterface $io
      *
      * @return void

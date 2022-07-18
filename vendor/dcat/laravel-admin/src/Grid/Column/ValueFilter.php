@@ -30,6 +30,23 @@ class ValueFilter
         Admin::style('.value-filter .dashed{border-bottom:1px dashed}.value-filter:hover+a{opacity:1!important}');
     }
 
+    public function value()
+    {
+        return $this->filter->value();
+    }
+
+    public function render($value)
+    {
+        $pageName = $this->column()->grid()->model()->getPageName();
+
+        $url = request()->fullUrlWithQuery([
+            $this->getQueryName() => $this->originalValue(),
+            $pageName => null,
+        ]);
+
+        return "<a class='value-filter' href='{$url}'>{$this->wrap($value)}</a> &nbsp;<a href='#' style='opacity:0;' class='feather icon-search'></a>";
+    }
+
     protected function column()
     {
         return $this->filter->parent();
@@ -40,14 +57,9 @@ class ValueFilter
         return $this->filter->getQueryName();
     }
 
-    public function value()
-    {
-        return $this->filter->value();
-    }
-
     protected function originalValue()
     {
-        if (! $this->valueKey) {
+        if (!$this->valueKey) {
             return $this->column()->getOriginal();
         }
 
@@ -69,22 +81,10 @@ class ValueFilter
 
     protected function wrap($value)
     {
-        if (! preg_match('/<[^>]+>(.*)<\/[^>]+>/', $value)) {
+        if (!preg_match('/<[^>]+>(.*)<\/[^>]+>/', $value)) {
             return "<span>{$value}</span>";
         }
 
         return $value;
-    }
-
-    public function render($value)
-    {
-        $pageName = $this->column()->grid()->model()->getPageName();
-
-        $url = request()->fullUrlWithQuery([
-            $this->getQueryName() => $this->originalValue(),
-            $pageName          => null,
-        ]);
-
-        return "<a class='value-filter' href='{$url}'>{$this->wrap($value)}</a> &nbsp;<a href='#' style='opacity:0;' class='feather icon-search'></a>";
     }
 }

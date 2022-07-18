@@ -134,12 +134,29 @@ class Card extends Widget
     }
 
     /**
-     * 初始化.
+     * 设置卡片标题.
+     *
+     * @param string $title
+     * @return $this
      */
-    protected function init()
+    public function title(?string $title)
     {
-        $this->id('metric-card-'.Str::random(8));
-        $this->class('card');
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * 设置图标.
+     *
+     * @param string $icon
+     * @return $this
+     */
+    public function icon(?string $icon)
+    {
+        $this->icon = $icon;
+
+        return $this;
     }
 
     /**
@@ -153,45 +170,18 @@ class Card extends Widget
     }
 
     /**
-     * 启用图表.
-     *
-     * @return Chart
+     * 初始化.
      */
-    public function useChart()
+    protected function init()
     {
-        return $this->chart ?: ($this->chart = Chart::make());
-    }
-
-    /**
-     * 设置图标.
-     *
-     * @param  string  $icon
-     * @return $this
-     */
-    public function icon(?string $icon)
-    {
-        $this->icon = $icon;
-
-        return $this;
-    }
-
-    /**
-     * 设置卡片标题.
-     *
-     * @param  string  $title
-     * @return $this
-     */
-    public function title(?string $title)
-    {
-        $this->title = $title;
-
-        return $this;
+        $this->id('metric-card-' . Str::random(8));
+        $this->class('card');
     }
 
     /**
      * 设置卡片子标题.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function subTitle(?string $title)
@@ -204,7 +194,7 @@ class Card extends Widget
     /**
      * 设置卡片头内容.
      *
-     * @param  string  $contents
+     * @param string $contents
      * @return $this
      */
     public function header($contents)
@@ -217,7 +207,7 @@ class Card extends Widget
     /**
      * 设置卡片内容.
      *
-     * @param  string  $contents
+     * @param string $contents
      * @return $this
      */
     public function content($contents)
@@ -228,22 +218,9 @@ class Card extends Widget
     }
 
     /**
-     * 设置主题色.
-     *
-     * @param  string  $style
-     * @return $this
-     */
-    public function style(string $style)
-    {
-        $this->style = $style;
-
-        return $this;
-    }
-
-    /**
      * 设置卡片的下拉菜单选项.
      *
-     * @param  array  $items
+     * @param array $items
      * @return $this
      */
     public function dropdown(array $items)
@@ -256,7 +233,7 @@ class Card extends Widget
     /**
      * 设置最小高度.
      *
-     * @param  string|int  $value
+     * @param string|int $value
      * @return $this
      */
     public function height($value)
@@ -269,8 +246,8 @@ class Card extends Widget
     /**
      * 设置图表配置.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
      * @return $this
      */
     public function chartOption($key, $value)
@@ -283,9 +260,19 @@ class Card extends Widget
     }
 
     /**
+     * 启用图表.
+     *
+     * @return Chart
+     */
+    public function useChart()
+    {
+        return $this->chart ?: ($this->chart = Chart::make());
+    }
+
+    /**
      * 设置图表高度.
      *
-     * @param  int  $number
+     * @param int $number
      * @return $this
      */
     public function chartHeight(int $number)
@@ -300,7 +287,7 @@ class Card extends Widget
     /**
      * 设置图表上间距.
      *
-     * @param  int  $number
+     * @param int $number
      * @return $this
      */
     public function chartMarginTop(int $number)
@@ -315,7 +302,7 @@ class Card extends Widget
     /**
      * 设置图表下间距.
      *
-     * @param  int  $number
+     * @param int $number
      * @return $this
      */
     public function chartMarginBottom(int $number)
@@ -330,12 +317,12 @@ class Card extends Widget
     /**
      * 设置图表label.
      *
-     * @param  string|array  $label
+     * @param string|array $label
      * @return $this
      */
     public function chartLabels($label)
     {
-        $this->chartOptions['labels'] = (array) $label;
+        $this->chartOptions['labels'] = (array)$label;
 
         $this->useChart();
 
@@ -345,12 +332,12 @@ class Card extends Widget
     /**
      * 设置图表颜色.
      *
-     * @param  string|array  $colors
+     * @param string|array $colors
      * @return $this
      */
     public function chartColors($colors)
     {
-        $this->chartOptions['colors'] = (array) $colors;
+        $this->chartOptions['colors'] = (array)$colors;
 
         $this->useChart();
 
@@ -360,7 +347,7 @@ class Card extends Widget
     /**
      * 设置图表.
      *
-     * @param  array|\Closure  $options
+     * @param array|\Closure $options
      * @return $this
      */
     public function chart($options = [])
@@ -380,11 +367,42 @@ class Card extends Widget
     }
 
     /**
+     * 渲染图表.
+     *
+     * @return string
+     */
+    public function renderChart()
+    {
+        return $this->chart ? $this->chart->render() : '';
+    }
+
+    /**
+     * @return string
+     */
+    public function render()
+    {
+        $this->setUpChart();
+        $this->setUpCardHeight();
+
+        $this->addScript();
+
+        $this->variables['icon'] = $this->icon;
+        $this->variables['title'] = $this->title;
+        $this->variables['subTitle'] = $this->subTitle;
+        $this->variables['style'] = $this->style;
+        $this->variables['header'] = $this->renderHeader();
+        $this->variables['content'] = $this->renderContent();
+        $this->variables['dropdown'] = $this->dropdown;
+
+        return parent::render();
+    }
+
+    /**
      * 设置图表.
      */
     protected function setUpChart()
     {
-        if (! $chart = $this->chart) {
+        if (!$chart = $this->chart) {
             return;
         }
 
@@ -395,7 +413,7 @@ class Card extends Widget
 
         // 颜色
         if (empty($this->chartOptions['colors'])) {
-            $this->chartOptions['colors'] = (array) Admin::color()->get($this->style);
+            $this->chartOptions['colors'] = (array)Admin::color()->get($this->style);
         }
 
         // 图表配置选项
@@ -427,11 +445,40 @@ class Card extends Widget
     }
 
     /**
+     * 设置主题色.
+     *
+     * @param string $style
+     * @return $this
+     */
+    public function style(string $style)
+    {
+        $this->style = $style;
+
+        return $this;
+    }
+
+    /**
+     * 设置卡片高度.
+     */
+    protected function setUpCardHeight()
+    {
+        if (!$height = $this->height) {
+            return;
+        }
+
+        if (is_numeric($height)) {
+            $height .= 'px';
+        }
+
+        $this->appendHtmlAttribute('style', "min-height:{$height};");
+    }
+
+    /**
      * @return mixed
      */
     public function addScript()
     {
-        if (! $this->allowBuildRequest()) {
+        if (!$this->allowBuildRequest()) {
             return;
         }
 
@@ -447,7 +494,7 @@ JS
 
         $this->fetched(
             <<<'JS'
-$card.loading(false);   
+$card.loading(false);
 $card.find('.metric-header').html(response.header);
 $card.find('.metric-content').html(response.content);
 JS
@@ -496,53 +543,6 @@ JS;
     }
 
     /**
-     * 渲染图表.
-     *
-     * @return string
-     */
-    public function renderChart()
-    {
-        return $this->chart ? $this->chart->render() : '';
-    }
-
-    /**
-     * 设置卡片高度.
-     */
-    protected function setUpCardHeight()
-    {
-        if (! $height = $this->height) {
-            return;
-        }
-
-        if (is_numeric($height)) {
-            $height .= 'px';
-        }
-
-        $this->appendHtmlAttribute('style', "min-height:{$height};");
-    }
-
-    /**
-     * @return string
-     */
-    public function render()
-    {
-        $this->setUpChart();
-        $this->setUpCardHeight();
-
-        $this->addScript();
-
-        $this->variables['icon'] = $this->icon;
-        $this->variables['title'] = $this->title;
-        $this->variables['subTitle'] = $this->subTitle;
-        $this->variables['style'] = $this->style;
-        $this->variables['header'] = $this->renderHeader();
-        $this->variables['content'] = $this->renderContent();
-        $this->variables['dropdown'] = $this->dropdown;
-
-        return parent::render();
-    }
-
-    /**
      * 返回API请求结果.
      *
      * @return array
@@ -557,7 +557,7 @@ JS;
                 'header' => $this->renderHeader(),
                 'content' => $this->renderContent(),
             ],
-            (array) optional($this->chart)->valueResult()
+            (array)optional($this->chart)->valueResult()
         );
     }
 }

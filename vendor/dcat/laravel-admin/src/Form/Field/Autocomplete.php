@@ -32,35 +32,7 @@ class Autocomplete extends Text
     }
 
     /**
-     * Set option groups.
-     *
-     * eg: $group = [
-     *        [
-     *        'label' => 'xxxx',
-     *        'options' => [
-     *            'foo',
-     *            'bar',
-     *            ...
-     *        ],
-     *        ...
-     *     ]
-     *
-     * @param  array|\Closure  $groups
-     * @return $this
-     */
-    public function groups($groups = [])
-    {
-        if ($groups instanceof \Closure) {
-            $groups = $groups->call($this->data(), $this->value());
-        }
-
-        $this->groups = array_merge($this->groups, $groups);
-
-        return $this;
-    }
-
-    /**
-     * @param  array|\Closure  $options
+     * @param array|\Closure $options
      * @return $this|Autocomplete
      */
     public function options($options = [])
@@ -74,21 +46,49 @@ class Autocomplete extends Text
         return $this;
     }
 
+    protected function formatOptions($options, string $group = ''): array
+    {
+        return array_filter(array_map(function ($opt) use ($group) {
+            if (!is_array($opt)) {
+                $opt = ['value' => $opt, 'data' => []];
+            }
+
+            if (!array_key_exists('value', $opt)) {
+                return null;
+            }
+
+            if ($group) {
+                $opt['data'][$this->groupBy] = $group;
+            }
+
+            return $opt;
+        }, Helper::array($options)));
+    }
+
     /**
-     * Set config for autocomplete.
+     * Set option groups.
      *
-     * all configurations see https://github.com/devbridge/jQuery-Autocomplete
+     * eg: $group = [
+     *        [
+     *        'label' => 'xxxx',
+     *        'options' => [
+     *            'foo',
+     *            'bar',
+     *            ...
+     *        ],
+     *        ...
+     *     ]
      *
-     * @param  array|\Closure  $configs
+     * @param array|\Closure $groups
      * @return $this
      */
-    public function configs($configs = [])
+    public function groups($groups = [])
     {
-        if ($configs instanceof \Closure) {
-            $configs = $configs->call($this->data(), $this->value());
+        if ($groups instanceof \Closure) {
+            $groups = $groups->call($this->data(), $this->value());
         }
 
-        $this->configs = array_merge($this->configs, Helper::array($configs));
+        $this->groups = array_merge($this->groups, $groups);
 
         return $this;
     }
@@ -103,9 +103,9 @@ class Autocomplete extends Text
     /**
      * Load options from ajax results.
      *
-     * @param  string  $url
-     * @param  string|null  $valueField
-     * @param  string|null  $groupField
+     * @param string $url
+     * @param string|null $valueField
+     * @param string|null $groupField
      * @return $this
      */
     public function ajax(string $url, string $valueField = '', string $groupField = '')
@@ -134,7 +134,7 @@ class Autocomplete extends Text
     protected function formatGroupOptions()
     {
         foreach ($this->groups as $group) {
-            if (! array_key_exists('options', $group) || ! array_key_exists('label', $group)) {
+            if (!array_key_exists('options', $group) || !array_key_exists('label', $group)) {
                 continue;
             }
 
@@ -146,22 +146,22 @@ class Autocomplete extends Text
         return $this;
     }
 
-    protected function formatOptions($options, string $group = ''): array
+    /**
+     * Set config for autocomplete.
+     *
+     * all configurations see https://github.com/devbridge/jQuery-Autocomplete
+     *
+     * @param array|\Closure $configs
+     * @return $this
+     */
+    public function configs($configs = [])
     {
-        return array_filter(array_map(function ($opt) use ($group) {
-            if (! is_array($opt)) {
-                $opt = ['value' => $opt, 'data' => []];
-            }
+        if ($configs instanceof \Closure) {
+            $configs = $configs->call($this->data(), $this->value());
+        }
 
-            if (! array_key_exists('value', $opt)) {
-                return null;
-            }
+        $this->configs = array_merge($this->configs, Helper::array($configs));
 
-            if ($group) {
-                $opt['data'][$this->groupBy] = $group;
-            }
-
-            return $opt;
-        }, Helper::array($options)));
+        return $this;
     }
 }

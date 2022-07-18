@@ -29,11 +29,11 @@ class MenuTest extends TestCase
     {
         $this->browse(function (Browser $browser) {
             $item = [
-                'parent_id'   => '0',
-                'title'       => 'Test',
-                'uri'         => 'test',
-                'icon'        => 'fa-user',
-                'roles'       => [1],
+                'parent_id' => '0',
+                'title' => 'Test',
+                'uri' => 'test',
+                'icon' => 'fa-user',
+                'roles' => [1],
                 'permissions' => [4, 5],
             ];
 
@@ -48,6 +48,30 @@ class MenuTest extends TestCase
             $this->assertDatabase($newMenuId, $item);
             $this->assertEquals(8, Menu::count());
         });
+    }
+
+    private function assertDatabase($id, $updates)
+    {
+        $roles = $updates['roles'];
+        $permissions = $updates['permissions'];
+
+        unset($updates['roles'], $updates['permissions']);
+
+        // 检测是否写入数据库
+        $this->seeInDatabase(config('admin.database.menu_table'), $updates);
+
+        foreach ((array)$roles as $role) {
+            $this->seeInDatabase(
+                config('admin.database.role_menu_table'),
+                ['role_id' => $role, 'menu_id' => $id]
+            );
+        }
+        foreach ((array)$permissions as $permission) {
+            $this->seeInDatabase(
+                config('admin.database.permission_menu_table'),
+                ['permission_id' => $permission, 'menu_id' => $id]
+            );
+        }
     }
 
     public function testDeleteMenu()
@@ -93,10 +117,10 @@ class MenuTest extends TestCase
             $id = 5;
 
             $updates = [
-                'title'       => 'balabala',
-                'icon'        => 'fa-list',
-                'parent_id'   => 0,
-                'roles'       => 1,
+                'title' => 'balabala',
+                'icon' => 'fa-list',
+                'parent_id' => 0,
+                'roles' => 1,
                 'permissions' => [4, 5, 6],
             ];
 
@@ -123,29 +147,5 @@ class MenuTest extends TestCase
             // 检测是否写入数据库
             $this->assertDatabase($id, $updates);
         });
-    }
-
-    private function assertDatabase($id, $updates)
-    {
-        $roles = $updates['roles'];
-        $permissions = $updates['permissions'];
-
-        unset($updates['roles'], $updates['permissions']);
-
-        // 检测是否写入数据库
-        $this->seeInDatabase(config('admin.database.menu_table'), $updates);
-
-        foreach ((array) $roles as $role) {
-            $this->seeInDatabase(
-                config('admin.database.role_menu_table'),
-                ['role_id' => $role, 'menu_id' => $id]
-            );
-        }
-        foreach ((array) $permissions as $permission) {
-            $this->seeInDatabase(
-                config('admin.database.permission_menu_table'),
-                ['permission_id' => $permission, 'menu_id' => $id]
-            );
-        }
     }
 }

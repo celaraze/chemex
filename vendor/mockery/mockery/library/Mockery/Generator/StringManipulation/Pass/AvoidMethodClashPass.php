@@ -20,8 +20,6 @@
 
 namespace Mockery\Generator\StringManipulation\Pass;
 
-use Mockery\Generator\Method;
-use Mockery\Generator\Parameter;
 use Mockery\Generator\MockConfiguration;
 
 class AvoidMethodClashPass implements Pass

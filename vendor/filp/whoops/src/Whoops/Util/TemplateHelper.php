@@ -50,9 +50,26 @@ class TemplateHelper
     }
 
     /**
+     * Escapes a string for output in an HTML document, but preserves
+     * URIs within it, and converts them to clickable anchor elements.
+     *
+     * @param string $raw
+     * @return string
+     */
+    public function escapeButPreserveUris($raw)
+    {
+        $escaped = $this->escape($raw);
+        return preg_replace(
+            "@([A-z]+?://([-\w\.]+[-\w])+(:\d+)?(/([\w/_\.#-]*(\?\S+)?[^\.\s])?)?)@",
+            "<a href=\"$1\" target=\"_blank\" rel=\"noreferrer noopener\">$1</a>",
+            $escaped
+        );
+    }
+
+    /**
      * Escapes a string for output in an HTML document
      *
-     * @param  string $raw
+     * @param string $raw
      * @return string
      */
     public function escape($raw)
@@ -77,27 +94,10 @@ class TemplateHelper
     }
 
     /**
-     * Escapes a string for output in an HTML document, but preserves
-     * URIs within it, and converts them to clickable anchor elements.
-     *
-     * @param  string $raw
-     * @return string
-     */
-    public function escapeButPreserveUris($raw)
-    {
-        $escaped = $this->escape($raw);
-        return preg_replace(
-            "@([A-z]+?://([-\w\.]+[-\w])+(:\d+)?(/([\w/_\.#-]*(\?\S+)?[^\.\s])?)?)@",
-            "<a href=\"$1\" target=\"_blank\" rel=\"noreferrer noopener\">$1</a>",
-            $escaped
-        );
-    }
-
-    /**
      * Makes sure that the given string breaks on the delimiter.
      *
-     * @param  string $delimiter
-     * @param  string $s
+     * @param string $delimiter
+     * @param string $s
      * @return string
      */
     public function breakOnDelimiter($delimiter, $s)
@@ -113,7 +113,7 @@ class TemplateHelper
     /**
      * Replace the part of the path that all files have in common.
      *
-     * @param  string $path
+     * @param string $path
      * @return string
      */
     public function shorten($path)
@@ -123,6 +123,33 @@ class TemplateHelper
         }
 
         return $path;
+    }
+
+    /**
+     * Format the args of the given Frame as a human readable html string
+     *
+     * @param Frame $frame
+     * @return string the rendered html
+     */
+    public function dumpArgs(Frame $frame)
+    {
+        // we support frame args only when the optional dumper is available
+        if (!$this->getDumper()) {
+            return '';
+        }
+
+        $html = '';
+        $numFrames = count($frame->getArgs());
+
+        if ($numFrames > 0) {
+            $html = '<ol class="linenums">';
+            foreach ($frame->getArgs() as $j => $frameArg) {
+                $html .= '<li>' . $this->dump($frameArg) . '</li>';
+            }
+            $html .= '</ol>';
+        }
+
+        return $html;
     }
 
     private function getDumper()
@@ -155,7 +182,7 @@ class TemplateHelper
     /**
      * Format the given value into a human readable string.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return string
      */
     public function dump($value)
@@ -187,36 +214,32 @@ class TemplateHelper
     }
 
     /**
-     * Format the args of the given Frame as a human readable html string
+     * Get the cloner used for dumping variables.
      *
-     * @param  Frame $frame
-     * @return string the rendered html
+     * @return AbstractCloner
      */
-    public function dumpArgs(Frame $frame)
+    public function getCloner()
     {
-        // we support frame args only when the optional dumper is available
-        if (!$this->getDumper()) {
-            return '';
+        if (!$this->cloner) {
+            $this->cloner = new VarCloner();
         }
+        return $this->cloner;
+    }
 
-        $html = '';
-        $numFrames = count($frame->getArgs());
-
-        if ($numFrames > 0) {
-            $html = '<ol class="linenums">';
-            foreach ($frame->getArgs() as $j => $frameArg) {
-                $html .= '<li>'. $this->dump($frameArg) .'</li>';
-            }
-            $html .= '</ol>';
-        }
-
-        return $html;
+    /**
+     * Set the cloner used for dumping variables.
+     *
+     * @param AbstractCloner $cloner
+     */
+    public function setCloner($cloner)
+    {
+        $this->cloner = $cloner;
     }
 
     /**
      * Convert a string to a slug version of itself
      *
-     * @param  string $original
+     * @param string $original
      * @return string
      */
     public function slug($original)
@@ -232,7 +255,7 @@ class TemplateHelper
      * passed to the template.
      *
      * @param string $template
-     * @param array  $additionalVariables
+     * @param array $additionalVariables
      */
     public function render($template, array $additionalVariables = null)
     {
@@ -252,6 +275,16 @@ class TemplateHelper
     }
 
     /**
+     * Returns all variables for this helper
+     *
+     * @return array
+     */
+    public function getVariables()
+    {
+        return $this->variables;
+    }
+
+    /**
      * Sets the variables to be passed to all templates rendered
      * by this template helper.
      *
@@ -266,7 +299,7 @@ class TemplateHelper
      * Sets a single template variable, by its name:
      *
      * @param string $variableName
-     * @param mixed  $variableValue
+     * @param mixed $variableValue
      */
     public function setVariable($variableName, $variableValue)
     {
@@ -277,8 +310,8 @@ class TemplateHelper
      * Gets a single template variable, by its name, or
      * $defaultValue if the variable does not exist
      *
-     * @param  string $variableName
-     * @param  mixed  $defaultValue
+     * @param string $variableName
+     * @param mixed $defaultValue
      * @return mixed
      */
     public function getVariable($variableName, $defaultValue = null)
@@ -298,36 +331,13 @@ class TemplateHelper
     }
 
     /**
-     * Returns all variables for this helper
+     * Return the application root path.
      *
-     * @return array
+     * @return string
      */
-    public function getVariables()
+    public function getApplicationRootPath()
     {
-        return $this->variables;
-    }
-
-    /**
-     * Set the cloner used for dumping variables.
-     *
-     * @param AbstractCloner $cloner
-     */
-    public function setCloner($cloner)
-    {
-        $this->cloner = $cloner;
-    }
-
-    /**
-     * Get the cloner used for dumping variables.
-     *
-     * @return AbstractCloner
-     */
-    public function getCloner()
-    {
-        if (!$this->cloner) {
-            $this->cloner = new VarCloner();
-        }
-        return $this->cloner;
+        return $this->applicationRootPath;
     }
 
     /**
@@ -338,15 +348,5 @@ class TemplateHelper
     public function setApplicationRootPath($applicationRootPath)
     {
         $this->applicationRootPath = $applicationRootPath;
-    }
-
-    /**
-     * Return the application root path.
-     *
-     * @return string
-     */
-    public function getApplicationRootPath()
-    {
-        return $this->applicationRootPath;
     }
 }

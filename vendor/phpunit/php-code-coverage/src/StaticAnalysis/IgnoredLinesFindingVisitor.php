@@ -7,11 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
-use function array_merge;
-use function range;
-use function strpos;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -19,6 +17,9 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeVisitorAbstract;
+use function array_merge;
+use function range;
+use function strpos;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -43,7 +44,7 @@ final class IgnoredLinesFindingVisitor extends NodeVisitorAbstract
     public function __construct(bool $useAnnotationsForIgnoringCode, bool $ignoreDeprecated)
     {
         $this->useAnnotationsForIgnoringCode = $useAnnotationsForIgnoringCode;
-        $this->ignoreDeprecated              = $ignoreDeprecated;
+        $this->ignoreDeprecated = $ignoreDeprecated;
     }
 
     public function enterNode(Node $node): void

@@ -69,9 +69,9 @@ interface LegacyMockInterface
     /**
      * Set mock to defer unexpected methods to its parent if possible
      *
+     * @return Mock
      * @deprecated since 1.4.0. Please use makePartial() instead.
      *
-     * @return Mock
      */
     public function shouldDeferMissing();
 
@@ -119,8 +119,8 @@ interface LegacyMockInterface
     /**
      * Iterate across all expectation directors and validate each
      *
-     * @throws \Mockery\CountValidator\Exception
      * @return void
+     * @throws \Mockery\CountValidator\Exception
      */
     public function mockery_verify();
 
@@ -172,8 +172,8 @@ interface LegacyMockInterface
      *
      * @param string $method
      * @param int $order
-     * @throws \Mockery\Exception
      * @return void
+     * @throws \Mockery\Exception
      */
     public function mockery_validateOrder($method, $order);
 
@@ -187,25 +187,25 @@ interface LegacyMockInterface
     /**
      * Return the expectations director for the given method
      *
-     * @var string $method
      * @return \Mockery\ExpectationDirector|null
+     * @var string $method
      */
     public function mockery_setExpectationsFor($method, \Mockery\ExpectationDirector $director);
 
     /**
      * Return the expectations director for the given method
      *
-     * @var string $method
      * @return \Mockery\ExpectationDirector|null
+     * @var string $method
      */
     public function mockery_getExpectationsFor($method);
 
     /**
      * Find an expectation matching the given method and arguments
      *
-     * @var string $method
-     * @var array $args
      * @return \Mockery\Expectation|null
+     * @var array $args
+     * @var string $method
      */
     public function mockery_findExpectation($method, array $args);
 

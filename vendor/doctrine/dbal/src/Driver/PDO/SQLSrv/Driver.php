@@ -8,7 +8,6 @@ use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Driver\PDO\Connection as PDOConnection;
 use Doctrine\DBAL\Driver\PDO\Exception as PDOException;
 use PDO;
-
 use function is_int;
 use function sprintf;
 
@@ -33,7 +32,7 @@ final class Driver extends AbstractSQLServerDriver
             }
         }
 
-        if (! empty($params['persistent'])) {
+        if (!empty($params['persistent'])) {
             $driverOptions[PDO::ATTR_PERSISTENT] = true;
         }
 
@@ -54,7 +53,7 @@ final class Driver extends AbstractSQLServerDriver
     /**
      * Constructs the Sqlsrv PDO DSN.
      *
-     * @param mixed[]  $params
+     * @param mixed[] $params
      * @param string[] $connectionOptions
      *
      * @throws Exception

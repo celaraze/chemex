@@ -18,7 +18,7 @@ final class PermittedFor implements Constraint
 
     public function assert(Token $token): void
     {
-        if (! $token->isPermittedFor($this->audience)) {
+        if (!$token->isPermittedFor($this->audience)) {
             throw new ConstraintViolation(
                 'The token is not allowed to be used by this audience'
             );

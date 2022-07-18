@@ -13,6 +13,11 @@ use Psr\Http\Message\UriInterface;
  */
 final class UriComparator
 {
+    private function __construct()
+    {
+        // cannot be instantiated
+    }
+
     /**
      * Determines if a modified URL should be considered cross-origin with
      * respect to an original URL.
@@ -43,10 +48,5 @@ final class UriComparator
         }
 
         return 'https' === $uri->getScheme() ? 443 : 80;
-    }
-
-    private function __construct()
-    {
-        // cannot be instantiated
     }
 }

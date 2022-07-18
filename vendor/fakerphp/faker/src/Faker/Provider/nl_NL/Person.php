@@ -108,7 +108,7 @@ class Person extends \Faker\Provider\Person
         'Haselaar', 'van Haspengouw', 'Hazenveld', 'de Heer', 'Heere', 'Heerkens',
         'Heerschop', 'Hehl', 'van der Heiden', 'van der Heijden', 'Heijman', 'Heijmans', 'Heijmen', 'Heinrichs',
         'Hekker', 'Hellevoort', 'Helmerhorst', 'van Hemert', 'Hemma', 'Hendricks', 'Hendriks',
-        'Hendrikse', 'van Henegouwen',  'van den Henst', 'Heribert van Laon', "d' Heripon",
+        'Hendrikse', 'van Henegouwen', 'van den Henst', 'Heribert van Laon', "d' Heripon",
         'Hermans', 'van Herstal', 'van Heusden', 'Hexspoor', 'Heymans', 'Heyne', 'Hoedemakers', 'van den Hoek', 'Hoeks',
         'Hoelen', 'Hoes', 'van Hoevel en van Zwindrecht', 'van der Hoeven', 'van Holland', 'Hollander', 'Holthuis',
         'Hondeveld', 'Honing', 'de Hoog', 'Hoogers', 'de Hoogh', 'Hoppenbrouwer', 'Horrocks', 'van der Horst',
@@ -260,31 +260,6 @@ class Person extends \Faker\Provider\Person
     ];
 
     /**
-     * @example 'Doe'
-     */
-    public function lastName()
-    {
-        $determinator = self::numberBetween(0, 25);
-
-        if ($determinator === 0) {
-            $lastName = static::randomElement(static::$longLastNames);
-        } elseif ($determinator <= 10) {
-            $lastName = static::randomElement(static::$commonDutchLastNames);
-        } elseif ($determinator <= 15) {
-            $lastName = static::randomElement(static::$commonForeignLastNames);
-        } else {
-            $lastName = static::randomElement(static::$dutchLastNames);
-        }
-
-        return $lastName;
-    }
-
-    public function title($gender = null)
-    {
-        return static::randomElement(static::$title);
-    }
-
-    /**
      * replaced by specific unisex dutch title
      */
     public static function titleMale()
@@ -314,6 +289,31 @@ class Person extends \Faker\Provider\Person
     public static function prefix()
     {
         return static::randomElement(static::$prefix);
+    }
+
+    /**
+     * @example 'Doe'
+     */
+    public function lastName()
+    {
+        $determinator = self::numberBetween(0, 25);
+
+        if ($determinator === 0) {
+            $lastName = static::randomElement(static::$longLastNames);
+        } elseif ($determinator <= 10) {
+            $lastName = static::randomElement(static::$commonDutchLastNames);
+        } elseif ($determinator <= 15) {
+            $lastName = static::randomElement(static::$commonForeignLastNames);
+        } else {
+            $lastName = static::randomElement(static::$dutchLastNames);
+        }
+
+        return $lastName;
+    }
+
+    public function title($gender = null)
+    {
+        return static::randomElement(static::$title);
     }
 
     /**

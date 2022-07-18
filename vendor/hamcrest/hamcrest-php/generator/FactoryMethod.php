@@ -106,6 +106,16 @@ class FactoryMethod
         return false;
     }
 
+    public function createCalls(array $names)
+    {
+        $names = array_unique($names);
+        foreach ($names as $name) {
+            if ($name != '-' && $name != '...') {
+                $this->calls[] = new FactoryCall($this, $name);
+            }
+        }
+    }
+
     public function extractFactoryNamesFromAnnotation($value)
     {
         $primaryName = $this->reflector->getName();
@@ -123,14 +133,9 @@ class FactoryMethod
         return $names;
     }
 
-    public function createCalls(array $names)
+    public function getName()
     {
-        $names = array_unique($names);
-        foreach ($names as $name) {
-            if ($name != '-' && $name != '...') {
-                $this->calls[] = new FactoryCall($this, $name);
-            }
-        }
+        return $this->reflector->name;
     }
 
     public function extractParameters()
@@ -141,6 +146,11 @@ class FactoryMethod
                 $this->parameters[] = new FactoryParameter($this, $parameter);
             }
         }
+    }
+
+    public function getParameters()
+    {
+        return $this->parameters;
     }
 
     public function getParameterDeclarations()
@@ -156,6 +166,11 @@ class FactoryMethod
         return implode(', ', $params);
     }
 
+    public function hasParameters()
+    {
+        return !empty($this->parameters);
+    }
+
     public function getParameterInvocations()
     {
         if ($this->isVarArgs) {
@@ -168,20 +183,9 @@ class FactoryMethod
         return implode(', ', $params);
     }
 
-
     public function getClass()
     {
         return $this->class;
-    }
-
-    public function getClassName()
-    {
-        return $this->class->getName();
-    }
-
-    public function getName()
-    {
-        return $this->reflector->name;
     }
 
     public function isFactory()
@@ -199,19 +203,14 @@ class FactoryMethod
         return $this->isVarArgs;
     }
 
-    public function hasParameters()
-    {
-        return !empty($this->parameters);
-    }
-
-    public function getParameters()
-    {
-        return $this->parameters;
-    }
-
     public function getFullName()
     {
         return $this->getClassName() . '::' . $this->getName();
+    }
+
+    public function getClassName()
+    {
+        return $this->class->getName();
     }
 
     public function getCommentText()

@@ -21,28 +21,9 @@ trait HasContainer
     protected $container;
 
     /**
-     * @param  \Illuminate\Contracts\Container\Container  $container
-     * @return void
-     */
-    public function setContainer(ContainerContract $container): void
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * Returns the current broker.
-     *
-     * @return \Illuminate\Contracts\Container\Container
-     */
-    public function getContainer(): ContainerContract
-    {
-        return $this->container ?? Container::getInstance();
-    }
-
-    /**
      * Resolve the given type from the container.
      *
-     * @param  string  $abstract
+     * @param string $abstract
      * @return mixed
      */
     public function resolve(string $abstract)
@@ -61,5 +42,24 @@ trait HasContainer
         }
 
         return $concrete;
+    }
+
+    /**
+     * Returns the current broker.
+     *
+     * @return \Illuminate\Contracts\Container\Container
+     */
+    public function getContainer(): ContainerContract
+    {
+        return $this->container ?? Container::getInstance();
+    }
+
+    /**
+     * @param \Illuminate\Contracts\Container\Container $container
+     * @return void
+     */
+    public function setContainer(ContainerContract $container): void
+    {
+        $this->container = $container;
     }
 }

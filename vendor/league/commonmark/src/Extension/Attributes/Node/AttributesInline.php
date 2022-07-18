@@ -31,7 +31,7 @@ final class AttributesInline extends AbstractInline
         parent::__construct();
 
         $this->attributes = $attributes;
-        $this->block      = $block;
+        $this->block = $block;
     }
 
     /**

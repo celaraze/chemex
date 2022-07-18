@@ -55,11 +55,12 @@ function v1($node = null, ?int $clockSeq = null): string
  * @return non-empty-string Version 2 UUID as a string
  */
 function v2(
-    int $localDomain,
+    int            $localDomain,
     ?IntegerObject $localIdentifier = null,
-    ?Hexadecimal $node = null,
-    ?int $clockSeq = null
-): string {
+    ?Hexadecimal   $node = null,
+    ?int           $clockSeq = null
+): string
+{
     return Uuid::uuid2($localDomain, $localIdentifier, $node, $clockSeq)->toString();
 }
 

@@ -12,7 +12,6 @@
 namespace Carbon\Doctrine;
 
 use Carbon\Carbon;
-use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
@@ -23,14 +22,6 @@ use Exception;
  */
 trait CarbonTypeConverter
 {
-    /**
-     * @return class-string<T>
-     */
-    protected function getCarbonClassName(): string
-    {
-        return Carbon::class;
-    }
-
     /**
      * @return string
      */
@@ -91,12 +82,20 @@ trait CarbonTypeConverter
             throw ConversionException::conversionFailedFormat(
                 $value,
                 $this->getName(),
-                'Y-m-d H:i:s.u or any format supported by '.$class.'::parse()',
+                'Y-m-d H:i:s.u or any format supported by ' . $class . '::parse()',
                 $error
             );
         }
 
         return $date;
+    }
+
+    /**
+     * @return class-string<T>
+     */
+    protected function getCarbonClassName(): string
+    {
+        return Carbon::class;
     }
 
     /**

@@ -43,7 +43,7 @@ class DirectoryWritePermissionsAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application's storage and cache directories are not writable. This can cause issues "
-            ."with your Laravel installation. The directories that are not writable include: {$this->failedDirs}";
+            . "with your Laravel installation. The directories that are not writable include: {$this->failedDirs}";
     }
 
     /**
@@ -63,10 +63,10 @@ class DirectoryWritePermissionsAnalyzer extends ReliabilityAnalyzer
             return $files->isWritable($directory);
         })->map(function ($path) {
             return Str::contains($path, base_path())
-                ? ('['.trim(Str::after($path, base_path()), '/').']') : '['.$path.']';
+                ? ('[' . trim(Str::after($path, base_path()), '/') . ']') : '[' . $path . ']';
         })->join(', ', ' and ');
 
-        if (! empty($this->failedDirs)) {
+        if (!empty($this->failedDirs)) {
             $this->markFailed();
         }
     }

@@ -8,12 +8,23 @@ use Illuminate\Support\Fluent;
 abstract class AbstractField implements Renderable
 {
     /**
+     * If this field show with a border.
+     *
+     * @var bool
+     */
+    public $border = true;
+    /**
+     * If this field show escaped contents.
+     *
+     * @var bool
+     */
+    public $escape = false;
+    /**
      * Field value.
      *
      * @var mixed
      */
     protected $value;
-
     /**
      * Current field model.
      *
@@ -22,21 +33,7 @@ abstract class AbstractField implements Renderable
     protected $model;
 
     /**
-     * If this field show with a border.
-     *
-     * @var bool
-     */
-    public $border = true;
-
-    /**
-     * If this field show escaped contents.
-     *
-     * @var bool
-     */
-    public $escape = false;
-
-    /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return AbstractField $this
      */
     public function setValue($value)
@@ -47,7 +44,7 @@ abstract class AbstractField implements Renderable
     }
 
     /**
-     * @param  Fluent  $model
+     * @param Fluent $model
      * @return AbstractField $this
      */
     public function setModel($model)

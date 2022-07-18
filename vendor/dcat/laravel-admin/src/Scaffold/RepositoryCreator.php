@@ -7,8 +7,8 @@ use Dcat\Admin\Support\Helper;
 class RepositoryCreator
 {
     /**
-     * @param  string  $modelClass
-     * @param  string  $repositoryClass
+     * @param string $modelClass
+     * @param string $repositoryClass
      * @return string
      */
     public function create(?string $modelClass, ?string $repositoryClass)
@@ -20,7 +20,7 @@ class RepositoryCreator
         $path = Helper::guessClassFileName($repositoryClass);
         $dir = dirname($path);
 
-        if (! is_dir($dir)) {
+        if (!is_dir($dir)) {
             $files->makeDirectory($dir, 0755, true);
         }
 
@@ -45,13 +45,13 @@ class RepositoryCreator
         return $path;
     }
 
+    protected function stub()
+    {
+        return __DIR__ . '/stubs/repository.stub';
+    }
+
     protected function getNamespace($name)
     {
         return trim(implode('\\', array_slice(explode('\\', $name), 0, -1)), '\\');
-    }
-
-    protected function stub()
-    {
-        return __DIR__.'/stubs/repository.stub';
     }
 }

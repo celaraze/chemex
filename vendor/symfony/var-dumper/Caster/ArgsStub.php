@@ -51,7 +51,7 @@ class ArgsStub extends EnumStub
 
     private static function getParameters(string $function, ?string $class): array
     {
-        if (isset(self::$parameters[$k = $class.'::'.$function])) {
+        if (isset(self::$parameters[$k = $class . '::' . $function])) {
             return self::$parameters[$k];
         }
 
@@ -64,9 +64,9 @@ class ArgsStub extends EnumStub
         $variadic = '...';
         $params = [];
         foreach ($r->getParameters() as $v) {
-            $k = '$'.$v->name;
+            $k = '$' . $v->name;
             if ($v->isPassedByReference()) {
-                $k = '&'.$k;
+                $k = '&' . $k;
             }
             if ($v->isVariadic()) {
                 $variadic .= $k;

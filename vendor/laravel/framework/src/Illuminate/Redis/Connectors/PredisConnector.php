@@ -13,8 +13,8 @@ class PredisConnector implements Connector
     /**
      * Create a new clustered Predis connection.
      *
-     * @param  array  $config
-     * @param  array  $options
+     * @param array $config
+     * @param array $options
      * @return \Illuminate\Redis\Connections\PredisConnection
      */
     public function connect(array $config, array $options)
@@ -33,9 +33,9 @@ class PredisConnector implements Connector
     /**
      * Create a new clustered Predis connection.
      *
-     * @param  array  $config
-     * @param  array  $clusterOptions
-     * @param  array  $options
+     * @param array $config
+     * @param array $clusterOptions
+     * @param array $options
      * @return \Illuminate\Redis\Connections\PredisClusterConnection
      */
     public function connectToCluster(array $config, array $clusterOptions, array $options)

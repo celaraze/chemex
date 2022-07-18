@@ -27,7 +27,7 @@ final class NodeIterator implements \IteratorAggregate
 
     public function __construct(Node $node, int $flags = 0)
     {
-        $this->node       = $node;
+        $this->node = $node;
         $this->blocksOnly = ($flags & self::FLAG_BLOCKS_ONLY) === self::FLAG_BLOCKS_ONLY;
     }
 
@@ -47,7 +47,7 @@ final class NodeIterator implements \IteratorAggregate
             // Push all children onto the stack in reverse order
             $child = $node->lastChild();
             while ($child !== null) {
-                if (! $this->blocksOnly || $child instanceof AbstractBlock) {
+                if (!$this->blocksOnly || $child instanceof AbstractBlock) {
                     $stack[] = $child;
                 }
 

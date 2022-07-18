@@ -31,24 +31,203 @@ final class Converter
     private $convertFirstColumn;
 
     /**
-     * @param bool     $convertEmptyStringToNull Whether each empty string should be converted to NULL
-     * @param bool     $rightTrimString          Whether each string should right-trimmed
-     * @param int|null $case                     Convert the case of the column names
+     * @param bool $convertEmptyStringToNull Whether each empty string should be converted to NULL
+     * @param bool $rightTrimString Whether each string should right-trimmed
+     * @param int|null $case Convert the case of the column names
      *                                           (one of {@see CASE_LOWER} and {@see CASE_UPPER})
      */
     public function __construct(bool $convertEmptyStringToNull, bool $rightTrimString, ?int $case)
     {
-        $convertValue       = $this->createConvertValue($convertEmptyStringToNull, $rightTrimString);
-        $convertNumeric     = $this->createConvertRow($convertValue, null);
+        $convertValue = $this->createConvertValue($convertEmptyStringToNull, $rightTrimString);
+        $convertNumeric = $this->createConvertRow($convertValue, null);
         $convertAssociative = $this->createConvertRow($convertValue, $case);
 
-        $this->convertNumeric     = $this->createConvert($convertNumeric, [self::class, 'id']);
+        $this->convertNumeric = $this->createConvert($convertNumeric, [self::class, 'id']);
         $this->convertAssociative = $this->createConvert($convertAssociative, [self::class, 'id']);
-        $this->convertOne         = $this->createConvert($convertValue, [self::class, 'id']);
+        $this->convertOne = $this->createConvert($convertValue, [self::class, 'id']);
 
-        $this->convertAllNumeric     = $this->createConvertAll($convertNumeric, [self::class, 'id']);
+        $this->convertAllNumeric = $this->createConvertAll($convertNumeric, [self::class, 'id']);
         $this->convertAllAssociative = $this->createConvertAll($convertAssociative, [self::class, 'id']);
-        $this->convertFirstColumn    = $this->createConvertAll($convertValue, [self::class, 'id']);
+        $this->convertFirstColumn = $this->createConvertAll($convertValue, [self::class, 'id']);
+    }
+
+    /**
+     * Creates a function that will convert each individual value retrieved from the database
+     *
+     * @param bool $convertEmptyStringToNull Whether each empty string should be converted to NULL
+     * @param bool $rightTrimString Whether each string should right-trimmed
+     *
+     * @return callable|null The resulting function or NULL if no conversion is needed
+     */
+    private function createConvertValue(bool $convertEmptyStringToNull, bool $rightTrimString): ?callable
+    {
+        $functions = [];
+
+        if ($convertEmptyStringToNull) {
+            $functions[] = [self::class, 'convertEmptyStringToNull'];
+        }
+
+        if ($rightTrimString) {
+            $functions[] = [self::class, 'rightTrimString'];
+        }
+
+        return $this->compose(...$functions);
+    }
+
+    /**
+     * Creates a composition of the given set of functions
+     *
+     * @param callable(T):T ...$functions The functions to compose
+     *
+     * @return callable(T):T|null
+     *
+     * @template T
+     */
+    private function compose(callable ...$functions): ?callable
+    {
+        return array_reduce($functions, static function (?callable $carry, callable $item): callable {
+            if ($carry === null) {
+                return $item;
+            }
+
+            return /**
+             * @param T $value
+             *
+             * @return T
+             *
+             * @template T
+             */
+                static function ($value) use ($carry, $item) {
+                    return $item($carry($value));
+                };
+        });
+    }
+
+    /**
+     * Creates a function that will convert each array-row retrieved from the database
+     *
+     * @param callable|null $function The function that will convert each value
+     * @param int|null $case Column name case
+     *
+     * @return callable|null The resulting function or NULL if no conversion is needed
+     */
+    private function createConvertRow(?callable $function, ?int $case): ?callable
+    {
+        $functions = [];
+
+        if ($function !== null) {
+            $functions[] = $this->createMapper($function);
+        }
+
+        if ($case !== null) {
+            $functions[] = static function (array $row) use ($case): array {
+                return array_change_key_case($row, $case);
+            };
+        }
+
+        return $this->compose(...$functions);
+    }
+
+    /**
+     * Creates a function that maps each value of the array using the given function
+     *
+     * @param callable $function The function that maps each value of the array
+     */
+    private function createMapper(callable $function): callable
+    {
+        return static function (array $array) use ($function): array {
+            return array_map($function, $array);
+        };
+    }
+
+    /**
+     * Creates a function that will be applied to the return value of Statement::fetch*()
+     * or an identity function if no conversion is needed
+     *
+     * @param callable|null $function The function that will convert each tow
+     * @param callable $id Identity function
+     */
+    private function createConvert(?callable $function, callable $id): callable
+    {
+        if ($function === null) {
+            return $id;
+        }
+
+        return /**
+         * @param T $value
+         *
+         * @psalm-return (T is false ? false : T)
+         *
+         * @template T
+         */
+            static function ($value) use ($function) {
+                if ($value === false) {
+                    return false;
+                }
+
+                return $function($value);
+            };
+    }
+
+    /**
+     * Creates a function that will be applied to the return value of Statement::fetchAll*()
+     * or an identity function if no transformation is required
+     *
+     * @param callable|null $function The function that will transform each value
+     * @param callable $id Identity function
+     */
+    private function createConvertAll(?callable $function, callable $id): callable
+    {
+        if ($function === null) {
+            return $id;
+        }
+
+        return $this->createMapper($function);
+    }
+
+    /**
+     * @param T $value
+     *
+     * @return T
+     *
+     * @template T
+     */
+    private static function id($value)
+    {
+        return $value;
+    }
+
+    /**
+     * @param T $value
+     *
+     * @return T|null
+     *
+     * @template T
+     */
+    private static function convertEmptyStringToNull($value)
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param T $value
+     *
+     * @return T|string
+     * @psalm-return (T is string ? string : T)
+     *
+     * @template T
+     */
+    private static function rightTrimString($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        return rtrim($value);
     }
 
     /**
@@ -109,184 +288,5 @@ final class Converter
     public function convertFirstColumn(array $data): array
     {
         return ($this->convertFirstColumn)($data);
-    }
-
-    /**
-     * @param T $value
-     *
-     * @return T
-     *
-     * @template T
-     */
-    private static function id($value)
-    {
-        return $value;
-    }
-
-    /**
-     * @param T $value
-     *
-     * @return T|null
-     *
-     * @template T
-     */
-    private static function convertEmptyStringToNull($value)
-    {
-        if ($value === '') {
-            return null;
-        }
-
-        return $value;
-    }
-
-    /**
-     * @param T $value
-     *
-     * @return T|string
-     * @psalm-return (T is string ? string : T)
-     *
-     * @template T
-     */
-    private static function rightTrimString($value)
-    {
-        if (! is_string($value)) {
-            return $value;
-        }
-
-        return rtrim($value);
-    }
-
-    /**
-     * Creates a function that will convert each individual value retrieved from the database
-     *
-     * @param bool $convertEmptyStringToNull Whether each empty string should be converted to NULL
-     * @param bool $rightTrimString          Whether each string should right-trimmed
-     *
-     * @return callable|null The resulting function or NULL if no conversion is needed
-     */
-    private function createConvertValue(bool $convertEmptyStringToNull, bool $rightTrimString): ?callable
-    {
-        $functions = [];
-
-        if ($convertEmptyStringToNull) {
-            $functions[] = [self::class, 'convertEmptyStringToNull'];
-        }
-
-        if ($rightTrimString) {
-            $functions[] = [self::class, 'rightTrimString'];
-        }
-
-        return $this->compose(...$functions);
-    }
-
-    /**
-     * Creates a function that will convert each array-row retrieved from the database
-     *
-     * @param callable|null $function The function that will convert each value
-     * @param int|null      $case     Column name case
-     *
-     * @return callable|null The resulting function or NULL if no conversion is needed
-     */
-    private function createConvertRow(?callable $function, ?int $case): ?callable
-    {
-        $functions = [];
-
-        if ($function !== null) {
-            $functions[] = $this->createMapper($function);
-        }
-
-        if ($case !== null) {
-            $functions[] = static function (array $row) use ($case): array {
-                return array_change_key_case($row, $case);
-            };
-        }
-
-        return $this->compose(...$functions);
-    }
-
-    /**
-     * Creates a function that will be applied to the return value of Statement::fetch*()
-     * or an identity function if no conversion is needed
-     *
-     * @param callable|null $function The function that will convert each tow
-     * @param callable      $id       Identity function
-     */
-    private function createConvert(?callable $function, callable $id): callable
-    {
-        if ($function === null) {
-            return $id;
-        }
-
-        return /**
-                * @param T $value
-                *
-                * @psalm-return (T is false ? false : T)
-                *
-                * @template T
-                */
-            static function ($value) use ($function) {
-                if ($value === false) {
-                    return false;
-                }
-
-                return $function($value);
-            };
-    }
-
-    /**
-     * Creates a function that will be applied to the return value of Statement::fetchAll*()
-     * or an identity function if no transformation is required
-     *
-     * @param callable|null $function The function that will transform each value
-     * @param callable      $id       Identity function
-     */
-    private function createConvertAll(?callable $function, callable $id): callable
-    {
-        if ($function === null) {
-            return $id;
-        }
-
-        return $this->createMapper($function);
-    }
-
-    /**
-     * Creates a function that maps each value of the array using the given function
-     *
-     * @param callable $function The function that maps each value of the array
-     */
-    private function createMapper(callable $function): callable
-    {
-        return static function (array $array) use ($function): array {
-            return array_map($function, $array);
-        };
-    }
-
-    /**
-     * Creates a composition of the given set of functions
-     *
-     * @param callable(T):T ...$functions The functions to compose
-     *
-     * @return callable(T):T|null
-     *
-     * @template T
-     */
-    private function compose(callable ...$functions): ?callable
-    {
-        return array_reduce($functions, static function (?callable $carry, callable $item): callable {
-            if ($carry === null) {
-                return $item;
-            }
-
-            return /**
-                    * @param T $value
-                    *
-                    * @return T
-                    *
-                    * @template T
-                    */
-                static function ($value) use ($carry, $item) {
-                    return $item($carry($value));
-                };
-        });
     }
 }

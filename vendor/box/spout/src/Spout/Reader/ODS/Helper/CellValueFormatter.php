@@ -36,19 +36,16 @@ class CellValueFormatter
     const XML_ATTRIBUTE_TIME_VALUE = 'office:time-value';
     const XML_ATTRIBUTE_CURRENCY = 'office:currency';
     const XML_ATTRIBUTE_C = 'text:c';
-
-    /** @var bool Whether date/time values should be returned as PHP objects or be formatted as strings */
-    protected $shouldFormatDates;
-
-    /** @var \Box\Spout\Common\Helper\Escaper\ODS Used to unescape XML data */
-    protected $escaper;
-
     /** @var array List of XML nodes representing whitespaces and their corresponding value */
     private static $WHITESPACE_XML_NODES = [
         self::XML_NODE_TEXT_S => ' ',
         self::XML_NODE_TEXT_TAB => "\t",
         self::XML_NODE_TEXT_LINE_BREAK => "\n",
     ];
+    /** @var bool Whether date/time values should be returned as PHP objects or be formatted as strings */
+    protected $shouldFormatDates;
+    /** @var \Box\Spout\Common\Helper\Escaper\ODS Used to unescape XML data */
+    protected $escaper;
 
     /**
      * @param bool $shouldFormatDates Whether date/time values should be returned as PHP objects or be formatted as strings
@@ -165,7 +162,7 @@ class CellValueFormatter
     private function transformWhitespaceNode($node)
     {
         $countAttribute = $node->getAttribute(self::XML_ATTRIBUTE_C); // only defined for "<text:s>"
-        $numWhitespaces = (!empty($countAttribute)) ? (int) $countAttribute : 1;
+        $numWhitespaces = (!empty($countAttribute)) ? (int)$countAttribute : 1;
 
         return \str_repeat(self::$WHITESPACE_XML_NODES[$node->nodeName], $numWhitespaces);
     }
@@ -180,9 +177,9 @@ class CellValueFormatter
     {
         $nodeValue = $node->getAttribute(self::XML_ATTRIBUTE_VALUE);
 
-        $nodeIntValue = (int) $nodeValue;
-        $nodeFloatValue = (float) $nodeValue;
-        $cellValue = ((float) $nodeIntValue === $nodeFloatValue) ? $nodeIntValue : $nodeFloatValue;
+        $nodeIntValue = (int)$nodeValue;
+        $nodeFloatValue = (float)$nodeValue;
+        $cellValue = ((float)$nodeIntValue === $nodeFloatValue) ? $nodeIntValue : $nodeFloatValue;
 
         return $cellValue;
     }
@@ -197,15 +194,15 @@ class CellValueFormatter
     {
         $nodeValue = $node->getAttribute(self::XML_ATTRIBUTE_BOOLEAN_VALUE);
 
-        return (bool) $nodeValue;
+        return (bool)$nodeValue;
     }
 
     /**
      * Returns the cell Date value from the given node.
      *
      * @param \DOMNode $node
-     * @throws InvalidValueException If the value is not a valid date
      * @return \DateTime|string The value associated with the cell
+     * @throws InvalidValueException If the value is not a valid date
      */
     protected function formatDateCellValue($node)
     {
@@ -235,8 +232,8 @@ class CellValueFormatter
      * Returns the cell Time value from the given node.
      *
      * @param \DOMNode $node
-     * @throws InvalidValueException If the value is not a valid time
      * @return \DateInterval|string The value associated with the cell
+     * @throws InvalidValueException If the value is not a valid time
      */
     protected function formatTimeCellValue($node)
     {

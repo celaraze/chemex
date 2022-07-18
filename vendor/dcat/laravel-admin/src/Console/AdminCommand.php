@@ -10,31 +10,29 @@ use Illuminate\Support\Str;
 class AdminCommand extends Command
 {
     /**
+     * @var string
+     */
+    public static $logo = <<<LOGO
+
+    ____   ______ ___   ______   ___     ____   __  ___ ____ _   __
+   / __ \ / ____//   | /_  __/  /   |   / __ \ /  |/  //  _// | / /
+  / / / // /    / /| |  / /    / /| |  / / / // /|_/ / / / /  |/ /
+ / /_/ // /___ / ___ | / /    / ___ | / /_/ // /  / /_/ / / /|  /
+/_____/ \____//_/  |_|/_/    /_/  |_|/_____//_/  /_//___//_/ |_/
+
+LOGO;
+    /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'admin';
-
     /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'List all admin commands';
-
-    /**
-     * @var string
-     */
-    public static $logo = <<<LOGO
-    
-    ____   ______ ___   ______   ___     ____   __  ___ ____ _   __
-   / __ \ / ____//   | /_  __/  /   |   / __ \ /  |/  //  _// | / /
-  / / / // /    / /| |  / /    / /| |  / / / // /|_/ / / / /  |/ / 
- / /_/ // /___ / ___ | / /    / ___ | / /_/ // /  / /_/ / / /|  /  
-/_____/ \____//_/  |_|/_/    /_/  |_|/_____//_/  /_//___//_/ |_/   
-                                                                                         
-LOGO;
 
     /**
      * Execute the console command.
@@ -94,7 +92,7 @@ LOGO;
     /**
      * Returns the length of a string, using mb_strwidth if it is available.
      *
-     * @param  string  $string  The string to check its length
+     * @param string $string The string to check its length
      * @return int The length of the string
      */
     public static function strlen($string)

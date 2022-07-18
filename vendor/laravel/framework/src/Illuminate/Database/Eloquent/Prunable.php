@@ -10,7 +10,7 @@ trait Prunable
     /**
      * Prune all prunable models in the database.
      *
-     * @param  int  $chunkSize
+     * @param int $chunkSize
      * @return int
      */
     public function pruneAll(int $chunkSize = 1000)
@@ -51,8 +51,8 @@ trait Prunable
         $this->pruning();
 
         return in_array(SoftDeletes::class, class_uses_recursive(get_class($this)))
-                ? $this->forceDelete()
-                : $this->delete();
+            ? $this->forceDelete()
+            : $this->delete();
     }
 
     /**

@@ -33,6 +33,6 @@ final class Fqsen implements Reference
      */
     public function __toString(): string
     {
-        return (string) $this->fqsen;
+        return (string)$this->fqsen;
     }
 }

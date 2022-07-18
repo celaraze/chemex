@@ -7,16 +7,17 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const PHP_EOL;
-use function get_class;
-use function sprintf;
-use function str_replace;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\TestSuite;
 use PHPUnit\Runner\PhptTestCase;
 use RecursiveIteratorIterator;
+use function get_class;
+use function sprintf;
+use function str_replace;
+use const PHP_EOL;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit

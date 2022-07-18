@@ -16,7 +16,7 @@ trait HasTimestamps
     /**
      * Update the model's update timestamp.
      *
-     * @param  string|null  $attribute
+     * @param string|null $attribute
      * @return bool
      */
     public function touch($attribute = null)
@@ -27,63 +27,13 @@ trait HasTimestamps
             return $this->save();
         }
 
-        if (! $this->usesTimestamps()) {
+        if (!$this->usesTimestamps()) {
             return false;
         }
 
         $this->updateTimestamps();
 
         return $this->save();
-    }
-
-    /**
-     * Update the creation and update timestamps.
-     *
-     * @return $this
-     */
-    public function updateTimestamps()
-    {
-        $time = $this->freshTimestamp();
-
-        $updatedAtColumn = $this->getUpdatedAtColumn();
-
-        if (! is_null($updatedAtColumn) && ! $this->isDirty($updatedAtColumn)) {
-            $this->setUpdatedAt($time);
-        }
-
-        $createdAtColumn = $this->getCreatedAtColumn();
-
-        if (! $this->exists && ! is_null($createdAtColumn) && ! $this->isDirty($createdAtColumn)) {
-            $this->setCreatedAt($time);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the value of the "created at" attribute.
-     *
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function setCreatedAt($value)
-    {
-        $this->{$this->getCreatedAtColumn()} = $value;
-
-        return $this;
-    }
-
-    /**
-     * Set the value of the "updated at" attribute.
-     *
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function setUpdatedAt($value)
-    {
-        $this->{$this->getUpdatedAtColumn()} = $value;
-
-        return $this;
     }
 
     /**
@@ -97,16 +47,6 @@ trait HasTimestamps
     }
 
     /**
-     * Get a fresh timestamp for the model.
-     *
-     * @return string
-     */
-    public function freshTimestampString()
-    {
-        return $this->fromDateTime($this->freshTimestamp());
-    }
-
-    /**
      * Determine if the model uses timestamps.
      *
      * @return bool
@@ -114,6 +54,53 @@ trait HasTimestamps
     public function usesTimestamps()
     {
         return $this->timestamps;
+    }
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return $this
+     */
+    public function updateTimestamps()
+    {
+        $time = $this->freshTimestamp();
+
+        $updatedAtColumn = $this->getUpdatedAtColumn();
+
+        if (!is_null($updatedAtColumn) && !$this->isDirty($updatedAtColumn)) {
+            $this->setUpdatedAt($time);
+        }
+
+        $createdAtColumn = $this->getCreatedAtColumn();
+
+        if (!$this->exists && !is_null($createdAtColumn) && !$this->isDirty($createdAtColumn)) {
+            $this->setCreatedAt($time);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the name of the "updated at" column.
+     *
+     * @return string|null
+     */
+    public function getUpdatedAtColumn()
+    {
+        return static::UPDATED_AT;
+    }
+
+    /**
+     * Set the value of the "updated at" attribute.
+     *
+     * @param mixed $value
+     * @return $this
+     */
+    public function setUpdatedAt($value)
+    {
+        $this->{$this->getUpdatedAtColumn()} = $value;
+
+        return $this;
     }
 
     /**
@@ -127,13 +114,26 @@ trait HasTimestamps
     }
 
     /**
-     * Get the name of the "updated at" column.
+     * Set the value of the "created at" attribute.
      *
-     * @return string|null
+     * @param mixed $value
+     * @return $this
      */
-    public function getUpdatedAtColumn()
+    public function setCreatedAt($value)
     {
-        return static::UPDATED_AT;
+        $this->{$this->getCreatedAtColumn()} = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get a fresh timestamp for the model.
+     *
+     * @return string
+     */
+    public function freshTimestampString()
+    {
+        return $this->fromDateTime($this->freshTimestamp());
     }
 
     /**

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'meridiem' => ['Munkyo', 'Eigulo'],
     'weekdays' => ['Sabiiti', 'Balaza', 'Owokubili', 'Owokusatu', 'Olokuna', 'Olokutaanu', 'Olomukaaga'],
     'weekdays_short' => ['Sabi', 'Bala', 'Kubi', 'Kusa', 'Kuna', 'Kuta', 'Muka'],

@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
-use function iterator_count;
 use Countable;
 use Iterator;
+use function count;
+use function iterator_count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit

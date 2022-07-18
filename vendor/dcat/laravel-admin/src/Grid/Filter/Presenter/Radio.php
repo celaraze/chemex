@@ -26,7 +26,7 @@ class Radio extends Presenter
     /**
      * Radio constructor.
      *
-     * @param  array  $options
+     * @param array $options
      */
     public function __construct($options = [])
     {
@@ -34,7 +34,7 @@ class Radio extends Presenter
             $options = $options->toArray();
         }
 
-        $this->options = (array) $options;
+        $this->options = (array)$options;
 
         return $this;
     }
@@ -58,10 +58,6 @@ class Radio extends Presenter
         return $this;
     }
 
-    protected function prepare()
-    {
-    }
-
     /**
      * @return array
      */
@@ -70,9 +66,13 @@ class Radio extends Presenter
         $this->prepare();
 
         return [
-            'options'   => $this->options,
-            'inline'    => $this->inline,
+            'options' => $this->options,
+            'inline' => $this->inline,
             'showLabel' => $this->showLabel,
         ];
+    }
+
+    protected function prepare()
+    {
     }
 }

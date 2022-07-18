@@ -7,15 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const DIRECTORY_SEPARATOR;
 use function array_diff;
 use function array_keys;
 use function fopen;
 use function get_defined_vars;
 use function sprintf;
 use function stream_resolve_include_path;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -52,6 +53,14 @@ final class FileLoader
     }
 
     /**
+     * @see https://github.com/sebastianbergmann/phpunit/pull/2751
+     */
+    private static function isReadable(string $filename): bool
+    {
+        return @fopen($filename, 'r') !== false;
+    }
+
+    /**
      * Loads a PHP sourcefile.
      */
     public static function load(string $filename): void
@@ -71,13 +80,5 @@ final class FileLoader
                 $GLOBALS[$variableName] = $newVariables[$variableName];
             }
         }
-    }
-
-    /**
-     * @see https://github.com/sebastianbergmann/phpunit/pull/2751
-     */
-    private static function isReadable(string $filename): bool
-    {
-        return @fopen($filename, 'r') !== false;
     }
 }

@@ -24,12 +24,6 @@ class PhpExtractor extends AbstractFileExtractor implements ExtractorInterface
     public const MESSAGE_TOKEN = 300;
     public const METHOD_ARGUMENTS_TOKEN = 1000;
     public const DOMAIN_TOKEN = 1001;
-
-    /**
-     * Prefix for new found message.
-     */
-    private string $prefix = '';
-
     /**
      * The sequence that captures translation messages.
      */
@@ -127,6 +121,10 @@ class PhpExtractor extends AbstractFileExtractor implements ExtractorInterface
             self::MESSAGE_TOKEN,
         ],
     ];
+    /**
+     * Prefix for new found message.
+     */
+    private string $prefix = '';
 
     /**
      * {@inheritdoc}
@@ -142,23 +140,54 @@ class PhpExtractor extends AbstractFileExtractor implements ExtractorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Extracts trans message from PHP tokens.
      */
-    public function setPrefix(string $prefix)
+    protected function parseTokens(array $tokens, MessageCatalogue $catalog, string $filename)
     {
-        $this->prefix = $prefix;
-    }
+        $tokenIterator = new \ArrayIterator($tokens);
 
-    /**
-     * Normalizes a token.
-     */
-    protected function normalizeToken(mixed $token): ?string
-    {
-        if (isset($token[1]) && 'b"' !== $token) {
-            return $token[1];
+        for ($key = 0; $key < $tokenIterator->count(); ++$key) {
+            foreach ($this->sequences as $sequence) {
+                $message = '';
+                $domain = 'messages';
+                $tokenIterator->seek($key);
+
+                foreach ($sequence as $sequenceKey => $item) {
+                    $this->seekToNextRelevantToken($tokenIterator);
+
+                    if ($this->normalizeToken($tokenIterator->current()) === $item) {
+                        $tokenIterator->next();
+                        continue;
+                    } elseif (self::MESSAGE_TOKEN === $item) {
+                        $message = $this->getValue($tokenIterator);
+
+                        if (\count($sequence) === ($sequenceKey + 1)) {
+                            break;
+                        }
+                    } elseif (self::METHOD_ARGUMENTS_TOKEN === $item) {
+                        $this->skipMethodArgument($tokenIterator);
+                    } elseif (self::DOMAIN_TOKEN === $item) {
+                        $domainToken = $this->getValue($tokenIterator);
+                        if ('' !== $domainToken) {
+                            $domain = $domainToken;
+                        }
+
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+
+                if ($message) {
+                    $catalog->set($message, $this->prefix . $message, $domain);
+                    $metadata = $catalog->getMetadata($message, $domain) ?? [];
+                    $normalizedFilename = preg_replace('{[\\\\/]+}', '/', $filename);
+                    $metadata['sources'][] = $normalizedFilename . ':' . $tokens[$key][2];
+                    $catalog->setMetadata($message, $metadata, $domain);
+                    break;
+                }
+            }
         }
-
-        return $token;
     }
 
     /**
@@ -174,25 +203,16 @@ class PhpExtractor extends AbstractFileExtractor implements ExtractorInterface
         }
     }
 
-    private function skipMethodArgument(\Iterator $tokenIterator)
+    /**
+     * Normalizes a token.
+     */
+    protected function normalizeToken(mixed $token): ?string
     {
-        $openBraces = 0;
-
-        for (; $tokenIterator->valid(); $tokenIterator->next()) {
-            $t = $tokenIterator->current();
-
-            if ('[' === $t[0] || '(' === $t[0]) {
-                ++$openBraces;
-            }
-
-            if (']' === $t[0] || ')' === $t[0]) {
-                --$openBraces;
-            }
-
-            if ((0 === $openBraces && ',' === $t[0]) || (-1 === $openBraces && ')' === $t[0])) {
-                break;
-            }
+        if (isset($token[1]) && 'b"' !== $token) {
+            return $token[1];
         }
+
+        return $token;
     }
 
     /**
@@ -255,55 +275,33 @@ class PhpExtractor extends AbstractFileExtractor implements ExtractorInterface
         return $message;
     }
 
-    /**
-     * Extracts trans message from PHP tokens.
-     */
-    protected function parseTokens(array $tokens, MessageCatalogue $catalog, string $filename)
+    private function skipMethodArgument(\Iterator $tokenIterator)
     {
-        $tokenIterator = new \ArrayIterator($tokens);
+        $openBraces = 0;
 
-        for ($key = 0; $key < $tokenIterator->count(); ++$key) {
-            foreach ($this->sequences as $sequence) {
-                $message = '';
-                $domain = 'messages';
-                $tokenIterator->seek($key);
+        for (; $tokenIterator->valid(); $tokenIterator->next()) {
+            $t = $tokenIterator->current();
 
-                foreach ($sequence as $sequenceKey => $item) {
-                    $this->seekToNextRelevantToken($tokenIterator);
+            if ('[' === $t[0] || '(' === $t[0]) {
+                ++$openBraces;
+            }
 
-                    if ($this->normalizeToken($tokenIterator->current()) === $item) {
-                        $tokenIterator->next();
-                        continue;
-                    } elseif (self::MESSAGE_TOKEN === $item) {
-                        $message = $this->getValue($tokenIterator);
+            if (']' === $t[0] || ')' === $t[0]) {
+                --$openBraces;
+            }
 
-                        if (\count($sequence) === ($sequenceKey + 1)) {
-                            break;
-                        }
-                    } elseif (self::METHOD_ARGUMENTS_TOKEN === $item) {
-                        $this->skipMethodArgument($tokenIterator);
-                    } elseif (self::DOMAIN_TOKEN === $item) {
-                        $domainToken = $this->getValue($tokenIterator);
-                        if ('' !== $domainToken) {
-                            $domain = $domainToken;
-                        }
-
-                        break;
-                    } else {
-                        break;
-                    }
-                }
-
-                if ($message) {
-                    $catalog->set($message, $this->prefix.$message, $domain);
-                    $metadata = $catalog->getMetadata($message, $domain) ?? [];
-                    $normalizedFilename = preg_replace('{[\\\\/]+}', '/', $filename);
-                    $metadata['sources'][] = $normalizedFilename.':'.$tokens[$key][2];
-                    $catalog->setMetadata($message, $metadata, $domain);
-                    break;
-                }
+            if ((0 === $openBraces && ',' === $t[0]) || (-1 === $openBraces && ')' === $t[0])) {
+                break;
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setPrefix(string $prefix)
+    {
+        $this->prefix = $prefix;
     }
 
     /**

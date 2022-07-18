@@ -69,11 +69,11 @@ return [
     'ordinal' => function ($number) {
         $lastDigit = $number % 10;
 
-        return $number.(
-            ((int) ($number % 100 / 10) === 1) ? 'e' : (
-                ($lastDigit === 1 || $lastDigit === 2) ? 'a' : 'e'
+        return $number . (
+            ((int)($number % 100 / 10) === 1) ? 'e' : (
+            ($lastDigit === 1 || $lastDigit === 2) ? 'a' : 'e'
             )
-        );
+            );
     },
     'months' => ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'],
     'months_short' => ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],

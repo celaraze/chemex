@@ -25,9 +25,9 @@ class AbstractClassPass extends CodeCleanerPass
     private $abstractMethods;
 
     /**
+     * @param Node $node
      * @throws FatalErrorException if the node is an abstract function with a body
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {
@@ -48,9 +48,9 @@ class AbstractClassPass extends CodeCleanerPass
     }
 
     /**
+     * @param Node $node
      * @throws FatalErrorException if the node is a non-abstract class with abstract methods
      *
-     * @param Node $node
      */
     public function leaveNode(Node $node)
     {

@@ -11,9 +11,9 @@
 
 namespace Monolog\Handler;
 
-use RuntimeException;
 use Monolog\Logger;
 use Monolog\Utils;
+use RuntimeException;
 
 /**
  * Handler send logs to Telegram using Telegram Bot API.
@@ -207,14 +207,6 @@ class TelegramBotHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @inheritDoc
-     */
-    protected function write(array $record): void
-    {
-        $this->send($record['formatted']);
-    }
-
-    /**
      * Send request to @link https://api.telegram.org/bot on SendMessage action.
      * @param string $message
      */
@@ -229,6 +221,21 @@ class TelegramBotHandler extends AbstractProcessingHandler
 
             $this->sendCurl($msg);
         }
+    }
+
+    /**
+     * Handle a message that is too long: truncates or splits into several
+     * @param string $message
+     * @return string[]
+     */
+    private function handleMessageLength(string $message): array
+    {
+        $truncatedMarker = ' (...truncated)';
+        if (!$this->splitLongMessages && strlen($message) > self::MAX_MESSAGE_LENGTH) {
+            return [Utils::substr($message, 0, self::MAX_MESSAGE_LENGTH - strlen($truncatedMarker)) . $truncatedMarker];
+        }
+
+        return str_split($message, self::MAX_MESSAGE_LENGTH);
     }
 
     protected function sendCurl(string $message): void
@@ -258,17 +265,10 @@ class TelegramBotHandler extends AbstractProcessingHandler
     }
 
     /**
-     * Handle a message that is too long: truncates or splits into several
-     * @param string $message
-     * @return string[]
+     * @inheritDoc
      */
-    private function handleMessageLength(string $message): array
+    protected function write(array $record): void
     {
-        $truncatedMarker = ' (...truncated)';
-        if (!$this->splitLongMessages && strlen($message) > self::MAX_MESSAGE_LENGTH) {
-            return [Utils::substr($message, 0, self::MAX_MESSAGE_LENGTH - strlen($truncatedMarker)) . $truncatedMarker];
-        }
-
-        return str_split($message, self::MAX_MESSAGE_LENGTH);
+        $this->send($record['formatted']);
     }
 }

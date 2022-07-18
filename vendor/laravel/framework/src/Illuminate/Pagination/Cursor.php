@@ -24,8 +24,8 @@ class Cursor implements Arrayable
     /**
      * Create a new cursor instance.
      *
-     * @param  array  $parameters
-     * @param  bool  $pointsToNextItems
+     * @param array $parameters
+     * @param bool $pointsToNextItems
      */
     public function __construct(array $parameters, $pointsToNextItems = true)
     {
@@ -34,26 +34,34 @@ class Cursor implements Arrayable
     }
 
     /**
-     * Get the given parameter from the cursor.
+     * Get a cursor instance from the encoded string representation.
      *
-     * @param  string  $parameterName
-     * @return string|null
-     *
-     * @throws \UnexpectedValueException
+     * @param string|null $encodedString
+     * @return static|null
      */
-    public function parameter(string $parameterName)
+    public static function fromEncoded($encodedString)
     {
-        if (! array_key_exists($parameterName, $this->parameters)) {
-            throw new UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
+        if (!is_string($encodedString)) {
+            return null;
         }
 
-        return $this->parameters[$parameterName];
+        $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString)), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        $pointsToNextItems = $parameters['_pointsToNextItems'];
+
+        unset($parameters['_pointsToNextItems']);
+
+        return new static($parameters, $pointsToNextItems);
     }
 
     /**
      * Get the given parameters from the cursor.
      *
-     * @param  array  $parameterNames
+     * @param array $parameterNames
      * @return array
      */
     public function parameters(array $parameterNames)
@@ -61,6 +69,35 @@ class Cursor implements Arrayable
         return collect($parameterNames)->map(function ($parameterName) {
             return $this->parameter($parameterName);
         })->toArray();
+    }
+
+    /**
+     * Get the array representation of the cursor.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge($this->parameters, [
+            '_pointsToNextItems' => $this->pointsToNextItems,
+        ]);
+    }
+
+    /**
+     * Get the given parameter from the cursor.
+     *
+     * @param string $parameterName
+     * @return string|null
+     *
+     * @throws \UnexpectedValueException
+     */
+    public function parameter(string $parameterName)
+    {
+        if (!array_key_exists($parameterName, $this->parameters)) {
+            throw new UnexpectedValueException("Unable to find parameter [{$parameterName}] in pagination item.");
+        }
+
+        return $this->parameters[$parameterName];
     }
 
     /**
@@ -80,19 +117,7 @@ class Cursor implements Arrayable
      */
     public function pointsToPreviousItems()
     {
-        return ! $this->pointsToNextItems;
-    }
-
-    /**
-     * Get the array representation of the cursor.
-     *
-     * @return array
-     */
-    public function toArray()
-    {
-        return array_merge($this->parameters, [
-            '_pointsToNextItems' => $this->pointsToNextItems,
-        ]);
+        return !$this->pointsToNextItems;
     }
 
     /**
@@ -103,30 +128,5 @@ class Cursor implements Arrayable
     public function encode()
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(json_encode($this->toArray())));
-    }
-
-    /**
-     * Get a cursor instance from the encoded string representation.
-     *
-     * @param  string|null  $encodedString
-     * @return static|null
-     */
-    public static function fromEncoded($encodedString)
-    {
-        if (! is_string($encodedString)) {
-            return null;
-        }
-
-        $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString)), true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-
-        $pointsToNextItems = $parameters['_pointsToNextItems'];
-
-        unset($parameters['_pointsToNextItems']);
-
-        return new static($parameters, $pointsToNextItems);
     }
 }

@@ -84,20 +84,6 @@ class ReturnTypePass extends CodeCleanerPass
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveNode(Node $node)
-    {
-        if (!$this->atLeastPhp71) {
-            return; // @codeCoverageIgnore
-        }
-
-        if (!empty($this->returnTypeStack) && $this->isFunctionNode($node)) {
-            \array_pop($this->returnTypeStack);
-        }
-    }
-
     private function isFunctionNode(Node $node): bool
     {
         return $node instanceof Function_ || $node instanceof Closure;
@@ -114,5 +100,19 @@ class ReturnTypePass extends CodeCleanerPass
         }
 
         throw new \InvalidArgumentException('Unable to find type name');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function leaveNode(Node $node)
+    {
+        if (!$this->atLeastPhp71) {
+            return; // @codeCoverageIgnore
+        }
+
+        if (!empty($this->returnTypeStack) && $this->isFunctionNode($node)) {
+            \array_pop($this->returnTypeStack);
+        }
     }
 }

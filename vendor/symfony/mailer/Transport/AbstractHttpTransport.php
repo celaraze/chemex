@@ -62,8 +62,6 @@ abstract class AbstractHttpTransport extends AbstractTransport
         return $this;
     }
 
-    abstract protected function doSendHttp(SentMessage $message): ResponseInterface;
-
     protected function doSend(SentMessage $message): void
     {
         $response = null;
@@ -76,4 +74,6 @@ abstract class AbstractHttpTransport extends AbstractTransport
             throw $e;
         }
     }
+
+    abstract protected function doSendHttp(SentMessage $message): ResponseInterface;
 }

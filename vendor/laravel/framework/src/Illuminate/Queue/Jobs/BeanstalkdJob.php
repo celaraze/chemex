@@ -26,11 +26,11 @@ class BeanstalkdJob extends Job implements JobContract
     /**
      * Create a new job instance.
      *
-     * @param  \Illuminate\Container\Container  $container
-     * @param  \Pheanstalk\Pheanstalk  $pheanstalk
-     * @param  \Pheanstalk\Job  $job
-     * @param  string  $connectionName
-     * @param  string  $queue
+     * @param \Illuminate\Container\Container $container
+     * @param \Pheanstalk\Pheanstalk $pheanstalk
+     * @param \Pheanstalk\Job $job
+     * @param string $connectionName
+     * @param string $queue
      * @return void
      */
     public function __construct(Container $container, Pheanstalk $pheanstalk, PheanstalkJob $job, $connectionName, $queue)
@@ -43,21 +43,6 @@ class BeanstalkdJob extends Job implements JobContract
     }
 
     /**
-     * Release the job back into the queue after (n) seconds.
-     *
-     * @param  int  $delay
-     * @return void
-     */
-    public function release($delay = 0)
-    {
-        parent::release($delay);
-
-        $priority = Pheanstalk::DEFAULT_PRIORITY;
-
-        $this->pheanstalk->release($this->job, $priority, $delay);
-    }
-
-    /**
      * Bury the job in the queue.
      *
      * @return void
@@ -67,6 +52,21 @@ class BeanstalkdJob extends Job implements JobContract
         parent::release();
 
         $this->pheanstalk->bury($this->job);
+    }
+
+    /**
+     * Release the job back into the queue after (n) seconds.
+     *
+     * @param int $delay
+     * @return void
+     */
+    public function release($delay = 0)
+    {
+        parent::release($delay);
+
+        $priority = Pheanstalk::DEFAULT_PRIORITY;
+
+        $this->pheanstalk->release($this->job, $priority, $delay);
     }
 
     /**
@@ -90,7 +90,7 @@ class BeanstalkdJob extends Job implements JobContract
     {
         $stats = $this->pheanstalk->statsJob($this->job);
 
-        return (int) $stats->reserves;
+        return (int)$stats->reserves;
     }
 
     /**

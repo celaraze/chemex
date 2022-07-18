@@ -70,6 +70,14 @@ class EventBucket
     }
 
     /**
+     * Returns the source.
+     */
+    public function getSource()
+    {
+        return $this->_source;
+    }
+
+    /**
      * Sets a new source.
      */
     public function setSource(EventSource $source)
@@ -81,11 +89,11 @@ class EventBucket
     }
 
     /**
-     * Returns the source.
+     * Returns the data.
      */
-    public function getSource()
+    public function getData()
     {
-        return $this->_source;
+        return $this->_data;
     }
 
     /**
@@ -97,13 +105,5 @@ class EventBucket
         $this->_data = $data;
 
         return $old;
-    }
-
-    /**
-     * Returns the data.
-     */
-    public function getData()
-    {
-        return $this->_data;
     }
 }

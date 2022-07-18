@@ -23,7 +23,7 @@ class QueryExecuted
     /**
      * Constructor.
      *
-     * @param Builder    $query
+     * @param Builder $query
      * @param null|float $time
      */
     public function __construct(Builder $query, $time = null)

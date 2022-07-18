@@ -58,30 +58,6 @@ class Company extends \Faker\Provider\Company
         'Экономист', 'Электромонтёр',
     ];
 
-    /**
-     * @example 'Robust full-range hub'
-     */
-    public function catchPhrase()
-    {
-        $result = [];
-
-        foreach (static::$catchPhraseWords as &$word) {
-            $result[] = static::randomElement($word);
-        }
-
-        return implode(' ', $result);
-    }
-
-    /**
-     * @example 'ООО АсбестЦементМонтаж'
-     */
-    public function company()
-    {
-        $format = static::randomElement(static::$companyNameFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function companyPrefix()
     {
         return static::randomElement(static::$companyPrefixes);
@@ -121,25 +97,16 @@ class Company extends \Faker\Provider\Company
      */
     public static function inn10($area_code = '')
     {
-        if ($area_code === '' || (int) $area_code === 0) {
+        if ($area_code === '' || (int)$area_code === 0) {
             //Simple generation code for areas in Russian without check for valid
             $area_code = self::numberBetween(1, 91);
         } else {
-            $area_code = (int) $area_code;
+            $area_code = (int)$area_code;
         }
         $area_code = str_pad($area_code, 2, '0', STR_PAD_LEFT);
         $inn_base = $area_code . static::numerify('#######');
 
         return $inn_base . self::inn10Checksum($inn_base);
-    }
-
-    public static function kpp($inn = '')
-    {
-        if ($inn === '' || strlen($inn) < 4) {
-            $inn = self::inn10();
-        }
-
-        return substr($inn, 0, 4) . '01001';
     }
 
     /**
@@ -157,10 +124,19 @@ class Company extends \Faker\Provider\Company
         $sum = 0;
 
         for ($i = 0; $i < 9; ++$i) {
-            $sum += (int) $inn[$i] * $multipliers[$i];
+            $sum += (int)$inn[$i] * $multipliers[$i];
         }
 
-        return (string) (($sum % 11) % 10);
+        return (string)(($sum % 11) % 10);
+    }
+
+    public static function kpp($inn = '')
+    {
+        if ($inn === '' || strlen($inn) < 4) {
+            $inn = self::inn10();
+        }
+
+        return substr($inn, 0, 4) . '01001';
     }
 
     /**
@@ -173,5 +149,29 @@ class Company extends \Faker\Provider\Company
     public static function inn10IsValid($inn)
     {
         return strlen($inn) === 10 && self::inn10Checksum($inn) === $inn[9];
+    }
+
+    /**
+     * @example 'Robust full-range hub'
+     */
+    public function catchPhrase()
+    {
+        $result = [];
+
+        foreach (static::$catchPhraseWords as &$word) {
+            $result[] = static::randomElement($word);
+        }
+
+        return implode(' ', $result);
+    }
+
+    /**
+     * @example 'ООО АсбестЦементМонтаж'
+     */
+    public function company()
+    {
+        $format = static::randomElement(static::$companyNameFormats);
+
+        return $this->generator->parse($format);
     }
 }

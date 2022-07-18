@@ -122,7 +122,7 @@ class Person extends \Faker\Provider\Person
      * @see http://en.wikipedia.org/wiki/Personal_identity_number_(Sweden)
      *
      * @param \DateTime $birthdate
-     * @param string    $gender    Person::GENDER_MALE || Person::GENDER_FEMALE
+     * @param string $gender Person::GENDER_MALE || Person::GENDER_FEMALE
      *
      * @return string on format XXXXXX-XXXX
      */
@@ -147,7 +147,7 @@ class Person extends \Faker\Provider\Person
     protected function getBirthNumber($gender = null)
     {
         if ($gender && $gender === static::GENDER_MALE) {
-            return (string) static::numerify('##') . static::randomElement([1, 3, 5, 7, 9]);
+            return (string)static::numerify('##') . static::randomElement([1, 3, 5, 7, 9]);
         }
 
         $zeroCheck = static function ($callback) {
@@ -160,12 +160,12 @@ class Person extends \Faker\Provider\Person
 
         if ($gender && $gender === static::GENDER_FEMALE) {
             return $zeroCheck(static function () {
-                return (string) static::numerify('##') . static::randomElement([0, 2, 4, 6, 8]);
+                return (string)static::numerify('##') . static::randomElement([0, 2, 4, 6, 8]);
             });
         }
 
-        return  $zeroCheck(static function () {
-            return (string) static::numerify('###');
+        return $zeroCheck(static function () {
+            return (string)static::numerify('###');
         });
     }
 }

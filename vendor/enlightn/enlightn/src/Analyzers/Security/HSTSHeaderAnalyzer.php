@@ -16,19 +16,23 @@ class HSTSHeaderAnalyzer extends SecurityAnalyzer
     use DetectsHttps;
 
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your application includes the HSTS header if it is a HTTPS only app.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
@@ -37,17 +41,10 @@ class HSTSHeaderAnalyzer extends SecurityAnalyzer
     public $timeToFix = 5;
 
     /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
-    /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -65,8 +62,8 @@ class HSTSHeaderAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application uses HTTPS only cookies, yet it does not include a HSTS (Strict-Transport-Security) "
-            ."response header that tells browsers that it should only be accessed using HTTPS. This may expose your "
-            ."application to man-in-the-middle attacks.";
+            . "response header that tells browsers that it should only be accessed using HTTPS. This may expose your "
+            . "application to man-in-the-middle attacks.";
     }
 
     /**
@@ -76,7 +73,7 @@ class HSTSHeaderAnalyzer extends SecurityAnalyzer
      */
     public function handle()
     {
-        if (! $this->headerExistsOnUrl($this->findLoginRoute(), 'Strict-Transport-Security')) {
+        if (!$this->headerExistsOnUrl($this->findLoginRoute(), 'Strict-Transport-Security')) {
             $this->markFailed();
         }
     }
@@ -89,6 +86,6 @@ class HSTSHeaderAnalyzer extends SecurityAnalyzer
     public function skip()
     {
         // Skip this analyzer if the app is not an HTTPS only application.
-        return ! $this->appIsHttpsOnly();
+        return !$this->appIsHttpsOnly();
     }
 }

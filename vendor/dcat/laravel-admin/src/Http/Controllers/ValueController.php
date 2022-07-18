@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 class ValueController
 {
     /**
-     * @param  Request  $request
+     * @param Request $request
      * @return mixed
      */
     public function handle(Request $request)
     {
         $instance = $this->resolve($request);
 
-        if (! $instance->passesAuthorization()) {
+        if (!$instance->passesAuthorization()) {
             return $instance->failedAuthorization();
         }
 
@@ -31,24 +31,24 @@ class ValueController
     }
 
     /**
-     * @param  Request  $request
+     * @param Request $request
      * @return \Dcat\Admin\Traits\InteractsWithApi
      *
      * @throws Exception
      */
     protected function resolve(Request $request)
     {
-        if (! $key = $request->get('_key')) {
+        if (!$key = $request->get('_key')) {
             throw new Exception('Invalid request.');
         }
 
-        if (! class_exists($key)) {
+        if (!class_exists($key)) {
             throw new Exception("Class [{$key}] does not exist.");
         }
 
         $instance = app($key);
 
-        if (! method_exists($instance, 'handle')) {
+        if (!method_exists($instance, 'handle')) {
             throw new Exception("The method '{$key}::handle()' does not exist.");
         }
 

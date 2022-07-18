@@ -67,47 +67,6 @@ class WorkbookRelationshipsManager
     }
 
     /**
-     * @return bool Whether the XLSX file contains a shared string XML file
-     */
-    public function hasSharedStringsXMLFile()
-    {
-        $workbookRelationships = $this->getWorkbookRelationships();
-
-        return isset($workbookRelationships[self::RELATIONSHIP_TYPE_SHARED_STRINGS])
-            || isset($workbookRelationships[self::RELATIONSHIP_TYPE_SHARED_STRINGS_STRICT]);
-    }
-
-    /**
-     * @return bool Whether the XLSX file contains a styles XML file
-     */
-    public function hasStylesXMLFile()
-    {
-        $workbookRelationships = $this->getWorkbookRelationships();
-
-        return isset($workbookRelationships[self::RELATIONSHIP_TYPE_STYLES])
-            || isset($workbookRelationships[self::RELATIONSHIP_TYPE_STYLES_STRICT]);
-    }
-
-    /**
-     * @return string The path of the styles XML file
-     */
-    public function getStylesXMLFilePath()
-    {
-        $workbookRelationships = $this->getWorkbookRelationships();
-        $stylesXMLFilePath = $workbookRelationships[self::RELATIONSHIP_TYPE_STYLES]
-            ?? $workbookRelationships[self::RELATIONSHIP_TYPE_STYLES_STRICT];
-
-        // the file path can be relative (e.g. "styles.xml") or absolute (e.g. "/xl/styles.xml")
-        $doesContainBasePath = (\strpos($stylesXMLFilePath, self::BASE_PATH) !== false);
-        if (!$doesContainBasePath) {
-            // make sure we return a full path
-            $stylesXMLFilePath = self::BASE_PATH . $stylesXMLFilePath;
-        }
-
-        return $stylesXMLFilePath;
-    }
-
-    /**
      * Reads the workbook.xml.rels and extracts the filename associated to the different types.
      * It caches the result so that the file is read only once.
      *
@@ -147,5 +106,46 @@ class WorkbookRelationshipsManager
         // @NOTE: if a type is defined more than once, we overwrite the previous value
         // To be changed if we want to get the file paths of sheet XML files for instance.
         $this->cachedWorkbookRelationships[$type] = $target;
+    }
+
+    /**
+     * @return bool Whether the XLSX file contains a shared string XML file
+     */
+    public function hasSharedStringsXMLFile()
+    {
+        $workbookRelationships = $this->getWorkbookRelationships();
+
+        return isset($workbookRelationships[self::RELATIONSHIP_TYPE_SHARED_STRINGS])
+            || isset($workbookRelationships[self::RELATIONSHIP_TYPE_SHARED_STRINGS_STRICT]);
+    }
+
+    /**
+     * @return bool Whether the XLSX file contains a styles XML file
+     */
+    public function hasStylesXMLFile()
+    {
+        $workbookRelationships = $this->getWorkbookRelationships();
+
+        return isset($workbookRelationships[self::RELATIONSHIP_TYPE_STYLES])
+            || isset($workbookRelationships[self::RELATIONSHIP_TYPE_STYLES_STRICT]);
+    }
+
+    /**
+     * @return string The path of the styles XML file
+     */
+    public function getStylesXMLFilePath()
+    {
+        $workbookRelationships = $this->getWorkbookRelationships();
+        $stylesXMLFilePath = $workbookRelationships[self::RELATIONSHIP_TYPE_STYLES]
+            ?? $workbookRelationships[self::RELATIONSHIP_TYPE_STYLES_STRICT];
+
+        // the file path can be relative (e.g. "styles.xml") or absolute (e.g. "/xl/styles.xml")
+        $doesContainBasePath = (\strpos($stylesXMLFilePath, self::BASE_PATH) !== false);
+        if (!$doesContainBasePath) {
+            // make sure we return a full path
+            $stylesXMLFilePath = self::BASE_PATH . $stylesXMLFilePath;
+        }
+
+        return $stylesXMLFilePath;
     }
 }

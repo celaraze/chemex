@@ -43,8 +43,8 @@ class IntrospectionProcessor implements ProcessorInterface
     ];
 
     /**
-     * @param string|int $level               The minimum logging level at which this Processor will be triggered
-     * @param string[]   $skipClassesPartials
+     * @param string|int $level The minimum logging level at which this Processor will be triggered
+     * @param string[] $skipClassesPartials
      *
      * @phpstan-param Level|LevelName|LogLevel::* $level
      */
@@ -98,11 +98,11 @@ class IntrospectionProcessor implements ProcessorInterface
         $record['extra'] = array_merge(
             $record['extra'],
             [
-                'file'      => isset($trace[$i - 1]['file']) ? $trace[$i - 1]['file'] : null,
-                'line'      => isset($trace[$i - 1]['line']) ? $trace[$i - 1]['line'] : null,
-                'class'     => isset($trace[$i]['class']) ? $trace[$i]['class'] : null,
-                'callType'  => isset($trace[$i]['type']) ? $trace[$i]['type'] : null,
-                'function'  => isset($trace[$i]['function']) ? $trace[$i]['function'] : null,
+                'file' => isset($trace[$i - 1]['file']) ? $trace[$i - 1]['file'] : null,
+                'line' => isset($trace[$i - 1]['line']) ? $trace[$i - 1]['line'] : null,
+                'class' => isset($trace[$i]['class']) ? $trace[$i]['class'] : null,
+                'callType' => isset($trace[$i]['type']) ? $trace[$i]['type'] : null,
+                'function' => isset($trace[$i]['function']) ? $trace[$i]['function'] : null,
             ]
         );
 

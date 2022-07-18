@@ -15,4 +15,4 @@
  * - Azri Jamil
  * - JD Isaacks
  */
-return require __DIR__.'/ms.php';
+return require __DIR__ . '/ms.php';

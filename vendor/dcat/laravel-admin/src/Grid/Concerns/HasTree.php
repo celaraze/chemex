@@ -50,9 +50,9 @@ trait HasTree
     /**
      * 开启树形表格功能.
      *
-     * @param  bool  $showAll
-     * @param  bool  $sortable
-     * @param  mixed  $defaultParentId
+     * @param bool $showAll
+     * @param bool $sortable
+     * @param mixed $defaultParentId
      * @return void
      */
     public function enableTree(bool $showAll, bool $sortable, $defaultParentId = null)
@@ -74,7 +74,7 @@ trait HasTree
         });
 
         $this->grid()->listen(Fetched::class, function ($grid, Collection $collection) {
-            if (! $this->getParentIdFromRequest()) {
+            if (!$this->getParentIdFromRequest()) {
                 return;
             }
 
@@ -84,6 +84,83 @@ trait HasTree
 
             $this->buildChildrenNodesPagination();
         });
+    }
+
+    protected function sortTree(bool $sortable)
+    {
+        if (
+            $sortable
+            && $this->findQueryByMethod('orderBy')->isEmpty()
+            && $this->findQueryByMethod('orderByDesc')->isEmpty()
+            && ($orderColumn = $this->repository->getOrderColumn())
+        ) {
+            $this->orderBy($orderColumn)
+                ->orderBy($this->repository->getKeyName());
+        }
+    }
+
+    protected function bindChildrenNodesQuery()
+    {
+        if (!$this->allowedTreeQuery) {
+            return;
+        }
+
+        $this->where($this->repository->getParentColumn(), $this->getParentIdFromRequest());
+    }
+
+    /**
+     * @return int
+     */
+    public function getParentIdFromRequest()
+    {
+        return $this->request->get(
+            $this->getParentIdQueryName()
+        ) ?: $this->getDefaultParentId();
+    }
+
+    /**
+     * @return string
+     */
+    public function getParentIdQueryName()
+    {
+        return $this->getChildrenQueryNamePrefix() . $this->parentIdQueryName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getChildrenQueryNamePrefix()
+    {
+        return $this->grid->getName();
+    }
+
+    /**
+     * 获取默认parent_id字段值.
+     *
+     * @return int|mixed
+     */
+    public function getDefaultParentId()
+    {
+        if ($this->defaultParentId !== null) {
+            return $this->defaultParentId;
+        }
+
+        $repository = $this->grid->model()->repository();
+
+        if ($repository instanceof EloquentRepository) {
+            return $repository->model()->getDefaultParentId();
+        }
+
+        return 0;
+    }
+
+    /**
+     * @param mixed $parentId
+     * @return string
+     */
+    public function getChildrenPageName($parentId)
+    {
+        return $this->getChildrenQueryNamePrefix() . '_children_page_' . $parentId;
     }
 
     /**
@@ -96,6 +173,40 @@ trait HasTree
             $this->getDepthQueryName(),
             $this->getChildrenPageName($this->getParentIdFromRequest()),
         ]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDepthQueryName()
+    {
+        return $this->getChildrenQueryNamePrefix() . $this->depthQueryName;
+    }
+
+    protected function buildChildrenNodesPagination()
+    {
+        if ($this->grid()->allowPagination()) {
+            $nextPage = $this->getCurrentChildrenPage() + 1;
+
+            Admin::html(
+                <<<HTML
+<next-page class="hidden">{$nextPage}</next-page>
+<last-page class="hidden">{$this->paginator()->lastPage()}</last-page>
+HTML
+            );
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentChildrenPage()
+    {
+        return $this->request->get(
+            $this->getChildrenPageName(
+                $this->getParentIdFromRequest()
+            )
+        ) ?: 1;
     }
 
     /**
@@ -123,14 +234,14 @@ trait HasTree
     /**
      * 设置子节点查询链接需要忽略的字段.
      *
-     * @param  string|array  $keys
+     * @param string|array $keys
      * @return $this
      */
     public function treeUrlWithoutQuery($keys)
     {
         $this->treeIgnoreQueryNames = array_merge(
             $this->treeIgnoreQueryNames,
-            (array) $keys
+            (array)$keys
         );
 
         return $this;
@@ -144,98 +255,15 @@ trait HasTree
         );
     }
 
-    protected function buildChildrenNodesPagination()
-    {
-        if ($this->grid()->allowPagination()) {
-            $nextPage = $this->getCurrentChildrenPage() + 1;
-
-            Admin::html(
-                <<<HTML
-<next-page class="hidden">{$nextPage}</next-page>
-<last-page class="hidden">{$this->paginator()->lastPage()}</last-page>
-HTML
-            );
-        }
-    }
-
-    protected function sortTree(bool $sortable)
-    {
-        if (
-            $sortable
-            && $this->findQueryByMethod('orderBy')->isEmpty()
-            && $this->findQueryByMethod('orderByDesc')->isEmpty()
-            && ($orderColumn = $this->repository->getOrderColumn())
-        ) {
-            $this->orderBy($orderColumn)
-                ->orderBy($this->repository->getKeyName());
-        }
-    }
-
-    protected function bindChildrenNodesQuery()
-    {
-        if (! $this->allowedTreeQuery) {
-            return;
-        }
-
-        $this->where($this->repository->getParentColumn(), $this->getParentIdFromRequest());
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getChildrenQueryNamePrefix()
-    {
-        return $this->grid->getName();
-    }
-
-    /**
-     * @param  mixed  $parentId
-     * @return string
-     */
-    public function getChildrenPageName($parentId)
-    {
-        return $this->getChildrenQueryNamePrefix().'_children_page_'.$parentId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCurrentChildrenPage()
-    {
-        return $this->request->get(
-            $this->getChildrenPageName(
-                $this->getParentIdFromRequest()
-            )
-        ) ?: 1;
-    }
-
-    /**
-     * @return string
-     */
-    public function getParentIdQueryName()
-    {
-        return $this->getChildrenQueryNamePrefix().$this->parentIdQueryName;
-    }
-
-    /**
-     * @return int
-     */
-    public function getParentIdFromRequest()
-    {
-        return $this->request->get(
-            $this->getParentIdQueryName()
-        ) ?: $this->getDefaultParentId();
-    }
-
     /**
      * 移除树相关参数.
      *
-     * @param  string  $url
+     * @param string $url
      * @return string
      */
     public function withoutTreeQuery($url)
     {
-        if (! $url) {
+        if (!$url) {
             return $url;
         }
 
@@ -243,7 +271,7 @@ HTML
 
         $parentId = $originalQuery[$this->getParentIdQueryName()] ?? 0;
 
-        if (! $parentId) {
+        if (!$parentId) {
             return $url;
         }
 
@@ -252,34 +280,6 @@ HTML
             $this->getChildrenPageName($parentId),
             $this->getDepthQueryName(),
         ]);
-    }
-
-    /**
-     * 获取默认parent_id字段值.
-     *
-     * @return int|mixed
-     */
-    public function getDefaultParentId()
-    {
-        if ($this->defaultParentId !== null) {
-            return $this->defaultParentId;
-        }
-
-        $repository = $this->grid->model()->repository();
-
-        if ($repository instanceof EloquentRepository) {
-            return $repository->model()->getDefaultParentId();
-        }
-
-        return 0;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDepthQueryName()
-    {
-        return $this->getChildrenQueryNamePrefix().$this->depthQueryName;
     }
 
     /**

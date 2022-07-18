@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Schema;
 
 use Doctrine\DBAL\Schema\Visitor\Visitor;
-
 use function count;
 use function sprintf;
 
@@ -22,9 +21,9 @@ class Sequence extends AbstractAsset
     protected $cache;
 
     /**
-     * @param string   $name
-     * @param int      $allocationSize
-     * @param int      $initialValue
+     * @param string $name
+     * @param int $allocationSize
+     * @param int $initialValue
      * @param int|null $cache
      */
     public function __construct($name, $allocationSize = 1, $initialValue = 1, $cache = null)
@@ -44,22 +43,6 @@ class Sequence extends AbstractAsset
     }
 
     /**
-     * @return int
-     */
-    public function getInitialValue()
-    {
-        return $this->initialValue;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getCache()
-    {
-        return $this->cache;
-    }
-
-    /**
      * @param int $allocationSize
      *
      * @return Sequence
@@ -76,6 +59,14 @@ class Sequence extends AbstractAsset
     }
 
     /**
+     * @return int
+     */
+    public function getInitialValue()
+    {
+        return $this->initialValue;
+    }
+
+    /**
      * @param int $initialValue
      *
      * @return Sequence
@@ -89,6 +80,14 @@ class Sequence extends AbstractAsset
         }
 
         return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getCache()
+    {
+        return $this->cache;
     }
 
     /**
@@ -127,12 +126,12 @@ class Sequence extends AbstractAsset
 
         $column = $table->getColumn($pkColumns[0]);
 
-        if (! $column->getAutoincrement()) {
+        if (!$column->getAutoincrement()) {
             return false;
         }
 
-        $sequenceName      = $this->getShortestName($table->getNamespaceName());
-        $tableName         = $table->getShortestName($table->getNamespaceName());
+        $sequenceName = $this->getShortestName($table->getNamespaceName());
+        $tableName = $table->getShortestName($table->getNamespaceName());
         $tableSequenceName = sprintf('%s_%s_seq', $tableName, $column->getShortestName($table->getNamespaceName()));
 
         return $tableSequenceName === $sequenceName;

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * @param  array  $values
+     * @param array $values
      * @return array
      */
     protected function convertDatetimeObjectToString(array $values)

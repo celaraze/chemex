@@ -1,11 +1,10 @@
-
-export default class Translator{
+export default class Translator {
     constructor(Dcat, lang) {
         this.dcat = Dcat;
         this.lang = lang;
 
         for (let i in lang) {
-            if (! Dcat.helpers.isset(this, i)) {
+            if (!Dcat.helpers.isset(this, i)) {
                 this[i] = lang[i];
             }
         }
@@ -31,16 +30,16 @@ export default class Translator{
         }
 
         var text = helpers.get(_this.lang, label), i;
-        if (! helpers.isset(text)) {
+        if (!helpers.isset(text)) {
             return label;
         }
 
-        if (! replace) {
+        if (!replace) {
             return text;
         }
 
         for (i in replace) {
-            text = helpers.replace(text, ':'+i, replace[i]);
+            text = helpers.replace(text, ':' + i, replace[i]);
         }
 
         return text;

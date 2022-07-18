@@ -28,6 +28,41 @@ class Donut extends Card
     protected $contentWidth = [6, 6];
 
     /**
+     * 设置内容宽度.
+     *
+     * @param int $left
+     * @param int $right
+     * @return $this
+     */
+    public function contentWidth(int $left, int $right)
+    {
+        $this->contentWidth = [$left, $right];
+
+        return $this;
+    }
+
+    /**
+     * 渲染内容，加上图表.
+     *
+     * @return string
+     */
+    public function renderContent()
+    {
+        $content = parent::renderContent();
+
+        return <<<HTML
+<div class="d-flex row justify-content-between">
+    <div class="col-sm-{$this->contentWidth[0]} justify-content-center">
+        {$content}
+    </div>
+    <div class="col-sm-{$this->contentWidth[1]}" style="margin-right: -15px;">
+        {$this->renderChart()}
+    </div>
+</div>
+HTML;
+    }
+
+    /**
      * 趋势图图表默认配置.
      *
      * @return array
@@ -77,40 +112,5 @@ class Donut extends Card
 
         // 默认样式
         $this->chart->style('margin: 10px 5px 0 0;width: 150px;float:right;');
-    }
-
-    /**
-     * 设置内容宽度.
-     *
-     * @param  int  $left
-     * @param  int  $right
-     * @return $this
-     */
-    public function contentWidth(int $left, int $right)
-    {
-        $this->contentWidth = [$left, $right];
-
-        return $this;
-    }
-
-    /**
-     * 渲染内容，加上图表.
-     *
-     * @return string
-     */
-    public function renderContent()
-    {
-        $content = parent::renderContent();
-
-        return <<<HTML
-<div class="d-flex row justify-content-between">
-    <div class="col-sm-{$this->contentWidth[0]} justify-content-center">
-        {$content}
-    </div>
-    <div class="col-sm-{$this->contentWidth[1]}" style="margin-right: -15px;">
-        {$this->renderChart()}
-    </div>
-</div>
-HTML;
     }
 }

@@ -28,6 +28,7 @@ final class SubscribedService
      */
     public function __construct(
         public ?string $key = null
-    ) {
+    )
+    {
     }
 }

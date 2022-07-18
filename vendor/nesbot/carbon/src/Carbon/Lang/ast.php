@@ -14,7 +14,7 @@
  * - Jordi Mallach jordi@gnu.org
  * - Adolfo Jayme-Barrientos (fitojb)
  */
-return array_replace_recursive(require __DIR__.'/es.php', [
+return array_replace_recursive(require __DIR__ . '/es.php', [
     'formats' => [
         'L' => 'DD/MM/YY',
     ],

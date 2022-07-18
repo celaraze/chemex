@@ -8,7 +8,7 @@ use PHPUnit\Runner\Version;
 use SebastianBergmann\Comparator\ComparisonFailure;
 use Traversable;
 
-if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
+if (class_exists(Version::class) && (int)Version::series()[0] >= 9) {
     /**
      * @internal This class is not meant to be used or overwritten outside the framework itself.
      */
@@ -27,8 +27,8 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
         /**
          * Create a new array subset constraint instance.
          *
-         * @param  iterable  $subset
-         * @param  bool  $strict
+         * @param iterable $subset
+         * @param bool $strict
          * @return void
          */
         public function __construct(iterable $subset, bool $strict = false)
@@ -47,9 +47,9 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * a boolean value instead: true in case of success, false in case of a
          * failure.
          *
-         * @param  mixed  $other
-         * @param  string  $description
-         * @param  bool  $returnResult
+         * @param mixed $other
+         * @param string $description
+         * @param bool $returnResult
          * @return bool|null
          *
          * @throws \PHPUnit\Framework\ExpectationFailedException
@@ -74,7 +74,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
                 return $result;
             }
 
-            if (! $result) {
+            if (!$result) {
                 $f = new ComparisonFailure(
                     $patched,
                     $other,
@@ -97,7 +97,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          */
         public function toString(): string
         {
-            return 'has the subset '.$this->exporter()->export($this->subset);
+            return 'has the subset ' . $this->exporter()->export($this->subset);
         }
 
         /**
@@ -106,14 +106,14 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * The beginning of failure messages is "Failed asserting that" in most
          * cases. This method should return the second part of that sentence.
          *
-         * @param  mixed  $other
+         * @param mixed $other
          * @return string
          *
          * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
          */
         protected function failureDescription($other): string
         {
-            return 'an array '.$this->toString();
+            return 'an array ' . $this->toString();
         }
 
         /**
@@ -122,7 +122,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * The beginning of failure messages is "Failed asserting that" in most
          * cases. This method should return the second part of that sentence.
          *
-         * @param  iterable  $other
+         * @param iterable $other
          * @return array
          */
         private function toArray(iterable $other): array
@@ -140,7 +140,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
             }
 
             // Keep BC even if we know that array would not be the expected one
-            return (array) $other;
+            return (array)$other;
         }
     }
 } else {
@@ -162,8 +162,8 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
         /**
          * Create a new array subset constraint instance.
          *
-         * @param  iterable  $subset
-         * @param  bool  $strict
+         * @param iterable $subset
+         * @param bool $strict
          * @return void
          */
         public function __construct(iterable $subset, bool $strict = false)
@@ -182,9 +182,9 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * a boolean value instead: true in case of success, false in case of a
          * failure.
          *
-         * @param  mixed  $other
-         * @param  string  $description
-         * @param  bool  $returnResult
+         * @param mixed $other
+         * @param string $description
+         * @param bool $returnResult
          * @return bool|null
          *
          * @throws \PHPUnit\Framework\ExpectationFailedException
@@ -209,7 +209,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
                 return $result;
             }
 
-            if (! $result) {
+            if (!$result) {
                 $f = new ComparisonFailure(
                     $patched,
                     $other,
@@ -230,7 +230,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          */
         public function toString(): string
         {
-            return 'has the subset '.$this->exporter()->export($this->subset);
+            return 'has the subset ' . $this->exporter()->export($this->subset);
         }
 
         /**
@@ -239,14 +239,14 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * The beginning of failure messages is "Failed asserting that" in most
          * cases. This method should return the second part of that sentence.
          *
-         * @param  mixed  $other
+         * @param mixed $other
          * @return string
          *
          * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
          */
         protected function failureDescription($other): string
         {
-            return 'an array '.$this->toString();
+            return 'an array ' . $this->toString();
         }
 
         /**
@@ -255,7 +255,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
          * The beginning of failure messages is "Failed asserting that" in most
          * cases. This method should return the second part of that sentence.
          *
-         * @param  iterable  $other
+         * @param iterable $other
          * @return array
          */
         private function toArray(iterable $other): array
@@ -273,7 +273,7 @@ if (class_exists(Version::class) && (int) Version::series()[0] >= 9) {
             }
 
             // Keep BC even if we know that array would not be the expected one
-            return (array) $other;
+            return (array)$other;
         }
     }
 }

@@ -20,15 +20,15 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PreCommandRunEvent;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Terminal;
 
 /**
@@ -50,24 +50,11 @@ abstract class BaseCommand extends Command
     private $io;
 
     /**
-     * Gets the application instance for this command.
-     */
-    public function getApplication(): Application
-    {
-        $application = parent::getApplication();
-        if (!$application instanceof Application) {
-            throw new \RuntimeException('Composer commands can only work with an '.Application::class.' instance set');
-        }
-
-        return $application;
-    }
-
-    /**
-     * @param  bool              $required       Should be set to false, or use `requireComposer` instead
-     * @param  bool|null         $disablePlugins If null, reads --no-plugins as default
-     * @param  bool|null         $disableScripts If null, reads --no-scripts as default
-     * @throws \RuntimeException
+     * @param bool $required Should be set to false, or use `requireComposer` instead
+     * @param bool|null $disablePlugins If null, reads --no-plugins as default
+     * @param bool|null $disableScripts If null, reads --no-scripts as default
      * @return Composer|null
+     * @throws \RuntimeException
      * @deprecated since Composer 2.3.0 use requireComposer or tryComposer depending on whether you have $required set to true or false
      */
     public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null)
@@ -77,6 +64,14 @@ abstract class BaseCommand extends Command
         }
 
         return $this->tryComposer($disablePlugins, $disableScripts);
+    }
+
+    /**
+     * @return void
+     */
+    public function setComposer(Composer $composer)
+    {
+        $this->composer = $composer;
     }
 
     /**
@@ -97,13 +92,26 @@ abstract class BaseCommand extends Command
                 assert($this->composer instanceof Composer);
             } else {
                 throw new \RuntimeException(
-                    'Could not create a Composer\Composer instance, you must inject '.
+                    'Could not create a Composer\Composer instance, you must inject ' .
                     'one if this command is not used with a Composer\Console\Application instance'
                 );
             }
         }
 
         return $this->composer;
+    }
+
+    /**
+     * Gets the application instance for this command.
+     */
+    public function getApplication(): Application
+    {
+        $application = parent::getApplication();
+        if (!$application instanceof Application) {
+            throw new \RuntimeException('Composer commands can only work with an ' . Application::class . ' instance set');
+        }
+
+        return $application;
     }
 
     /**
@@ -127,14 +135,6 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @return void
-     */
-    public function setComposer(Composer $composer)
-    {
-        $this->composer = $composer;
-    }
-
-    /**
      * Removes the cached composer instance
      *
      * @return void
@@ -155,31 +155,6 @@ abstract class BaseCommand extends Command
     public function isProxyCommand()
     {
         return false;
-    }
-
-    /**
-     * @return IOInterface
-     */
-    public function getIO()
-    {
-        if (null === $this->io) {
-            $application = parent::getApplication();
-            if ($application instanceof Application) {
-                $this->io = $application->getIO();
-            } else {
-                $this->io = new NullIO();
-            }
-        }
-
-        return $this->io;
-    }
-
-    /**
-     * @return void
-     */
-    public function setIO(IOInterface $io)
-    {
-        $this->io = $io;
     }
 
     /**
@@ -231,7 +206,7 @@ abstract class BaseCommand extends Command
             if (0 === count($input->getOption('ignore-platform-req')) && is_string($ignorePlatformReqEnv) && '' !== $ignorePlatformReqEnv) {
                 $input->setOption('ignore-platform-req', explode(',', $ignorePlatformReqEnv));
 
-                $io->writeError('<warning>COMPOSER_IGNORE_PLATFORM_REQ is set to ignore '.$ignorePlatformReqEnv.'. You may experience unexpected errors.</warning>');
+                $io->writeError('<warning>COMPOSER_IGNORE_PLATFORM_REQ is set to ignore ' . $ignorePlatformReqEnv . '. You may experience unexpected errors.</warning>');
             }
         }
 
@@ -239,9 +214,34 @@ abstract class BaseCommand extends Command
     }
 
     /**
+     * @return IOInterface
+     */
+    public function getIO()
+    {
+        if (null === $this->io) {
+            $application = parent::getApplication();
+            if ($application instanceof Application) {
+                $this->io = $application->getIO();
+            } else {
+                $this->io = new NullIO();
+            }
+        }
+
+        return $this->io;
+    }
+
+    /**
+     * @return void
+     */
+    public function setIO(IOInterface $io)
+    {
+        $this->io = $io;
+    }
+
+    /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     * @param bool           $keepVcsRequiresPreferSource
+     * @param bool $keepVcsRequiresPreferSource
      *
      * @return bool[] An array composed of the preferSource and preferDist values
      */
@@ -286,7 +286,7 @@ abstract class BaseCommand extends Command
                     $preferSource = false;
                     break;
                 default:
-                    throw new \UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got '.$input->getOption('prefer-install'));
+                    throw new \UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got ' . $input->getOption('prefer-install'));
             }
         }
 
@@ -327,7 +327,7 @@ abstract class BaseCommand extends Command
         $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
             if (!isset($requirement['version'])) {
-                throw new \UnexpectedValueException('Option '.$requirement['name'] .' is missing a version constraint, use e.g. '.$requirement['name'].':^1.0');
+                throw new \UnexpectedValueException('Option ' . $requirement['name'] . ' is missing a version constraint, use e.g. ' . $requirement['name'] . ':^1.0');
             }
             $requires[$requirement['name']] = $requirement['version'];
         }

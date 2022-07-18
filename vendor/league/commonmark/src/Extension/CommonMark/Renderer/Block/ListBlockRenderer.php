@@ -43,7 +43,7 @@ final class ListBlockRenderer implements NodeRendererInterface, XmlNodeRendererI
         $attrs = $node->data->get('attributes');
 
         if ($listData->start !== null && $listData->start !== 1) {
-            $attrs['start'] = (string) $listData->start;
+            $attrs['start'] = (string)$listData->start;
         }
 
         $innerSeparator = $childRenderer->getInnerSeparator();

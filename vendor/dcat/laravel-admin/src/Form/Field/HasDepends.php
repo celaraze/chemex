@@ -7,15 +7,15 @@ trait HasDepends
     /**
      * 联动加载多个字段.
      *
-     * @param  array|string  $fields
-     * @param  bool  $clear
+     * @param array|string $fields
+     * @param bool $clear
      * @return $this
      */
     public function depends($fields = [], bool $clear = true)
     {
         $fields = array_map(function ($field) {
             return $this->formatName($field);
-        }, (array) $fields);
+        }, (array)$fields);
 
         return $this->addVariables([
             'depends' => [

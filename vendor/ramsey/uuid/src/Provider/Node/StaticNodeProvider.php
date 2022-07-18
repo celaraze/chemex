@@ -17,12 +17,10 @@ namespace Ramsey\Uuid\Provider\Node;
 use Ramsey\Uuid\Exception\InvalidArgumentException;
 use Ramsey\Uuid\Provider\NodeProviderInterface;
 use Ramsey\Uuid\Type\Hexadecimal;
-
 use function dechex;
 use function hexdec;
 use function str_pad;
 use function substr;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -51,11 +49,6 @@ class StaticNodeProvider implements NodeProviderInterface
         $this->node = $this->setMulticastBit($node);
     }
 
-    public function getNode(): Hexadecimal
-    {
-        return $this->node;
-    }
-
     /**
      * Set the multicast bit for the static node value
      */
@@ -72,5 +65,10 @@ class StaticNodeProvider implements NodeProviderInterface
         );
 
         return new Hexadecimal($firstOctet . substr($nodeHex, 2));
+    }
+
+    public function getNode(): Hexadecimal
+    {
+        return $this->node;
     }
 }

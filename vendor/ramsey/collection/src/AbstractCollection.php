@@ -22,7 +22,6 @@ use Ramsey\Collection\Exception\OutOfBoundsException;
 use Ramsey\Collection\Tool\TypeTrait;
 use Ramsey\Collection\Tool\ValueExtractorTrait;
 use Ramsey\Collection\Tool\ValueToStringTrait;
-
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -182,14 +181,6 @@ abstract class AbstractCollection extends AbstractArray implements CollectionInt
         return $collection;
     }
 
-    public function filter(callable $callback): CollectionInterface
-    {
-        $collection = clone $this;
-        $collection->data = array_merge([], array_filter($collection->data, $callback));
-
-        return $collection;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -201,6 +192,14 @@ abstract class AbstractCollection extends AbstractArray implements CollectionInt
 
             return $accessorValue === $value;
         });
+    }
+
+    public function filter(callable $callback): CollectionInterface
+    {
+        $collection = clone $this;
+        $collection->data = array_merge([], array_filter($collection->data, $callback));
+
+        return $collection;
     }
 
     public function map(callable $callback): CollectionInterface
@@ -222,6 +221,43 @@ abstract class AbstractCollection extends AbstractArray implements CollectionInt
         $collection->data = $diff;
 
         return $collection;
+    }
+
+    /**
+     * @param CollectionInterface<T> $other
+     */
+    private function compareCollectionTypes(CollectionInterface $other): void
+    {
+        if (!$other instanceof static) {
+            throw new CollectionMismatchException('Collection must be of type ' . static::class);
+        }
+
+        // When using generics (Collection.php, Set.php, etc),
+        // we also need to make sure that the internal types match each other
+        if ($other->getType() !== $this->getType()) {
+            throw new CollectionMismatchException('Collection items must be of type ' . $this->getType());
+        }
+    }
+
+    private function getComparator(): Closure
+    {
+        return /**
+         * @param T $a
+         * @param T $b
+         */
+            function ($a, $b): int {
+                // If the two values are object, we convert them to unique scalars.
+                // If the collection contains mixed values (unlikely) where some are objects
+                // and some are not, we leave them as they are.
+                // The comparator should still work and the result of $a < $b should
+                // be consistent but unpredictable since not documented.
+                if (is_object($a) && is_object($b)) {
+                    $a = spl_object_id($a);
+                    $b = spl_object_id($b);
+                }
+
+                return $a === $b ? 0 : ($a < $b ? 1 : -1);
+            };
     }
 
     public function intersect(CollectionInterface $other): CollectionInterface
@@ -277,42 +313,5 @@ abstract class AbstractCollection extends AbstractArray implements CollectionInt
         $data = unserialize($serialized, ['allowed_classes' => [$this->getType()]]);
 
         $this->data = $data;
-    }
-
-    /**
-     * @param CollectionInterface<T> $other
-     */
-    private function compareCollectionTypes(CollectionInterface $other): void
-    {
-        if (!$other instanceof static) {
-            throw new CollectionMismatchException('Collection must be of type ' . static::class);
-        }
-
-        // When using generics (Collection.php, Set.php, etc),
-        // we also need to make sure that the internal types match each other
-        if ($other->getType() !== $this->getType()) {
-            throw new CollectionMismatchException('Collection items must be of type ' . $this->getType());
-        }
-    }
-
-    private function getComparator(): Closure
-    {
-        return /**
-             * @param T $a
-             * @param T $b
-             */
-            function ($a, $b): int {
-                // If the two values are object, we convert them to unique scalars.
-                // If the collection contains mixed values (unlikely) where some are objects
-                // and some are not, we leave them as they are.
-                // The comparator should still work and the result of $a < $b should
-                // be consistent but unpredictable since not documented.
-                if (is_object($a) && is_object($b)) {
-                    $a = spl_object_id($a);
-                    $b = spl_object_id($b);
-                }
-
-                return $a === $b ? 0 : ($a < $b ? 1 : -1);
-            };
     }
 }

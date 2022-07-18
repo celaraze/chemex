@@ -31,17 +31,17 @@ class WebProcessor implements ProcessorInterface
      * @var array<string, string>
      */
     protected $extraFields = [
-        'url'         => 'REQUEST_URI',
-        'ip'          => 'REMOTE_ADDR',
+        'url' => 'REQUEST_URI',
+        'ip' => 'REMOTE_ADDR',
         'http_method' => 'REQUEST_METHOD',
-        'server'      => 'SERVER_NAME',
-        'referrer'    => 'HTTP_REFERER',
-        'user_agent'  => 'HTTP_USER_AGENT',
+        'server' => 'SERVER_NAME',
+        'referrer' => 'HTTP_REFERER',
+        'user_agent' => 'HTTP_USER_AGENT',
     ];
 
     /**
-     * @param array<string, mixed>|\ArrayAccess<string, mixed>|null $serverData  Array or object w/ ArrayAccess that provides access to the $_SERVER data
-     * @param array<string, string>|array<string>|null              $extraFields Field names and the related key inside $serverData to be added (or just a list of field names to use the default configured $serverData mapping). If not provided it defaults to: [url, ip, http_method, server, referrer] + unique_id if present in server data
+     * @param array<string, mixed>|\ArrayAccess<string, mixed>|null $serverData Array or object w/ ArrayAccess that provides access to the $_SERVER data
+     * @param array<string, string>|array<string>|null $extraFields Field names and the related key inside $serverData to be added (or just a list of field names to use the default configured $serverData mapping). If not provided it defaults to: [url, ip, http_method, server, referrer] + unique_id if present in server data
      */
     public function __construct($serverData = null, array $extraFields = null)
     {
@@ -89,15 +89,8 @@ class WebProcessor implements ProcessorInterface
         return $record;
     }
 
-    public function addExtraField(string $extraName, string $serverName): self
-    {
-        $this->extraFields[$extraName] = $serverName;
-
-        return $this;
-    }
-
     /**
-     * @param  mixed[] $extra
+     * @param mixed[] $extra
      * @return mixed[]
      */
     private function appendExtraFields(array $extra): array
@@ -107,5 +100,12 @@ class WebProcessor implements ProcessorInterface
         }
 
         return $extra;
+    }
+
+    public function addExtraField(string $extraName, string $serverName): self
+    {
+        $this->extraFields[$extraName] = $serverName;
+
+        return $this;
     }
 }

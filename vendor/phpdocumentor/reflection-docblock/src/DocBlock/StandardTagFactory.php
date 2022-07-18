@@ -39,7 +39,6 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Webmozart\Assert\Assert;
-
 use function array_merge;
 use function array_slice;
 use function call_user_func_array;
@@ -124,9 +123,9 @@ final class StandardTagFactory implements TagFactory
      * If no tag handlers are provided than the default list in the {@see self::$tagHandlerMappings} property
      * is used.
      *
+     * @param array<class-string<Tag>> $tagHandlers
      * @see self::registerTagHandler() to add a new tag handler to the existing default list.
      *
-     * @param array<class-string<Tag>> $tagHandlers
      */
     public function __construct(FqsenResolver $fqsenResolver, ?array $tagHandlers = null)
     {
@@ -138,6 +137,11 @@ final class StandardTagFactory implements TagFactory
         $this->addService($fqsenResolver, FqsenResolver::class);
     }
 
+    public function addService(object $service, ?string $alias = null): void
+    {
+        $this->serviceLocator[$alias ?: get_class($service)] = $service;
+    }
+
     public function create(string $tagLine, ?TypeContext $context = null): Tag
     {
         if (!$context) {
@@ -147,34 +151,6 @@ final class StandardTagFactory implements TagFactory
         [$tagName, $tagBody] = $this->extractTagParts($tagLine);
 
         return $this->createTag(trim($tagBody), $tagName, $context);
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function addParameter(string $name, $value): void
-    {
-        $this->serviceLocator[$name] = $value;
-    }
-
-    public function addService(object $service, ?string $alias = null): void
-    {
-        $this->serviceLocator[$alias ?: get_class($service)] = $service;
-    }
-
-    public function registerTagHandler(string $tagName, string $handler): void
-    {
-        Assert::stringNotEmpty($tagName);
-        Assert::classExists($handler);
-        Assert::implementsInterface($handler, Tag::class);
-
-        if (strpos($tagName, '\\') && $tagName[0] !== '\\') {
-            throw new InvalidArgumentException(
-                'A namespaced tag must have a leading backslash as it must be fully qualified'
-            );
-        }
-
-        $this->tagHandlerMappings[$tagName] = $handler;
     }
 
     /**
@@ -205,7 +181,7 @@ final class StandardTagFactory implements TagFactory
     private function createTag(string $body, string $name, TypeContext $context): Tag
     {
         $handlerClassName = $this->findHandlerClassName($name, $context);
-        $arguments        = $this->getArgumentsForParametersFromWiring(
+        $arguments = $this->getArgumentsForParametersFromWiring(
             $this->fetchParametersForHandlerFactoryMethod($handlerClassName),
             $this->getServiceLocatorWithDynamicParameters($context, $name, $body)
         );
@@ -234,7 +210,7 @@ final class StandardTagFactory implements TagFactory
             $handlerClassName = $this->tagHandlerMappings[$tagName];
         } elseif ($this->isAnnotation($tagName)) {
             // TODO: Annotation support is planned for a later stage and as such is disabled for now
-            $tagName = (string) $this->fqsenResolver->resolve($tagName, $context);
+            $tagName = (string)$this->fqsenResolver->resolve($tagName, $context);
             if (isset($this->annotationMappings[$tagName])) {
                 $handlerClassName = $this->annotationMappings[$tagName];
             }
@@ -244,10 +220,25 @@ final class StandardTagFactory implements TagFactory
     }
 
     /**
+     * Returns whether the given tag belongs to an annotation.
+     *
+     * @todo this method should be populated once we implement Annotation notation support.
+     */
+    private function isAnnotation(string $tagContent): bool
+    {
+        // 1. Contains a namespace separator
+        // 2. Contains parenthesis
+        // 3. Is present in a list of known annotations (make the algorithm smart by first checking is the last part
+        //    of the annotation class name matches the found tag name
+
+        return false;
+    }
+
+    /**
      * Retrieves the arguments that need to be passed to the Factory Method with the given Parameters.
      *
      * @param ReflectionParameter[] $parameters
-     * @param mixed[]               $locator
+     * @param mixed[] $locator
      *
      * @return mixed[] A series of values that can be passed to the Factory Method of the tag whose parameters
      *     is provided with this method.
@@ -256,7 +247,7 @@ final class StandardTagFactory implements TagFactory
     {
         $arguments = [];
         foreach ($parameters as $parameter) {
-            $type     = $parameter->getType();
+            $type = $parameter->getType();
             $typeHint = null;
             if ($type instanceof ReflectionNamedType) {
                 $typeHint = $type->getName();
@@ -296,7 +287,7 @@ final class StandardTagFactory implements TagFactory
     private function fetchParametersForHandlerFactoryMethod(string $handlerClassName): array
     {
         if (!isset($this->tagHandlerParameterCache[$handlerClassName])) {
-            $methodReflection                                  = new ReflectionMethod($handlerClassName, 'create');
+            $methodReflection = new ReflectionMethod($handlerClassName, 'create');
             $this->tagHandlerParameterCache[$handlerClassName] = $methodReflection->getParameters();
         }
 
@@ -309,18 +300,19 @@ final class StandardTagFactory implements TagFactory
      *
      * @param TypeContext $context The Context (namespace and aliasses) that may be
      *  passed and is used to resolve FQSENs.
-     * @param string      $tagName The name of the tag that may be
+     * @param string $tagName The name of the tag that may be
      *  passed onto the factory method of the Tag class.
-     * @param string      $tagBody The body of the tag that may be
+     * @param string $tagBody The body of the tag that may be
      *  passed onto the factory method of the Tag class.
      *
      * @return mixed[]
      */
     private function getServiceLocatorWithDynamicParameters(
         TypeContext $context,
-        string $tagName,
-        string $tagBody
-    ): array {
+        string      $tagName,
+        string      $tagBody
+    ): array
+    {
         return array_merge(
             $this->serviceLocator,
             [
@@ -332,17 +324,25 @@ final class StandardTagFactory implements TagFactory
     }
 
     /**
-     * Returns whether the given tag belongs to an annotation.
-     *
-     * @todo this method should be populated once we implement Annotation notation support.
+     * @param mixed $value
      */
-    private function isAnnotation(string $tagContent): bool
+    public function addParameter(string $name, $value): void
     {
-        // 1. Contains a namespace separator
-        // 2. Contains parenthesis
-        // 3. Is present in a list of known annotations (make the algorithm smart by first checking is the last part
-        //    of the annotation class name matches the found tag name
+        $this->serviceLocator[$name] = $value;
+    }
 
-        return false;
+    public function registerTagHandler(string $tagName, string $handler): void
+    {
+        Assert::stringNotEmpty($tagName);
+        Assert::classExists($handler);
+        Assert::implementsInterface($handler, Tag::class);
+
+        if (strpos($tagName, '\\') && $tagName[0] !== '\\') {
+            throw new InvalidArgumentException(
+                'A namespaced tag must have a leading backslash as it must be fully qualified'
+            );
+        }
+
+        $this->tagHandlerMappings[$tagName] = $handler;
     }
 }

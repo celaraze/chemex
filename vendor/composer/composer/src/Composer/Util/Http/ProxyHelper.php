@@ -58,6 +58,87 @@ class ProxyHelper
     }
 
     /**
+     * Searches $_SERVER for case-sensitive values
+     *
+     * @param string[] $names Names to search for
+     * @param string|null $name Name of any found value
+     *
+     * @return string|null The found value
+     */
+    private static function getProxyEnv(array $names, ?string &$name): ?string
+    {
+        foreach ($names as $name) {
+            if (!empty($_SERVER[$name])) {
+                return $_SERVER[$name];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks and formats a proxy url from the environment
+     *
+     * @param string $proxyUrl
+     * @param string $envName
+     * @return string            The formatted proxy url
+     * @throws \RuntimeException on malformed url
+     */
+    private static function checkProxy(string $proxyUrl, string $envName): string
+    {
+        $error = sprintf('malformed %s url', $envName);
+        $proxy = parse_url($proxyUrl);
+
+        // We need parse_url to have identified a host
+        if (!isset($proxy['host'])) {
+            throw new \RuntimeException($error);
+        }
+
+        $proxyUrl = self::formatParsedUrl($proxy, true);
+
+        // We need a port because streams and curl use different defaults
+        if (!parse_url($proxyUrl, PHP_URL_PORT)) {
+            throw new \RuntimeException($error);
+        }
+
+        return $proxyUrl;
+    }
+
+    /**
+     * Formats a url from its component parts
+     *
+     * @param array{scheme?: string, host: string, port?: int, user?: string, pass?: string} $proxy
+     * @param bool $includeAuth
+     *
+     * @return string The formatted value
+     */
+    private static function formatParsedUrl(array $proxy, bool $includeAuth): string
+    {
+        $proxyUrl = isset($proxy['scheme']) ? strtolower($proxy['scheme']) . '://' : '';
+
+        if ($includeAuth && isset($proxy['user'])) {
+            $proxyUrl .= $proxy['user'];
+
+            if (isset($proxy['pass'])) {
+                $proxyUrl .= ':' . $proxy['pass'];
+            }
+            $proxyUrl .= '@';
+        }
+
+        $proxyUrl .= $proxy['host'];
+
+        if (isset($proxy['port'])) {
+            $proxyUrl .= ':' . $proxy['port'];
+        } elseif (strpos($proxyUrl, 'http://') === 0) {
+            $proxyUrl .= ':80';
+        } elseif (strpos($proxyUrl, 'https://') === 0) {
+            $proxyUrl .= ':443';
+        }
+
+        return $proxyUrl;
+    }
+
+    /**
      * Returns http context options for the proxy url
      *
      * @param string $proxyUrl
@@ -92,7 +173,7 @@ class ProxyHelper
     /**
      * Sets/unsets request_fulluri value in http context options array
      *
-     * @param string  $requestUrl
+     * @param string $requestUrl
      * @param mixed[] $options Set by method
      *
      * @return void
@@ -104,86 +185,5 @@ class ProxyHelper
         } else {
             unset($options['http']['request_fulluri']);
         }
-    }
-
-    /**
-     * Searches $_SERVER for case-sensitive values
-     *
-     * @param string[]    $names Names to search for
-     * @param string|null $name  Name of any found value
-     *
-     * @return string|null The found value
-     */
-    private static function getProxyEnv(array $names, ?string &$name): ?string
-    {
-        foreach ($names as $name) {
-            if (!empty($_SERVER[$name])) {
-                return $_SERVER[$name];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks and formats a proxy url from the environment
-     *
-     * @param  string            $proxyUrl
-     * @param  string            $envName
-     * @throws \RuntimeException on malformed url
-     * @return string            The formatted proxy url
-     */
-    private static function checkProxy(string $proxyUrl, string $envName): string
-    {
-        $error = sprintf('malformed %s url', $envName);
-        $proxy = parse_url($proxyUrl);
-
-        // We need parse_url to have identified a host
-        if (!isset($proxy['host'])) {
-            throw new \RuntimeException($error);
-        }
-
-        $proxyUrl = self::formatParsedUrl($proxy, true);
-
-        // We need a port because streams and curl use different defaults
-        if (!parse_url($proxyUrl, PHP_URL_PORT)) {
-            throw new \RuntimeException($error);
-        }
-
-        return $proxyUrl;
-    }
-
-    /**
-     * Formats a url from its component parts
-     *
-     * @param  array{scheme?: string, host: string, port?: int, user?: string, pass?: string} $proxy
-     * @param  bool                                                                           $includeAuth
-     *
-     * @return string The formatted value
-     */
-    private static function formatParsedUrl(array $proxy, bool $includeAuth): string
-    {
-        $proxyUrl = isset($proxy['scheme']) ? strtolower($proxy['scheme']) . '://' : '';
-
-        if ($includeAuth && isset($proxy['user'])) {
-            $proxyUrl .= $proxy['user'];
-
-            if (isset($proxy['pass'])) {
-                $proxyUrl .= ':' . $proxy['pass'];
-            }
-            $proxyUrl .= '@';
-        }
-
-        $proxyUrl .= $proxy['host'];
-
-        if (isset($proxy['port'])) {
-            $proxyUrl .= ':' . $proxy['port'];
-        } elseif (strpos($proxyUrl, 'http://') === 0) {
-            $proxyUrl .= ':80';
-        } elseif (strpos($proxyUrl, 'https://') === 0) {
-            $proxyUrl .= ':443';
-        }
-
-        return $proxyUrl;
     }
 }

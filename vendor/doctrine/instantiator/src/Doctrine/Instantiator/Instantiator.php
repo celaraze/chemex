@@ -10,7 +10,6 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use Serializable;
-
 use function class_exists;
 use function enum_exists;
 use function is_subclass_of;
@@ -19,7 +18,6 @@ use function set_error_handler;
 use function sprintf;
 use function strlen;
 use function unserialize;
-
 use const PHP_VERSION_ID;
 
 final class Instantiator implements InstantiatorInterface
@@ -29,7 +27,7 @@ final class Instantiator implements InstantiatorInterface
      * the method {@see \Serializable::unserialize()} when dealing with classes implementing
      * the {@see \Serializable} interface.
      */
-    public const SERIALIZATION_FORMAT_USE_UNSERIALIZER   = 'C';
+    public const SERIALIZATION_FORMAT_USE_UNSERIALIZER = 'C';
     public const SERIALIZATION_FORMAT_AVOID_UNSERIALIZER = 'O';
 
     /**
@@ -89,7 +87,7 @@ final class Instantiator implements InstantiatorInterface
      */
     private function buildAndCacheFromFactory(string $className)
     {
-        $factory  = self::$cachedInstantiators[$className] = $this->buildFactory($className);
+        $factory = self::$cachedInstantiators[$className] = $this->buildFactory($className);
         $instance = $factory();
 
         if ($this->isSafeToClone(new ReflectionClass($instance))) {
@@ -147,7 +145,7 @@ final class Instantiator implements InstantiatorInterface
      */
     private function getReflectionClass(string $className): ReflectionClass
     {
-        if (! class_exists($className)) {
+        if (!class_exists($className)) {
             throw InvalidArgumentException::fromNonExistingClass($className);
         }
 
@@ -162,6 +160,36 @@ final class Instantiator implements InstantiatorInterface
         }
 
         return $reflection;
+    }
+
+    /**
+     * @phpstan-param ReflectionClass<T> $reflectionClass
+     *
+     * @template T of object
+     */
+    private function isInstantiableViaReflection(ReflectionClass $reflectionClass): bool
+    {
+        return !($this->hasInternalAncestors($reflectionClass) && $reflectionClass->isFinal());
+    }
+
+    /**
+     * Verifies whether the given class is to be considered internal
+     *
+     * @phpstan-param ReflectionClass<T> $reflectionClass
+     *
+     * @template T of object
+     */
+    private function hasInternalAncestors(ReflectionClass $reflectionClass): bool
+    {
+        do {
+            if ($reflectionClass->isInternal()) {
+                return true;
+            }
+
+            $reflectionClass = $reflectionClass->getParentClass();
+        } while ($reflectionClass);
+
+        return false;
     }
 
     /**
@@ -213,36 +241,6 @@ final class Instantiator implements InstantiatorInterface
     }
 
     /**
-     * @phpstan-param ReflectionClass<T> $reflectionClass
-     *
-     * @template T of object
-     */
-    private function isInstantiableViaReflection(ReflectionClass $reflectionClass): bool
-    {
-        return ! ($this->hasInternalAncestors($reflectionClass) && $reflectionClass->isFinal());
-    }
-
-    /**
-     * Verifies whether the given class is to be considered internal
-     *
-     * @phpstan-param ReflectionClass<T> $reflectionClass
-     *
-     * @template T of object
-     */
-    private function hasInternalAncestors(ReflectionClass $reflectionClass): bool
-    {
-        do {
-            if ($reflectionClass->isInternal()) {
-                return true;
-            }
-
-            $reflectionClass = $reflectionClass->getParentClass();
-        } while ($reflectionClass);
-
-        return false;
-    }
-
-    /**
      * Checks if a class is cloneable
      *
      * Classes implementing `__clone` cannot be safely cloned, as that may cause side-effects.
@@ -254,7 +252,7 @@ final class Instantiator implements InstantiatorInterface
     private function isSafeToClone(ReflectionClass $reflectionClass): bool
     {
         return $reflectionClass->isCloneable()
-            && ! $reflectionClass->hasMethod('__clone')
-            && ! $reflectionClass->isSubclassOf(ArrayIterator::class);
+            && !$reflectionClass->hasMethod('__clone')
+            && !$reflectionClass->isSubclassOf(ArrayIterator::class);
     }
 }

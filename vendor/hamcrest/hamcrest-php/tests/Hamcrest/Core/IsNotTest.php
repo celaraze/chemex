@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Core;
 
 class IsNotTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Core\IsNot::not('something');
-    }
 
     public function testEvaluatesToTheTheLogicalNegationOfAnotherMatcher()
     {
@@ -27,5 +23,10 @@ class IsNotTest extends \Hamcrest\AbstractMatcherTest
     {
         $this->assertDescription('not a value greater than <2>', not(greaterThan(2)));
         $this->assertDescription('not "A"', not('A'));
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Core\IsNot::not('something');
     }
 }

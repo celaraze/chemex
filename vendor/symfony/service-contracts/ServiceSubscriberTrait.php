@@ -56,13 +56,13 @@ trait ServiceSubscriberTrait
                 throw new \LogicException(sprintf('Cannot use "%s" on methods without a return type in "%s::%s()".', SubscribedService::class, $method->name, self::class));
             }
 
-            $serviceId = $returnType instanceof \ReflectionNamedType ? $returnType->getName() : (string) $returnType;
+            $serviceId = $returnType instanceof \ReflectionNamedType ? $returnType->getName() : (string)$returnType;
 
             if ($returnType->allowsNull()) {
-                $serviceId = '?'.$serviceId;
+                $serviceId = '?' . $serviceId;
             }
 
-            $services[$attribute->newInstance()->key ?? self::class.'::'.$method->name] = $serviceId;
+            $services[$attribute->newInstance()->key ?? self::class . '::' . $method->name] = $serviceId;
         }
 
         return $services;

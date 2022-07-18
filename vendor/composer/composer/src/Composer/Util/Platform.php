@@ -53,33 +53,15 @@ class Platform
     }
 
     /**
-     * getenv() equivalent but reads from the runtime global variables first
-     *
-     * @param  string $name
-     * @return string|false
-     */
-    public static function getEnv(string $name)
-    {
-        if (array_key_exists($name, $_SERVER)) {
-            return (string) $_SERVER[$name];
-        }
-        if (array_key_exists($name, $_ENV)) {
-            return (string) $_ENV[$name];
-        }
-
-        return getenv($name);
-    }
-
-    /**
      * putenv() equivalent but updates the runtime global variables too
      *
-     * @param  string $name
-     * @param  string $value
+     * @param string $name
+     * @param string $value
      * @return void
      */
     public static function putEnv(string $name, string $value): void
     {
-        $value = (string) $value;
+        $value = (string)$value;
         putenv($name . '=' . $value);
         $_SERVER[$name] = $_ENV[$name] = $value;
     }
@@ -87,7 +69,7 @@ class Platform
     /**
      * putenv('X') equivalent but updates the runtime global variables too
      *
-     * @param  string $name
+     * @param string $name
      * @return void
      */
     public static function clearEnv(string $name): void
@@ -99,7 +81,7 @@ class Platform
     /**
      * Parses tildes and environment variables in paths.
      *
-     * @param  string $path
+     * @param string $path
      * @return string
      */
     public static function expandPath(string $path): string
@@ -119,8 +101,8 @@ class Platform
     }
 
     /**
-     * @throws \RuntimeException If the user home could not reliably be determined
      * @return string            The formal user home as detected from environment parameters
+     * @throws \RuntimeException If the user home could not reliably be determined
      */
     public static function getUserDirectory(): string
     {
@@ -139,6 +121,32 @@ class Platform
         }
 
         throw new \RuntimeException('Could not determine user directory');
+    }
+
+    /**
+     * getenv() equivalent but reads from the runtime global variables first
+     *
+     * @param string $name
+     * @return string|false
+     */
+    public static function getEnv(string $name)
+    {
+        if (array_key_exists($name, $_SERVER)) {
+            return (string)$_SERVER[$name];
+        }
+        if (array_key_exists($name, $_ENV)) {
+            return (string)$_ENV[$name];
+        }
+
+        return getenv($name);
+    }
+
+    /**
+     * @return bool Whether the host machine is running a Windows OS
+     */
+    public static function isWindows(): bool
+    {
+        return \defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -168,15 +176,7 @@ class Platform
     }
 
     /**
-     * @return bool Whether the host machine is running a Windows OS
-     */
-    public static function isWindows(): bool
-    {
-        return \defined('PHP_WINDOWS_VERSION_BUILD');
-    }
-
-    /**
-     * @param  string $str
+     * @param string $str
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
     public static function strlen(string $str): int

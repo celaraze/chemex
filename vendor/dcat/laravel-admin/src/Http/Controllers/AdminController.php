@@ -34,13 +34,18 @@ class AdminController extends Controller
     protected $translation;
 
     /**
-     * Get content title.
+     * Index interface.
      *
-     * @return string
+     * @param Content $content
+     * @return Content
      */
-    protected function title()
+    public function index(Content $content)
     {
-        return $this->title ?: admin_trans_label();
+        return $content
+            ->translation($this->translation())
+            ->title($this->title())
+            ->description($this->description()['index'] ?? trans('admin.list'))
+            ->body($this->grid());
     }
 
     /**
@@ -54,6 +59,16 @@ class AdminController extends Controller
     }
 
     /**
+     * Get content title.
+     *
+     * @return string
+     */
+    protected function title()
+    {
+        return $this->title ?: admin_trans_label();
+    }
+
+    /**
      * Get translation path.
      *
      * @return string
@@ -64,25 +79,10 @@ class AdminController extends Controller
     }
 
     /**
-     * Index interface.
-     *
-     * @param  Content  $content
-     * @return Content
-     */
-    public function index(Content $content)
-    {
-        return $content
-            ->translation($this->translation())
-            ->title($this->title())
-            ->description($this->description()['index'] ?? trans('admin.list'))
-            ->body($this->grid());
-    }
-
-    /**
      * Show interface.
      *
-     * @param  mixed  $id
-     * @param  Content  $content
+     * @param mixed $id
+     * @param Content $content
      * @return Content
      */
     public function show($id, Content $content)
@@ -97,8 +97,8 @@ class AdminController extends Controller
     /**
      * Edit interface.
      *
-     * @param  mixed  $id
-     * @param  Content  $content
+     * @param mixed $id
+     * @param Content $content
      * @return Content
      */
     public function edit($id, Content $content)
@@ -113,7 +113,7 @@ class AdminController extends Controller
     /**
      * Create interface.
      *
-     * @param  Content  $content
+     * @param Content $content
      * @return Content
      */
     public function create(Content $content)
@@ -128,7 +128,7 @@ class AdminController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update($id)
@@ -149,7 +149,7 @@ class AdminController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)

@@ -30,26 +30,26 @@ if (class_exists('SebastianBergmann\CodeCoverage\CodeCoverage')) {
 
     $coverage = new CodeCoverage(
         (new Selector)->{driverMethod}($filter),
-        $filter
-    );
+$filter
+);
 
-    if ({codeCoverageCacheDirectory}) {
-        $coverage->cacheStaticAnalysis({codeCoverageCacheDirectory});
-    }
+if ({codeCoverageCacheDirectory}) {
+$coverage->cacheStaticAnalysis({codeCoverageCacheDirectory});
+}
 
-    $coverage->start(__FILE__);
+$coverage->start(__FILE__);
 }
 
 register_shutdown_function(
-    function() use ($coverage) {
-        $output = null;
+function() use ($coverage) {
+$output = null;
 
-        if ($coverage) {
-            $output = $coverage->stop();
-        }
+if ($coverage) {
+$output = $coverage->stop();
+}
 
-        file_put_contents('{coverageFile}', serialize($output));
-    }
+file_put_contents('{coverageFile}', serialize($output));
+}
 );
 
 ob_end_clean();

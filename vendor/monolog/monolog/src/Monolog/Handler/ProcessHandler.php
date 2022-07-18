@@ -27,28 +27,6 @@ use Monolog\Logger;
 class ProcessHandler extends AbstractProcessingHandler
 {
     /**
-     * Holds the process to receive data on its STDIN.
-     *
-     * @var resource|bool|null
-     */
-    private $process;
-
-    /**
-     * @var string
-     */
-    private $command;
-
-    /**
-     * @var string|null
-     */
-    private $cwd;
-
-    /**
-     * @var resource[]
-     */
-    private $pipes = [];
-
-    /**
      * @var array<int, string[]>
      */
     protected const DESCRIPTOR_SPEC = [
@@ -56,11 +34,29 @@ class ProcessHandler extends AbstractProcessingHandler
         1 => ['pipe', 'w'],  // STDOUT is a pipe that the child will write to
         2 => ['pipe', 'w'],  // STDERR is a pipe to catch the any errors
     ];
+    /**
+     * Holds the process to receive data on its STDIN.
+     *
+     * @var resource|bool|null
+     */
+    private $process;
+    /**
+     * @var string
+     */
+    private $command;
+    /**
+     * @var string|null
+     */
+    private $cwd;
+    /**
+     * @var resource[]
+     */
+    private $pipes = [];
 
     /**
-     * @param  string                    $command Command for the process to start. Absolute paths are recommended,
+     * @param string $command Command for the process to start. Absolute paths are recommended,
      *                                            especially if you do not use the $cwd parameter.
-     * @param  string|null               $cwd     "Current working directory" (CWD) for the process to be executed in.
+     * @param string|null $cwd "Current working directory" (CWD) for the process to be executed in.
      * @throws \InvalidArgumentException
      */
     public function __construct(string $command, $level = Logger::DEBUG, bool $bubble = true, ?string $cwd = null)
@@ -76,6 +72,20 @@ class ProcessHandler extends AbstractProcessingHandler
 
         $this->command = $command;
         $this->cwd = $cwd;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function close(): void
+    {
+        if (is_resource($this->process)) {
+            foreach ($this->pipes as $pipe) {
+                fclose($pipe);
+            }
+            proc_close($this->process);
+            $this->process = null;
+        }
     }
 
     /**
@@ -162,7 +172,7 @@ class ProcessHandler extends AbstractProcessingHandler
      */
     protected function readProcessErrors(): string
     {
-        return (string) stream_get_contents($this->pipes[2]);
+        return (string)stream_get_contents($this->pipes[2]);
     }
 
     /**
@@ -173,19 +183,5 @@ class ProcessHandler extends AbstractProcessingHandler
     protected function writeProcessInput(string $string): void
     {
         fwrite($this->pipes[0], $string);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function close(): void
-    {
-        if (is_resource($this->process)) {
-            foreach ($this->pipes as $pipe) {
-                fclose($pipe);
-            }
-            proc_close($this->process);
-            $this->process = null;
-        }
     }
 }

@@ -29,8 +29,8 @@ class SesTransport extends AbstractTransport
     /**
      * Create a new SES transport instance.
      *
-     * @param  \Aws\Ses\SesClient  $ses
-     * @param  array  $options
+     * @param \Aws\Ses\SesClient $ses
+     * @param array $options
      * @return void
      */
     public function __construct(SesClient $ses, $options = [])
@@ -39,53 +39,6 @@ class SesTransport extends AbstractTransport
         $this->options = $options;
 
         parent::__construct();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function doSend(SentMessage $message): void
-    {
-        $options = $this->options;
-
-        if ($message->getOriginalMessage() instanceof Message) {
-            foreach ($message->getOriginalMessage()->getHeaders()->all() as $header) {
-                if ($header instanceof MetadataHeader) {
-                    $options['Tags'][] = ['Name' => $header->getKey(), 'Value' => $header->getValue()];
-                }
-            }
-        }
-
-        try {
-            $result = $this->ses->sendRawEmail(
-                array_merge(
-                    $options, [
-                        'Source' => $message->getEnvelope()->getSender()->toString(),
-                        'Destinations' => collect($message->getEnvelope()->getRecipients())
-                                ->map
-                                ->toString()
-                                ->values()
-                                ->all(),
-                        'RawMessage' => [
-                            'Data' => $message->toString(),
-                        ],
-                    ]
-                )
-            );
-        } catch (AwsException $e) {
-            $reason = $e->getAwsErrorMessage() ?? $e->getMessage();
-
-            throw new Exception(
-                sprintf('Request to AWS SES API failed. Reason: %s.', $reason),
-                is_int($e->getCode()) ? $e->getCode() : 0,
-                $e
-            );
-        }
-
-        $messageId = $result->get('MessageId');
-
-        $message->getOriginalMessage()->getHeaders()->addHeader('X-Message-ID', $messageId);
-        $message->getOriginalMessage()->getHeaders()->addHeader('X-SES-Message-ID', $messageId);
     }
 
     /**
@@ -121,11 +74,58 @@ class SesTransport extends AbstractTransport
     /**
      * Set the transmission options being used by the transport.
      *
-     * @param  array  $options
+     * @param array $options
      * @return array
      */
     public function setOptions(array $options)
     {
         return $this->options = $options;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function doSend(SentMessage $message): void
+    {
+        $options = $this->options;
+
+        if ($message->getOriginalMessage() instanceof Message) {
+            foreach ($message->getOriginalMessage()->getHeaders()->all() as $header) {
+                if ($header instanceof MetadataHeader) {
+                    $options['Tags'][] = ['Name' => $header->getKey(), 'Value' => $header->getValue()];
+                }
+            }
+        }
+
+        try {
+            $result = $this->ses->sendRawEmail(
+                array_merge(
+                    $options, [
+                        'Source' => $message->getEnvelope()->getSender()->toString(),
+                        'Destinations' => collect($message->getEnvelope()->getRecipients())
+                            ->map
+                            ->toString()
+                            ->values()
+                            ->all(),
+                        'RawMessage' => [
+                            'Data' => $message->toString(),
+                        ],
+                    ]
+                )
+            );
+        } catch (AwsException $e) {
+            $reason = $e->getAwsErrorMessage() ?? $e->getMessage();
+
+            throw new Exception(
+                sprintf('Request to AWS SES API failed. Reason: %s.', $reason),
+                is_int($e->getCode()) ? $e->getCode() : 0,
+                $e
+            );
+        }
+
+        $messageId = $result->get('MessageId');
+
+        $message->getOriginalMessage()->getHeaders()->addHeader('X-Message-ID', $messageId);
+        $message->getOriginalMessage()->getHeaders()->addHeader('X-SES-Message-ID', $messageId);
     }
 }

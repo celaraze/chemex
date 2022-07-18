@@ -17,10 +17,10 @@ use Symfony\Component\String\Exception\InvalidArgumentException;
 /**
  * Represents a string of Unicode code points encoded as UTF-8.
  *
- * @author Nicolas Grekas <p@tchwork.com>
+ * @throws ExceptionInterface
  * @author Hugo Hamon <hugohamon@neuf.fr>
  *
- * @throws ExceptionInterface
+ * @author Nicolas Grekas <p@tchwork.com>
  */
 class CodePointString extends AbstractUnicodeString
 {
@@ -60,7 +60,7 @@ class CodePointString extends AbstractUnicodeString
             $rx .= '.{65535}';
             $length -= 65535;
         }
-        $rx .= '.{'.$length.'})/us';
+        $rx .= '.{' . $length . '})/us';
 
         $str = clone $this;
         $chunks = [];
@@ -80,6 +80,14 @@ class CodePointString extends AbstractUnicodeString
         return '' === $str->string ? [] : [mb_ord($str->string, 'UTF-8')];
     }
 
+    public function slice(int $start = 0, int $length = null): static
+    {
+        $str = clone $this;
+        $str->string = mb_substr($this->string, $start, $length, 'UTF-8');
+
+        return $str;
+    }
+
     public function endsWith(string|iterable|AbstractString $suffix): bool
     {
         if ($suffix instanceof AbstractString) {
@@ -93,7 +101,7 @@ class CodePointString extends AbstractUnicodeString
         }
 
         if ($this->ignoreCase) {
-            return preg_match('{'.preg_quote($suffix).'$}iuD', $this->string);
+            return preg_match('{' . preg_quote($suffix) . '$}iuD', $this->string);
         }
 
         return \strlen($this->string) >= \strlen($suffix) && 0 === substr_compare($this->string, $suffix, -\strlen($suffix));
@@ -156,7 +164,7 @@ class CodePointString extends AbstractUnicodeString
     public function prepend(string ...$prefix): static
     {
         $str = clone $this;
-        $str->string = (1 >= \count($prefix) ? ($prefix[0] ?? '') : implode('', $prefix)).$this->string;
+        $str->string = (1 >= \count($prefix) ? ($prefix[0] ?? '') : implode('', $prefix)) . $this->string;
 
         if (!preg_match('//u', $str->string)) {
             throw new InvalidArgumentException('Invalid UTF-8 string.');
@@ -178,18 +186,10 @@ class CodePointString extends AbstractUnicodeString
         }
 
         if ($this->ignoreCase) {
-            $str->string = implode($to, preg_split('{'.preg_quote($from).'}iuD', $this->string));
+            $str->string = implode($to, preg_split('{' . preg_quote($from) . '}iuD', $this->string));
         } else {
             $str->string = str_replace($from, $to, $this->string);
         }
-
-        return $str;
-    }
-
-    public function slice(int $start = 0, int $length = null): static
-    {
-        $str = clone $this;
-        $str->string = mb_substr($this->string, $start, $length, 'UTF-8');
 
         return $str;
     }
@@ -219,7 +219,7 @@ class CodePointString extends AbstractUnicodeString
         }
 
         if (null !== $flags) {
-            return parent::split($delimiter.'u', $limit, $flags);
+            return parent::split($delimiter . 'u', $limit, $flags);
         }
 
         if (!preg_match('//u', $delimiter)) {
@@ -228,7 +228,7 @@ class CodePointString extends AbstractUnicodeString
 
         $str = clone $this;
         $chunks = $this->ignoreCase
-            ? preg_split('{'.preg_quote($delimiter).'}iuD', $this->string, $limit)
+            ? preg_split('{' . preg_quote($delimiter) . '}iuD', $this->string, $limit)
             : explode($delimiter, $this->string, $limit);
 
         foreach ($chunks as &$chunk) {

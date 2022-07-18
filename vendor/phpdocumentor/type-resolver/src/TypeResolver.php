@@ -32,7 +32,6 @@ use phpDocumentor\Reflection\Types\Nullable;
 use phpDocumentor\Reflection\Types\Object_;
 use phpDocumentor\Reflection\Types\String_;
 use RuntimeException;
-
 use function array_key_exists;
 use function array_pop;
 use function array_values;
@@ -48,7 +47,6 @@ use function preg_split;
 use function strpos;
 use function strtolower;
 use function trim;
-
 use const PREG_SPLIT_DELIM_CAPTURE;
 use const PREG_SPLIT_NO_EMPTY;
 
@@ -143,11 +141,11 @@ final class TypeResolver
      * This method only works as expected if the namespace and aliases are set;
      * no dynamic reflection is being performed here.
      *
-     * @uses Context::getNamespaceAliases() to check whether the first part of the relative type name should not be
-     * replaced with another namespace.
+     * @param string $type The relative or absolute type.
      * @uses Context::getNamespace()        to determine with what to prefix the type name.
      *
-     * @param string $type The relative or absolute type.
+     * @uses Context::getNamespaceAliases() to check whether the first part of the relative type name should not be
+     * replaced with another namespace.
      */
     public function resolve(string $type, ?Context $context = null): Type
     {
@@ -181,8 +179,8 @@ final class TypeResolver
     /**
      * Analyse each tokens and creates types
      *
-     * @param ArrayIterator<int, string|null> $tokens        the iterator on tokens
-     * @param int                        $parserContext on of self::PARSER_* constants, indicating
+     * @param ArrayIterator<int, string|null> $tokens the iterator on tokens
+     * @param int $parserContext on of self::PARSER_* constants, indicating
      * the context where we are in the parsing
      */
     private function parseTypes(ArrayIterator $tokens, Context $context, int $parserContext): Type
@@ -233,7 +231,7 @@ final class TypeResolver
                 }
 
                 $tokens->next();
-                $type    = $this->parseTypes($tokens, $context, self::PARSER_IN_NULLABLE);
+                $type = $this->parseTypes($tokens, $context, self::PARSER_IN_NULLABLE);
                 $types[] = new Nullable($type);
             } elseif ($token === '(') {
                 $tokens->next();
@@ -260,11 +258,11 @@ final class TypeResolver
 
                 $classType = array_pop($types);
                 if ($classType !== null) {
-                    if ((string) $classType === 'class-string') {
+                    if ((string)$classType === 'class-string') {
                         $types[] = $this->resolveClassString($tokens, $context);
-                    } elseif ((string) $classType === 'int') {
+                    } elseif ((string)$classType === 'int') {
                         $types[] = $this->resolveIntRange($tokens);
-                    } elseif ((string) $classType === 'interface-string') {
+                    } elseif ((string)$classType === 'interface-string') {
                         $types[] = $this->resolveInterfaceString($tokens, $context);
                     } else {
                         $types[] = $this->resolveCollection($tokens, $classType, $context);
@@ -336,125 +334,6 @@ final class TypeResolver
         }
 
         return new Intersection(array_values($types));
-    }
-
-    /**
-     * resolve the given type into a type object
-     *
-     * @param string $type the type string, representing a single type
-     *
-     * @return Type|Array_|Object_
-     *
-     * @psalm-mutation-free
-     */
-    private function resolveSingleType(string $type, Context $context): object
-    {
-        switch (true) {
-            case $this->isKeyword($type):
-                return $this->resolveKeyword($type);
-
-            case $this->isFqsen($type):
-                return $this->resolveTypedObject($type);
-
-            case $this->isPartialStructuralElementName($type):
-                return $this->resolveTypedObject($type, $context);
-
-            // @codeCoverageIgnoreStart
-            default:
-                // I haven't got the foggiest how the logic would come here but added this as a defense.
-                throw new RuntimeException(
-                    'Unable to resolve type "' . $type . '", there is no known method to resolve it'
-                );
-        }
-
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * Adds a keyword to the list of Keywords and associates it with a specific Value Object.
-     *
-     * @psalm-param class-string<Type> $typeClassName
-     */
-    public function addKeyword(string $keyword, string $typeClassName): void
-    {
-        if (!class_exists($typeClassName)) {
-            throw new InvalidArgumentException(
-                'The Value Object that needs to be created with a keyword "' . $keyword . '" must be an existing class'
-                . ' but we could not find the class ' . $typeClassName
-            );
-        }
-
-        $interfaces = class_implements($typeClassName);
-        if ($interfaces === false) {
-            throw new InvalidArgumentException(
-                'The Value Object that needs to be created with a keyword "' . $keyword . '" must be an existing class'
-                . ' but we could not find the class ' . $typeClassName
-            );
-        }
-
-        if (!in_array(Type::class, $interfaces, true)) {
-            throw new InvalidArgumentException(
-                'The class "' . $typeClassName . '" must implement the interface "phpDocumentor\Reflection\Type"'
-            );
-        }
-
-        $this->keywords[$keyword] = $typeClassName;
-    }
-
-    /**
-     * Detects whether the given type represents a PHPDoc keyword.
-     *
-     * @param string $type A relative or absolute type as defined in the phpDocumentor documentation.
-     *
-     * @psalm-mutation-free
-     */
-    private function isKeyword(string $type): bool
-    {
-        return array_key_exists(strtolower($type), $this->keywords);
-    }
-
-    /**
-     * Detects whether the given type represents a relative structural element name.
-     *
-     * @param string $type A relative or absolute type as defined in the phpDocumentor documentation.
-     *
-     * @psalm-mutation-free
-     */
-    private function isPartialStructuralElementName(string $type): bool
-    {
-        return (isset($type[0]) && $type[0] !== self::OPERATOR_NAMESPACE) && !$this->isKeyword($type);
-    }
-
-    /**
-     * Tests whether the given type is a Fully Qualified Structural Element Name.
-     *
-     * @psalm-mutation-free
-     */
-    private function isFqsen(string $type): bool
-    {
-        return strpos($type, self::OPERATOR_NAMESPACE) === 0;
-    }
-
-    /**
-     * Resolves the given keyword (such as `string`) into a Type object representing that keyword.
-     *
-     * @psalm-mutation-free
-     */
-    private function resolveKeyword(string $type): Type
-    {
-        $className = $this->keywords[strtolower($type)];
-
-        return new $className();
-    }
-
-    /**
-     * Resolves the given FQSEN string into an FQSEN object.
-     *
-     * @psalm-mutation-free
-     */
-    private function resolveTypedObject(string $type, ?Context $context = null): Object_
-    {
-        return new Object_($this->fqsenResolver->resolve($type, $context));
     }
 
     /**
@@ -601,9 +480,9 @@ final class TypeResolver
      */
     private function resolveCollection(ArrayIterator $tokens, Type $classType, Context $context): Type
     {
-        $isArray    = ((string) $classType === 'array');
-        $isIterable = ((string) $classType === 'iterable');
-        $isList     = ((string) $classType === 'list');
+        $isArray = ((string)$classType === 'array');
+        $isIterable = ((string)$classType === 'iterable');
+        $isList = ((string)$classType === 'list');
 
         // allow only "array", "iterable" or class name before "<"
         if (
@@ -618,7 +497,7 @@ final class TypeResolver
         $tokens->next();
 
         $valueType = $this->parseTypes($tokens, $context, self::PARSER_IN_COLLECTION_EXPRESSION);
-        $keyType   = null;
+        $keyType = null;
 
         $token = $tokens->current();
         if ($token !== null && trim($token) === ',' && !$isList) {
@@ -696,5 +575,124 @@ final class TypeResolver
     private function makeCollectionFromObject(Object_ $object, Type $valueType, ?Type $keyType = null): Collection
     {
         return new Collection($object->getFqsen(), $valueType, $keyType);
+    }
+
+    /**
+     * resolve the given type into a type object
+     *
+     * @param string $type the type string, representing a single type
+     *
+     * @return Type|Array_|Object_
+     *
+     * @psalm-mutation-free
+     */
+    private function resolveSingleType(string $type, Context $context): object
+    {
+        switch (true) {
+            case $this->isKeyword($type):
+                return $this->resolveKeyword($type);
+
+            case $this->isFqsen($type):
+                return $this->resolveTypedObject($type);
+
+            case $this->isPartialStructuralElementName($type):
+                return $this->resolveTypedObject($type, $context);
+
+            // @codeCoverageIgnoreStart
+            default:
+                // I haven't got the foggiest how the logic would come here but added this as a defense.
+                throw new RuntimeException(
+                    'Unable to resolve type "' . $type . '", there is no known method to resolve it'
+                );
+        }
+
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Detects whether the given type represents a PHPDoc keyword.
+     *
+     * @param string $type A relative or absolute type as defined in the phpDocumentor documentation.
+     *
+     * @psalm-mutation-free
+     */
+    private function isKeyword(string $type): bool
+    {
+        return array_key_exists(strtolower($type), $this->keywords);
+    }
+
+    /**
+     * Resolves the given keyword (such as `string`) into a Type object representing that keyword.
+     *
+     * @psalm-mutation-free
+     */
+    private function resolveKeyword(string $type): Type
+    {
+        $className = $this->keywords[strtolower($type)];
+
+        return new $className();
+    }
+
+    /**
+     * Tests whether the given type is a Fully Qualified Structural Element Name.
+     *
+     * @psalm-mutation-free
+     */
+    private function isFqsen(string $type): bool
+    {
+        return strpos($type, self::OPERATOR_NAMESPACE) === 0;
+    }
+
+    /**
+     * Resolves the given FQSEN string into an FQSEN object.
+     *
+     * @psalm-mutation-free
+     */
+    private function resolveTypedObject(string $type, ?Context $context = null): Object_
+    {
+        return new Object_($this->fqsenResolver->resolve($type, $context));
+    }
+
+    /**
+     * Detects whether the given type represents a relative structural element name.
+     *
+     * @param string $type A relative or absolute type as defined in the phpDocumentor documentation.
+     *
+     * @psalm-mutation-free
+     */
+    private function isPartialStructuralElementName(string $type): bool
+    {
+        return (isset($type[0]) && $type[0] !== self::OPERATOR_NAMESPACE) && !$this->isKeyword($type);
+    }
+
+    /**
+     * Adds a keyword to the list of Keywords and associates it with a specific Value Object.
+     *
+     * @psalm-param class-string<Type> $typeClassName
+     */
+    public function addKeyword(string $keyword, string $typeClassName): void
+    {
+        if (!class_exists($typeClassName)) {
+            throw new InvalidArgumentException(
+                'The Value Object that needs to be created with a keyword "' . $keyword . '" must be an existing class'
+                . ' but we could not find the class ' . $typeClassName
+            );
+        }
+
+        $interfaces = class_implements($typeClassName);
+        if ($interfaces === false) {
+            throw new InvalidArgumentException(
+                'The Value Object that needs to be created with a keyword "' . $keyword . '" must be an existing class'
+                . ' but we could not find the class ' . $typeClassName
+            );
+        }
+
+        if (!in_array(Type::class, $interfaces, true)) {
+            throw new InvalidArgumentException(
+                'The class "' . $typeClassName . '" must implement the interface "phpDocumentor\Reflection\Type"'
+            );
+        }
+
+        $this->keywords[$keyword] = $typeClassName;
     }
 }

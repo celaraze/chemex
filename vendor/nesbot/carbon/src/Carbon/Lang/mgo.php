@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'weekdays' => ['Aneg 1', 'Aneg 2', 'Aneg 3', 'Aneg 4', 'Aneg 5', 'Aneg 6', 'Aneg 7'],
     'weekdays_short' => ['Aneg 1', 'Aneg 2', 'Aneg 3', 'Aneg 4', 'Aneg 5', 'Aneg 6', 'Aneg 7'],
     'weekdays_min' => ['1', '2', '3', '4', '5', '6', '7'],

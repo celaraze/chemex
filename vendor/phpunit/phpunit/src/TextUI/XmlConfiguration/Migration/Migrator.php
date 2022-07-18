@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function sprintf;
 use PHPUnit\Util\Xml\Exception as XmlException;
 use PHPUnit\Util\Xml\Loader as XmlLoader;
 use PHPUnit\Util\Xml\SchemaDetector;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -49,7 +50,7 @@ final class Migrator
             $migration->migrate($configurationDocument);
         }
 
-        $configurationDocument->formatOutput       = true;
+        $configurationDocument->formatOutput = true;
         $configurationDocument->preserveWhiteSpace = false;
 
         return $configurationDocument->saveXML();

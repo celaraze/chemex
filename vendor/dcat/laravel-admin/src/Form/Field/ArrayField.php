@@ -40,21 +40,6 @@ class ArrayField extends HasMany
         return $forms;
     }
 
-    protected function prepareInputValue($input)
-    {
-        return collect($this->buildNestedForm()->prepare($input))
-            ->filter(function ($item) {
-                return empty($item[NestedForm::REMOVE_FLAG_NAME]);
-            })
-            ->transform(function ($item) {
-                unset($item[NestedForm::REMOVE_FLAG_NAME]);
-
-                return $item;
-            })
-            ->values()
-            ->toArray();
-    }
-
     public function buildNestedForm($key = null)
     {
         $form = new NestedForm($this->getNestedFormColumnName());
@@ -74,5 +59,20 @@ class ArrayField extends HasMany
         $form->layout()->appendToLastColumn($hidden);
 
         return $form;
+    }
+
+    protected function prepareInputValue($input)
+    {
+        return collect($this->buildNestedForm()->prepare($input))
+            ->filter(function ($item) {
+                return empty($item[NestedForm::REMOVE_FLAG_NAME]);
+            })
+            ->transform(function ($item) {
+                unset($item[NestedForm::REMOVE_FLAG_NAME]);
+
+                return $item;
+            })
+            ->values()
+            ->toArray();
     }
 }

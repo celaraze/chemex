@@ -83,8 +83,8 @@ class Subset extends MatcherAbstract
     {
         $return = '<Subset[';
         $elements = array();
-        foreach ($this->expected as $k=>$v) {
-            $elements[] = $k . '=' . (string) $v;
+        foreach ($this->expected as $k => $v) {
+            $elements[] = $k . '=' . (string)$v;
         }
         $return .= implode(', ', $elements) . ']>';
         return $return;

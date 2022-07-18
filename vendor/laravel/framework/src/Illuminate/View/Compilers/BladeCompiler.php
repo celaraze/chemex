@@ -151,62 +151,62 @@ class BladeCompiler extends Compiler implements CompilerInterface
     protected $compilesComponentTags = true;
 
     /**
-     * Compile the view at the given path.
+     * Render a component instance to HTML.
      *
-     * @param  string|null  $path
-     * @return void
-     */
-    public function compile($path = null)
-    {
-        if ($path) {
-            $this->setPath($path);
-        }
-
-        if (! is_null($this->cachePath)) {
-            $contents = $this->compileString($this->files->get($this->getPath()));
-
-            if (! empty($this->getPath())) {
-                $contents = $this->appendFilePath($contents);
-            }
-
-            $this->ensureCompiledDirectoryExists(
-                $compiledPath = $this->getCompiledPath($this->getPath())
-            );
-
-            $this->files->put($compiledPath, $contents);
-        }
-    }
-
-    /**
-     * Append the file path to the compiled string.
-     *
-     * @param  string  $contents
+     * @param \Illuminate\View\Component $component
      * @return string
      */
-    protected function appendFilePath($contents)
+    public static function renderComponent(Component $component)
     {
-        $tokens = $this->getOpenAndClosingPhpTokens($contents);
+        $data = $component->data();
 
-        if ($tokens->isNotEmpty() && $tokens->last() !== T_CLOSE_TAG) {
-            $contents .= ' ?>';
+        $view = value($component->resolveView(), $data);
+
+        if ($view instanceof View) {
+            return $view->with($data)->render();
+        } elseif ($view instanceof Htmlable) {
+            return $view->toHtml();
+        } else {
+            return Container::getInstance()
+                ->make(ViewFactory::class)
+                ->make($view, $data)
+                ->render();
         }
-
-        return $contents."<?php /**PATH {$this->getPath()} ENDPATH**/ ?>";
     }
 
     /**
-     * Get the open and closing PHP tag tokens from the given string.
+     * Evaluate and render a Blade string to HTML.
      *
-     * @param  string  $contents
-     * @return \Illuminate\Support\Collection
+     * @param string $string
+     * @param array $data
+     * @param bool $deleteCachedView
+     * @return string
      */
-    protected function getOpenAndClosingPhpTokens($contents)
+    public static function render($string, $data = [], $deleteCachedView = false)
     {
-        return collect(token_get_all($contents))
-            ->pluck(0)
-            ->filter(function ($token) {
-                return in_array($token, [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG]);
-            });
+        $component = new class($string) extends Component {
+            protected $template;
+
+            public function __construct($template)
+            {
+                $this->template = $template;
+            }
+
+            public function render()
+            {
+                return $this->template;
+            }
+        };
+
+        $view = Container::getInstance()
+            ->make(ViewFactory::class)
+            ->make($component->resolveView(), $data);
+
+        return tap($view->render(), function () use ($view, $deleteCachedView) {
+            if ($deleteCachedView) {
+                unlink($view->getPath());
+            }
+        });
     }
 
     /**
@@ -222,7 +222,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Set the path currently being compiled.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     public function setPath($path)
@@ -231,9 +231,36 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
+     * Compile the view at the given path.
+     *
+     * @param string|null $path
+     * @return void
+     */
+    public function compile($path = null)
+    {
+        if ($path) {
+            $this->setPath($path);
+        }
+
+        if (!is_null($this->cachePath)) {
+            $contents = $this->compileString($this->files->get($this->getPath()));
+
+            if (!empty($this->getPath())) {
+                $contents = $this->appendFilePath($contents);
+            }
+
+            $this->ensureCompiledDirectoryExists(
+                $compiledPath = $this->getCompiledPath($this->getPath())
+            );
+
+            $this->files->put($compiledPath, $contents);
+        }
+    }
+
+    /**
      * Compile the given Blade template contents.
      *
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     public function compileString($value)
@@ -258,7 +285,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
             $result .= is_array($token) ? $this->parseToken($token) : $token;
         }
 
-        if (! empty($this->rawBlocks)) {
+        if (!empty($this->rawBlocks)) {
             $result = $this->restoreRawContent($result);
         }
 
@@ -269,7 +296,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
             $result = $this->addFooters($result);
         }
 
-        if (! empty($this->echoHandlers)) {
+        if (!empty($this->echoHandlers)) {
             $result = $this->addBladeCompilerVariable($result);
         }
 
@@ -280,69 +307,26 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Evaluate and render a Blade string to HTML.
+     * Compile the component tags.
      *
-     * @param  string  $string
-     * @param  array  $data
-     * @param  bool  $deleteCachedView
+     * @param string $value
      * @return string
      */
-    public static function render($string, $data = [], $deleteCachedView = false)
+    protected function compileComponentTags($value)
     {
-        $component = new class($string) extends Component
-        {
-            protected $template;
-
-            public function __construct($template)
-            {
-                $this->template = $template;
-            }
-
-            public function render()
-            {
-                return $this->template;
-            }
-        };
-
-        $view = Container::getInstance()
-                    ->make(ViewFactory::class)
-                    ->make($component->resolveView(), $data);
-
-        return tap($view->render(), function () use ($view, $deleteCachedView) {
-            if ($deleteCachedView) {
-                unlink($view->getPath());
-            }
-        });
-    }
-
-    /**
-     * Render a component instance to HTML.
-     *
-     * @param  \Illuminate\View\Component  $component
-     * @return string
-     */
-    public static function renderComponent(Component $component)
-    {
-        $data = $component->data();
-
-        $view = value($component->resolveView(), $data);
-
-        if ($view instanceof View) {
-            return $view->with($data)->render();
-        } elseif ($view instanceof Htmlable) {
-            return $view->toHtml();
-        } else {
-            return Container::getInstance()
-                ->make(ViewFactory::class)
-                ->make($view, $data)
-                ->render();
+        if (!$this->compilesComponentTags) {
+            return $value;
         }
+
+        return (new ComponentTagCompiler(
+            $this->classComponentAliases, $this->classComponentNamespaces, $this
+        ))->compile($value);
     }
 
     /**
      * Store the blocks that do not receive compilation.
      *
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     protected function storeUncompiledBlocks($value)
@@ -361,7 +345,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Store the verbatim blocks and replace them with a temporary placeholder.
      *
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     protected function storeVerbatimBlocks($value)
@@ -372,22 +356,9 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Store the PHP blocks and replace them with a temporary placeholder.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    protected function storePhpBlocks($value)
-    {
-        return preg_replace_callback('/(?<!@)@php(.*?)@endphp/s', function ($matches) {
-            return $this->storeRawBlock("<?php{$matches[1]}?>");
-        }, $value);
-    }
-
-    /**
      * Store a raw block and return a unique raw placeholder.
      *
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     protected function storeRawBlock($value)
@@ -398,43 +369,9 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Compile the component tags.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    protected function compileComponentTags($value)
-    {
-        if (! $this->compilesComponentTags) {
-            return $value;
-        }
-
-        return (new ComponentTagCompiler(
-            $this->classComponentAliases, $this->classComponentNamespaces, $this
-        ))->compile($value);
-    }
-
-    /**
-     * Replace the raw placeholders with the original code stored in the raw blocks.
-     *
-     * @param  string  $result
-     * @return string
-     */
-    protected function restoreRawContent($result)
-    {
-        $result = preg_replace_callback('/'.$this->getRawPlaceholder('(\d+)').'/', function ($matches) {
-            return $this->rawBlocks[$matches[1]];
-        }, $result);
-
-        $this->rawBlocks = [];
-
-        return $result;
-    }
-
-    /**
      * Get a placeholder to temporarily mark the position of raw blocks.
      *
-     * @param  int|string  $replace
+     * @param int|string $replace
      * @return string
      */
     protected function getRawPlaceholder($replace)
@@ -443,21 +380,22 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Add the stored footers onto the given content.
+     * Store the PHP blocks and replace them with a temporary placeholder.
      *
-     * @param  string  $result
+     * @param string $value
      * @return string
      */
-    protected function addFooters($result)
+    protected function storePhpBlocks($value)
     {
-        return ltrim($result, "\n")
-                ."\n".implode("\n", array_reverse($this->footer));
+        return preg_replace_callback('/(?<!@)@php(.*?)@endphp/s', function ($matches) {
+            return $this->storeRawBlock("<?php{$matches[1]}?>");
+        }, $value);
     }
 
     /**
      * Parse the tokens from the template.
      *
-     * @param  array  $token
+     * @param array $token
      * @return string
      */
     protected function parseToken($token)
@@ -474,91 +412,70 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Execute the user defined extensions.
+     * Replace the raw placeholders with the original code stored in the raw blocks.
      *
-     * @param  string  $value
+     * @param string $result
      * @return string
      */
-    protected function compileExtensions($value)
+    protected function restoreRawContent($result)
     {
-        foreach ($this->extensions as $compiler) {
-            $value = $compiler($value, $this);
-        }
+        $result = preg_replace_callback('/' . $this->getRawPlaceholder('(\d+)') . '/', function ($matches) {
+            return $this->rawBlocks[$matches[1]];
+        }, $result);
 
-        return $value;
+        $this->rawBlocks = [];
+
+        return $result;
     }
 
     /**
-     * Compile Blade statements that start with "@".
+     * Add the stored footers onto the given content.
      *
-     * @param  string  $value
+     * @param string $result
      * @return string
      */
-    protected function compileStatements($value)
+    protected function addFooters($result)
     {
-        return preg_replace_callback(
-            '/\B@(@?\w+(?:::\w+)?)([ \t]*)(\( ( (?>[^()]+) | (?3) )* \))?/x', function ($match) {
-                return $this->compileStatement($match);
-            }, $value
-        );
+        return ltrim($result, "\n")
+            . "\n" . implode("\n", array_reverse($this->footer));
     }
 
     /**
-     * Compile a single Blade @ statement.
+     * Append the file path to the compiled string.
      *
-     * @param  array  $match
+     * @param string $contents
      * @return string
      */
-    protected function compileStatement($match)
+    protected function appendFilePath($contents)
     {
-        if (str_contains($match[1], '@')) {
-            $match[0] = isset($match[3]) ? $match[1].$match[3] : $match[1];
-        } elseif (isset($this->customDirectives[$match[1]])) {
-            $match[0] = $this->callCustomDirective($match[1], Arr::get($match, 3));
-        } elseif (method_exists($this, $method = 'compile'.ucfirst($match[1]))) {
-            $match[0] = $this->$method(Arr::get($match, 3));
+        $tokens = $this->getOpenAndClosingPhpTokens($contents);
+
+        if ($tokens->isNotEmpty() && $tokens->last() !== T_CLOSE_TAG) {
+            $contents .= ' ?>';
         }
 
-        return isset($match[3]) ? $match[0] : $match[0].$match[2];
+        return $contents . "<?php /**PATH {$this->getPath()} ENDPATH**/ ?>";
     }
 
     /**
-     * Call the given directive with the given value.
+     * Get the open and closing PHP tag tokens from the given string.
      *
-     * @param  string  $name
-     * @param  string|null  $value
-     * @return string
+     * @param string $contents
+     * @return \Illuminate\Support\Collection
      */
-    protected function callCustomDirective($name, $value)
+    protected function getOpenAndClosingPhpTokens($contents)
     {
-        $value ??= '';
-
-        if (str_starts_with($value, '(') && str_ends_with($value, ')')) {
-            $value = Str::substr($value, 1, -1);
-        }
-
-        return call_user_func($this->customDirectives[$name], trim($value));
-    }
-
-    /**
-     * Strip the parentheses from the given expression.
-     *
-     * @param  string  $expression
-     * @return string
-     */
-    public function stripParentheses($expression)
-    {
-        if (Str::startsWith($expression, '(')) {
-            $expression = substr($expression, 1, -1);
-        }
-
-        return $expression;
+        return collect(token_get_all($contents))
+            ->pluck(0)
+            ->filter(function ($token) {
+                return in_array($token, [T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO, T_CLOSE_TAG]);
+            });
     }
 
     /**
      * Register a custom Blade compiler.
      *
-     * @param  callable  $compiler
+     * @param callable $compiler
      * @return void
      */
     public function extend(callable $compiler)
@@ -579,8 +496,8 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register an "if" statement directive.
      *
-     * @param  string  $name
-     * @param  callable  $callback
+     * @param string $name
+     * @param callable $callback
      * @return void
      */
     public function if($name, callable $callback)
@@ -589,32 +506,50 @@ class BladeCompiler extends Compiler implements CompilerInterface
 
         $this->directive($name, function ($expression) use ($name) {
             return $expression !== ''
-                    ? "<?php if (\Illuminate\Support\Facades\Blade::check('{$name}', {$expression})): ?>"
-                    : "<?php if (\Illuminate\Support\Facades\Blade::check('{$name}')): ?>";
+                ? "<?php if (\Illuminate\Support\Facades\Blade::check('{$name}', {$expression})): ?>"
+                : "<?php if (\Illuminate\Support\Facades\Blade::check('{$name}')): ?>";
         });
 
-        $this->directive('unless'.$name, function ($expression) use ($name) {
+        $this->directive('unless' . $name, function ($expression) use ($name) {
             return $expression !== ''
                 ? "<?php if (! \Illuminate\Support\Facades\Blade::check('{$name}', {$expression})): ?>"
                 : "<?php if (! \Illuminate\Support\Facades\Blade::check('{$name}')): ?>";
         });
 
-        $this->directive('else'.$name, function ($expression) use ($name) {
+        $this->directive('else' . $name, function ($expression) use ($name) {
             return $expression !== ''
                 ? "<?php elseif (\Illuminate\Support\Facades\Blade::check('{$name}', {$expression})): ?>"
                 : "<?php elseif (\Illuminate\Support\Facades\Blade::check('{$name}')): ?>";
         });
 
-        $this->directive('end'.$name, function () {
+        $this->directive('end' . $name, function () {
             return '<?php endif; ?>';
         });
     }
 
     /**
+     * Register a handler for custom directives.
+     *
+     * @param string $name
+     * @param callable $handler
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function directive($name, callable $handler)
+    {
+        if (!preg_match('/^\w+(?:::\w+)?$/x', $name)) {
+            throw new InvalidArgumentException("The directive name [{$name}] is not valid. Directive names must only contain alphanumeric characters and underscores.");
+        }
+
+        $this->customDirectives[$name] = $handler;
+    }
+
+    /**
      * Check the result of a condition.
      *
-     * @param  string  $name
-     * @param  array  $parameters
+     * @param string $name
+     * @param array $parameters
      * @return bool
      */
     public function check($name, ...$parameters)
@@ -623,39 +558,10 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Register a class-based component alias directive.
-     *
-     * @param  string  $class
-     * @param  string|null  $alias
-     * @param  string  $prefix
-     * @return void
-     */
-    public function component($class, $alias = null, $prefix = '')
-    {
-        if (! is_null($alias) && str_contains($alias, '\\')) {
-            [$class, $alias] = [$alias, $class];
-        }
-
-        if (is_null($alias)) {
-            $alias = str_contains($class, '\\View\\Components\\')
-                            ? collect(explode('\\', Str::after($class, '\\View\\Components\\')))->map(function ($segment) {
-                                return Str::kebab($segment);
-                            })->implode(':')
-                            : Str::kebab(class_basename($class));
-        }
-
-        if (! empty($prefix)) {
-            $alias = $prefix.'-'.$alias;
-        }
-
-        $this->classComponentAliases[$alias] = $class;
-    }
-
-    /**
      * Register an array of class-based components.
      *
-     * @param  array  $components
-     * @param  string  $prefix
+     * @param array $components
+     * @param string $prefix
      * @return void
      */
     public function components(array $components, $prefix = '')
@@ -667,6 +573,35 @@ class BladeCompiler extends Compiler implements CompilerInterface
                 $this->component($key, $value, $prefix);
             }
         }
+    }
+
+    /**
+     * Register a class-based component alias directive.
+     *
+     * @param string $class
+     * @param string|null $alias
+     * @param string $prefix
+     * @return void
+     */
+    public function component($class, $alias = null, $prefix = '')
+    {
+        if (!is_null($alias) && str_contains($alias, '\\')) {
+            [$class, $alias] = [$alias, $class];
+        }
+
+        if (is_null($alias)) {
+            $alias = str_contains($class, '\\View\\Components\\')
+                ? collect(explode('\\', Str::after($class, '\\View\\Components\\')))->map(function ($segment) {
+                    return Str::kebab($segment);
+                })->implode(':')
+                : Str::kebab(class_basename($class));
+        }
+
+        if (!empty($prefix)) {
+            $alias = $prefix . '-' . $alias;
+        }
+
+        $this->classComponentAliases[$alias] = $class;
     }
 
     /**
@@ -682,8 +617,8 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register an anonymous component namespace.
      *
-     * @param  string  $directory
-     * @param  string|null  $prefix
+     * @param string $directory
+     * @param string|null $prefix
      * @return void
      */
     public function anonymousComponentNamespace(string $directory, string $prefix = null)
@@ -691,16 +626,16 @@ class BladeCompiler extends Compiler implements CompilerInterface
         $prefix ??= $directory;
 
         $this->anonymousComponentNamespaces[$prefix] = Str::of($directory)
-                ->replace('/', '.')
-                ->trim('. ')
-                ->toString();
+            ->replace('/', '.')
+            ->trim('. ')
+            ->toString();
     }
 
     /**
      * Register a class-based component namespace.
      *
-     * @param  string  $namespace
-     * @param  string  $prefix
+     * @param string $namespace
+     * @param string $prefix
      * @return void
      */
     public function componentNamespace($namespace, $prefix)
@@ -731,8 +666,8 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register a component alias directive.
      *
-     * @param  string  $path
-     * @param  string|null  $alias
+     * @param string $path
+     * @param string|null $alias
      * @return void
      */
     public function aliasComponent($path, $alias = null)
@@ -741,11 +676,11 @@ class BladeCompiler extends Compiler implements CompilerInterface
 
         $this->directive($alias, function ($expression) use ($path) {
             return $expression
-                        ? "<?php \$__env->startComponent('{$path}', {$expression}); ?>"
-                        : "<?php \$__env->startComponent('{$path}'); ?>";
+                ? "<?php \$__env->startComponent('{$path}', {$expression}); ?>"
+                : "<?php \$__env->startComponent('{$path}'); ?>";
         });
 
-        $this->directive('end'.$alias, function ($expression) {
+        $this->directive('end' . $alias, function ($expression) {
             return '<?php echo $__env->renderComponent(); ?>';
         });
     }
@@ -753,8 +688,8 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register an include alias directive.
      *
-     * @param  string  $path
-     * @param  string|null  $alias
+     * @param string $path
+     * @param string|null $alias
      * @return void
      */
     public function include($path, $alias = null)
@@ -765,8 +700,8 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register an include alias directive.
      *
-     * @param  string  $path
-     * @param  string|null  $alias
+     * @param string $path
+     * @param string|null $alias
      * @return void
      */
     public function aliasInclude($path, $alias = null)
@@ -781,21 +716,18 @@ class BladeCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Register a handler for custom directives.
+     * Strip the parentheses from the given expression.
      *
-     * @param  string  $name
-     * @param  callable  $handler
-     * @return void
-     *
-     * @throws \InvalidArgumentException
+     * @param string $expression
+     * @return string
      */
-    public function directive($name, callable $handler)
+    public function stripParentheses($expression)
     {
-        if (! preg_match('/^\w+(?:::\w+)?$/x', $name)) {
-            throw new InvalidArgumentException("The directive name [{$name}] is not valid. Directive names must only contain alphanumeric characters and underscores.");
+        if (Str::startsWith($expression, '(')) {
+            $expression = substr($expression, 1, -1);
         }
 
-        $this->customDirectives[$name] = $handler;
+        return $expression;
     }
 
     /**
@@ -811,23 +743,12 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Register a new precompiler.
      *
-     * @param  callable  $precompiler
+     * @param callable $precompiler
      * @return void
      */
     public function precompiler(callable $precompiler)
     {
         $this->precompilers[] = $precompiler;
-    }
-
-    /**
-     * Set the echo format to be used by the compiler.
-     *
-     * @param  string  $format
-     * @return void
-     */
-    public function setEchoFormat($format)
-    {
-        $this->echoFormat = $format;
     }
 
     /**
@@ -838,6 +759,17 @@ class BladeCompiler extends Compiler implements CompilerInterface
     public function withDoubleEncoding()
     {
         $this->setEchoFormat('e(%s, true)');
+    }
+
+    /**
+     * Set the echo format to be used by the compiler.
+     *
+     * @param string $format
+     * @return void
+     */
+    public function setEchoFormat($format)
+    {
+        $this->echoFormat = $format;
     }
 
     /**
@@ -858,5 +790,72 @@ class BladeCompiler extends Compiler implements CompilerInterface
     public function withoutComponentTags()
     {
         $this->compilesComponentTags = false;
+    }
+
+    /**
+     * Execute the user defined extensions.
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function compileExtensions($value)
+    {
+        foreach ($this->extensions as $compiler) {
+            $value = $compiler($value, $this);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Compile Blade statements that start with "@".
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function compileStatements($value)
+    {
+        return preg_replace_callback(
+            '/\B@(@?\w+(?:::\w+)?)([ \t]*)(\( ( (?>[^()]+) | (?3) )* \))?/x', function ($match) {
+            return $this->compileStatement($match);
+        }, $value
+        );
+    }
+
+    /**
+     * Compile a single Blade @ statement.
+     *
+     * @param array $match
+     * @return string
+     */
+    protected function compileStatement($match)
+    {
+        if (str_contains($match[1], '@')) {
+            $match[0] = isset($match[3]) ? $match[1] . $match[3] : $match[1];
+        } elseif (isset($this->customDirectives[$match[1]])) {
+            $match[0] = $this->callCustomDirective($match[1], Arr::get($match, 3));
+        } elseif (method_exists($this, $method = 'compile' . ucfirst($match[1]))) {
+            $match[0] = $this->$method(Arr::get($match, 3));
+        }
+
+        return isset($match[3]) ? $match[0] : $match[0] . $match[2];
+    }
+
+    /**
+     * Call the given directive with the given value.
+     *
+     * @param string $name
+     * @param string|null $value
+     * @return string
+     */
+    protected function callCustomDirective($name, $value)
+    {
+        $value ??= '';
+
+        if (str_starts_with($value, '(') && str_ends_with($value, ')')) {
+            $value = Str::substr($value, 1, -1);
+        }
+
+        return call_user_func($this->customDirectives[$name], trim($value));
     }
 }

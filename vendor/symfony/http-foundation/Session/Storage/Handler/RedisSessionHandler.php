@@ -56,47 +56,6 @@ class RedisSessionHandler extends AbstractSessionHandler
     /**
      * {@inheritdoc}
      */
-    protected function doRead(string $sessionId): string
-    {
-        return $this->redis->get($this->prefix.$sessionId) ?: '';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function doWrite(string $sessionId, string $data): bool
-    {
-        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
-        $result = $this->redis->setEx($this->prefix.$sessionId, (int) $ttl, $data);
-
-        return $result && !$result instanceof ErrorInterface;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function doDestroy(string $sessionId): bool
-    {
-        static $unlink = true;
-
-        if ($unlink) {
-            try {
-                $unlink = false !== $this->redis->unlink($this->prefix.$sessionId);
-            } catch (\Throwable) {
-                $unlink = false;
-            }
-        }
-
-        if (!$unlink) {
-            $this->redis->del($this->prefix.$sessionId);
-        }
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     #[\ReturnTypeWillChange]
     public function close(): bool
     {
@@ -112,6 +71,47 @@ class RedisSessionHandler extends AbstractSessionHandler
     {
         $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
 
-        return $this->redis->expire($this->prefix.$sessionId, (int) $ttl);
+        return $this->redis->expire($this->prefix . $sessionId, (int)$ttl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doRead(string $sessionId): string
+    {
+        return $this->redis->get($this->prefix . $sessionId) ?: '';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doWrite(string $sessionId, string $data): bool
+    {
+        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
+        $result = $this->redis->setEx($this->prefix . $sessionId, (int)$ttl, $data);
+
+        return $result && !$result instanceof ErrorInterface;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doDestroy(string $sessionId): bool
+    {
+        static $unlink = true;
+
+        if ($unlink) {
+            try {
+                $unlink = false !== $this->redis->unlink($this->prefix . $sessionId);
+            } catch (\Throwable) {
+                $unlink = false;
+            }
+        }
+
+        if (!$unlink) {
+            $this->redis->del($this->prefix . $sessionId);
+        }
+
+        return true;
     }
 }

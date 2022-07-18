@@ -18,9 +18,9 @@ class WriterEntityFactory
     /**
      * This creates an instance of the appropriate writer, given the type of the file to be written
      *
-     * @param  string $writerType Type of the writer to instantiate
-     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @param string $writerType Type of the writer to instantiate
      * @return WriterInterface
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      */
     public static function createWriter($writerType)
     {
@@ -31,8 +31,8 @@ class WriterEntityFactory
      * This creates an instance of the appropriate writer, given the extension of the file to be written
      *
      * @param string $path The path to the spreadsheet file. Supported extensions are .csv, .ods and .xlsx
-     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      * @return WriterInterface
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      */
     public static function createWriterFromFile(string $path)
     {

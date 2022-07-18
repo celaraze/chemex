@@ -28,11 +28,11 @@ class IcuDatFileLoader extends IcuResFileLoader
      */
     public function load(mixed $resource, string $locale, string $domain = 'messages'): MessageCatalogue
     {
-        if (!stream_is_local($resource.'.dat')) {
+        if (!stream_is_local($resource . '.dat')) {
             throw new InvalidResourceException(sprintf('This is not a local file "%s".', $resource));
         }
 
-        if (!file_exists($resource.'.dat')) {
+        if (!file_exists($resource . '.dat')) {
             throw new NotFoundResourceException(sprintf('File "%s" not found.', $resource));
         }
 
@@ -53,7 +53,7 @@ class IcuDatFileLoader extends IcuResFileLoader
         $catalogue->add($messages, $domain);
 
         if (class_exists(FileResource::class)) {
-            $catalogue->addResource(new FileResource($resource.'.dat'));
+            $catalogue->addResource(new FileResource($resource . '.dat'));
         }
 
         return $catalogue;

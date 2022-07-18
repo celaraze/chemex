@@ -55,7 +55,7 @@ class ArrayInput extends Input
      */
     public function hasParameterOption(string|array $values, bool $onlyParams = false): bool
     {
-        $values = (array) $values;
+        $values = (array)$values;
 
         foreach ($this->parameters as $k => $v) {
             if (!\is_int($k)) {
@@ -79,7 +79,7 @@ class ArrayInput extends Input
      */
     public function getParameterOption(string|array $values, string|bool|int|float|array|null $default = false, bool $onlyParams = false): mixed
     {
-        $values = (array) $values;
+        $values = (array)$values;
 
         foreach ($this->parameters as $k => $v) {
             if ($onlyParams && ('--' === $k || (\is_int($k) && '--' === $v))) {
@@ -109,10 +109,10 @@ class ArrayInput extends Input
                 $glue = ('-' === $param[1]) ? '=' : ' ';
                 if (\is_array($val)) {
                     foreach ($val as $v) {
-                        $params[] = $param.('' != $v ? $glue.$this->escapeToken($v) : '');
+                        $params[] = $param . ('' != $v ? $glue . $this->escapeToken($v) : '');
                     }
                 } else {
-                    $params[] = $param.('' != $val ? $glue.$this->escapeToken($val) : '');
+                    $params[] = $param . ('' != $val ? $glue . $this->escapeToken($val) : '');
                 }
             } else {
                 $params[] = \is_array($val) ? implode(' ', array_map($this->escapeToken(...), $val)) : $this->escapeToken($val);
@@ -139,20 +139,6 @@ class ArrayInput extends Input
                 $this->addArgument($key, $value);
             }
         }
-    }
-
-    /**
-     * Adds a short option value.
-     *
-     * @throws InvalidOptionException When option given doesn't exist
-     */
-    private function addShortOption(string $shortcut, mixed $value)
-    {
-        if (!$this->definition->hasShortcut($shortcut)) {
-            throw new InvalidOptionException(sprintf('The "-%s" option does not exist.', $shortcut));
-        }
-
-        $this->addLongOption($this->definition->getOptionForShortcut($shortcut)->getName(), $value);
     }
 
     /**
@@ -187,6 +173,20 @@ class ArrayInput extends Input
         }
 
         $this->options[$name] = $value;
+    }
+
+    /**
+     * Adds a short option value.
+     *
+     * @throws InvalidOptionException When option given doesn't exist
+     */
+    private function addShortOption(string $shortcut, mixed $value)
+    {
+        if (!$this->definition->hasShortcut($shortcut)) {
+            throw new InvalidOptionException(sprintf('The "-%s" option does not exist.', $shortcut));
+        }
+
+        $this->addLongOption($this->definition->getOptionForShortcut($shortcut)->getName(), $value);
     }
 
     /**

@@ -78,6 +78,22 @@ class Profiler implements ResetInterface
     }
 
     /**
+     * Gets a Collector by name.
+     *
+     * @param string $name A collector name
+     *
+     * @throws \InvalidArgumentException if the collector does not exist
+     */
+    public function get(string $name): DataCollectorInterface
+    {
+        if (!isset($this->collectors[$name])) {
+            throw new \InvalidArgumentException(sprintf('Collector "%s" does not exist.', $name));
+        }
+
+        return $this->collectors[$name];
+    }
+
+    /**
      * Loads the Profile for the given token.
      */
     public function loadProfile(string $token): ?Profile
@@ -117,13 +133,28 @@ class Profiler implements ResetInterface
      *
      * @param string|null $limit The maximum number of tokens to return
      * @param string|null $start The start date to search from
-     * @param string|null $end   The end date to search to
+     * @param string|null $end The end date to search to
      *
      * @see https://php.net/datetime.formats for the supported date/time formats
      */
     public function find(?string $ip, ?string $url, ?string $limit, ?string $method, ?string $start, ?string $end, string $statusCode = null): array
     {
         return $this->storage->find($ip, $url, $limit, $method, $this->getTimestamp($start), $this->getTimestamp($end), $statusCode);
+    }
+
+    private function getTimestamp(?string $value): ?int
+    {
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
+        try {
+            $value = new \DateTime(is_numeric($value) ? '@' . $value : $value);
+        } catch (\Exception) {
+            return null;
+        }
+
+        return $value->getTimestamp();
     }
 
     /**
@@ -162,22 +193,6 @@ class Profiler implements ResetInterface
         return $profile;
     }
 
-    public function reset()
-    {
-        foreach ($this->collectors as $collector) {
-            $collector->reset();
-        }
-        $this->enabled = $this->initiallyEnabled;
-    }
-
-    /**
-     * Gets the Collectors associated with this profiler.
-     */
-    public function all(): array
-    {
-        return $this->collectors;
-    }
-
     /**
      * Sets the Collectors associated with this profiler.
      *
@@ -199,6 +214,22 @@ class Profiler implements ResetInterface
         $this->collectors[$collector->getName()] = $collector;
     }
 
+    public function reset()
+    {
+        foreach ($this->collectors as $collector) {
+            $collector->reset();
+        }
+        $this->enabled = $this->initiallyEnabled;
+    }
+
+    /**
+     * Gets the Collectors associated with this profiler.
+     */
+    public function all(): array
+    {
+        return $this->collectors;
+    }
+
     /**
      * Returns true if a Collector for the given name exists.
      *
@@ -207,36 +238,5 @@ class Profiler implements ResetInterface
     public function has(string $name): bool
     {
         return isset($this->collectors[$name]);
-    }
-
-    /**
-     * Gets a Collector by name.
-     *
-     * @param string $name A collector name
-     *
-     * @throws \InvalidArgumentException if the collector does not exist
-     */
-    public function get(string $name): DataCollectorInterface
-    {
-        if (!isset($this->collectors[$name])) {
-            throw new \InvalidArgumentException(sprintf('Collector "%s" does not exist.', $name));
-        }
-
-        return $this->collectors[$name];
-    }
-
-    private function getTimestamp(?string $value): ?int
-    {
-        if (null === $value || '' === $value) {
-            return null;
-        }
-
-        try {
-            $value = new \DateTime(is_numeric($value) ? '@'.$value : $value);
-        } catch (\Exception) {
-            return null;
-        }
-
-        return $value->getTimestamp();
     }
 }

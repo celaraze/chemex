@@ -232,6 +232,7 @@ any substring.
 Replace/provide rules should not be considered here.
 
 It must return an array of package names:
+
 ```json
 {
     "packageNames": [
@@ -432,8 +433,11 @@ GitHub API. But unlike using the `git` driver directly, Composer will still
 attempt to use github's zip files.
 
 Please note:
+
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
-* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
+* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to
+  install the same package with drivers, remember to launch the command `composer clearcache` followed by the
+  command `composer update` to update Composer cache and install the package from dist.
 * VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
 
 #### Bitbucket Driver Configuration
@@ -553,8 +557,8 @@ Typically, you would leave the source part off, as you don't really need it.
 >
 > - Composer will not update the package unless you change the `version` field.
 > - Composer will not update the commit references, so if you use `master` as
->   reference you will have to delete the package to force an update, and will
->   have to deal with an unstable lock file.
+    > reference you will have to delete the package to force an update, and will
+    > have to deal with an unstable lock file.
 
 The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
 
@@ -665,6 +669,7 @@ you to depend on a local directory, either absolute or relative. This can be
 especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
+
 ```
 ...
 ├── apps
@@ -759,6 +764,7 @@ You can configure the way the package's dist reference (which appears in
 the composer.lock file) is built.
 
 The following modes exist:
+
 - `none` - reference will be always null. This can help reduce lock file conflicts
   in the lock file but reduces clarity as to when the last update happened and whether
   the package is in the latest state.

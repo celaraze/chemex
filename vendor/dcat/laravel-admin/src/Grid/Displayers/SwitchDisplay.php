@@ -8,11 +8,6 @@ class SwitchDisplay extends AbstractDisplayer
 {
     protected $color;
 
-    public function color($color)
-    {
-        $this->color = Admin::color()->get($color);
-    }
-
     public function display(string $color = '', $refresh = false)
     {
         if ($color instanceof \Closure) {
@@ -32,8 +27,13 @@ class SwitchDisplay extends AbstractDisplayer
         );
     }
 
+    public function color($color)
+    {
+        $this->color = Admin::color()->get($color);
+    }
+
     protected function url()
     {
-        return $this->resource().'/'.$this->getKey();
+        return $this->resource() . '/' . $this->getKey();
     }
 }

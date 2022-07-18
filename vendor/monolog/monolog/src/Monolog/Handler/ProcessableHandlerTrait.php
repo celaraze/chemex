@@ -11,8 +11,8 @@
 
 namespace Monolog\Handler;
 
-use Monolog\ResettableInterface;
 use Monolog\Processor\ProcessorInterface;
+use Monolog\ResettableInterface;
 
 /**
  * Helper trait for implementing ProcessableInterface

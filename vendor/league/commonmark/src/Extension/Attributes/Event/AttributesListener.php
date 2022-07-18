@@ -32,7 +32,7 @@ final class AttributesListener
     public function processDocument(DocumentParsedEvent $event): void
     {
         foreach ($event->getDocument()->iterator() as $node) {
-            if (! ($node instanceof Attributes || $node instanceof AttributesInline)) {
+            if (!($node instanceof Attributes || $node instanceof AttributesInline)) {
                 continue;
             }
 
@@ -64,16 +64,16 @@ final class AttributesListener
      */
     private static function findTargetAndDirection($node): array
     {
-        $target    = null;
+        $target = null;
         $direction = null;
-        $previous  = $next = $node;
+        $previous = $next = $node;
         while (true) {
             $previous = self::getPrevious($previous);
-            $next     = self::getNext($next);
+            $next = self::getNext($next);
 
             if ($previous === null && $next === null) {
-                if (! $node->parent() instanceof FencedCode) {
-                    $target    = $node->parent();
+                if (!$node->parent() instanceof FencedCode) {
+                    $target = $node->parent();
                     $direction = self::DIRECTION_SUFFIX;
                 }
 
@@ -84,15 +84,15 @@ final class AttributesListener
                 continue;
             }
 
-            if ($previous !== null && ! self::isAttributesNode($previous)) {
-                $target    = $previous;
+            if ($previous !== null && !self::isAttributesNode($previous)) {
+                $target = $previous;
                 $direction = self::DIRECTION_SUFFIX;
 
                 break;
             }
 
-            if ($next !== null && ! self::isAttributesNode($next)) {
-                $target    = $next;
+            if ($next !== null && !self::isAttributesNode($next)) {
+                $target = $next;
                 $direction = self::DIRECTION_PREFIX;
 
                 break;

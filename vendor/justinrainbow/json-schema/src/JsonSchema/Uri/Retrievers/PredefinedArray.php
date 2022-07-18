@@ -28,12 +28,12 @@ class PredefinedArray extends AbstractRetriever
     /**
      * Constructor
      *
-     * @param array  $schemas
+     * @param array $schemas
      * @param string $contentType
      */
     public function __construct(array $schemas, $contentType = Validator::SCHEMA_MEDIA_TYPE)
     {
-        $this->schemas     = $schemas;
+        $this->schemas = $schemas;
         $this->contentType = $contentType;
     }
 

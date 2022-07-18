@@ -1,5 +1,5 @@
-
 /* @see https://github.com/lodash/lodash/blob/master/debounce.js */
+
 /* @see https://www.lodashjs.com/docs/lodash.debounce */
 function debounce(func, wait, options) {
     var lastArgs,
@@ -139,6 +139,7 @@ function debounce(func, wait, options) {
         }
         return result
     }
+
     debounced.cancel = cancel;
     debounced.flush = flush;
     debounced.pending = pending;

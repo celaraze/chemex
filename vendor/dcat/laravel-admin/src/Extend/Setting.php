@@ -35,7 +35,7 @@ abstract class Setting extends Form implements LazyRenderable
     /**
      * 处理请求.
      *
-     * @param  array  $input
+     * @param array $input
      * @return \Dcat\Admin\Http\JsonResponse
      */
     public function handle(array $input)
@@ -46,9 +46,21 @@ abstract class Setting extends Form implements LazyRenderable
     }
 
     /**
+     * @return ServiceProvider
+     */
+    public function extension()
+    {
+        if (!empty($this->payload['_extension_'])) {
+            return Admin::extension()->get($this->payload['_extension_']);
+        }
+
+        return $this->extension;
+    }
+
+    /**
      * 格式化配置信息.
      *
-     * @param  array  $input
+     * @param array $input
      * @return array
      */
     protected function formatInput(array $input)
@@ -73,19 +85,6 @@ abstract class Setting extends Form implements LazyRenderable
     }
 
     /**
-     * 翻译.
-     *
-     * @param  string  $key
-     * @param  array  $replace
-     * @param  null  $locale
-     * @return array|string|null
-     */
-    protected function trans($key, $replace = [], $locale = null)
-    {
-        return $this->extension()->trans($key, $replace, $locale);
-    }
-
-    /**
      * 填充表单数据.
      *
      * @return array
@@ -96,14 +95,15 @@ abstract class Setting extends Form implements LazyRenderable
     }
 
     /**
-     * @return ServiceProvider
+     * 翻译.
+     *
+     * @param string $key
+     * @param array $replace
+     * @param null $locale
+     * @return array|string|null
      */
-    public function extension()
+    protected function trans($key, $replace = [], $locale = null)
     {
-        if (! empty($this->payload['_extension_'])) {
-            return Admin::extension()->get($this->payload['_extension_']);
-        }
-
-        return $this->extension;
+        return $this->extension()->trans($key, $replace, $locale);
     }
 }

@@ -34,29 +34,10 @@ final class AdjacentTextMerger
         self::mergeTextNodesInclusive($node->firstChild(), $node->lastChild());
     }
 
-    public static function mergeTextNodesBetweenExclusive(Node $fromNode, Node $toNode): void
-    {
-        // No nodes between them
-        if ($fromNode === $toNode || $fromNode->next() === $toNode || $fromNode->next() === null || $toNode->previous() === null) {
-            return;
-        }
-
-        /** @psalm-suppress PossiblyNullArgument */
-        self::mergeTextNodesInclusive($fromNode->next(), $toNode->previous());
-    }
-
-    public static function mergeWithDirectlyAdjacentNodes(Text $node): void
-    {
-        $start = ($previous = $node->previous()) instanceof Text ? $previous : $node;
-        $end   = ($next = $node->next()) instanceof Text ? $next : $node;
-
-        self::mergeIfNeeded($start, $end);
-    }
-
     private static function mergeTextNodesInclusive(Node $fromNode, Node $toNode): void
     {
         $first = null;
-        $last  = null;
+        $last = null;
 
         $node = $fromNode;
         while ($node !== null) {
@@ -69,7 +50,7 @@ final class AdjacentTextMerger
             } else {
                 self::mergeIfNeeded($first, $last);
                 $first = null;
-                $last  = null;
+                $last = null;
             }
 
             if ($node === $toNode) {
@@ -94,12 +75,31 @@ final class AdjacentTextMerger
         $node = $first->next();
         $stop = $last->next();
         while ($node !== $stop && $node instanceof Text) {
-            $s     .= $node->getLiteral();
+            $s .= $node->getLiteral();
             $unlink = $node;
-            $node   = $node->next();
+            $node = $node->next();
             $unlink->detach();
         }
 
         $first->setLiteral($s);
+    }
+
+    public static function mergeTextNodesBetweenExclusive(Node $fromNode, Node $toNode): void
+    {
+        // No nodes between them
+        if ($fromNode === $toNode || $fromNode->next() === $toNode || $fromNode->next() === null || $toNode->previous() === null) {
+            return;
+        }
+
+        /** @psalm-suppress PossiblyNullArgument */
+        self::mergeTextNodesInclusive($fromNode->next(), $toNode->previous());
+    }
+
+    public static function mergeWithDirectlyAdjacentNodes(Text $node): void
+    {
+        $start = ($previous = $node->previous()) instanceof Text ? $previous : $node;
+        $end = ($next = $node->next()) instanceof Text ? $next : $node;
+
+        self::mergeIfNeeded($start, $end);
     }
 }

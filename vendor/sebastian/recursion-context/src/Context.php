@@ -7,10 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\RecursionContext;
 
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
+use SplObjectStorage;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -18,7 +18,8 @@ use function is_array;
 use function is_object;
 use function random_int;
 use function spl_object_hash;
-use SplObjectStorage;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /**
  * A context containing previously processed arrays and objects
@@ -41,7 +42,7 @@ final class Context
      */
     public function __construct()
     {
-        $this->arrays  = [];
+        $this->arrays = [];
         $this->objects = new SplObjectStorage;
     }
 
@@ -63,13 +64,13 @@ final class Context
      *
      * @param array|object $value the value to add
      *
-     * @throws InvalidArgumentException Thrown if $value is not an array or object
-     *
      * @return bool|int|string the ID of the stored value, either as a string or integer
      *
      * @psalm-template T
      * @psalm-param T $value
      * @param-out T $value
+     * @throws InvalidArgumentException Thrown if $value is not an array or object
+     *
      */
     public function add(&$value)
     {
@@ -79,34 +80,6 @@ final class Context
 
         if (is_object($value)) {
             return $this->addObject($value);
-        }
-
-        throw new InvalidArgumentException(
-            'Only arrays and objects are supported'
-        );
-    }
-
-    /**
-     * Checks if the given value exists within the context.
-     *
-     * @param array|object $value the value to check
-     *
-     * @throws InvalidArgumentException Thrown if $value is not an array or object
-     *
-     * @return false|int|string the string or integer ID of the stored value if it has already been seen, or false if the value is not stored
-     *
-     * @psalm-template T
-     * @psalm-param T $value
-     * @param-out T $value
-     */
-    public function contains(&$value)
-    {
-        if (is_array($value)) {
-            return $this->containsArray($value);
-        }
-
-        if (is_object($value)) {
-            return $this->containsObject($value);
         }
 
         throw new InvalidArgumentException(
@@ -125,7 +98,7 @@ final class Context
             return $key;
         }
 
-        $key            = count($this->arrays);
+        $key = count($this->arrays);
         $this->arrays[] = &$array;
 
         if (!isset($array[PHP_INT_MAX]) && !isset($array[PHP_INT_MAX - 1])) {
@@ -149,6 +122,16 @@ final class Context
     }
 
     /**
+     * @return false|int
+     */
+    private function containsArray(array &$array)
+    {
+        $end = array_slice($array, -2);
+
+        return isset($end[1]) && $end[1] === $this->objects ? $end[0] : false;
+    }
+
+    /**
      * @param object $object
      */
     private function addObject($object): string
@@ -161,13 +144,31 @@ final class Context
     }
 
     /**
-     * @return false|int
+     * Checks if the given value exists within the context.
+     *
+     * @param array|object $value the value to check
+     *
+     * @return false|int|string the string or integer ID of the stored value if it has already been seen, or false if the value is not stored
+     *
+     * @psalm-template T
+     * @psalm-param T $value
+     * @param-out T $value
+     * @throws InvalidArgumentException Thrown if $value is not an array or object
+     *
      */
-    private function containsArray(array &$array)
+    public function contains(&$value)
     {
-        $end = array_slice($array, -2);
+        if (is_array($value)) {
+            return $this->containsArray($value);
+        }
 
-        return isset($end[1]) && $end[1] === $this->objects ? $end[0] : false;
+        if (is_object($value)) {
+            return $this->containsObject($value);
+        }
+
+        throw new InvalidArgumentException(
+            'Only arrays and objects are supported'
+        );
     }
 
     /**

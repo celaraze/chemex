@@ -59,20 +59,26 @@ class MemcachedSessionHandler extends AbstractSessionHandler
         return $this->memcached->quit();
     }
 
+    public function updateTimestamp(string $sessionId, string $data): bool
+    {
+        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
+        $this->memcached->touch($this->prefix . $sessionId, time() + (int)$ttl);
+
+        return true;
+    }
+
+    public function gc(int $maxlifetime): int|false
+    {
+        // not required here because memcached will auto expire the records anyhow.
+        return 0;
+    }
+
     /**
      * {@inheritdoc}
      */
     protected function doRead(string $sessionId): string
     {
-        return $this->memcached->get($this->prefix.$sessionId) ?: '';
-    }
-
-    public function updateTimestamp(string $sessionId, string $data): bool
-    {
-        $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
-        $this->memcached->touch($this->prefix.$sessionId, time() + (int) $ttl);
-
-        return true;
+        return $this->memcached->get($this->prefix . $sessionId) ?: '';
     }
 
     /**
@@ -82,7 +88,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     {
         $ttl = ($this->ttl instanceof \Closure ? ($this->ttl)() : $this->ttl) ?? ini_get('session.gc_maxlifetime');
 
-        return $this->memcached->set($this->prefix.$sessionId, $data, time() + (int) $ttl);
+        return $this->memcached->set($this->prefix . $sessionId, $data, time() + (int)$ttl);
     }
 
     /**
@@ -90,15 +96,9 @@ class MemcachedSessionHandler extends AbstractSessionHandler
      */
     protected function doDestroy(string $sessionId): bool
     {
-        $result = $this->memcached->delete($this->prefix.$sessionId);
+        $result = $this->memcached->delete($this->prefix . $sessionId);
 
         return $result || \Memcached::RES_NOTFOUND == $this->memcached->getResultCode();
-    }
-
-    public function gc(int $maxlifetime): int|false
-    {
-        // not required here because memcached will auto expire the records anyhow.
-        return 0;
     }
 
     /**

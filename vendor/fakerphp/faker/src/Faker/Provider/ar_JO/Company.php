@@ -27,9 +27,9 @@ class Company extends \Faker\Provider\Company
     protected static $companySuffix = ['وأولاده', 'للمساهمة المحدودة', ' ذ.م.م', 'مساهمة عامة', 'وشركائه'];
 
     /**
+     * @return string
      * @example 'مؤسسة'
      *
-     * @return string
      */
     public function companyPrefix()
     {

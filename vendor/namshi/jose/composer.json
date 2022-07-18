@@ -2,25 +2,32 @@
     "name": "namshi/jose",
     "description": "JSON Object Signing and Encryption library for PHP.",
     "license": "MIT",
-    "keywords": ["jws", "jwt", "json", "json web token", "json web signature", "token"],
+    "keywords": [
+        "jws",
+        "jwt",
+        "json",
+        "json web token",
+        "json web signature",
+        "token"
+    ],
     "authors": [
         {
             "name": "Alessandro Nadalin",
             "email": "alessandro.nadalin@gmail.com"
         },
         {
-          "name": "Alessandro Cinelli (cirpo)",
-          "email": "alessandro.cinelli@gmail.com"
+            "name": "Alessandro Cinelli (cirpo)",
+            "email": "alessandro.cinelli@gmail.com"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Namshi\\JOSE\\":  "src/Namshi/JOSE/"
+            "Namshi\\JOSE\\": "src/Namshi/JOSE/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Namshi\\JOSE\\Test\\":  "test/Namshi/JOSE/Test/"
+            "Namshi\\JOSE\\Test\\": "test/Namshi/JOSE/Test/"
         }
     },
     "require": {

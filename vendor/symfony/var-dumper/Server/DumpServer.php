@@ -35,18 +35,11 @@ class DumpServer
     public function __construct(string $host, LoggerInterface $logger = null)
     {
         if (!str_contains($host, '://')) {
-            $host = 'tcp://'.$host;
+            $host = 'tcp://' . $host;
         }
 
         $this->host = $host;
         $this->logger = $logger;
-    }
-
-    public function start(): void
-    {
-        if (!$this->socket = stream_socket_server($this->host, $errno, $errstr)) {
-            throw new \RuntimeException(sprintf('Server start failed on "%s": ', $this->host).$errstr.' '.$errno);
-        }
     }
 
     public function listen(callable $callback): void
@@ -79,14 +72,16 @@ class DumpServer
         }
     }
 
-    public function getHost(): string
+    public function start(): void
     {
-        return $this->host;
+        if (!$this->socket = stream_socket_server($this->host, $errno, $errstr)) {
+            throw new \RuntimeException(sprintf('Server start failed on "%s": ', $this->host) . $errstr . ' ' . $errno);
+        }
     }
 
     private function getMessages(): iterable
     {
-        $sockets = [(int) $this->socket => $this->socket];
+        $sockets = [(int)$this->socket => $this->socket];
         $write = [];
 
         while (true) {
@@ -96,14 +91,19 @@ class DumpServer
             foreach ($read as $stream) {
                 if ($this->socket === $stream) {
                     $stream = stream_socket_accept($this->socket);
-                    $sockets[(int) $stream] = $stream;
+                    $sockets[(int)$stream] = $stream;
                 } elseif (feof($stream)) {
-                    unset($sockets[(int) $stream]);
+                    unset($sockets[(int)$stream]);
                     fclose($stream);
                 } else {
-                    yield (int) $stream => fgets($stream);
+                    yield (int)$stream => fgets($stream);
                 }
             }
         }
+    }
+
+    public function getHost(): string
+    {
+        return $this->host;
     }
 }

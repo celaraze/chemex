@@ -20,7 +20,7 @@ class Dropdown extends Widget
      * @var array
      */
     protected $button = [
-        'text'  => null,
+        'text' => null,
         'class' => 'btn btn-sm btn-white waves-effect',
         'style' => null,
     ];
@@ -58,13 +58,13 @@ class Dropdown extends Widget
     /**
      * Set the options of dropdown menus.
      *
-     * @param  array  $options
-     * @param  string|null  $title
+     * @param array $options
+     * @param string|null $title
      * @return $this
      */
     public function options($options = [], ?string $title = null)
     {
-        if (! $options) {
+        if (!$options) {
             return $this;
         }
 
@@ -74,22 +74,9 @@ class Dropdown extends Widget
     }
 
     /**
-     * Set the button text.
-     *
-     * @param  string|null  $text
-     * @return $this
-     */
-    public function button(?string $text)
-    {
-        $this->button['text'] = $text;
-
-        return $this;
-    }
-
-    /**
      * Set the button class.
      *
-     * @param  string  $class
+     * @param string $class
      * @return $this
      */
     public function buttonClass(?string $class)
@@ -102,7 +89,7 @@ class Dropdown extends Widget
     /**
      * Set the button style.
      *
-     * @param  string  $class
+     * @param string $class
      * @return $this
      */
     public function buttonStyle(?string $style)
@@ -112,16 +99,16 @@ class Dropdown extends Widget
         return $this;
     }
 
+    public function up()
+    {
+        return $this->direction('up');
+    }
+
     public function direction(string $direction = 'down')
     {
         $this->direction = $direction;
 
         return $this;
-    }
-
-    public function up()
-    {
-        return $this->direction('up');
     }
 
     public function down()
@@ -132,7 +119,7 @@ class Dropdown extends Widget
     /**
      * Show divider.
      *
-     * @param  string  $class
+     * @param string $class
      * @return $this
      */
     public function divider()
@@ -145,7 +132,7 @@ class Dropdown extends Widget
     /**
      * Applies the callback to the elements of the options.
      *
-     * @param  string  $class
+     * @param string $class
      * @return $this
      */
     public function map(\Closure $builder)
@@ -158,18 +145,31 @@ class Dropdown extends Widget
     /**
      * Add click event listener.
      *
-     * @param  string|null  $defaultLabel
+     * @param string|null $defaultLabel
      * @return $this
      */
     public function click(?string $defaultLabel = null)
     {
         $this->click = true;
 
-        $this->buttonId = 'dropd-'.Str::random(8);
+        $this->buttonId = 'dropd-' . Str::random(8);
 
         if ($defaultLabel !== null) {
             $this->button($defaultLabel);
         }
+
+        return $this;
+    }
+
+    /**
+     * Set the button text.
+     *
+     * @param string|null $text
+     * @return $this
+     */
+    public function button(?string $text)
+    {
+        $this->button['text'] = $text;
 
         return $this;
     }
@@ -180,6 +180,22 @@ class Dropdown extends Widget
     public function getButtonId()
     {
         return $this->buttonId;
+    }
+
+    /**
+     * @return string
+     */
+    public function render()
+    {
+        $this->addVariables([
+            'options' => $this->renderOptions(),
+            'button' => $this->button,
+            'buttonId' => $this->buttonId,
+            'click' => $this->click,
+            'direction' => $this->direction,
+        ]);
+
+        return parent::render();
     }
 
     /**
@@ -205,8 +221,8 @@ class Dropdown extends Widget
     }
 
     /**
-     * @param  mixed  $k
-     * @param  mixed  $v
+     * @param mixed $k
+     * @param mixed $v
      * @return mixed|string
      */
     protected function renderOption($k, $v)
@@ -228,21 +244,5 @@ class Dropdown extends Widget
         }
 
         return $v;
-    }
-
-    /**
-     * @return string
-     */
-    public function render()
-    {
-        $this->addVariables([
-            'options'   => $this->renderOptions(),
-            'button'    => $this->button,
-            'buttonId'  => $this->buttonId,
-            'click'     => $this->click,
-            'direction' => $this->direction,
-        ]);
-
-        return parent::render();
     }
 }

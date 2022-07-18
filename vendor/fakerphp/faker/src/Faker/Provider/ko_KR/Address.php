@@ -55,19 +55,19 @@ class Address extends \Faker\Provider\Address
     ];
 
     /**
-     * @example '서울특별시'
-     */
-    public function metropolitanCity()
-    {
-        return static::randomElement(static::$metropolitanCity);
-    }
-
-    /**
      * @example '경기도'
      */
     public static function province()
     {
         return static::randomElement(static::$province);
+    }
+
+    /**
+     * @example '서울특별시'
+     */
+    public function metropolitanCity()
+    {
+        return static::randomElement(static::$metropolitanCity);
     }
 
     /**

@@ -41,7 +41,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * Constructor
      *
      * @param JsonFile $file
-     * @param bool     $authConfig
+     * @param bool $authConfig
      */
     public function __construct(JsonFile $file, bool $authConfig = false)
     {
@@ -84,6 +84,104 @@ class JsonConfigSource implements ConfigSourceInterface
                 $config['repositories'] = array($repo => $repoConfig) + $config['repositories'];
             }
         }, $name, $config, $append);
+    }
+
+    /**
+     * @param string $method
+     * @param callable $fallback
+     * @param mixed ...$args
+     *
+     * @return void
+     */
+    private function manipulateJson(string $method, callable $fallback, ...$args): void
+    {
+        if ($this->file->exists()) {
+            if (!is_writable($this->file->getPath())) {
+                throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));
+            }
+
+            if (!Filesystem::isReadable($this->file->getPath())) {
+                throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
+            }
+
+            $contents = file_get_contents($this->file->getPath());
+        } elseif ($this->authConfig) {
+            $contents = "{\n}\n";
+        } else {
+            $contents = "{\n    \"config\": {\n    }\n}\n";
+        }
+
+        $manipulator = new JsonManipulator($contents);
+
+        $newFile = !$this->file->exists();
+
+        // override manipulator method for auth config files
+        if ($this->authConfig && $method === 'addConfigSetting') {
+            $method = 'addSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name, $args[1]);
+        } elseif ($this->authConfig && $method === 'removeConfigSetting') {
+            $method = 'removeSubNode';
+            list($mainNode, $name) = explode('.', $args[0], 2);
+            $args = array($mainNode, $name);
+        }
+
+        // try to update cleanly
+        if (call_user_func_array(array($manipulator, $method), $args)) {
+            file_put_contents($this->file->getPath(), $manipulator->getContents());
+        } else {
+            // on failed clean update, call the fallback and rewrite the whole file
+            $config = $this->file->read();
+            $this->arrayUnshiftRef($args, $config);
+            call_user_func_array($fallback, $args);
+            // avoid ending up with arrays for keys that should be objects
+            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
+                if (isset($config[$prop]) && $config[$prop] === array()) {
+                    $config[$prop] = new \stdClass;
+                }
+            }
+            foreach (array('psr-0', 'psr-4') as $prop) {
+                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === array()) {
+                    $config['autoload'][$prop] = new \stdClass;
+                }
+                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === array()) {
+                    $config['autoload-dev'][$prop] = new \stdClass;
+                }
+            }
+            foreach (array('platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'preferred-install') as $prop) {
+                if (isset($config['config'][$prop]) && $config['config'][$prop] === array()) {
+                    $config['config'][$prop] = new \stdClass;
+                }
+            }
+            $this->file->write($config);
+        }
+
+        try {
+            $this->file->validateSchema(JsonFile::LAX_SCHEMA);
+        } catch (JsonValidationException $e) {
+            // restore contents to the original state
+            file_put_contents($this->file->getPath(), $contents);
+            throw new \RuntimeException('Failed to update composer.json with a valid format, reverting to the original content. Please report an issue to us with details (command you run and a copy of your composer.json). ' . PHP_EOL . implode(PHP_EOL, $e->getErrors()), 0, $e);
+        }
+
+        if ($newFile) {
+            Silencer::call('chmod', $this->file->getPath(), 0600);
+        }
+    }
+
+    /**
+     * Prepend a reference to an element to the beginning of an array.
+     *
+     * @param mixed[] $array
+     * @param mixed $value
+     * @return int
+     */
+    private function arrayUnshiftRef(array &$array, &$value): int
+    {
+        $return = array_unshift($array, '');
+        $array[0] = &$value;
+
+        return $return;
     }
 
     /**
@@ -205,103 +303,5 @@ class JsonConfigSource implements ConfigSourceInterface
                 unset($config[$type]);
             }
         }, $type);
-    }
-
-    /**
-     * @param string $method
-     * @param callable $fallback
-     * @param mixed ...$args
-     *
-     * @return void
-     */
-    private function manipulateJson(string $method, callable $fallback, ...$args): void
-    {
-        if ($this->file->exists()) {
-            if (!is_writable($this->file->getPath())) {
-                throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));
-            }
-
-            if (!Filesystem::isReadable($this->file->getPath())) {
-                throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
-            }
-
-            $contents = file_get_contents($this->file->getPath());
-        } elseif ($this->authConfig) {
-            $contents = "{\n}\n";
-        } else {
-            $contents = "{\n    \"config\": {\n    }\n}\n";
-        }
-
-        $manipulator = new JsonManipulator($contents);
-
-        $newFile = !$this->file->exists();
-
-        // override manipulator method for auth config files
-        if ($this->authConfig && $method === 'addConfigSetting') {
-            $method = 'addSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
-            $args = array($mainNode, $name, $args[1]);
-        } elseif ($this->authConfig && $method === 'removeConfigSetting') {
-            $method = 'removeSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
-            $args = array($mainNode, $name);
-        }
-
-        // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
-            file_put_contents($this->file->getPath(), $manipulator->getContents());
-        } else {
-            // on failed clean update, call the fallback and rewrite the whole file
-            $config = $this->file->read();
-            $this->arrayUnshiftRef($args, $config);
-            call_user_func_array($fallback, $args);
-            // avoid ending up with arrays for keys that should be objects
-            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
-                if (isset($config[$prop]) && $config[$prop] === array()) {
-                    $config[$prop] = new \stdClass;
-                }
-            }
-            foreach (array('psr-0', 'psr-4') as $prop) {
-                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === array()) {
-                    $config['autoload'][$prop] = new \stdClass;
-                }
-                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === array()) {
-                    $config['autoload-dev'][$prop] = new \stdClass;
-                }
-            }
-            foreach (array('platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'preferred-install') as $prop) {
-                if (isset($config['config'][$prop]) && $config['config'][$prop] === array()) {
-                    $config['config'][$prop] = new \stdClass;
-                }
-            }
-            $this->file->write($config);
-        }
-
-        try {
-            $this->file->validateSchema(JsonFile::LAX_SCHEMA);
-        } catch (JsonValidationException $e) {
-            // restore contents to the original state
-            file_put_contents($this->file->getPath(), $contents);
-            throw new \RuntimeException('Failed to update composer.json with a valid format, reverting to the original content. Please report an issue to us with details (command you run and a copy of your composer.json). '.PHP_EOL.implode(PHP_EOL, $e->getErrors()), 0, $e);
-        }
-
-        if ($newFile) {
-            Silencer::call('chmod', $this->file->getPath(), 0600);
-        }
-    }
-
-    /**
-     * Prepend a reference to an element to the beginning of an array.
-     *
-     * @param  mixed[] $array
-     * @param  mixed $value
-     * @return int
-     */
-    private function arrayUnshiftRef(array &$array, &$value): int
-    {
-        $return = array_unshift($array, '');
-        $array[0] = &$value;
-
-        return $return;
     }
 }

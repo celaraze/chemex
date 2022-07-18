@@ -72,12 +72,12 @@ class ParseCommand extends Command implements ContextAware, PresenterAware
         $this->presenter->addCasters([
             Node::class => function (Node $node, array $a) {
                 $a = [
-                    Caster::PREFIX_VIRTUAL.'type'       => $node->getType(),
-                    Caster::PREFIX_VIRTUAL.'attributes' => $node->getAttributes(),
+                    Caster::PREFIX_VIRTUAL . 'type' => $node->getType(),
+                    Caster::PREFIX_VIRTUAL . 'attributes' => $node->getAttributes(),
                 ];
 
                 foreach ($node->getSubNodeNames() as $name) {
-                    $a[Caster::PREFIX_VIRTUAL.$name] = $node->$name;
+                    $a[Caster::PREFIX_VIRTUAL . $name] = $node->$name;
                 }
 
                 return $a;
@@ -91,16 +91,16 @@ class ParseCommand extends Command implements ContextAware, PresenterAware
     protected function configure()
     {
         $kindMsg = 'One of PhpParser\\ParserFactory constants: '
-            .\implode(', ', ParserFactory::getPossibleKinds())
-            ." (default is based on current interpreter's version).";
+            . \implode(', ', ParserFactory::getPossibleKinds())
+            . " (default is based on current interpreter's version).";
 
         $this
             ->setName('parse')
             ->setDefinition([
-            new CodeArgument('code', CodeArgument::REQUIRED, 'PHP code to parse.'),
-            new InputOption('depth', '', InputOption::VALUE_REQUIRED, 'Depth to parse.', 10),
-            new InputOption('kind', '', InputOption::VALUE_REQUIRED, $kindMsg, $this->parserFactory->getDefaultKind()),
-        ])
+                new CodeArgument('code', CodeArgument::REQUIRED, 'PHP code to parse.'),
+                new InputOption('depth', '', InputOption::VALUE_REQUIRED, 'Depth to parse.', 10),
+                new InputOption('kind', '', InputOption::VALUE_REQUIRED, $kindMsg, $this->parserFactory->getDefaultKind()),
+            ])
             ->setDescription('Parse PHP code and show the abstract syntax tree.')
             ->setHelp(
                 <<<'HELP'
@@ -123,7 +123,7 @@ HELP
     {
         $code = $input->getArgument('code');
         if (\strpos($code, '<?') === false) {
-            $code = '<?php '.$code;
+            $code = '<?php ' . $code;
         }
 
         $parserKind = $input->getOption('kind');
@@ -154,7 +154,7 @@ HELP
             }
 
             // If we got an unexpected EOF, let's try it again with a semicolon.
-            return $parser->parse($code.';');
+            return $parser->parse($code . ';');
         }
     }
 

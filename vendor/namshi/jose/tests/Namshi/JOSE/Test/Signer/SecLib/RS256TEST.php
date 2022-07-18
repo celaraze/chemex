@@ -10,8 +10,8 @@ class RS256TEST extends SecLibTestCase
     {
         parent::setup();
 
-        $this->privateKey = file_get_contents(SSL_KEYS_PATH.'private.key');
-        $this->public = file_get_contents(SSL_KEYS_PATH.'public.key');
+        $this->privateKey = file_get_contents(SSL_KEYS_PATH . 'private.key');
+        $this->public = file_get_contents(SSL_KEYS_PATH . 'public.key');
         $this->password = 'tests';
         $this->signer = new RS256();
     }

@@ -21,7 +21,7 @@ class QueuedCommand implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param  array  $data
+     * @param array $data
      * @return void
      */
     public function __construct($data)
@@ -32,7 +32,7 @@ class QueuedCommand implements ShouldQueue
     /**
      * Handle the job.
      *
-     * @param  \Illuminate\Contracts\Console\Kernel  $kernel
+     * @param \Illuminate\Contracts\Console\Kernel $kernel
      * @return void
      */
     public function handle(KernelContract $kernel)

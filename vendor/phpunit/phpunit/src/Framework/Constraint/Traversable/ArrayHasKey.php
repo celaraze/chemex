@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
+use ArrayAccess;
 use function array_key_exists;
 use function is_array;
-use ArrayAccess;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -29,16 +30,6 @@ final class ArrayHasKey extends Constraint
     public function __construct($key)
     {
         $this->key = $key;
-    }
-
-    /**
-     * Returns a string representation of the constraint.
-     *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    public function toString(): string
-    {
-        return 'has the key ' . $this->exporter()->export($this->key);
     }
 
     /**
@@ -73,5 +64,15 @@ final class ArrayHasKey extends Constraint
     protected function failureDescription($other): string
     {
         return 'an array ' . $this->toString();
+    }
+
+    /**
+     * Returns a string representation of the constraint.
+     *
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function toString(): string
+    {
+        return 'has the key ' . $this->exporter()->export($this->key);
     }
 }

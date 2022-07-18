@@ -7,7 +7,7 @@ interface ExceptionHandler
     /**
      * 处理异常.
      *
-     * @param  \Throwable  $e
+     * @param \Throwable $e
      * @return array|string|void
      */
     public function handle(\Throwable $e);
@@ -15,7 +15,7 @@ interface ExceptionHandler
     /**
      * 显示异常信息.
      *
-     * @param  \Throwable  $exception
+     * @param \Throwable $exception
      * @return array|string|void
      */
     public function render(\Throwable $exception);
@@ -23,7 +23,7 @@ interface ExceptionHandler
     /**
      * 上报异常信息.
      *
-     * @param  \Throwable  $e
+     * @param \Throwable $e
      */
     public function report(\Throwable $e);
 }

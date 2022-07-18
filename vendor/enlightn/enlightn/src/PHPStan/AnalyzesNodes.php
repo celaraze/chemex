@@ -25,38 +25,24 @@ trait AnalyzesNodes
      * @param \PHPStan\Analyser\Scope $scope
      * @return bool
      */
-    protected function isRequestArrayData(Expr $expr, Scope $scope)
-    {
-        $logic = (new RequestArrayDataType(new UnionType([new StringType, new IntegerType]), new RequestDataType))
-            ->canBeSuperTypeOf($scope->getType($expr));
-
-        return $logic->yes() || $logic->maybe();
-    }
-
-    /**
-     * Determine whether the Expr was called on a Request instance.
-     *
-     * @param \PhpParser\Node\Expr $expr
-     * @param \PHPStan\Analyser\Scope $scope
-     * @return bool
-     */
-    protected function isRequestData(Expr $expr, Scope $scope)
-    {
-        $logic = (new RequestDataType)->canBeSuperTypeOf($scope->getType($expr));
-
-        return $logic->yes() || $logic->maybe();
-    }
-
-    /**
-     * Determine whether the Expr was called on a Request instance.
-     *
-     * @param \PhpParser\Node\Expr $expr
-     * @param \PHPStan\Analyser\Scope $scope
-     * @return bool
-     */
     protected function isCalledOnRequest(Expr $expr, Scope $scope)
     {
         return $this->isCalledOn($expr, $scope, Request::class);
+    }
+
+    /**
+     * Determine whether the Expr was called on a class instance.
+     *
+     * @param \PhpParser\Node\Expr $expr
+     * @param \PHPStan\Analyser\Scope $scope
+     * @param string $className
+     * @return bool
+     */
+    protected function isCalledOn(Expr $expr, Scope $scope, string $className)
+    {
+        $calledOnType = $scope->getType($expr);
+
+        return (new ObjectType($className))->isSuperTypeOf($calledOnType)->yes();
     }
 
     /**
@@ -83,6 +69,40 @@ trait AnalyzesNodes
     }
 
     /**
+     * Recursively analyze if any of the subnodes satisfy the callback condition.
+     * If the callback returns true, it will return true. False will continue searching. Null will stop recursion.
+     *
+     * @param \PhpParser\Node $node
+     * @param \PHPStan\Analyser\Scope $scope
+     * @param callable $callback
+     * @return bool
+     */
+    protected function analyzeRecursively(Node $node, Scope $scope, $callback)
+    {
+        if ($result = call_user_func($callback, $node, $scope)) {
+            return true;
+        }
+
+        if (is_null($result)) {
+            // Stop the recursion here. Do not check subnodes.
+            return false;
+        }
+
+        foreach ($node->getSubNodeNames() as $subNodeName) {
+            $subNodes = Arr::wrap($node->{$subNodeName});
+
+            foreach ($subNodes as $subNode) {
+                if ($subNode instanceof Node
+                    && ($result = $this->analyzeRecursively($subNode, $scope, $callback))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param \PhpParser\Node $node
      * @param \PHPStan\Analyser\Scope $scope
      * @return bool
@@ -98,18 +118,32 @@ trait AnalyzesNodes
     }
 
     /**
-     * Determine whether the Expr was called on a class instance.
+     * Determine whether the Expr was called on a Request instance.
      *
      * @param \PhpParser\Node\Expr $expr
      * @param \PHPStan\Analyser\Scope $scope
-     * @param string $className
      * @return bool
      */
-    protected function isCalledOn(Expr $expr, Scope $scope, string $className)
+    protected function isRequestData(Expr $expr, Scope $scope)
     {
-        $calledOnType = $scope->getType($expr);
+        $logic = (new RequestDataType)->canBeSuperTypeOf($scope->getType($expr));
 
-        return (new ObjectType($className))->isSuperTypeOf($calledOnType)->yes();
+        return $logic->yes() || $logic->maybe();
+    }
+
+    /**
+     * Determine whether the Expr was called on a Request instance.
+     *
+     * @param \PhpParser\Node\Expr $expr
+     * @param \PHPStan\Analyser\Scope $scope
+     * @return bool
+     */
+    protected function isRequestArrayData(Expr $expr, Scope $scope)
+    {
+        $logic = (new RequestArrayDataType(new UnionType([new StringType, new IntegerType]), new RequestDataType))
+            ->canBeSuperTypeOf($scope->getType($expr));
+
+        return $logic->yes() || $logic->maybe();
     }
 
     /**
@@ -149,47 +183,13 @@ trait AnalyzesNodes
         return $node instanceof Node\Scalar\String_ && Str::contains($node->value, $search);
     }
 
-    /**
-     * Recursively analyze if any of the subnodes satisfy the callback condition.
-     * If the callback returns true, it will return true. False will continue searching. Null will stop recursion.
-     *
-     * @param \PhpParser\Node $node
-     * @param \PHPStan\Analyser\Scope $scope
-     * @param callable $callback
-     * @return bool
-     */
-    protected function analyzeRecursively(Node $node, Scope $scope, $callback)
+    protected function allBlacklistedRequestMethods()
     {
-        if ($result = call_user_func($callback, $node, $scope)) {
-            return true;
-        }
-
-        if (is_null($result)) {
-            // Stop the recursion here. Do not check subnodes.
-            return false;
-        }
-
-        foreach ($node->getSubNodeNames() as $subNodeName) {
-            $subNodes = Arr::wrap($node->{$subNodeName});
-
-            foreach ($subNodes as $subNode) {
-                if ($subNode instanceof Node
-                    && ($result = $this->analyzeRecursively($subNode, $scope, $callback))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return array_merge($this->blacklistedRequestDataMethods(), ['all', 'except']);
     }
 
     protected function blacklistedRequestDataMethods()
     {
         return ['input', 'get', 'post', 'query', 'old', 'cookie', 'header'];
-    }
-
-    protected function allBlacklistedRequestMethods()
-    {
-        return array_merge($this->blacklistedRequestDataMethods(), ['all', 'except']);
     }
 }

@@ -37,6 +37,59 @@ class Role extends Model
     }
 
     /**
+     * Get id of the permission by id.
+     *
+     * @param array $roleIds
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getPermissionId(array $roleIds)
+    {
+        if (!$roleIds) {
+            return collect();
+        }
+        $related = config('admin.database.role_permissions_table');
+
+        $model = new static();
+        $keyName = $model->getKeyName();
+
+        return $model->newQuery()
+            ->leftJoin($related, $keyName, '=', 'role_id')
+            ->whereIn($keyName, $roleIds)
+            ->get(['permission_id', 'role_id'])
+            ->groupBy('role_id')
+            ->map(function ($v) {
+                $v = $v instanceof Arrayable ? $v->toArray() : $v;
+
+                return array_column($v, 'permission_id');
+            });
+    }
+
+    /**
+     * @param string $slug
+     * @return bool
+     */
+    public static function isAdministrator(?string $slug)
+    {
+        return $slug === static::ADMINISTRATOR;
+    }
+
+    /**
+     * Detach models from the relationship.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($model) {
+            $model->administrators()->detach();
+
+            $model->permissions()->detach();
+        });
+    }
+
+    /**
      * A role belongs to many users.
      *
      * @return BelongsToMany
@@ -77,6 +130,17 @@ class Role extends Model
     }
 
     /**
+     * Check user has no permission.
+     *
+     * @param $permission
+     * @return bool
+     */
+    public function cannot(?string $permission): bool
+    {
+        return !$this->can($permission);
+    }
+
+    /**
      * Check user has permission.
      *
      * @param $permission
@@ -85,69 +149,5 @@ class Role extends Model
     public function can(?string $permission): bool
     {
         return $this->permissions()->where('slug', $permission)->exists();
-    }
-
-    /**
-     * Check user has no permission.
-     *
-     * @param $permission
-     * @return bool
-     */
-    public function cannot(?string $permission): bool
-    {
-        return ! $this->can($permission);
-    }
-
-    /**
-     * Get id of the permission by id.
-     *
-     * @param  array  $roleIds
-     * @return \Illuminate\Support\Collection
-     */
-    public static function getPermissionId(array $roleIds)
-    {
-        if (! $roleIds) {
-            return collect();
-        }
-        $related = config('admin.database.role_permissions_table');
-
-        $model = new static();
-        $keyName = $model->getKeyName();
-
-        return $model->newQuery()
-            ->leftJoin($related, $keyName, '=', 'role_id')
-            ->whereIn($keyName, $roleIds)
-            ->get(['permission_id', 'role_id'])
-            ->groupBy('role_id')
-            ->map(function ($v) {
-                $v = $v instanceof Arrayable ? $v->toArray() : $v;
-
-                return array_column($v, 'permission_id');
-            });
-    }
-
-    /**
-     * @param  string  $slug
-     * @return bool
-     */
-    public static function isAdministrator(?string $slug)
-    {
-        return $slug === static::ADMINISTRATOR;
-    }
-
-    /**
-     * Detach models from the relationship.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($model) {
-            $model->administrators()->detach();
-
-            $model->permissions()->detach();
-        });
     }
 }

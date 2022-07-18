@@ -9,33 +9,29 @@ use Throwable;
 class CacheStatusAnalyzer extends ReliabilityAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = "Your application cache is working.";
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
     /**
      * The current disk usage (in percentage).
      *

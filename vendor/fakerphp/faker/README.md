@@ -7,9 +7,12 @@
 [![Type Coverage](https://shepherd.dev/github/FakerPHP/Faker/coverage.svg)](https://shepherd.dev/github/FakerPHP/Faker)
 [![Code Coverage](https://codecov.io/gh/FakerPHP/Faker/branch/main/graph/badge.svg)](https://codecov.io/gh/FakerPHP/Faker)
 
-Faker is a PHP library that generates fake data for you. Whether you need to bootstrap your database, create good-looking XML documents, fill-in your persistence to stress test it, or anonymize data taken from a production service, Faker is for you.
+Faker is a PHP library that generates fake data for you. Whether you need to bootstrap your database, create
+good-looking XML documents, fill-in your persistence to stress test it, or anonymize data taken from a production
+service, Faker is for you.
 
-It's heavily inspired by Perl's [Data::Faker](https://metacpan.org/pod/Data::Faker), and by Ruby's [Faker](https://rubygems.org/gems/faker).
+It's heavily inspired by Perl's [Data::Faker](https://metacpan.org/pod/Data::Faker), and by
+Ruby's [Faker](https://rubygems.org/gems/faker).
 
 ## Getting Started
 
@@ -27,7 +30,8 @@ Full documentation can be found over on [fakerphp.github.io](https://fakerphp.gi
 
 ### Basic Usage
 
-Use `Faker\Factory::create()` to create and initialize a Faker generator, which can generate data by accessing methods named after the type of data you want.
+Use `Faker\Factory::create()` to create and initialize a Faker generator, which can generate data by accessing methods
+named after the type of data you want.
 
 ```php
 <?php
@@ -44,7 +48,8 @@ echo $faker->text();
 // 'Numquam ut mollitia at consequuntur inventore dolorem.'
 ```
 
-Each call to `$faker->name()` yields a different (random) result. This is because Faker uses `__call()` magic, and forwards `Faker\Generator->$method()` calls to `Faker\Generator->format($method, $attributes)`.
+Each call to `$faker->name()` yields a different (random) result. This is because Faker uses `__call()` magic, and
+forwards `Faker\Generator->$method()` calls to `Faker\Generator->format($method, $attributes)`.
 
 ```php
 <?php

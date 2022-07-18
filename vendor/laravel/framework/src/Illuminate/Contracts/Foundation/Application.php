@@ -16,7 +16,7 @@ interface Application extends Container
     /**
      * Get the base path of the Laravel installation.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function basePath($path = '');
@@ -24,7 +24,7 @@ interface Application extends Container
     /**
      * Get the path to the bootstrap directory.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function bootstrapPath($path = '');
@@ -32,7 +32,7 @@ interface Application extends Container
     /**
      * Get the path to the application configuration files.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function configPath($path = '');
@@ -40,7 +40,7 @@ interface Application extends Container
     /**
      * Get the path to the database directory.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function databasePath($path = '');
@@ -48,7 +48,7 @@ interface Application extends Container
     /**
      * Get the path to the resources directory.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function resourcePath($path = '');
@@ -56,7 +56,7 @@ interface Application extends Container
     /**
      * Get the path to the storage directory.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function storagePath($path = '');
@@ -64,7 +64,7 @@ interface Application extends Container
     /**
      * Get or check the current application environment.
      *
-     * @param  string|array  $environments
+     * @param string|array $environments
      * @return string|bool
      */
     public function environment(...$environments);
@@ -107,8 +107,8 @@ interface Application extends Container
     /**
      * Register a service provider with the application.
      *
-     * @param  \Illuminate\Support\ServiceProvider|string  $provider
-     * @param  bool  $force
+     * @param \Illuminate\Support\ServiceProvider|string $provider
+     * @param bool $force
      * @return \Illuminate\Support\ServiceProvider
      */
     public function register($provider, $force = false);
@@ -116,8 +116,8 @@ interface Application extends Container
     /**
      * Register a deferred provider and service.
      *
-     * @param  string  $provider
-     * @param  string|null  $service
+     * @param string $provider
+     * @param string|null $service
      * @return void
      */
     public function registerDeferredProvider($provider, $service = null);
@@ -125,7 +125,7 @@ interface Application extends Container
     /**
      * Resolve a service provider instance from the class name.
      *
-     * @param  string  $provider
+     * @param string $provider
      * @return \Illuminate\Support\ServiceProvider
      */
     public function resolveProvider($provider);
@@ -140,7 +140,7 @@ interface Application extends Container
     /**
      * Register a new boot listener.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return void
      */
     public function booting($callback);
@@ -148,7 +148,7 @@ interface Application extends Container
     /**
      * Register a new "booted" listener.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return void
      */
     public function booted($callback);
@@ -156,7 +156,7 @@ interface Application extends Container
     /**
      * Run the given array of bootstrap classes.
      *
-     * @param  array  $bootstrappers
+     * @param array $bootstrappers
      * @return void
      */
     public function bootstrapWith(array $bootstrappers);
@@ -180,7 +180,7 @@ interface Application extends Container
     /**
      * Get the registered service provider instances if any exist.
      *
-     * @param  \Illuminate\Support\ServiceProvider|string  $provider
+     * @param \Illuminate\Support\ServiceProvider|string $provider
      * @return array
      */
     public function getProviders($provider);
@@ -202,7 +202,7 @@ interface Application extends Container
     /**
      * Set the current application locale.
      *
-     * @param  string  $locale
+     * @param string $locale
      * @return void
      */
     public function setLocale($locale);
@@ -217,7 +217,7 @@ interface Application extends Container
     /**
      * Register a terminating callback with the application.
      *
-     * @param  callable|string  $callback
+     * @param callable|string $callback
      * @return \Illuminate\Contracts\Foundation\Application
      */
     public function terminating($callback);

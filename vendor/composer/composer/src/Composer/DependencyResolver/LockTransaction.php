@@ -59,6 +59,7 @@ class LockTransaction extends Transaction
     }
 
     // TODO make this a bit prettier instead of the two text indexes?
+
     /**
      * @return void
      */
@@ -101,6 +102,7 @@ class LockTransaction extends Transaction
     }
 
     // TODO additionalFixedRepository needs to be looked at here as well?
+
     /**
      * @param bool $devMode
      * @param bool $updateMirrors

@@ -29,7 +29,7 @@ use League\Config\ConfigurationInterface;
 final class HeadingPermalinkProcessor implements EnvironmentAwareInterface
 {
     public const INSERT_BEFORE = 'before';
-    public const INSERT_AFTER  = 'after';
+    public const INSERT_AFTER = 'after';
 
     /** @psalm-readonly-allow-private-mutation */
     private TextNormalizerInterface $slugNormalizer;
@@ -39,16 +39,16 @@ final class HeadingPermalinkProcessor implements EnvironmentAwareInterface
 
     public function setEnvironment(EnvironmentInterface $environment): void
     {
-        $this->config         = $environment->getConfiguration();
+        $this->config = $environment->getConfiguration();
         $this->slugNormalizer = $environment->getSlugNormalizer();
     }
 
     public function __invoke(DocumentParsedEvent $e): void
     {
-        $min = (int) $this->config->get('heading_permalink/min_heading_level');
-        $max = (int) $this->config->get('heading_permalink/max_heading_level');
+        $min = (int)$this->config->get('heading_permalink/min_heading_level');
+        $max = (int)$this->config->get('heading_permalink/max_heading_level');
 
-        $slugLength = (int) $this->config->get('slug_normalizer/max_length');
+        $slugLength = (int)$this->config->get('slug_normalizer/max_length');
 
         foreach ($e->getDocument()->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $node) {
             if ($node instanceof Heading && $node->getLevel() >= $min && $node->getLevel() <= $max) {

@@ -28,38 +28,22 @@ class Card extends Widget
         $this->content($content);
 
         $this->class('card');
-        $this->id('card-'.Str::random(8));
+        $this->id('card-' . Str::random(8));
     }
 
     /**
+     * @param string $title
      * @return $this
      */
-    public function withHeaderBorder()
+    public function title($title)
     {
-        $this->divider = true;
+        $this->title = $title;
 
         return $this;
     }
 
     /**
-     * 设置卡片间距.
-     *
-     * @param  string  $padding
-     */
-    public function padding(string $padding)
-    {
-        $this->padding = 'padding:'.$padding;
-
-        return $this;
-    }
-
-    public function noPadding()
-    {
-        return $this->padding('0');
-    }
-
-    /**
-     * @param  string|\Closure|Renderable|LazyWidget  $content
+     * @param string|\Closure|Renderable|LazyWidget $content
      * @return $this
      */
     public function content($content)
@@ -74,7 +58,34 @@ class Card extends Widget
     }
 
     /**
-     * @param  string  $content
+     * @return $this
+     */
+    public function withHeaderBorder()
+    {
+        $this->divider = true;
+
+        return $this;
+    }
+
+    public function noPadding()
+    {
+        return $this->padding('0');
+    }
+
+    /**
+     * 设置卡片间距.
+     *
+     * @param string $padding
+     */
+    public function padding(string $padding)
+    {
+        $this->padding = 'padding:' . $padding;
+
+        return $this;
+    }
+
+    /**
+     * @param string $content
      * @return $this
      */
     public function footer($content)
@@ -85,18 +96,7 @@ class Card extends Widget
     }
 
     /**
-     * @param  string  $title
-     * @return $this
-     */
-    public function title($title)
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * @param  string|Renderable|\Closure  $content
+     * @param string|Renderable|\Closure $content
      * @return $this
      */
     public function tool($content)
@@ -112,13 +112,13 @@ class Card extends Widget
     public function defaultVariables()
     {
         return [
-            'title'      => $this->title,
-            'content'    => $this->toString($this->content),
-            'footer'     => $this->toString($this->footer),
-            'tools'      => $this->tools,
+            'title' => $this->title,
+            'content' => $this->toString($this->content),
+            'footer' => $this->toString($this->footer),
+            'tools' => $this->tools,
             'attributes' => $this->formatHtmlAttributes(),
-            'padding'    => $this->padding,
-            'divider'    => $this->divider,
+            'padding' => $this->padding,
+            'divider' => $this->divider,
         ];
     }
 }

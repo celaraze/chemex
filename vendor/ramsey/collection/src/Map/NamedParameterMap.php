@@ -17,7 +17,6 @@ namespace Ramsey\Collection\Map;
 use Ramsey\Collection\Exception\InvalidArgumentException;
 use Ramsey\Collection\Tool\TypeTrait;
 use Ramsey\Collection\Tool\ValueToStringTrait;
-
 use function array_combine;
 use function array_key_exists;
 use function is_int;
@@ -50,6 +49,32 @@ class NamedParameterMap extends AbstractMap
     {
         $this->namedParameters = $this->filterNamedParameters($namedParameters);
         parent::__construct($data);
+    }
+
+    /**
+     * Given an array of named parameters, constructs a proper mapping of
+     * named parameters to types.
+     *
+     * @param array<array-key, string> $namedParameters The named parameters to filter.
+     *
+     * @return array<string, string>
+     */
+    protected function filterNamedParameters(array $namedParameters): array
+    {
+        $names = [];
+        $types = [];
+
+        foreach ($namedParameters as $key => $value) {
+            if (is_int($key)) {
+                $names[] = $value;
+                $types[] = 'mixed';
+            } else {
+                $names[] = $key;
+                $types[] = $value;
+            }
+        }
+
+        return array_combine($names, $types) ?: [];
     }
 
     /**
@@ -90,31 +115,5 @@ class NamedParameterMap extends AbstractMap
         }
 
         $this->data[$offset] = $value;
-    }
-
-    /**
-     * Given an array of named parameters, constructs a proper mapping of
-     * named parameters to types.
-     *
-     * @param array<array-key, string> $namedParameters The named parameters to filter.
-     *
-     * @return array<string, string>
-     */
-    protected function filterNamedParameters(array $namedParameters): array
-    {
-        $names = [];
-        $types = [];
-
-        foreach ($namedParameters as $key => $value) {
-            if (is_int($key)) {
-                $names[] = $value;
-                $types[] = 'mixed';
-            } else {
-                $names[] = $key;
-                $types[] = $value;
-            }
-        }
-
-        return array_combine($names, $types) ?: [];
     }
 }

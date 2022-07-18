@@ -39,18 +39,18 @@ class ImportTest extends DatabaseTestCase
 
         $users = [
             $this->makeLdapUser([
-                'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
-                'samaccountname'    => ['johndoe'],
+                'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
+                'samaccountname' => ['johndoe'],
                 'userprincipalname' => ['johndoe@email.com'],
-                'mail'              => ['johndoe@email.com'],
-                'cn'                => ['John Doe'],
+                'mail' => ['johndoe@email.com'],
+                'cn' => ['John Doe'],
             ]),
             $this->makeLdapUser([
-                'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b1'],
-                'samaccountname'    => ['janedoe'],
+                'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b1'],
+                'samaccountname' => ['janedoe'],
                 'userprincipalname' => ['janedoe@email.com'],
-                'mail'              => ['janedoe@email.com'],
-                'cn'                => ['Jane Doe'],
+                'mail' => ['janedoe@email.com'],
+                'cn' => ['Jane Doe'],
             ]),
         ];
 
@@ -100,9 +100,9 @@ class ImportTest extends DatabaseTestCase
 
         $model = TestUser::create([
             'objectguid' => $user->getConvertedGuid(),
-            'email'      => $user->getUserPrincipalName(),
-            'name'       => $user->getCommonName(),
-            'password'   => Hash::make('password'),
+            'email' => $user->getUserPrincipalName(),
+            'name' => $user->getCommonName(),
+            'password' => Hash::make('password'),
         ]);
 
         $model->delete();
@@ -141,9 +141,9 @@ class ImportTest extends DatabaseTestCase
 
         $model = TestUser::create([
             'objectguid' => $user->getConvertedGuid(),
-            'email'      => 'jdoe@email.com',
-            'name'       => 'John Doe',
-            'password'   => Hash::make('password'),
+            'email' => 'jdoe@email.com',
+            'name' => 'John Doe',
+            'password' => Hash::make('password'),
         ]);
 
         $this->assertFalse($model->trashed());

@@ -21,9 +21,37 @@ final class DataSourceName
         $this->string = $string;
     }
 
-    public function toString(): string
+    /**
+     * Creates the object from the given DBAL connection parameters.
+     *
+     * @param array<string,mixed> $params
+     */
+    public static function fromConnectionParameters(array $params): self
     {
-        return $this->string;
+        if (isset($params['dbname']) && strpos($params['dbname'], '=') !== false) {
+            return new self($params['dbname']);
+        }
+
+        $dsnParams = [];
+
+        foreach (
+            [
+                'host' => 'HOSTNAME',
+                'port' => 'PORT',
+                'protocol' => 'PROTOCOL',
+                'dbname' => 'DATABASE',
+                'user' => 'UID',
+                'password' => 'PWD',
+            ] as $dbalParam => $dsnParam
+        ) {
+            if (!isset($params[$dbalParam])) {
+                continue;
+            }
+
+            $dsnParams[$dsnParam] = $params[$dbalParam];
+        }
+
+        return self::fromArray($dsnParams);
     }
 
     /**
@@ -42,36 +70,8 @@ final class DataSourceName
         return new self(implode(';', $chunks));
     }
 
-    /**
-     * Creates the object from the given DBAL connection parameters.
-     *
-     * @param array<string,mixed> $params
-     */
-    public static function fromConnectionParameters(array $params): self
+    public function toString(): string
     {
-        if (isset($params['dbname']) && strpos($params['dbname'], '=') !== false) {
-            return new self($params['dbname']);
-        }
-
-        $dsnParams = [];
-
-        foreach (
-            [
-                'host'     => 'HOSTNAME',
-                'port'     => 'PORT',
-                'protocol' => 'PROTOCOL',
-                'dbname'   => 'DATABASE',
-                'user'     => 'UID',
-                'password' => 'PWD',
-            ] as $dbalParam => $dsnParam
-        ) {
-            if (! isset($params[$dbalParam])) {
-                continue;
-            }
-
-            $dsnParams[$dsnParam] = $params[$dbalParam];
-        }
-
-        return self::fromArray($dsnParams);
+        return $this->string;
     }
 }

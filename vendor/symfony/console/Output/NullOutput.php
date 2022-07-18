@@ -29,18 +29,18 @@ class NullOutput implements OutputInterface
     /**
      * {@inheritdoc}
      */
-    public function setFormatter(OutputFormatterInterface $formatter)
+    public function getFormatter(): OutputFormatterInterface
     {
-        // do nothing
+        // to comply with the interface we must return a OutputFormatterInterface
+        return $this->formatter ??= new NullOutputFormatter();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFormatter(): OutputFormatterInterface
+    public function setFormatter(OutputFormatterInterface $formatter)
     {
-        // to comply with the interface we must return a OutputFormatterInterface
-        return $this->formatter ??= new NullOutputFormatter();
+        // do nothing
     }
 
     /**

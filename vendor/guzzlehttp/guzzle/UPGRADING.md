@@ -6,9 +6,10 @@ Guzzle Upgrade Guide
 
 In order to take advantage of the new features of PHP, Guzzle dropped the support
 of PHP 5. The minimum supported PHP version is now PHP 7.2. Type hints and return
-types for functions and methods have been added wherever possible. 
+types for functions and methods have been added wherever possible.
 
 Please make sure:
+
 - You are calling a function or a method with the correct type.
 - If you extend a class of Guzzle; update all signatures on methods you override.
 
@@ -16,7 +17,7 @@ Please make sure:
 
 - Class `GuzzleHttp\UriTemplate` is removed.
 - Class `GuzzleHttp\Exception\SeekException` is removed.
-- Classes `GuzzleHttp\Exception\BadResponseException`, `GuzzleHttp\Exception\ClientException`, 
+- Classes `GuzzleHttp\Exception\BadResponseException`, `GuzzleHttp\Exception\ClientException`,
   `GuzzleHttp\Exception\ServerException` can no longer be initialized with an empty
   Response as argument.
 - Class `GuzzleHttp\Exception\ConnectException` now extends `GuzzleHttp\Exception\TransferException`
@@ -30,10 +31,15 @@ Please make sure:
 - Request option `exception` is removed. Please use `http_errors`.
 - Request option `save_to` is removed. Please use `sink`.
 - Pool option `pool_size` is removed. Please use `concurrency`.
-- We now look for environment variables in the `$_SERVER` super global, due to thread safety issues with `getenv`. We continue to fallback to `getenv` in CLI environments, for maximum compatibility.
-- The `get`, `head`, `put`, `post`, `patch`, `delete`, `getAsync`, `headAsync`, `putAsync`, `postAsync`, `patchAsync`, and `deleteAsync` methods are now implemented as genuine methods on `GuzzleHttp\Client`, with strong typing. The original `__call` implementation remains unchanged for now, for maximum backwards compatibility, but won't be invoked under normal operation.
-- The `log` middleware will log the errors with level `error` instead of `notice` 
-- Support for international domain names (IDN) is now disabled by default, and enabling it requires installing ext-intl, linked against a modern version of the C library (ICU 4.6 or higher).
+- We now look for environment variables in the `$_SERVER` super global, due to thread safety issues with `getenv`. We
+  continue to fallback to `getenv` in CLI environments, for maximum compatibility.
+- The `get`, `head`, `put`, `post`, `patch`, `delete`, `getAsync`, `headAsync`, `putAsync`, `postAsync`, `patchAsync`,
+  and `deleteAsync` methods are now implemented as genuine methods on `GuzzleHttp\Client`, with strong typing. The
+  original `__call` implementation remains unchanged for now, for maximum backwards compatibility, but won't be invoked
+  under normal operation.
+- The `log` middleware will log the errors with level `error` instead of `notice`
+- Support for international domain names (IDN) is now disabled by default, and enabling it requires installing ext-intl,
+  linked against a modern version of the C library (ICU 4.6 or higher).
 
 #### Native functions calls
 
@@ -73,18 +79,18 @@ functions that wrap handlers (or are injected into a
 - Guzzle no longer uses ReactPHP promises and now uses the
   `guzzlehttp/promises` library. We use a custom promise library for three
   significant reasons:
-  1. React promises (at the time of writing this) are recursive. Promise
-     chaining and promise resolution will eventually blow the stack. Guzzle
-     promises are not recursive as they use a sort of trampolining technique.
-     Note: there has been movement in the React project to modify promises to
-     no longer utilize recursion.
-  2. Guzzle needs to have the ability to synchronously block on a promise to
-     wait for a result. Guzzle promises allows this functionality (and does
-     not require the use of recursion).
-  3. Because we need to be able to wait on a result, doing so using React
-     promises requires wrapping react promises with RingPHP futures. This
-     overhead is no longer needed, reducing stack sizes, reducing complexity,
-     and improving performance.
+    1. React promises (at the time of writing this) are recursive. Promise
+       chaining and promise resolution will eventually blow the stack. Guzzle
+       promises are not recursive as they use a sort of trampolining technique.
+       Note: there has been movement in the React project to modify promises to
+       no longer utilize recursion.
+    2. Guzzle needs to have the ability to synchronously block on a promise to
+       wait for a result. Guzzle promises allows this functionality (and does
+       not require the use of recursion).
+    3. Because we need to be able to wait on a result, doing so using React
+       promises requires wrapping react promises with RingPHP futures. This
+       overhead is no longer needed, reducing stack sizes, reducing complexity,
+       and improving performance.
 - `GuzzleHttp\Mimetypes` has been moved to a function in
   `GuzzleHttp\Psr7\mimetype_from_extension` and
   `GuzzleHttp\Psr7\mimetype_from_filename`.
@@ -108,23 +114,23 @@ functions that wrap handlers (or are injected into a
   integration has been removed. Note: while the event system has been removed,
   it is possible to add your own type of event system that is powered by the
   middleware system.
-  - Removed the `Event` namespace.
-  - Removed the `Subscriber` namespace.
-  - Removed `Transaction` class
-  - Removed `RequestFsm`
-  - Removed `RingBridge`
-  - `GuzzleHttp\Subscriber\Cookie` is now provided by
-    `GuzzleHttp\Middleware::cookies`
-  - `GuzzleHttp\Subscriber\HttpError` is now provided by
-    `GuzzleHttp\Middleware::httpError`
-  - `GuzzleHttp\Subscriber\History` is now provided by
-    `GuzzleHttp\Middleware::history`
-  - `GuzzleHttp\Subscriber\Mock` is now provided by
-    `GuzzleHttp\Handler\MockHandler`
-  - `GuzzleHttp\Subscriber\Prepare` is now provided by
-    `GuzzleHttp\PrepareBodyMiddleware`
-  - `GuzzleHttp\Subscriber\Redirect` is now provided by
-    `GuzzleHttp\RedirectMiddleware`
+    - Removed the `Event` namespace.
+    - Removed the `Subscriber` namespace.
+    - Removed `Transaction` class
+    - Removed `RequestFsm`
+    - Removed `RingBridge`
+    - `GuzzleHttp\Subscriber\Cookie` is now provided by
+      `GuzzleHttp\Middleware::cookies`
+    - `GuzzleHttp\Subscriber\HttpError` is now provided by
+      `GuzzleHttp\Middleware::httpError`
+    - `GuzzleHttp\Subscriber\History` is now provided by
+      `GuzzleHttp\Middleware::history`
+    - `GuzzleHttp\Subscriber\Mock` is now provided by
+      `GuzzleHttp\Handler\MockHandler`
+    - `GuzzleHttp\Subscriber\Prepare` is now provided by
+      `GuzzleHttp\PrepareBodyMiddleware`
+    - `GuzzleHttp\Subscriber\Redirect` is now provided by
+      `GuzzleHttp\RedirectMiddleware`
 - Guzzle now uses `Psr\Http\Message\UriInterface` (implements in
   `GuzzleHttp\Psr7\Uri`) for URI support. `GuzzleHttp\Url` is now gone.
 - Static functions in `GuzzleHttp\Utils` have been moved to namespaced
@@ -730,13 +736,17 @@ PHP requests are now implemented through the `GuzzleHttp\Adapter\StreamAdapter`.
 
 The following APIs and options have been marked as deprecated:
 
-- Marked `Guzzle\Http\Message\Request::isResponseBodyRepeatable()` as deprecated. Use `$request->getResponseBody()->isRepeatable()` instead.
-- Marked `Guzzle\Http\Message\Request::canCache()` as deprecated. Use `Guzzle\Plugin\Cache\DefaultCanCacheStrategy->canCacheRequest()` instead.
-- Marked `Guzzle\Http\Message\Request::canCache()` as deprecated. Use `Guzzle\Plugin\Cache\DefaultCanCacheStrategy->canCacheRequest()` instead.
+- Marked `Guzzle\Http\Message\Request::isResponseBodyRepeatable()` as deprecated.
+  Use `$request->getResponseBody()->isRepeatable()` instead.
+- Marked `Guzzle\Http\Message\Request::canCache()` as deprecated.
+  Use `Guzzle\Plugin\Cache\DefaultCanCacheStrategy->canCacheRequest()` instead.
+- Marked `Guzzle\Http\Message\Request::canCache()` as deprecated.
+  Use `Guzzle\Plugin\Cache\DefaultCanCacheStrategy->canCacheRequest()` instead.
 - Marked `Guzzle\Http\Message\Request::setIsRedirect()` as deprecated. Use the HistoryPlugin instead.
 - Marked `Guzzle\Http\Message\Request::isRedirect()` as deprecated. Use the HistoryPlugin instead.
 - Marked `Guzzle\Cache\CacheAdapterFactory::factory()` as deprecated
-- Marked `Guzzle\Service\Client::enableMagicMethods()` as deprecated. Magic methods can no longer be disabled on a Guzzle\Service\Client.
+- Marked `Guzzle\Service\Client::enableMagicMethods()` as deprecated. Magic methods can no longer be disabled on a
+  Guzzle\Service\Client.
 - Marked `Guzzle\Parser\Url\UrlParser` as deprecated. Just use PHP's `parse_url()` and percent encode your UTF-8.
 - Marked `Guzzle\Common\Collection::inject()` as deprecated.
 - Marked `Guzzle\Plugin\CurlAuth\CurlAuthPlugin` as deprecated. Use
@@ -749,9 +759,12 @@ for various aspects of a request. Because these options make other previous conf
 configuration options and methods of a client and AbstractCommand have been deprecated.
 
 - Marked `Guzzle\Service\Client::getDefaultHeaders()` as deprecated. Use `$client->getDefaultOption('headers')`.
-- Marked `Guzzle\Service\Client::setDefaultHeaders()` as deprecated. Use `$client->setDefaultOption('headers/{header_name}', 'value')`.
-- Marked 'request.params' for `Guzzle\Http\Client` as deprecated. Use `$client->setDefaultOption('params/{param_name}', 'value')`
-- Marked 'command.headers', 'command.response_body' and 'command.on_complete' as deprecated for AbstractCommand. These will work through Guzzle 4.0
+- Marked `Guzzle\Service\Client::setDefaultHeaders()` as deprecated.
+  Use `$client->setDefaultOption('headers/{header_name}', 'value')`.
+- Marked 'request.params' for `Guzzle\Http\Client` as deprecated.
+  Use `$client->setDefaultOption('params/{param_name}', 'value')`
+- Marked 'command.headers', 'command.response_body' and 'command.on_complete' as deprecated for AbstractCommand. These
+  will work through Guzzle 4.0
 
         $command = $client->getCommand('foo', array(
             'command.headers' => array('Test' => '123'),
@@ -791,7 +804,8 @@ that implement them, but you should update your code to use alternative methods:
   `$client->getConfig()->setPath('request.options/headers', array('header_name' => 'value'))` or
   `$client->setDefaultOption('headers/{header_name}', 'value')`. or
   `$client->setDefaultOption('headers', array('header_name' => 'value'))`.
-- Removed `Guzzle\Http\ClientInterface::getDefaultHeaders(). Use `$client->getConfig()->getPath('request.options/headers')`.
+- Removed `Guzzle\Http\ClientInterface::getDefaultHeaders(). Use `$client->getConfig()->getPath('
+  request.options/headers')`.
 - Removed `Guzzle\Http\ClientInterface::expandTemplate()`. This is an implementation detail.
 - Removed `Guzzle\Http\ClientInterface::setRequestFactory()`. This is an implementation detail.
 - Removed `Guzzle\Http\ClientInterface::getCurlMulti()`. This is a very specific implementation detail.
@@ -1175,7 +1189,8 @@ Namespace is now `Guzzle\Inflection\Inflector`
 
 ### Guzzle\Http\Plugin
 
-Namespace is now `Guzzle\Plugin`. Many other changes occur within this namespace and are detailed in their own sections below.
+Namespace is now `Guzzle\Plugin`. Many other changes occur within this namespace and are detailed in their own sections
+below.
 
 ### Guzzle\Http\Plugin\LogPlugin and Guzzle\Common\Log
 
@@ -1249,5 +1264,6 @@ $client->addSubscriber($backoffPlugin);
 (See #217) (Fixed in 09daeb8c666fb44499a0646d655a8ae36456575e)
 
 In version 2.8 setting the `Accept-Encoding` header would set the CURLOPT_ENCODING option, which permitted cURL to
-properly handle gzip/deflate compressed responses from the server. In versions affected by this bug this does not happen.
+properly handle gzip/deflate compressed responses from the server. In versions affected by this bug this does not
+happen.
 See issue #217 for a workaround, or use a version containing the fix.

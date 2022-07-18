@@ -7,9 +7,9 @@ interface Translator
     /**
      * Get the translation for a given key.
      *
-     * @param  string  $key
-     * @param  array  $replace
-     * @param  string|null  $locale
+     * @param string $key
+     * @param array $replace
+     * @param string|null $locale
      * @return mixed
      */
     public function get($key, array $replace = [], $locale = null);
@@ -17,10 +17,10 @@ interface Translator
     /**
      * Get a translation according to an integer value.
      *
-     * @param  string  $key
-     * @param  \Countable|int|array  $number
-     * @param  array  $replace
-     * @param  string|null  $locale
+     * @param string $key
+     * @param \Countable|int|array $number
+     * @param array $replace
+     * @param string|null $locale
      * @return string
      */
     public function choice($key, $number, array $replace = [], $locale = null);
@@ -35,7 +35,7 @@ interface Translator
     /**
      * Set the default locale.
      *
-     * @param  string  $locale
+     * @param string $locale
      * @return void
      */
     public function setLocale($locale);

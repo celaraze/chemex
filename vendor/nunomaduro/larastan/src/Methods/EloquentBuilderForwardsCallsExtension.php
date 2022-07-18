@@ -47,24 +47,19 @@ final class EloquentBuilderForwardsCallsExtension implements MethodsClassReflect
      */
     public function hasMethod(ClassReflection $classReflection, string $methodName): bool
     {
-        if (array_key_exists($classReflection->getCacheKey().'-'.$methodName, $this->cache)) {
+        if (array_key_exists($classReflection->getCacheKey() . '-' . $methodName, $this->cache)) {
             return true;
         }
 
         $methodReflection = $this->findMethod($classReflection, $methodName);
 
         if ($methodReflection !== null && $classReflection->isGeneric()) {
-            $this->cache[$classReflection->getCacheKey().'-'.$methodName] = $methodReflection;
+            $this->cache[$classReflection->getCacheKey() . '-' . $methodName] = $methodReflection;
 
             return true;
         }
 
         return false;
-    }
-
-    public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
-    {
-        return $this->cache[$classReflection->getCacheKey().'-'.$methodName];
     }
 
     /**
@@ -73,7 +68,7 @@ final class EloquentBuilderForwardsCallsExtension implements MethodsClassReflect
      */
     private function findMethod(ClassReflection $classReflection, string $methodName): ?MethodReflection
     {
-        if ($classReflection->getName() !== EloquentBuilder::class && ! $classReflection->isSubclassOf(EloquentBuilder::class)) {
+        if ($classReflection->getName() !== EloquentBuilder::class && !$classReflection->isSubclassOf(EloquentBuilder::class)) {
             return null;
         }
 
@@ -160,5 +155,10 @@ final class EloquentBuilderForwardsCallsExtension implements MethodsClassReflect
             new GenericObjectType($classReflection->getName(), [$modelType]),
             $parametersAcceptor->isVariadic()
         );
+    }
+
+    public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+    {
+        return $this->cache[$classReflection->getCacheKey() . '-' . $methodName];
     }
 }

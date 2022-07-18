@@ -53,22 +53,6 @@ final class StdoutHandler
     }
 
     /**
-     * Intercept all output headers writing.
-     *
-     * @return void
-     */
-    private static function restreamHeaders(): void
-    {
-        \header_register_callback(static function(): void {
-            $headers = \headers_list();
-
-            if ($headers !== []) {
-                \file_put_contents(self::PIPE_OUT, self::ERROR_WRITING_HEADER);
-            }
-        });
-    }
-
-    /**
      * Intercept all output buffer write.
      *
      * @param positive-int|0 $chunkSize
@@ -83,6 +67,22 @@ final class StdoutHandler
                 \file_put_contents(self::PIPE_OUT, $chunk);
             }
         }, $chunkSize);
+    }
+
+    /**
+     * Intercept all output headers writing.
+     *
+     * @return void
+     */
+    private static function restreamHeaders(): void
+    {
+        \header_register_callback(static function (): void {
+            $headers = \headers_list();
+
+            if ($headers !== []) {
+                \file_put_contents(self::PIPE_OUT, self::ERROR_WRITING_HEADER);
+            }
+        });
     }
 
     /**

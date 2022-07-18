@@ -49,6 +49,11 @@ interface StreamStatable extends IStream
     const SIZE_UNDEFINED = -1;
 
     /**
+     * Clear all files status cache.
+     */
+    public static function clearAllStatisticCaches();
+
+    /**
      * Get size.
      */
     public function getSize(): int;
@@ -107,9 +112,4 @@ interface StreamStatable extends IStream
      * Clear file status cache.
      */
     public function clearStatisticCache();
-
-    /**
-     * Clear all files status cache.
-     */
-    public static function clearAllStatisticCaches();
 }

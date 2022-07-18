@@ -7,11 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Environment;
 
-use const DIRECTORY_SEPARATOR;
-use const STDIN;
-use const STDOUT;
 use function defined;
 use function fclose;
 use function fstat;
@@ -28,6 +26,9 @@ use function shell_exec;
 use function stream_get_contents;
 use function stream_isatty;
 use function trim;
+use const DIRECTORY_SEPARATOR;
+use const STDIN;
+use const STDOUT;
 
 final class Console
 {
@@ -76,22 +77,9 @@ final class Console
         return $this->isInteractive(STDOUT);
     }
 
-    /**
-     * Returns the number of columns of the terminal.
-     *
-     * @codeCoverageIgnore
-     */
-    public function getNumberOfColumns(): int
+    private function isWindows(): bool
     {
-        if (!$this->isInteractive(defined('STDIN') ? STDIN : self::STDIN)) {
-            return 80;
-        }
-
-        if ($this->isWindows()) {
-            return $this->getNumberOfColumnsWindows();
-        }
-
-        return $this->getNumberOfColumnsInteractive();
+        return DIRECTORY_SEPARATOR === '\\';
     }
 
     /**
@@ -123,29 +111,22 @@ final class Console
         return function_exists('posix_isatty') && @posix_isatty($fileDescriptor);
     }
 
-    private function isWindows(): bool
-    {
-        return DIRECTORY_SEPARATOR === '\\';
-    }
-
     /**
+     * Returns the number of columns of the terminal.
+     *
      * @codeCoverageIgnore
      */
-    private function getNumberOfColumnsInteractive(): int
+    public function getNumberOfColumns(): int
     {
-        if (function_exists('shell_exec') && preg_match('#\d+ (\d+)#', shell_exec('stty size') ?: '', $match) === 1) {
-            if ((int) $match[1] > 0) {
-                return (int) $match[1];
-            }
+        if (!$this->isInteractive(defined('STDIN') ? STDIN : self::STDIN)) {
+            return 80;
         }
 
-        if (function_exists('shell_exec') && preg_match('#columns = (\d+);#', shell_exec('stty') ?: '', $match) === 1) {
-            if ((int) $match[1] > 0) {
-                return (int) $match[1];
-            }
+        if ($this->isWindows()) {
+            return $this->getNumberOfColumnsWindows();
         }
 
-        return 80;
+        return $this->getNumberOfColumnsInteractive();
     }
 
     /**
@@ -157,7 +138,7 @@ final class Console
         $columns = 80;
 
         if (is_string($ansicon) && preg_match('/^(\d+)x\d+ \(\d+x(\d+)\)$/', trim($ansicon), $matches)) {
-            $columns = (int) $matches[1];
+            $columns = (int)$matches[1];
         } elseif (function_exists('proc_open')) {
             $process = proc_open(
                 'mode CON',
@@ -179,11 +160,31 @@ final class Console
                 proc_close($process);
 
                 if (preg_match('/--------+\r?\n.+?(\d+)\r?\n.+?(\d+)\r?\n/', $info, $matches)) {
-                    $columns = (int) $matches[2];
+                    $columns = (int)$matches[2];
                 }
             }
         }
 
         return $columns - 1;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    private function getNumberOfColumnsInteractive(): int
+    {
+        if (function_exists('shell_exec') && preg_match('#\d+ (\d+)#', shell_exec('stty size') ?: '', $match) === 1) {
+            if ((int)$match[1] > 0) {
+                return (int)$match[1];
+            }
+        }
+
+        if (function_exists('shell_exec') && preg_match('#columns = (\d+);#', shell_exec('stty') ?: '', $match) === 1) {
+            if ((int)$match[1] > 0) {
+                return (int)$match[1];
+            }
+        }
+
+        return 80;
     }
 }

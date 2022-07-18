@@ -61,6 +61,24 @@ class TimeitVisitor extends NodeVisitorAbstract
     }
 
     /**
+     * Get PhpParser AST nodes for a `markEnd` call.
+     *
+     * Optionally pass in a return value.
+     *
+     * @param Expr|null $arg
+     *
+     * @return \PhpParser\Node\Expr\StaticCall
+     */
+    private function getEndCall(Expr $arg = null): StaticCall
+    {
+        if ($arg === null) {
+            $arg = NoReturnValue::create();
+        }
+
+        return new StaticCall(new FullyQualifiedName(TimeitCommand::class), 'markEnd', [new Arg($arg)]);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function leaveNode(Node $node)
@@ -96,6 +114,21 @@ class TimeitVisitor extends NodeVisitorAbstract
     }
 
     /**
+     * Compatibility shim for PHP Parser 3.x.
+     *
+     * Wrap $expr in a PhpParser\Node\Stmt\Expression if the class exists.
+     *
+     * @param \PhpParser\Node $expr
+     * @param array $attrs
+     *
+     * @return \PhpParser\Node\Expr|\PhpParser\Node\Stmt\Expression
+     */
+    private function maybeExpression(Node $expr, array $attrs = [])
+    {
+        return \class_exists(Expression::class) ? new Expression($expr, $attrs) : $expr;
+    }
+
+    /**
      * Get PhpParser AST nodes for a `markStart` call.
      *
      * @return \PhpParser\Node\Expr\StaticCall
@@ -103,38 +136,5 @@ class TimeitVisitor extends NodeVisitorAbstract
     private function getStartCall(): StaticCall
     {
         return new StaticCall(new FullyQualifiedName(TimeitCommand::class), 'markStart');
-    }
-
-    /**
-     * Get PhpParser AST nodes for a `markEnd` call.
-     *
-     * Optionally pass in a return value.
-     *
-     * @param Expr|null $arg
-     *
-     * @return \PhpParser\Node\Expr\StaticCall
-     */
-    private function getEndCall(Expr $arg = null): StaticCall
-    {
-        if ($arg === null) {
-            $arg = NoReturnValue::create();
-        }
-
-        return new StaticCall(new FullyQualifiedName(TimeitCommand::class), 'markEnd', [new Arg($arg)]);
-    }
-
-    /**
-     * Compatibility shim for PHP Parser 3.x.
-     *
-     * Wrap $expr in a PhpParser\Node\Stmt\Expression if the class exists.
-     *
-     * @param \PhpParser\Node $expr
-     * @param array           $attrs
-     *
-     * @return \PhpParser\Node\Expr|\PhpParser\Node\Stmt\Expression
-     */
-    private function maybeExpression(Node $expr, array $attrs = [])
-    {
-        return \class_exists(Expression::class) ? new Expression($expr, $attrs) : $expr;
     }
 }

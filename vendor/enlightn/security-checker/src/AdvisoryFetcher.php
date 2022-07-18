@@ -7,23 +7,18 @@ use Psr\Http\Message\ResponseInterface;
 
 class AdvisoryFetcher
 {
+    const ADVISORIES_URL = 'https://codeload.github.com/FriendsOfPHP/security-advisories/zip/master';
+    const CACHE_FILE_NAME = 'php_security_advisories.json';
+    const ARCHIVE_FILE_NAME = 'php_security_advisories.zip';
+    const EXTRACT_PATH = 'php_security_advisories';
     /**
      * @var \GuzzleHttp\Client
      */
     private $client;
-
     /**
      * @var string
      */
     private $tempDir;
-
-    const ADVISORIES_URL = 'https://codeload.github.com/FriendsOfPHP/security-advisories/zip/master';
-
-    const CACHE_FILE_NAME = 'php_security_advisories.json';
-
-    const ARCHIVE_FILE_NAME = 'php_security_advisories.zip';
-
-    const EXTRACT_PATH = 'php_security_advisories';
 
     public function __construct($tempDir = null)
     {
@@ -55,7 +50,7 @@ class AdvisoryFetcher
         $headers = [];
         $cacheResult = [];
 
-        if (! empty($cache = $this->getCacheFile())) {
+        if (!empty($cache = $this->getCacheFile())) {
             $cacheResult = json_decode($cache, true);
 
             if (is_file($cacheResult['ArchivePath'])) {
@@ -74,7 +69,7 @@ class AdvisoryFetcher
         if ($response->getStatusCode() !== 304) {
             $this->writeCacheFile($response);
 
-            $this->storeAdvisoriesArchive((string) $response->getBody());
+            $this->storeAdvisoriesArchive((string)$response->getBody());
 
             return $this->getArchiveFilePath();
         }
@@ -84,20 +79,11 @@ class AdvisoryFetcher
     }
 
     /**
-     * @param string $content
-     * @return false|int
-     */
-    public function storeAdvisoriesArchive($content)
-    {
-        return file_put_contents($this->getArchiveFilePath(), $content);
-    }
-
-    /**
      * @return false|string|null
      */
     public function getCacheFile()
     {
-        if (! is_file($path = $this->getCacheFilePath())) {
+        if (!is_file($path = $this->getCacheFilePath())) {
             return null;
         }
 
@@ -106,22 +92,7 @@ class AdvisoryFetcher
 
     public function getCacheFilePath()
     {
-        return $this->tempDir.DIRECTORY_SEPARATOR.self::CACHE_FILE_NAME;
-    }
-
-    public function getArchiveFilePath()
-    {
-        return $this->tempDir.DIRECTORY_SEPARATOR.self::ARCHIVE_FILE_NAME;
-    }
-
-    public function getExtractDirectoryPath()
-    {
-        return $this->tempDir.DIRECTORY_SEPARATOR.self::EXTRACT_PATH;
-    }
-
-    public function setClient(Client $client)
-    {
-        $this->client = $client;
+        return $this->tempDir . DIRECTORY_SEPARATOR . self::CACHE_FILE_NAME;
     }
 
     protected function writeCacheFile(ResponseInterface $response)
@@ -133,5 +104,29 @@ class AdvisoryFetcher
         ];
 
         file_put_contents($this->getCacheFilePath(), json_encode($cache), LOCK_EX);
+    }
+
+    public function getArchiveFilePath()
+    {
+        return $this->tempDir . DIRECTORY_SEPARATOR . self::ARCHIVE_FILE_NAME;
+    }
+
+    /**
+     * @param string $content
+     * @return false|int
+     */
+    public function storeAdvisoriesArchive($content)
+    {
+        return file_put_contents($this->getArchiveFilePath(), $content);
+    }
+
+    public function getExtractDirectoryPath()
+    {
+        return $this->tempDir . DIRECTORY_SEPARATOR . self::EXTRACT_PATH;
+    }
+
+    public function setClient(Client $client)
+    {
+        $this->client = $client;
     }
 }

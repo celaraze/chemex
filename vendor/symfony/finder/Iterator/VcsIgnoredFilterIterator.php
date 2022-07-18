@@ -50,6 +50,38 @@ final class VcsIgnoredFilterIterator extends \FilterIterator
         parent::__construct($iterator);
     }
 
+    private function normalizePath(string $path): string
+    {
+        if ('\\' === \DIRECTORY_SEPARATOR) {
+            return str_replace('\\', '/', $path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function parentDirectoriesUpwards(string $from): array
+    {
+        $parentDirectories = [];
+
+        $parentDirectory = $from;
+
+        while (true) {
+            $newParentDirectory = \dirname($parentDirectory);
+
+            // dirname('/') = '/'
+            if ($newParentDirectory === $parentDirectory) {
+                break;
+            }
+
+            $parentDirectories[] = $parentDirectory = $newParentDirectory;
+        }
+
+        return $parentDirectories;
+    }
+
     public function accept(): bool
     {
         $file = $this->current();
@@ -102,24 +134,11 @@ final class VcsIgnoredFilterIterator extends \FilterIterator
     /**
      * @return list<string>
      */
-    private function parentDirectoriesUpwards(string $from): array
+    private function parentDirectoriesDownwards(string $fileRealPath): array
     {
-        $parentDirectories = [];
-
-        $parentDirectory = $from;
-
-        while (true) {
-            $newParentDirectory = \dirname($parentDirectory);
-
-            // dirname('/') = '/'
-            if ($newParentDirectory === $parentDirectory) {
-                break;
-            }
-
-            $parentDirectories[] = $parentDirectory = $newParentDirectory;
-        }
-
-        return $parentDirectories;
+        return array_reverse(
+            $this->parentDirectoriesUpTo($fileRealPath, $this->baseDir)
+        );
     }
 
     private function parentDirectoriesUpTo(string $from, string $upTo): array
@@ -129,16 +148,6 @@ final class VcsIgnoredFilterIterator extends \FilterIterator
             static function (string $directory) use ($upTo): bool {
                 return str_starts_with($directory, $upTo);
             }
-        );
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function parentDirectoriesDownwards(string $fileRealPath): array
-    {
-        return array_reverse(
-            $this->parentDirectoriesUpTo($fileRealPath, $this->baseDir)
         );
     }
 
@@ -165,14 +174,5 @@ final class VcsIgnoredFilterIterator extends \FilterIterator
             Gitignore::toRegex($gitignoreFileContent),
             Gitignore::toRegexMatchingNegatedPatterns($gitignoreFileContent),
         ];
-    }
-
-    private function normalizePath(string $path): string
-    {
-        if ('\\' === \DIRECTORY_SEPARATOR) {
-            return str_replace('\\', '/', $path);
-        }
-
-        return $path;
     }
 }

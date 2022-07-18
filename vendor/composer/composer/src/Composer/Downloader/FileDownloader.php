@@ -12,26 +12,26 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
 use Composer\Cache;
-use Composer\IO\IOInterface;
-use Composer\IO\NullIO;
-use Composer\Exception\IrrecoverableDownloadException;
-use Composer\Package\Comparer\Comparer;
-use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\Exception\IrrecoverableDownloadException;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
+use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
 use Composer\Util\HttpDownloader;
-use Composer\Util\Url as UrlUtil;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Silencer;
+use Composer\Util\Url as UrlUtil;
 use React\Promise\PromiseInterface;
 
 /**
@@ -44,6 +44,12 @@ use React\Promise\PromiseInterface;
  */
 class FileDownloader implements DownloaderInterface, ChangeReportInterface
 {
+    /**
+     * @var array<string, int|string>
+     * @private
+     * @internal
+     */
+    public static $downloadMetadata = array();
     /** @var IOInterface */
     protected $io;
     /** @var Config */
@@ -59,13 +65,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /** @var ProcessExecutor */
     protected $process;
     /**
-     * @var array<string, int|string>
-     * @private
-     * @internal
-     */
-    public static $downloadMetadata = array();
-
-    /**
      * @var array<string, string> Map of package name to cache key
      */
     private $lastCacheWrites = array();
@@ -75,12 +74,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * Constructor.
      *
-     * @param IOInterface     $io              The IO instance
-     * @param Config          $config          The config
-     * @param HttpDownloader  $httpDownloader  The remote filesystem
+     * @param IOInterface $io The IO instance
+     * @param Config $config The config
+     * @param HttpDownloader $httpDownloader The remote filesystem
      * @param EventDispatcher $eventDispatcher The event dispatcher
-     * @param Cache           $cache           Cache instance
-     * @param Filesystem      $filesystem      The filesystem
+     * @param Cache $cache Cache instance
+     * @param Filesystem $filesystem The filesystem
      */
     public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null, ProcessExecutor $process = null)
     {
@@ -108,6 +107,174 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * @inheritDoc
+     */
+    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    {
+        return \React\Promise\resolve(null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    {
+        $fileName = $this->getFileName($package, $path);
+        if (file_exists($fileName)) {
+            $this->filesystem->unlink($fileName);
+        }
+
+        $dirsToCleanUp = array(
+            $this->config->get('vendor-dir') . '/composer/',
+            $this->config->get('vendor-dir'),
+            $path,
+        );
+
+        if (isset($this->additionalCleanupPaths[$package->getName()])) {
+            foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
+                $this->filesystem->remove($path);
+            }
+        }
+
+        foreach ($dirsToCleanUp as $dir) {
+            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== Platform::getCwd()) {
+                $this->filesystem->removeDirectoryPhp($dir);
+            }
+        }
+
+        return \React\Promise\resolve(null);
+    }
+
+    /**
+     * Gets file name for specific package
+     *
+     * @param PackageInterface $package package instance
+     * @param string $path download path
+     * @return string           file name
+     */
+    protected function getFileName(PackageInterface $package, string $path): string
+    {
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . pathinfo(parse_url(strtr((string)$package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param bool $output
+     */
+    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
+    {
+        if ($output) {
+            $this->io->writeError("  - " . UninstallOperation::format($package));
+        }
+        $promise = $this->filesystem->removeDirectoryAsync($path);
+
+        return $promise->then(function ($result) use ($path): void {
+            if (!$result) {
+                throw new \RuntimeException('Could not completely delete ' . $path . ', aborting.');
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface
+    {
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
+
+        $promise = $this->remove($initial, $path, false);
+
+        return $promise->then(function () use ($target, $path): PromiseInterface {
+            return $this->install($target, $path, false);
+        });
+    }
+
+    /**
+     * Gets appendix message to add to the "- Upgrading x" string being output on update
+     *
+     * @param PackageInterface $package package instance
+     * @param string $path download path
+     * @return string
+     */
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param bool $output
+     */
+    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
+    {
+        if ($output) {
+            $this->io->writeError("  - " . InstallOperation::format($package));
+        }
+
+        $this->filesystem->emptyDirectory($path);
+        $this->filesystem->ensureDirectoryExists($path);
+        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url(strtr((string)$package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_BASENAME));
+
+        if ($package->getBinaries()) {
+            // Single files can not have a mode set like files in archives
+            // so we make sure if the file is a binary that it is executable
+            foreach ($package->getBinaries() as $bin) {
+                if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
+                    Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
+                }
+            }
+        }
+
+        return \React\Promise\resolve(null);
+    }
+
+    /**
+     * @inheritDoc
+     * @throws \RuntimeException
+     */
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
+    {
+        $prevIO = $this->io;
+
+        $this->io = new NullIO;
+        $this->io->loadConfiguration($this->config);
+        $e = null;
+        $output = '';
+
+        $targetDir = Filesystem::trimTrailingSlash($path);
+        try {
+            if (is_dir($targetDir . '_compare')) {
+                $this->filesystem->removeDirectory($targetDir . '_compare');
+            }
+
+            $this->download($package, $targetDir . '_compare', null, false);
+            $this->httpDownloader->wait();
+            $this->install($package, $targetDir . '_compare', false);
+            $this->process->wait();
+
+            $comparer = new Comparer();
+            $comparer->setSource($targetDir . '_compare');
+            $comparer->setUpdate($targetDir);
+            $comparer->doCompare();
+            $output = $comparer->getChangedAsString(true);
+            $this->filesystem->removeDirectory($targetDir . '_compare');
+        } catch (\Exception $e) {
+        }
+
+        $this->io = $prevIO;
+
+        if ($e) {
+            throw $e;
+        }
+
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
+    }
+
+    /**
+     * @inheritDoc
      *
      * @param bool $output
      */
@@ -120,7 +287,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $cacheKeyGenerator = function (PackageInterface $package, $key): string {
             $cacheKey = sha1($key);
 
-            return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
+            return $package->getName() . '/' . $cacheKey . '.' . $package->getDistType();
         };
 
         $retries = 3;
@@ -203,12 +370,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if (!file_exists($fileName)) {
-                    throw new \UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
-                        .' directory is writable and you have internet connectivity');
+                    throw new \UnexpectedValueException($url['base'] . ' could not be saved to ' . $fileName . ', make sure the'
+                        . ' directory is writable and you have internet connectivity');
                 }
 
                 if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
+                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from ' . $url['base'] . ')');
                 }
 
                 if ($eventDispatcher) {
@@ -273,10 +440,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             array_shift($urls);
             if ($urls) {
                 if ($io->isDebug()) {
-                    $io->writeError('    Failed downloading '.$package->getName().': ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
-                    $io->writeError('    Trying the next URL for '.$package->getName());
+                    $io->writeError('    Failed downloading ' . $package->getName() . ': [' . get_class($e) . '] ' . $e->getCode() . ': ' . $e->getMessage());
+                    $io->writeError('    Trying the next URL for ' . $package->getName());
                 } else {
-                    $io->writeError('    Failed downloading '.$package->getName().', trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
+                    $io->writeError('    Failed downloading ' . $package->getName() . ', trying the next URL (' . $e->getCode() . ': ' . $e->getMessage() . ')');
                 }
 
                 $retries = 3;
@@ -292,70 +459,24 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
-    {
-        return \React\Promise\resolve(null);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
-    {
-        $fileName = $this->getFileName($package, $path);
-        if (file_exists($fileName)) {
-            $this->filesystem->unlink($fileName);
-        }
-
-        $dirsToCleanUp = array(
-            $this->config->get('vendor-dir').'/composer/',
-            $this->config->get('vendor-dir'),
-            $path,
-        );
-
-        if (isset($this->additionalCleanupPaths[$package->getName()])) {
-            foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
-                $this->filesystem->remove($path);
-            }
-        }
-
-        foreach ($dirsToCleanUp as $dir) {
-            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== Platform::getCwd()) {
-                $this->filesystem->removeDirectoryPhp($dir);
-            }
-        }
-
-        return \React\Promise\resolve(null);
-    }
-
-    /**
-     * @inheritDoc
+     * Process the download url
      *
-     * @param bool $output
+     * @param PackageInterface $package package the url is coming from
+     * @param string $url download url
+     * @return string            url
+     * @throws \RuntimeException If any problem with the url
      */
-    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
+    protected function processUrl(PackageInterface $package, string $url): string
     {
-        if ($output) {
-            $this->io->writeError("  - " . InstallOperation::format($package));
+        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
+            throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
-        $this->filesystem->emptyDirectory($path);
-        $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_BASENAME));
-
-        if ($package->getBinaries()) {
-            // Single files can not have a mode set like files in archives
-            // so we make sure if the file is a binary that it is executable
-            foreach ($package->getBinaries() as $bin) {
-                if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
-                    Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
-                }
-            }
+        if ($package->getDistReference()) {
+            $url = UrlUtil::updateDistReference($this->config, $url, $package->getDistReference());
         }
 
-        return \React\Promise\resolve(null);
+        return $url;
     }
 
     /**
@@ -392,127 +513,5 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 unset($this->additionalCleanupPaths[$package->getName()][$idx]);
             }
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface
-    {
-        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
-
-        $promise = $this->remove($initial, $path, false);
-
-        return $promise->then(function () use ($target, $path): PromiseInterface {
-            return $this->install($target, $path, false);
-        });
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @param bool $output
-     */
-    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
-    {
-        if ($output) {
-            $this->io->writeError("  - " . UninstallOperation::format($package));
-        }
-        $promise = $this->filesystem->removeDirectoryAsync($path);
-
-        return $promise->then(function ($result) use ($path): void {
-            if (!$result) {
-                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-            }
-        });
-    }
-
-    /**
-     * Gets file name for specific package
-     *
-     * @param  PackageInterface $package package instance
-     * @param  string           $path    download path
-     * @return string           file name
-     */
-    protected function getFileName(PackageInterface $package, string $path): string
-    {
-        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
-    }
-
-    /**
-     * Gets appendix message to add to the "- Upgrading x" string being output on update
-     *
-     * @param  PackageInterface $package package instance
-     * @param  string           $path    download path
-     * @return string
-     */
-    protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
-    {
-        return '';
-    }
-
-    /**
-     * Process the download url
-     *
-     * @param  PackageInterface  $package package the url is coming from
-     * @param  string            $url     download url
-     * @throws \RuntimeException If any problem with the url
-     * @return string            url
-     */
-    protected function processUrl(PackageInterface $package, string $url): string
-    {
-        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
-            throw new \RuntimeException('You must enable the openssl extension to download files via https');
-        }
-
-        if ($package->getDistReference()) {
-            $url = UrlUtil::updateDistReference($this->config, $url, $package->getDistReference());
-        }
-
-        return $url;
-    }
-
-    /**
-     * @inheritDoc
-     * @throws \RuntimeException
-     */
-    public function getLocalChanges(PackageInterface $package, string $path): ?string
-    {
-        $prevIO = $this->io;
-
-        $this->io = new NullIO;
-        $this->io->loadConfiguration($this->config);
-        $e = null;
-        $output = '';
-
-        $targetDir = Filesystem::trimTrailingSlash($path);
-        try {
-            if (is_dir($targetDir.'_compare')) {
-                $this->filesystem->removeDirectory($targetDir.'_compare');
-            }
-
-            $this->download($package, $targetDir.'_compare', null, false);
-            $this->httpDownloader->wait();
-            $this->install($package, $targetDir.'_compare', false);
-            $this->process->wait();
-
-            $comparer = new Comparer();
-            $comparer->setSource($targetDir.'_compare');
-            $comparer->setUpdate($targetDir);
-            $comparer->doCompare();
-            $output = $comparer->getChangedAsString(true);
-            $this->filesystem->removeDirectory($targetDir.'_compare');
-        } catch (\Exception $e) {
-        }
-
-        $this->io = $prevIO;
-
-        if ($e) {
-            throw $e;
-        }
-
-        $output = trim($output);
-
-        return strlen($output) > 0 ? $output : null;
     }
 }

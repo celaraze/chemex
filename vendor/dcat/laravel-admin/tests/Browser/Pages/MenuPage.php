@@ -8,19 +8,9 @@ use Tests\Browser\Components\Form\MenuCreationForm;
 class MenuPage extends Page
 {
     /**
-     * Get the URL for the page.
-     *
-     * @return string
-     */
-    public function url()
-    {
-        return admin_base_path('auth/menu');
-    }
-
-    /**
      * Assert that the browser is on the page.
      *
-     * @param  \Laravel\Dusk\Browser  $browser
+     * @param \Laravel\Dusk\Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -59,8 +49,8 @@ class MenuPage extends Page
     /**
      * 创建.
      *
-     * @param  Browser  $browser
-     * @param  array  $input
+     * @param Browser $browser
+     * @param array $input
      * @return Browser
      */
     public function newMenu(Browser $browser, array $input)
@@ -71,6 +61,16 @@ class MenuPage extends Page
             $browser->pressAndWaitFor(__('admin.submit'), 2);
             $browser->waitForLocation($this->url(), 2);
         });
+    }
+
+    /**
+     * Get the URL for the page.
+     *
+     * @return string
+     */
+    public function url()
+    {
+        return admin_base_path('auth/menu');
     }
 
     /**

@@ -11,13 +11,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ScheduleTestCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'schedule:test {--name= : The name of the scheduled command to run}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -27,7 +20,12 @@ class ScheduleTestCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'schedule:test';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'schedule:test {--name= : The name of the scheduled command to run}';
     /**
      * The console command description.
      *
@@ -38,7 +36,7 @@ class ScheduleTestCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     public function handle(Schedule $schedule)
@@ -55,8 +53,8 @@ class ScheduleTestCommand extends Command
             return $this->comment('No scheduled commands have been defined.');
         }
 
-        if (! empty($name = $this->option('name'))) {
-            $commandBinary = Application::phpBinary().' '.Application::artisanBinary();
+        if (!empty($name = $this->option('name'))) {
+            $commandBinary = Application::phpBinary() . ' ' . Application::artisanBinary();
 
             $matches = array_filter($commandNames, function ($commandName) use ($commandBinary, $name) {
                 return trim(str_replace($commandBinary, '', $commandName)) === $name;
@@ -73,7 +71,7 @@ class ScheduleTestCommand extends Command
 
         $event = $commands[$index];
 
-        $this->line('<info>['.Carbon::now()->format('c').'] Running scheduled command:</info> '.$event->getSummaryForDisplay());
+        $this->line('<info>[' . Carbon::now()->format('c') . '] Running scheduled command:</info> ' . $event->getSummaryForDisplay());
 
         $event->run($this->laravel);
     }

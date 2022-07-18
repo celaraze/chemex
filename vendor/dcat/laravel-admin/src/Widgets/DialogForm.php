@@ -21,23 +21,23 @@ class DialogForm
      * @var array
      */
     protected $options = [
-        'title'          => 'Form',
-        'area'           => ['700px', '670px'],
-        'defaultUrl'     => null,
+        'title' => 'Form',
+        'area' => ['700px', '670px'],
+        'defaultUrl' => null,
         'buttonSelector' => null,
-        'query'          => null,
-        'lang'           => null,
-        'forceRefresh'   => false,
-        'resetButton'    => true,
+        'query' => null,
+        'lang' => null,
+        'forceRefresh' => false,
+        'resetButton' => true,
     ];
 
     /**
      * @var array
      */
     protected $handlers = [
-        'saved'   => null,
+        'saved' => null,
         'success' => null,
-        'error'   => null,
+        'error' => null,
     ];
 
     public function __construct(?string $title = null, $url = null)
@@ -48,7 +48,105 @@ class DialogForm
     }
 
     /**
-     * @param  array  $options
+     * 设置弹窗标题.
+     *
+     * @param string $title
+     * @return $this
+     */
+    public function title(?string $title)
+    {
+        $this->options['title'] = $title;
+
+        return $this;
+    }
+
+    /**
+     * 设置默认的表单页面url.
+     *
+     * @param null|string $url
+     * @return $this
+     */
+    public function url(?string $url)
+    {
+        if ($url) {
+            $this->options['defaultUrl'] = Helper::urlWithQuery(
+                admin_url($url),
+                [static::QUERY_NAME => 1]
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Form $form
+     */
+    public static function prepare(Form $form)
+    {
+        if (!static::is()) {
+            return;
+        }
+
+        Admin::baseCss([], false);
+        Admin::baseJs([], false);
+        Admin::fonts(false);
+        Admin::style('.form-content{ padding-top: 7px }');
+
+        $form->wrap(function ($v) {
+            return $v;
+        });
+
+        $form->disableHeader();
+        $form->disableFooter();
+
+        $form->width(9, 2);
+
+        $form->composing(function ($form) {
+            static::addScript($form);
+        });
+
+        Content::composing(function (Content $content) {
+            $content->view(static::$contentView);
+        });
+    }
+
+    /**
+     * 判断是否是获取弹窗表单内容的请求
+     *
+     * @return bool
+     */
+    public static function is()
+    {
+        return request(static::QUERY_NAME) ? true : false;
+    }
+
+    /**
+     * 设置弹窗宽度
+     * 支持百分比和"px".
+     *
+     * @param string|null $width
+     * @return $this
+     */
+    public function width(?string $width)
+    {
+        $this->options['area'][0] = $width;
+
+        return $this;
+    }
+
+    protected static function addScript(Form $form)
+    {
+        $confirm = json_encode($form->builder()->confirm);
+
+        Admin::script(
+            <<<JS
+Dcat.FormConfirm = {$confirm};
+JS
+        );
+    }
+
+    /**
+     * @param array $options
      * @return $this
      */
     public function options($options = [])
@@ -63,22 +161,9 @@ class DialogForm
     }
 
     /**
-     * 设置弹窗标题.
-     *
-     * @param  string  $title
-     * @return $this
-     */
-    public function title(?string $title)
-    {
-        $this->options['title'] = $title;
-
-        return $this;
-    }
-
-    /**
      * 绑定点击按钮.
      *
-     * @param  string  $buttonSelector
+     * @param string $buttonSelector
      * @return $this
      */
     public function click(string $buttonSelector)
@@ -103,7 +188,7 @@ class DialogForm
     /**
      * 重置按钮.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function resetButton(bool $value = true)
@@ -116,7 +201,7 @@ class DialogForm
     /**
      * 保存后触发的js的代码（不论成功还是失败）.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function saved(string $script)
@@ -129,7 +214,7 @@ class DialogForm
     /**
      * 保存失败时触发的js代码
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function error(string $script)
@@ -142,7 +227,7 @@ class DialogForm
     /**
      * 保存成功后触发的js代码
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function success(string $script)
@@ -156,8 +241,8 @@ class DialogForm
      * 设置弹窗宽高
      * 支持百分比和"px".
      *
-     * @param  string  $width
-     * @param  string  $height
+     * @param string $width
+     * @param string $height
      * @return $this
      */
     public function dimensions(string $width, string $height)
@@ -168,24 +253,10 @@ class DialogForm
     }
 
     /**
-     * 设置弹窗宽度
-     * 支持百分比和"px".
-     *
-     * @param  string|null  $width
-     * @return $this
-     */
-    public function width(?string $width)
-    {
-        $this->options['area'][0] = $width;
-
-        return $this;
-    }
-
-    /**
      * 设置弹窗高度
      * 支持百分比和"px".
      *
-     * @param  string|null  $height
+     * @param string|null $height
      * @return $this
      */
     public function height(?string $height)
@@ -195,22 +266,11 @@ class DialogForm
         return $this;
     }
 
-    /**
-     * 设置默认的表单页面url.
-     *
-     * @param  null|string  $url
-     * @return $this
-     */
-    public function url(?string $url)
+    public function __destruct()
     {
-        if ($url) {
-            $this->options['defaultUrl'] = Helper::urlWithQuery(
-                admin_url($url),
-                [static::QUERY_NAME => 1]
-            );
+        if ($results = Helper::render($this->render())) {
+            Admin::html($results);
         }
-
-        return $this;
     }
 
     /**
@@ -252,69 +312,9 @@ JS
     {
         $this->options['lang'] = [
             'submit' => trans('admin.submit'),
-            'reset'  => trans('admin.reset'),
+            'reset' => trans('admin.reset'),
         ];
 
         $this->options['query'] = static::QUERY_NAME;
-    }
-
-    /**
-     * 判断是否是获取弹窗表单内容的请求
-     *
-     * @return bool
-     */
-    public static function is()
-    {
-        return request(static::QUERY_NAME) ? true : false;
-    }
-
-    /**
-     * @param  Form  $form
-     */
-    public static function prepare(Form $form)
-    {
-        if (! static::is()) {
-            return;
-        }
-
-        Admin::baseCss([], false);
-        Admin::baseJs([], false);
-        Admin::fonts(false);
-        Admin::style('.form-content{ padding-top: 7px }');
-
-        $form->wrap(function ($v) {
-            return $v;
-        });
-
-        $form->disableHeader();
-        $form->disableFooter();
-
-        $form->width(9, 2);
-
-        $form->composing(function ($form) {
-            static::addScript($form);
-        });
-
-        Content::composing(function (Content $content) {
-            $content->view(static::$contentView);
-        });
-    }
-
-    protected static function addScript(Form $form)
-    {
-        $confirm = json_encode($form->builder()->confirm);
-
-        Admin::script(
-            <<<JS
-Dcat.FormConfirm = {$confirm};
-JS
-        );
-    }
-
-    public function __destruct()
-    {
-        if ($results = Helper::render($this->render())) {
-            Admin::html($results);
-        }
     }
 }

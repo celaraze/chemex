@@ -5,7 +5,7 @@
 @endsection
 
 <script>
-@section('popover-content')
+    @section('popover-content')
     $template.find('textarea').text($trigger.data('value'));
-@endsection
+    @endsection
 </script>

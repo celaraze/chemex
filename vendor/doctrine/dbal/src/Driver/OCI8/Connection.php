@@ -11,7 +11,6 @@ use Doctrine\DBAL\Driver\Statement as DriverStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\SQL\Parser;
 use Doctrine\Deprecations\Deprecation;
-
 use function addcslashes;
 use function assert;
 use function is_float;
@@ -36,14 +35,14 @@ final class Connection implements ServerInfoAwareConnection
     private $executionMode;
 
     /**
+     * @param resource $connection
      * @internal The connection can be only instantiated by its driver.
      *
-     * @param resource $connection
      */
     public function __construct($connection)
     {
-        $this->connection    = $connection;
-        $this->parser        = new Parser(false);
+        $this->connection = $connection;
+        $this->parser = new Parser(false);
         $this->executionMode = new ExecutionMode();
     }
 
@@ -59,30 +58,6 @@ final class Connection implements ServerInfoAwareConnection
         assert($result === 1);
 
         return $matches[1];
-    }
-
-    /**
-     * @throws Parser\Exception
-     */
-    public function prepare(string $sql): DriverStatement
-    {
-        $visitor = new ConvertPositionalToNamedPlaceholders();
-
-        $this->parser->parse($sql, $visitor);
-
-        $statement = oci_parse($this->connection, $visitor->getSQL());
-        assert(is_resource($statement));
-
-        return new Statement($this->connection, $statement, $visitor->getParameterMap(), $this->executionMode);
-    }
-
-    /**
-     * @throws Exception
-     * @throws Parser\Exception
-     */
-    public function query(string $sql): ResultInterface
-    {
-        return $this->prepare($sql)->execute();
     }
 
     /**
@@ -106,6 +81,21 @@ final class Connection implements ServerInfoAwareConnection
     public function exec(string $sql): int
     {
         return $this->prepare($sql)->execute()->rowCount();
+    }
+
+    /**
+     * @throws Parser\Exception
+     */
+    public function prepare(string $sql): DriverStatement
+    {
+        $visitor = new ConvertPositionalToNamedPlaceholders();
+
+        $this->parser->parse($sql, $visitor);
+
+        $statement = oci_parse($this->connection, $visitor->getSQL());
+        assert(is_resource($statement));
+
+        return new Statement($this->connection, $statement, $visitor->getParameterMap(), $this->executionMode);
     }
 
     /**
@@ -135,7 +125,16 @@ final class Connection implements ServerInfoAwareConnection
             throw SequenceDoesNotExist::new();
         }
 
-        return (int) $result;
+        return (int)$result;
+    }
+
+    /**
+     * @throws Exception
+     * @throws Parser\Exception
+     */
+    public function query(string $sql): ResultInterface
+    {
+        return $this->prepare($sql)->execute();
     }
 
     public function beginTransaction(): bool
@@ -147,7 +146,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function commit(): bool
     {
-        if (! oci_commit($this->connection)) {
+        if (!oci_commit($this->connection)) {
             throw Error::new($this->connection);
         }
 
@@ -158,7 +157,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function rollBack(): bool
     {
-        if (! oci_rollback($this->connection)) {
+        if (!oci_rollback($this->connection)) {
             throw Error::new($this->connection);
         }
 

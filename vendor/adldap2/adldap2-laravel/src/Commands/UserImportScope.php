@@ -39,7 +39,7 @@ class UserImportScope implements Scope
      * Apply the scope to a given Eloquent query builder.
      *
      * @param Builder $query
-     * @param Model   $model
+     * @param Model $model
      *
      * @return void
      */

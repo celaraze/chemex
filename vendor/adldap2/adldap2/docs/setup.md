@@ -91,7 +91,8 @@ If one is not defined, you will not retrieve any search results.
 
 ##### Username & Password
 
-To connect to your LDAP server, a username and password is required to be able to query and run operations on your server(s).
+To connect to your LDAP server, a username and password is required to be able to query and run operations on your
+server(s).
 
 You can use any account that has these permissions.
 
@@ -132,7 +133,8 @@ through the `Adldap\Auth\Guard::attempt()` method.
 
 This option is just for convenience.
 
-An example use case for this would be inserting your LDAP users `userPrincipalName` suffix so you don't need to append it manually.
+An example use case for this would be inserting your LDAP users `userPrincipalName` suffix so you don't need to append
+it manually.
 
 For example, with a `account_suffix` in your configuration set to `@corp.acme.org`:
 
@@ -154,7 +156,8 @@ Only insert a port if your LDAP server uses a unique port.
 
 ##### Follow Referrals
 
-The follow referrals option is a boolean to tell active directory to follow a referral to another server on your network if the server queried knows the information your asking for exists, but does not yet contain a copy of it locally.
+The follow referrals option is a boolean to tell active directory to follow a referral to another server on your network
+if the server queried knows the information your asking for exists, but does not yet contain a copy of it locally.
 
 This option is defaulted to false.
 
@@ -172,7 +175,8 @@ Only **one** can be set to `true`. You must chose either or.
 
 These options are definitely recommended if you have the ability to connect to your server securely.
 
-> **Note**: TLS is recommended over SSL, as SSL is now labelled as a depreciated mechanism for securely running LDAP operations.
+> **Note**: TLS is recommended over SSL, as SSL is now labelled as a depreciated mechanism for securely running LDAP
+> operations.
 
 ##### Version
 
@@ -191,7 +195,8 @@ The default is 5 seconds.
 
 Arbitrary options can be set for the connection to fine-tune TLS and connection behavior.
 
-Please note that `LDAP_OPT_PROTOCOL_VERSION`, `LDAP_OPT_NETWORK_TIMEOUT` and `LDAP_OPT_REFERRALS` will be ignored if set.
+Please note that `LDAP_OPT_PROTOCOL_VERSION`, `LDAP_OPT_NETWORK_TIMEOUT` and `LDAP_OPT_REFERRALS` will be ignored if
+set.
 
 These are set above with the `version`, `timeout` and `follow_referrals` keys respectively.
 
@@ -204,6 +209,7 @@ Each LDAP connection you have will be contained inside the `Adldap` instance as 
 There are a couple of ways you can easily add each of your LDAP connections. Let's walk through them:
 
 **Using a configuration array:**
+
 ```php
 $config = ['...'];
 
@@ -217,6 +223,7 @@ $ad->addProvider($config, 'connection-one');
 ```
 
 **Using a DomainConfiguration object:**
+
 ```php
 $ad = new Adldap\Adldap();
 
@@ -272,7 +279,8 @@ try {
 
 ### Using an alternate username / password
 
-If you'd like to connect to your configured connection using a different username and password than your configuration, then simply provide them in the second and third arguments:
+If you'd like to connect to your configured connection using a different username and password than your configuration,
+then simply provide them in the second and third arguments:
 
 ```php
 $username = 'server-admin';
@@ -406,15 +414,17 @@ some different attribute names than ActiveDirectory.
 The Adldap2 schema offers an attribute map for each available LDAP attribute, and
 is completely configurable and customizable.
 
-If you're using an alternate LDAP server variant such as OpenLDAP or FreeIPA, you **must** change the default schema inside your configuration array. If you do not, you won't receive the correct model instances for results, and you won't be
+If you're using an alternate LDAP server variant such as OpenLDAP or FreeIPA, you **must** change the default schema
+inside your configuration array. If you do not, you won't receive the correct model instances for results, and you won't
+be
 able to utilize some standard methods available on these models.
 
 By default, Adldap2 is configured to be used with **Microsoft ActiveDirectory**.
 
 When creating your configuration array, set your schema using the `schema` key:
 
-
 **Using configuration array:**
+
 ```php
 $ad = new Adldap\Adldap();
 
@@ -427,6 +437,7 @@ $ad->addProvider($config);
 ```
 
 **Using configuration object:**
+
 ```php
 $ad = new Adldap\Adldap();
 
@@ -437,13 +448,15 @@ $config->set('schema', Adldap\Schemas\OpenLDAP::class);
 $ad->addProvider($config);
 ```
 
-Once you've set the schema of your connection provider, you can use the same API interacting with different LDAP servers.
+Once you've set the schema of your connection provider, you can use the same API interacting with different LDAP
+servers.
 
 Continue onto the [searching](searching.md) documentation to learn how to begin querying your LDAP server(s).
 
 ## Using G-Suite Secure LDAP Service
 
-G-Suite LDAP service only uses client certificates and no username + password, make sure yo match base_dn with your domian.
+G-Suite LDAP service only uses client certificates and no username + password, make sure yo match base_dn with your
+domian.
 
 ```php
 $ad = new \Adldap\Adldap();
@@ -505,11 +518,14 @@ try {
 
 ### Introduction
 
-If you want to connect to your LDAP server without utilizing Adldap's models (old fashion way), and want to get back the data in a raw format you can easily do so.
+If you want to connect to your LDAP server without utilizing Adldap's models (old fashion way), and want to get back the
+data in a raw format you can easily do so.
 
-If you call `getConnection()` on your connected provider instance, you can perform all LDAP functions on a container class that encapsulates all of PHP's LDAP methods.
+If you call `getConnection()` on your connected provider instance, you can perform all LDAP functions on a container
+class that encapsulates all of PHP's LDAP methods.
 
-You can view all methods avaialble by browsing the LDAP class [here](https://github.com/Adldap2/Adldap2/blob/master/src/Connections/Ldap.php).
+You can view all methods avaialble by browsing the LDAP
+class [here](https://github.com/Adldap2/Adldap2/blob/master/src/Connections/Ldap.php).
 
 Now for some examples:
 

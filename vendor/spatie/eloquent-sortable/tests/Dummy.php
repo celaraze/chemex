@@ -10,7 +10,7 @@ class Dummy extends Model implements Sortable
 {
     use SortableTrait;
 
+    public $timestamps = false;
     protected $table = 'dummies';
     protected $guarded = [];
-    public $timestamps = false;
 }

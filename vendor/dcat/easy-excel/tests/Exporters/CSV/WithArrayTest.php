@@ -15,7 +15,7 @@ class WithArrayTest extends TestCase
      */
     public function testStore()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $storePath = $this->generateTempFilePath('csv');
 
@@ -46,7 +46,7 @@ class WithArrayTest extends TestCase
      */
     public function testRaw()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         $storePath = $this->generateTempFilePath('csv');
 

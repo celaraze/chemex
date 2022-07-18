@@ -59,18 +59,26 @@ class Factory
         $this->constuctParams = &$params;
     }
 
+    public function __call($method, array $arguments = [])
+    {
+        if (in_array($method, static::$exporterMethods)) {
+            return $this->resolveExporter()->{$method}(...$arguments);
+        } elseif (in_array($method, static::$importerMethods)) {
+            return $this->resolveImporter()->{$method}(...$arguments);
+        }
+
+        $this->callers[] = [
+            'method' => $method,
+            'arguments' => &$arguments,
+        ];
+
+        return $this;
+    }
+
     protected function resolveExporter()
     {
         return $this->call(
             Excel::export(...$this->constuctParams)
-                ->type($this->type)
-        );
-    }
-
-    protected function resolveImporter()
-    {
-        return $this->call(
-            Excel::import(...$this->constuctParams)
                 ->type($this->type)
         );
     }
@@ -84,19 +92,11 @@ class Factory
         return $excel;
     }
 
-    public function __call($method, array $arguments = [])
+    protected function resolveImporter()
     {
-        if (in_array($method, static::$exporterMethods)) {
-            return $this->resolveExporter()->{$method}(...$arguments);
-        } elseif (in_array($method, static::$importerMethods)) {
-            return $this->resolveImporter()->{$method}(...$arguments);
-        }
-
-        $this->callers[] = [
-            'method'    => $method,
-            'arguments' => &$arguments,
-        ];
-
-        return $this;
+        return $this->call(
+            Excel::import(...$this->constuctParams)
+                ->type($this->type)
+        );
     }
 }

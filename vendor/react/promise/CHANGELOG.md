@@ -3,93 +3,96 @@ CHANGELOG for 2.x
 
 * 2.9.0 (2022-02-11)
 
-    *   Feature: Support union types and address deprecation of `ReflectionType::getClass()` (PHP 8+).
-        (#198 by @cdosoftei and @SimonFrings)
+    * Feature: Support union types and address deprecation of `ReflectionType::getClass()` (PHP 8+).
+      (#198 by @cdosoftei and @SimonFrings)
 
-        ```php
-        $promise->otherwise(function (OverflowException|UnderflowException $e) {
-            echo 'Error: ' . $e->getMessage() . PHP_EOL;
-        });
-        ```
+      ```php
+      $promise->otherwise(function (OverflowException|UnderflowException $e) {
+          echo 'Error: ' . $e->getMessage() . PHP_EOL;
+      });
+      ```
 
-    *   Feature: Support intersection types (PHP 8.1+).
-        (#195 by @bzikarsky)
+    * Feature: Support intersection types (PHP 8.1+).
+      (#195 by @bzikarsky)
 
-        ```php
-        $promise->otherwise(function (OverflowException&CacheException $e) {
-            echo 'Error: ' . $e->getMessage() . PHP_EOL;
-        });
-        ```
+      ```php
+      $promise->otherwise(function (OverflowException&CacheException $e) {
+          echo 'Error: ' . $e->getMessage() . PHP_EOL;
+      });
+      ```
 
-    *   Improve test suite, use GitHub actions for continuous integration (CI),
-        update to PHPUnit 9, and add full core team to the license.
-        (#174, #183, #186, and #201 by @SimonFrings and #211 by @clue)
+    * Improve test suite, use GitHub actions for continuous integration (CI),
+      update to PHPUnit 9, and add full core team to the license.
+      (#174, #183, #186, and #201 by @SimonFrings and #211 by @clue)
 
 * 2.8.0 (2020-05-12)
 
-    *   Mark `FulfilledPromise`, `RejectedPromise` and `LazyPromise` as deprecated for Promise v2 (and remove for Promise v3).
-        (#143 and #165 by @clue)
+    * Mark `FulfilledPromise`, `RejectedPromise` and `LazyPromise` as deprecated for Promise v2 (and remove for Promise
+      v3).
+      (#143 and #165 by @clue)
 
-        ```php
-        // deprecated
-        $fulfilled = new React\Promise\FulfilledPromise($value);
-        $rejected = new React\Promise\RejectedPromise($reason);
+      ```php
+      // deprecated
+      $fulfilled = new React\Promise\FulfilledPromise($value);
+      $rejected = new React\Promise\RejectedPromise($reason);
 
-        // recommended alternatives
-        $fulfilled = React\Promise\resolve($value);
-        $rejected = React\Promise\reject($reason);
-        ```
+      // recommended alternatives
+      $fulfilled = React\Promise\resolve($value);
+      $rejected = React\Promise\reject($reason);
+      ```
 
-    *   Fix: Fix checking whether cancellable promise is an object and avoid possible warning.
-        (#168 by @smscr and @jsor)
+    * Fix: Fix checking whether cancellable promise is an object and avoid possible warning.
+      (#168 by @smscr and @jsor)
 
-    *   Improve documentation and add docblocks to functions and interfaces.
-        (#135 by @CharlotteDunois)
+    * Improve documentation and add docblocks to functions and interfaces.
+      (#135 by @CharlotteDunois)
 
-    *   Add `.gitattributes` to exclude dev files from exports.
-        (#154 by @reedy)
+    * Add `.gitattributes` to exclude dev files from exports.
+      (#154 by @reedy)
 
-    *   Improve test suite, run tests on PHP 7.4 and update PHPUnit test setup.
-        (#163 by @clue)
+    * Improve test suite, run tests on PHP 7.4 and update PHPUnit test setup.
+      (#163 by @clue)
 
 * 2.7.1 (2018-01-07)
 
-    *   Fix: file_exists warning when resolving with long strings.
-        (#130 by @sbesselsen)
-    *   Improve performance by prefixing all global functions calls with \ to skip the look up and resolve process and go straight to the global function.
-        (#133 by @WyriHaximus)
+    * Fix: file_exists warning when resolving with long strings.
+      (#130 by @sbesselsen)
+    * Improve performance by prefixing all global functions calls with \ to skip the look up and resolve process and go
+      straight to the global function.
+      (#133 by @WyriHaximus)
 
 * 2.7.0 (2018-06-13)
 
-    *   Feature: Improve memory consumption for pending promises by using static internal callbacks without binding to self.
-        (#124 by @clue)
+    * Feature: Improve memory consumption for pending promises by using static internal callbacks without binding to
+      self.
+      (#124 by @clue)
 
 * 2.6.0 (2018-06-11)
 
-    *   Feature: Significantly improve memory consumption and performance by only passing resolver args
-        to resolver and canceller if callback requires them. Also use static callbacks without
-        binding to promise, clean up canceller function reference when they are no longer
-        needed and hide resolver and canceller references from call stack on PHP 7+.
-        (#113, #115, #116, #117, #118, #119 and #123 by @clue)
+    * Feature: Significantly improve memory consumption and performance by only passing resolver args
+      to resolver and canceller if callback requires them. Also use static callbacks without
+      binding to promise, clean up canceller function reference when they are no longer
+      needed and hide resolver and canceller references from call stack on PHP 7+.
+      (#113, #115, #116, #117, #118, #119 and #123 by @clue)
 
-        These changes combined mean that rejecting promises with an `Exception` should
-        no longer cause any internal circular references which could cause some unexpected
-        memory growth in previous versions. By explicitly avoiding and explicitly
-        cleaning up said references, we can avoid relying on PHP's circular garbage collector
-        to kick in which significantly improves performance when rejecting many promises.
+      These changes combined mean that rejecting promises with an `Exception` should
+      no longer cause any internal circular references which could cause some unexpected
+      memory growth in previous versions. By explicitly avoiding and explicitly
+      cleaning up said references, we can avoid relying on PHP's circular garbage collector
+      to kick in which significantly improves performance when rejecting many promises.
 
-    *   Mark legacy progress support / notification API as deprecated
-        (#112 by @clue)
+    * Mark legacy progress support / notification API as deprecated
+      (#112 by @clue)
 
-    *   Recommend rejecting promises by throwing an exception
-        (#114 by @jsor)
+    * Recommend rejecting promises by throwing an exception
+      (#114 by @jsor)
 
-    *   Improve documentation to properly instantiate LazyPromise
-        (#121 by @holtkamp)
+    * Improve documentation to properly instantiate LazyPromise
+      (#121 by @holtkamp)
 
-    *   Follower cancellation propagation was originally planned for this release
-        but has been reverted for now and is planned for a future release.
-        (#99 by @jsor and #122 by @clue)
+    * Follower cancellation propagation was originally planned for this release
+      but has been reverted for now and is planned for a future release.
+      (#99 by @jsor and #122 by @clue)
 
 * 2.5.1 (2017-03-25)
 
@@ -168,14 +171,14 @@ CHANGELOG for 2.x
 
 * 2.0.0 (2013-12-10)
 
-    New major release. The goal is to streamline the API and to make it more
-    compliant with other promise libraries and especially with the new upcoming
-    [ES6 promises specification](https://github.com/domenic/promises-unwrapping/).
+  New major release. The goal is to streamline the API and to make it more
+  compliant with other promise libraries and especially with the new upcoming
+  [ES6 promises specification](https://github.com/domenic/promises-unwrapping/).
 
     * Add standalone Promise class.
     * Add new `race()` function.
     * BC break: Bump minimum PHP version to PHP 5.4.
-    * BC break: Remove `ResolverInterface` and `PromiseInterface` from 
+    * BC break: Remove `ResolverInterface` and `PromiseInterface` from
       `Deferred`.
     * BC break: Change signature of `PromiseInterface`.
     * BC break: Remove `When` and `Util` classes and move static methods to

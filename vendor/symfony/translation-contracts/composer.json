@@ -2,7 +2,14 @@
     "name": "symfony/translation-contracts",
     "type": "library",
     "description": "Generic abstractions related to translation",
-    "keywords": ["abstractions", "contracts", "decoupling", "interfaces", "interoperability", "standards"],
+    "keywords": [
+        "abstractions",
+        "contracts",
+        "decoupling",
+        "interfaces",
+        "interoperability",
+        "standards"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -22,7 +29,9 @@
         "symfony/translation-implementation": ""
     },
     "autoload": {
-        "psr-4": { "Symfony\\Contracts\\Translation\\": "" },
+        "psr-4": {
+            "Symfony\\Contracts\\Translation\\": ""
+        },
         "exclude-from-classmap": [
             "/Test/"
         ]

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 use IteratorAggregate;
@@ -22,17 +23,17 @@ final class GroupCollection implements IteratorAggregate
      */
     private $groups;
 
+    private function __construct(Group ...$groups)
+    {
+        $this->groups = $groups;
+    }
+
     /**
      * @param Group[] $groups
      */
     public static function fromArray(array $groups): self
     {
         return new self(...$groups);
-    }
-
-    private function __construct(Group ...$groups)
-    {
-        $this->groups = $groups;
     }
 
     /**

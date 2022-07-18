@@ -1,4 +1,3 @@
-
 <div class="dcat-box">
 
     <div class="d-block pb-0">
@@ -10,7 +9,7 @@
     {!! $grid->renderHeader() !!}
 
     <div class="{!! $grid->formatTableParentClass() !!}">
-        <table class="{{ $grid->formatTableClass() }}" id="{{ $tableId }}" >
+        <table class="{{ $grid->formatTableClass() }}" id="{{ $tableId }}">
             <thead>
             @if ($headers = $grid->getVisibleComplexHeaders())
                 <tr>
@@ -41,7 +40,9 @@
             @if ($grid->rows()->isEmpty())
                 <tr>
                     <td colspan="{!! count($grid->getVisibleColumnNames()) !!}">
-                        <div style="margin:5px 0 0 10px;"><span class="help-block" style="margin-bottom:0"><i class="feather icon-alert-circle"></i>&nbsp;{{ trans('admin.no_data') }}</span></div>
+                        <div style="margin:5px 0 0 10px;"><span class="help-block" style="margin-bottom:0"><i
+                                    class="feather icon-alert-circle"></i>&nbsp;{{ trans('admin.no_data') }}</span>
+                        </div>
                     </td>
                 </tr>
             @endif

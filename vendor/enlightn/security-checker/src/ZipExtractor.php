@@ -38,7 +38,7 @@ class ZipExtractor
     {
         $finder = new ExecutableFinder;
 
-        return (bool) $finder->find('unzip');
+        return (bool)$finder->find('unzip');
     }
 
     /**
@@ -77,8 +77,8 @@ class ZipExtractor
     /**
      * Give a meaningful error message to the user.
      *
-     * @param  int    $retval
-     * @param  string $file
+     * @param int $retval
+     * @param string $file
      * @return string
      */
     protected function getErrorMessage($retval, $file)

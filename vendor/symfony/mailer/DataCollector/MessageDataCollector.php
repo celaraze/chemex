@@ -29,17 +29,17 @@ final class MessageDataCollector extends DataCollector
         $this->events = $logger->getEvents();
     }
 
+    public function getEvents(): MessageEvents
+    {
+        return $this->data['events'];
+    }
+
     /**
      * {@inheritdoc}
      */
     public function collect(Request $request, Response $response, \Throwable $exception = null)
     {
         $this->data['events'] = $this->events;
-    }
-
-    public function getEvents(): MessageEvents
-    {
-        return $this->data['events'];
     }
 
     /**

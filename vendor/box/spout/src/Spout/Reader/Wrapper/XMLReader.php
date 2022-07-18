@@ -77,11 +77,28 @@ class XMLReader extends \XMLReader
     }
 
     /**
+     * Read until the element with the given name is found, or the end of the file.
+     *
+     * @param string $nodeName Name of the node to find
+     * @return bool TRUE on success or FALSE on failure
+     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
+     */
+    public function readUntilNodeFound($nodeName)
+    {
+        do {
+            $wasReadSuccessful = $this->read();
+            $isNotPositionedOnStartingNode = !$this->isPositionedOnStartingNode($nodeName);
+        } while ($wasReadSuccessful && $isNotPositionedOnStartingNode);
+
+        return $wasReadSuccessful;
+    }
+
+    /**
      * Move to next node in document
+     * @return bool TRUE on success or FALSE on failure
+     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
      * @see \XMLReader::read
      *
-     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
-     * @return bool TRUE on success or FALSE on failure
      */
     public function read()
     {
@@ -95,57 +112,12 @@ class XMLReader extends \XMLReader
     }
 
     /**
-     * Read until the element with the given name is found, or the end of the file.
-     *
-     * @param string $nodeName Name of the node to find
-     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
-     * @return bool TRUE on success or FALSE on failure
-     */
-    public function readUntilNodeFound($nodeName)
-    {
-        do {
-            $wasReadSuccessful = $this->read();
-            $isNotPositionedOnStartingNode = !$this->isPositionedOnStartingNode($nodeName);
-        } while ($wasReadSuccessful && $isNotPositionedOnStartingNode);
-
-        return $wasReadSuccessful;
-    }
-
-    /**
-     * Move cursor to next node skipping all subtrees
-     * @see \XMLReader::next
-     *
-     * @param string|null $localName The name of the next node to move to
-     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
-     * @return bool TRUE on success or FALSE on failure
-     */
-    public function next($localName = null)
-    {
-        $this->useXMLInternalErrors();
-
-        $wasNextSuccessful = parent::next($localName);
-
-        $this->resetXMLInternalErrorsSettingAndThrowIfXMLErrorOccured();
-
-        return $wasNextSuccessful;
-    }
-
-    /**
      * @param string $nodeName
      * @return bool Whether the XML Reader is currently positioned on the starting node with given name
      */
     public function isPositionedOnStartingNode($nodeName)
     {
         return $this->isPositionedOnNode($nodeName, self::ELEMENT);
-    }
-
-    /**
-     * @param string $nodeName
-     * @return bool Whether the XML Reader is currently positioned on the ending node with given name
-     */
-    public function isPositionedOnEndingNode($nodeName)
-    {
-        return $this->isPositionedOnNode($nodeName, self::END_ELEMENT);
     }
 
     /**
@@ -162,6 +134,34 @@ class XMLReader extends \XMLReader
         $currentNodeName = ($hasPrefix) ? $this->name : $this->localName;
 
         return ($this->nodeType === $nodeType && $currentNodeName === $nodeName);
+    }
+
+    /**
+     * Move cursor to next node skipping all subtrees
+     * @param string|null $localName The name of the next node to move to
+     * @return bool TRUE on success or FALSE on failure
+     * @throws \Box\Spout\Reader\Exception\XMLProcessingException If an error/warning occurred
+     * @see \XMLReader::next
+     *
+     */
+    public function next($localName = null)
+    {
+        $this->useXMLInternalErrors();
+
+        $wasNextSuccessful = parent::next($localName);
+
+        $this->resetXMLInternalErrorsSettingAndThrowIfXMLErrorOccured();
+
+        return $wasNextSuccessful;
+    }
+
+    /**
+     * @param string $nodeName
+     * @return bool Whether the XML Reader is currently positioned on the ending node with given name
+     */
+    public function isPositionedOnEndingNode($nodeName)
+    {
+        return $this->isPositionedOnNode($nodeName, self::END_ELEMENT);
     }
 
     /**

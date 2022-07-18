@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Template;
 
 use function array_merge;
@@ -45,7 +46,7 @@ final class Template
     {
         $this->setFile($file);
 
-        $this->openDelimiter  = $openDelimiter;
+        $this->openDelimiter = $openDelimiter;
         $this->closeDelimiter = $closeDelimiter;
     }
 
@@ -79,17 +80,6 @@ final class Template
         }
     }
 
-    public function render(): string
-    {
-        $keys = [];
-
-        foreach ($this->values as $key => $value) {
-            $keys[] = $this->openDelimiter . $key . $this->closeDelimiter;
-        }
-
-        return str_replace($keys, $this->values, $this->template);
-    }
-
     /**
      * @codeCoverageIgnore
      */
@@ -103,5 +93,16 @@ final class Template
                 )
             );
         }
+    }
+
+    public function render(): string
+    {
+        $keys = [];
+
+        foreach ($this->values as $key => $value) {
+            $keys[] = $this->openDelimiter . $key . $this->closeDelimiter;
+        }
+
+        return str_replace($keys, $this->values, $this->template);
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\DBAL\Types;
 
 use Doctrine\DBAL\Exception;
-
 use function array_search;
 use function in_array;
 
@@ -33,7 +32,7 @@ final class TypeRegistry
      */
     public function get(string $name): Type
     {
-        if (! isset($this->instances[$name])) {
+        if (!isset($this->instances[$name])) {
             throw Exception::unknownColumnType($name);
         }
 
@@ -51,6 +50,17 @@ final class TypeRegistry
 
         if ($name === null) {
             throw Exception::typeNotRegistered($type);
+        }
+
+        return $name;
+    }
+
+    private function findTypeName(Type $type): ?string
+    {
+        $name = array_search($type, $this->instances, true);
+
+        if ($name === false) {
+            return null;
         }
 
         return $name;
@@ -89,11 +99,11 @@ final class TypeRegistry
      */
     public function override(string $name, Type $type): void
     {
-        if (! isset($this->instances[$name])) {
+        if (!isset($this->instances[$name])) {
             throw Exception::typeNotFound($name);
         }
 
-        if (! in_array($this->findTypeName($type), [$name, null], true)) {
+        if (!in_array($this->findTypeName($type), [$name, null], true)) {
             throw Exception::typeAlreadyRegistered($type);
         }
 
@@ -103,23 +113,12 @@ final class TypeRegistry
     /**
      * Gets the map of all registered types and their corresponding type instances.
      *
+     * @return array<string, Type>
      * @internal
      *
-     * @return array<string, Type>
      */
     public function getMap(): array
     {
         return $this->instances;
-    }
-
-    private function findTypeName(Type $type): ?string
-    {
-        $name = array_search($type, $this->instances, true);
-
-        if ($name === false) {
-            return null;
-        }
-
-        return $name;
     }
 }

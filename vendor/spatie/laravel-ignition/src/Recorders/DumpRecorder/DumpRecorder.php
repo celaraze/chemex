@@ -11,12 +11,10 @@ use Symfony\Component\VarDumper\VarDumper;
 
 class DumpRecorder
 {
+    protected static bool $registeredHandler = false;
     /** @var array<array<int,mixed>> */
     protected array $dumps = [];
-
     protected Application $app;
-
-    protected static bool $registeredHandler = false;
 
     public function __construct(Application $app)
     {
@@ -27,21 +25,35 @@ class DumpRecorder
     {
         $multiDumpHandler = new MultiDumpHandler();
 
-        $this->app->singleton(MultiDumpHandler::class, fn () => $multiDumpHandler);
+        $this->app->singleton(MultiDumpHandler::class, fn() => $multiDumpHandler);
 
-        if (! self::$registeredHandler) {
+        if (!self::$registeredHandler) {
             static::$registeredHandler = true;
 
             $this->ensureOriginalHandlerExists();
 
-            $originalHandler = VarDumper::setHandler(fn ($dumpedVariable) => $multiDumpHandler->dump($dumpedVariable));
+            $originalHandler = VarDumper::setHandler(fn($dumpedVariable) => $multiDumpHandler->dump($dumpedVariable));
 
             $multiDumpHandler?->addHandler($originalHandler);
 
-            $multiDumpHandler->addHandler(fn ($var) => (new DumpHandler($this))->dump($var));
+            $multiDumpHandler->addHandler(fn($var) => (new DumpHandler($this))->dump($var));
         }
 
         return $this;
+    }
+
+    protected function ensureOriginalHandlerExists(): void
+    {
+        $reflectionProperty = new ReflectionProperty(VarDumper::class, 'handler');
+        $reflectionProperty->setAccessible(true);
+        $handler = $reflectionProperty->getValue();
+
+        if (!$handler) {
+            // No handler registered yet, so we'll force VarDumper to create one.
+            $reflectionMethod = new ReflectionMethod(VarDumper::class, 'register');
+            $reflectionMethod->setAccessible(true);
+            $reflectionMethod->invoke(null);
+        }
     }
 
     public function record(Data $data): void
@@ -50,55 +62,12 @@ class DumpRecorder
 
         $sourceFrame = $this->findSourceFrame($backtrace);
 
-        $file = (string) Arr::get($sourceFrame, 'file');
-        $lineNumber = (int) Arr::get($sourceFrame, 'line');
+        $file = (string)Arr::get($sourceFrame, 'file');
+        $lineNumber = (int)Arr::get($sourceFrame, 'line');
 
         $htmlDump = (new HtmlDumper())->dump($data);
 
         $this->dumps[] = new Dump($htmlDump, $file, $lineNumber);
-    }
-
-    public function getDumps(): array
-    {
-        return $this->toArray();
-    }
-
-    public function reset()
-    {
-        $this->dumps = [];
-    }
-
-    public function toArray(): array
-    {
-        $dumps = [];
-
-        foreach ($this->dumps as $dump) {
-            $dumps[] = $dump->toArray();
-        }
-
-        return $dumps;
-    }
-
-    /*
-     * Only the `VarDumper` knows how to create the orignal HTML or CLI VarDumper.
-     * Using reflection and the private VarDumper::register() method we can force it
-     * to create and register a new VarDumper::$handler before we'll overwrite it.
-     * Of course, we only need to do this if there isn't a registered VarDumper::$handler.
-     *
-     * @throws \ReflectionException
-     */
-    protected function ensureOriginalHandlerExists(): void
-    {
-        $reflectionProperty = new ReflectionProperty(VarDumper::class, 'handler');
-        $reflectionProperty->setAccessible(true);
-        $handler = $reflectionProperty->getValue();
-
-        if (! $handler) {
-            // No handler registered yet, so we'll force VarDumper to create one.
-            $reflectionMethod = new ReflectionMethod(VarDumper::class, 'register');
-            $reflectionMethod->setAccessible(true);
-            $reflectionMethod->invoke(null);
-        }
     }
 
     /**
@@ -122,7 +91,7 @@ class DumpRecorder
                 continue;
             }
 
-            if (! $seenVarDumper) {
+            if (!$seenVarDumper) {
                 continue;
             }
 
@@ -131,5 +100,35 @@ class DumpRecorder
         }
 
         return null;
+    }
+
+    public function getDumps(): array
+    {
+        return $this->toArray();
+    }
+
+    /*
+     * Only the `VarDumper` knows how to create the orignal HTML or CLI VarDumper.
+     * Using reflection and the private VarDumper::register() method we can force it
+     * to create and register a new VarDumper::$handler before we'll overwrite it.
+     * Of course, we only need to do this if there isn't a registered VarDumper::$handler.
+     *
+     * @throws \ReflectionException
+     */
+
+    public function toArray(): array
+    {
+        $dumps = [];
+
+        foreach ($this->dumps as $dump) {
+            $dumps[] = $dump->toArray();
+        }
+
+        return $dumps;
+    }
+
+    public function reset()
+    {
+        $this->dumps = [];
     }
 }

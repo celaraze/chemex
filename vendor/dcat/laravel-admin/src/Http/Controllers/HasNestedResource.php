@@ -29,6 +29,48 @@ trait HasNestedResource
     }
 
     /**
+     * @return string|null
+     */
+    public function getNestedResourceId()
+    {
+        if ($this->nestedResourceId) {
+            return $this->nestedResourceId;
+        }
+
+        return $this->nestedResourceId = request($this->getRouteParameterName());
+    }
+
+    /**
+     * @param string|int $id
+     * @return void
+     */
+    public function setNestedResourceId($id)
+    {
+        $this->nestedResourceId = $id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRouteParameterName()
+    {
+        if ($this->routeParameterName) {
+            return $this->routeParameterName;
+        }
+
+        return $this->routeParameterName = last(request()->route()->parameterNames());
+    }
+
+    /**
+     * @param string $name
+     * @return void
+     */
+    public function setRouteParameterName($name)
+    {
+        $this->routeParameterName = (string)$name;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function edit($id, Content $content)
@@ -50,47 +92,5 @@ trait HasNestedResource
     public function destroy($id)
     {
         return parent::destroy($this->getNestedResourceId());
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNestedResourceId()
-    {
-        if ($this->nestedResourceId) {
-            return $this->nestedResourceId;
-        }
-
-        return $this->nestedResourceId = request($this->getRouteParameterName());
-    }
-
-    /**
-     * @param  string|int  $id
-     * @return void
-     */
-    public function setNestedResourceId($id)
-    {
-        $this->nestedResourceId = $id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRouteParameterName()
-    {
-        if ($this->routeParameterName) {
-            return $this->routeParameterName;
-        }
-
-        return $this->routeParameterName = last(request()->route()->parameterNames());
-    }
-
-    /**
-     * @param  string  $name
-     * @return void
-     */
-    public function setRouteParameterName($name)
-    {
-        $this->routeParameterName = (string) $name;
     }
 }

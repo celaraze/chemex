@@ -26,7 +26,7 @@ class RenderedContent implements RenderedContentInterface, \Stringable
     public function __construct(Document $document, string $content)
     {
         $this->document = $document;
-        $this->content  = $content;
+        $this->content = $content;
     }
 
     public function getDocument(): Document

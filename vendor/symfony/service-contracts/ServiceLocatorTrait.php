@@ -71,28 +71,6 @@ trait ServiceLocatorTrait
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getProvidedServices(): array
-    {
-        if (!isset($this->providedTypes)) {
-            $this->providedTypes = [];
-
-            foreach ($this->factories as $name => $factory) {
-                if (!\is_callable($factory)) {
-                    $this->providedTypes[$name] = '?';
-                } else {
-                    $type = (new \ReflectionFunction($factory))->getReturnType();
-
-                    $this->providedTypes[$name] = $type ? ($type->allowsNull() ? '?' : '').($type instanceof \ReflectionNamedType ? $type->getName() : $type) : '?';
-                }
-            }
-        }
-
-        return $this->providedTypes;
-    }
-
     private function createNotFoundException(string $id): NotFoundExceptionInterface
     {
         if (!$alternatives = array_keys($this->factories)) {
@@ -120,5 +98,27 @@ trait ServiceLocatorTrait
     {
         return new class(sprintf('Circular reference detected for service "%s", path: "%s".', $id, implode(' -> ', $path))) extends \RuntimeException implements ContainerExceptionInterface {
         };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProvidedServices(): array
+    {
+        if (!isset($this->providedTypes)) {
+            $this->providedTypes = [];
+
+            foreach ($this->factories as $name => $factory) {
+                if (!\is_callable($factory)) {
+                    $this->providedTypes[$name] = '?';
+                } else {
+                    $type = (new \ReflectionFunction($factory))->getReturnType();
+
+                    $this->providedTypes[$name] = $type ? ($type->allowsNull() ? '?' : '') . ($type instanceof \ReflectionNamedType ? $type->getName() : $type) : '?';
+                }
+            }
+        }
+
+        return $this->providedTypes;
     }
 }

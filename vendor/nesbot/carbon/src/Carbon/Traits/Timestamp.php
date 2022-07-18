@@ -21,7 +21,7 @@ trait Timestamp
      *
      * Timestamp input can be given as int, float or a string containing one or more numbers.
      *
-     * @param float|int|string          $timestamp
+     * @param float|int|string $timestamp
      * @param \DateTimeZone|string|null $tz
      *
      * @return static
@@ -46,9 +46,61 @@ trait Timestamp
         $delta = floor($decimal / static::MICROSECONDS_PER_SECOND);
         $integer += $delta;
         $decimal -= $delta * static::MICROSECONDS_PER_SECOND;
-        $decimal = str_pad((string) $decimal, 6, '0', STR_PAD_LEFT);
+        $decimal = str_pad((string)$decimal, 6, '0', STR_PAD_LEFT);
 
         return static::rawCreateFromFormat('U u', "$integer $decimal");
+    }
+
+    /**
+     * Return an array with integer part digits and decimals digits split from one or more positive numbers
+     * (such as timestamps) as string with the given number of decimals (6 by default).
+     *
+     * By splitting integer and decimal, this method obtain a better precision than
+     * number_format when the input is a string.
+     *
+     * @param float|int|string $numbers one or more numbers
+     * @param int $decimals number of decimals precision (6 by default)
+     *
+     * @return array 0-index is integer part, 1-index is decimal part digits
+     */
+    private static function getIntegerAndDecimalParts($numbers, $decimals = 6)
+    {
+        if (\is_int($numbers) || \is_float($numbers)) {
+            $numbers = number_format($numbers, $decimals, '.', '');
+        }
+
+        $sign = str_starts_with($numbers, '-') ? -1 : 1;
+        $integer = 0;
+        $decimal = 0;
+
+        foreach (preg_split('`[^0-9.]+`', $numbers) as $chunk) {
+            [$integerPart, $decimalPart] = explode('.', "$chunk.");
+
+            $integer += (int)$integerPart;
+            $decimal += (float)("0.$decimalPart");
+        }
+
+        $overflow = floor($decimal);
+        $integer += $overflow;
+        $decimal -= $overflow;
+
+        return [$sign * $integer, $decimal === 0.0 ? 0.0 : $sign * round($decimal * pow(10, $decimals))];
+    }
+
+    /**
+     * Create a Carbon instance from a timestamp in milliseconds.
+     *
+     * Timestamp input can be given as int, float or a string containing one or more numbers.
+     *
+     * @param float|int|string $timestamp
+     * @param \DateTimeZone|string|null $tz
+     *
+     * @return static
+     */
+    public static function createFromTimestampMs($timestamp, $tz = null)
+    {
+        return static::createFromTimestampMsUTC($timestamp)
+            ->setTimezone($tz);
     }
 
     /**
@@ -76,22 +128,6 @@ trait Timestamp
     }
 
     /**
-     * Create a Carbon instance from a timestamp in milliseconds.
-     *
-     * Timestamp input can be given as int, float or a string containing one or more numbers.
-     *
-     * @param float|int|string          $timestamp
-     * @param \DateTimeZone|string|null $tz
-     *
-     * @return static
-     */
-    public static function createFromTimestampMs($timestamp, $tz = null)
-    {
-        return static::createFromTimestampMsUTC($timestamp)
-            ->setTimezone($tz);
-    }
-
-    /**
      * Set the instance's timestamp.
      *
      * Timestamp input can be given as int, float or a string containing one or more numbers.
@@ -106,8 +142,21 @@ trait Timestamp
     }
 
     /**
+     * Returns the milliseconds timestamps used amongst other by Date javascript objects.
+     *
+     * @return float
+     */
+    public function valueOf()
+    {
+        return $this->getPreciseTimestamp(3);
+    }
+
+    /**
      * Returns a timestamp rounded with the given precision (6 by default).
      *
+     * @param int $precision
+     *
+     * @return float
      * @example getPreciseTimestamp()   1532087464437474 (microsecond maximum precision)
      * @example getPreciseTimestamp(6)  1532087464437474
      * @example getPreciseTimestamp(5)  153208746443747  (1/100000 second precision)
@@ -119,23 +168,10 @@ trait Timestamp
      * @example getPreciseTimestamp(-1) 153208746        (10 second precision)
      * @example getPreciseTimestamp(-2) 15320875         (100 second precision)
      *
-     * @param int $precision
-     *
-     * @return float
      */
     public function getPreciseTimestamp($precision = 6)
     {
-        return round(((float) $this->rawFormat('Uu')) / pow(10, 6 - $precision));
-    }
-
-    /**
-     * Returns the milliseconds timestamps used amongst other by Date javascript objects.
-     *
-     * @return float
-     */
-    public function valueOf()
-    {
-        return $this->getPreciseTimestamp(3);
+        return round(((float)$this->rawFormat('Uu')) / pow(10, 6 - $precision));
     }
 
     /**
@@ -145,7 +181,7 @@ trait Timestamp
      */
     public function getTimestampMs()
     {
-        return (int) $this->getPreciseTimestamp(3);
+        return (int)$this->getPreciseTimestamp(3);
     }
 
     /**
@@ -158,41 +194,5 @@ trait Timestamp
     public function unix()
     {
         return $this->getTimestamp();
-    }
-
-    /**
-     * Return an array with integer part digits and decimals digits split from one or more positive numbers
-     * (such as timestamps) as string with the given number of decimals (6 by default).
-     *
-     * By splitting integer and decimal, this method obtain a better precision than
-     * number_format when the input is a string.
-     *
-     * @param float|int|string $numbers  one or more numbers
-     * @param int              $decimals number of decimals precision (6 by default)
-     *
-     * @return array 0-index is integer part, 1-index is decimal part digits
-     */
-    private static function getIntegerAndDecimalParts($numbers, $decimals = 6)
-    {
-        if (\is_int($numbers) || \is_float($numbers)) {
-            $numbers = number_format($numbers, $decimals, '.', '');
-        }
-
-        $sign = str_starts_with($numbers, '-') ? -1 : 1;
-        $integer = 0;
-        $decimal = 0;
-
-        foreach (preg_split('`[^0-9.]+`', $numbers) as $chunk) {
-            [$integerPart, $decimalPart] = explode('.', "$chunk.");
-
-            $integer += (int) $integerPart;
-            $decimal += (float) ("0.$decimalPart");
-        }
-
-        $overflow = floor($decimal);
-        $integer += $overflow;
-        $decimal -= $overflow;
-
-        return [$sign * $integer, $decimal === 0.0 ? 0.0 : $sign * round($decimal * pow(10, $decimals))];
     }
 }

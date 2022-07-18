@@ -72,7 +72,7 @@ class MySQL57Platform extends MySQLPlatform
             'doctrine/dbal',
             'https://github.com/doctrine/dbal/issues/4510',
             'MySQL57Platform::getReservedKeywordsClass() is deprecated,'
-                . ' use MySQL57Platform::createReservedKeywordsList() instead.'
+            . ' use MySQL57Platform::createReservedKeywordsList() instead.'
         );
 
         return Keywords\MySQL57Keywords::class;

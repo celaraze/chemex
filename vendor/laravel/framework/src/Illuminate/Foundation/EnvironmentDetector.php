@@ -9,8 +9,8 @@ class EnvironmentDetector
     /**
      * Detect the application's current environment.
      *
-     * @param  \Closure  $callback
-     * @param  array|null  $consoleArgs
+     * @param \Closure $callback
+     * @param array|null $consoleArgs
      * @return string
      */
     public function detect(Closure $callback, $consoleArgs = null)
@@ -23,21 +23,10 @@ class EnvironmentDetector
     }
 
     /**
-     * Set the application environment for a web request.
-     *
-     * @param  \Closure  $callback
-     * @return string
-     */
-    protected function detectWebEnvironment(Closure $callback)
-    {
-        return $callback();
-    }
-
-    /**
      * Set the application environment from command-line arguments.
      *
-     * @param  \Closure  $callback
-     * @param  array  $args
+     * @param \Closure $callback
+     * @param array $args
      * @return string
      */
     protected function detectConsoleEnvironment(Closure $callback, array $args)
@@ -45,7 +34,7 @@ class EnvironmentDetector
         // First we will check if an environment argument was passed via console arguments
         // and if it was that automatically overrides as the environment. Otherwise, we
         // will check the environment as a "web" request like a typical HTTP request.
-        if (! is_null($value = $this->getEnvironmentArgument($args))) {
+        if (!is_null($value = $this->getEnvironmentArgument($args))) {
             return $value;
         }
 
@@ -55,7 +44,7 @@ class EnvironmentDetector
     /**
      * Get the environment argument from the console.
      *
-     * @param  array  $args
+     * @param array $args
      * @return string|null
      */
     protected function getEnvironmentArgument(array $args)
@@ -69,5 +58,16 @@ class EnvironmentDetector
                 return head(array_slice(explode('=', $value), 1));
             }
         }
+    }
+
+    /**
+     * Set the application environment for a web request.
+     *
+     * @param \Closure $callback
+     * @return string
+     */
+    protected function detectWebEnvironment(Closure $callback)
+    {
+        return $callback();
     }
 }

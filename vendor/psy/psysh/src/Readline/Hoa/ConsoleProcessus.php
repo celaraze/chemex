@@ -245,12 +245,13 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function __construct(
         string $command,
-        array $options = null,
-        array $descriptors = null,
+        array  $options = null,
+        array  $descriptors = null,
         string $cwd = null,
-        array $environment = null,
-        int $timeout = 30
-    ) {
+        array  $environment = null,
+        int    $timeout = 30
+    )
+    {
         $this->setCommand($command);
 
         if (null !== $options) {
@@ -262,7 +263,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
 
             foreach ($descriptors as $descriptor => $nature) {
                 if (isset($this->_descriptors[$descriptor])) {
-                    throw new ConsoleException('Pipe descriptor %d already exists, cannot '.'redefine it.', 0, $descriptor);
+                    throw new ConsoleException('Pipe descriptor %d already exists, cannot ' . 'redefine it.', 0, $descriptor);
                 }
 
                 $this->_descriptors[$descriptor] = $nature;
@@ -283,35 +284,119 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Open the stream and return the associated resource.
+     * Get command-line.
      */
-    protected function &_open(string $streamName, StreamContext $context = null)
+    public function getCommandLine(): string
     {
-        $out = @\proc_open(
-            $streamName,
-            $this->_descriptors,
-            $this->_pipes,
-            $this->getCwd(),
-            $this->getEnvironment()
-        );
+        $out = $this->getCommand();
 
-        if (false === $out) {
-            throw new ConsoleException('Something wrong happen when running %s.', 1, $streamName);
+        foreach ($this->getOptions() as $key => $value) {
+            if (!\is_int($key)) {
+                $out .= ' ' . $key . '=' . $value;
+            } else {
+                $out .= ' ' . $value;
+            }
         }
 
         return $out;
     }
 
     /**
-     * Close the current stream.
+     * Get command name.
      */
-    protected function _close(): bool
+    public function getCommand()
     {
-        foreach ($this->_pipes as $pipe) {
-            @\fclose($pipe);
+        return $this->_command;
+    }
+
+    /**
+     * Set command name.
+     */
+    protected function setCommand(string $command)
+    {
+        $old = $this->_command;
+        $this->_command = \escapeshellcmd($command);
+
+        return $old;
+    }
+
+    /**
+     * Get options.
+     */
+    public function getOptions(): array
+    {
+        return $this->_options;
+    }
+
+    /**
+     * Set command options.
+     */
+    protected function setOptions(array $options): array
+    {
+        foreach ($options as &$option) {
+            $option = \escapeshellarg($option);
         }
 
-        return (bool) @\proc_close($this->getStream());
+        $old = $this->_options;
+        $this->_options = $options;
+
+        return $old;
+    }
+
+    /**
+     * Set process title.
+     */
+    public static function setTitle(string $title)
+    {
+        \cli_set_process_title($title);
+    }
+
+    /**
+     * Get process title.
+     */
+    public static function getTitle()
+    {
+        return \cli_get_process_title();
+    }
+
+    /**
+     * Found the place of a binary.
+     */
+    public static function locate(string $binary)
+    {
+        if (isset($_ENV['PATH'])) {
+            $separator = ':';
+            $path = &$_ENV['PATH'];
+        } elseif (isset($_SERVER['PATH'])) {
+            $separator = ':';
+            $path = &$_SERVER['PATH'];
+        } elseif (isset($_SERVER['Path'])) {
+            $separator = ';';
+            $path = &$_SERVER['Path'];
+        } else {
+            return null;
+        }
+
+        foreach (\explode($separator, $path) as $directory) {
+            if (true === \file_exists($out = $directory . \DIRECTORY_SEPARATOR . $binary)) {
+                return $out;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Quick process execution.
+     * Returns only the STDOUT.
+     */
+    public static function execute(string $commandLine, bool $escape = true): string
+    {
+        if (true === $escape) {
+            $commandLine = \escapeshellcmd($commandLine);
+        }
+
+        return \rtrim(\shell_exec($commandLine) ?? '');
     }
 
     /**
@@ -438,6 +523,103 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
+     * Close the current stream.
+     */
+    protected function _close(): bool
+    {
+        foreach ($this->_pipes as $pipe) {
+            @\fclose($pipe);
+        }
+
+        return (bool)@\proc_close($this->getStream());
+    }
+
+    /**
+     * Open the stream and return the associated resource.
+     */
+    protected function &_open(string $streamName, StreamContext $context = null)
+    {
+        $out = @\proc_open(
+            $streamName,
+            $this->_descriptors,
+            $this->_pipes,
+            $this->getCwd(),
+            $this->getEnvironment()
+        );
+
+        if (false === $out) {
+            throw new ConsoleException('Something wrong happen when running %s.', 1, $streamName);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Get current working directory of the process.
+     */
+    public function getCwd(): string
+    {
+        return $this->_cwd;
+    }
+
+    /**
+     * Set current working directory of the process.
+     */
+    protected function setCwd(string $cwd)
+    {
+        $old = $this->_cwd;
+        $this->_cwd = $cwd;
+
+        return $old;
+    }
+
+    /**
+     * Get environment of the process.
+     */
+    public function getEnvironment()
+    {
+        return $this->_environment;
+    }
+
+    /**
+     * Set environment of the process.
+     */
+    protected function setEnvironment(array $environment)
+    {
+        $old = $this->_environment;
+        $this->_environment = $environment;
+
+        return $old;
+    }
+
+    /**
+     * Get timeout of the process.
+     */
+    public function getTimeout(): int
+    {
+        return $this->_timeout;
+    }
+
+    /**
+     * Set timeout of the process.
+     */
+    public function setTimeout(int $timeout)
+    {
+        $old = $this->_timeout;
+        $this->_timeout = $timeout;
+
+        return $old;
+    }
+
+    /**
+     * Read a line.
+     */
+    public function readLine(int $pipe = 1)
+    {
+        return \stream_get_line($this->getPipe($pipe), 1 << 15, "\n");
+    }
+
+    /**
      * Get pipe resource.
      */
     protected function getPipe(int $pipe)
@@ -450,25 +632,19 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Check if a pipe is seekable or not.
-     */
-    protected function isPipeSeekable(int $pipe): bool
-    {
-        if (!isset($this->_seekable[$pipe])) {
-            $_pipe = $this->getPipe($pipe);
-            $data = \stream_get_meta_data($_pipe);
-            $this->_seekable[$pipe] = $data['seekable'];
-        }
-
-        return $this->_seekable[$pipe];
-    }
-
-    /**
      * Test for end-of-file.
      */
     public function eof(int $pipe = 1): bool
     {
         return \feof($this->getPipe($pipe));
+    }
+
+    /**
+     * Alias of $this->read().
+     */
+    public function readString(int $length, int $pipe = 1)
+    {
+        return $this->read($length, $pipe);
     }
 
     /**
@@ -484,14 +660,6 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Alias of $this->read().
-     */
-    public function readString(int $length, int $pipe = 1)
-    {
-        return $this->read($length, $pipe);
-    }
-
-    /**
      * Read a character.
      */
     public function readCharacter(int $pipe = 1)
@@ -504,7 +672,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function readBoolean(int $pipe = 1)
     {
-        return (bool) $this->read(1, $pipe);
+        return (bool)$this->read(1, $pipe);
     }
 
     /**
@@ -512,7 +680,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function readInteger(int $length = 1, int $pipe = 1)
     {
-        return (int) $this->read($length, $pipe);
+        return (int)$this->read($length, $pipe);
     }
 
     /**
@@ -520,7 +688,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function readFloat(int $length = 1, int $pipe = 1)
     {
-        return (float) $this->read($length, $pipe);
+        return (float)$this->read($length, $pipe);
     }
 
     /**
@@ -533,11 +701,11 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Read a line.
+     * Parse input from a stream according to a format.
      */
-    public function readLine(int $pipe = 1)
+    public function scanf(string $format, int $pipe = 1): array
     {
-        return \stream_get_line($this->getPipe($pipe), 1 << 15, "\n");
+        return \fscanf($this->getPipe($pipe), $format);
     }
 
     /**
@@ -557,11 +725,27 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Parse input from a stream according to a format.
+     * Check if a pipe is seekable or not.
      */
-    public function scanf(string $format, int $pipe = 1): array
+    protected function isPipeSeekable(int $pipe): bool
     {
-        return \fscanf($this->getPipe($pipe), $format);
+        if (!isset($this->_seekable[$pipe])) {
+            $_pipe = $this->getPipe($pipe);
+            $data = \stream_get_meta_data($_pipe);
+            $this->_seekable[$pipe] = $data['seekable'];
+        }
+
+        return $this->_seekable[$pipe];
+    }
+
+    /**
+     * Write a string.
+     */
+    public function writeString(string $string, int $pipe = 0)
+    {
+        $string = (string)$string;
+
+        return $this->write($string, \strlen($string), $pipe);
     }
 
     /**
@@ -577,21 +761,11 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Write a string.
-     */
-    public function writeString(string $string, int $pipe = 0)
-    {
-        $string = (string) $string;
-
-        return $this->write($string, \strlen($string), $pipe);
-    }
-
-    /**
      * Write a character.
      */
     public function writeCharacter(string $char, int $pipe = 0)
     {
-        return $this->write((string) $char[0], 1, $pipe);
+        return $this->write((string)$char[0], 1, $pipe);
     }
 
     /**
@@ -599,7 +773,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function writeBoolean(bool $boolean, int $pipe = 0)
     {
-        return $this->write((string) (bool) $boolean, 1, $pipe);
+        return $this->write((string)(bool)$boolean, 1, $pipe);
     }
 
     /**
@@ -607,7 +781,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function writeInteger(int $integer, int $pipe = 0)
     {
-        $integer = (string) (int) $integer;
+        $integer = (string)(int)$integer;
 
         return $this->write($integer, \strlen($integer), $pipe);
     }
@@ -617,7 +791,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
      */
     public function writeFloat(float $float, int $pipe = 0)
     {
-        $float = (string) (float) $float;
+        $float = (string)(float)$float;
 
         return $this->write($float, \strlen($float), $pipe);
     }
@@ -638,7 +812,7 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     public function writeLine(string $line, int $pipe = 0)
     {
         if (false === $n = \strpos($line, "\n")) {
-            return $this->write($line."\n", \strlen($line) + 1, $pipe);
+            return $this->write($line . "\n", \strlen($line) + 1, $pipe);
         }
 
         ++$n;
@@ -679,11 +853,13 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Get status.
+     * Whether the processus have ended successfully.
+     *
+     * @return bool
      */
-    public function getStatus(): array
+    public function isSuccessful(): bool
     {
-        return \proc_get_status($this->getStream());
+        return 0 === $this->getExitCode();
     }
 
     /**
@@ -697,13 +873,11 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     }
 
     /**
-     * Whether the processus have ended successfully.
-     *
-     * @return bool
+     * Get status.
      */
-    public function isSuccessful(): bool
+    public function getStatus(): array
     {
-        return 0 === $this->getExitCode();
+        return \proc_get_status($this->getStream());
     }
 
     /**
@@ -715,178 +889,5 @@ class ConsoleProcessus extends Stream implements StreamIn, StreamOut, StreamPath
     public function terminate(int $signal = self::SIGTERM): bool
     {
         return \proc_terminate($this->getStream(), $signal);
-    }
-
-    /**
-     * Set command name.
-     */
-    protected function setCommand(string $command)
-    {
-        $old = $this->_command;
-        $this->_command = \escapeshellcmd($command);
-
-        return $old;
-    }
-
-    /**
-     * Get command name.
-     */
-    public function getCommand()
-    {
-        return $this->_command;
-    }
-
-    /**
-     * Set command options.
-     */
-    protected function setOptions(array $options): array
-    {
-        foreach ($options as &$option) {
-            $option = \escapeshellarg($option);
-        }
-
-        $old = $this->_options;
-        $this->_options = $options;
-
-        return $old;
-    }
-
-    /**
-     * Get options.
-     */
-    public function getOptions(): array
-    {
-        return $this->_options;
-    }
-
-    /**
-     * Get command-line.
-     */
-    public function getCommandLine(): string
-    {
-        $out = $this->getCommand();
-
-        foreach ($this->getOptions() as $key => $value) {
-            if (!\is_int($key)) {
-                $out .= ' '.$key.'='.$value;
-            } else {
-                $out .= ' '.$value;
-            }
-        }
-
-        return $out;
-    }
-
-    /**
-     * Set current working directory of the process.
-     */
-    protected function setCwd(string $cwd)
-    {
-        $old = $this->_cwd;
-        $this->_cwd = $cwd;
-
-        return $old;
-    }
-
-    /**
-     * Get current working directory of the process.
-     */
-    public function getCwd(): string
-    {
-        return $this->_cwd;
-    }
-
-    /**
-     * Set environment of the process.
-     */
-    protected function setEnvironment(array $environment)
-    {
-        $old = $this->_environment;
-        $this->_environment = $environment;
-
-        return $old;
-    }
-
-    /**
-     * Get environment of the process.
-     */
-    public function getEnvironment()
-    {
-        return $this->_environment;
-    }
-
-    /**
-     * Set timeout of the process.
-     */
-    public function setTimeout(int $timeout)
-    {
-        $old = $this->_timeout;
-        $this->_timeout = $timeout;
-
-        return $old;
-    }
-
-    /**
-     * Get timeout of the process.
-     */
-    public function getTimeout(): int
-    {
-        return $this->_timeout;
-    }
-
-    /**
-     * Set process title.
-     */
-    public static function setTitle(string $title)
-    {
-        \cli_set_process_title($title);
-    }
-
-    /**
-     * Get process title.
-     */
-    public static function getTitle()
-    {
-        return \cli_get_process_title();
-    }
-
-    /**
-     * Found the place of a binary.
-     */
-    public static function locate(string $binary)
-    {
-        if (isset($_ENV['PATH'])) {
-            $separator = ':';
-            $path = &$_ENV['PATH'];
-        } elseif (isset($_SERVER['PATH'])) {
-            $separator = ':';
-            $path = &$_SERVER['PATH'];
-        } elseif (isset($_SERVER['Path'])) {
-            $separator = ';';
-            $path = &$_SERVER['Path'];
-        } else {
-            return null;
-        }
-
-        foreach (\explode($separator, $path) as $directory) {
-            if (true === \file_exists($out = $directory.\DIRECTORY_SEPARATOR.$binary)) {
-                return $out;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Quick process execution.
-     * Returns only the STDOUT.
-     */
-    public static function execute(string $commandLine, bool $escape = true): string
-    {
-        if (true === $escape) {
-            $commandLine = \escapeshellcmd($commandLine);
-        }
-
-        return \rtrim(\shell_exec($commandLine) ?? '');
     }
 }

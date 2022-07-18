@@ -99,56 +99,6 @@ final class CharacterStream
         }
     }
 
-    public function read(int $length): ?string
-    {
-        if ($this->currentPos >= $this->charCount) {
-            return null;
-        }
-        $length = ($this->currentPos + $length > $this->charCount) ? $this->charCount - $this->currentPos : $length;
-        if ($this->fixedWidth > 0) {
-            $len = $length * $this->fixedWidth;
-            $ret = substr($this->data, $this->currentPos * $this->fixedWidth, $len);
-            $this->currentPos += $length;
-        } else {
-            $end = $this->currentPos + $length;
-            $end = $end > $this->charCount ? $this->charCount : $end;
-            $ret = '';
-            $start = 0;
-            if ($this->currentPos > 0) {
-                $start = $this->map['p'][$this->currentPos - 1];
-            }
-            $to = $start;
-            for (; $this->currentPos < $end; ++$this->currentPos) {
-                if (isset($this->map['i'][$this->currentPos])) {
-                    $ret .= substr($this->data, $start, $to - $start).'?';
-                    $start = $this->map['p'][$this->currentPos];
-                } else {
-                    $to = $this->map['p'][$this->currentPos];
-                }
-            }
-            $ret .= substr($this->data, $start, $to - $start);
-        }
-
-        return $ret;
-    }
-
-    public function readBytes(int $length): ?array
-    {
-        if (null !== $read = $this->read($length)) {
-            return array_map('ord', str_split($read, 1));
-        }
-
-        return null;
-    }
-
-    public function setPointer(int $charOffset): void
-    {
-        if ($this->charCount < $charOffset) {
-            $charOffset = $this->charCount;
-        }
-        $this->currentPos = $charOffset;
-    }
-
     public function write(string $chars): void
     {
         $ignored = '';
@@ -207,5 +157,55 @@ final class CharacterStream
         }
 
         return $foundChars;
+    }
+
+    public function readBytes(int $length): ?array
+    {
+        if (null !== $read = $this->read($length)) {
+            return array_map('ord', str_split($read, 1));
+        }
+
+        return null;
+    }
+
+    public function read(int $length): ?string
+    {
+        if ($this->currentPos >= $this->charCount) {
+            return null;
+        }
+        $length = ($this->currentPos + $length > $this->charCount) ? $this->charCount - $this->currentPos : $length;
+        if ($this->fixedWidth > 0) {
+            $len = $length * $this->fixedWidth;
+            $ret = substr($this->data, $this->currentPos * $this->fixedWidth, $len);
+            $this->currentPos += $length;
+        } else {
+            $end = $this->currentPos + $length;
+            $end = $end > $this->charCount ? $this->charCount : $end;
+            $ret = '';
+            $start = 0;
+            if ($this->currentPos > 0) {
+                $start = $this->map['p'][$this->currentPos - 1];
+            }
+            $to = $start;
+            for (; $this->currentPos < $end; ++$this->currentPos) {
+                if (isset($this->map['i'][$this->currentPos])) {
+                    $ret .= substr($this->data, $start, $to - $start) . '?';
+                    $start = $this->map['p'][$this->currentPos];
+                } else {
+                    $to = $this->map['p'][$this->currentPos];
+                }
+            }
+            $ret .= substr($this->data, $start, $to - $start);
+        }
+
+        return $ret;
+    }
+
+    public function setPointer(int $charOffset): void
+    {
+        if ($this->charCount < $charOffset) {
+            $charOffset = $this->charCount;
+        }
+        $this->currentPos = $charOffset;
     }
 }

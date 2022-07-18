@@ -44,15 +44,6 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     }
 
     /**
-     * @param RowIterator $rowIterator
-     * @return Sheet
-     */
-    private function createSheet($rowIterator)
-    {
-        return new Sheet($rowIterator);
-    }
-
-    /**
      * @param resource $filePointer Pointer to the CSV file to read
      * @param OptionsManagerInterface $optionsManager
      * @param GlobalFunctionsHelper $globalFunctionsHelper
@@ -66,21 +57,12 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     }
 
     /**
-     * @param Cell[] $cells
-     * @return Row
+     * @param RowIterator $rowIterator
+     * @return Sheet
      */
-    public function createRow(array $cells = [])
+    private function createSheet($rowIterator)
     {
-        return new Row($cells, null);
-    }
-
-    /**
-     * @param mixed $cellValue
-     * @return Cell
-     */
-    public function createCell($cellValue)
-    {
-        return new Cell($cellValue);
+        return new Sheet($rowIterator);
     }
 
     /**
@@ -94,5 +76,23 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
         }, $cellValues);
 
         return $this->createRow($cells);
+    }
+
+    /**
+     * @param mixed $cellValue
+     * @return Cell
+     */
+    public function createCell($cellValue)
+    {
+        return new Cell($cellValue);
+    }
+
+    /**
+     * @param Cell[] $cells
+     * @return Row
+     */
+    public function createRow(array $cells = [])
+    {
+        return new Row($cells, null);
     }
 }

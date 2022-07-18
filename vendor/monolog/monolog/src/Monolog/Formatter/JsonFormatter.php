@@ -72,31 +72,6 @@ class JsonFormatter extends NormalizerFormatter
     /**
      * {@inheritDoc}
      */
-    public function format(array $record): string
-    {
-        $normalized = $this->normalize($record);
-
-        if (isset($normalized['context']) && $normalized['context'] === []) {
-            if ($this->ignoreEmptyContextAndExtra) {
-                unset($normalized['context']);
-            } else {
-                $normalized['context'] = new \stdClass;
-            }
-        }
-        if (isset($normalized['extra']) && $normalized['extra'] === []) {
-            if ($this->ignoreEmptyContextAndExtra) {
-                unset($normalized['extra']);
-            } else {
-                $normalized['extra'] = new \stdClass;
-            }
-        }
-
-        return $this->toJson($normalized, true) . ($this->appendNewline ? "\n" : '');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function formatBatch(array $records): string
     {
         switch ($this->batchMode) {
@@ -107,26 +82,6 @@ class JsonFormatter extends NormalizerFormatter
             default:
                 return $this->formatBatchJson($records);
         }
-    }
-
-    /**
-     * @return self
-     */
-    public function includeStacktraces(bool $include = true): self
-    {
-        $this->includeStacktraces = $include;
-
-        return $this;
-    }
-
-    /**
-     * Return a JSON-encoded array of records.
-     *
-     * @phpstan-param Record[] $records
-     */
-    protected function formatBatchJson(array $records): string
-    {
-        return $this->toJson($this->normalize($records), true);
     }
 
     /**
@@ -150,6 +105,31 @@ class JsonFormatter extends NormalizerFormatter
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function format(array $record): string
+    {
+        $normalized = $this->normalize($record);
+
+        if (isset($normalized['context']) && $normalized['context'] === []) {
+            if ($this->ignoreEmptyContextAndExtra) {
+                unset($normalized['context']);
+            } else {
+                $normalized['context'] = new \stdClass;
+            }
+        }
+        if (isset($normalized['extra']) && $normalized['extra'] === []) {
+            if ($this->ignoreEmptyContextAndExtra) {
+                unset($normalized['extra']);
+            } else {
+                $normalized['extra'] = new \stdClass;
+            }
+        }
+
+        return $this->toJson($normalized, true) . ($this->appendNewline ? "\n" : '');
+    }
+
+    /**
      * Normalizes given $data.
      *
      * @param mixed $data
@@ -159,7 +139,7 @@ class JsonFormatter extends NormalizerFormatter
     protected function normalize($data, int $depth = 0)
     {
         if ($depth > $this->maxNormalizeDepth) {
-            return 'Over '.$this->maxNormalizeDepth.' levels deep, aborting normalization';
+            return 'Over ' . $this->maxNormalizeDepth . ' levels deep, aborting normalization';
         }
 
         if (is_array($data)) {
@@ -168,7 +148,7 @@ class JsonFormatter extends NormalizerFormatter
             $count = 1;
             foreach ($data as $key => $value) {
                 if ($count++ > $this->maxNormalizeItemCount) {
-                    $normalized['...'] = 'Over '.$this->maxNormalizeItemCount.' items ('.count($data).' total), aborting normalization';
+                    $normalized['...'] = 'Over ' . $this->maxNormalizeItemCount . ' items (' . count($data) . ' total), aborting normalization';
                     break;
                 }
 
@@ -207,5 +187,25 @@ class JsonFormatter extends NormalizerFormatter
         }
 
         return $data;
+    }
+
+    /**
+     * Return a JSON-encoded array of records.
+     *
+     * @phpstan-param Record[] $records
+     */
+    protected function formatBatchJson(array $records): string
+    {
+        return $this->toJson($this->normalize($records), true);
+    }
+
+    /**
+     * @return self
+     */
+    public function includeStacktraces(bool $include = true): self
+    {
+        $this->includeStacktraces = $include;
+
+        return $this;
     }
 }

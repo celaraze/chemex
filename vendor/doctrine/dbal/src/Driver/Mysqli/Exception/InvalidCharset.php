@@ -8,7 +8,6 @@ use Doctrine\DBAL\Driver\AbstractException;
 use mysqli;
 use mysqli_sql_exception;
 use ReflectionProperty;
-
 use function sprintf;
 
 /**
@@ -35,7 +34,7 @@ final class InvalidCharset extends AbstractException
         return new self(
             sprintf('Failed to set charset "%s": %s', $charset, $exception->getMessage()),
             $p->getValue($exception),
-            (int) $exception->getCode(),
+            (int)$exception->getCode(),
             $exception
         );
     }

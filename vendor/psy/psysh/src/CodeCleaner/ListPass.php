@@ -39,9 +39,9 @@ class ListPass extends CodeCleanerPass
     /**
      * Validate use of list assignment.
      *
+     * @param Node $node
      * @throws ParseErrorException if the user used empty with anything but a variable
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

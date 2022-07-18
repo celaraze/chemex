@@ -43,6 +43,18 @@ class ErrorListener implements EventSubscriberInterface
         $this->exceptionsMapping = $exceptionsMapping;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::CONTROLLER_ARGUMENTS => 'onControllerArguments',
+            KernelEvents::EXCEPTION => [
+                ['logKernelException', 0],
+                ['onKernelException', -128],
+            ],
+            KernelEvents::RESPONSE => ['removeCspHeader', -128],
+        ];
+    }
+
     public function logKernelException(ExceptionEvent $event)
     {
         $throwable = $event->getThrowable();
@@ -70,6 +82,22 @@ class ErrorListener implements EventSubscriberInterface
         $e = FlattenException::createFromThrowable($throwable);
 
         $this->logException($throwable, sprintf('Uncaught PHP Exception %s: "%s" at %s line %s', $e->getClass(), $e->getMessage(), $e->getFile(), $e->getLine()), $logLevel);
+    }
+
+    /**
+     * Logs an exception.
+     */
+    protected function logException(\Throwable $exception, string $message, string $logLevel = null): void
+    {
+        if (null !== $this->logger) {
+            if (null !== $logLevel) {
+                $this->logger->log($logLevel, $message, ['exception' => $exception]);
+            } elseif (!$exception instanceof HttpExceptionInterface || $exception->getStatusCode() >= 500) {
+                $this->logger->critical($message, ['exception' => $exception]);
+            } else {
+                $this->logger->error($message, ['exception' => $exception]);
+            }
+        }
     }
 
     public function onKernelException(ExceptionEvent $event)
@@ -108,6 +136,22 @@ class ErrorListener implements EventSubscriberInterface
         }
     }
 
+    /**
+     * Clones the request for the exception.
+     */
+    protected function duplicateRequest(\Throwable $exception, Request $request): Request
+    {
+        $attributes = [
+            '_controller' => $this->controller,
+            'exception' => $exception,
+            'logger' => $this->logger instanceof DebugLoggerInterface ? $this->logger : null,
+        ];
+        $request = $request->duplicate(null, null, $attributes);
+        $request->setMethod('GET');
+
+        return $request;
+    }
+
     public function removeCspHeader(ResponseEvent $event): void
     {
         if ($this->debug && $event->getRequest()->attributes->get('_remove_csp_headers', false)) {
@@ -131,49 +175,5 @@ class ErrorListener implements EventSubscriberInterface
             $arguments[$k] = FlattenException::createFromThrowable($e);
             $event->setArguments($arguments);
         }
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::CONTROLLER_ARGUMENTS => 'onControllerArguments',
-            KernelEvents::EXCEPTION => [
-                ['logKernelException', 0],
-                ['onKernelException', -128],
-            ],
-            KernelEvents::RESPONSE => ['removeCspHeader', -128],
-        ];
-    }
-
-    /**
-     * Logs an exception.
-     */
-    protected function logException(\Throwable $exception, string $message, string $logLevel = null): void
-    {
-        if (null !== $this->logger) {
-            if (null !== $logLevel) {
-                $this->logger->log($logLevel, $message, ['exception' => $exception]);
-            } elseif (!$exception instanceof HttpExceptionInterface || $exception->getStatusCode() >= 500) {
-                $this->logger->critical($message, ['exception' => $exception]);
-            } else {
-                $this->logger->error($message, ['exception' => $exception]);
-            }
-        }
-    }
-
-    /**
-     * Clones the request for the exception.
-     */
-    protected function duplicateRequest(\Throwable $exception, Request $request): Request
-    {
-        $attributes = [
-            '_controller' => $this->controller,
-            'exception' => $exception,
-            'logger' => $this->logger instanceof DebugLoggerInterface ? $this->logger : null,
-        ];
-        $request = $request->duplicate(null, null, $attributes);
-        $request->setMethod('GET');
-
-        return $request;
     }
 }

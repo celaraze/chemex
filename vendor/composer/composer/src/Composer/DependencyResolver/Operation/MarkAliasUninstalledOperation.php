@@ -48,6 +48,6 @@ class MarkAliasUninstalledOperation extends SolverOperation implements Operation
      */
     public function show($lock): string
     {
-        return 'Marking <info>'.$this->package->getPrettyName().'</info> (<comment>'.$this->package->getFullPrettyVersion().'</comment>) as uninstalled, alias of <info>'.$this->package->getAliasOf()->getPrettyName().'</info> (<comment>'.$this->package->getAliasOf()->getFullPrettyVersion().'</comment>)';
+        return 'Marking <info>' . $this->package->getPrettyName() . '</info> (<comment>' . $this->package->getFullPrettyVersion() . '</comment>) as uninstalled, alias of <info>' . $this->package->getAliasOf()->getPrettyName() . '</info> (<comment>' . $this->package->getAliasOf()->getFullPrettyVersion() . '</comment>)';
     }
 }

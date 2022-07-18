@@ -45,81 +45,10 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
      */
     public function trans(?string $id, array $parameters = [], string $domain = null, string $locale = null): string
     {
-        $trans = $this->translator->trans($id = (string) $id, $parameters, $domain, $locale);
+        $trans = $this->translator->trans($id = (string)$id, $parameters, $domain, $locale);
         $this->collectMessage($locale, $domain, $id, $trans, $parameters);
 
         return $trans;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLocale(string $locale)
-    {
-        $this->translator->setLocale($locale);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLocale(): string
-    {
-        return $this->translator->getLocale();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCatalogue(string $locale = null): MessageCatalogueInterface
-    {
-        return $this->translator->getCatalogue($locale);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCatalogues(): array
-    {
-        return $this->translator->getCatalogues();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return string[]
-     */
-    public function warmUp(string $cacheDir): array
-    {
-        if ($this->translator instanceof WarmableInterface) {
-            return (array) $this->translator->warmUp($cacheDir);
-        }
-
-        return [];
-    }
-
-    /**
-     * Gets the fallback locales.
-     */
-    public function getFallbackLocales(): array
-    {
-        if ($this->translator instanceof Translator || method_exists($this->translator, 'getFallbackLocales')) {
-            return $this->translator->getFallbackLocales();
-        }
-
-        return [];
-    }
-
-    /**
-     * Passes through all unknown calls onto the translator object.
-     */
-    public function __call(string $method, array $args)
-    {
-        return $this->translator->{$method}(...$args);
-    }
-
-    public function getCollectedMessages(): array
-    {
-        return $this->messages;
     }
 
     private function collectMessage(?string $locale, ?string $domain, string $id, string $translation, ?array $parameters = [])
@@ -158,5 +87,76 @@ class DataCollectorTranslator implements TranslatorInterface, TranslatorBagInter
             'state' => $state,
             'transChoiceNumber' => isset($parameters['%count%']) && is_numeric($parameters['%count%']) ? $parameters['%count%'] : null,
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCatalogue(string $locale = null): MessageCatalogueInterface
+    {
+        return $this->translator->getCatalogue($locale);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLocale(): string
+    {
+        return $this->translator->getLocale();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setLocale(string $locale)
+    {
+        $this->translator->setLocale($locale);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCatalogues(): array
+    {
+        return $this->translator->getCatalogues();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return string[]
+     */
+    public function warmUp(string $cacheDir): array
+    {
+        if ($this->translator instanceof WarmableInterface) {
+            return (array)$this->translator->warmUp($cacheDir);
+        }
+
+        return [];
+    }
+
+    /**
+     * Gets the fallback locales.
+     */
+    public function getFallbackLocales(): array
+    {
+        if ($this->translator instanceof Translator || method_exists($this->translator, 'getFallbackLocales')) {
+            return $this->translator->getFallbackLocales();
+        }
+
+        return [];
+    }
+
+    /**
+     * Passes through all unknown calls onto the translator object.
+     */
+    public function __call(string $method, array $args)
+    {
+        return $this->translator->{$method}(...$args);
+    }
+
+    public function getCollectedMessages(): array
+    {
+        return $this->messages;
     }
 }

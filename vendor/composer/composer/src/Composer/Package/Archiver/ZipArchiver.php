@@ -12,8 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
-use ZipArchive;
 use Composer\Util\Filesystem;
+use ZipArchive;
 
 /**
  * @author Jan Prieser <jan@prieser.net>
@@ -39,7 +39,7 @@ class ZipArchiver implements ArchiverInterface
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
                 /** @var \SplFileInfo $file */
-                $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
+                $filepath = strtr($file->getPath() . "/" . $file->getFilename(), '\\', '/');
                 $localname = $filepath;
                 if (strpos($localname, $sources . '/') === 0) {
                     $localname = substr($localname, strlen($sources . '/'));

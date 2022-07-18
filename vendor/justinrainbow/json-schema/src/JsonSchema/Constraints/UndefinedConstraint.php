@@ -52,58 +52,12 @@ class UndefinedConstraint extends Constraint
     }
 
     /**
-     * Validates the value against the types
-     *
-     * @param mixed       $value
-     * @param mixed       $schema
-     * @param JsonPointer $path
-     * @param string      $i
-     */
-    public function validateTypes(&$value, $schema, JsonPointer $path, $i = null)
-    {
-        // check array
-        if ($this->getTypeCheck()->isArray($value)) {
-            $this->checkArray($value, $schema, $path, $i);
-        }
-
-        // check object
-        if (LooseTypeCheck::isObject($value)) { // object processing should always be run on assoc arrays,
-                                                // so use LooseTypeCheck here even if CHECK_MODE_TYPE_CAST
-                                                // is not set (i.e. don't use $this->getTypeCheck() here).
-            $this->checkObject(
-                $value,
-                $schema,
-                $path,
-                isset($schema->properties) ? $schema->properties : null,
-                isset($schema->additionalProperties) ? $schema->additionalProperties : null,
-                isset($schema->patternProperties) ? $schema->patternProperties : null,
-                $this->appliedDefaults
-            );
-        }
-
-        // check string
-        if (is_string($value)) {
-            $this->checkString($value, $schema, $path, $i);
-        }
-
-        // check numeric
-        if (is_numeric($value)) {
-            $this->checkNumber($value, $schema, $path, $i);
-        }
-
-        // check enum
-        if (isset($schema->enum)) {
-            $this->checkEnum($value, $schema, $path, $i);
-        }
-    }
-
-    /**
      * Validates common properties
      *
-     * @param mixed       $value
-     * @param mixed       $schema
+     * @param mixed $value
+     * @param mixed $schema
      * @param JsonPointer $path
-     * @param string      $i
+     * @param string $i
      */
     protected function validateCommonProperties(&$value, $schema, JsonPointer $path, $i = '')
     {
@@ -198,43 +152,25 @@ class UndefinedConstraint extends Constraint
         }
     }
 
-    /**
-     * Check whether a default should be applied for this value
-     *
-     * @param mixed $schema
-     * @param mixed $parentSchema
-     * @param bool  $requiredOnly
-     *
-     * @return bool
-     */
-    private function shouldApplyDefaultValue($requiredOnly, $schema, $name = null, $parentSchema = null)
+    protected function validateUri($schema, $schemaUri = null)
     {
-        // required-only mode is off
-        if (!$requiredOnly) {
-            return true;
+        $resolver = new UriResolver();
+        $retriever = $this->factory->getUriRetriever();
+
+        $jsonSchema = null;
+        if ($resolver->isValid($schemaUri)) {
+            $schemaId = property_exists($schema, 'id') ? $schema->id : null;
+            $jsonSchema = $retriever->retrieve($schemaId, $schemaUri);
         }
-        // draft-04 required is set
-        if (
-            $name !== null
-            && isset($parentSchema->required)
-            && is_array($parentSchema->required)
-            && in_array($name, $parentSchema->required)
-        ) {
-            return true;
-        }
-        // draft-03 required is set
-        if (isset($schema->required) && !is_array($schema->required) && $schema->required) {
-            return true;
-        }
-        // default case
-        return false;
+
+        return $jsonSchema;
     }
 
     /**
      * Apply default values
      *
-     * @param mixed       $value
-     * @param mixed       $schema
+     * @param mixed $value
+     * @param mixed $schema
      * @param JsonPointer $path
      */
     protected function applyDefaultValues(&$value, $schema, $path)
@@ -297,12 +233,76 @@ class UndefinedConstraint extends Constraint
     }
 
     /**
+     * Check whether a default should be applied for this value
+     *
+     * @param mixed $schema
+     * @param mixed $parentSchema
+     * @param bool $requiredOnly
+     *
+     * @return bool
+     */
+    private function shouldApplyDefaultValue($requiredOnly, $schema, $name = null, $parentSchema = null)
+    {
+        // required-only mode is off
+        if (!$requiredOnly) {
+            return true;
+        }
+        // draft-04 required is set
+        if (
+            $name !== null
+            && isset($parentSchema->required)
+            && is_array($parentSchema->required)
+            && in_array($name, $parentSchema->required)
+        ) {
+            return true;
+        }
+        // draft-03 required is set
+        if (isset($schema->required) && !is_array($schema->required) && $schema->required) {
+            return true;
+        }
+        // default case
+        return false;
+    }
+
+    /**
+     * Validate dependencies
+     *
+     * @param mixed $value
+     * @param mixed $dependencies
+     * @param JsonPointer $path
+     * @param string $i
+     */
+    protected function validateDependencies($value, $dependencies, JsonPointer $path, $i = '')
+    {
+        foreach ($dependencies as $key => $dependency) {
+            if ($this->getTypeCheck()->propertyExists($value, $key)) {
+                if (is_string($dependency)) {
+                    // Draft 3 string is allowed - e.g. "dependencies": {"bar": "foo"}
+                    if (!$this->getTypeCheck()->propertyExists($value, $dependency)) {
+                        $this->addError($path, "$key depends on $dependency and $dependency is missing", 'dependencies');
+                    }
+                } elseif (is_array($dependency)) {
+                    // Draft 4 must be an array - e.g. "dependencies": {"bar": ["foo"]}
+                    foreach ($dependency as $d) {
+                        if (!$this->getTypeCheck()->propertyExists($value, $d)) {
+                            $this->addError($path, "$key depends on $d and $d is missing", 'dependencies');
+                        }
+                    }
+                } elseif (is_object($dependency)) {
+                    // Schema - e.g. "dependencies": {"bar": {"properties": {"foo": {...}}}}
+                    $this->checkUndefined($value, $dependency, $path, $i);
+                }
+            }
+        }
+    }
+
+    /**
      * Validate allOf, anyOf, and oneOf properties
      *
-     * @param mixed       $value
-     * @param mixed       $schema
+     * @param mixed $value
+     * @param mixed $schema
      * @param JsonPointer $path
-     * @param string      $i
+     * @param string $i
      */
     protected function validateOfProperties(&$value, $schema, JsonPointer $path, $i = '')
     {
@@ -372,48 +372,48 @@ class UndefinedConstraint extends Constraint
     }
 
     /**
-     * Validate dependencies
+     * Validates the value against the types
      *
-     * @param mixed       $value
-     * @param mixed       $dependencies
+     * @param mixed $value
+     * @param mixed $schema
      * @param JsonPointer $path
-     * @param string      $i
+     * @param string $i
      */
-    protected function validateDependencies($value, $dependencies, JsonPointer $path, $i = '')
+    public function validateTypes(&$value, $schema, JsonPointer $path, $i = null)
     {
-        foreach ($dependencies as $key => $dependency) {
-            if ($this->getTypeCheck()->propertyExists($value, $key)) {
-                if (is_string($dependency)) {
-                    // Draft 3 string is allowed - e.g. "dependencies": {"bar": "foo"}
-                    if (!$this->getTypeCheck()->propertyExists($value, $dependency)) {
-                        $this->addError($path, "$key depends on $dependency and $dependency is missing", 'dependencies');
-                    }
-                } elseif (is_array($dependency)) {
-                    // Draft 4 must be an array - e.g. "dependencies": {"bar": ["foo"]}
-                    foreach ($dependency as $d) {
-                        if (!$this->getTypeCheck()->propertyExists($value, $d)) {
-                            $this->addError($path, "$key depends on $d and $d is missing", 'dependencies');
-                        }
-                    }
-                } elseif (is_object($dependency)) {
-                    // Schema - e.g. "dependencies": {"bar": {"properties": {"foo": {...}}}}
-                    $this->checkUndefined($value, $dependency, $path, $i);
-                }
-            }
-        }
-    }
-
-    protected function validateUri($schema, $schemaUri = null)
-    {
-        $resolver = new UriResolver();
-        $retriever = $this->factory->getUriRetriever();
-
-        $jsonSchema = null;
-        if ($resolver->isValid($schemaUri)) {
-            $schemaId = property_exists($schema, 'id') ? $schema->id : null;
-            $jsonSchema = $retriever->retrieve($schemaId, $schemaUri);
+        // check array
+        if ($this->getTypeCheck()->isArray($value)) {
+            $this->checkArray($value, $schema, $path, $i);
         }
 
-        return $jsonSchema;
+        // check object
+        if (LooseTypeCheck::isObject($value)) { // object processing should always be run on assoc arrays,
+            // so use LooseTypeCheck here even if CHECK_MODE_TYPE_CAST
+            // is not set (i.e. don't use $this->getTypeCheck() here).
+            $this->checkObject(
+                $value,
+                $schema,
+                $path,
+                isset($schema->properties) ? $schema->properties : null,
+                isset($schema->additionalProperties) ? $schema->additionalProperties : null,
+                isset($schema->patternProperties) ? $schema->patternProperties : null,
+                $this->appliedDefaults
+            );
+        }
+
+        // check string
+        if (is_string($value)) {
+            $this->checkString($value, $schema, $path, $i);
+        }
+
+        // check numeric
+        if (is_numeric($value)) {
+            $this->checkNumber($value, $schema, $path, $i);
+        }
+
+        // check enum
+        if (isset($schema->enum)) {
+            $this->checkEnum($value, $schema, $path, $i);
+        }
     }
 }

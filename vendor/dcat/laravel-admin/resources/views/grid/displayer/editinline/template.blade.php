@@ -40,11 +40,13 @@
         margin: 10px 0 10px 10px;
         float: right;
     }
+
     [data-editinline="popover"] {
-        border-bottom:dashed 1px @primary;
+        border-bottom: dashed 1px @primary;
         color: @primary;
         display: inline-block;
     }
+
     body.dark-mode [data-editinline="popover"] {
         color: @primary;
         border-color: @primary;
@@ -72,11 +74,11 @@
         },
         content: function () {
             var $trigger = $(this);
-            var $template = $($('template#'+$(this).data('temp')).html());
+            var $template = $($('template#' + $(this).data('temp')).html());
 
             @yield('popover-content')
 
-            return $template.prop("outerHTML");
+                return $template.prop("outerHTML");
         }
     }).on('shown.bs.popover', function (e) {
 
@@ -111,7 +113,7 @@
             val,
             label;
 
-        switch($popover.data('type')) {
+        switch ($popover.data('type')) {
             case 'input':
             case 'textarea':
                 val = $popover.find('.ie-input').val();
@@ -120,7 +122,7 @@
             case 'checkbox':
                 val = [];
                 label = [];
-                $popover.find('.ie-input:checked').each(function(){
+                $popover.find('.ie-input:checked').each(function () {
                     val.push($(this).val());
                     label.push($(this).parent().text());
                 });
@@ -154,7 +156,7 @@
         $.put({
             url: $trigger.data('url'),
             data: data,
-            error:function(a,b,c) {
+            error: function (a, b, c) {
                 Dcat.handleAjaxError(a, b, c);
             },
         }).done(function (res) {
@@ -164,7 +166,7 @@
                 Dcat.success(data.message);
                 var $display = $popover.data('display');
                 $display.text(label);
-                if (! label) {
+                if (!label) {
                     $display.html('<i class="feather icon-edit-2"></i>');
                 }
                 $trigger.data('value', val).data('original', val);

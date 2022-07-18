@@ -10,7 +10,7 @@
 ##### 键盘快捷键 (Keyboard shortcuts)
 
 > If Editor.md code editor is on focus, you can use keyboard shortcuts.
-    
+
 | Keyboard shortcuts (键盘快捷键)                 |   说明                            | Description                                        |
 | :---------------------------------------------- |:--------------------------------- | :------------------------------------------------- |
 | F9                                              | 切换实时预览                      | Switch watch/unwatch                               |

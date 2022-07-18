@@ -27,11 +27,9 @@ use Ramsey\Uuid\Rfc4122\UuidInterface;
 use Ramsey\Uuid\Rfc4122\UuidV1;
 use Ramsey\Uuid\Uuid;
 use Throwable;
-
 use function hex2bin;
 use function str_pad;
 use function substr;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -57,11 +55,12 @@ final class UuidV6 extends Uuid implements UuidInterface
      *     for converting timestamps extracted from a UUID to unix timestamps
      */
     public function __construct(
-        Rfc4122FieldsInterface $fields,
+        Rfc4122FieldsInterface   $fields,
         NumberConverterInterface $numberConverter,
-        CodecInterface $codec,
-        TimeConverterInterface $timeConverter
-    ) {
+        CodecInterface           $codec,
+        TimeConverterInterface   $timeConverter
+    )
+    {
         if ($fields->getVersion() !== Uuid::UUID_TYPE_PEABODY) {
             throw new InvalidArgumentException(
                 'Fields used to create a UuidV6 must represent a '
@@ -70,6 +69,24 @@ final class UuidV6 extends Uuid implements UuidInterface
         }
 
         parent::__construct($fields, $numberConverter, $codec, $timeConverter);
+    }
+
+    /**
+     * Converts a version 1 UUID into an instance of a version 6 UUID
+     */
+    public static function fromUuidV1(UuidV1 $uuidV1): UuidV6
+    {
+        $hex = $uuidV1->getHex()->toString();
+        $hex = substr($hex, 13, 3)
+            . substr($hex, 8, 4)
+            . substr($hex, 0, 5)
+            . '6' . substr($hex, 5, 3)
+            . substr($hex, 16);
+
+        /** @var LazyUuidFromString $uuid */
+        $uuid = Uuid::fromBytes((string)hex2bin($hex));
+
+        return $uuid->toUuidV6();
     }
 
     /**
@@ -91,7 +108,7 @@ final class UuidV6 extends Uuid implements UuidInterface
                 . str_pad($time->getMicroseconds()->toString(), 6, '0', STR_PAD_LEFT)
             );
         } catch (Throwable $e) {
-            throw new DateTimeException($e->getMessage(), (int) $e->getCode(), $e);
+            throw new DateTimeException($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -108,26 +125,8 @@ final class UuidV6 extends Uuid implements UuidInterface
             . substr($hex, 16);
 
         /** @var LazyUuidFromString $uuid */
-        $uuid = Uuid::fromBytes((string) hex2bin($hex));
+        $uuid = Uuid::fromBytes((string)hex2bin($hex));
 
         return $uuid->toUuidV1();
-    }
-
-    /**
-     * Converts a version 1 UUID into an instance of a version 6 UUID
-     */
-    public static function fromUuidV1(UuidV1 $uuidV1): UuidV6
-    {
-        $hex = $uuidV1->getHex()->toString();
-        $hex = substr($hex, 13, 3)
-            . substr($hex, 8, 4)
-            . substr($hex, 0, 5)
-            . '6' . substr($hex, 5, 3)
-            . substr($hex, 16);
-
-        /** @var LazyUuidFromString $uuid */
-        $uuid = Uuid::fromBytes((string) hex2bin($hex));
-
-        return $uuid->toUuidV6();
     }
 }

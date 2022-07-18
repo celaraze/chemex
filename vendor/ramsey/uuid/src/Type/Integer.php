@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Type;
 
 use Ramsey\Uuid\Exception\InvalidArgumentException;
 use ValueError;
-
 use function ctype_digit;
 use function ltrim;
 use function sprintf;
@@ -47,12 +46,75 @@ final class Integer implements NumberInterface
      */
     private $isNegative = false;
 
+    public function isNegative(): bool
+    {
+        return $this->isNegative;
+    }
+
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
+
+    /**
+     * @psalm-return numeric-string
+     */
+    public function toString(): string
+    {
+        return $this->value;
+    }
+
+    public function jsonSerialize(): string
+    {
+        return $this->toString();
+    }
+
+    public function serialize(): string
+    {
+        return $this->toString();
+    }
+
+    /**
+     * @return array{string: string}
+     */
+    public function __serialize(): array
+    {
+        return ['string' => $this->toString()];
+    }
+
+    /**
+     * @param array{string: string} $data
+     */
+    public function __unserialize(array $data): void
+    {
+        // @codeCoverageIgnoreStart
+        if (!isset($data['string'])) {
+            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
+        }
+        // @codeCoverageIgnoreEnd
+
+        $this->unserialize($data['string']);
+    }
+
+    /**
+     * Constructs the object from a serialized string representation
+     *
+     * @param string $serialized The serialized string representation of the object
+     *
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+     * @psalm-suppress UnusedMethodCall
+     */
+    public function unserialize($serialized): void
+    {
+        $this->__construct($serialized);
+    }
+
     /**
      * @param mixed $value The integer value to store
      */
     public function __construct($value)
     {
-        $value = (string) $value;
+        $value = (string)$value;
         $sign = '+';
 
         // If the value contains a sign, remove it for ctype_digit() check.
@@ -86,68 +148,5 @@ final class Integer implements NumberInterface
         $numericValue = $value;
 
         $this->value = $numericValue;
-    }
-
-    public function isNegative(): bool
-    {
-        return $this->isNegative;
-    }
-
-    /**
-     * @psalm-return numeric-string
-     */
-    public function toString(): string
-    {
-        return $this->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->toString();
-    }
-
-    public function jsonSerialize(): string
-    {
-        return $this->toString();
-    }
-
-    public function serialize(): string
-    {
-        return $this->toString();
-    }
-
-    /**
-     * @return array{string: string}
-     */
-    public function __serialize(): array
-    {
-        return ['string' => $this->toString()];
-    }
-
-    /**
-     * Constructs the object from a serialized string representation
-     *
-     * @param string $serialized The serialized string representation of the object
-     *
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-     * @psalm-suppress UnusedMethodCall
-     */
-    public function unserialize($serialized): void
-    {
-        $this->__construct($serialized);
-    }
-
-    /**
-     * @param array{string: string} $data
-     */
-    public function __unserialize(array $data): void
-    {
-        // @codeCoverageIgnoreStart
-        if (!isset($data['string'])) {
-            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
-        }
-        // @codeCoverageIgnoreEnd
-
-        $this->unserialize($data['string']);
     }
 }

@@ -20,13 +20,13 @@ class StringOutput extends Output
         $this->output = '';
     }
 
-    protected function doWrite($message, $newline)
-    {
-        $this->output .= $message.($newline ? "\n" : '');
-    }
-
     public function getContent()
     {
         return trim($this->output);
+    }
+
+    protected function doWrite($message, $newline)
+    {
+        $this->output .= $message . ($newline ? "\n" : '');
     }
 }

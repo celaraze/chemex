@@ -11,11 +11,6 @@ use RuntimeException;
  */
 trait ProxyArrayAccessToProperties
 {
-    private function formatPropertyName(string $offset): string
-    {
-        return str_replace('_', '', lcfirst(ucwords($offset, '_')));
-    }
-
     /**
      * @param mixed $offset
      *
@@ -23,9 +18,14 @@ trait ProxyArrayAccessToProperties
      */
     public function offsetExists($offset): bool
     {
-        $property = $this->formatPropertyName((string) $offset);
+        $property = $this->formatPropertyName((string)$offset);
 
         return isset($this->{$property});
+    }
+
+    private function formatPropertyName(string $offset): string
+    {
+        return str_replace('_', '', lcfirst(ucwords($offset, '_')));
     }
 
     /**
@@ -36,7 +36,7 @@ trait ProxyArrayAccessToProperties
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        $property = $this->formatPropertyName((string) $offset);
+        $property = $this->formatPropertyName((string)$offset);
 
         return $this->{$property};
     }

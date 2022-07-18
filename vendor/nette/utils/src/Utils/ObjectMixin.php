@@ -18,24 +18,24 @@ use Nette;
  */
 final class ObjectMixin
 {
-	use Nette\StaticClass;
+    use Nette\StaticClass;
 
-	/** @deprecated  use ObjectHelpers::getSuggestion() */
-	public static function getSuggestion(array $possibilities, string $value): ?string
-	{
-		trigger_error(__METHOD__ . '() has been renamed to Nette\Utils\ObjectHelpers::getSuggestion()', E_USER_DEPRECATED);
-		return ObjectHelpers::getSuggestion($possibilities, $value);
-	}
-
-
-	public static function setExtensionMethod(): void
-	{
-		trigger_error('Class Nette\Utils\ObjectMixin is deprecated', E_USER_DEPRECATED);
-	}
+    /** @deprecated  use ObjectHelpers::getSuggestion() */
+    public static function getSuggestion(array $possibilities, string $value): ?string
+    {
+        trigger_error(__METHOD__ . '() has been renamed to Nette\Utils\ObjectHelpers::getSuggestion()', E_USER_DEPRECATED);
+        return ObjectHelpers::getSuggestion($possibilities, $value);
+    }
 
 
-	public static function getExtensionMethod(): void
-	{
-		trigger_error('Class Nette\Utils\ObjectMixin is deprecated', E_USER_DEPRECATED);
-	}
+    public static function setExtensionMethod(): void
+    {
+        trigger_error('Class Nette\Utils\ObjectMixin is deprecated', E_USER_DEPRECATED);
+    }
+
+
+    public static function getExtensionMethod(): void
+    {
+        trigger_error('Class Nette\Utils\ObjectMixin is deprecated', E_USER_DEPRECATED);
+    }
 }

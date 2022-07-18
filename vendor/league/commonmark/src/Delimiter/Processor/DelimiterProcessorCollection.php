@@ -46,17 +46,16 @@ final class DelimiterProcessorCollection implements DelimiterProcessorCollection
         }
     }
 
-    public function getDelimiterProcessor(string $char): ?DelimiterProcessorInterface
+    private function addStaggeredDelimiterProcessorForChar(string $opening, DelimiterProcessorInterface $old, DelimiterProcessorInterface $new): void
     {
-        return $this->processorsByChar[$char] ?? null;
-    }
+        if ($old instanceof StaggeredDelimiterProcessor) {
+            $s = $old;
+        } else {
+            $s = new StaggeredDelimiterProcessor($opening, $old);
+        }
 
-    /**
-     * @return string[]
-     */
-    public function getDelimiterCharacters(): array
-    {
-        return \array_keys($this->processorsByChar);
+        $s->add($new);
+        $this->processorsByChar[$opening] = $s;
     }
 
     private function addDelimiterProcessorForChar(string $delimiterChar, DelimiterProcessorInterface $processor): void
@@ -68,16 +67,17 @@ final class DelimiterProcessorCollection implements DelimiterProcessorCollection
         $this->processorsByChar[$delimiterChar] = $processor;
     }
 
-    private function addStaggeredDelimiterProcessorForChar(string $opening, DelimiterProcessorInterface $old, DelimiterProcessorInterface $new): void
+    public function getDelimiterProcessor(string $char): ?DelimiterProcessorInterface
     {
-        if ($old instanceof StaggeredDelimiterProcessor) {
-            $s = $old;
-        } else {
-            $s = new StaggeredDelimiterProcessor($opening, $old);
-        }
+        return $this->processorsByChar[$char] ?? null;
+    }
 
-        $s->add($new);
-        $this->processorsByChar[$opening] = $s;
+    /**
+     * @return string[]
+     */
+    public function getDelimiterCharacters(): array
+    {
+        return \array_keys($this->processorsByChar);
     }
 
     public function count(): int

@@ -36,16 +36,6 @@ class ComposerProperty implements Arrayable
 
     /**
      * @param $key
-     * @param  null  $default
-     * @return mixed
-     */
-    public function get($key, $default = null)
-    {
-        return Arr::get($this->attributes, $key, $default);
-    }
-
-    /**
-     * @param $key
      * @param $val
      * @return $this
      */
@@ -80,13 +70,23 @@ class ComposerProperty implements Arrayable
         return $this->get(str_replace('_', '-', $name));
     }
 
-    public function toArray()
+    /**
+     * @param $key
+     * @param null $default
+     * @return mixed
+     */
+    public function get($key, $default = null)
     {
-        return $this->attributes;
+        return Arr::get($this->attributes, $key, $default);
     }
 
     public function toJson()
     {
         return json_encode($this->toArray());
+    }
+
+    public function toArray()
+    {
+        return $this->attributes;
     }
 }

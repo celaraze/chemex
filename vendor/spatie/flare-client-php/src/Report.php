@@ -19,55 +19,57 @@ class Report
     use UsesTime;
     use HasContext;
 
-    protected Backtrace $stacktrace;
-
-    protected string $exceptionClass = '';
-
-    protected string $message = '';
-
-    /** @var array<int, array{time: int, name: string, message_level: string, meta_data: array, microtime: float}> */
-    protected array $glows = [];
-
-    /** @var array<int, array<int|string, mixed>> */
-    protected array $solutions = [];
-
+    public static ?string $fakeTrackingUuid = null;
     /** @var array<int, string> */
     public array $documentationLinks = [];
-
+    protected Backtrace $stacktrace;
+    protected string $exceptionClass = '';
+    protected string $message = '';
+    /** @var array<int, array{time: int, name: string, message_level: string, meta_data: array, microtime: float}> */
+    protected array $glows = [];
+    /** @var array<int, array<int|string, mixed>> */
+    protected array $solutions = [];
     protected ContextProvider $context;
-
     protected ?string $applicationPath = null;
-
     protected ?string $applicationVersion = null;
-
     /** @var array<int|string, mixed> */
     protected array $userProvidedContext = [];
-
     /** @var array<int|string, mixed> */
     protected array $exceptionContext = [];
-
     protected ?Throwable $throwable = null;
-
     protected string $notifierName = 'Flare Client';
-
     protected ?string $languageVersion = null;
-
     protected ?string $frameworkVersion = null;
-
     protected ?int $openFrameIndex = null;
-
     protected string $trackingUuid;
-
     protected ?View $view;
 
-    public static ?string $fakeTrackingUuid = null;
+    public function __construct()
+    {
+        $this->trackingUuid = self::$fakeTrackingUuid ?? $this->generateUuid();
+    }
+
+    protected function generateUuid(): string
+    {
+        // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
+        $data = random_bytes(16);
+
+        // Set version to 0100
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+        // Set bits 6-7 to 10
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+
+        // Output the 36 character UUID.
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
 
     public static function createForThrowable(
-        Throwable $throwable,
+        Throwable       $throwable,
         ContextProvider $context,
-        ?string $applicationPath = null,
-        ?string $version = null
-    ): self {
+        ?string         $applicationPath = null,
+        ?string         $version = null
+    ): self
+    {
         return (new self())
             ->setApplicationPath($applicationPath)
             ->throwable($throwable)
@@ -77,6 +79,50 @@ class Report
             ->stackTrace(Backtrace::createForThrowable($throwable)->applicationPath($applicationPath ?? ''))
             ->exceptionContext($throwable)
             ->setApplicationVersion($version);
+    }
+
+    protected function exceptionContext(Throwable $throwable): self
+    {
+        if ($throwable instanceof ProvidesFlareContext) {
+            $this->exceptionContext = $throwable->context();
+        }
+
+        return $this;
+    }
+
+    public function stacktrace(Backtrace $stacktrace): self
+    {
+        $this->stacktrace = $stacktrace;
+
+        return $this;
+    }
+
+    public function message(string $message): self
+    {
+        $this->message = $message;
+
+        return $this;
+    }
+
+    public function exceptionClass(string $exceptionClass): self
+    {
+        $this->exceptionClass = $exceptionClass;
+
+        return $this;
+    }
+
+    public function useContext(ContextProvider $request): self
+    {
+        $this->context = $request;
+
+        return $this;
+    }
+
+    public function throwable(Throwable $throwable): self
+    {
+        $this->throwable = $throwable;
+
+        return $this;
     }
 
     protected static function getClassForThrowable(Throwable $throwable): string
@@ -93,12 +139,18 @@ class Report
         return get_class($throwable);
     }
 
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
     public static function createForMessage(
-        string $message,
-        string $logLevel,
+        string          $message,
+        string          $logLevel,
         ContextProvider $context,
-        ?string $applicationPath = null
-    ): self {
+        ?string         $applicationPath = null
+    ): self
+    {
         $stacktrace = Backtrace::create()->applicationPath($applicationPath ?? '');
 
         return (new self())
@@ -110,9 +162,11 @@ class Report
             ->openFrameIndex($stacktrace->firstApplicationFrameIndex());
     }
 
-    public function __construct()
+    public function openFrameIndex(?int $index): self
     {
-        $this->trackingUuid = self::$fakeTrackingUuid ?? $this->generateUuid();
+        $this->openFrameIndex = $index;
+
+        return $this;
     }
 
     public function trackingUuid(): string
@@ -120,47 +174,14 @@ class Report
         return $this->trackingUuid;
     }
 
-    public function exceptionClass(string $exceptionClass): self
-    {
-        $this->exceptionClass = $exceptionClass;
-
-        return $this;
-    }
-
     public function getExceptionClass(): string
     {
         return $this->exceptionClass;
     }
 
-    public function throwable(Throwable $throwable): self
-    {
-        $this->throwable = $throwable;
-
-        return $this;
-    }
-
     public function getThrowable(): ?Throwable
     {
         return $this->throwable;
-    }
-
-    public function message(string $message): self
-    {
-        $this->message = $message;
-
-        return $this;
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
-    public function stacktrace(Backtrace $stacktrace): self
-    {
-        $this->stacktrace = $stacktrace;
-
-        return $this;
     }
 
     public function getStacktrace(): Backtrace
@@ -189,18 +210,9 @@ class Report
         return $this;
     }
 
-    public function useContext(ContextProvider $request): self
+    public function getApplicationPath(): ?string
     {
-        $this->context = $request;
-
-        return $this;
-    }
-
-    public function openFrameIndex(?int $index): self
-    {
-        $this->openFrameIndex = $index;
-
-        return $this;
+        return $this->applicationPath;
     }
 
     public function setApplicationPath(?string $applicationPath): self
@@ -210,9 +222,9 @@ class Report
         return $this;
     }
 
-    public function getApplicationPath(): ?string
+    public function getApplicationVersion(): ?string
     {
-        return $this->applicationPath;
+        return $this->applicationVersion;
     }
 
     public function setApplicationVersion(?string $applicationVersion): self
@@ -220,11 +232,6 @@ class Report
         $this->applicationVersion = $applicationVersion;
 
         return $this;
-    }
-
-    public function getApplicationVersion(): ?string
-    {
-        return $this->applicationVersion;
     }
 
     public function view(?View $view): self
@@ -239,69 +246,6 @@ class Report
         $this->glows[] = $glow->toArray();
 
         return $this;
-    }
-
-    public function addSolution(Solution $solution): self
-    {
-        $this->solutions[] = ReportSolution::fromSolution($solution)->toArray();
-
-        return $this;
-    }
-
-    /**
-     * @param array<int, string> $documentationLinks
-     *
-     * @return $this
-     */
-    public function addDocumentationLinks(array $documentationLinks): self
-    {
-        $this->documentationLinks = $documentationLinks;
-
-        return $this;
-    }
-
-    /**
-     * @param array<int|string, mixed> $userProvidedContext
-     *
-     * @return $this
-     */
-    public function userProvidedContext(array $userProvidedContext): self
-    {
-        $this->userProvidedContext = $userProvidedContext;
-
-        return $this;
-    }
-
-    /**
-     * @return array<int|string, mixed>
-    */
-    public function allContext(): array
-    {
-        $context = $this->context->toArray();
-
-        $context = array_merge_recursive_distinct($context, $this->exceptionContext);
-
-        return array_merge_recursive_distinct($context, $this->userProvidedContext);
-    }
-
-    protected function exceptionContext(Throwable $throwable): self
-    {
-        if ($throwable instanceof ProvidesFlareContext) {
-            $this->exceptionContext = $throwable->context();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return array<int|string, mixed>
-     */
-    protected function stracktraceAsArray(): array
-    {
-        return array_map(
-            fn (SpatieFrame $frame) => Frame::fromSpatieFrame($frame)->toArray(),
-            $this->stacktrace->frames(),
-        );
     }
 
     /**
@@ -331,20 +275,61 @@ class Report
         ];
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
+    protected function stracktraceAsArray(): array
+    {
+        return array_map(
+            fn(SpatieFrame $frame) => Frame::fromSpatieFrame($frame)->toArray(),
+            $this->stacktrace->frames(),
+        );
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function allContext(): array
+    {
+        $context = $this->context->toArray();
+
+        $context = array_merge_recursive_distinct($context, $this->exceptionContext);
+
+        return array_merge_recursive_distinct($context, $this->userProvidedContext);
+    }
+
+    public function addSolution(Solution $solution): self
+    {
+        $this->solutions[] = ReportSolution::fromSolution($solution)->toArray();
+
+        return $this;
+    }
+
+    /**
+     * @param array<int, string> $documentationLinks
+     *
+     * @return $this
+     */
+    public function addDocumentationLinks(array $documentationLinks): self
+    {
+        $this->documentationLinks = $documentationLinks;
+
+        return $this;
+    }
+
     /*
      * Found on https://stackoverflow.com/questions/2040240/php-function-to-generate-v4-uuid/15875555#15875555
      */
-    protected function generateUuid(): string
+
+    /**
+     * @param array<int|string, mixed> $userProvidedContext
+     *
+     * @return $this
+     */
+    public function userProvidedContext(array $userProvidedContext): self
     {
-        // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-        $data = random_bytes(16);
+        $this->userProvidedContext = $userProvidedContext;
 
-        // Set version to 0100
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        // Set bits 6-7 to 10
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-
-        // Output the 36 character UUID.
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        return $this;
     }
 }

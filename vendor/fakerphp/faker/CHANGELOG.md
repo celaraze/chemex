@@ -14,6 +14,7 @@
 - Fix regexify escape backslash in character class (#434)
 - Removed UUID from Generator to be able to extend it (#441)
 -
+
 ## [2022-01-23, v1.18.0](https://github.com/FakerPHP/Faker/compare/v1.17.0..v1.18.0)
 
 - Deprecated UUID, use uuid3 to specify version (#427)

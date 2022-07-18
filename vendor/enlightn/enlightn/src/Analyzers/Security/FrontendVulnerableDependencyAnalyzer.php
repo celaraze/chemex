@@ -26,20 +26,18 @@ class FrontendVulnerableDependencyAnalyzer extends SecurityAnalyzer
      * @var int|null
      */
     public $timeToFix = 60;
-
-    /**
-     * The NPM instance.
-     *
-     * @var \Enlightn\Enlightn\NPM
-     */
-    private $NPM;
-
     /**
      * The number of frontend vulnerabilities.
      *
      * @var int
      */
     protected $vulnerabilityCount;
+    /**
+     * The NPM instance.
+     *
+     * @var \Enlightn\Enlightn\NPM
+     */
+    private $NPM;
 
     /**
      * Create a new analyzer instance.
@@ -59,8 +57,8 @@ class FrontendVulnerableDependencyAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application has a total of {$this->vulnerabilityCount} known vulnerabilities in the application's "
-            ."frontend dependencies. This can be very dangerous and you may investigate this further by running an "
-            ."npm audit or a yarn audit command.";
+            . "frontend dependencies. This can be very dangerous and you may investigate this further by running an "
+            . "npm audit or a yarn audit command.";
     }
 
     /**

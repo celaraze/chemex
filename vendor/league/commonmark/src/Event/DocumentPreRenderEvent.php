@@ -29,7 +29,7 @@ final class DocumentPreRenderEvent extends AbstractEvent
     public function __construct(Document $document, string $format)
     {
         $this->document = $document;
-        $this->format   = $format;
+        $this->format = $format;
     }
 
     public function getDocument(): Document

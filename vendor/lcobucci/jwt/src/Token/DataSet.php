@@ -14,7 +14,7 @@ final class DataSet
     /** @param mixed[] $data */
     public function __construct(array $data, string $encoded)
     {
-        $this->data    = $data;
+        $this->data = $data;
         $this->encoded = $encoded;
     }
 

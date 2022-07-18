@@ -11,7 +11,8 @@
             <input {!! $attributes !!} />
 
             <span class="input-group-addon clearfix" style="padding: 1px;">
-                <img class="field-refresh-captcha" data-url="{{ $captchaSrc }}" src="{{ $captchaSrc }}" style="height:30px;cursor: pointer;"  title="Click to refresh"/>
+                <img class="field-refresh-captcha" data-url="{{ $captchaSrc }}" src="{{ $captchaSrc }}"
+                     style="height:30px;cursor: pointer;" title="Click to refresh"/>
             </span>
         </div>
 
@@ -22,6 +23,6 @@
 
 <script init=".field-refresh-captcha" once>
     $this.off('click').on('click', function () {
-        $(this).attr('src', $(this).attr('data-url')+'?'+Math.random());
+        $(this).attr('src', $(this).attr('data-url') + '?' + Math.random());
     });
 </script>

@@ -43,32 +43,14 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param string $operator One of Constraint::STR_OP_*
-     * @return bool
-     *
-     * @phpstan-param Constraint::STR_OP_* $operator
-     */
-    public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
-    {
-        if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
-            return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
-        }
-
-        $constraint = new Constraint($operator, $b->getVersion());
-        $version = new Constraint('==', $a->getVersion());
-
-        return $constraint->matchSpecific($version, true);
-    }
-
-    /**
-     * @param  int[]  $literals
-     * @param  string $requiredPackage
+     * @param int[] $literals
+     * @param string $requiredPackage
      * @return int[]
      */
     public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
     {
         sort($literals);
-        $resultCacheKey = implode(',', $literals).$requiredPackage;
+        $resultCacheKey = implode(',', $literals) . $requiredPackage;
         $poolId = spl_object_id($pool);
 
         if (isset($this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey])) {
@@ -79,7 +61,7 @@ class DefaultPolicy implements PolicyInterface
 
         foreach ($packages as &$nameLiterals) {
             usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
-                $cacheKey = 'i'.$a.'.'.$b.$requiredPackage; // i prefix -> ignoreReplace = true
+                $cacheKey = 'i' . $a . '.' . $b . $requiredPackage; // i prefix -> ignoreReplace = true
 
                 if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
                     return $this->sortingCachePerPool[$poolId][$cacheKey];
@@ -98,7 +80,7 @@ class DefaultPolicy implements PolicyInterface
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
-            $cacheKey = $a.'.'.$b.$requiredPackage; // no i prefix -> ignoreReplace = false
+            $cacheKey = $a . '.' . $b . $requiredPackage; // no i prefix -> ignoreReplace = false
 
             if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
                 return $this->sortingCachePerPool[$poolId][$cacheKey];
@@ -111,7 +93,7 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[] $literals
+     * @param int[] $literals
      * @return array<string, int[]>
      */
     protected function groupLiteralsByName(Pool $pool, array $literals): array
@@ -194,7 +176,7 @@ class DefaultPolicy implements PolicyInterface
             if ($link->getTarget() === $target->getName()
 //                && (null === $link->getConstraint() ||
 //                $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
-                ) {
+            ) {
                 return true;
             }
         }
@@ -203,7 +185,7 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[] $literals
+     * @param int[] $literals
      * @return int[]
      */
     protected function pruneToBestVersion(Pool $pool, array $literals): array
@@ -230,11 +212,29 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
+     * @param string $operator One of Constraint::STR_OP_*
+     * @return bool
+     *
+     * @phpstan-param Constraint::STR_OP_* $operator
+     */
+    public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
+    {
+        if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
+            return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
+        }
+
+        $constraint = new Constraint($operator, $b->getVersion());
+        $version = new Constraint('==', $a->getVersion());
+
+        return $constraint->matchSpecific($version, true);
+    }
+
+    /**
      * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
      *
      * If no package is a local alias, nothing happens
      *
-     * @param  int[] $literals
+     * @param int[] $literals
      * @return int[]
      */
     protected function pruneRemoteAliases(Pool $pool, array $literals): array

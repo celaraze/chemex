@@ -21,7 +21,7 @@ class LaravelServiceProvider extends AbstractServiceProvider
      */
     public function boot()
     {
-        $path = realpath(__DIR__.'/../../config/config.php');
+        $path = realpath(__DIR__ . '/../../config/config.php');
 
         $this->publishes([$path => config_path('jwt.php')], 'config');
         $this->mergeConfigFrom($path, 'jwt');
@@ -34,22 +34,6 @@ class LaravelServiceProvider extends AbstractServiceProvider
             new RouteParams,
             new Cookies($this->config('decrypt_cookies')),
         ]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function registerStorageProvider()
-    {
-        $this->app->singleton('tymon.jwt.provider.storage', function () {
-            $instance = $this->getConfigInstance('providers.storage');
-
-            if (method_exists($instance, 'setLaravelVersion')) {
-                $instance->setLaravelVersion($this->app->version());
-            }
-
-            return $instance;
-        });
     }
 
     /**
@@ -66,5 +50,21 @@ class LaravelServiceProvider extends AbstractServiceProvider
         foreach ($this->middlewareAliases as $alias => $middleware) {
             $router->$method($alias, $middleware);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function registerStorageProvider()
+    {
+        $this->app->singleton('tymon.jwt.provider.storage', function () {
+            $instance = $this->getConfigInstance('providers.storage');
+
+            if (method_exists($instance, 'setLaravelVersion')) {
+                $instance->setLaravelVersion($this->app->version());
+            }
+
+            return $instance;
+        });
     }
 }

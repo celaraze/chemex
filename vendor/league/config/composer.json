@@ -2,7 +2,15 @@
     "name": "league/config",
     "type": "library",
     "description": "Define configuration arrays with strict schemas and access values with dot notation",
-    "keywords": ["configuration","config","schema","array","nested","dot","dot-access"],
+    "keywords": [
+        "configuration",
+        "config",
+        "schema",
+        "array",
+        "nested",
+        "dot",
+        "dot-access"
+    ],
     "homepage": "https://config.thephpleague.com",
     "license": "BSD-3-Clause",
     "authors": [

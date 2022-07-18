@@ -26,18 +26,14 @@ class FileSystemHelper extends \Box\Spout\Common\Helper\FileSystemHelper impleme
     const META_XML_FILE_NAME = 'meta.xml';
     const MIMETYPE_FILE_NAME = 'mimetype';
     const STYLES_XML_FILE_NAME = 'styles.xml';
-
-    /** @var ZipHelper Helper to perform tasks with Zip archive */
-    private $zipHelper;
-
     /** @var string Path to the root folder inside the temp folder where the files to create the ODS will be stored */
     protected $rootFolder;
-
     /** @var string Path to the "META-INF" folder inside the root folder */
     protected $metaInfFolder;
-
     /** @var string Path to the temp folder, inside the root folder, where specific sheets content will be written to */
     protected $sheetsContentTempFolder;
+    /** @var ZipHelper Helper to perform tasks with Zip archive */
+    private $zipHelper;
 
     /**
      * @param string $baseFolderPath The path of the base folder where all the I/O can occur
@@ -68,8 +64,8 @@ class FileSystemHelper extends \Box\Spout\Common\Helper\FileSystemHelper impleme
     /**
      * Creates all the folders needed to create a ODS file, as well as the files that won't change.
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the base folders
      * @return void
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the base folders
      */
     public function createBaseFilesAndFolders()
     {
@@ -82,66 +78,14 @@ class FileSystemHelper extends \Box\Spout\Common\Helper\FileSystemHelper impleme
     }
 
     /**
-     * Creates the folder that will be used as root
+     * Creates the "mimetype" file under the root folder
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      * @return FileSystemHelper
-     */
-    protected function createRootFolder()
-    {
-        $this->rootFolder = $this->createFolder($this->baseFolderRealPath, \uniqid('ods'));
-
-        return $this;
-    }
-
-    /**
-     * Creates the "META-INF" folder under the root folder as well as the "manifest.xml" file in it
-     *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or the "manifest.xml" file
-     * @return FileSystemHelper
-     */
-    protected function createMetaInfoFolderAndFile()
-    {
-        $this->metaInfFolder = $this->createFolder($this->rootFolder, self::META_INF_FOLDER_NAME);
-
-        $this->createManifestFile();
-
-        return $this;
-    }
-
-    /**
-     * Creates the "manifest.xml" file under the "META-INF" folder (under root)
-     *
      * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
-     * @return FileSystemHelper
      */
-    protected function createManifestFile()
+    protected function createMimetypeFile()
     {
-        $manifestXmlFileContents = <<<'EOD'
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
-    <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.spreadsheet"/>
-    <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>
-    <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
-    <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>
-</manifest:manifest>
-EOD;
-
-        $this->createFileWithContents($this->metaInfFolder, self::MANIFEST_XML_FILE_NAME, $manifestXmlFileContents);
-
-        return $this;
-    }
-
-    /**
-     * Creates the temp folder where specific sheets content will be written to.
-     * This folder is not part of the final ODS file and is only used to be able to jump between sheets.
-     *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
-     * @return FileSystemHelper
-     */
-    protected function createSheetsContentTempFolder()
-    {
-        $this->sheetsContentTempFolder = $this->createFolder($this->rootFolder, self::SHEETS_CONTENT_TEMP_FOLDER_NAME);
+        $this->createFileWithContents($this->rootFolder, self::MIMETYPE_FILE_NAME, self::MIMETYPE);
 
         return $this;
     }
@@ -149,8 +93,8 @@ EOD;
     /**
      * Creates the "meta.xml" file under the root folder
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      */
     protected function createMetaFile()
     {
@@ -174,14 +118,66 @@ EOD;
     }
 
     /**
-     * Creates the "mimetype" file under the root folder
+     * Creates the temp folder where specific sheets content will be written to.
+     * This folder is not part of the final ODS file and is only used to be able to jump between sheets.
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      */
-    protected function createMimetypeFile()
+    protected function createSheetsContentTempFolder()
     {
-        $this->createFileWithContents($this->rootFolder, self::MIMETYPE_FILE_NAME, self::MIMETYPE);
+        $this->sheetsContentTempFolder = $this->createFolder($this->rootFolder, self::SHEETS_CONTENT_TEMP_FOLDER_NAME);
+
+        return $this;
+    }
+
+    /**
+     * Creates the "META-INF" folder under the root folder as well as the "manifest.xml" file in it
+     *
+     * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or the "manifest.xml" file
+     */
+    protected function createMetaInfoFolderAndFile()
+    {
+        $this->metaInfFolder = $this->createFolder($this->rootFolder, self::META_INF_FOLDER_NAME);
+
+        $this->createManifestFile();
+
+        return $this;
+    }
+
+    /**
+     * Creates the "manifest.xml" file under the "META-INF" folder (under root)
+     *
+     * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
+     */
+    protected function createManifestFile()
+    {
+        $manifestXmlFileContents = <<<'EOD'
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
+    <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.spreadsheet"/>
+    <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>
+    <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
+    <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>
+</manifest:manifest>
+EOD;
+
+        $this->createFileWithContents($this->metaInfFolder, self::MANIFEST_XML_FILE_NAME, $manifestXmlFileContents);
+
+        return $this;
+    }
+
+    /**
+     * Creates the folder that will be used as root
+     *
+     * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
+     */
+    protected function createRootFolder()
+    {
+        $this->rootFolder = $this->createFolder($this->baseFolderRealPath, \uniqid('ods'));
 
         return $this;
     }

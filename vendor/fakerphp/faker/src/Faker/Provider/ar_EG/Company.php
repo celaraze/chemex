@@ -40,9 +40,29 @@ class Company extends \Faker\Provider\Company
     ];
 
     /**
+     * example 010101010
+     */
+    public static function companyTaxIdNumber()
+    {
+        $partialValue = static::numerify(str_repeat('#', 9));
+
+        return Luhn::generateLuhnNumber($partialValue);
+    }
+
+    /**
+     * example 010101
+     */
+    public static function companyTradeRegisterNumber()
+    {
+        $partialValue = static::numerify(str_repeat('#', 6));
+
+        return Luhn::generateLuhnNumber($partialValue);
+    }
+
+    /**
+     * @return string
      * @example 'مؤسسة'
      *
-     * @return string
      */
     public function companyPrefix()
     {
@@ -61,25 +81,5 @@ class Company extends \Faker\Provider\Company
         }
 
         return implode(' ', $result);
-    }
-
-    /**
-     * example 010101010
-     */
-    public static function companyTaxIdNumber()
-    {
-        $partialValue = static::numerify(str_repeat('#', 9));
-
-        return Luhn::generateLuhnNumber($partialValue);
-    }
-
-    /**
-     * example 010101
-     */
-    public static function companyTradeRegisterNumber()
-    {
-        $partialValue = static::numerify(str_repeat('#', 6));
-
-        return Luhn::generateLuhnNumber($partialValue);
     }
 }

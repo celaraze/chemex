@@ -45,7 +45,7 @@ class Package
     {
         $configFileName = $configFileName ?? $this->shortName();
 
-        if (! is_array($configFileName)) {
+        if (!is_array($configFileName)) {
             $configFileName = [$configFileName];
         }
 
@@ -75,7 +75,7 @@ class Package
         return $this;
     }
 
-    public function hasViewComponents(string $prefix,  ...$viewComponentNames): self
+    public function hasViewComponents(string $prefix, ...$viewComponentNames): self
     {
         foreach ($viewComponentNames as $componentName) {
             $this->viewComponents[$componentName] = $prefix;
@@ -93,7 +93,7 @@ class Package
 
     public function hasViewComposer($view, $viewComposer): self
     {
-        if (! is_array($view)) {
+        if (!is_array($view)) {
             $view = [$view];
         }
 

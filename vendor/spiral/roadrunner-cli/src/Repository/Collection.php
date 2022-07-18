@@ -70,15 +70,6 @@ abstract class Collection implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param callable(T): bool $filter
-     * @return $this
-     */
-    public function filter(callable $filter): self
-    {
-        return new static(\array_filter($this->items, $filter));
-    }
-
-    /**
      * @param callable(T): mixed $map
      * @return $this
      */
@@ -96,9 +87,19 @@ abstract class Collection implements \IteratorAggregate, \Countable
      */
     public function except(callable $filter): self
     {
-        $callback = static fn (...$args): bool => ! $filter(...$args);
+        $callback = static fn(...$args): bool => !$filter(...$args);
 
         return new static(\array_filter($this->items, $callback));
+    }
+
+    /**
+     * @param callable(): T $otherwise
+     * @param null|callable(T): bool $filter
+     * @return T
+     */
+    public function firstOr(callable $otherwise, callable $filter = null): object
+    {
+        return $this->first($filter) ?? $otherwise();
     }
 
     /**
@@ -113,13 +114,12 @@ abstract class Collection implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param callable(): T $otherwise
-     * @param null|callable(T): bool $filter
-     * @return T
+     * @param callable(T): bool $filter
+     * @return $this
      */
-    public function firstOr(callable $otherwise, callable $filter = null): object
+    public function filter(callable $filter): self
     {
-        return $this->first($filter) ?? $otherwise();
+        return new static(\array_filter($this->items, $filter));
     }
 
     /**

@@ -20,8 +20,8 @@ use Composer\Pcre\Preg;
 class Version
 {
     /**
-     * @param  string      $opensslVersion
-     * @param  bool        $isFips Set by the method
+     * @param string $opensslVersion
+     * @param bool $isFips Set by the method
      * @return string|null
      */
     public static function parseOpenssl(string $opensslVersion, ?bool &$isFips): ?string
@@ -35,45 +35,19 @@ class Version
         // OpenSSL 1 used 1.2.3a style versioning, 3+ uses semver
         $patch = '';
         if (version_compare($matches['version'], '3.0.0', '<')) {
-            $patch = '.'.self::convertAlphaVersionToIntVersion($matches['patch']);
+            $patch = '.' . self::convertAlphaVersionToIntVersion($matches['patch']);
         }
 
         $isFips = strpos($matches['suffix'], 'fips') !== false;
-        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
+        $suffix = strtr('-' . ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
 
-        return rtrim($matches['version'].$patch.$suffix, '-');
-    }
-
-    /**
-     * @param  string      $libjpegVersion
-     * @return string|null
-     */
-    public static function parseLibjpeg(string $libjpegVersion): ?string
-    {
-        if (!Preg::isMatch('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
-            return null;
-        }
-
-        return $matches['major'].'.'.self::convertAlphaVersionToIntVersion($matches['minor']);
-    }
-
-    /**
-     * @param  string      $zoneinfoVersion
-     * @return string|null
-     */
-    public static function parseZoneinfoVersion(string $zoneinfoVersion): ?string
-    {
-        if (!Preg::isMatch('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
-            return null;
-        }
-
-        return $matches['year'].'.'.self::convertAlphaVersionToIntVersion($matches['revision']);
+        return rtrim($matches['version'] . $patch . $suffix, '-');
     }
 
     /**
      * "" => 0, "a" => 1, "zg" => 33
      *
-     * @param  string $alpha
+     * @param string $alpha
      * @return int
      */
     private static function convertAlphaVersionToIntVersion(string $alpha): int
@@ -82,19 +56,36 @@ class Version
     }
 
     /**
-     * @param  int    $versionId
-     * @return string
+     * @param string $libjpegVersion
+     * @return string|null
      */
-    public static function convertLibxpmVersionId(int $versionId): string
+    public static function parseLibjpeg(string $libjpegVersion): ?string
     {
-        return self::convertVersionId($versionId, 100);
+        if (!Preg::isMatch('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
+            return null;
+        }
+
+        return $matches['major'] . '.' . self::convertAlphaVersionToIntVersion($matches['minor']);
     }
 
     /**
-     * @param  int    $versionId
+     * @param string $zoneinfoVersion
+     * @return string|null
+     */
+    public static function parseZoneinfoVersion(string $zoneinfoVersion): ?string
+    {
+        if (!Preg::isMatch('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
+            return null;
+        }
+
+        return $matches['year'] . '.' . self::convertAlphaVersionToIntVersion($matches['revision']);
+    }
+
+    /**
+     * @param int $versionId
      * @return string
      */
-    public static function convertOpenldapVersionId(int $versionId): string
+    public static function convertLibxpmVersionId(int $versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
@@ -110,8 +101,17 @@ class Version
         return sprintf(
             '%d.%d.%d',
             $versionId / ($base * $base),
-            (int) ($versionId / $base) % $base,
+            (int)($versionId / $base) % $base,
             $versionId % $base
         );
+    }
+
+    /**
+     * @param int $versionId
+     * @return string
+     */
+    public static function convertOpenldapVersionId(int $versionId): string
+    {
+        return self::convertVersionId($versionId, 100);
     }
 }

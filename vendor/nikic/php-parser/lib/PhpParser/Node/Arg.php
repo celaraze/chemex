@@ -2,7 +2,6 @@
 
 namespace PhpParser\Node;
 
-use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeAbstract;
 
 class Arg extends NodeAbstract
@@ -19,16 +18,17 @@ class Arg extends NodeAbstract
     /**
      * Constructs a function call argument node.
      *
-     * @param Expr  $value      Value to pass
-     * @param bool  $byRef      Whether to pass by ref
-     * @param bool  $unpack     Whether to unpack the argument
+     * @param Expr $value Value to pass
+     * @param bool $byRef Whether to pass by ref
+     * @param bool $unpack Whether to unpack the argument
      * @param array $attributes Additional attributes
      * @param Identifier|null $name Parameter name (for named parameters)
      */
     public function __construct(
-        Expr $value, bool $byRef = false, bool $unpack = false, array $attributes = [],
+        Expr       $value, bool $byRef = false, bool $unpack = false, array $attributes = [],
         Identifier $name = null
-    ) {
+    )
+    {
         $this->attributes = $attributes;
         $this->name = $name;
         $this->value = $value;
@@ -36,11 +36,13 @@ class Arg extends NodeAbstract
         $this->unpack = $unpack;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['name', 'value', 'byRef', 'unpack'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Arg';
     }
 }

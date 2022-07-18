@@ -10,19 +10,22 @@ class NullableType extends ComplexType
     /**
      * Constructs a nullable type (wrapping another type).
      *
-     * @param string|Identifier|Name $type       Type
-     * @param array                  $attributes Additional attributes
+     * @param string|Identifier|Name $type Type
+     * @param array $attributes Additional attributes
      */
-    public function __construct($type, array $attributes = []) {
+    public function __construct($type, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->type = \is_string($type) ? new Identifier($type) : $type;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['type'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'NullableType';
     }
 }

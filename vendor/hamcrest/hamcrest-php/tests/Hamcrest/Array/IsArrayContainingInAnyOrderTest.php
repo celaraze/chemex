@@ -1,15 +1,11 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 use Hamcrest\AbstractMatcherTest;
 
 class IsArrayContainingInAnyOrderTest extends AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return IsArrayContainingInAnyOrder::arrayContainingInAnyOrder(array(1, 2));
-    }
 
     public function testHasAReadableDescription()
     {
@@ -50,5 +46,10 @@ class IsArrayContainingInAnyOrderTest extends AbstractMatcherTest
         $this->assertMismatchDescription('No item matches: <1>, <2>, <3> in []', $matcher, array());
         $this->assertMismatchDescription('No item matches: <2>, <3> in [<1>]', $matcher, array(1));
         $this->assertMismatchDescription('Not matched: <4>', $matcher, array(4, 3, 2, 1));
+    }
+
+    protected function createMatcher()
+    {
+        return IsArrayContainingInAnyOrder::arrayContainingInAnyOrder(array(1, 2));
     }
 }

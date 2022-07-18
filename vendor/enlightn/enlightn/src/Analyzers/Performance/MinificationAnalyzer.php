@@ -9,39 +9,35 @@ use Symfony\Component\Finder\Finder;
 class MinificationAnalyzer extends PerformanceAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your application minifies assets in production.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
     /**
      * A list of un-minified assets served by the application.
      *
      * @var string
      */
     protected $unMinifiedAssets;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
 
     /**
      * Get the error message describing the analyzer insights.
@@ -51,8 +47,8 @@ class MinificationAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your application does not minify all assets (js, css) while in a non-local environment. "
-            ."Minification of assets can provide a significant performance boost for your application "
-            ."and is recommended for production. Your un-minified assets include: {$this->unMinifiedAssets}.";
+            . "Minification of assets can provide a significant performance boost for your application "
+            . "and is recommended for production. Your un-minified assets include: {$this->unMinifiedAssets}.";
     }
 
     /**
@@ -76,10 +72,10 @@ class MinificationAnalyzer extends PerformanceAnalyzer
             return $files->lines($path)->count() > 10;
         })->map(function ($path) {
             return Str::contains($path, base_path())
-                ? ('['.trim(Str::after($path, base_path()), '/').']') : '['.$path.']';
+                ? ('[' . trim(Str::after($path, base_path()), '/') . ']') : '[' . $path . ']';
         })->join(', ', ' and ');
 
-        if (! empty($this->unMinifiedAssets)) {
+        if (!empty($this->unMinifiedAssets)) {
             $this->markFailed();
         }
     }

@@ -17,7 +17,7 @@ trait HasSelector
     protected $_selector;
 
     /**
-     * @param  \Closure  $closure
+     * @param \Closure $closure
      * @return $this|Selector
      */
     public function selector(\Closure $closure = null)
@@ -38,6 +38,16 @@ trait HasSelector
     }
 
     /**
+     * Render grid selector.
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
+     */
+    public function renderSelector()
+    {
+        return $this->_selector->render();
+    }
+
+    /**
      * Apply selector query to grid model query.
      *
      * @return $this
@@ -53,7 +63,7 @@ trait HasSelector
         $this->_selector->all()->each(function ($selector, $column) use ($active) {
             $key = $this->_selector->formatKey($column);
 
-            if (! array_key_exists($key, $active)) {
+            if (!array_key_exists($key, $active)) {
                 return;
             }
 
@@ -79,15 +89,5 @@ trait HasSelector
         });
 
         return $this;
-    }
-
-    /**
-     * Render grid selector.
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
-     */
-    public function renderSelector()
-    {
-        return $this->_selector->render();
     }
 }

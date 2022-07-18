@@ -14,11 +14,11 @@ namespace Composer\Command;
 
 use Composer\Script\Event as ScriptEvent;
 use Composer\Script\ScriptEvents;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -69,8 +69,7 @@ The <info>run-script</info> command runs scripts defined in composer.json:
 
 Read more at https://getcomposer.org/doc/03-cli.md#run-script
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -85,7 +84,7 @@ EOT
         }
 
         if (!in_array($script, $this->scriptEvents)) {
-            if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+            if (defined('Composer\Script\ScriptEvents::' . str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
         }
@@ -105,7 +104,7 @@ EOT
                 throw new \RuntimeException('Timeout value must be numeric and positive if defined, or 0 for forever');
             }
             // Override global timeout set before in Composer by environment or config
-            ProcessExecutor::setTimeout((int) $timeout);
+            ProcessExecutor::setTimeout((int)$timeout);
         }
 
         Platform::putEnv('COMPOSER_DEV_MODE', $devMode ? '1' : '0');
@@ -137,7 +136,7 @@ EOT
             } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
                 // ignore scripts that have no command associated, like native Composer script listeners
             }
-            $table[] = array('  '.$name, $description);
+            $table[] = array('  ' . $name, $description);
         }
 
         $this->renderTable($table, $output);

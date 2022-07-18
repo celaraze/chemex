@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Node;
 
 use function sprintf;
@@ -29,17 +30,17 @@ final class CrapIndex
     public function __construct(int $cyclomaticComplexity, float $codeCoverage)
     {
         $this->cyclomaticComplexity = $cyclomaticComplexity;
-        $this->codeCoverage         = $codeCoverage;
+        $this->codeCoverage = $codeCoverage;
     }
 
     public function asString(): string
     {
         if ($this->codeCoverage === 0.0) {
-            return (string) ($this->cyclomaticComplexity ** 2 + $this->cyclomaticComplexity);
+            return (string)($this->cyclomaticComplexity ** 2 + $this->cyclomaticComplexity);
         }
 
         if ($this->codeCoverage >= 95) {
-            return (string) $this->cyclomaticComplexity;
+            return (string)$this->cyclomaticComplexity;
         }
 
         return sprintf(

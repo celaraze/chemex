@@ -22,7 +22,7 @@ final class ValidationException extends InvalidConfigurationException
 
     public function __construct(NetteException $innerException)
     {
-        parent::__construct($innerException->getMessage(), (int) $innerException->getCode(), $innerException);
+        parent::__construct($innerException->getMessage(), (int)$innerException->getCode(), $innerException);
 
         $this->messages = $innerException->getMessages();
     }

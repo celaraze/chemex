@@ -17,12 +17,10 @@ Install the latest version with:
 $ composer require composer/ca-bundle
 ```
 
-
 Requirements
 ------------
 
 * PHP 5.3.2 is required but using the latest version of PHP is highly recommended.
-
 
 Basic usage
 -----------
@@ -34,7 +32,6 @@ Basic usage
 - `CaBundle::validateCaFile($filename)`: Validates a CA file using openssl_x509_parse only if it is safe to use
 - `CaBundle::isOpensslParseSafe()`: Test if it is safe to use the PHP function openssl_x509_parse()
 - `CaBundle::reset()`: Resets the static caches
-
 
 #### To use with curl
 

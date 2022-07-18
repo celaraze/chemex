@@ -41,14 +41,38 @@ class Application
         $this->container = $app;
     }
 
-    public function getApps()
-    {
-        return $this->apps ?: ($this->apps = (array) config('admin.multi_app'));
-    }
-
     public function getEnabledApps()
     {
         return array_filter($this->getApps());
+    }
+
+    public function getApps()
+    {
+        return $this->apps ?: ($this->apps = (array)config('admin.multi_app'));
+    }
+
+    public function boot()
+    {
+        $this->registerRoute(static::DEFAULT);
+
+        if ($this->getApps()) {
+            $this->registerMultiAppRoutes();
+
+            $this->switch(static::DEFAULT);
+        }
+    }
+
+    protected function registerRoute(?string $app)
+    {
+        $this->switch($app);
+
+        $this->loadRoutesFrom(function () {
+            Admin::registerApiRoutes();
+        }, $app);
+
+        if (is_file($routes = admin_path('routes.php'))) {
+            $this->loadRoutesFrom($routes, $app);
+        }
     }
 
     public function switch(string $app = null)
@@ -63,19 +87,42 @@ class Application
         $this->name = $app;
     }
 
+    protected function withConfig(string $app)
+    {
+        if (!isset($this->configs[$app])) {
+            $this->configs[$app] = config($app);
+        }
+
+        config(['admin' => $this->configs[$app]]);
+    }
+
+    protected function loadRoutesFrom($path, ?string $app)
+    {
+        Route::group(array_filter([
+            'middleware' => 'admin.app:' . $app,
+            'domain' => config("{$app}.route.domain"),
+            'as' => $this->getRoutePrefix($app),
+        ]), $path);
+    }
+
+    public function getRoutePrefix(?string $app = null)
+    {
+        $app = $app ?: $this->getName();
+
+        return 'dcat.' . $app . '.';
+    }
+
     public function getName()
     {
         return $this->name ?: static::DEFAULT;
     }
 
-    public function boot()
+    protected function registerMultiAppRoutes()
     {
-        $this->registerRoute(static::DEFAULT);
-
-        if ($this->getApps()) {
-            $this->registerMultiAppRoutes();
-
-            $this->switch(static::DEFAULT);
+        foreach ($this->getApps() as $app => $enable) {
+            if ($enable) {
+                $this->registerRoute($app);
+            }
         }
     }
 
@@ -97,15 +144,6 @@ class Application
         }
     }
 
-    protected function registerMultiAppRoutes()
-    {
-        foreach ($this->getApps() as $app => $enable) {
-            if ($enable) {
-                $this->registerRoute($app);
-            }
-        }
-    }
-
     public function getCurrentApiRoutePrefix()
     {
         return $this->getApiRoutePrefix($this->getName());
@@ -113,49 +151,11 @@ class Application
 
     public function getApiRoutePrefix(?string $app = null)
     {
-        return $this->getRoutePrefix($app).'dcat-api.';
-    }
-
-    public function getRoutePrefix(?string $app = null)
-    {
-        $app = $app ?: $this->getName();
-
-        return 'dcat.'.$app.'.';
+        return $this->getRoutePrefix($app) . 'dcat-api.';
     }
 
     public function getRoute(?string $route, array $params = [], $absolute = true)
     {
-        return route($this->getRoutePrefix().$route, $params, $absolute);
-    }
-
-    protected function registerRoute(?string $app)
-    {
-        $this->switch($app);
-
-        $this->loadRoutesFrom(function () {
-            Admin::registerApiRoutes();
-        }, $app);
-
-        if (is_file($routes = admin_path('routes.php'))) {
-            $this->loadRoutesFrom($routes, $app);
-        }
-    }
-
-    protected function withConfig(string $app)
-    {
-        if (! isset($this->configs[$app])) {
-            $this->configs[$app] = config($app);
-        }
-
-        config(['admin' => $this->configs[$app]]);
-    }
-
-    protected function loadRoutesFrom($path, ?string $app)
-    {
-        Route::group(array_filter([
-            'middleware' => 'admin.app:'.$app,
-            'domain'     => config("{$app}.route.domain"),
-            'as'         => $this->getRoutePrefix($app),
-        ]), $path);
+        return route($this->getRoutePrefix() . $route, $params, $absolute);
     }
 }

@@ -15,13 +15,8 @@ class Permission extends Model implements Sortable
 {
     use HasDateTimeFormatter,
         ModelTree {
-            ModelTree::boot as treeBoot;
-        }
-
-    /**
-     * @var array
-     */
-    protected $fillable = ['parent_id', 'name', 'slug', 'http_method', 'http_path'];
+        ModelTree::boot as treeBoot;
+    }
 
     /**
      * @var array
@@ -29,7 +24,10 @@ class Permission extends Model implements Sortable
     public static $httpMethods = [
         'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD',
     ];
-
+    /**
+     * @var array
+     */
+    protected $fillable = ['parent_id', 'name', 'slug', 'http_method', 'http_path'];
     protected $titleColumn = 'name';
 
     /**
@@ -49,6 +47,35 @@ class Permission extends Model implements Sortable
         $this->setConnection($connection);
 
         $this->setTable(config('admin.database.permissions_table'));
+    }
+
+    /**
+     * Get options for Select field in form.
+     *
+     * @param \Closure|null $closure
+     * @return array
+     */
+    public static function selectOptions(\Closure $closure = null)
+    {
+        $options = (new static())->withQuery($closure)->buildSelectOptions();
+
+        return collect($options)->all();
+    }
+
+    /**
+     * Detach models from the relationship.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        static::treeBoot();
+
+        parent::boot();
+
+        static::deleting(function ($model) {
+            $model->roles()->detach();
+        });
     }
 
     /**
@@ -80,12 +107,12 @@ class Permission extends Model implements Sortable
     /**
      * If request should pass through the current permission.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return bool
      */
     public function shouldPassThrough(Request $request): bool
     {
-        if (! $this->http_path) {
+        if (!$this->http_path) {
             return false;
         }
 
@@ -112,20 +139,31 @@ class Permission extends Model implements Sortable
     }
 
     /**
-     * Get options for Select field in form.
+     * If a request match the specific HTTP method and path.
      *
-     * @param  \Closure|null  $closure
-     * @return array
+     * @param array $match
+     * @param Request $request
+     * @return bool
      */
-    public static function selectOptions(\Closure $closure = null)
+    protected function matchRequest(array $match, Request $request): bool
     {
-        $options = (new static())->withQuery($closure)->buildSelectOptions();
+        if (!$path = trim($match['path'], '/')) {
+            return false;
+        }
 
-        return collect($options)->all();
+        if (!Helper::matchRequestPath($path, $request->decodedPath())) {
+            return false;
+        }
+
+        $method = collect($match['method'])->filter()->map(function ($method) {
+            return strtoupper($method);
+        });
+
+        return $method->isEmpty() || $method->contains($request->method());
     }
 
     /**
-     * @param  string  $path
+     * @param string $path
      * @return mixed
      */
     public function getHttpPathAttribute($path)
@@ -143,30 +181,6 @@ class Permission extends Model implements Sortable
         }
 
         return $this->attributes['http_path'] = $path;
-    }
-
-    /**
-     * If a request match the specific HTTP method and path.
-     *
-     * @param  array  $match
-     * @param  Request  $request
-     * @return bool
-     */
-    protected function matchRequest(array $match, Request $request): bool
-    {
-        if (! $path = trim($match['path'], '/')) {
-            return false;
-        }
-
-        if (! Helper::matchRequestPath($path, $request->decodedPath())) {
-            return false;
-        }
-
-        $method = collect($match['method'])->filter()->map(function ($method) {
-            return strtoupper($method);
-        });
-
-        return $method->isEmpty() || $method->contains($request->method());
     }
 
     /**
@@ -190,21 +204,5 @@ class Permission extends Model implements Sortable
         }
 
         return $method;
-    }
-
-    /**
-     * Detach models from the relationship.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        static::treeBoot();
-
-        parent::boot();
-
-        static::deleting(function ($model) {
-            $model->roles()->detach();
-        });
     }
 }

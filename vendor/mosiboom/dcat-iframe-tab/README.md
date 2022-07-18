@@ -32,9 +32,12 @@ $ php artisan vendor:publish --tag=iframe-tab.view
 `php artisan vendor:publish --tag=iframe-tab` 会将css和js发布`public/vendor/iframe-tab`
 
 ## 更新
-相关更新内容请关注github的`tag`，里面有每个版本详细的更新：[https://github.com/mosiboom/dcat-iframe-tab/releases](https://github.com/mosiboom/dcat-iframe-tab/releases)
+
+相关更新内容请关注github的`tag`
+，里面有每个版本详细的更新：[https://github.com/mosiboom/dcat-iframe-tab/releases](https://github.com/mosiboom/dcat-iframe-tab/releases)
 
 基本迭代更新命令：
+
 ```apacheconfig
 composer remove mosiboom/dcat-iframe-tab
 composer require mosiboom/dcat-iframe-tab:版本号
@@ -42,6 +45,7 @@ php artisan vendor:publish --tag=iframe-tab --force
 ```
 
 其他文件覆盖更新：
+
 ```
 $ php artisan vendor:publish --tag=iframe-tab --force
 $ php artisan vendor:publish --tag=iframe-tab.config --force
@@ -83,6 +87,7 @@ return [
 
 1. 用户可以在子页面引入 `public/vendor/iframe-tab/js/extend.js`文件，或者通过调用`window.iframeTabParent`全局对象来调用父级页面的iframe-tab
 2. 引入新功能：超链接监听打开新页面加入iframe-tab：用户可自行定义超链接按钮，以此来打开新标签页页面，通过添加`iframe-extends=true` 和 `iframe-tab=true` 两个属性
+
 ```html
 <a iframe-extends=true iframe-tab=true href="https://github.com/mosiboom/dcat-iframe-tab">添加新的标签页</a>
 ```

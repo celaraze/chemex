@@ -17,7 +17,6 @@ namespace Ramsey\Uuid\Provider\Dce;
 use Ramsey\Uuid\Exception\DceSecurityException;
 use Ramsey\Uuid\Provider\DceSecurityProviderInterface;
 use Ramsey\Uuid\Type\Integer as IntegerObject;
-
 use function escapeshellarg;
 use function preg_split;
 use function str_getcsv;
@@ -27,7 +26,6 @@ use function strtolower;
 use function strtoupper;
 use function substr;
 use function trim;
-
 use const PREG_SPLIT_NO_EMPTY;
 
 /**
@@ -66,36 +64,6 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
     }
 
     /**
-     * @throws DceSecurityException if unable to get a group identifier
-     *
-     * @inheritDoc
-     */
-    public function getGid(): IntegerObject
-    {
-        static $gid = null;
-
-        if ($gid instanceof IntegerObject) {
-            return $gid;
-        }
-
-        if ($gid === null) {
-            $gid = $this->getSystemGid();
-        }
-
-        if ($gid === '') {
-            throw new DceSecurityException(
-                'Unable to get a group identifier using the system DCE '
-                . 'Security provider; please provide a custom identifier or '
-                . 'use a different provider'
-            );
-        }
-
-        $gid = new IntegerObject($gid);
-
-        return $gid;
-    }
-
-    /**
      * Returns the UID from the system
      */
     private function getSystemUid(): string
@@ -111,27 +79,7 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
             case 'FRE':
             case 'LIN':
             default:
-                return trim((string) shell_exec('id -u'));
-        }
-    }
-
-    /**
-     * Returns the GID from the system
-     */
-    private function getSystemGid(): string
-    {
-        if (!$this->hasShellExec()) {
-            return '';
-        }
-
-        switch ($this->getOs()) {
-            case 'WIN':
-                return $this->getWindowsGid();
-            case 'DAR':
-            case 'FRE':
-            case 'LIN':
-            default:
-                return trim((string) shell_exec('id -g'));
+                return trim((string)shell_exec('id -u'));
         }
     }
 
@@ -140,7 +88,7 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
      */
     private function hasShellExec(): bool
     {
-        $disabledFunctions = strtolower((string) ini_get('disable_functions'));
+        $disabledFunctions = strtolower((string)ini_get('disable_functions'));
 
         return strpos($disabledFunctions, 'shell_exec') === false;
     }
@@ -177,13 +125,63 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
             return '';
         }
 
-        $sid = str_getcsv(trim((string) $response))[1] ?? '';
+        $sid = str_getcsv(trim((string)$response))[1] ?? '';
 
         if (($lastHyphen = strrpos($sid, '-')) === false) {
             return '';
         }
 
         return trim(substr($sid, $lastHyphen + 1));
+    }
+
+    /**
+     * @throws DceSecurityException if unable to get a group identifier
+     *
+     * @inheritDoc
+     */
+    public function getGid(): IntegerObject
+    {
+        static $gid = null;
+
+        if ($gid instanceof IntegerObject) {
+            return $gid;
+        }
+
+        if ($gid === null) {
+            $gid = $this->getSystemGid();
+        }
+
+        if ($gid === '') {
+            throw new DceSecurityException(
+                'Unable to get a group identifier using the system DCE '
+                . 'Security provider; please provide a custom identifier or '
+                . 'use a different provider'
+            );
+        }
+
+        $gid = new IntegerObject($gid);
+
+        return $gid;
+    }
+
+    /**
+     * Returns the GID from the system
+     */
+    private function getSystemGid(): string
+    {
+        if (!$this->hasShellExec()) {
+            return '';
+        }
+
+        switch ($this->getOs()) {
+            case 'WIN':
+                return $this->getWindowsGid();
+            case 'DAR':
+            case 'FRE':
+            case 'LIN':
+            default:
+                return trim((string)shell_exec('id -g'));
+        }
     }
 
     /**
@@ -206,7 +204,7 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
         }
 
         /** @var string[] $userGroups */
-        $userGroups = preg_split('/\s{2,}/', (string) $response, -1, PREG_SPLIT_NO_EMPTY);
+        $userGroups = preg_split('/\s{2,}/', (string)$response, -1, PREG_SPLIT_NO_EMPTY);
 
         $firstGroup = trim($userGroups[1] ?? '', "* \t\n\r\0\x0B");
 
@@ -221,7 +219,7 @@ class SystemDceSecurityProvider implements DceSecurityProviderInterface
         }
 
         /** @var string[] $userGroup */
-        $userGroup = preg_split('/\s{2,}/', (string) $response, -1, PREG_SPLIT_NO_EMPTY);
+        $userGroup = preg_split('/\s{2,}/', (string)$response, -1, PREG_SPLIT_NO_EMPTY);
 
         $sid = $userGroup[1] ?? '';
 

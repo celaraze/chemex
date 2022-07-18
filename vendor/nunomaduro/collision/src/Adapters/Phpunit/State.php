@@ -71,11 +71,21 @@ final class State
     }
 
     /**
+     * Returns the printable test case name from the given `TestCase`.
+     */
+    public static function getPrintableTestCaseName(TestCase $test): string
+    {
+        return $test instanceof HasPrintableTestCaseName
+            ? $test->getPrintableTestCaseName()
+            : get_class($test);
+    }
+
+    /**
      * Adds the given test to the State.
      */
     public function add(TestResult $test): void
     {
-        $this->testCaseTests[]        = $test;
+        $this->testCaseTests[] = $test;
         $this->toBePrintedCaseTests[] = $test;
 
         $this->suiteTests[] = $test;
@@ -188,15 +198,5 @@ final class State
         }
 
         return false;
-    }
-
-    /**
-     * Returns the printable test case name from the given `TestCase`.
-     */
-    public static function getPrintableTestCaseName(TestCase $test): string
-    {
-        return $test instanceof HasPrintableTestCaseName
-            ? $test->getPrintableTestCaseName()
-            : get_class($test);
     }
 }

@@ -19,7 +19,7 @@ final class Driver extends AbstractOracleDriver
     {
         $driverOptions = $params['driverOptions'] ?? [];
 
-        if (! empty($params['persistent'])) {
+        if (!empty($params['persistent'])) {
             $driverOptions[PDO::ATTR_PERSISTENT] = true;
         }
 

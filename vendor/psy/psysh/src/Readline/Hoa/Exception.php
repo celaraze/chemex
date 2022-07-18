@@ -49,11 +49,12 @@ class Exception extends ExceptionIdle implements EventSource
      * chaining, a previous exception can be added.
      */
     public function __construct(
-        string $message,
-        int $code = 0,
-        $arguments = [],
+        string     $message,
+        int        $code = 0,
+                   $arguments = [],
         \Throwable $previous = null
-    ) {
+    )
+    {
         parent::__construct($message, $code, $arguments, $previous);
 
         if (false === Event::eventExists('hoa://Event/Exception')) {

@@ -27,9 +27,9 @@ class JWTAuth extends JWT
     /**
      * Constructor.
      *
-     * @param  \Tymon\JWTAuth\Manager  $manager
-     * @param  \Tymon\JWTAuth\Contracts\Providers\Auth  $auth
-     * @param  \Tymon\JWTAuth\Http\Parser\Parser  $parser
+     * @param \Tymon\JWTAuth\Manager $manager
+     * @param \Tymon\JWTAuth\Contracts\Providers\Auth $auth
+     * @param \Tymon\JWTAuth\Http\Parser\Parser $parser
      * @return void
      */
     public function __construct(Manager $manager, Auth $auth, Parser $parser)
@@ -41,12 +41,12 @@ class JWTAuth extends JWT
     /**
      * Attempt to authenticate the user and return the token.
      *
-     * @param  array  $credentials
+     * @param array $credentials
      * @return false|string
      */
     public function attempt(array $credentials)
     {
-        if (! $this->auth->byCredentials($credentials)) {
+        if (!$this->auth->byCredentials($credentials)) {
             return false;
         }
 
@@ -54,19 +54,13 @@ class JWTAuth extends JWT
     }
 
     /**
-     * Authenticate a user via a token.
+     * Get the authenticated user.
      *
-     * @return \Tymon\JWTAuth\Contracts\JWTSubject|false
+     * @return \Tymon\JWTAuth\Contracts\JWTSubject
      */
-    public function authenticate()
+    public function user()
     {
-        $id = $this->getPayload()->get('sub');
-
-        if (! $this->auth->byId($id)) {
-            return false;
-        }
-
-        return $this->user();
+        return $this->auth->user();
     }
 
     /**
@@ -80,12 +74,18 @@ class JWTAuth extends JWT
     }
 
     /**
-     * Get the authenticated user.
+     * Authenticate a user via a token.
      *
-     * @return \Tymon\JWTAuth\Contracts\JWTSubject
+     * @return \Tymon\JWTAuth\Contracts\JWTSubject|false
      */
-    public function user()
+    public function authenticate()
     {
-        return $this->auth->user();
+        $id = $this->getPayload()->get('sub');
+
+        if (!$this->auth->byId($id)) {
+            return false;
+        }
+
+        return $this->user();
     }
 }

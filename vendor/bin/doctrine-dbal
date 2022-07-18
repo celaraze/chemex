@@ -13,7 +13,7 @@
 namespace Composer;
 
 $GLOBALS['_composer_bin_dir'] = __DIR__;
-$GLOBALS['_composer_autoload_path'] = __DIR__ . '/..'.'/autoload.php';
+$GLOBALS['_composer_autoload_path'] = __DIR__ . '/..' . '/autoload.php';
 
 if (PHP_VERSION_ID < 80000) {
     if (!class_exists('Composer\BinProxyWrapper')) {
@@ -35,7 +35,7 @@ if (PHP_VERSION_ID < 80000) {
                 $this->handle = fopen($this->realpath, $mode);
                 $this->position = 0;
 
-                return (bool) $this->handle;
+                return (bool)$this->handle;
             }
 
             public function stream_read($count)
@@ -109,9 +109,9 @@ if (PHP_VERSION_ID < 80000) {
     }
 
     if (function_exists('stream_wrapper_register') && stream_wrapper_register('phpvfscomposer', 'Composer\BinProxyWrapper')) {
-        include("phpvfscomposer://" . __DIR__ . '/..'.'/doctrine/dbal/bin/doctrine-dbal');
+        include("phpvfscomposer://" . __DIR__ . '/..' . '/doctrine/dbal/bin/doctrine-dbal');
         exit(0);
     }
 }
 
-include __DIR__ . '/..'.'/doctrine/dbal/bin/doctrine-dbal';
+include __DIR__ . '/..' . '/doctrine/dbal/bin/doctrine-dbal';

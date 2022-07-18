@@ -18,16 +18,16 @@ class FilesystemTest extends TestCase
 
     public function test()
     {
-        $users = include __DIR__.'/../../resources/users.php';
+        $users = include __DIR__ . '/../../resources/users.php';
 
         if (class_exists(LocalFilesystemAdapter::class)) {
-            $adapter = new LocalFilesystemAdapter(__DIR__.'/../../resources');
+            $adapter = new LocalFilesystemAdapter(__DIR__ . '/../../resources');
         } else {
-            $adapter = new Local(__DIR__.'/../../resources');
+            $adapter = new Local(__DIR__ . '/../../resources');
         }
 
         $this->filesystem = new Filesystem($adapter);
-        $this->filename = time().'.csv';
+        $this->filename = time() . '.csv';
 
         Excel::csv($users)->disk($this->filesystem)->store($this->filename);
 

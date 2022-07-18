@@ -45,7 +45,7 @@ trait TestDatabases
                 Testing\RefreshDatabase::class,
             ];
 
-            if (Arr::hasAny($uses, $databaseTraits) && ! ParallelTesting::option('without_databases')) {
+            if (Arr::hasAny($uses, $databaseTraits) && !ParallelTesting::option('without_databases')) {
                 $this->whenNotUsingInMemoryDatabase(function ($database) use ($uses) {
                     [$testDatabase, $created] = $this->ensureTestDatabaseExists($database);
 
@@ -74,9 +74,36 @@ trait TestDatabases
     }
 
     /**
+     * Apply the given callback when tests are not using in memory database.
+     *
+     * @param callable $callback
+     * @return void
+     */
+    protected function whenNotUsingInMemoryDatabase($callback)
+    {
+        $database = DB::getConfig('database');
+
+        if ($database !== ':memory:') {
+            $callback($database);
+        }
+    }
+
+    /**
+     * Returns the test database name.
+     *
+     * @return string
+     */
+    protected function testDatabase($database)
+    {
+        $token = ParallelTesting::token();
+
+        return "{$database}_test_{$token}";
+    }
+
+    /**
      * Ensure a test database exists and returns its name.
      *
-     * @param  string  $database
+     * @param string $database
      * @return array
      */
     protected function ensureTestDatabaseExists($database)
@@ -100,24 +127,10 @@ trait TestDatabases
     }
 
     /**
-     * Ensure the current database test schema is up to date.
-     *
-     * @return void
-     */
-    protected function ensureSchemaIsUpToDate()
-    {
-        if (! static::$schemaIsUpToDate) {
-            Artisan::call('migrate');
-
-            static::$schemaIsUpToDate = true;
-        }
-    }
-
-    /**
      * Runs the given callable using the given database.
      *
-     * @param  string  $database
-     * @param  callable  $callable
+     * @param string $database
+     * @param callable $callable
      * @return void
      */
     protected function usingDatabase($database, $callable)
@@ -133,24 +146,9 @@ trait TestDatabases
     }
 
     /**
-     * Apply the given callback when tests are not using in memory database.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    protected function whenNotUsingInMemoryDatabase($callback)
-    {
-        $database = DB::getConfig('database');
-
-        if ($database !== ':memory:') {
-            $callback($database);
-        }
-    }
-
-    /**
      * Switch to the given database.
      *
-     * @param  string  $database
+     * @param string $database
      * @return void
      */
     protected function switchToDatabase($database)
@@ -175,14 +173,16 @@ trait TestDatabases
     }
 
     /**
-     * Returns the test database name.
+     * Ensure the current database test schema is up to date.
      *
-     * @return string
+     * @return void
      */
-    protected function testDatabase($database)
+    protected function ensureSchemaIsUpToDate()
     {
-        $token = ParallelTesting::token();
+        if (!static::$schemaIsUpToDate) {
+            Artisan::call('migrate');
 
-        return "{$database}_test_{$token}";
+            static::$schemaIsUpToDate = true;
+        }
     }
 }

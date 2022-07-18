@@ -61,15 +61,16 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
      * @param ManagerFactoryInterface $managerFactory
      */
     public function __construct(
-        Workbook $workbook,
-        OptionsManagerInterface $optionsManager,
-        WorksheetManagerInterface $worksheetManager,
-        StyleManagerInterface $styleManager,
-        StyleMerger $styleMerger,
+        Workbook                                $workbook,
+        OptionsManagerInterface                 $optionsManager,
+        WorksheetManagerInterface               $worksheetManager,
+        StyleManagerInterface                   $styleManager,
+        StyleMerger                             $styleMerger,
         FileSystemWithRootFolderHelperInterface $fileSystemHelper,
-        InternalEntityFactory $entityFactory,
-        ManagerFactoryInterface $managerFactory
-    ) {
+        InternalEntityFactory                   $entityFactory,
+        ManagerFactoryInterface                 $managerFactory
+    )
+    {
         $this->workbook = $workbook;
         $this->optionsManager = $optionsManager;
         $this->worksheetManager = $worksheetManager;
@@ -81,17 +82,6 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
-     * @return int Maximum number of rows/columns a sheet can contain
-     */
-    abstract protected function getMaxRowsPerWorksheet();
-
-    /**
-     * @param Sheet $sheet
-     * @return string The file path where the data for the given sheet will be stored
-     */
-    abstract protected function getWorksheetFilePath(Sheet $sheet);
-
-    /**
      * @return Workbook
      */
     public function getWorkbook()
@@ -100,70 +90,12 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
-     * Creates a new sheet in the workbook and make it the current sheet.
-     * The writing will resume where it stopped (i.e. data won't be truncated).
-     *
-     * @throws IOException If unable to open the sheet for writing
-     * @return Worksheet The created sheet
-     */
-    public function addNewSheetAndMakeItCurrent()
-    {
-        $worksheet = $this->addNewSheet();
-        $this->setCurrentWorksheet($worksheet);
-
-        return $worksheet;
-    }
-
-    /**
-     * Creates a new sheet in the workbook. The current sheet remains unchanged.
-     *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to open the sheet for writing
-     * @return Worksheet The created sheet
-     */
-    private function addNewSheet()
-    {
-        $worksheets = $this->getWorksheets();
-
-        $newSheetIndex = \count($worksheets);
-        $sheetManager = $this->managerFactory->createSheetManager();
-        $sheet = $this->entityFactory->createSheet($newSheetIndex, $this->workbook->getInternalId(), $sheetManager);
-
-        $worksheetFilePath = $this->getWorksheetFilePath($sheet);
-        $worksheet = $this->entityFactory->createWorksheet($worksheetFilePath, $sheet);
-
-        $this->worksheetManager->startSheet($worksheet);
-
-        $worksheets[] = $worksheet;
-        $this->workbook->setWorksheets($worksheets);
-
-        return $worksheet;
-    }
-
-    /**
-     * @return Worksheet[] All the workbook's sheets
-     */
-    public function getWorksheets()
-    {
-        return $this->workbook->getWorksheets();
-    }
-
-    /**
-     * Returns the current sheet
-     *
-     * @return Worksheet The current sheet
-     */
-    public function getCurrentWorksheet()
-    {
-        return $this->currentWorksheet;
-    }
-
-    /**
      * Sets the given sheet as the current one. New data will be written to this sheet.
      * The writing will resume where it stopped (i.e. data won't be truncated).
      *
      * @param Sheet $sheet The "external" sheet to set as current
-     * @throws SheetNotFoundException If the given sheet does not exist in the workbook
      * @return void
+     * @throws SheetNotFoundException If the given sheet does not exist in the workbook
      */
     public function setCurrentSheet(Sheet $sheet)
     {
@@ -173,15 +105,6 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
         } else {
             throw new SheetNotFoundException('The given sheet does not exist in the workbook.');
         }
-    }
-
-    /**
-     * @param Worksheet $worksheet
-     * @return void
-     */
-    private function setCurrentWorksheet($worksheet)
-    {
-        $this->currentWorksheet = $worksheet;
     }
 
     /**
@@ -205,14 +128,22 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
+     * @return Worksheet[] All the workbook's sheets
+     */
+    public function getWorksheets()
+    {
+        return $this->workbook->getWorksheets();
+    }
+
+    /**
      * Adds a row to the current sheet.
      * If shouldCreateNewSheetsAutomatically option is set to true, it will handle pagination
      * with the creation of new worksheets if one worksheet has reached its maximum capicity.
      *
      * @param Row $row The row to be added
-     * @throws IOException If trying to create a new sheet and unable to open the sheet for writing
-     * @throws WriterException If unable to write data
      * @return void
+     * @throws WriterException If unable to write data
+     * @throws IOException If trying to create a new sheet and unable to open the sheet for writing
      */
     public function addRowToCurrentWorksheet(Row $row)
     {
@@ -235,6 +166,16 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
+     * Returns the current sheet
+     *
+     * @return Worksheet The current sheet
+     */
+    public function getCurrentWorksheet()
+    {
+        return $this->currentWorksheet;
+    }
+
+    /**
      * @return bool Whether the current worksheet has reached the maximum number of rows per sheet.
      */
     private function hasCurrentWorksheetReachedMaxRows()
@@ -245,12 +186,72 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
+     * @return int Maximum number of rows/columns a sheet can contain
+     */
+    abstract protected function getMaxRowsPerWorksheet();
+
+    /**
+     * Creates a new sheet in the workbook and make it the current sheet.
+     * The writing will resume where it stopped (i.e. data won't be truncated).
+     *
+     * @return Worksheet The created sheet
+     * @throws IOException If unable to open the sheet for writing
+     */
+    public function addNewSheetAndMakeItCurrent()
+    {
+        $worksheet = $this->addNewSheet();
+        $this->setCurrentWorksheet($worksheet);
+
+        return $worksheet;
+    }
+
+    /**
+     * Creates a new sheet in the workbook. The current sheet remains unchanged.
+     *
+     * @return Worksheet The created sheet
+     * @throws \Box\Spout\Common\Exception\IOException If unable to open the sheet for writing
+     */
+    private function addNewSheet()
+    {
+        $worksheets = $this->getWorksheets();
+
+        $newSheetIndex = \count($worksheets);
+        $sheetManager = $this->managerFactory->createSheetManager();
+        $sheet = $this->entityFactory->createSheet($newSheetIndex, $this->workbook->getInternalId(), $sheetManager);
+
+        $worksheetFilePath = $this->getWorksheetFilePath($sheet);
+        $worksheet = $this->entityFactory->createWorksheet($worksheetFilePath, $sheet);
+
+        $this->worksheetManager->startSheet($worksheet);
+
+        $worksheets[] = $worksheet;
+        $this->workbook->setWorksheets($worksheets);
+
+        return $worksheet;
+    }
+
+    /**
+     * @param Sheet $sheet
+     * @return string The file path where the data for the given sheet will be stored
+     */
+    abstract protected function getWorksheetFilePath(Sheet $sheet);
+
+    /**
+     * @param Worksheet $worksheet
+     * @return void
+     */
+    private function setCurrentWorksheet($worksheet)
+    {
+        $this->currentWorksheet = $worksheet;
+    }
+
+    /**
      * Adds a row to the given sheet.
      *
      * @param Worksheet $worksheet Worksheet to write the row to
      * @param Row $row The row to be added
-     * @throws WriterException If unable to write data
      * @return void
+     * @throws WriterException If unable to write data
      */
     private function addRowToWorksheet(Worksheet $worksheet, Row $row)
     {
@@ -293,6 +294,20 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
     }
 
     /**
+     * Closes all workbook's associated sheets.
+     *
+     * @return void
+     */
+    private function closeAllWorksheets()
+    {
+        $worksheets = $this->getWorksheets();
+
+        foreach ($worksheets as $worksheet) {
+            $this->worksheetManager->close($worksheet);
+        }
+    }
+
+    /**
      * Closes custom objects that are still opened
      *
      * @return void
@@ -309,20 +324,6 @@ abstract class WorkbookManagerAbstract implements WorkbookManagerInterface
      * @return void
      */
     abstract protected function writeAllFilesToDiskAndZipThem($finalFilePointer);
-
-    /**
-     * Closes all workbook's associated sheets.
-     *
-     * @return void
-     */
-    private function closeAllWorksheets()
-    {
-        $worksheets = $this->getWorksheets();
-
-        foreach ($worksheets as $worksheet) {
-            $this->worksheetManager->close($worksheet);
-        }
-    }
 
     /**
      * Deletes the root folder created in the temp folder and all its contents.

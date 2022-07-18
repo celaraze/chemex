@@ -1,4 +1,3 @@
-
 export default class Helper {
     getChildren(all, parent) {
         let _this = this,
@@ -8,12 +7,12 @@ export default class Helper {
 
         all.each(function (_, v) {
             // 过滤非tr标签
-            if (! _this.isTr(v) || isBreak) return;
+            if (!_this.isTr(v) || isBreak) return;
 
             firstTr || (firstTr = $(v));
 
             // 非连续的子节点
-            if (firstTr && ! _this.isChildren(parent, firstTr)) {
+            if (firstTr && !_this.isChildren(parent, firstTr)) {
                 return;
             }
 
@@ -42,7 +41,7 @@ export default class Helper {
             next;
 
         all.each(function (_, v) {
-            if (_this.getDepth(v) === depth && ! next && _this.isTr(v)) {
+            if (_this.getDepth(v) === depth && !next && _this.isTr(v)) {
                 next = $(v);
             }
         });

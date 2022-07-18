@@ -2,21 +2,21 @@
 
 namespace Adldap\Models;
 
-use DateTime;
-use ArrayAccess;
-use Adldap\Utilities;
-use JsonSerializable;
-use Adldap\Query\Builder;
-use Illuminate\Support\Arr;
-use Adldap\Query\Collection;
-use InvalidArgumentException;
-use UnexpectedValueException;
-use Adldap\Models\Attributes\Sid;
-use Adldap\Models\Attributes\Guid;
-use Adldap\Schemas\SchemaInterface;
-use Adldap\Models\Attributes\MbString;
 use Adldap\Connections\ConnectionException;
 use Adldap\Models\Attributes\DistinguishedName;
+use Adldap\Models\Attributes\Guid;
+use Adldap\Models\Attributes\MbString;
+use Adldap\Models\Attributes\Sid;
+use Adldap\Query\Builder;
+use Adldap\Query\Collection;
+use Adldap\Schemas\SchemaInterface;
+use Adldap\Utilities;
+use ArrayAccess;
+use DateTime;
+use Illuminate\Support\Arr;
+use InvalidArgumentException;
+use JsonSerializable;
+use UnexpectedValueException;
 
 /**
  * Class Model.
@@ -60,7 +60,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * Constructor.
      *
-     * @param array   $attributes
+     * @param array $attributes
      * @param Builder $builder
      */
     public function __construct(array $attributes, Builder $builder)
@@ -71,73 +71,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the models distinguished name when the model is converted to a string.
+     * Returns the current model schema.
      *
-     * @return null|string
+     * @return SchemaInterface
      */
-    public function __toString()
+    public function getSchema()
     {
-        return $this->getDn();
-    }
-
-    /**
-     * Sets the current query builder.
-     *
-     * @param Builder $builder
-     *
-     * @return $this
-     */
-    public function setQuery(Builder $builder)
-    {
-        $this->query = $builder;
-
-        return $this;
-    }
-
-    /**
-     * Returns the current query builder.
-     *
-     * @return Builder
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
-
-    /**
-     * Returns a new query builder instance.
-     *
-     * @return Builder
-     */
-    public function newQuery()
-    {
-        return $this->query->newInstance();
-    }
-
-    /**
-     * Returns a new batch modification.
-     *
-     * @param string|null     $attribute
-     * @param string|int|null $type
-     * @param array           $values
-     *
-     * @return BatchModification
-     */
-    public function newBatchModification($attribute = null, $type = null, $values = [])
-    {
-        return new BatchModification($attribute, $type, $values);
-    }
-
-    /**
-     * Returns a new collection with the specified items.
-     *
-     * @param mixed $items
-     *
-     * @return Collection
-     */
-    public function newCollection($items = [])
-    {
-        return new Collection($items);
+        return $this->schema;
     }
 
     /**
@@ -155,26 +95,75 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the current model schema.
+     * Returns the models distinguished name when the model is converted to a string.
      *
-     * @return SchemaInterface
+     * @return null|string
      */
-    public function getSchema()
+    public function __toString()
     {
-        return $this->schema;
+        return $this->getDn();
     }
 
     /**
-     * Determine if the given offset exists.
+     * Returns the model's distinguished name string.
      *
-     * @param string $offset
+     * (Alias for getDistinguishedName())
      *
-     * @return bool
+     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     *
+     * @return string|null
      */
-    #[\ReturnTypeWillChange]
-    public function offsetExists($offset)
+    public function getDn()
     {
-        return !is_null($this->getAttribute($offset));
+        return $this->getDistinguishedName();
+    }
+
+    /**
+     * Returns the model's distinguished name string.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     *
+     * @return string|null
+     */
+    public function getDistinguishedName()
+    {
+        return $this->getFirstAttribute($this->schema->distinguishedName());
+    }
+
+    /**
+     * Returns the current query builder.
+     *
+     * @return Builder
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
+     * Sets the current query builder.
+     *
+     * @param Builder $builder
+     *
+     * @return $this
+     */
+    public function setQuery(Builder $builder)
+    {
+        $this->query = $builder;
+
+        return $this;
+    }
+
+    /**
+     * Returns a new collection with the specified items.
+     *
+     * @param mixed $items
+     *
+     * @return Collection
+     */
+    public function newCollection($items = [])
+    {
+        return new Collection($items);
     }
 
     /**
@@ -194,7 +183,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * Set the value at the given offset.
      *
      * @param string $offset
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -230,6 +219,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Determine if the given offset exists.
+     *
+     * @param string $offset
+     *
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetExists($offset)
+    {
+        return !is_null($this->getAttribute($offset));
+    }
+
+    /**
      * Convert the object into something JSON serializable.
      *
      * @return array
@@ -259,160 +261,60 @@ abstract class Model implements ArrayAccess, JsonSerializable
         // their string equivalents for convenience.
         return array_replace($attributes, [
             $this->schema->objectGuid() => $this->getConvertedGuid(),
-            $this->schema->objectSid()  => $this->getConvertedSid(),
+            $this->schema->objectSid() => $this->getConvertedSid(),
         ]);
     }
 
     /**
-     * Reload a fresh model instance from the directory.
-     *
-     * @return static|null
-     */
-    public function fresh()
-    {
-        $model = $this->query->newInstance()->findByDn($this->getDn());
-
-        return $model instanceof self ? $model : null;
-    }
-
-    /**
-     * Synchronizes the current models attributes with the directory values.
-     *
-     * @return bool
-     */
-    public function syncRaw()
-    {
-        if ($model = $this->fresh()) {
-            $this->setRawAttributes($model->getAttributes());
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns the models batch modifications to be processed.
-     *
-     * @return array
-     */
-    public function getModifications()
-    {
-        $this->buildModificationsFromDirty();
-
-        return $this->modifications;
-    }
-
-    /**
-     * Sets the models modifications array.
-     *
-     * @param array $modifications
-     *
-     * @return $this
-     */
-    public function setModifications(array $modifications = [])
-    {
-        $this->modifications = $modifications;
-
-        return $this;
-    }
-
-    /**
-     * Adds a batch modification to the models modifications array.
-     *
-     * @param array|BatchModification $mod
-     *
-     * @throws InvalidArgumentException
-     *
-     * @return $this
-     */
-    public function addModification($mod = [])
-    {
-        if ($mod instanceof BatchModification) {
-            $mod = $mod->get();
-        }
-
-        if ($this->isValidModification($mod)) {
-            $this->modifications[] = $mod;
-
-            return $this;
-        }
-
-        throw new InvalidArgumentException(
-            "The batch modification array does not include the mandatory 'attrib' or 'modtype' keys."
-        );
-    }
-
-    /**
-     * Returns the model's distinguished name string.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     * Returns the model's GUID.
      *
      * @return string|null
      */
-    public function getDistinguishedName()
+    public function getConvertedGuid()
     {
-        return $this->getFirstAttribute($this->schema->distinguishedName());
+        try {
+            return (string)new Guid($this->getObjectGuid());
+        } catch (InvalidArgumentException $e) {
+            return;
+        }
     }
 
     /**
-     * Sets the model's distinguished name attribute.
+     * Returns the model's binary object GUID.
      *
-     * @param string|DistinguishedName $dn
+     * @link https://msdn.microsoft.com/en-us/library/ms679021(v=vs.85).aspx
      *
-     * @return $this
+     * @return string
      */
-    public function setDistinguishedName($dn)
+    public function getObjectGuid()
     {
-        $this->setFirstAttribute($this->schema->distinguishedName(), (string) $dn);
-
-        return $this;
+        return $this->getFirstAttribute($this->schema->objectGuid());
     }
 
     /**
-     * Returns the model's distinguished name string.
-     *
-     * (Alias for getDistinguishedName())
-     *
-     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     * Returns the model's SID.
      *
      * @return string|null
      */
-    public function getDn()
+    public function getConvertedSid()
     {
-        return $this->getDistinguishedName();
-    }
-
-    /**
-     * Returns a DistinguishedName object for modifying the current models DN.
-     *
-     * @return DistinguishedName
-     */
-    public function getDnBuilder()
-    {
-        // If we currently don't have a distinguished name, we'll set
-        // it to our base, otherwise we'll use our query's base DN.
-        $dn = $this->getDistinguishedName() ?: $this->query->getDn();
-
-        return $this->getNewDnBuilder($dn);
-    }
-
-    /**
-     * Returns the models distinguished name components.
-     *
-     * @param bool $removeAttributePrefixes
-     *
-     * @return array
-     */
-    public function getDnComponents($removeAttributePrefixes = true)
-    {
-        if ($components = Utilities::explodeDn($this->getDn(), $removeAttributePrefixes)) {
-            unset($components['count']);
-
-            return $components;
+        try {
+            return (string)new Sid($this->getObjectSid());
+        } catch (InvalidArgumentException $e) {
+            return;
         }
+    }
 
-        return [];
+    /**
+     * Returns the model's hex object SID.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms679024(v=vs.85).aspx
+     *
+     * @return string
+     */
+    public function getObjectSid()
+    {
+        return $this->getFirstAttribute($this->schema->objectSid());
     }
 
     /**
@@ -432,93 +334,21 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns a new DistinguishedName object for building onto.
+     * Returns the models distinguished name components.
      *
-     * @param string $baseDn
+     * @param bool $removeAttributePrefixes
      *
-     * @return DistinguishedName
+     * @return array
      */
-    public function getNewDnBuilder($baseDn = '')
+    public function getDnComponents($removeAttributePrefixes = true)
     {
-        return new DistinguishedName($baseDn);
-    }
+        if ($components = Utilities::explodeDn($this->getDn(), $removeAttributePrefixes)) {
+            unset($components['count']);
 
-    /**
-     *  Sets the model's distinguished name attribute.
-     *
-     * (Alias for setDistinguishedName())
-     *
-     * @param string $dn
-     *
-     * @return $this
-     */
-    public function setDn($dn)
-    {
-        return $this->setDistinguishedName($dn);
-    }
-
-    /**
-     * Returns the model's hex object SID.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms679024(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public function getObjectSid()
-    {
-        return $this->getFirstAttribute($this->schema->objectSid());
-    }
-
-    /**
-     * Returns the model's binary object GUID.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms679021(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public function getObjectGuid()
-    {
-        return $this->getFirstAttribute($this->schema->objectGuid());
-    }
-
-    /**
-     * Returns the model's GUID.
-     *
-     * @return string|null
-     */
-    public function getConvertedGuid()
-    {
-        try {
-            return (string) new Guid($this->getObjectGuid());
-        } catch (InvalidArgumentException $e) {
-            return;
+            return $components;
         }
-    }
 
-    /**
-     * Returns the model's SID.
-     *
-     * @return string|null
-     */
-    public function getConvertedSid()
-    {
-        try {
-            return (string) new Sid($this->getObjectSid());
-        } catch (InvalidArgumentException $e) {
-            return;
-        }
-    }
-
-    /**
-     * Returns the model's common name.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms675449(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public function getCommonName()
-    {
-        return $this->getFirstAttribute($this->schema->commonName());
+        return [];
     }
 
     /**
@@ -640,18 +470,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the model's `whenCreated` time.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms680924(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public function getCreatedAt()
-    {
-        return $this->getFirstAttribute($this->schema->createdAt());
-    }
-
-    /**
      * Returns the created at time in a mysql formatted date.
      *
      * @return string
@@ -672,15 +490,15 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the model's `whenChanged` time.
+     * Returns the model's `whenCreated` time.
      *
-     * @link https://msdn.microsoft.com/en-us/library/ms680921(v=vs.85).aspx
+     * @link https://msdn.microsoft.com/en-us/library/ms680924(v=vs.85).aspx
      *
      * @return string
      */
-    public function getUpdatedAt()
+    public function getCreatedAt()
     {
-        return $this->getFirstAttribute($this->schema->updatedAt());
+        return $this->getFirstAttribute($this->schema->createdAt());
     }
 
     /**
@@ -704,6 +522,18 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the model's `whenChanged` time.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms680921(v=vs.85).aspx
+     *
+     * @return string
+     */
+    public function getUpdatedAt()
+    {
+        return $this->getFirstAttribute($this->schema->updatedAt());
+    }
+
+    /**
      * Returns the Container of the current Model.
      *
      * @link https://msdn.microsoft.com/en-us/library/ms679012(v=vs.85).aspx
@@ -713,6 +543,16 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function getObjectClass()
     {
         return $this->query->findByDn($this->getObjectCategoryDn());
+    }
+
+    /**
+     * Returns the model's object category DN string.
+     *
+     * @return null|string
+     */
+    public function getObjectCategoryDn()
+    {
+        return $this->getFirstAttribute($this->schema->objectCategory());
     }
 
     /**
@@ -740,16 +580,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the model's object category DN string.
-     *
-     * @return null|string
-     */
-    public function getObjectCategoryDn()
-    {
-        return $this->getFirstAttribute($this->schema->objectCategory());
-    }
-
-    /**
      * Returns the model's primary group ID.
      *
      * @link https://msdn.microsoft.com/en-us/library/ms679375(v=vs.85).aspx
@@ -759,28 +589,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function getPrimaryGroupId()
     {
         return $this->getFirstAttribute($this->schema->primaryGroupId());
-    }
-
-    /**
-     * Returns the model's instance type.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms676204(v=vs.85).aspx
-     *
-     * @return int
-     */
-    public function getInstanceType()
-    {
-        return $this->getFirstAttribute($this->schema->instanceType());
-    }
-
-    /**
-     * Returns the distinguished name of the user who is assigned to manage this object.
-     *
-     * @return string|null
-     */
-    public function getManagedBy()
-    {
-        return $this->getFirstAttribute($this->schema->managedBy());
     }
 
     /**
@@ -800,6 +608,16 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the distinguished name of the user who is assigned to manage this object.
+     *
+     * @return string|null
+     */
+    public function getManagedBy()
+    {
+        return $this->getFirstAttribute($this->schema->managedBy());
+    }
+
+    /**
      * Sets the user who is assigned to managed this object.
      *
      * @param Model|string $dn
@@ -816,16 +634,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the model's max password age.
-     *
-     * @return string
-     */
-    public function getMaxPasswordAge()
-    {
-        return $this->getFirstAttribute($this->schema->maxPasswordAge());
-    }
-
-    /**
      * Returns the model's max password age in days.
      *
      * @return int
@@ -838,7 +646,17 @@ abstract class Model implements ArrayAccess, JsonSerializable
             return 0;
         }
 
-        return (int) (abs($age) / 10000000 / 60 / 60 / 24);
+        return (int)(abs($age) / 10000000 / 60 / 60 / 24);
+    }
+
+    /**
+     * Returns the model's max password age.
+     *
+     * @return string
+     */
+    public function getMaxPasswordAge()
+    {
+        return $this->getFirstAttribute($this->schema->maxPasswordAge());
     }
 
     /**
@@ -846,8 +664,8 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * If a model instance is given, the strict parameter is ignored.
      *
-     * @param Model|string $ou     The organizational unit to check.
-     * @param bool         $strict Whether the check is case-sensitive.
+     * @param Model|string $ou The organizational unit to check.
+     * @param bool $strict Whether the check is case-sensitive.
      *
      * @return bool
      */
@@ -857,12 +675,38 @@ abstract class Model implements ArrayAccess, JsonSerializable
             // If we've been given an OU model, we can
             // just check if the OU's DN is inside
             // the current models DN.
-            return (bool) strpos($this->getDn(), $ou->getDn());
+            return (bool)strpos($this->getDn(), $ou->getDn());
         }
 
         $suffix = $strict ? '' : 'i';
 
-        return (bool) preg_grep("/{$ou}/{$suffix}", $this->getDnBuilder()->getComponents('ou'));
+        return (bool)preg_grep("/{$ou}/{$suffix}", $this->getDnBuilder()->getComponents('ou'));
+    }
+
+    /**
+     * Returns a DistinguishedName object for modifying the current models DN.
+     *
+     * @return DistinguishedName
+     */
+    public function getDnBuilder()
+    {
+        // If we currently don't have a distinguished name, we'll set
+        // it to our base, otherwise we'll use our query's base DN.
+        $dn = $this->getDistinguishedName() ?: $this->query->getDn();
+
+        return $this->getNewDnBuilder($dn);
+    }
+
+    /**
+     * Returns a new DistinguishedName object for building onto.
+     *
+     * @param string $baseDn
+     *
+     * @return DistinguishedName
+     */
+    public function getNewDnBuilder($baseDn = '')
+    {
+        return new DistinguishedName($baseDn);
     }
 
     /**
@@ -873,7 +717,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function isWritable()
     {
-        return (int) $this->getInstanceType() === 4;
+        return (int)$this->getInstanceType() === 4;
+    }
+
+    /**
+     * Returns the model's instance type.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms676204(v=vs.85).aspx
+     *
+     * @return int
+     */
+    public function getInstanceType()
+    {
+        return $this->getFirstAttribute($this->schema->instanceType());
     }
 
     /**
@@ -936,13 +792,155 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the models batch modifications to be processed.
+     *
+     * @return array
+     */
+    public function getModifications()
+    {
+        $this->buildModificationsFromDirty();
+
+        return $this->modifications;
+    }
+
+    /**
+     * Sets the models modifications array.
+     *
+     * @param array $modifications
+     *
+     * @return $this
+     */
+    public function setModifications(array $modifications = [])
+    {
+        $this->modifications = $modifications;
+
+        return $this;
+    }
+
+    /**
+     * Builds the models modifications from its dirty attributes.
+     *
+     * @return array
+     */
+    protected function buildModificationsFromDirty()
+    {
+        foreach ($this->getDirty() as $attribute => $values) {
+            // Make sure values is always an array.
+            $values = (is_array($values) ? $values : [$values]);
+
+            // Create a new modification.
+            $modification = $this->newBatchModification($attribute, null, $values);
+
+            if (array_key_exists($attribute, $this->original)) {
+                // If the attribute we're modifying has an original value, we'll give the
+                // BatchModification object its values to automatically determine
+                // which type of LDAP operation we need to perform.
+                $modification->setOriginal($this->original[$attribute]);
+            }
+
+            // Build the modification from its
+            // possible original values.
+            $modification->build();
+
+            if ($modification->isValid()) {
+                // Finally, we'll add the modification to the model.
+                $this->addModification($modification);
+            }
+        }
+
+        return $this->modifications;
+    }
+
+    /**
+     * Returns a new batch modification.
+     *
+     * @param string|null $attribute
+     * @param string|int|null $type
+     * @param array $values
+     *
+     * @return BatchModification
+     */
+    public function newBatchModification($attribute = null, $type = null, $values = [])
+    {
+        return new BatchModification($attribute, $type, $values);
+    }
+
+    /**
+     * Adds a batch modification to the models modifications array.
+     *
+     * @param array|BatchModification $mod
+     *
+     * @return $this
+     * @throws InvalidArgumentException
+     *
+     */
+    public function addModification($mod = [])
+    {
+        if ($mod instanceof BatchModification) {
+            $mod = $mod->get();
+        }
+
+        if ($this->isValidModification($mod)) {
+            $this->modifications[] = $mod;
+
+            return $this;
+        }
+
+        throw new InvalidArgumentException(
+            "The batch modification array does not include the mandatory 'attrib' or 'modtype' keys."
+        );
+    }
+
+    /**
+     * Determines if the given modification is valid.
+     *
+     * @param mixed $mod
+     *
+     * @return bool
+     */
+    protected function isValidModification($mod)
+    {
+        return is_array($mod) &&
+            array_key_exists(BatchModification::KEY_MODTYPE, $mod) &&
+            array_key_exists(BatchModification::KEY_ATTRIB, $mod);
+    }
+
+    /**
+     * Synchronizes the current models attributes with the directory values.
+     *
+     * @return bool
+     */
+    public function syncRaw()
+    {
+        if ($model = $this->fresh()) {
+            $this->setRawAttributes($model->getAttributes());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Reload a fresh model instance from the directory.
+     *
+     * @return static|null
+     */
+    public function fresh()
+    {
+        $model = $this->query->newInstance()->findByDn($this->getDn());
+
+        return $model instanceof self ? $model : null;
+    }
+
+    /**
      * Creates the entry in LDAP.
      *
      * @param array $attributes The attributes for the new entry.
      *
+     * @return bool
      * @throws UnexpectedValueException
      *
-     * @return bool
      */
     public function create(array $attributes = [])
     {
@@ -982,11 +980,71 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Constructs a new distinguished name that is creatable in the directory.
+     *
+     * @return DistinguishedName|string
+     */
+    protected function getCreatableDn()
+    {
+        return $this->getDnBuilder()->addCn($this->getCommonName());
+    }
+
+    /**
+     * Returns the model's common name.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms675449(v=vs.85).aspx
+     *
+     * @return string
+     */
+    public function getCommonName()
+    {
+        return $this->getFirstAttribute($this->schema->commonName());
+    }
+
+    /**
+     *  Sets the model's distinguished name attribute.
+     *
+     * (Alias for setDistinguishedName())
+     *
+     * @param string $dn
+     *
+     * @return $this
+     */
+    public function setDn($dn)
+    {
+        return $this->setDistinguishedName($dn);
+    }
+
+    /**
+     * Sets the model's distinguished name attribute.
+     *
+     * @param string|DistinguishedName $dn
+     *
+     * @return $this
+     */
+    public function setDistinguishedName($dn)
+    {
+        $this->setFirstAttribute($this->schema->distinguishedName(), (string)$dn);
+
+        return $this;
+    }
+
+    /**
+     * Returns the models creatable attributes.
+     *
+     * @return mixed
+     */
+    protected function getCreatableAttributes()
+    {
+        return Arr::except($this->getAttributes(), [$this->schema->distinguishedName()]);
+    }
+
+    /**
      * Creates an attribute on the current model.
      *
      * @param string $attribute The attribute to create
-     * @param mixed  $value     The value of the new attribute
-     * @param bool   $sync      Whether to re-sync all attributes
+     * @param mixed $value The value of the new attribute
+     * @param bool $sync Whether to re-sync all attributes
      *
      * @return bool
      */
@@ -1010,8 +1068,8 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * Updates the specified attribute with the specified value.
      *
      * @param string $attribute The attribute to modify
-     * @param mixed  $value     The new value for the attribute
-     * @param bool   $sync      Whether to re-sync all attributes
+     * @param mixed $value The new value for the attribute
+     * @param bool $sync Whether to re-sync all attributes
      *
      * @return bool
      */
@@ -1035,7 +1093,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * Deletes an attribute on the current entry.
      *
      * @param string|array $attributes The attribute(s) to delete
-     * @param bool         $sync       Whether to re-sync all attributes
+     * @param bool $sync Whether to re-sync all attributes
      *
      * Delete specific values in attributes:
      *
@@ -1076,9 +1134,9 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @param bool $recursive Whether to recursively delete leaf nodes (models that are children).
      *
+     * @return bool
      * @throws ModelDoesNotExistException
      *
-     * @return bool
      */
     public function delete($recursive = false)
     {
@@ -1114,12 +1172,22 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns a new query builder instance.
+     *
+     * @return Builder
+     */
+    public function newQuery()
+    {
+        return $this->query->newInstance();
+    }
+
+    /**
      * Moves the current model into the given new parent.
      *
      * For example: $user->move($ou);
      *
-     * @param Model|string $newParentDn  The new parent of the current model.
-     * @param bool         $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
+     * @param Model|string $newParentDn The new parent of the current model.
+     * @param bool $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
      *
      * @return bool
      */
@@ -1129,7 +1197,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $parts = Utilities::explodeDn($this->getDn(), $removeAttrPrefixes = false);
 
         // If the current model has an empty RDN, we can't move it.
-        if ((int) Arr::first($parts) === 0) {
+        if ((int)Arr::first($parts) === 0) {
             throw new UnexpectedValueException('Current model does not contain an RDN to move.');
         }
 
@@ -1142,9 +1210,9 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * Renames the current model to a new RDN and new parent.
      *
-     * @param string            $rdn          The models new relative distinguished name. Example: "cn=JohnDoe"
-     * @param Model|string|null $newParentDn  The models new parent distinguished name (if moving). Leave this null if you are only renaming. Example: "ou=MovedUsers,dc=acme,dc=org"
-     * @param bool|true         $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
+     * @param string $rdn The models new relative distinguished name. Example: "cn=JohnDoe"
+     * @param Model|string|null $newParentDn The models new parent distinguished name (if moving). Leave this null if you are only renaming. Example: "ou=MovedUsers,dc=acme,dc=org"
+     * @param bool|true $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
      *
      * @return bool
      */
@@ -1170,79 +1238,11 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Constructs a new distinguished name that is creatable in the directory.
-     *
-     * @return DistinguishedName|string
-     */
-    protected function getCreatableDn()
-    {
-        return $this->getDnBuilder()->addCn($this->getCommonName());
-    }
-
-    /**
-     * Returns the models creatable attributes.
-     *
-     * @return mixed
-     */
-    protected function getCreatableAttributes()
-    {
-        return Arr::except($this->getAttributes(), [$this->schema->distinguishedName()]);
-    }
-
-    /**
-     * Determines if the given modification is valid.
-     *
-     * @param mixed $mod
-     *
-     * @return bool
-     */
-    protected function isValidModification($mod)
-    {
-        return is_array($mod) &&
-            array_key_exists(BatchModification::KEY_MODTYPE, $mod) &&
-            array_key_exists(BatchModification::KEY_ATTRIB, $mod);
-    }
-
-    /**
-     * Builds the models modifications from its dirty attributes.
-     *
-     * @return array
-     */
-    protected function buildModificationsFromDirty()
-    {
-        foreach ($this->getDirty() as $attribute => $values) {
-            // Make sure values is always an array.
-            $values = (is_array($values) ? $values : [$values]);
-
-            // Create a new modification.
-            $modification = $this->newBatchModification($attribute, null, $values);
-
-            if (array_key_exists($attribute, $this->original)) {
-                // If the attribute we're modifying has an original value, we'll give the
-                // BatchModification object its values to automatically determine
-                // which type of LDAP operation we need to perform.
-                $modification->setOriginal($this->original[$attribute]);
-            }
-
-            // Build the modification from its
-            // possible original values.
-            $modification->build();
-
-            if ($modification->isValid()) {
-                // Finally, we'll add the modification to the model.
-                $this->addModification($modification);
-            }
-        }
-
-        return $this->modifications;
-    }
-
-    /**
      * Validates that the current LDAP connection is secure.
      *
+     * @return void
      * @throws ConnectionException
      *
-     * @return void
      */
     protected function validateSecureConnection()
     {

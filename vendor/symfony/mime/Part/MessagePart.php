@@ -26,7 +26,7 @@ class MessagePart extends DataPart
     public function __construct(RawMessage $message)
     {
         if ($message instanceof Message) {
-            $name = $message->getHeaders()->getHeaderBody('Subject').'.eml';
+            $name = $message->getHeaders()->getHeaderBody('Subject') . '.eml';
         } else {
             $name = 'email.eml';
         }
@@ -45,14 +45,14 @@ class MessagePart extends DataPart
         return 'rfc822';
     }
 
-    public function getBody(): string
-    {
-        return $this->message->toString();
-    }
-
     public function bodyToString(): string
     {
         return $this->getBody();
+    }
+
+    public function getBody(): string
+    {
+        return $this->message->toString();
     }
 
     public function bodyToIterable(): iterable

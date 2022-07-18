@@ -114,9 +114,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return male middle name
      *
+     * @return string Middle name
      * @example 'Kumar'
      *
-     * @return string Middle name
      */
     public function middleNameMale()
     {

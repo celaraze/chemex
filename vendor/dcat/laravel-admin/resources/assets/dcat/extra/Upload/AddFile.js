@@ -1,4 +1,3 @@
-
 export default class AddFile {
     constructor(Uploder) {
         this.uploader = Uploder;
@@ -80,7 +79,7 @@ export default class AddFile {
     }
 
     // 显示错误信息
-    showError ($li, code, file) {
+    showError($li, code, file) {
         let _this = this,
             lang = _this.uploader.lang,
             text = '',
@@ -138,7 +137,7 @@ export default class AddFile {
                     height = file._info.height;
 
                 // 验证图片宽高
-                if (! _this.validateDimensions(file)) {
+                if (!_this.validateDimensions(file)) {
                     Dcat.error(lang.trans('dimensions') || 'The image dimensions is invalid.');
 
                     uploader.removeFile(file);
@@ -264,7 +263,7 @@ export default class AddFile {
             isset = Dcat.helpers.isset;
 
         // The image dimensions is invalid.
-        if (! parent.isImage() || ! _this.isImage(file) || ! Dcat.helpers.len(options.dimensions)) {
+        if (!parent.isImage() || !_this.isImage(file) || !Dcat.helpers.len(options.dimensions)) {
             return true;
         }
 
@@ -284,7 +283,7 @@ export default class AddFile {
     }
 
     // 判断是否是图片
-    isImage (file) {
+    isImage(file) {
         return file.type.match(/^image/);
     }
 }

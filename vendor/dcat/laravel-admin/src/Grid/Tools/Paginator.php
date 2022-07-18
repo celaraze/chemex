@@ -10,19 +10,18 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class Paginator implements Renderable
 {
     /**
+     * @var \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public $paginator = null;
+    /**
      * @var Grid
      */
     protected $grid;
 
     /**
-     * @var \Illuminate\Pagination\LengthAwarePaginator
-     */
-    public $paginator = null;
-
-    /**
      * Create a new Paginator instance.
      *
-     * @param  Grid  $grid
+     * @param Grid $grid
      */
     public function __construct(Grid $grid)
     {
@@ -56,17 +55,15 @@ class Paginator implements Renderable
     }
 
     /**
-     * Get per-page selector.
+     * Render Paginator.
      *
-     * @return string|null
+     * @return string
      */
-    protected function perPageSelector()
+    public function render()
     {
-        if (! $this->grid->getPerPages()) {
-            return;
-        }
-
-        return (new PerPageSelector($this->grid))->render();
+        return $this->paginationRanger() .
+            $this->paginationLinks() .
+            $this->perPageSelector();
     }
 
     /**
@@ -78,7 +75,7 @@ class Paginator implements Renderable
     {
         $parameters = [
             'first' => $this->paginator->firstItem(),
-            'last'  => $this->paginator->lastItem(),
+            'last' => $this->paginator->lastItem(),
             'total' => method_exists($this->paginator, 'total') ? $this->paginator->total() : '...',
         ];
 
@@ -88,18 +85,20 @@ class Paginator implements Renderable
 
         $color = Admin::color()->dark80();
 
-        return "<span class='d-none d-sm-inline' style=\"line-height:33px;color:{$color}\">".trans('admin.pagination.range', $parameters->all()).'</span>';
+        return "<span class='d-none d-sm-inline' style=\"line-height:33px;color:{$color}\">" . trans('admin.pagination.range', $parameters->all()) . '</span>';
     }
 
     /**
-     * Render Paginator.
+     * Get per-page selector.
      *
-     * @return string
+     * @return string|null
      */
-    public function render()
+    protected function perPageSelector()
     {
-        return $this->paginationRanger().
-            $this->paginationLinks().
-            $this->perPageSelector();
+        if (!$this->grid->getPerPages()) {
+            return;
+        }
+
+        return (new PerPageSelector($this->grid))->render();
     }
 }

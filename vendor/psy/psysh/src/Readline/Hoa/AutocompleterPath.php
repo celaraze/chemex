@@ -62,9 +62,10 @@ class AutocompleterPath implements Autocompleter
      * Constructor.
      */
     public function __construct(
-        string $root = null,
+        string   $root = null,
         \Closure $iteratorFactory = null
-    ) {
+    )
+    {
         if (null === $root) {
             $root = static::PWD;
         }
@@ -90,17 +91,17 @@ class AutocompleterPath implements Autocompleter
             $root = \getcwd();
         }
 
-        $path = $root.\DIRECTORY_SEPARATOR.$prefix;
+        $path = $root . \DIRECTORY_SEPARATOR . $prefix;
 
         if (!\is_dir($path)) {
-            $path = \dirname($path).\DIRECTORY_SEPARATOR;
+            $path = \dirname($path) . \DIRECTORY_SEPARATOR;
             $prefix = \basename($prefix);
         } else {
             $prefix = null;
         }
 
         $iteratorFactory = $this->getIteratorFactory() ?:
-                               static::getDefaultIteratorFactory();
+            static::getDefaultIteratorFactory();
 
         try {
             $iterator = $iteratorFactory($path);
@@ -113,7 +114,7 @@ class AutocompleterPath implements Autocompleter
                 if (null === $prefix ||
                     (\mb_substr($filename, 0, $length) === $prefix)) {
                     if ($fileinfo->isDir()) {
-                        $out[] = $filename.'/';
+                        $out[] = $filename . '/';
                     } else {
                         $out[] = $filename;
                     }
@@ -137,11 +138,11 @@ class AutocompleterPath implements Autocompleter
     }
 
     /**
-     * Get definition of a word.
+     * Get root.
      */
-    public function getWordDefinition(): string
+    public function getRoot()
     {
-        return '/?[\w\d\\_\-\.]+(/[\w\d\\_\-\.]*)*';
+        return $this->_root;
     }
 
     /**
@@ -156,11 +157,11 @@ class AutocompleterPath implements Autocompleter
     }
 
     /**
-     * Get root.
+     * Get iterator factory.
      */
-    public function getRoot()
+    public function getIteratorFactory()
     {
-        return $this->_root;
+        return $this->_iteratorFactory;
     }
 
     /**
@@ -175,14 +176,6 @@ class AutocompleterPath implements Autocompleter
     }
 
     /**
-     * Get iterator factory.
-     */
-    public function getIteratorFactory()
-    {
-        return $this->_iteratorFactory;
-    }
-
-    /**
      * Get default iterator factory (based on \DirectoryIterator).
      */
     public static function getDefaultIteratorFactory()
@@ -190,5 +183,13 @@ class AutocompleterPath implements Autocompleter
         return function ($path) {
             return new \DirectoryIterator($path);
         };
+    }
+
+    /**
+     * Get definition of a word.
+     */
+    public function getWordDefinition(): string
+    {
+        return '/?[\w\d\\_\-\.]+(/[\w\d\\_\-\.]*)*';
     }
 }

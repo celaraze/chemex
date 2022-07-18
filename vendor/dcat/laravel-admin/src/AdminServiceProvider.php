@@ -64,13 +64,13 @@ class AdminServiceProvider extends ServiceProvider
      * @var array
      */
     protected $routeMiddleware = [
-        'admin.auth'       => Http\Middleware\Authenticate::class,
-        'admin.pjax'       => Http\Middleware\Pjax::class,
+        'admin.auth' => Http\Middleware\Authenticate::class,
+        'admin.pjax' => Http\Middleware\Pjax::class,
         'admin.permission' => Http\Middleware\Permission::class,
-        'admin.bootstrap'  => Http\Middleware\Bootstrap::class,
-        'admin.session'    => Http\Middleware\Session::class,
-        'admin.upload'     => Http\Middleware\WebUploader::class,
-        'admin.app'        => Http\Middleware\Application::class,
+        'admin.bootstrap' => Http\Middleware\Bootstrap::class,
+        'admin.session' => Http\Middleware\Session::class,
+        'admin.upload' => Http\Middleware\WebUploader::class,
+        'admin.app' => Http\Middleware\Application::class,
     ];
 
     /**
@@ -87,6 +87,41 @@ class AdminServiceProvider extends ServiceProvider
         ],
     ];
 
+    public function boot()
+    {
+        $this->registerDefaultSections();
+        $this->registerViews();
+        $this->ensureHttps();
+        $this->bootApplication();
+        $this->registerPublishing();
+        $this->compatibleBlade();
+        $this->bootExtensions();
+        $this->registerBladeDirective();
+    }
+
+    /**
+     * 默认 section 注册.
+     */
+    protected function registerDefaultSections()
+    {
+        Content::composing(function () {
+            if (!admin_has_default_section(Admin::SECTION['NAVBAR_USER_PANEL'])) {
+                admin_inject_default_section(Admin::SECTION['NAVBAR_USER_PANEL'], function () {
+                    return view('admin::partials.navbar-user-panel', ['user' => Admin::user()]);
+                });
+            }
+
+            if (!admin_has_default_section(Admin::SECTION['LEFT_SIDEBAR_USER_PANEL'])) {
+                admin_inject_default_section(Admin::SECTION['LEFT_SIDEBAR_USER_PANEL'], function () {
+                    return view('admin::partials.sidebar-user-panel', ['user' => Admin::user()]);
+                });
+            }
+
+            // Register menu
+            Admin::menu()->register();
+        }, true);
+    }
+
     public function register()
     {
         $this->aliasAdmin();
@@ -102,76 +137,10 @@ class AdminServiceProvider extends ServiceProvider
         }
     }
 
-    public function boot()
-    {
-        $this->registerDefaultSections();
-        $this->registerViews();
-        $this->ensureHttps();
-        $this->bootApplication();
-        $this->registerPublishing();
-        $this->compatibleBlade();
-        $this->bootExtensions();
-        $this->registerBladeDirective();
-    }
-
     protected function aliasAdmin()
     {
-        if (! class_exists(\Admin::class)) {
+        if (!class_exists(\Admin::class)) {
             class_alias(Admin::class, \Admin::class);
-        }
-    }
-
-    protected function registerViews()
-    {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'admin');
-    }
-
-    /**
-     * 是否强制使用https.
-     *
-     * @return void
-     */
-    protected function ensureHttps()
-    {
-        if (config('admin.https') || config('admin.secure')) {
-            \URL::forceScheme('https');
-            $this->app['request']->server->set('HTTPS', true);
-        }
-    }
-
-    /**
-     * 路由注册.
-     */
-    protected function bootApplication()
-    {
-        Admin::app()->boot();
-    }
-
-    /**
-     * 禁止laravel 5.6或更高版本中启用双编码的默认特性.
-     *
-     * @return void
-     */
-    protected function compatibleBlade()
-    {
-        $bladeReflectionClass = new \ReflectionClass('\Illuminate\View\Compilers\BladeCompiler');
-        if ($bladeReflectionClass->hasMethod('withoutDoubleEncoding')) {
-            Blade::withoutDoubleEncoding();
-        }
-    }
-
-    /**
-     * 资源发布注册.
-     *
-     * @return void
-     */
-    protected function registerPublishing()
-    {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([__DIR__.'/../config' => config_path()], 'dcat-admin-config');
-            $this->publishes([__DIR__.'/../resources/lang' => $this->app->langPath()], 'dcat-admin-lang');
-            $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'dcat-admin-migrations');
-            $this->publishes([__DIR__.'/../resources/dist' => public_path(Admin::asset()->getRealPath('@admin'))], 'dcat-admin-assets');
         }
     }
 
@@ -184,34 +153,36 @@ class AdminServiceProvider extends ServiceProvider
     {
         config(Arr::dot(config('admin.auth', []), 'auth.'));
 
-        foreach ((array) config('admin.multi_app') as $app => $enable) {
+        foreach ((array)config('admin.multi_app') as $app => $enable) {
             if ($enable) {
-                config(Arr::dot(config($app.'.auth', []), 'auth.'));
+                config(Arr::dot(config($app . '.auth', []), 'auth.'));
             }
         }
     }
 
     /**
-     * 默认 section 注册.
+     * 路由中间件注册.
+     *
+     * @return void
      */
-    protected function registerDefaultSections()
+    protected function registerRouteMiddleware()
     {
-        Content::composing(function () {
-            if (! admin_has_default_section(Admin::SECTION['NAVBAR_USER_PANEL'])) {
-                admin_inject_default_section(Admin::SECTION['NAVBAR_USER_PANEL'], function () {
-                    return view('admin::partials.navbar-user-panel', ['user' => Admin::user()]);
-                });
-            }
+        $router = $this->app->make('router');
 
-            if (! admin_has_default_section(Admin::SECTION['LEFT_SIDEBAR_USER_PANEL'])) {
-                admin_inject_default_section(Admin::SECTION['LEFT_SIDEBAR_USER_PANEL'], function () {
-                    return view('admin::partials.sidebar-user-panel', ['user' => Admin::user()]);
-                });
-            }
+        // register route middleware.
+        foreach ($this->routeMiddleware as $key => $middleware) {
+            $router->aliasMiddleware($key, $middleware);
+        }
 
-            // Register menu
-            Admin::menu()->register();
-        }, true);
+        $disablePermission = !config('admin.permission.enable');
+
+        // register middleware group.
+        foreach ($this->middlewareGroups as $key => $middleware) {
+            if ($disablePermission) {
+                Helper::deleteByValue($middleware, 'admin.permission', true);
+            }
+            $router->middlewareGroup($key, $middleware);
+        }
     }
 
     public function registerServices()
@@ -243,6 +214,60 @@ class AdminServiceProvider extends ServiceProvider
         Admin::extension()->register();
     }
 
+    protected function registerViews()
+    {
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'admin');
+    }
+
+    /**
+     * 是否强制使用https.
+     *
+     * @return void
+     */
+    protected function ensureHttps()
+    {
+        if (config('admin.https') || config('admin.secure')) {
+            \URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', true);
+        }
+    }
+
+    /**
+     * 路由注册.
+     */
+    protected function bootApplication()
+    {
+        Admin::app()->boot();
+    }
+
+    /**
+     * 资源发布注册.
+     *
+     * @return void
+     */
+    protected function registerPublishing()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([__DIR__ . '/../config' => config_path()], 'dcat-admin-config');
+            $this->publishes([__DIR__ . '/../resources/lang' => $this->app->langPath()], 'dcat-admin-lang');
+            $this->publishes([__DIR__ . '/../database/migrations' => database_path('migrations')], 'dcat-admin-migrations');
+            $this->publishes([__DIR__ . '/../resources/dist' => public_path(Admin::asset()->getRealPath('@admin'))], 'dcat-admin-assets');
+        }
+    }
+
+    /**
+     * 禁止laravel 5.6或更高版本中启用双编码的默认特性.
+     *
+     * @return void
+     */
+    protected function compatibleBlade()
+    {
+        $bladeReflectionClass = new \ReflectionClass('\Illuminate\View\Compilers\BladeCompiler');
+        if ($bladeReflectionClass->hasMethod('withoutDoubleEncoding')) {
+            Blade::withoutDoubleEncoding();
+        }
+    }
+
     public function bootExtensions()
     {
         Admin::extension()->boot();
@@ -255,30 +280,5 @@ class AdminServiceProvider extends ServiceProvider
 <?php echo admin_color()->primary($amt); ?>
 PHP;
         });
-    }
-
-    /**
-     * 路由中间件注册.
-     *
-     * @return void
-     */
-    protected function registerRouteMiddleware()
-    {
-        $router = $this->app->make('router');
-
-        // register route middleware.
-        foreach ($this->routeMiddleware as $key => $middleware) {
-            $router->aliasMiddleware($key, $middleware);
-        }
-
-        $disablePermission = ! config('admin.permission.enable');
-
-        // register middleware group.
-        foreach ($this->middlewareGroups as $key => $middleware) {
-            if ($disablePermission) {
-                Helper::deleteByValue($middleware, 'admin.permission', true);
-            }
-            $router->middlewareGroup($key, $middleware);
-        }
     }
 }

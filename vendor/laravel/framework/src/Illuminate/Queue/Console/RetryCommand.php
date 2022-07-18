@@ -14,16 +14,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class RetryCommand extends Command
 {
     /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:retry
-                            {id?* : The ID of the failed job or "all" to retry all jobs}
-                            {--queue= : Retry all of the failed jobs for the specified queue}
-                            {--range=* : Range of job IDs (numeric) to be retried}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -33,7 +23,15 @@ class RetryCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:retry';
-
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:retry
+                            {id?* : The ID of the failed job or "all" to retry all jobs}
+                            {--queue= : Retry all of the failed jobs for the specified queue}
+                            {--range=* : Range of job IDs (numeric) to be retried}';
     /**
      * The console command description.
      *
@@ -72,7 +70,7 @@ class RetryCommand extends Command
      */
     protected function getJobIds()
     {
-        $ids = (array) $this->argument('id');
+        $ids = (array)$this->argument('id');
 
         if (count($ids) === 1 && $ids[0] === 'all') {
             return Arr::pluck($this->laravel['queue.failer']->all(), 'id');
@@ -82,7 +80,7 @@ class RetryCommand extends Command
             return $this->getJobIdsByQueue($queue);
         }
 
-        if ($ranges = (array) $this->option('range')) {
+        if ($ranges = (array)$this->option('range')) {
             $ids = array_merge($ids, $this->getJobIdsByRanges($ranges));
         }
 
@@ -92,15 +90,15 @@ class RetryCommand extends Command
     /**
      * Get the job IDs by queue, if applicable.
      *
-     * @param  string  $queue
+     * @param string $queue
      * @return array
      */
     protected function getJobIdsByQueue($queue)
     {
         $ids = collect($this->laravel['queue.failer']->all())
-                        ->where('queue', $queue)
-                        ->pluck('id')
-                        ->toArray();
+            ->where('queue', $queue)
+            ->pluck('id')
+            ->toArray();
 
         if (count($ids) === 0) {
             $this->error("Unable to find failed jobs for queue [{$queue}].");
@@ -112,7 +110,7 @@ class RetryCommand extends Command
     /**
      * Get the job IDs ranges, if applicable.
      *
-     * @param  array  $ranges
+     * @param array $ranges
      * @return array
      */
     protected function getJobIdsByRanges(array $ranges)
@@ -131,7 +129,7 @@ class RetryCommand extends Command
     /**
      * Retry the queue job.
      *
-     * @param  \stdClass  $job
+     * @param \stdClass $job
      * @return void
      */
     protected function retryJob($job)
@@ -142,28 +140,9 @@ class RetryCommand extends Command
     }
 
     /**
-     * Reset the payload attempts.
-     *
-     * Applicable to Redis and other jobs which store attempts in their payload.
-     *
-     * @param  string  $payload
-     * @return string
-     */
-    protected function resetAttempts($payload)
-    {
-        $payload = json_decode($payload, true);
-
-        if (isset($payload['attempts'])) {
-            $payload['attempts'] = 0;
-        }
-
-        return json_encode($payload);
-    }
-
-    /**
      * Refresh the "retry until" timestamp for the job.
      *
-     * @param  string  $payload
+     * @param string $payload
      * @return string
      *
      * @throws \RuntimeException
@@ -172,7 +151,7 @@ class RetryCommand extends Command
     {
         $payload = json_decode($payload, true);
 
-        if (! isset($payload['data']['command'])) {
+        if (!isset($payload['data']['command'])) {
             return json_encode($payload);
         }
 
@@ -182,16 +161,35 @@ class RetryCommand extends Command
             $instance = unserialize($this->laravel->make(Encrypter::class)->decrypt($payload['data']['command']));
         }
 
-        if (! isset($instance)) {
+        if (!isset($instance)) {
             throw new RuntimeException('Unable to extract job payload.');
         }
 
-        if (is_object($instance) && ! $instance instanceof \__PHP_Incomplete_Class && method_exists($instance, 'retryUntil')) {
+        if (is_object($instance) && !$instance instanceof \__PHP_Incomplete_Class && method_exists($instance, 'retryUntil')) {
             $retryUntil = $instance->retryUntil();
 
             $payload['retryUntil'] = $retryUntil instanceof DateTimeInterface
-                                        ? $retryUntil->getTimestamp()
-                                        : $retryUntil;
+                ? $retryUntil->getTimestamp()
+                : $retryUntil;
+        }
+
+        return json_encode($payload);
+    }
+
+    /**
+     * Reset the payload attempts.
+     *
+     * Applicable to Redis and other jobs which store attempts in their payload.
+     *
+     * @param string $payload
+     * @return string
+     */
+    protected function resetAttempts($payload)
+    {
+        $payload = json_decode($payload, true);
+
+        if (isset($payload['attempts'])) {
+            $payload['attempts'] = 0;
         }
 
         return json_encode($payload);

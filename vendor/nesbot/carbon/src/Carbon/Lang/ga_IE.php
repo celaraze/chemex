@@ -9,4 +9,4 @@
  * file that was distributed with this source code.
  */
 
-return require __DIR__.'/ga.php';
+return require __DIR__ . '/ga.php';

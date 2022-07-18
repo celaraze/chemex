@@ -89,6 +89,14 @@ class EventListener
     }
 
     /**
+     * Checks if a listener exists.
+     */
+    public function listenerExists(string $listenerId): bool
+    {
+        return \array_key_exists($listenerId, $this->_callables);
+    }
+
+    /**
      * Detaches a callable from a listenable component.
      */
     public function detach(string $listenerId, $callable): self
@@ -106,14 +114,6 @@ class EventListener
         unset($this->_callables[$listenerId]);
 
         return $this;
-    }
-
-    /**
-     * Checks if a listener exists.
-     */
-    public function listenerExists(string $listenerId): bool
-    {
-        return \array_key_exists($listenerId, $this->_callables);
     }
 
     /**

@@ -20,7 +20,7 @@ class SystemFacade
 
     /**
      * @param callable $handler
-     * @param int      $types
+     * @param int $types
      *
      * @return callable|null
      */

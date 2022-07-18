@@ -10,7 +10,7 @@ class MaintenanceModeBypassCookie
     /**
      * Create a new maintenance mode bypass cookie.
      *
-     * @param  string  $key
+     * @param string $key
      * @return \Symfony\Component\HttpFoundation\Cookie
      */
     public static function create(string $key)
@@ -26,8 +26,8 @@ class MaintenanceModeBypassCookie
     /**
      * Determine if the given maintenance mode bypass cookie is valid.
      *
-     * @param  string  $cookie
-     * @param  string  $key
+     * @param string $cookie
+     * @param string $key
      * @return bool
      */
     public static function isValid(string $cookie, string $key)
@@ -38,6 +38,6 @@ class MaintenanceModeBypassCookie
             is_numeric($payload['expires_at'] ?? null) &&
             isset($payload['mac']) &&
             hash_equals(hash_hmac('sha256', $payload['expires_at'], $key), $payload['mac']) &&
-            (int) $payload['expires_at'] >= Carbon::now()->getTimestamp();
+            (int)$payload['expires_at'] >= Carbon::now()->getTimestamp();
     }
 }

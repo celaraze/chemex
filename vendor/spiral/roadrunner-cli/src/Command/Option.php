@@ -39,14 +39,6 @@ abstract class Option implements OptionInterface
     }
 
     /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * @param Command $command
      * @param string $name
      * @param string $short
@@ -70,6 +62,19 @@ abstract class Option implements OptionInterface
     abstract protected function getDescription(): string;
 
     /**
+     * @return string|null
+     */
+    abstract protected function default(): ?string;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * @param InputInterface $input
      * @param StyleInterface $io
      * @return string
@@ -80,9 +85,4 @@ abstract class Option implements OptionInterface
 
         return \is_string($result) ? $result : '';
     }
-
-    /**
-     * @return string|null
-     */
-    abstract protected function default(): ?string;
 }

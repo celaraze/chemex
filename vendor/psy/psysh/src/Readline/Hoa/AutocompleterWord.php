@@ -87,11 +87,11 @@ class AutocompleterWord implements Autocompleter
     }
 
     /**
-     * Get definition of a word.
+     * Get list of words.
      */
-    public function getWordDefinition(): string
+    public function getWords(): array
     {
-        return '\b\w+';
+        return $this->_words;
     }
 
     /**
@@ -110,10 +110,10 @@ class AutocompleterWord implements Autocompleter
     }
 
     /**
-     * Get list of words.
+     * Get definition of a word.
      */
-    public function getWords(): array
+    public function getWordDefinition(): string
     {
-        return $this->_words;
+        return '\b\w+';
     }
 }

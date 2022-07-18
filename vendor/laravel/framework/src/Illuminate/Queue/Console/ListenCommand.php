@@ -11,6 +11,16 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ListenCommand extends Command
 {
     /**
+     * The name of the console command.
+     *
+     * This name is used to identify the command during lazy loading.
+     *
+     * @var string|null
+     *
+     * @deprecated
+     */
+    protected static $defaultName = 'queue:listen';
+    /**
      * The console command name.
      *
      * @var string
@@ -26,18 +36,6 @@ class ListenCommand extends Command
                             {--sleep=3 : Number of seconds to sleep when no job is available}
                             {--timeout=60 : The number of seconds a child process can run}
                             {--tries=1 : Number of times to attempt a job before logging it failed}';
-
-    /**
-     * The name of the console command.
-     *
-     * This name is used to identify the command during lazy loading.
-     *
-     * @var string|null
-     *
-     * @deprecated
-     */
-    protected static $defaultName = 'queue:listen';
-
     /**
      * The console command description.
      *
@@ -55,7 +53,7 @@ class ListenCommand extends Command
     /**
      * Create a new queue listen command.
      *
-     * @param  \Illuminate\Queue\Listener  $listener
+     * @param \Illuminate\Queue\Listener $listener
      * @return void
      */
     public function __construct(Listener $listener)
@@ -63,6 +61,19 @@ class ListenCommand extends Command
         parent::__construct();
 
         $this->setOutputHandler($this->listener = $listener);
+    }
+
+    /**
+     * Set the options on the queue listener.
+     *
+     * @param \Illuminate\Queue\Listener $listener
+     * @return void
+     */
+    protected function setOutputHandler(Listener $listener)
+    {
+        $listener->setOutputHandler(function ($type, $line) {
+            $this->output->write($line);
+        });
     }
 
     /**
@@ -87,7 +98,7 @@ class ListenCommand extends Command
     /**
      * Get the name of the queue connection to listen on.
      *
-     * @param  string  $connection
+     * @param string $connection
      * @return string
      */
     protected function getQueue($connection)
@@ -107,8 +118,8 @@ class ListenCommand extends Command
     protected function gatherOptions()
     {
         $backoff = $this->hasOption('backoff')
-                ? $this->option('backoff')
-                : $this->option('delay');
+            ? $this->option('backoff')
+            : $this->option('delay');
 
         return new ListenerOptions(
             $this->option('name'),
@@ -120,18 +131,5 @@ class ListenCommand extends Command
             $this->option('tries'),
             $this->option('force')
         );
-    }
-
-    /**
-     * Set the options on the queue listener.
-     *
-     * @param  \Illuminate\Queue\Listener  $listener
-     * @return void
-     */
-    protected function setOutputHandler(Listener $listener)
-    {
-        $listener->setOutputHandler(function ($type, $line) {
-            $this->output->write($line);
-        });
     }
 }

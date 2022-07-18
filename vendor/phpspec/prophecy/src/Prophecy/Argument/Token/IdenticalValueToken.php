@@ -27,13 +27,13 @@ class IdenticalValueToken implements TokenInterface
     /**
      * Initializes token.
      *
-     * @param mixed      $value
+     * @param mixed $value
      * @param StringUtil $util
      */
     public function __construct($value, StringUtil $util = null)
     {
         $this->value = $value;
-        $this->util  = $util ?: new StringUtil();
+        $this->util = $util ?: new StringUtil();
     }
 
     /**

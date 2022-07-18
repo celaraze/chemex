@@ -18,106 +18,6 @@ class UserController extends AdminController
         return trans('admin.administrator');
     }
 
-    protected function grid()
-    {
-        return Grid::make(Administrator::with(['roles']), function (Grid $grid) {
-            $grid->column('id', 'ID')->sortable();
-            $grid->column('username');
-            $grid->column('name');
-
-            if (config('admin.permission.enable')) {
-                $grid->column('roles')->pluck('name')->label('primary', 3);
-
-                $permissionModel = config('admin.database.permissions_model');
-                $roleModel = config('admin.database.roles_model');
-                $nodes = (new $permissionModel())->allNodes();
-                $grid->column('permissions')
-                    ->if(function () {
-                        return ! $this->roles->isEmpty();
-                    })
-                    ->showTreeInDialog(function (Grid\Displayers\DialogTree $tree) use (&$nodes, $roleModel) {
-                        $tree->nodes($nodes);
-
-                        foreach (array_column($this->roles->toArray(), 'slug') as $slug) {
-                            if ($roleModel::isAdministrator($slug)) {
-                                $tree->checkAll();
-                            }
-                        }
-                    })
-                    ->else()
-                    ->display('');
-            }
-
-            $grid->column('created_at');
-            $grid->column('updated_at')->sortable();
-
-            $grid->quickSearch(['id', 'name', 'username']);
-
-            $grid->showQuickEditButton();
-            $grid->enableDialogCreate();
-            $grid->showColumnSelector();
-            $grid->disableEditButton();
-
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                if ($actions->getKey() == AdministratorModel::DEFAULT_ID) {
-                    $actions->disableDelete();
-                }
-            });
-        });
-    }
-
-    protected function detail($id)
-    {
-        return Show::make($id, Administrator::with(['roles']), function (Show $show) {
-            $show->field('id');
-            $show->field('username');
-            $show->field('name');
-
-            $show->field('avatar', __('admin.avatar'))->image();
-
-            if (config('admin.permission.enable')) {
-                $show->field('roles')->as(function ($roles) {
-                    if (! $roles) {
-                        return;
-                    }
-
-                    return collect($roles)->pluck('name');
-                })->label();
-
-                $show->field('permissions')->unescape()->as(function () {
-                    $roles = $this->roles->toArray();
-
-                    $permissionModel = config('admin.database.permissions_model');
-                    $roleModel = config('admin.database.roles_model');
-                    $permissionModel = new $permissionModel();
-                    $nodes = $permissionModel->allNodes();
-
-                    $tree = Tree::make($nodes);
-
-                    $isAdministrator = false;
-                    foreach (array_column($roles, 'slug') as $slug) {
-                        if ($roleModel::isAdministrator($slug)) {
-                            $tree->checkAll();
-                            $isAdministrator = true;
-                        }
-                    }
-
-                    if (! $isAdministrator) {
-                        $keyName = $permissionModel->getKeyName();
-                        $tree->check(
-                            $roleModel::getPermissionId(array_column($roles, $keyName))->flatten()
-                        );
-                    }
-
-                    return $tree->render();
-                });
-            }
-
-            $show->field('created_at');
-            $show->field('updated_at');
-        });
-    }
-
     public function form()
     {
         return Form::make(Administrator::with(['roles']), function (Form $form) {
@@ -177,7 +77,7 @@ class UserController extends AdminController
                 $form->password = bcrypt($form->password);
             }
 
-            if (! $form->password) {
+            if (!$form->password) {
                 $form->deleteInput('password');
             }
         });
@@ -190,5 +90,105 @@ class UserController extends AdminController
         }
 
         return parent::destroy($id);
+    }
+
+    protected function grid()
+    {
+        return Grid::make(Administrator::with(['roles']), function (Grid $grid) {
+            $grid->column('id', 'ID')->sortable();
+            $grid->column('username');
+            $grid->column('name');
+
+            if (config('admin.permission.enable')) {
+                $grid->column('roles')->pluck('name')->label('primary', 3);
+
+                $permissionModel = config('admin.database.permissions_model');
+                $roleModel = config('admin.database.roles_model');
+                $nodes = (new $permissionModel())->allNodes();
+                $grid->column('permissions')
+                    ->if(function () {
+                        return !$this->roles->isEmpty();
+                    })
+                    ->showTreeInDialog(function (Grid\Displayers\DialogTree $tree) use (&$nodes, $roleModel) {
+                        $tree->nodes($nodes);
+
+                        foreach (array_column($this->roles->toArray(), 'slug') as $slug) {
+                            if ($roleModel::isAdministrator($slug)) {
+                                $tree->checkAll();
+                            }
+                        }
+                    })
+                    ->else()
+                    ->display('');
+            }
+
+            $grid->column('created_at');
+            $grid->column('updated_at')->sortable();
+
+            $grid->quickSearch(['id', 'name', 'username']);
+
+            $grid->showQuickEditButton();
+            $grid->enableDialogCreate();
+            $grid->showColumnSelector();
+            $grid->disableEditButton();
+
+            $grid->actions(function (Grid\Displayers\Actions $actions) {
+                if ($actions->getKey() == AdministratorModel::DEFAULT_ID) {
+                    $actions->disableDelete();
+                }
+            });
+        });
+    }
+
+    protected function detail($id)
+    {
+        return Show::make($id, Administrator::with(['roles']), function (Show $show) {
+            $show->field('id');
+            $show->field('username');
+            $show->field('name');
+
+            $show->field('avatar', __('admin.avatar'))->image();
+
+            if (config('admin.permission.enable')) {
+                $show->field('roles')->as(function ($roles) {
+                    if (!$roles) {
+                        return;
+                    }
+
+                    return collect($roles)->pluck('name');
+                })->label();
+
+                $show->field('permissions')->unescape()->as(function () {
+                    $roles = $this->roles->toArray();
+
+                    $permissionModel = config('admin.database.permissions_model');
+                    $roleModel = config('admin.database.roles_model');
+                    $permissionModel = new $permissionModel();
+                    $nodes = $permissionModel->allNodes();
+
+                    $tree = Tree::make($nodes);
+
+                    $isAdministrator = false;
+                    foreach (array_column($roles, 'slug') as $slug) {
+                        if ($roleModel::isAdministrator($slug)) {
+                            $tree->checkAll();
+                            $isAdministrator = true;
+                        }
+                    }
+
+                    if (!$isAdministrator) {
+                        $keyName = $permissionModel->getKeyName();
+                        $tree->check(
+                            $roleModel::getPermissionId(array_column($roles, $keyName))->flatten()
+                        );
+                    }
+
+                    return $tree->render();
+                });
+            }
+
+            $show->field('created_at');
+            $show->field('updated_at');
+        });
     }
 }

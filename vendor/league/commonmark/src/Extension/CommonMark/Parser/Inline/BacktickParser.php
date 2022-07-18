@@ -31,12 +31,12 @@ final class BacktickParser implements InlineParserInterface
 
     public function parse(InlineParserContext $inlineContext): bool
     {
-        $ticks  = $inlineContext->getFullMatch();
+        $ticks = $inlineContext->getFullMatch();
         $cursor = $inlineContext->getCursor();
         $cursor->advanceBy($inlineContext->getFullMatchLength());
 
         $currentPosition = $cursor->getPosition();
-        $previousState   = $cursor->saveState();
+        $previousState = $cursor->saveState();
 
         while ($matchingTicks = $cursor->match('/`+/m')) {
             if ($matchingTicks !== $ticks) {

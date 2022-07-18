@@ -34,7 +34,8 @@ class Lexer
      *                       'endTokenPos', 'startFilePos', 'endFilePos'. The option defaults to the
      *                       first three. For more info see getNextToken() docs.
      */
-    public function __construct(array $options = []) {
+    public function __construct(array $options = [])
+    {
         // Create Map from internal tokens to PhpParser tokens.
         $this->defineCompatibilityTokens();
         $this->tokenMap = $this->createTokenMap();
@@ -59,6 +60,146 @@ class Lexer
         $this->attributeCommentsUsed = isset($usedAttributes['comments']);
     }
 
+    private function defineCompatibilityTokens()
+    {
+        static $compatTokensDefined = false;
+        if ($compatTokensDefined) {
+            return;
+        }
+
+        $compatTokens = [
+            // PHP 7.4
+            'T_BAD_CHARACTER',
+            'T_FN',
+            'T_COALESCE_EQUAL',
+            // PHP 8.0
+            'T_NAME_QUALIFIED',
+            'T_NAME_FULLY_QUALIFIED',
+            'T_NAME_RELATIVE',
+            'T_MATCH',
+            'T_NULLSAFE_OBJECT_OPERATOR',
+            'T_ATTRIBUTE',
+            // PHP 8.1
+            'T_ENUM',
+            'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
+            'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
+            'T_READONLY',
+        ];
+
+        // PHP-Parser might be used together with another library that also emulates some or all
+        // of these tokens. Perform a sanity-check that all already defined tokens have been
+        // assigned a unique ID.
+        $usedTokenIds = [];
+        foreach ($compatTokens as $token) {
+            if (\defined($token)) {
+                $tokenId = \constant($token);
+                $clashingToken = $usedTokenIds[$tokenId] ?? null;
+                if ($clashingToken !== null) {
+                    throw new \Error(sprintf(
+                        'Token %s has same ID as token %s, ' .
+                        'you may be using a library with broken token emulation',
+                        $token, $clashingToken
+                    ));
+                }
+                $usedTokenIds[$tokenId] = $token;
+            }
+        }
+
+        // Now define any tokens that have not yet been emulated. Try to assign IDs from -1
+        // downwards, but skip any IDs that may already be in use.
+        $newTokenId = -1;
+        foreach ($compatTokens as $token) {
+            if (!\defined($token)) {
+                while (isset($usedTokenIds[$newTokenId])) {
+                    $newTokenId--;
+                }
+                \define($token, $newTokenId);
+                $newTokenId--;
+            }
+        }
+
+        $compatTokensDefined = true;
+    }
+
+    /**
+     * Creates the token map.
+     *
+     * The token map maps the PHP internal token identifiers
+     * to the identifiers used by the Parser. Additionally it
+     * maps T_OPEN_TAG_WITH_ECHO to T_ECHO and T_CLOSE_TAG to ';'.
+     *
+     * @return array The token map
+     */
+    protected function createTokenMap(): array
+    {
+        $tokenMap = [];
+
+        // 256 is the minimum possible token number, as everything below
+        // it is an ASCII value
+        for ($i = 256; $i < 1000; ++$i) {
+            if (\T_DOUBLE_COLON === $i) {
+                // T_DOUBLE_COLON is equivalent to T_PAAMAYIM_NEKUDOTAYIM
+                $tokenMap[$i] = Tokens::T_PAAMAYIM_NEKUDOTAYIM;
+            } elseif (\T_OPEN_TAG_WITH_ECHO === $i) {
+                // T_OPEN_TAG_WITH_ECHO with dropped T_OPEN_TAG results in T_ECHO
+                $tokenMap[$i] = Tokens::T_ECHO;
+            } elseif (\T_CLOSE_TAG === $i) {
+                // T_CLOSE_TAG is equivalent to ';'
+                $tokenMap[$i] = ord(';');
+            } elseif ('UNKNOWN' !== $name = token_name($i)) {
+                if ('T_HASHBANG' === $name) {
+                    // HHVM uses a special token for #! hashbang lines
+                    $tokenMap[$i] = Tokens::T_INLINE_HTML;
+                } elseif (defined($name = Tokens::class . '::' . $name)) {
+                    // Other tokens can be mapped directly
+                    $tokenMap[$i] = constant($name);
+                }
+            }
+        }
+
+        // HHVM uses a special token for numbers that overflow to double
+        if (defined('T_ONUMBER')) {
+            $tokenMap[\T_ONUMBER] = Tokens::T_DNUMBER;
+        }
+        // HHVM also has a separate token for the __COMPILER_HALT_OFFSET__ constant
+        if (defined('T_COMPILER_HALT_OFFSET')) {
+            $tokenMap[\T_COMPILER_HALT_OFFSET] = Tokens::T_STRING;
+        }
+
+        // Assign tokens for which we define compatibility constants, as token_name() does not know them.
+        $tokenMap[\T_FN] = Tokens::T_FN;
+        $tokenMap[\T_COALESCE_EQUAL] = Tokens::T_COALESCE_EQUAL;
+        $tokenMap[\T_NAME_QUALIFIED] = Tokens::T_NAME_QUALIFIED;
+        $tokenMap[\T_NAME_FULLY_QUALIFIED] = Tokens::T_NAME_FULLY_QUALIFIED;
+        $tokenMap[\T_NAME_RELATIVE] = Tokens::T_NAME_RELATIVE;
+        $tokenMap[\T_MATCH] = Tokens::T_MATCH;
+        $tokenMap[\T_NULLSAFE_OBJECT_OPERATOR] = Tokens::T_NULLSAFE_OBJECT_OPERATOR;
+        $tokenMap[\T_ATTRIBUTE] = Tokens::T_ATTRIBUTE;
+        $tokenMap[\T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG] = Tokens::T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG;
+        $tokenMap[\T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG] = Tokens::T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG;
+        $tokenMap[\T_ENUM] = Tokens::T_ENUM;
+        $tokenMap[\T_READONLY] = Tokens::T_READONLY;
+
+        return $tokenMap;
+    }
+
+    private function createIdentifierTokenMap(): array
+    {
+        // Based on semi_reserved production.
+        return array_fill_keys([
+            \T_STRING,
+            \T_STATIC, \T_ABSTRACT, \T_FINAL, \T_PRIVATE, \T_PROTECTED, \T_PUBLIC, \T_READONLY,
+            \T_INCLUDE, \T_INCLUDE_ONCE, \T_EVAL, \T_REQUIRE, \T_REQUIRE_ONCE, \T_LOGICAL_OR, \T_LOGICAL_XOR, \T_LOGICAL_AND,
+            \T_INSTANCEOF, \T_NEW, \T_CLONE, \T_EXIT, \T_IF, \T_ELSEIF, \T_ELSE, \T_ENDIF, \T_ECHO, \T_DO, \T_WHILE,
+            \T_ENDWHILE, \T_FOR, \T_ENDFOR, \T_FOREACH, \T_ENDFOREACH, \T_DECLARE, \T_ENDDECLARE, \T_AS, \T_TRY, \T_CATCH,
+            \T_FINALLY, \T_THROW, \T_USE, \T_INSTEADOF, \T_GLOBAL, \T_VAR, \T_UNSET, \T_ISSET, \T_EMPTY, \T_CONTINUE, \T_GOTO,
+            \T_FUNCTION, \T_CONST, \T_RETURN, \T_PRINT, \T_YIELD, \T_LIST, \T_SWITCH, \T_ENDSWITCH, \T_CASE, \T_DEFAULT,
+            \T_BREAK, \T_ARRAY, \T_CALLABLE, \T_EXTENDS, \T_IMPLEMENTS, \T_NAMESPACE, \T_TRAIT, \T_INTERFACE, \T_CLASS,
+            \T_CLASS_C, \T_TRAIT_C, \T_FUNC_C, \T_METHOD_C, \T_LINE, \T_FILE, \T_DIR, \T_NS_C, \T_HALT_COMPILER, \T_FN,
+            \T_MATCH,
+        ], true);
+    }
+
     /**
      * Initializes the lexer for lexing the provided source code.
      *
@@ -69,14 +210,15 @@ class Lexer
      * @param ErrorHandler|null $errorHandler Error handler to use for lexing errors. Defaults to
      *                                        ErrorHandler\Throwing
      */
-    public function startLexing(string $code, ErrorHandler $errorHandler = null) {
+    public function startLexing(string $code, ErrorHandler $errorHandler = null)
+    {
         if (null === $errorHandler) {
             $errorHandler = new ErrorHandler\Throwing();
         }
 
         $this->code = $code; // keep the code around for __halt_compiler() handling
-        $this->pos  = -1;
-        $this->line =  1;
+        $this->pos = -1;
+        $this->line = 1;
         $this->filePos = 0;
 
         // If inline HTML occurs without preceding code, treat it as if it had a leading newline.
@@ -93,42 +235,8 @@ class Lexer
         }
     }
 
-    private function handleInvalidCharacterRange($start, $end, $line, ErrorHandler $errorHandler) {
-        $tokens = [];
-        for ($i = $start; $i < $end; $i++) {
-            $chr = $this->code[$i];
-            if ($chr === "\0") {
-                // PHP cuts error message after null byte, so need special case
-                $errorMsg = 'Unexpected null byte';
-            } else {
-                $errorMsg = sprintf(
-                    'Unexpected character "%s" (ASCII %d)', $chr, ord($chr)
-                );
-            }
-
-            $tokens[] = [\T_BAD_CHARACTER, $chr, $line];
-            $errorHandler->handleError(new Error($errorMsg, [
-                'startLine' => $line,
-                'endLine' => $line,
-                'startFilePos' => $i,
-                'endFilePos' => $i,
-            ]));
-        }
-        return $tokens;
-    }
-
-    /**
-     * Check whether comment token is unterminated.
-     *
-     * @return bool
-     */
-    private function isUnterminatedComment($token) : bool {
-        return ($token[0] === \T_COMMENT || $token[0] === \T_DOC_COMMENT)
-            && substr($token[1], 0, 2) === '/*'
-            && substr($token[1], -2) !== '*/';
-    }
-
-    protected function postprocessTokens(ErrorHandler $errorHandler) {
+    protected function postprocessTokens(ErrorHandler $errorHandler)
+    {
         // PHP's error handling for token_get_all() is rather bad, so if we want detailed
         // error information we need to compute it ourselves. Invalid character errors are
         // detected by finding "gaps" in the token array. Unterminated comments are detected
@@ -153,7 +261,7 @@ class Lexer
             }
 
             if ($token[0] === \T_COMMENT && substr($token[1], 0, 2) !== '/*'
-                    && preg_match('/(\r\n|\n|\r)$/D', $token[1], $matches)) {
+                && preg_match('/(\r\n|\n|\r)$/D', $token[1], $matches)) {
                 $trailingNewline = $matches[0];
                 $token[1] = substr($token[1], 0, -strlen($trailingNewline));
                 $this->tokens[$i] = $token;
@@ -173,7 +281,7 @@ class Lexer
             // Emulate PHP 8 T_NAME_* tokens, by combining sequences of T_NS_SEPARATOR and T_STRING
             // into a single token.
             if (\is_array($token)
-                    && ($token[0] === \T_NS_SEPARATOR || isset($this->identifierTokens[$token[0]]))) {
+                && ($token[0] === \T_NS_SEPARATOR || isset($this->identifierTokens[$token[0]]))) {
                 $lastWasSeparator = $token[0] === \T_NS_SEPARATOR;
                 $text = $token[1];
                 for ($j = $i + 1; isset($this->tokens[$j]); $j++) {
@@ -233,7 +341,7 @@ class Lexer
                 $nextFilePos = strpos($this->code, $tokenValue, $filePos);
                 $badCharTokens = $this->handleInvalidCharacterRange(
                     $filePos, $nextFilePos, $line, $errorHandler);
-                $filePos = (int) $nextFilePos;
+                $filePos = (int)$nextFilePos;
 
                 array_splice($this->tokens, $i, 0, $badCharTokens);
                 $numTokens += \count($badCharTokens);
@@ -281,6 +389,43 @@ class Lexer
         }
     }
 
+    private function handleInvalidCharacterRange($start, $end, $line, ErrorHandler $errorHandler)
+    {
+        $tokens = [];
+        for ($i = $start; $i < $end; $i++) {
+            $chr = $this->code[$i];
+            if ($chr === "\0") {
+                // PHP cuts error message after null byte, so need special case
+                $errorMsg = 'Unexpected null byte';
+            } else {
+                $errorMsg = sprintf(
+                    'Unexpected character "%s" (ASCII %d)', $chr, ord($chr)
+                );
+            }
+
+            $tokens[] = [\T_BAD_CHARACTER, $chr, $line];
+            $errorHandler->handleError(new Error($errorMsg, [
+                'startLine' => $line,
+                'endLine' => $line,
+                'startFilePos' => $i,
+                'endFilePos' => $i,
+            ]));
+        }
+        return $tokens;
+    }
+
+    /**
+     * Check whether comment token is unterminated.
+     *
+     * @return bool
+     */
+    private function isUnterminatedComment($token): bool
+    {
+        return ($token[0] === \T_COMMENT || $token[0] === \T_DOC_COMMENT)
+            && substr($token[1], 0, 2) === '/*'
+            && substr($token[1], -2) !== '*/';
+    }
+
     /**
      * Fetches the next token.
      *
@@ -297,15 +442,16 @@ class Lexer
      *  * 'startFilePos'  => Offset into the code string of the first character that is part of the node.
      *  * 'endFilePos'    => Offset into the code string of the last character that is part of the node.
      *
-     * @param mixed $value           Variable to store token content in
+     * @param mixed $value Variable to store token content in
      * @param mixed $startAttributes Variable to store start attributes in
-     * @param mixed $endAttributes   Variable to store end attributes in
+     * @param mixed $endAttributes Variable to store end attributes in
      *
      * @return int Token id
      */
-    public function getNextToken(&$value = null, &$startAttributes = null, &$endAttributes = null) : int {
+    public function getNextToken(&$value = null, &$startAttributes = null, &$endAttributes = null): int
+    {
         $startAttributes = [];
-        $endAttributes   = [];
+        $endAttributes = [];
 
         while (1) {
             if (isset($this->tokens[++$this->pos])) {
@@ -394,7 +540,8 @@ class Lexer
      *
      * @return array Array of tokens in token_get_all() format
      */
-    public function getTokens() : array {
+    public function getTokens(): array
+    {
         return $this->tokens;
     }
 
@@ -403,7 +550,8 @@ class Lexer
      *
      * @return string Remaining text
      */
-    public function handleHaltCompiler() : string {
+    public function handleHaltCompiler(): string
+    {
         // text after T_HALT_COMPILER, still including ();
         $textAfter = substr($this->code, $this->filePos);
 
@@ -419,142 +567,5 @@ class Lexer
 
         // return with (); removed
         return substr($textAfter, strlen($matches[0]));
-    }
-
-    private function defineCompatibilityTokens() {
-        static $compatTokensDefined = false;
-        if ($compatTokensDefined) {
-            return;
-        }
-
-        $compatTokens = [
-            // PHP 7.4
-            'T_BAD_CHARACTER',
-            'T_FN',
-            'T_COALESCE_EQUAL',
-            // PHP 8.0
-            'T_NAME_QUALIFIED',
-            'T_NAME_FULLY_QUALIFIED',
-            'T_NAME_RELATIVE',
-            'T_MATCH',
-            'T_NULLSAFE_OBJECT_OPERATOR',
-            'T_ATTRIBUTE',
-            // PHP 8.1
-            'T_ENUM',
-            'T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG',
-            'T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG',
-            'T_READONLY',
-        ];
-
-        // PHP-Parser might be used together with another library that also emulates some or all
-        // of these tokens. Perform a sanity-check that all already defined tokens have been
-        // assigned a unique ID.
-        $usedTokenIds = [];
-        foreach ($compatTokens as $token) {
-            if (\defined($token)) {
-                $tokenId = \constant($token);
-                $clashingToken = $usedTokenIds[$tokenId] ?? null;
-                if ($clashingToken !== null) {
-                    throw new \Error(sprintf(
-                        'Token %s has same ID as token %s, ' .
-                        'you may be using a library with broken token emulation',
-                        $token, $clashingToken
-                    ));
-                }
-                $usedTokenIds[$tokenId] = $token;
-            }
-        }
-
-        // Now define any tokens that have not yet been emulated. Try to assign IDs from -1
-        // downwards, but skip any IDs that may already be in use.
-        $newTokenId = -1;
-        foreach ($compatTokens as $token) {
-            if (!\defined($token)) {
-                while (isset($usedTokenIds[$newTokenId])) {
-                    $newTokenId--;
-                }
-                \define($token, $newTokenId);
-                $newTokenId--;
-            }
-        }
-
-        $compatTokensDefined = true;
-    }
-
-    /**
-     * Creates the token map.
-     *
-     * The token map maps the PHP internal token identifiers
-     * to the identifiers used by the Parser. Additionally it
-     * maps T_OPEN_TAG_WITH_ECHO to T_ECHO and T_CLOSE_TAG to ';'.
-     *
-     * @return array The token map
-     */
-    protected function createTokenMap() : array {
-        $tokenMap = [];
-
-        // 256 is the minimum possible token number, as everything below
-        // it is an ASCII value
-        for ($i = 256; $i < 1000; ++$i) {
-            if (\T_DOUBLE_COLON === $i) {
-                // T_DOUBLE_COLON is equivalent to T_PAAMAYIM_NEKUDOTAYIM
-                $tokenMap[$i] = Tokens::T_PAAMAYIM_NEKUDOTAYIM;
-            } elseif(\T_OPEN_TAG_WITH_ECHO === $i) {
-                // T_OPEN_TAG_WITH_ECHO with dropped T_OPEN_TAG results in T_ECHO
-                $tokenMap[$i] = Tokens::T_ECHO;
-            } elseif(\T_CLOSE_TAG === $i) {
-                // T_CLOSE_TAG is equivalent to ';'
-                $tokenMap[$i] = ord(';');
-            } elseif ('UNKNOWN' !== $name = token_name($i)) {
-                if ('T_HASHBANG' === $name) {
-                    // HHVM uses a special token for #! hashbang lines
-                    $tokenMap[$i] = Tokens::T_INLINE_HTML;
-                } elseif (defined($name = Tokens::class . '::' . $name)) {
-                    // Other tokens can be mapped directly
-                    $tokenMap[$i] = constant($name);
-                }
-            }
-        }
-
-        // HHVM uses a special token for numbers that overflow to double
-        if (defined('T_ONUMBER')) {
-            $tokenMap[\T_ONUMBER] = Tokens::T_DNUMBER;
-        }
-        // HHVM also has a separate token for the __COMPILER_HALT_OFFSET__ constant
-        if (defined('T_COMPILER_HALT_OFFSET')) {
-            $tokenMap[\T_COMPILER_HALT_OFFSET] = Tokens::T_STRING;
-        }
-
-        // Assign tokens for which we define compatibility constants, as token_name() does not know them.
-        $tokenMap[\T_FN] = Tokens::T_FN;
-        $tokenMap[\T_COALESCE_EQUAL] = Tokens::T_COALESCE_EQUAL;
-        $tokenMap[\T_NAME_QUALIFIED] = Tokens::T_NAME_QUALIFIED;
-        $tokenMap[\T_NAME_FULLY_QUALIFIED] = Tokens::T_NAME_FULLY_QUALIFIED;
-        $tokenMap[\T_NAME_RELATIVE] = Tokens::T_NAME_RELATIVE;
-        $tokenMap[\T_MATCH] = Tokens::T_MATCH;
-        $tokenMap[\T_NULLSAFE_OBJECT_OPERATOR] = Tokens::T_NULLSAFE_OBJECT_OPERATOR;
-        $tokenMap[\T_ATTRIBUTE] = Tokens::T_ATTRIBUTE;
-        $tokenMap[\T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG] = Tokens::T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG;
-        $tokenMap[\T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG] = Tokens::T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG;
-        $tokenMap[\T_ENUM] = Tokens::T_ENUM;
-        $tokenMap[\T_READONLY] = Tokens::T_READONLY;
-
-        return $tokenMap;
-    }
-
-    private function createIdentifierTokenMap(): array {
-        // Based on semi_reserved production.
-        return array_fill_keys([
-            \T_STRING,
-            \T_STATIC, \T_ABSTRACT, \T_FINAL, \T_PRIVATE, \T_PROTECTED, \T_PUBLIC, \T_READONLY,
-            \T_INCLUDE, \T_INCLUDE_ONCE, \T_EVAL, \T_REQUIRE, \T_REQUIRE_ONCE, \T_LOGICAL_OR, \T_LOGICAL_XOR, \T_LOGICAL_AND,
-            \T_INSTANCEOF, \T_NEW, \T_CLONE, \T_EXIT, \T_IF, \T_ELSEIF, \T_ELSE, \T_ENDIF, \T_ECHO, \T_DO, \T_WHILE,
-            \T_ENDWHILE, \T_FOR, \T_ENDFOR, \T_FOREACH, \T_ENDFOREACH, \T_DECLARE, \T_ENDDECLARE, \T_AS, \T_TRY, \T_CATCH,
-            \T_FINALLY, \T_THROW, \T_USE, \T_INSTEADOF, \T_GLOBAL, \T_VAR, \T_UNSET, \T_ISSET, \T_EMPTY, \T_CONTINUE, \T_GOTO,
-            \T_FUNCTION, \T_CONST, \T_RETURN, \T_PRINT, \T_YIELD, \T_LIST, \T_SWITCH, \T_ENDSWITCH, \T_CASE, \T_DEFAULT,
-            \T_BREAK, \T_ARRAY, \T_CALLABLE, \T_EXTENDS, \T_IMPLEMENTS, \T_NAMESPACE, \T_TRAIT, \T_INTERFACE, \T_CLASS,
-            \T_CLASS_C, \T_TRAIT_C, \T_FUNC_C, \T_METHOD_C, \T_LINE, \T_FILE, \T_DIR, \T_NS_C, \T_HALT_COMPILER, \T_FN,
-            \T_MATCH,
-        ], true);
     }
 }

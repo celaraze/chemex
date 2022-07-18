@@ -15,17 +15,20 @@ class Match_ extends Node\Expr
     /**
      * @param MatchArm[] $arms
      */
-    public function __construct(Node\Expr $cond, array $arms = [], array $attributes = []) {
+    public function __construct(Node\Expr $cond, array $arms = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->cond = $cond;
         $this->arms = $arms;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['cond', 'arms'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_Match';
     }
 }

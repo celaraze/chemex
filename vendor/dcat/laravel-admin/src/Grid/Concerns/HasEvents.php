@@ -15,8 +15,8 @@ trait HasEvents
     /**
      * 监听事件.
      *
-     * @param  string  $class
-     * @param  \Closure  $callback
+     * @param string $class
+     * @param \Closure $callback
      */
     public function listen(string $class, \Closure $callback)
     {
@@ -30,23 +30,9 @@ trait HasEvents
     }
 
     /**
-     * 触发事件.
-     *
-     * @param  \Dcat\Admin\Grid\Events\Event  $event
-     */
-    public function fire(Events\Event $event)
-    {
-        $this->dispatched[get_class($event)] = $event;
-
-        $event->setGrid($this);
-
-        Event::dispatch($event);
-    }
-
-    /**
      * 只触发一次.
      *
-     * @param  \Dcat\Admin\Grid\Events\Event  $event
+     * @param \Dcat\Admin\Grid\Events\Event $event
      */
     public function fireOnce(Events\Event $event)
     {
@@ -55,5 +41,19 @@ trait HasEvents
         }
 
         return $this->fire($event);
+    }
+
+    /**
+     * 触发事件.
+     *
+     * @param \Dcat\Admin\Grid\Events\Event $event
+     */
+    public function fire(Events\Event $event)
+    {
+        $this->dispatched[get_class($event)] = $event;
+
+        $event->setGrid($this);
+
+        Event::dispatch($event);
     }
 }

@@ -13,6 +13,20 @@ class Isbn
     public const PATTERN = '/^\d{9}[0-9X]$/';
 
     /**
+     * Checks whether the provided number is a valid ISBN-10 number
+     *
+     * @param string $isbn ISBN to check
+     */
+    public static function isValid(string $isbn): bool
+    {
+        if (!preg_match(self::PATTERN, $isbn)) {
+            return false;
+        }
+
+        return self::checksum(substr($isbn, 0, -1)) === substr($isbn, -1);
+    }
+
+    /**
      * ISBN-10 check digit
      *
      * @see http://en.wikipedia.org/wiki/International_Standard_Book_Number#ISBN-10_check_digits
@@ -41,20 +55,6 @@ class Isbn
         $result = (11 - array_sum($digits) % 11) % 11;
 
         // 10 is replaced by X
-        return ($result < 10) ? (string) $result : 'X';
-    }
-
-    /**
-     * Checks whether the provided number is a valid ISBN-10 number
-     *
-     * @param string $isbn ISBN to check
-     */
-    public static function isValid(string $isbn): bool
-    {
-        if (!preg_match(self::PATTERN, $isbn)) {
-            return false;
-        }
-
-        return self::checksum(substr($isbn, 0, -1)) === substr($isbn, -1);
+        return ($result < 10) ? (string)$result : 'X';
     }
 }

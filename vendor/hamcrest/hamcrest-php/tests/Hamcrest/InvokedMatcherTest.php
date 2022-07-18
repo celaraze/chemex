@@ -1,4 +1,5 @@
 <?php
+
 namespace Hamcrest;
 
 use PHPUnit\Framework\TestCase;

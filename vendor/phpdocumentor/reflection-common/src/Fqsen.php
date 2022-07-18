@@ -47,7 +47,7 @@ final class Fqsen
         $matches = [];
 
         $result = preg_match(
-            //phpcs:ignore Generic.Files.LineLength.TooLong
+        //phpcs:ignore Generic.Files.LineLength.TooLong
             '/^\\\\([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\\\]*)?(?:[:]{2}\\$?([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*))?(?:\\(\\))?$/',
             $fqsen,
             $matches
@@ -74,7 +74,7 @@ final class Fqsen
     /**
      * converts this class to string.
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->fqsen;
     }
@@ -82,7 +82,7 @@ final class Fqsen
     /**
      * Returns the name of the element without path.
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }

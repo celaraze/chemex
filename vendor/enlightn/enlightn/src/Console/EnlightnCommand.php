@@ -11,6 +11,12 @@ use Illuminate\Console\Command;
 class EnlightnCommand extends Command
 {
     /**
+     * The final result of the analysis.
+     *
+     * @var array
+     */
+    public $result = [];
+    /**
      * The name and signature of the console command.
      *
      * @var string
@@ -23,21 +29,12 @@ class EnlightnCommand extends Command
                             {--review : Enable this for a review of the diff by the Enlightn Github Bot}
                             {--show-exceptions : Display the stack trace of exceptions if any}
                             {--issue= : The issue number of the pull request for the Enlightn Github Bot}';
-
     /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Enlightn your application!';
-
-    /**
-     * The final result of the analysis.
-     *
-     * @var array
-     */
-    public $result = [];
-
     /**
      * The number of analyzers to run.
      *
@@ -120,7 +117,7 @@ class EnlightnCommand extends Command
 
             $url = $api->sendReport($reportBuilder->buildReport($this->analyzerInfos, $this->result, $metadata));
 
-            if (! is_null($url)) {
+            if (!is_null($url)) {
                 $this->getOutput()->newLine();
                 $this->comment("Your report can be viewed at <href={$url}>{$url}</>");
             }
@@ -130,28 +127,6 @@ class EnlightnCommand extends Command
         return collect($this->result)->sum(function ($category) {
             return $category['reported'];
         }) == 0 ? 0 : 1;
-    }
-
-    /**
-     * @param array $info
-     *
-     * @return void
-     */
-    public function printAnalyzerOutput(array $info)
-    {
-        $this->analyzerInfos[] = $info;
-
-        $this->formatter->parseAnalyzerResult(
-            $this,
-            $info,
-            $this->countAnalyzers,
-            $this->totalAnalyzers,
-            empty($this->analyzerClasses)
-        );
-
-        $this->updateResult($info);
-
-        $this->countAnalyzers++;
     }
 
     /**
@@ -174,6 +149,28 @@ class EnlightnCommand extends Command
         }
 
         return $this;
+    }
+
+    /**
+     * @param array $info
+     *
+     * @return void
+     */
+    public function printAnalyzerOutput(array $info)
+    {
+        $this->analyzerInfos[] = $info;
+
+        $this->formatter->parseAnalyzerResult(
+            $this,
+            $info,
+            $this->countAnalyzers,
+            $this->totalAnalyzers,
+            empty($this->analyzerClasses)
+        );
+
+        $this->updateResult($info);
+
+        $this->countAnalyzers++;
     }
 
     /**

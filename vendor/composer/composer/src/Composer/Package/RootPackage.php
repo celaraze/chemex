@@ -37,14 +37,6 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setMinimumStability(string $minimumStability): void
-    {
-        $this->minimumStability = $minimumStability;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getMinimumStability(): string
     {
         return $this->minimumStability;
@@ -53,9 +45,9 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setStabilityFlags(array $stabilityFlags): void
+    public function setMinimumStability(string $minimumStability): void
     {
-        $this->stabilityFlags = $stabilityFlags;
+        $this->minimumStability = $minimumStability;
     }
 
     /**
@@ -69,9 +61,9 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setPreferStable(bool $preferStable): void
+    public function setStabilityFlags(array $stabilityFlags): void
     {
-        $this->preferStable = $preferStable;
+        $this->stabilityFlags = $stabilityFlags;
     }
 
     /**
@@ -85,9 +77,9 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setConfig(array $config): void
+    public function setPreferStable(bool $preferStable): void
     {
-        $this->config = $config;
+        $this->preferStable = $preferStable;
     }
 
     /**
@@ -101,9 +93,9 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setReferences(array $references): void
+    public function setConfig(array $config): void
     {
-        $this->references = $references;
+        $this->config = $config;
     }
 
     /**
@@ -117,9 +109,9 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setAliases(array $aliases): void
+    public function setReferences(array $references): void
     {
-        $this->aliases = $aliases;
+        $this->references = $references;
     }
 
     /**
@@ -128,5 +120,13 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     public function getAliases(): array
     {
         return $this->aliases;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAliases(array $aliases): void
+    {
+        $this->aliases = $aliases;
     }
 }

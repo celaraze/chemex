@@ -11,21 +11,14 @@ use Faker\Calculator\Isbn;
  */
 class Barcode extends Base
 {
-    private function ean($length = 13)
-    {
-        $code = static::numerify(str_repeat('#', $length - 1));
-
-        return $code . Ean::checksum($code);
-    }
-
     /**
      * Utility function for computing EAN checksums
-     *
-     * @deprecated Use \Faker\Calculator\Ean::checksum() instead
      *
      * @param string $input
      *
      * @return int
+     * @deprecated Use \Faker\Calculator\Ean::checksum() instead
+     *
      */
     protected static function eanChecksum($input)
     {
@@ -59,6 +52,13 @@ class Barcode extends Base
     public function ean13()
     {
         return $this->ean(13);
+    }
+
+    private function ean($length = 13)
+    {
+        $code = static::numerify(str_repeat('#', $length - 1));
+
+        return $code . Ean::checksum($code);
     }
 
     /**

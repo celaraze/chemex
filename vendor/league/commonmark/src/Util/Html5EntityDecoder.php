@@ -42,6 +42,14 @@ final class Html5EntityDecoder
     }
 
     /**
+     * @psalm-pure
+     */
+    private static function fromHex(string $hexChars): string
+    {
+        return self::fromDecimal(\hexdec($hexChars));
+    }
+
+    /**
      * @param mixed $number
      *
      * @psalm-pure
@@ -63,13 +71,5 @@ final class Html5EntityDecoder
         }
 
         return $converted;
-    }
-
-    /**
-     * @psalm-pure
-     */
-    private static function fromHex(string $hexChars): string
-    {
-        return self::fromDecimal(\hexdec($hexChars));
     }
 }

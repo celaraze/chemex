@@ -16,12 +16,12 @@ if (!function_exists('trigger_deprecation')) {
      * @param string $package The name of the Composer package that is triggering the deprecation
      * @param string $version The version of the package that introduced the deprecation
      * @param string $message The message of the deprecation
-     * @param mixed  ...$args Values to insert in the message using printf() formatting
+     * @param mixed ...$args Values to insert in the message using printf() formatting
      *
      * @author Nicolas Grekas <p@tchwork.com>
      */
     function trigger_deprecation(string $package, string $version, string $message, mixed ...$args): void
     {
-        @trigger_error(($package || $version ? "Since $package $version: " : '').($args ? vsprintf($message, $args) : $message), \E_USER_DEPRECATED);
+        @trigger_error(($package || $version ? "Since $package $version: " : '') . ($args ? vsprintf($message, $args) : $message), \E_USER_DEPRECATED);
     }
 }

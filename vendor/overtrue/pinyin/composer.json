@@ -19,7 +19,9 @@
         "psr-4": {
             "Overtrue\\Pinyin\\": "src/"
         },
-        "files": ["src/const.php"]
+        "files": [
+            "src/const.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -27,7 +29,7 @@
         }
     },
     "require": {
-        "php":">=7.1"
+        "php": ">=7.1"
     },
     "require-dev": {
         "phpunit/phpunit": "~8.0",

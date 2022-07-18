@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
-use function constant;
-use function phpversion;
 use DateTimeImmutable;
 use DOMElement;
 use SebastianBergmann\Environment\Runtime;
+use function constant;
+use function phpversion;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -56,17 +57,6 @@ final class BuildInformation
         }
     }
 
-    public function setBuildTime(DateTimeImmutable $date): void
-    {
-        $this->contextNode->setAttribute('time', $date->format('D M j G:i:s T Y'));
-    }
-
-    public function setGeneratorVersions(string $phpUnitVersion, string $coverageVersion): void
-    {
-        $this->contextNode->setAttribute('phpunit', $phpUnitVersion);
-        $this->contextNode->setAttribute('coverage', $coverageVersion);
-    }
-
     private function nodeByName(string $name): DOMElement
     {
         $node = $this->contextNode->getElementsByTagNameNS(
@@ -84,5 +74,16 @@ final class BuildInformation
         }
 
         return $node;
+    }
+
+    public function setBuildTime(DateTimeImmutable $date): void
+    {
+        $this->contextNode->setAttribute('time', $date->format('D M j G:i:s T Y'));
+    }
+
+    public function setGeneratorVersions(string $phpUnitVersion, string $coverageVersion): void
+    {
+        $this->contextNode->setAttribute('phpunit', $phpUnitVersion);
+        $this->contextNode->setAttribute('coverage', $coverageVersion);
     }
 }

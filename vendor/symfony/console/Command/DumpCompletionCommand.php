@@ -82,8 +82,12 @@ Add this to the end of your shell configuration file (e.g. <info>"{$rcFile}"</>)
 EOH
             )
             ->addArgument('shell', InputArgument::OPTIONAL, 'The shell type (e.g. "bash"), the value of the "$SHELL" env var will be used if this is not given', null, $this->getSupportedShells(...))
-            ->addOption('debug', null, InputOption::VALUE_NONE, 'Tail the completion debug log')
-        ;
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Tail the completion debug log');
+    }
+
+    private static function guessShell(): string
+    {
+        return basename($_SERVER['SHELL'] ?? '');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -97,7 +101,7 @@ EOH
         }
 
         $shell = $input->getArgument('shell') ?? self::guessShell();
-        $completionFile = __DIR__.'/../Resources/completion.'.$shell;
+        $completionFile = __DIR__ . '/../Resources/completion.' . $shell;
         if (!file_exists($completionFile)) {
             $supportedShells = $this->getSupportedShells();
 
@@ -112,14 +116,9 @@ EOH
         return self::SUCCESS;
     }
 
-    private static function guessShell(): string
-    {
-        return basename($_SERVER['SHELL'] ?? '');
-    }
-
     private function tailDebugLog(string $commandName, OutputInterface $output): void
     {
-        $debugFile = sys_get_temp_dir().'/sf_'.$commandName.'.log';
+        $debugFile = sys_get_temp_dir() . '/sf_' . $commandName . '.log';
         if (!file_exists($debugFile)) {
             touch($debugFile);
         }
@@ -136,6 +135,6 @@ EOH
     {
         return $this->supportedShells ??= array_map(function ($f) {
             return pathinfo($f, \PATHINFO_EXTENSION);
-        }, glob(__DIR__.'/../Resources/completion.*'));
+        }, glob(__DIR__ . '/../Resources/completion.*'));
     }
 }

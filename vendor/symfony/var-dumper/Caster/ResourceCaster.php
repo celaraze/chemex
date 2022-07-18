@@ -30,7 +30,7 @@ class ResourceCaster
     public static function castDba($dba, array $a, Stub $stub, bool $isNested)
     {
         $list = dba_list();
-        $a['file'] = $list[(int) $dba];
+        $a['file'] = $list[(int)$dba];
 
         return $a;
     }
@@ -57,7 +57,7 @@ class ResourceCaster
 
     public static function castGd($gd, array $a, Stub $stub, bool $isNested)
     {
-        $a['size'] = imagesx($gd).'x'.imagesy($gd);
+        $a['size'] = imagesx($gd) . 'x' . imagesy($gd);
         $a['trueColor'] = imageistruecolor($gd);
 
         return $a;

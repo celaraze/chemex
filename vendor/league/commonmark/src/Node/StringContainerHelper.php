@@ -18,7 +18,7 @@ final class StringContainerHelper
     /**
      * Extract text literals from all descendant nodes
      *
-     * @param Node          $node         Parent node
+     * @param Node $node Parent node
      * @param array<string> $excludeTypes Optional list of node class types to exclude
      *
      * @return string Concatenated literals
@@ -28,7 +28,7 @@ final class StringContainerHelper
         $text = '';
 
         foreach ($node->iterator() as $child) {
-            if ($child instanceof StringContainerInterface && ! self::isOneOf($child, $excludeTypes)) {
+            if ($child instanceof StringContainerInterface && !self::isOneOf($child, $excludeTypes)) {
                 $text .= $child->getLiteral();
             }
         }

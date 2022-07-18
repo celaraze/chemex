@@ -7,8 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
+use Closure;
 use function array_keys;
 use function array_reverse;
 use function array_shift;
@@ -27,7 +29,6 @@ use function strpos;
 use function strtr;
 use function substr;
 use function var_export;
-use Closure;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -63,8 +64,8 @@ final class GlobalState
     public static function processIncludedFilesAsString(array $files): string
     {
         $excludeList = new ExcludeList;
-        $prefix      = false;
-        $result      = '';
+        $prefix = false;
+        $result = '';
 
         if (defined('__PHPUNIT_PHAR__')) {
             $prefix = 'phar://' . __PHPUNIT_PHAR__ . '/';
@@ -109,8 +110,37 @@ final class GlobalState
             $result .= sprintf(
                 '@ini_set(%s, %s);' . "\n",
                 self::exportVariable($key),
-                self::exportVariable((string) $value)
+                self::exportVariable((string)$value)
             );
+        }
+
+        return $result;
+    }
+
+    private static function exportVariable($variable): string
+    {
+        if (is_scalar($variable) || $variable === null ||
+            (is_array($variable) && self::arrayOnlyContainsScalars($variable))) {
+            return var_export($variable, true);
+        }
+
+        return 'unserialize(' . var_export(serialize($variable), true) . ')';
+    }
+
+    private static function arrayOnlyContainsScalars(array $array): bool
+    {
+        $result = true;
+
+        foreach ($array as $element) {
+            if (is_array($element)) {
+                $result = self::arrayOnlyContainsScalars($element);
+            } elseif (!is_scalar($element) && $element !== null) {
+                $result = false;
+            }
+
+            if (!$result) {
+                break;
+            }
         }
 
         return $result;
@@ -119,7 +149,7 @@ final class GlobalState
     public static function getConstantsAsString(): string
     {
         $constants = get_defined_constants(true);
-        $result    = '';
+        $result = '';
 
         if (isset($constants['user'])) {
             foreach ($constants['user'] as $name => $value) {
@@ -156,7 +186,7 @@ final class GlobalState
             }
         }
 
-        $excludeList   = self::SUPER_GLOBAL_ARRAYS;
+        $excludeList = self::SUPER_GLOBAL_ARRAYS;
         $excludeList[] = 'GLOBALS';
 
         foreach (array_keys($GLOBALS) as $key) {
@@ -166,35 +196,6 @@ final class GlobalState
                     $key,
                     self::exportVariable($GLOBALS[$key])
                 );
-            }
-        }
-
-        return $result;
-    }
-
-    private static function exportVariable($variable): string
-    {
-        if (is_scalar($variable) || $variable === null ||
-            (is_array($variable) && self::arrayOnlyContainsScalars($variable))) {
-            return var_export($variable, true);
-        }
-
-        return 'unserialize(' . var_export(serialize($variable), true) . ')';
-    }
-
-    private static function arrayOnlyContainsScalars(array $array): bool
-    {
-        $result = true;
-
-        foreach ($array as $element) {
-            if (is_array($element)) {
-                $result = self::arrayOnlyContainsScalars($element);
-            } elseif (!is_scalar($element) && $element !== null) {
-                $result = false;
-            }
-
-            if (!$result) {
-                break;
             }
         }
 

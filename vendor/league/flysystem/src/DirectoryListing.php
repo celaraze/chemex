@@ -63,6 +63,16 @@ class DirectoryListing implements IteratorAggregate
     }
 
     /**
+     * @return T[]
+     */
+    public function toArray(): array
+    {
+        return $this->listing instanceof Traversable
+            ? iterator_to_array($this->listing, false)
+            : (array)$this->listing;
+    }
+
+    /**
      * @return Traversable<T>
      */
     public function getIterator(): Traversable
@@ -70,15 +80,5 @@ class DirectoryListing implements IteratorAggregate
         return $this->listing instanceof Traversable
             ? $this->listing
             : new ArrayIterator($this->listing);
-    }
-
-    /**
-     * @return T[]
-     */
-    public function toArray(): array
-    {
-        return $this->listing instanceof Traversable
-            ? iterator_to_array($this->listing, false)
-            : (array) $this->listing;
     }
 }

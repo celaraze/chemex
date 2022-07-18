@@ -27,7 +27,7 @@ final class ModelRuleHelper
         }
 
         // We expect it to be generic builder or relation class with model type inside
-        if ((! $type instanceof GenericObjectType) && (new ObjectType(Model::class))->isSuperTypeOf($type)->no()) {
+        if ((!$type instanceof GenericObjectType) && (new ObjectType(Model::class))->isSuperTypeOf($type)->no()) {
             return null;
         }
 
@@ -39,7 +39,7 @@ final class ModelRuleHelper
 
         $modelType = TypeCombinator::removeNull($modelType);
 
-        if (! $modelType instanceof ObjectType) {
+        if (!$modelType instanceof ObjectType) {
             return null;
         }
 

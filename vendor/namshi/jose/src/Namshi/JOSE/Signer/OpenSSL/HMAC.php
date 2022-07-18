@@ -10,14 +10,6 @@ use Namshi\JOSE\Signer\SignerInterface;
 abstract class HMAC implements SignerInterface
 {
     /**
-     * {@inheritdoc}
-     */
-    public function sign($input, $key)
-    {
-        return hash_hmac($this->getHashingAlgorithm(), $input, (string) $key, true);
-    }
-
-    /**
      * To prevent timing attacks we are using PHP 5.6 native function hash_equals,
      * in case of PHP < 5.6 a timing safe equals comparison function.
      *
@@ -35,16 +27,11 @@ abstract class HMAC implements SignerInterface
     }
 
     /**
-     * A timing safe equals comparison.
-     *
-     * @param string $signature   the internal signature to be checked
-     * @param string $signedInput The signed input submitted value
-     *
-     * @return bool true if the two strings are identical.
+     * {@inheritdoc}
      */
-    public function timingSafeEquals($known, $input)
+    public function sign($input, $key)
     {
-        return hash_equals($known, $input);
+        return hash_hmac($this->getHashingAlgorithm(), $input, (string)$key, true);
     }
 
     /**
@@ -53,4 +40,17 @@ abstract class HMAC implements SignerInterface
      * @return string
      */
     abstract public function getHashingAlgorithm();
+
+    /**
+     * A timing safe equals comparison.
+     *
+     * @param string $signature the internal signature to be checked
+     * @param string $signedInput The signed input submitted value
+     *
+     * @return bool true if the two strings are identical.
+     */
+    public function timingSafeEquals($known, $input)
+    {
+        return hash_equals($known, $input);
+    }
 }

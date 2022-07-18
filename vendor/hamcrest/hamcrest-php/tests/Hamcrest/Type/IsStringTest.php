@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Type;
 
 class IsStringTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Type\IsString::stringValue();
-    }
 
     public function testEvaluatesToTrueIfArgumentMatchesType()
     {
@@ -31,5 +27,10 @@ class IsStringTest extends \Hamcrest\AbstractMatcherTest
     {
         $this->assertMismatchDescription('was null', stringValue(), null);
         $this->assertMismatchDescription('was a double <5.2F>', stringValue(), 5.2);
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Type\IsString::stringValue();
     }
 }

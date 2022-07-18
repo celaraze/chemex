@@ -22,6 +22,15 @@ class GlobalFunctionFile extends FactoryFile
         $this->functions .= "\n" . $this->generateFactoryCall($call);
     }
 
+    public function generateFactoryCall(FactoryCall $call)
+    {
+        $code = "if (!function_exists('{$call->getName()}')) {\n";
+        $code .= parent::generateFactoryCall($call);
+        $code .= "}\n";
+
+        return $code;
+    }
+
     public function build()
     {
         $this->addFileHeader();
@@ -29,14 +38,5 @@ class GlobalFunctionFile extends FactoryFile
         $this->addPart('functions_header');
         $this->addCode($this->functions);
         $this->addPart('functions_footer');
-    }
-
-    public function generateFactoryCall(FactoryCall $call)
-    {
-        $code = "if (!function_exists('{$call->getName()}')) {\n";
-        $code.= parent::generateFactoryCall($call);
-        $code.= "}\n";
-
-        return $code;
     }
 }

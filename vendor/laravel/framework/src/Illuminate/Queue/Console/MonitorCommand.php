@@ -13,15 +13,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class MonitorCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:monitor
-                       {queues : The names of the queues to monitor}
-                       {--max=1000 : The maximum number of jobs that can be on the queue before an event is dispatched}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -31,7 +22,14 @@ class MonitorCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:monitor';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:monitor
+                       {queues : The names of the queues to monitor}
+                       {--max=1000 : The maximum number of jobs that can be on the queue before an event is dispatched}';
     /**
      * The console command description.
      *
@@ -63,8 +61,8 @@ class MonitorCommand extends Command
     /**
      * Create a new queue listen command.
      *
-     * @param  \Illuminate\Contracts\Queue\Factory  $manager
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $events
+     * @param \Illuminate\Contracts\Queue\Factory $manager
+     * @param \Illuminate\Contracts\Events\Dispatcher $events
      * @return void
      */
     public function __construct(Factory $manager, Dispatcher $events)
@@ -92,7 +90,7 @@ class MonitorCommand extends Command
     /**
      * Parse the queues into an array of the connections and queues.
      *
-     * @param  string  $queues
+     * @param string $queues
      * @return \Illuminate\Support\Collection
      */
     protected function parseQueues($queues)
@@ -100,7 +98,7 @@ class MonitorCommand extends Command
         return collect(explode(',', $queues))->map(function ($queue) {
             [$connection, $queue] = array_pad(explode(':', $queue, 2), 2, null);
 
-            if (! isset($queue)) {
+            if (!isset($queue)) {
                 $queue = $connection;
                 $connection = $this->laravel['config']['queue.default'];
             }
@@ -117,7 +115,7 @@ class MonitorCommand extends Command
     /**
      * Display the failed jobs in the console.
      *
-     * @param  \Illuminate\Support\Collection  $queues
+     * @param \Illuminate\Support\Collection $queues
      * @return void
      */
     protected function displaySizes(Collection $queues)
@@ -128,7 +126,7 @@ class MonitorCommand extends Command
     /**
      * Fire the monitoring events.
      *
-     * @param  \Illuminate\Support\Collection  $queues
+     * @param \Illuminate\Support\Collection $queues
      * @return void
      */
     protected function dispatchEvents(Collection $queues)

@@ -15,7 +15,7 @@ class RouteNotDefinedSolutionProvider implements HasSolutionsForThrowable
 
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof RouteNotFoundException) {
+        if (!$throwable instanceof RouteNotFoundException) {
             return false;
         }
 

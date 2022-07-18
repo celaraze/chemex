@@ -21,8 +21,8 @@
 namespace Mockery\Generator\StringManipulation\Pass;
 
 use Mockery\Generator\Method;
-use Mockery\Generator\Parameter;
 use Mockery\Generator\MockConfiguration;
+use Mockery\Generator\Parameter;
 
 class MethodDefinitionPass implements Pass
 {
@@ -87,25 +87,18 @@ class MethodDefinitionPass implements Pass
         return '(' . implode(', ', $methodParams) . ')';
     }
 
-    protected function renderReturnType(Method $method)
-    {
-        $type = $method->getReturnType();
-
-        return $type ? sprintf(': %s', $type) : '';
-    }
-
-    protected function appendToClass($class, $code)
-    {
-        $lastBrace = strrpos($class, "}");
-        $class = substr($class, 0, $lastBrace) . $code . "\n    }\n";
-        return $class;
-    }
-
     protected function renderTypeHint(Parameter $param)
     {
         $typeHint = $param->getTypeHint();
 
         return $typeHint === null ? '' : sprintf('%s ', $typeHint);
+    }
+
+    protected function renderReturnType(Method $method)
+    {
+        $type = $method->getReturnType();
+
+        return $type ? sprintf(': %s', $type) : '';
     }
 
     private function renderMethodBody($method, $config)
@@ -163,5 +156,12 @@ BODY;
 
         $body .= "}\n";
         return $body;
+    }
+
+    protected function appendToClass($class, $code)
+    {
+        $lastBrace = strrpos($class, "}");
+        $class = substr($class, 0, $lastBrace) . $code . "\n    }\n";
+        return $class;
     }
 }

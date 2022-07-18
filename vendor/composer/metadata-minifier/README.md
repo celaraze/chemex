@@ -15,12 +15,10 @@ Install the latest version with:
 $ composer require composer/metadata-minifier
 ```
 
-
 Requirements
 ------------
 
 * PHP 5.3.2 is required but using the latest version of PHP is highly recommended.
-
 
 Basic usage
 -----------
@@ -29,7 +27,6 @@ Basic usage
 
 - `MetadataMinifier::expand()`: Expands an array of minified versions back to their original format
 - `MetadataMinifier::minify()`: Minifies an array of versions into a set of version diffs
-
 
 License
 -------

@@ -7,7 +7,6 @@ use Doctrine\DBAL\Driver\Result as ResultInterface;
 use Doctrine\DBAL\Driver\SQLSrv\Exception\Error;
 use Doctrine\DBAL\Driver\Statement as StatementInterface;
 use Doctrine\DBAL\ParameterType;
-
 use function assert;
 use function is_int;
 use function sqlsrv_execute;
@@ -16,7 +15,6 @@ use function SQLSRV_PHPTYPE_STRING;
 use function sqlsrv_prepare;
 use function SQLSRV_SQLTYPE_VARBINARY;
 use function stripos;
-
 use const SQLSRV_ENC_BINARY;
 use const SQLSRV_ENC_CHAR;
 use const SQLSRV_PARAM_IN;
@@ -24,33 +22,33 @@ use const SQLSRV_PARAM_IN;
 final class Statement implements StatementInterface
 {
     /**
+     * Append to any INSERT query to retrieve the last insert id.
+     */
+    private const LAST_INSERT_ID_SQL = ';SELECT SCOPE_IDENTITY() AS LastInsertId;';
+    /**
      * The SQLSRV Resource.
      *
      * @var resource
      */
     private $conn;
-
     /**
      * The SQL statement to execute.
      *
      * @var string
      */
     private $sql;
-
     /**
      * The SQLSRV statement resource.
      *
      * @var resource|null
      */
     private $stmt;
-
     /**
      * References to the variables bound as statement parameters.
      *
      * @var array<int, mixed>
      */
     private $variables = [];
-
     /**
      * Bound parameter types.
      *
@@ -59,20 +57,15 @@ final class Statement implements StatementInterface
     private $types = [];
 
     /**
-     * Append to any INSERT query to retrieve the last insert id.
-     */
-    private const LAST_INSERT_ID_SQL = ';SELECT SCOPE_IDENTITY() AS LastInsertId;';
-
-    /**
+     * @param resource $conn
+     * @param string $sql
      * @internal The statement can be only instantiated by its driver connection.
      *
-     * @param resource $conn
-     * @param string   $sql
      */
     public function __construct($conn, $sql)
     {
         $this->conn = $conn;
-        $this->sql  = $sql;
+        $this->sql = $sql;
 
         if (stripos($sql, 'INSERT INTO ') !== 0) {
             return;
@@ -84,25 +77,12 @@ final class Statement implements StatementInterface
     /**
      * {@inheritdoc}
      */
-    public function bindValue($param, $value, $type = ParameterType::STRING): bool
-    {
-        assert(is_int($param));
-
-        $this->variables[$param] = $value;
-        $this->types[$param]     = $type;
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function bindParam($param, &$variable, $type = ParameterType::STRING, $length = null): bool
     {
         assert(is_int($param));
 
         $this->variables[$param] =& $variable;
-        $this->types[$param]     = $type;
+        $this->types[$param] = $type;
 
         // unset the statement resource if it exists as the new one will need to be bound to the new variable
         $this->stmt = null;
@@ -129,11 +109,24 @@ final class Statement implements StatementInterface
             $this->stmt = $this->prepare();
         }
 
-        if (! sqlsrv_execute($this->stmt)) {
+        if (!sqlsrv_execute($this->stmt)) {
             throw Error::new();
         }
 
         return new Result($this->stmt);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function bindValue($param, $value, $type = ParameterType::STRING): bool
+    {
+        assert(is_int($param));
+
+        $this->variables[$param] = $value;
+        $this->types[$param] = $type;
+
+        return true;
     }
 
     /**

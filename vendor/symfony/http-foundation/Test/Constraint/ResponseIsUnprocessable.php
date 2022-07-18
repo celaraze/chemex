@@ -17,14 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 final class ResponseIsUnprocessable extends Constraint
 {
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return 'is unprocessable';
-    }
-
-    /**
      * @param Response $other
      *
      * {@inheritdoc}
@@ -41,7 +33,15 @@ final class ResponseIsUnprocessable extends Constraint
      */
     protected function failureDescription($other): string
     {
-        return 'the Response '.$this->toString();
+        return 'the Response ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return 'is unprocessable';
     }
 
     /**
@@ -51,6 +51,6 @@ final class ResponseIsUnprocessable extends Constraint
      */
     protected function additionalFailureDescription($other): string
     {
-        return (string) $other;
+        return (string)$other;
     }
 }

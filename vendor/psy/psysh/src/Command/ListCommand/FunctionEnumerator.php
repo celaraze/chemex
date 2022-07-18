@@ -45,7 +45,7 @@ class FunctionEnumerator extends Enumerator
             $functions = $this->getFunctions();
         }
 
-        $prefix = $reflector === null ? null : \strtolower($reflector->getName()).'\\';
+        $prefix = $reflector === null ? null : \strtolower($reflector->getName()) . '\\';
         $functions = $this->prepareFunctions($functions, $prefix);
 
         if (empty($functions)) {
@@ -81,7 +81,7 @@ class FunctionEnumerator extends Enumerator
     /**
      * Prepare formatted function array.
      *
-     * @param array  $functions
+     * @param array $functions
      * @param string $prefix
      *
      * @return array
@@ -101,7 +101,7 @@ class FunctionEnumerator extends Enumerator
             if ($this->showItem($name)) {
                 try {
                     $ret[$name] = [
-                        'name'  => $name,
+                        'name' => $name,
                         'style' => self::IS_FUNCTION,
                         'value' => $this->presentSignature($name),
                     ];

@@ -11,8 +11,8 @@ class Vite
     /**
      * Generate Vite tags for an entrypoint.
      *
-     * @param  string|string[]  $entrypoints
-     * @param  string  $buildDirectory
+     * @param string|string[] $entrypoints
+     * @param string $buildDirectory
      * @return \Illuminate\Support\HtmlString
      *
      * @throws \Exception
@@ -29,16 +29,16 @@ class Vite
 
             return new HtmlString(
                 $entrypoints
-                    ->map(fn ($entrypoint) => $this->makeTag("{$url}/{$entrypoint}"))
+                    ->map(fn($entrypoint) => $this->makeTag("{$url}/{$entrypoint}"))
                     ->prepend($this->makeScriptTag("{$url}/@vite/client"))
                     ->join('')
             );
         }
 
-        $manifestPath = public_path($buildDirectory.'/manifest.json');
+        $manifestPath = public_path($buildDirectory . '/manifest.json');
 
-        if (! isset($manifests[$manifestPath])) {
-            if (! is_file($manifestPath)) {
+        if (!isset($manifests[$manifestPath])) {
+            if (!is_file($manifestPath)) {
                 throw new Exception("Vite manifest not found at: {$manifestPath}");
             }
 
@@ -50,7 +50,7 @@ class Vite
         $tags = collect();
 
         foreach ($entrypoints as $entrypoint) {
-            if (! isset($manifest[$entrypoint])) {
+            if (!isset($manifest[$entrypoint])) {
                 throw new Exception("Unable to locate file in Vite manifest: {$entrypoint}.");
             }
 
@@ -73,9 +73,57 @@ class Vite
             }
         }
 
-        [$stylesheets, $scripts] = $tags->partition(fn ($tag) => str_starts_with($tag, '<link'));
+        [$stylesheets, $scripts] = $tags->partition(fn($tag) => str_starts_with($tag, '<link'));
 
-        return new HtmlString($stylesheets->join('').$scripts->join(''));
+        return new HtmlString($stylesheets->join('') . $scripts->join(''));
+    }
+
+    /**
+     * Generate an appropriate tag for the given URL.
+     *
+     * @param string $url
+     * @return string
+     */
+    protected function makeTag($url)
+    {
+        if ($this->isCssPath($url)) {
+            return $this->makeStylesheetTag($url);
+        }
+
+        return $this->makeScriptTag($url);
+    }
+
+    /**
+     * Determine whether the given path is a CSS file.
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function isCssPath($path)
+    {
+        return preg_match('/\.(css|less|sass|scss|styl|stylus|pcss|postcss)$/', $path) === 1;
+    }
+
+    /**
+     * Generate a stylesheet tag for the given URL.
+     *
+     * @param string $url
+     * @return string
+     */
+    protected function makeStylesheetTag($url)
+    {
+        return sprintf('<link rel="stylesheet" href="%s" />', $url);
+    }
+
+    /**
+     * Generate a script tag for the given URL.
+     *
+     * @param string $url
+     * @return string
+     */
+    protected function makeScriptTag($url)
+    {
+        return sprintf('<script type="module" src="%s"></script>', $url);
     }
 
     /**
@@ -85,7 +133,7 @@ class Vite
      */
     public function reactRefresh()
     {
-        if (! is_file(public_path('/hot'))) {
+        if (!is_file(public_path('/hot'))) {
             return;
         }
 
@@ -105,53 +153,5 @@ class Vite
                 $url
             )
         );
-    }
-
-    /**
-     * Generate an appropriate tag for the given URL.
-     *
-     * @param  string  $url
-     * @return string
-     */
-    protected function makeTag($url)
-    {
-        if ($this->isCssPath($url)) {
-            return $this->makeStylesheetTag($url);
-        }
-
-        return $this->makeScriptTag($url);
-    }
-
-    /**
-     * Generate a script tag for the given URL.
-     *
-     * @param  string  $url
-     * @return string
-     */
-    protected function makeScriptTag($url)
-    {
-        return sprintf('<script type="module" src="%s"></script>', $url);
-    }
-
-    /**
-     * Generate a stylesheet tag for the given URL.
-     *
-     * @param  string  $url
-     * @return string
-     */
-    protected function makeStylesheetTag($url)
-    {
-        return sprintf('<link rel="stylesheet" href="%s" />', $url);
-    }
-
-    /**
-     * Determine whether the given path is a CSS file.
-     *
-     * @param  string  $path
-     * @return bool
-     */
-    protected function isCssPath($path)
-    {
-        return preg_match('/\.(css|less|sass|scss|styl|stylus|pcss|postcss)$/', $path) === 1;
     }
 }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 /**
@@ -36,9 +37,9 @@ final class Extension
      */
     public function __construct(string $className, string $sourceFile, array $arguments)
     {
-        $this->className  = $className;
+        $this->className = $className;
         $this->sourceFile = $sourceFile;
-        $this->arguments  = $arguments;
+        $this->arguments = $arguments;
     }
 
     /**

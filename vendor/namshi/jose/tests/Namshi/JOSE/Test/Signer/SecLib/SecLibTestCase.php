@@ -1,6 +1,6 @@
 <?php
 
-namespace  Namshi\JOSE\Test\Signer\SecLib;
+namespace Namshi\JOSE\Test\Signer\SecLib;
 
 use PHPUnit_Framework_TestCase as TestCase;
 

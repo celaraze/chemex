@@ -25,6 +25,28 @@ class Processor
     }
 
     /**
+     * @param string $css
+     *
+     * @return string
+     */
+    private function doCleanup($css)
+    {
+        // remove charset
+        $css = preg_replace('/@charset "[^"]++";/', '', $css);
+        // remove media queries
+        $css = preg_replace('/@media [^{]*+{([^{}]++|{[^{}]*+})*+}/', '', $css);
+
+        $css = str_replace(array("\r", "\n"), '', $css);
+        $css = str_replace(array("\t"), ' ', $css);
+        $css = str_replace('"', '\'', $css);
+        $css = preg_replace('|/\*.*?\*/|', '', $css);
+        $css = preg_replace('/\s\s++/', ' ', $css);
+        $css = trim($css);
+
+        return $css;
+    }
+
+    /**
      * Get the CSS from the style-tags in the given HTML-string
      *
      * @param string $html
@@ -43,28 +65,6 @@ class Processor
                 $css .= trim($match) . "\n";
             }
         }
-
-        return $css;
-    }
-
-    /**
-     * @param string $css
-     *
-     * @return string
-     */
-    private function doCleanup($css)
-    {
-        // remove charset
-        $css = preg_replace('/@charset "[^"]++";/', '', $css);
-        // remove media queries
-        $css = preg_replace('/@media [^{]*+{([^{}]++|{[^{}]*+})*+}/', '', $css);
-
-        $css = str_replace(array("\r", "\n"), '', $css);
-        $css = str_replace(array("\t"), ' ', $css);
-        $css = str_replace('"', '\'', $css);
-        $css = preg_replace('|/\*.*?\*/|', '', $css);
-        $css = preg_replace('/\s\s++/', ' ', $css);
-        $css = trim($css);
 
         return $css;
     }

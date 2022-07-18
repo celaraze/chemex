@@ -16,8 +16,8 @@ class SolutionMakeCommand extends GeneratorCommand
     protected function getStub(): string
     {
         return $this->option('runnable')
-            ? __DIR__.'/stubs/runnable-solution.stub'
-            : __DIR__.'/stubs/solution.stub';
+            ? __DIR__ . '/stubs/runnable-solution.stub'
+            : __DIR__ . '/stubs/solution.stub';
     }
 
     protected function getDefaultNamespace($rootNamespace)

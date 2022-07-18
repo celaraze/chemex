@@ -14,7 +14,7 @@ interface Sheet
     public function data($data);
 
     /**
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function chunk(callable $callback);
@@ -27,7 +27,7 @@ interface Sheet
     /**
      * 传false则禁用标题.
      *
-     * @param  array|false  $headings
+     * @param array|false $headings
      * @return $this
      */
     public function headings($headings);
@@ -38,7 +38,7 @@ interface Sheet
     public function getHeadings();
 
     /**
-     * @param  Style  $style
+     * @param Style $style
      * @return $this
      */
     public function headingStyle($style);
@@ -49,7 +49,7 @@ interface Sheet
     public function getHeadingStyle();
 
     /**
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function name(?string $name);
@@ -60,13 +60,13 @@ interface Sheet
     public function getName();
 
     /**
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function row(\Closure $callback);
 
     /**
-     * @param  array  $row
+     * @param array $row
      * @return array|Row
      */
     public function formatRow(array $row);

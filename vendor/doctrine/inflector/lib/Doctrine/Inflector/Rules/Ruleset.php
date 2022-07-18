@@ -17,9 +17,9 @@ class Ruleset
 
     public function __construct(Transformations $regular, Patterns $uninflected, Substitutions $irregular)
     {
-        $this->regular     = $regular;
+        $this->regular = $regular;
         $this->uninflected = $uninflected;
-        $this->irregular   = $irregular;
+        $this->irregular = $irregular;
     }
 
     public function getRegular(): Transformations

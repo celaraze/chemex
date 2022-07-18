@@ -9,7 +9,6 @@ use Doctrine\DBAL\Driver\Result as DriverResult;
 use Doctrine\DBAL\Exception\NoKeyValue;
 use LogicException;
 use Traversable;
-
 use function array_shift;
 use function func_num_args;
 
@@ -26,88 +25,8 @@ class Result
      */
     public function __construct(DriverResult $result, Connection $connection)
     {
-        $this->result     = $result;
+        $this->result = $result;
         $this->connection = $connection;
-    }
-
-    /**
-     * Returns the next row of the result as a numeric array or FALSE if there are no more rows.
-     *
-     * @return list<mixed>|false
-     *
-     * @throws Exception
-     */
-    public function fetchNumeric()
-    {
-        try {
-            return $this->result->fetchNumeric();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
-    }
-
-    /**
-     * Returns the next row of the result as an associative array or FALSE if there are no more rows.
-     *
-     * @return array<string,mixed>|false
-     *
-     * @throws Exception
-     */
-    public function fetchAssociative()
-    {
-        try {
-            return $this->result->fetchAssociative();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
-    }
-
-    /**
-     * Returns the first value of the next row of the result or FALSE if there are no more rows.
-     *
-     * @return mixed|false
-     *
-     * @throws Exception
-     */
-    public function fetchOne()
-    {
-        try {
-            return $this->result->fetchOne();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
-    }
-
-    /**
-     * Returns an array containing all of the result rows represented as numeric arrays.
-     *
-     * @return list<list<mixed>>
-     *
-     * @throws Exception
-     */
-    public function fetchAllNumeric(): array
-    {
-        try {
-            return $this->result->fetchAllNumeric();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
-    }
-
-    /**
-     * Returns an array containing all of the result rows represented as associative arrays.
-     *
-     * @return list<array<string,mixed>>
-     *
-     * @throws Exception
-     */
-    public function fetchAllAssociative(): array
-    {
-        try {
-            return $this->result->fetchAllAssociative();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
     }
 
     /**
@@ -131,6 +50,46 @@ class Result
     }
 
     /**
+     * @throws Exception
+     */
+    private function ensureHasKeyValue(): void
+    {
+        $columnCount = $this->columnCount();
+
+        if ($columnCount < 2) {
+            throw NoKeyValue::fromColumnCount($columnCount);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function columnCount(): int
+    {
+        try {
+            return $this->result->columnCount();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
+        }
+    }
+
+    /**
+     * Returns an array containing all of the result rows represented as numeric arrays.
+     *
+     * @return list<list<mixed>>
+     *
+     * @throws Exception
+     */
+    public function fetchAllNumeric(): array
+    {
+        try {
+            return $this->result->fetchAllNumeric();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
+        }
+    }
+
+    /**
      * Returns an associative array with the keys mapped to the first column and the values being
      * an associative array representing the rest of the columns and their values.
      *
@@ -150,16 +109,32 @@ class Result
     }
 
     /**
-     * @return list<mixed>
+     * Returns an array containing all of the result rows represented as associative arrays.
+     *
+     * @return list<array<string,mixed>>
      *
      * @throws Exception
      */
-    public function fetchFirstColumn(): array
+    public function fetchAllAssociative(): array
     {
         try {
-            return $this->result->fetchFirstColumn();
+            return $this->result->fetchAllAssociative();
         } catch (DriverException $e) {
             throw $this->connection->convertException($e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws Exception
+     */
+    public function iterateKeyValue(): Traversable
+    {
+        $this->ensureHasKeyValue();
+
+        foreach ($this->iterateNumeric() as [$key, $value]) {
+            yield $key => $value;
         }
     }
 
@@ -176,28 +151,18 @@ class Result
     }
 
     /**
-     * @return Traversable<int,array<string,mixed>>
+     * Returns the next row of the result as a numeric array or FALSE if there are no more rows.
+     *
+     * @return list<mixed>|false
      *
      * @throws Exception
      */
-    public function iterateAssociative(): Traversable
+    public function fetchNumeric()
     {
-        while (($row = $this->fetchAssociative()) !== false) {
-            yield $row;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws Exception
-     */
-    public function iterateKeyValue(): Traversable
-    {
-        $this->ensureHasKeyValue();
-
-        foreach ($this->iterateNumeric() as [$key, $value]) {
-            yield $key => $value;
+        try {
+            return $this->result->fetchNumeric();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
         }
     }
 
@@ -217,6 +182,34 @@ class Result
     }
 
     /**
+     * @return Traversable<int,array<string,mixed>>
+     *
+     * @throws Exception
+     */
+    public function iterateAssociative(): Traversable
+    {
+        while (($row = $this->fetchAssociative()) !== false) {
+            yield $row;
+        }
+    }
+
+    /**
+     * Returns the next row of the result as an associative array or FALSE if there are no more rows.
+     *
+     * @return array<string,mixed>|false
+     *
+     * @throws Exception
+     */
+    public function fetchAssociative()
+    {
+        try {
+            return $this->result->fetchAssociative();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
+        }
+    }
+
+    /**
      * @return Traversable<int,mixed>
      *
      * @throws Exception
@@ -225,6 +218,22 @@ class Result
     {
         while (($value = $this->fetchOne()) !== false) {
             yield $value;
+        }
+    }
+
+    /**
+     * Returns the first value of the next row of the result or FALSE if there are no more rows.
+     *
+     * @return mixed|false
+     *
+     * @throws Exception
+     */
+    public function fetchOne()
+    {
+        try {
+            return $this->result->fetchOne();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
         }
     }
 
@@ -240,43 +249,19 @@ class Result
         }
     }
 
-    /**
-     * @throws Exception
-     */
-    public function columnCount(): int
-    {
-        try {
-            return $this->result->columnCount();
-        } catch (DriverException $e) {
-            throw $this->connection->convertException($e);
-        }
-    }
-
     public function free(): void
     {
         $this->result->free();
     }
 
     /**
-     * @throws Exception
-     */
-    private function ensureHasKeyValue(): void
-    {
-        $columnCount = $this->columnCount();
-
-        if ($columnCount < 2) {
-            throw NoKeyValue::fromColumnCount($columnCount);
-        }
-    }
-
-    /**
      * BC layer for a wide-spread use-case of old DBAL APIs
-     *
-     * @deprecated This API is deprecated and will be removed after 2022
      *
      * @return mixed
      *
      * @throws Exception
+     * @deprecated This API is deprecated and will be removed after 2022
+     *
      */
     public function fetch(int $mode = FetchMode::ASSOCIATIVE)
     {
@@ -302,11 +287,11 @@ class Result
     /**
      * BC layer for a wide-spread use-case of old DBAL APIs
      *
-     * @deprecated This API is deprecated and will be removed after 2022
-     *
      * @return list<mixed>
      *
      * @throws Exception
+     * @deprecated This API is deprecated and will be removed after 2022
+     *
      */
     public function fetchAll(int $mode = FetchMode::ASSOCIATIVE): array
     {
@@ -327,5 +312,19 @@ class Result
         }
 
         throw new LogicException('Only fetch modes declared on Doctrine\DBAL\FetchMode are supported by legacy API.');
+    }
+
+    /**
+     * @return list<mixed>
+     *
+     * @throws Exception
+     */
+    public function fetchFirstColumn(): array
+    {
+        try {
+            return $this->result->fetchFirstColumn();
+        } catch (DriverException $e) {
+            throw $this->connection->convertException($e);
+        }
     }
 }

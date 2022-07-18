@@ -16,7 +16,7 @@ class AddGitInformation
         try {
             $this->baseDir = $this->getGitBaseDirectory();
 
-            if (! $this->baseDir) {
+            if (!$this->baseDir) {
                 return $next($report);
             }
 
@@ -25,7 +25,7 @@ class AddGitInformation
                 'message' => $this->message(),
                 'tag' => $this->tag(),
                 'remote' => $this->remote(),
-                'isDirty' => ! $this->isClean(),
+                'isDirty' => !$this->isClean(),
             ]);
         } catch (Throwable) {
         }
@@ -33,9 +33,38 @@ class AddGitInformation
         return $next($report);
     }
 
+    protected function getGitBaseDirectory(): ?string
+    {
+        /** @var Process $process */
+        $process = Process::fromShellCommandline("echo $(git rev-parse --show-toplevel)")->setTimeout(1);
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            return null;
+        }
+
+        $directory = trim($process->getOutput());
+
+        if (!file_exists($directory)) {
+            return null;
+        }
+
+        return $directory;
+    }
+
     protected function hash(): ?string
     {
         return $this->command("git log --pretty=format:'%H' -n 1") ?: null;
+    }
+
+    protected function command($command)
+    {
+        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(1);
+
+        $process->run();
+
+        return trim($process->getOutput());
     }
 
     protected function message(): ?string
@@ -56,34 +85,5 @@ class AddGitInformation
     protected function isClean(): bool
     {
         return empty($this->command('git status -s'));
-    }
-
-    protected function getGitBaseDirectory(): ?string
-    {
-        /** @var Process $process */
-        $process = Process::fromShellCommandline("echo $(git rev-parse --show-toplevel)")->setTimeout(1);
-
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            return null;
-        }
-
-        $directory = trim($process->getOutput());
-
-        if (! file_exists($directory)) {
-            return null;
-        }
-
-        return $directory;
-    }
-
-    protected function command($command)
-    {
-        $process = Process::fromShellCommandline($command, $this->baseDir)->setTimeout(1);
-
-        $process->run();
-
-        return trim($process->getOutput());
     }
 }

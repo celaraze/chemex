@@ -11,23 +11,21 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait ImageField
 {
+    protected static $interventionAlias = [
+        'filling' => 'fill',
+    ];
     /**
      * Intervention calls.
      *
      * @var array
      */
     protected $interventionCalls = [];
-
     /**
      * Thumbnail settings.
      *
      * @var array
      */
     protected $thumbnails = [];
-
-    protected static $interventionAlias = [
-        'filling' => 'fill',
-    ];
 
     /**
      * Default directory for file to upload.
@@ -42,13 +40,13 @@ trait ImageField
     /**
      * Execute Intervention calls.
      *
-     * @param  string  $target
-     * @param  string  $mime
+     * @param string $target
+     * @param string $mime
      * @return mixed
      */
     public function callInterventionMethods($target, $mime)
     {
-        if (! empty($this->interventionCalls)) {
+        if (!empty($this->interventionCalls)) {
             $image = ImageManagerStatic::make($target);
 
             $mime = $mime ?: finfo_file(finfo_open(FILEINFO_MIME_TYPE), $target);
@@ -67,8 +65,8 @@ trait ImageField
     /**
      * Call intervention methods.
      *
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string $method
+     * @param array $arguments
      * @return $this
      *
      * @throws \Exception
@@ -79,12 +77,12 @@ trait ImageField
             return parent::__call($method, $arguments);
         }
 
-        if (! class_exists(ImageManagerStatic::class)) {
+        if (!class_exists(ImageManagerStatic::class)) {
             throw new AdminException('To use image handling and manipulation, please install [intervention/image] first.');
         }
 
         $this->interventionCalls[] = [
-            'method'    => static::$interventionAlias[$method] ?? $method,
+            'method' => static::$interventionAlias[$method] ?? $method,
             'arguments' => $arguments,
         ];
 
@@ -92,9 +90,9 @@ trait ImageField
     }
 
     /**
-     * @param  string|array  $name
-     * @param  int  $width
-     * @param  int  $height
+     * @param string|array $name
+     * @param int $width
+     * @param int $height
      * @return $this
      */
     public function thumbnail($name, int $width = null, int $height = null)
@@ -113,20 +111,61 @@ trait ImageField
     }
 
     /**
+     * Upload file and delete original thumbnail files.
+     *
+     * @param UploadedFile $file
+     * @return $this
+     */
+    protected function uploadAndDeleteOriginalThumbnail(UploadedFile $file)
+    {
+        foreach ($this->thumbnails as $name => $size) {
+            // We need to get extension type ( .jpeg , .png ...)
+            $ext = pathinfo($this->name, PATHINFO_EXTENSION);
+
+            // We remove extension from file name so we can append thumbnail type
+            $path = Str::replaceLast('.' . $ext, '', $this->name);
+
+            // We merge original name + thumbnail name + extension
+            $path = $path . '-' . $name . '.' . $ext;
+
+            /** @var \Intervention\Image\Image $image */
+            $image = InterventionImage::make($file);
+
+            $action = $size[2] ?? 'resize';
+            // Resize image with aspect ratio
+            $image->$action($size[0], $size[1], function (Constraint $constraint) {
+                $constraint->aspectRatio();
+            });
+
+            if (!is_null($this->storagePermission)) {
+                $this->getStorage()->put("{$this->getDirectory()}/{$path}", $image->encode()->stream(), $this->storagePermission);
+            } else {
+                $this->getStorage()->put("{$this->getDirectory()}/{$path}", $image->encode()->stream());
+            }
+        }
+
+        if (!is_array($this->original)) {
+            $this->destroyThumbnail();
+        }
+
+        return $this;
+    }
+
+    /**
      * Destroy original thumbnail files.
      *
-     * @param  string|array  $file
-     * @param  bool  $force
+     * @param string|array $file
+     * @param bool $force
      * @return void.
      */
     public function destroyThumbnail($file = null, bool $force = false)
     {
-        if ($this->retainable && ! $force) {
+        if ($this->retainable && !$force) {
             return;
         }
 
         $file = $file ?: $this->original;
-        if (! $file) {
+        if (!$file) {
             return;
         }
 
@@ -143,55 +182,14 @@ trait ImageField
             $ext = pathinfo($file, PATHINFO_EXTENSION);
 
             // We remove extension from file name so we can append thumbnail type
-            $path = Str::replaceLast('.'.$ext, '', $file);
+            $path = Str::replaceLast('.' . $ext, '', $file);
 
             // We merge original name + thumbnail name + extension
-            $path = $path.'-'.$name.'.'.$ext;
+            $path = $path . '-' . $name . '.' . $ext;
 
             if ($this->getStorage()->exists($path)) {
                 $this->getStorage()->delete($path);
             }
         }
-    }
-
-    /**
-     * Upload file and delete original thumbnail files.
-     *
-     * @param  UploadedFile  $file
-     * @return $this
-     */
-    protected function uploadAndDeleteOriginalThumbnail(UploadedFile $file)
-    {
-        foreach ($this->thumbnails as $name => $size) {
-            // We need to get extension type ( .jpeg , .png ...)
-            $ext = pathinfo($this->name, PATHINFO_EXTENSION);
-
-            // We remove extension from file name so we can append thumbnail type
-            $path = Str::replaceLast('.'.$ext, '', $this->name);
-
-            // We merge original name + thumbnail name + extension
-            $path = $path.'-'.$name.'.'.$ext;
-
-            /** @var \Intervention\Image\Image $image */
-            $image = InterventionImage::make($file);
-
-            $action = $size[2] ?? 'resize';
-            // Resize image with aspect ratio
-            $image->$action($size[0], $size[1], function (Constraint $constraint) {
-                $constraint->aspectRatio();
-            });
-
-            if (! is_null($this->storagePermission)) {
-                $this->getStorage()->put("{$this->getDirectory()}/{$path}", $image->encode()->stream(), $this->storagePermission);
-            } else {
-                $this->getStorage()->put("{$this->getDirectory()}/{$path}", $image->encode()->stream());
-            }
-        }
-
-        if (! is_array($this->original)) {
-            $this->destroyThumbnail();
-        }
-
-        return $this;
     }
 }

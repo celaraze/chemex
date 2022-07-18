@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Platforms\SQLite;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\Comparator as BaseComparator;
 use Doctrine\DBAL\Schema\Table;
-
 use function strcasecmp;
 
 /**
@@ -29,7 +28,7 @@ class Comparator extends BaseComparator
     public function diffTable(Table $fromTable, Table $toTable)
     {
         $fromTable = clone $fromTable;
-        $toTable   = clone $toTable;
+        $toTable = clone $toTable;
 
         $this->normalizeColumns($fromTable);
         $this->normalizeColumns($toTable);
@@ -42,7 +41,7 @@ class Comparator extends BaseComparator
         foreach ($table->getColumns() as $column) {
             $options = $column->getPlatformOptions();
 
-            if (! isset($options['collation']) || strcasecmp($options['collation'], 'binary') !== 0) {
+            if (!isset($options['collation']) || strcasecmp($options['collation'], 'binary') !== 0) {
                 continue;
             }
 

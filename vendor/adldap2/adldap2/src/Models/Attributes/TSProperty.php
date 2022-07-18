@@ -95,78 +95,6 @@ class TSProperty
     }
 
     /**
-     * Set the name for the TSProperty.
-     *
-     * @param string $name
-     *
-     * @return TSProperty
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the name for the TSProperty.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Set the value for the TSProperty.
-     *
-     * @param string|int $value
-     *
-     * @return TSProperty
-     */
-    public function setValue($value)
-    {
-        $this->value = $value;
-
-        return $this;
-    }
-
-    /**
-     * Get the value for the TSProperty.
-     *
-     * @return string|int
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * Convert the TSProperty name/value back to its binary
-     * representation for the userParameters blob.
-     *
-     * @return string
-     */
-    public function toBinary()
-    {
-        $name = bin2hex($this->name);
-
-        $binValue = $this->getEncodedValueForProp($this->name, $this->value);
-
-        $valueLen = strlen(bin2hex($binValue)) / 3;
-
-        $binary = hex2bin(
-            $this->dec2hex(strlen($name))
-            .$this->dec2hex($valueLen)
-            .$this->dec2hex($this->valueType)
-            .$name
-        );
-
-        return $binary.$binValue;
-    }
-
-    /**
      * Given a TSProperty blob, decode the name/value/type/etc.
      *
      * @param string $tsProperty
@@ -181,30 +109,6 @@ class TSProperty
         $this->valueType = hexdec(substr($tsProperty, 4, 2));
         $this->name = pack('H*', substr($tsProperty, 6, $nameLength));
         $this->value = $this->getDecodedValueForProp($this->name, substr($tsProperty, 6 + $nameLength, $valueLength));
-    }
-
-    /**
-     * Based on the property name/value in question, get its encoded form.
-     *
-     * @param string     $propName
-     * @param string|int $propValue
-     *
-     * @return string
-     */
-    protected function getEncodedValueForProp($propName, $propValue)
-    {
-        if (in_array($propName, $this->propTypes['string'])) {
-            // Simple strings are null terminated. Unsure if this is
-            // needed or simply a product of how ADUC does stuff?
-            $value = $this->encodePropValue($propValue."\0", true);
-        } elseif (in_array($propName, $this->propTypes['time'])) {
-            // Needs to be in microseconds (assuming it is in minute format)...
-            $value = $this->encodePropValue($propValue * self::TIME_CONVERSION);
-        } else {
-            $value = $this->encodePropValue($propValue);
-        }
-
-        return $value;
     }
 
     /**
@@ -239,7 +143,7 @@ class TSProperty
      * the control, and adding up the results into a final value.
      *
      * @param string $hex
-     * @param bool   $string Whether or not this is simple string data.
+     * @param bool $string Whether or not this is simple string data.
      *
      * @return string
      */
@@ -257,12 +161,12 @@ class TSProperty
             $controlX = substr($bin, 14, 6);
             $nibbleX = substr($bin, 20, 4);
 
-            $byte = $this->nibbleControl($nibbleX, $controlX).$this->nibbleControl($nibbleY, $controlY);
+            $byte = $this->nibbleControl($nibbleX, $controlX) . $this->nibbleControl($nibbleY, $controlY);
 
             if ($string) {
                 $decodePropValue .= MbString::chr(bindec($byte));
             } else {
-                $decodePropValue = $this->dec2hex(bindec($byte)).$decodePropValue;
+                $decodePropValue = $this->dec2hex(bindec($byte)) . $decodePropValue;
             }
         }
 
@@ -270,10 +174,140 @@ class TSProperty
     }
 
     /**
+     * Based on the control, adjust the nibble accordingly.
+     *
+     * @param string $nibble
+     * @param string $control
+     *
+     * @return string
+     */
+    protected function nibbleControl($nibble, $control)
+    {
+        // This control stays constant for the low/high nibbles,
+        // so it doesn't matter which we compare to
+        if ($control == self::NIBBLE_CONTROL['X'][1]) {
+            $dec = bindec($nibble);
+            $dec += 9;
+            $nibble = str_pad(decbin($dec), 4, '0', STR_PAD_LEFT);
+        }
+
+        return $nibble;
+    }
+
+    /**
+     * Need to make sure hex values are always an even length, so pad as needed.
+     *
+     * @param int $int
+     * @param int $padLength The hex string must be padded to this length (with zeros).
+     *
+     * @return string
+     */
+    protected function dec2hex($int, $padLength = 2)
+    {
+        return str_pad(dechex($int), $padLength, 0, STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the name for the TSProperty.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set the name for the TSProperty.
+     *
+     * @param string $name
+     *
+     * @return TSProperty
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * Get the value for the TSProperty.
+     *
+     * @return string|int
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Set the value for the TSProperty.
+     *
+     * @param string|int $value
+     *
+     * @return TSProperty
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
+    /**
+     * Convert the TSProperty name/value back to its binary
+     * representation for the userParameters blob.
+     *
+     * @return string
+     */
+    public function toBinary()
+    {
+        $name = bin2hex($this->name);
+
+        $binValue = $this->getEncodedValueForProp($this->name, $this->value);
+
+        $valueLen = strlen(bin2hex($binValue)) / 3;
+
+        $binary = hex2bin(
+            $this->dec2hex(strlen($name))
+            . $this->dec2hex($valueLen)
+            . $this->dec2hex($this->valueType)
+            . $name
+        );
+
+        return $binary . $binValue;
+    }
+
+    /**
+     * Based on the property name/value in question, get its encoded form.
+     *
+     * @param string $propName
+     * @param string|int $propValue
+     *
+     * @return string
+     */
+    protected function getEncodedValueForProp($propName, $propValue)
+    {
+        if (in_array($propName, $this->propTypes['string'])) {
+            // Simple strings are null terminated. Unsure if this is
+            // needed or simply a product of how ADUC does stuff?
+            $value = $this->encodePropValue($propValue . "\0", true);
+        } elseif (in_array($propName, $this->propTypes['time'])) {
+            // Needs to be in microseconds (assuming it is in minute format)...
+            $value = $this->encodePropValue($propValue * self::TIME_CONVERSION);
+        } else {
+            $value = $this->encodePropValue($propValue);
+        }
+
+        return $value;
+    }
+
+    /**
      * Get the encoded property value as a binary blob.
      *
      * @param string $value
-     * @param bool   $string
+     * @param bool $string
      *
      * @return string
      */
@@ -310,52 +344,6 @@ class TSProperty
     }
 
     /**
-     * PHP's pack() function has no 'b' or 'B' template. This is
-     * a workaround that turns a literal bit-string into a
-     * packed byte-string with 8 bits per byte.
-     *
-     * @param string $bits
-     * @param bool   $len
-     *
-     * @return string
-     */
-    protected function packBitString($bits, $len)
-    {
-        $bits = substr($bits, 0, $len);
-        // Pad input with zeros to next multiple of 4 above $len
-        $bits = str_pad($bits, 4 * (int) (($len + 3) / 4), '0');
-
-        // Split input into chunks of 4 bits, convert each to hex and pack them
-        $nibbles = str_split($bits, 4);
-        foreach ($nibbles as $i => $nibble) {
-            $nibbles[$i] = base_convert($nibble, 2, 16);
-        }
-
-        return pack('H*', implode('', $nibbles));
-    }
-
-    /**
-     * Based on the control, adjust the nibble accordingly.
-     *
-     * @param string $nibble
-     * @param string $control
-     *
-     * @return string
-     */
-    protected function nibbleControl($nibble, $control)
-    {
-        // This control stays constant for the low/high nibbles,
-        // so it doesn't matter which we compare to
-        if ($control == self::NIBBLE_CONTROL['X'][1]) {
-            $dec = bindec($nibble);
-            $dec += 9;
-            $nibble = str_pad(decbin($dec), 4, '0', STR_PAD_LEFT);
-        }
-
-        return $nibble;
-    }
-
-    /**
      * Get the nibble value with the control prefixed.
      *
      * If the nibble dec is <= 9, the control X equals 001011 and Y equals 001110, otherwise if the nibble dec is > 9
@@ -378,19 +366,31 @@ class TSProperty
             $control = self::NIBBLE_CONTROL[$nibbleType][0];
         }
 
-        return $control.sprintf('%04d', decbin($dec));
+        return $control . sprintf('%04d', decbin($dec));
     }
 
     /**
-     * Need to make sure hex values are always an even length, so pad as needed.
+     * PHP's pack() function has no 'b' or 'B' template. This is
+     * a workaround that turns a literal bit-string into a
+     * packed byte-string with 8 bits per byte.
      *
-     * @param int $int
-     * @param int $padLength The hex string must be padded to this length (with zeros).
+     * @param string $bits
+     * @param bool $len
      *
      * @return string
      */
-    protected function dec2hex($int, $padLength = 2)
+    protected function packBitString($bits, $len)
     {
-        return str_pad(dechex($int), $padLength, 0, STR_PAD_LEFT);
+        $bits = substr($bits, 0, $len);
+        // Pad input with zeros to next multiple of 4 above $len
+        $bits = str_pad($bits, 4 * (int)(($len + 3) / 4), '0');
+
+        // Split input into chunks of 4 bits, convert each to hex and pack them
+        $nibbles = str_split($bits, 4);
+        foreach ($nibbles as $i => $nibble) {
+            $nibbles[$i] = base_convert($nibble, 2, 16);
+        }
+
+        return pack('H*', implode('', $nibbles));
     }
 }

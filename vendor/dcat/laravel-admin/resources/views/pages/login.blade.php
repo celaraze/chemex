@@ -3,19 +3,24 @@
         margin-top: -10rem;
         padding: 5px;
     }
+
     .login-card-body {
         padding: 1.5rem 1.8rem 1.6rem;
     }
+
     .card, .card-body {
         border-radius: .25rem
     }
+
     .login-btn {
-        padding-left: 2rem!important;;
-        padding-right: 1.5rem!important;
+        padding-left: 2rem !important;;
+        padding-right: 1.5rem !important;
     }
+
     .content {
         overflow-x: hidden;
     }
+
     .form-group .control-label {
         text-align: left;
     }
@@ -36,13 +41,13 @@
 
                     <fieldset class="form-label-group form-group position-relative has-icon-left">
                         <input
-                                type="text"
-                                class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}"
-                                name="username"
-                                placeholder="{{ trans('admin.username') }}"
-                                value="{{ old('username') }}"
-                                required
-                                autofocus
+                            type="text"
+                            class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}"
+                            name="username"
+                            placeholder="{{ trans('admin.username') }}"
+                            value="{{ old('username') }}"
+                            required
+                            autofocus
                         >
 
                         <div class="form-control-position">
@@ -55,7 +60,8 @@
                         @if($errors->has('username'))
                             <span class="invalid-feedback text-danger" role="alert">
                                             @foreach($errors->get('username') as $message)
-                                    <span class="control-label" for="inputError"><i class="feather icon-x-circle"></i> {{$message}}</span><br>
+                                    <span class="control-label" for="inputError"><i class="feather icon-x-circle"></i> {{$message}}</span>
+                                    <br>
                                 @endforeach
                                         </span>
                         @endif
@@ -63,15 +69,15 @@
 
                     <fieldset class="form-label-group form-group position-relative has-icon-left">
                         <input
-                                minlength="5"
-                                maxlength="20"
-                                id="password"
-                                type="password"
-                                class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}"
-                                name="password"
-                                placeholder="{{ trans('admin.password') }}"
-                                required
-                                autocomplete="current-password"
+                            minlength="5"
+                            maxlength="20"
+                            id="password"
+                            type="password"
+                            class="form-control {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                            name="password"
+                            placeholder="{{ trans('admin.password') }}"
+                            required
+                            autocomplete="current-password"
                         >
 
                         <div class="form-control-position">
@@ -83,7 +89,8 @@
                         @if($errors->has('password'))
                             <span class="invalid-feedback text-danger" role="alert">
                                             @foreach($errors->get('password') as $message)
-                                    <span class="control-label" for="inputError"><i class="feather icon-x-circle"></i> {{$message}}</span><br>
+                                    <span class="control-label" for="inputError"><i class="feather icon-x-circle"></i> {{$message}}</span>
+                                    <br>
                                 @endforeach
                                             </span>
                         @endif
@@ -92,17 +99,18 @@
                     <div class="form-group d-flex justify-content-between align-items-center">
                         <div class="text-left">
                             @if(config('admin.auth.remember'))
-                            <fieldset class="checkbox">
-                                <div class="vs-checkbox-con vs-checkbox-primary">
-                                    <input id="remember" name="remember"  value="1" type="checkbox" {{ old('remember') ? 'checked' : '' }}>
-                                    <span class="vs-checkbox">
+                                <fieldset class="checkbox">
+                                    <div class="vs-checkbox-con vs-checkbox-primary">
+                                        <input id="remember" name="remember" value="1"
+                                               type="checkbox" {{ old('remember') ? 'checked' : '' }}>
+                                        <span class="vs-checkbox">
                                                         <span class="vs-checkbox--check">
                                                           <i class="vs-icon feather icon-check"></i>
                                                         </span>
                                                     </span>
-                                    <span> {{ trans('admin.remember_me') }}</span>
-                                </div>
-                            </fieldset>
+                                        <span> {{ trans('admin.remember_me') }}</span>
+                                    </div>
+                                </fieldset>
                             @endif
                         </div>
                     </div>
@@ -120,10 +128,10 @@
 </div>
 
 <script>
-Dcat.ready(function () {
-    // ajax表单提交
-    $('#login-form').form({
-        validate: true,
+    Dcat.ready(function () {
+        // ajax表单提交
+        $('#login-form').form({
+            validate: true,
+        });
     });
-});
 </script>

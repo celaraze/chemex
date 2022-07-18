@@ -69,17 +69,14 @@ abstract class Stream implements IStream, EventListenable
      * Default buffer size.
      */
     const DEFAULT_BUFFER_SIZE = 8192;
-
-    /**
-     * Current stream bucket.
-     */
-    protected $_bucket = [];
-
     /**
      * Static stream register.
      */
     private static $_register = [];
-
+    /**
+     * Current stream bucket.
+     */
+    protected $_bucket = [];
     /**
      * Buffer size (default is 8Ko).
      */
@@ -143,68 +140,6 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
-     * Get a stream in the register.
-     * If the stream does not exist, try to open it by calling the
-     * $handler->_open() method.
-     */
-    private static function &_getStream(
-        string $streamName,
-        self $handler,
-        string $context = null
-    ): array {
-        $name = \md5($streamName);
-
-        if (null !== $context) {
-            if (false === StreamContext::contextExists($context)) {
-                throw new StreamException('Context %s was not previously declared, cannot retrieve '.'this context.', 0, $context);
-            }
-
-            $context = StreamContext::getInstance($context);
-        }
-
-        if (!isset(self::$_register[$name])) {
-            self::$_register[$name] = [
-                self::NAME     => $streamName,
-                self::HANDLER  => $handler,
-                self::RESOURCE => $handler->_open($streamName, $context),
-                self::CONTEXT  => $context,
-            ];
-            Event::register(
-                'hoa://Event/Stream/'.$streamName,
-                $handler
-            );
-            // Add :open-ready?
-            Event::register(
-                'hoa://Event/Stream/'.$streamName.':close-before',
-                $handler
-            );
-        } else {
-            $handler->_borrowing = true;
-        }
-
-        if (null === self::$_register[$name][self::RESOURCE]) {
-            self::$_register[$name][self::RESOURCE]
-                = $handler->_open($streamName, $context);
-        }
-
-        return self::$_register[$name];
-    }
-
-    /**
-     * Open the stream and return the associated resource.
-     * Note: This method is protected, but do not forget that it could be
-     * overloaded into a public context.
-     */
-    abstract protected function &_open(string $streamName, StreamContext $context = null);
-
-    /**
-     * Close the current stream.
-     * Note: this method is protected, but do not forget that it could be
-     * overloaded into a public context.
-     */
-    abstract protected function _close(): bool;
-
-    /**
      * Open the stream.
      */
     final public function open(): self
@@ -241,6 +176,100 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
+     * Whether the opening of the stream has been deferred.
+     */
+    protected function hasBeenDeferred()
+    {
+        return $this->_hasBeenDeferred;
+    }
+
+    /**
+     * Get a stream in the register.
+     * If the stream does not exist, try to open it by calling the
+     * $handler->_open() method.
+     */
+    private static function &_getStream(
+        string $streamName,
+        self   $handler,
+        string $context = null
+    ): array
+    {
+        $name = \md5($streamName);
+
+        if (null !== $context) {
+            if (false === StreamContext::contextExists($context)) {
+                throw new StreamException('Context %s was not previously declared, cannot retrieve ' . 'this context.', 0, $context);
+            }
+
+            $context = StreamContext::getInstance($context);
+        }
+
+        if (!isset(self::$_register[$name])) {
+            self::$_register[$name] = [
+                self::NAME => $streamName,
+                self::HANDLER => $handler,
+                self::RESOURCE => $handler->_open($streamName, $context),
+                self::CONTEXT => $context,
+            ];
+            Event::register(
+                'hoa://Event/Stream/' . $streamName,
+                $handler
+            );
+            // Add :open-ready?
+            Event::register(
+                'hoa://Event/Stream/' . $streamName . ':close-before',
+                $handler
+            );
+        } else {
+            $handler->_borrowing = true;
+        }
+
+        if (null === self::$_register[$name][self::RESOURCE]) {
+            self::$_register[$name][self::RESOURCE]
+                = $handler->_open($streamName, $context);
+        }
+
+        return self::$_register[$name];
+    }
+
+    /**
+     * Open the stream and return the associated resource.
+     * Note: This method is protected, but do not forget that it could be
+     * overloaded into a public context.
+     */
+    abstract protected function &_open(string $streamName, StreamContext $context = null);
+
+    /**
+     * Get stream handler according to its name.
+     */
+    public static function getStreamHandler(string $streamName)
+    {
+        $name = \md5($streamName);
+
+        if (!isset(self::$_register[$name])) {
+            return null;
+        }
+
+        return self::$_register[$name][self::HANDLER];
+    }
+
+    /**
+     * Call the $handler->close() method on each stream in the static stream
+     * register.
+     * This method does not check the return value of $handler->close(). Thus,
+     * if a stream is persistent, the $handler->close() should do anything. It
+     * is a very generic method.
+     */
+    final public static function _Hoa_Stream()
+    {
+        foreach (self::$_register as $entry) {
+            $entry[self::HANDLER]->close();
+        }
+
+        return;
+    }
+
+    /**
      * Close the current stream.
      */
     final public function close()
@@ -258,7 +287,7 @@ abstract class Stream implements IStream, EventListenable
         }
 
         Event::notify(
-            'hoa://Event/Stream/'.$streamName.':close-before',
+            'hoa://Event/Stream/' . $streamName . ':close-before',
             $this,
             new EventBucket()
         );
@@ -270,10 +299,10 @@ abstract class Stream implements IStream, EventListenable
         unset(self::$_register[$name]);
         $this->_bucket[self::HANDLER] = null;
         Event::unregister(
-            'hoa://Event/Stream/'.$streamName
+            'hoa://Event/Stream/' . $streamName
         );
         Event::unregister(
-            'hoa://Event/Stream/'.$streamName.':close-before'
+            'hoa://Event/Stream/' . $streamName . ':close-before'
         );
 
         return;
@@ -292,16 +321,11 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
-     * Get the current stream.
+     * Close the current stream.
+     * Note: this method is protected, but do not forget that it could be
+     * overloaded into a public context.
      */
-    public function getStream()
-    {
-        if (empty($this->_bucket)) {
-            return null;
-        }
-
-        return $this->_bucket[self::RESOURCE];
-    }
+    abstract protected function _close(): bool;
 
     /**
      * Get the current stream context.
@@ -316,20 +340,6 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
-     * Get stream handler according to its name.
-     */
-    public static function getStreamHandler(string $streamName)
-    {
-        $name = \md5($streamName);
-
-        if (!isset(self::$_register[$name])) {
-            return null;
-        }
-
-        return self::$_register[$name][self::HANDLER];
-    }
-
-    /**
      * Set the current stream. Useful to manage a stack of streams (e.g. socket
      * and select). Notice that it could be unsafe to use this method without
      * taking time to think about it two minutes. Resource of type “Unknown” is
@@ -339,22 +349,14 @@ abstract class Stream implements IStream, EventListenable
     {
         if (false === \is_resource($stream) &&
             ('resource' !== \gettype($stream) ||
-             'Unknown' !== \get_resource_type($stream))) {
-            throw new StreamException('Try to change the stream resource with an invalid one; '.'given %s.', 1, \gettype($stream));
+                'Unknown' !== \get_resource_type($stream))) {
+            throw new StreamException('Try to change the stream resource with an invalid one; ' . 'given %s.', 1, \gettype($stream));
         }
 
         $old = $this->_bucket[self::RESOURCE];
         $this->_bucket[self::RESOURCE] = $stream;
 
         return $old;
-    }
-
-    /**
-     * Check if the stream is opened.
-     */
-    public function isOpened(): bool
-    {
-        return \is_resource($this->getStream());
     }
 
     /**
@@ -366,11 +368,15 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
-     * Whether the opening of the stream has been deferred.
+     * Get the current stream.
      */
-    protected function hasBeenDeferred()
+    public function getStream()
     {
-        return $this->_hasBeenDeferred;
+        if (empty($this->_bucket)) {
+            return null;
+        }
+
+        return $this->_bucket[self::RESOURCE];
     }
 
     /**
@@ -386,11 +392,28 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
+     * Get stream meta data.
+     */
+    public function getStreamMetaData(): array
+    {
+        return \stream_get_meta_data($this->getStream());
+    }
+
+    /**
      * Set blocking/non-blocking mode.
      */
     public function setStreamBlocking(bool $mode): bool
     {
         return \stream_set_blocking($this->getStream(), $mode);
+    }
+
+    /**
+     * Disable stream buffering.
+     * Alias of $this->setBuffer(0).
+     */
+    public function disableStreamBuffer(): bool
+    {
+        return $this->setStreamBuffer(0);
     }
 
     /**
@@ -410,15 +433,6 @@ abstract class Stream implements IStream, EventListenable
         }
 
         return $out;
-    }
-
-    /**
-     * Disable stream buffering.
-     * Alias of $this->setBuffer(0).
-     */
-    public function disableStreamBuffer(): bool
-    {
-        return $this->setStreamBuffer(0);
     }
 
     /**
@@ -442,14 +456,6 @@ abstract class Stream implements IStream, EventListenable
     }
 
     /**
-     * Get stream meta data.
-     */
-    public function getStreamMetaData(): array
-    {
-        return \stream_get_meta_data($this->getStream());
-    }
-
-    /**
      * Whether this stream is already opened by another handler.
      */
     public function isBorrowing(): bool
@@ -463,47 +469,32 @@ abstract class Stream implements IStream, EventListenable
     public function _notify(
         int $ncode,
         int $severity,
-        $message,
-        $code,
-        $transferred,
-        $max
-    ) {
+            $message,
+            $code,
+            $transferred,
+            $max
+    )
+    {
         static $_map = [
             \STREAM_NOTIFY_AUTH_REQUIRED => 'authrequire',
-            \STREAM_NOTIFY_AUTH_RESULT   => 'authresult',
-            \STREAM_NOTIFY_COMPLETED     => 'complete',
-            \STREAM_NOTIFY_CONNECT       => 'connect',
-            \STREAM_NOTIFY_FAILURE       => 'failure',
-            \STREAM_NOTIFY_MIME_TYPE_IS  => 'mimetype',
-            \STREAM_NOTIFY_PROGRESS      => 'progress',
-            \STREAM_NOTIFY_REDIRECTED    => 'redirect',
-            \STREAM_NOTIFY_RESOLVE       => 'resolve',
-            \STREAM_NOTIFY_FILE_SIZE_IS  => 'size',
+            \STREAM_NOTIFY_AUTH_RESULT => 'authresult',
+            \STREAM_NOTIFY_COMPLETED => 'complete',
+            \STREAM_NOTIFY_CONNECT => 'connect',
+            \STREAM_NOTIFY_FAILURE => 'failure',
+            \STREAM_NOTIFY_MIME_TYPE_IS => 'mimetype',
+            \STREAM_NOTIFY_PROGRESS => 'progress',
+            \STREAM_NOTIFY_REDIRECTED => 'redirect',
+            \STREAM_NOTIFY_RESOLVE => 'resolve',
+            \STREAM_NOTIFY_FILE_SIZE_IS => 'size',
         ];
 
         $this->getListener()->fire($_map[$ncode], new EventBucket([
-            'code'        => $code,
-            'severity'    => $severity,
-            'message'     => $message,
+            'code' => $code,
+            'severity' => $severity,
+            'message' => $message,
             'transferred' => $transferred,
-            'max'         => $max,
+            'max' => $max,
         ]));
-    }
-
-    /**
-     * Call the $handler->close() method on each stream in the static stream
-     * register.
-     * This method does not check the return value of $handler->close(). Thus,
-     * if a stream is persistent, the $handler->close() should do anything. It
-     * is a very generic method.
-     */
-    final public static function _Hoa_Stream()
-    {
-        foreach (self::$_register as $entry) {
-            $entry[self::HANDLER]->close();
-        }
-
-        return;
     }
 
     /**
@@ -526,6 +517,14 @@ abstract class Stream implements IStream, EventListenable
         $this->close();
 
         return;
+    }
+
+    /**
+     * Check if the stream is opened.
+     */
+    public function isOpened(): bool
+    {
+        return \is_resource($this->getStream());
     }
 }
 

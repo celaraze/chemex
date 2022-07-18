@@ -52,11 +52,11 @@ final class RelativeNormalizerStrategy implements NormalizerStrategyInterface
             $targetListBlock->setStartLine($listItemToAdd->getStartLine());
             $targetListBlock->setEndLine($listItemToAdd->getEndLine());
             $lastListItem->appendChild($targetListBlock);
-        // Otherwise we're at the right level
-        // If there's no stack we're adding this item directly to the TOC element
+            // Otherwise we're at the right level
+            // If there's no stack we're adding this item directly to the TOC element
         } elseif ($lastListItem === false) {
             $targetListBlock = $this->toc;
-        // Otherwise add it to the last list item
+            // Otherwise add it to the last list item
         } else {
             $targetListBlock = $lastListItem->parent();
         }

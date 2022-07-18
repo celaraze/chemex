@@ -2,20 +2,21 @@
 
 namespace Adldap;
 
-use Adldap\Log\EventLogger;
-use Adldap\Connections\Ldap;
-use InvalidArgumentException;
-use Adldap\Log\LogsInformation;
-use Adldap\Connections\Provider;
-use Adldap\Events\DispatchesEvents;
-use Adldap\Connections\ProviderInterface;
-use Adldap\Connections\ConnectionInterface;
 use Adldap\Configuration\DomainConfiguration;
+use Adldap\Connections\ConnectionInterface;
+use Adldap\Connections\Ldap;
+use Adldap\Connections\Provider;
+use Adldap\Connections\ProviderInterface;
+use Adldap\Events\DispatchesEvents;
+use Adldap\Log\EventLogger;
+use Adldap\Log\LogsInformation;
+use InvalidArgumentException;
 
 class Adldap implements AdldapInterface
 {
     use DispatchesEvents;
     use LogsInformation;
+
     /**
      * The default provider name.
      *
@@ -92,9 +93,11 @@ class Adldap implements AdldapInterface
     /**
      * {@inheritdoc}
      */
-    public function getProviders()
+    public function setDefaultProvider($name = 'default')
     {
-        return $this->providers;
+        if ($this->getProvider($name) instanceof ProviderInterface) {
+            $this->default = $name;
+        }
     }
 
     /**
@@ -107,58 +110,6 @@ class Adldap implements AdldapInterface
         }
 
         throw new AdldapException("The connection provider '$name' does not exist.");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setDefaultProvider($name = 'default')
-    {
-        if ($this->getProvider($name) instanceof ProviderInterface) {
-            $this->default = $name;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultProvider()
-    {
-        return $this->getProvider($this->default);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function removeProvider($name)
-    {
-        unset($this->providers[$name]);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function connect($name = null, $username = null, $password = null)
-    {
-        $provider = $name ? $this->getProvider($name) : $this->getDefaultProvider();
-
-        return $provider->connect($username, $password);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __call($method, $parameters)
-    {
-        $provider = $this->getDefaultProvider();
-        
-        if (! $provider->getConnection()->isBound()) {
-            $provider->connect();
-        }
-
-        return call_user_func_array([$provider, $method], $parameters);
     }
 
     /**
@@ -190,5 +141,55 @@ class Adldap implements AdldapInterface
     protected function newEventLogger()
     {
         return new EventLogger(static::getLogger());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProviders()
+    {
+        return $this->providers;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeProvider($name)
+    {
+        unset($this->providers[$name]);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __call($method, $parameters)
+    {
+        $provider = $this->getDefaultProvider();
+
+        if (!$provider->getConnection()->isBound()) {
+            $provider->connect();
+        }
+
+        return call_user_func_array([$provider, $method], $parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultProvider()
+    {
+        return $this->getProvider($this->default);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function connect($name = null, $username = null, $password = null)
+    {
+        $provider = $name ? $this->getProvider($name) : $this->getDefaultProvider();
+
+        return $provider->connect($username, $password);
     }
 }

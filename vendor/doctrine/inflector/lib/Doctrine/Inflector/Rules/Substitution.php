@@ -15,7 +15,7 @@ final class Substitution
     public function __construct(Word $from, Word $to)
     {
         $this->from = $from;
-        $this->to   = $to;
+        $this->to = $to;
     }
 
     public function getFrom(): Word

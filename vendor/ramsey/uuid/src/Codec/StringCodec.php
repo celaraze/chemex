@@ -20,7 +20,6 @@ use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Ramsey\Uuid\Rfc4122\FieldsInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-
 use function hex2bin;
 use function implode;
 use function str_replace;
@@ -80,6 +79,34 @@ class StringCodec implements CodecInterface
     }
 
     /**
+     * Returns a byte string of the UUID
+     */
+    protected function getBytes(string $encodedUuid): string
+    {
+        $parsedUuid = str_replace(
+            ['urn:', 'uuid:', 'URN:', 'UUID:', '{', '}', '-'],
+            '',
+            $encodedUuid
+        );
+
+        $components = [
+            substr($parsedUuid, 0, 8),
+            substr($parsedUuid, 8, 4),
+            substr($parsedUuid, 12, 4),
+            substr($parsedUuid, 16, 4),
+            substr($parsedUuid, 20),
+        ];
+
+        if (!Uuid::isValid(implode('-', $components))) {
+            throw new InvalidUuidStringException(
+                'Invalid UUID string: ' . $encodedUuid
+            );
+        }
+
+        return (string)hex2bin($parsedUuid);
+    }
+
+    /**
      * @throws InvalidUuidStringException
      *
      * @inheritDoc
@@ -106,33 +133,5 @@ class StringCodec implements CodecInterface
     protected function getBuilder(): UuidBuilderInterface
     {
         return $this->builder;
-    }
-
-    /**
-     * Returns a byte string of the UUID
-     */
-    protected function getBytes(string $encodedUuid): string
-    {
-        $parsedUuid = str_replace(
-            ['urn:', 'uuid:', 'URN:', 'UUID:', '{', '}', '-'],
-            '',
-            $encodedUuid
-        );
-
-        $components = [
-            substr($parsedUuid, 0, 8),
-            substr($parsedUuid, 8, 4),
-            substr($parsedUuid, 12, 4),
-            substr($parsedUuid, 16, 4),
-            substr($parsedUuid, 20),
-        ];
-
-        if (!Uuid::isValid(implode('-', $components))) {
-            throw new InvalidUuidStringException(
-                'Invalid UUID string: ' . $encodedUuid
-            );
-        }
-
-        return (string) hex2bin($parsedUuid);
     }
 }

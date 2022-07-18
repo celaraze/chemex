@@ -29,7 +29,7 @@ class MariaDBPlatform extends MySQLPlatform
             'doctrine/dbal',
             'https://github.com/doctrine/dbal/issues/4510',
             'MariaDb1027Platform::getReservedKeywordsClass() is deprecated,'
-                . ' use MariaDb1027Platform::createReservedKeywordsList() instead.'
+            . ' use MariaDb1027Platform::createReservedKeywordsList() instead.'
         );
 
         return Keywords\MariaDb102Keywords::class;

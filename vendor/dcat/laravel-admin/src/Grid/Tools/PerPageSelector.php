@@ -27,7 +27,7 @@ class PerPageSelector implements Renderable
     /**
      * Create a new PerPageSelector instance.
      *
-     * @param  Grid  $grid
+     * @param Grid $grid
      */
     public function __construct(Grid $grid)
     {
@@ -45,24 +45,10 @@ class PerPageSelector implements Renderable
     {
         $this->perPageName = $this->parent->model()->getPerPageName();
 
-        $this->perPage = (int) app('request')->input(
+        $this->perPage = (int)app('request')->input(
             $this->perPageName,
             $this->parent->getPerPage()
         );
-    }
-
-    /**
-     * Get options for selector.
-     *
-     * @return static
-     */
-    public function getOptions()
-    {
-        return collect($this->parent->getPerPages())
-            ->push($this->parent->getPerPage())
-            ->push($this->perPage)
-            ->unique()
-            ->sort();
     }
 
     /**
@@ -104,5 +90,19 @@ $('.{$this->parent->getPerPageName()}').change(function() {
     Dcat.reload(this.value);
 });
 JS;
+    }
+
+    /**
+     * Get options for selector.
+     *
+     * @return static
+     */
+    public function getOptions()
+    {
+        return collect($this->parent->getPerPages())
+            ->push($this->parent->getPerPage())
+            ->push($this->perPage)
+            ->unique()
+            ->sort();
     }
 }

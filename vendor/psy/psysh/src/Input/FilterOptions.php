@@ -56,7 +56,7 @@ class FilterOptions
         }
 
         if (!$this->stringIsRegex($pattern)) {
-            $pattern = '/'.\preg_quote($pattern, '/').'/';
+            $pattern = '/' . \preg_quote($pattern, '/') . '/';
         }
 
         if ($insensitive = $input->getOption('insensitive')) {
@@ -72,41 +72,18 @@ class FilterOptions
     }
 
     /**
-     * Check whether the bound input has filter options.
-     *
-     * @return bool
-     */
-    public function hasFilter(): bool
-    {
-        return $this->filter;
-    }
-
-    /**
-     * Check whether a string matches the current filter options.
-     *
-     * @param string $string
-     * @param array  $matches
-     *
-     * @return bool
-     */
-    public function match(string $string, array &$matches = null): bool
-    {
-        return $this->filter === false || (\preg_match($this->pattern, $string, $matches) xor $this->invert);
-    }
-
-    /**
      * Validate that grep, invert and insensitive input options are consistent.
      *
+     * @param InputInterface $input
      * @throws RuntimeException if input is invalid
      *
-     * @param InputInterface $input
      */
     private function validateInput(InputInterface $input)
     {
         if (!$input->getOption('grep')) {
             foreach (['invert', 'insensitive'] as $option) {
                 if ($input->getOption($option)) {
-                    throw new RuntimeException('--'.$option.' does not make sense without --grep');
+                    throw new RuntimeException('--' . $option . ' does not make sense without --grep');
                 }
             }
         }
@@ -127,9 +104,9 @@ class FilterOptions
     /**
      * Validate that $pattern is a valid regular expression.
      *
+     * @param string $pattern
      * @throws RuntimeException if pattern is invalid
      *
-     * @param string $pattern
      */
     private function validateRegex(string $pattern)
     {
@@ -141,5 +118,28 @@ class FilterOptions
         } finally {
             \restore_error_handler();
         }
+    }
+
+    /**
+     * Check whether the bound input has filter options.
+     *
+     * @return bool
+     */
+    public function hasFilter(): bool
+    {
+        return $this->filter;
+    }
+
+    /**
+     * Check whether a string matches the current filter options.
+     *
+     * @param string $string
+     * @param array $matches
+     *
+     * @return bool
+     */
+    public function match(string $string, array &$matches = null): bool
+    {
+        return $this->filter === false || (\preg_match($this->pattern, $string, $matches) xor $this->invert);
     }
 }

@@ -14,7 +14,7 @@ class SelfReference
     /**
      * Creates a new self reference instance.
      *
-     * @param  string  $hash
+     * @param string $hash
      * @return void
      */
     public function __construct($hash)

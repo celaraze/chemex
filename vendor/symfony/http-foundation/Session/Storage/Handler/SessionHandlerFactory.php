@@ -70,7 +70,7 @@ class SessionHandlerFactory
                     throw new \InvalidArgumentException(sprintf('Unsupported DSN "%s". Try running "composer require doctrine/dbal".', $connection));
                 }
                 $connection = DriverManager::getConnection(['url' => $connection])->getWrappedConnection();
-                // no break;
+            // no break;
 
             case str_starts_with($connection, 'mssql://'):
             case str_starts_with($connection, 'mysql://'):

@@ -35,15 +35,16 @@ final class Link extends BaseTag implements Factory\StaticMethod
      */
     public function __construct(string $link, ?Description $description = null)
     {
-        $this->link        = $link;
+        $this->link = $link;
         $this->description = $description;
     }
 
     public static function create(
-        string $body,
+        string              $body,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::notNull($descriptionFactory);
 
         $parts = Utils::pregSplit('/\s+/Su', $body, 2);

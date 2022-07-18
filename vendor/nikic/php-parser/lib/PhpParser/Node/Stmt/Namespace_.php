@@ -18,21 +18,24 @@ class Namespace_ extends Node\Stmt
     /**
      * Constructs a namespace node.
      *
-     * @param null|Node\Name   $name       Name
-     * @param null|Node\Stmt[] $stmts      Statements
-     * @param array            $attributes Additional attributes
+     * @param null|Node\Name $name Name
+     * @param null|Node\Stmt[] $stmts Statements
+     * @param array $attributes Additional attributes
      */
-    public function __construct(Node\Name $name = null, $stmts = [], array $attributes = []) {
+    public function __construct(Node\Name $name = null, $stmts = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->name = $name;
         $this->stmts = $stmts;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['name', 'stmts'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Namespace';
     }
 }

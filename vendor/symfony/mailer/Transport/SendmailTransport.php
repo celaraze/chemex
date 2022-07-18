@@ -80,7 +80,7 @@ class SendmailTransport extends AbstractTransport
     public function __toString(): string
     {
         if ($this->transport) {
-            return (string) $this->transport;
+            return (string)$this->transport;
         }
 
         return 'smtp://sendmail';
@@ -97,7 +97,7 @@ class SendmailTransport extends AbstractTransport
         }
 
         if (!str_contains($command, ' -f')) {
-            $command .= ' -f'.escapeshellarg($message->getEnvelope()->getSender()->getEncodedAddress());
+            $command .= ' -f' . escapeshellarg($message->getEnvelope()->getSender()->getEncodedAddress());
         }
 
         $chunks = AbstractStream::replace("\r\n", "\n", $message->toIterable());
@@ -107,7 +107,7 @@ class SendmailTransport extends AbstractTransport
         }
 
         foreach ($recipients as $recipient) {
-            $command .= ' '.escapeshellarg($recipient->getEncodedAddress());
+            $command .= ' ' . escapeshellarg($recipient->getEncodedAddress());
         }
 
         $this->stream->setCommand($command);

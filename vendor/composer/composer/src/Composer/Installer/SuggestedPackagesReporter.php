@@ -45,39 +45,9 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @return array<array{source: string, target: string, reason: string}> Suggested packages with source, target and reason keys.
-     */
-    public function getPackages(): array
-    {
-        return $this->suggestedPackages;
-    }
-
-    /**
-     * Add suggested packages to be listed after install
-     *
-     * Could be used to add suggested packages both from the installer
-     * or from CreateProjectCommand.
-     *
-     * @param  string                    $source Source package which made the suggestion
-     * @param  string                    $target Target package to be suggested
-     * @param  string                    $reason Reason the target package to be suggested
-     * @return SuggestedPackagesReporter
-     */
-    public function addPackage(string $source, string $target, string $reason): SuggestedPackagesReporter
-    {
-        $this->suggestedPackages[] = array(
-            'source' => $source,
-            'target' => $target,
-            'reason' => $reason,
-        );
-
-        return $this;
-    }
-
-    /**
      * Add all suggestions from a package.
      *
-     * @param  PackageInterface          $package
+     * @param PackageInterface $package
      * @return SuggestedPackagesReporter
      */
     public function addSuggestionsFromPackage(PackageInterface $package): SuggestedPackagesReporter
@@ -95,13 +65,35 @@ class SuggestedPackagesReporter
     }
 
     /**
+     * Add suggested packages to be listed after install
+     *
+     * Could be used to add suggested packages both from the installer
+     * or from CreateProjectCommand.
+     *
+     * @param string $source Source package which made the suggestion
+     * @param string $target Target package to be suggested
+     * @param string $reason Reason the target package to be suggested
+     * @return SuggestedPackagesReporter
+     */
+    public function addPackage(string $source, string $target, string $reason): SuggestedPackagesReporter
+    {
+        $this->suggestedPackages[] = array(
+            'source' => $source,
+            'target' => $target,
+            'reason' => $reason,
+        );
+
+        return $this;
+    }
+
+    /**
      * Output suggested packages.
      *
      * Do not list the ones already installed if installed repository provided.
      *
-     * @param  int                      $mode             One of the MODE_* constants from this class
-     * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
+     * @param int $mode One of the MODE_* constants from this class
+     * @param InstalledRepository|null $installedRepo If passed in, suggested packages which are installed already will be skipped
+     * @param PackageInterface|null $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return void
      */
     public function output(int $mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
@@ -158,29 +150,14 @@ class SuggestedPackagesReporter
             $allSuggestedPackages = $this->getFilteredSuggestions($installedRepo);
             $diff = count($allSuggestedPackages) - count($suggestedPackages);
             if ($diff) {
-                $this->io->write('<info>'.$diff.' additional suggestions</info> by transitive dependencies can be shown with <info>--all</info>');
+                $this->io->write('<info>' . $diff . ' additional suggestions</info> by transitive dependencies can be shown with <info>--all</info>');
             }
         }
     }
 
     /**
-     * Output number of new suggested packages and a hint to use suggest command.
-     *
-     * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
-     * @return void
-     */
-    public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
-    {
-        $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
-        if ($suggestedPackages) {
-            $this->io->writeError('<info>'.count($suggestedPackages).' package suggestions were added by new dependencies, use `composer suggest` to see details.</info>');
-        }
-    }
-
-    /**
-     * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
+     * @param InstalledRepository|null $installedRepo If passed in, suggested packages which are installed already will be skipped
+     * @param PackageInterface|null $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return mixed[]
      */
     private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): array
@@ -217,7 +194,15 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @param  string $string
+     * @return array<array{source: string, target: string, reason: string}> Suggested packages with source, target and reason keys.
+     */
+    public function getPackages(): array
+    {
+        return $this->suggestedPackages;
+    }
+
+    /**
+     * @param string $string
      * @return string
      */
     private function escapeOutput(string $string): string
@@ -228,7 +213,7 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @param  string $string
+     * @param string $string
      * @return string
      */
     private function removeControlCharacters(string $string): string
@@ -238,5 +223,20 @@ class SuggestedPackagesReporter
             '',
             str_replace("\n", ' ', $string)
         );
+    }
+
+    /**
+     * Output number of new suggested packages and a hint to use suggest command.
+     *
+     * @param InstalledRepository|null $installedRepo If passed in, suggested packages which are installed already will be skipped
+     * @param PackageInterface|null $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
+     * @return void
+     */
+    public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
+    {
+        $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
+        if ($suggestedPackages) {
+            $this->io->writeError('<info>' . count($suggestedPackages) . ' package suggestions were added by new dependencies, use `composer suggest` to see details.</info>');
+        }
     }
 }

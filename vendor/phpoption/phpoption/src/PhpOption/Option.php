@@ -29,30 +29,6 @@ use IteratorAggregate;
 abstract class Option implements IteratorAggregate
 {
     /**
-     * Creates an option given a return value.
-     *
-     * This is intended for consuming existing APIs and allows you to easily
-     * convert them to an option. By default, we treat ``null`` as the None
-     * case, and everything else as Some.
-     *
-     * @template S
-     *
-     * @param S $value     The actual return value.
-     * @param S $noneValue The value which should be considered "None"; null by
-     *                     default.
-     *
-     * @return Option<S>
-     */
-    public static function fromValue($value, $noneValue = null)
-    {
-        if ($value === $noneValue) {
-            return None::create();
-        }
-
-        return new Some($value);
-    }
-
-    /**
      * Creates an option from an array's value.
      *
      * If the key does not exist in the array, the array is not actually an
@@ -62,7 +38,7 @@ abstract class Option implements IteratorAggregate
      * @template S
      *
      * @param array<string|int,S>|ArrayAccess<string|int,S>|null $array A potential array or \ArrayAccess value.
-     * @param string                                             $key   The key to check.
+     * @param string $key The key to check.
      *
      * @return Option<S>
      */
@@ -84,10 +60,10 @@ abstract class Option implements IteratorAggregate
      *
      * @template S
      *
-     * @param callable $callback  The callback to evaluate.
-     * @param array    $arguments The arguments for the callback.
-     * @param S        $noneValue The value which should be considered "None";
-    *                             null by default.
+     * @param callable $callback The callback to evaluate.
+     * @param array $arguments The arguments for the callback.
+     * @param S $noneValue The value which should be considered "None";
+     *                             null by default.
      *
      * @return LazyOption<S>
      */
@@ -106,6 +82,72 @@ abstract class Option implements IteratorAggregate
     }
 
     /**
+     * Lift a function so that it accepts Option as parameters.
+     *
+     * We return a new closure that wraps the original callback. If any of the
+     * parameters passed to the lifted function is empty, the function will
+     * return a value of None. Otherwise, we will pass all parameters to the
+     * original callback and return the value inside a new Option, unless an
+     * Option is returned from the function, in which case, we use that.
+     *
+     * @template S
+     *
+     * @param callable $callback
+     * @param mixed $noneValue
+     *
+     * @return callable
+     */
+    public static function lift($callback, $noneValue = null)
+    {
+        return static function () use ($callback, $noneValue) {
+            /** @var array<int, mixed> */
+            $args = func_get_args();
+
+            $reduced_args = array_reduce(
+                $args,
+                /** @param bool $status */
+                static function ($status, self $o) {
+                    return $o->isEmpty() ? true : $status;
+                },
+                false
+            );
+            // if at least one parameter is empty, return None
+            if ($reduced_args) {
+                return None::create();
+            }
+
+            $args = array_map(
+            /** @return T */
+                static function (self $o) {
+                    // it is safe to do so because the fold above checked
+                    // that all arguments are of type Some
+                    /** @var T */
+                    return $o->get();
+                },
+                $args
+            );
+
+            return self::ensure(call_user_func_array($callback, $args), $noneValue);
+        };
+    }
+
+    /**
+     * Returns true if no value is available, false otherwise.
+     *
+     * @return bool
+     */
+    abstract public function isEmpty();
+
+    /**
+     * Returns the value if available, or throws an exception otherwise.
+     *
+     * @return T
+     * @throws \RuntimeException If value is not available.
+     *
+     */
+    abstract public function get();
+
+    /**
      * Option factory, which creates new option based on passed value.
      *
      * If value is already an option, it simply returns. If value is callable,
@@ -116,7 +158,7 @@ abstract class Option implements IteratorAggregate
      * @template S
      *
      * @param Option<S>|callable|S $value
-     * @param S                    $noneValue Used when $value is mixed or
+     * @param S $noneValue Used when $value is mixed or
      *                                        callable, for None-check.
      *
      * @return Option<S>|LazyOption<S>
@@ -142,63 +184,28 @@ abstract class Option implements IteratorAggregate
     }
 
     /**
-     * Lift a function so that it accepts Option as parameters.
+     * Creates an option given a return value.
      *
-     * We return a new closure that wraps the original callback. If any of the
-     * parameters passed to the lifted function is empty, the function will
-     * return a value of None. Otherwise, we will pass all parameters to the
-     * original callback and return the value inside a new Option, unless an
-     * Option is returned from the function, in which case, we use that.
+     * This is intended for consuming existing APIs and allows you to easily
+     * convert them to an option. By default, we treat ``null`` as the None
+     * case, and everything else as Some.
      *
      * @template S
      *
-     * @param callable $callback
-     * @param mixed    $noneValue
+     * @param S $value The actual return value.
+     * @param S $noneValue The value which should be considered "None"; null by
+     *                     default.
      *
-     * @return callable
+     * @return Option<S>
      */
-    public static function lift($callback, $noneValue = null)
+    public static function fromValue($value, $noneValue = null)
     {
-        return static function () use ($callback, $noneValue) {
-            /** @var array<int, mixed> */
-            $args = func_get_args();
+        if ($value === $noneValue) {
+            return None::create();
+        }
 
-            $reduced_args = array_reduce(
-                $args,
-                /** @param bool $status */
-                static function ($status, self $o) {
-                    return $o->isEmpty() ? true : $status;
-                },
-                false
-            );
-            // if at least one parameter is empty, return None
-            if ($reduced_args) {
-                return None::create();
-            }
-
-            $args = array_map(
-                /** @return T */
-                static function (self $o) {
-                    // it is safe to do so because the fold above checked
-                    // that all arguments are of type Some
-                    /** @var T */
-                    return $o->get();
-                },
-                $args
-            );
-
-            return self::ensure(call_user_func_array($callback, $args), $noneValue);
-        };
+        return new Some($value);
     }
-
-    /**
-     * Returns the value if available, or throws an exception otherwise.
-     *
-     * @throws \RuntimeException If value is not available.
-     *
-     * @return T
-     */
-    abstract public function get();
 
     /**
      * Returns the value if available, or the default value if not.
@@ -233,13 +240,6 @@ abstract class Option implements IteratorAggregate
      * @return T
      */
     abstract public function getOrThrow(\Exception $ex);
-
-    /**
-     * Returns true if no value is available, false otherwise.
-     *
-     * @return bool
-     */
-    abstract public function isEmpty();
 
     /**
      * Returns true if a value is available, false otherwise.
@@ -282,11 +282,11 @@ abstract class Option implements IteratorAggregate
      * If you're looking for something like ``ifEmpty``, you can use ``getOrCall``
      * and ``getOrElse`` in these cases.
      *
-     * @deprecated Use forAll() instead.
-     *
      * @param callable(T):mixed $callable
      *
      * @return void
+     * @deprecated Use forAll() instead.
+     *
      */
     abstract public function ifDefined($callable);
 
@@ -413,7 +413,7 @@ abstract class Option implements IteratorAggregate
      *
      * @template S
      *
-     * @param S                $initialValue
+     * @param S $initialValue
      * @param callable(S, T):S $callable
      *
      * @return S
@@ -425,7 +425,7 @@ abstract class Option implements IteratorAggregate
      *
      * @template S
      *
-     * @param S                $initialValue
+     * @param S $initialValue
      * @param callable(T, S):S $callable
      *
      * @return S

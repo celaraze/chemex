@@ -21,15 +21,16 @@ class Glow
     /**
      * @param string $name
      * @param string $messageLevel
-     * @param array<int, mixed>  $metaData
+     * @param array<int, mixed> $metaData
      * @param float|null $microtime
      */
     public function __construct(
         string $name,
         string $messageLevel = MessageLevels::INFO,
-        array $metaData = [],
+        array  $metaData = [],
         ?float $microtime = null
-    ) {
+    )
+    {
         $this->name = $name;
         $this->messageLevel = $messageLevel;
         $this->metaData = $metaData;

@@ -21,7 +21,7 @@ class DocblockFormatter implements ReflectorFormatter
 {
     private static $vectorParamTemplates = [
         'type' => 'info',
-        'var'  => 'strong',
+        'var' => 'strong',
     ];
 
     /**
@@ -59,6 +59,33 @@ class DocblockFormatter implements ReflectorFormatter
         }
 
         return \rtrim(\implode("\n", $chunks));
+    }
+
+    /**
+     * Indent a string.
+     *
+     * @param string $text String to indent
+     * @param string $indent (default: '  ')
+     *
+     * @return string
+     */
+    private static function indent(string $text, string $indent = '  '): string
+    {
+        return $indent . \str_replace("\n", "\n" . $indent, $text);
+    }
+
+    /**
+     * Convert underscored or whitespace separated words into sentence case.
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    private static function inflect(string $text): string
+    {
+        $words = \trim(\preg_replace('/[\s_-]+/', ' ', \preg_replace('/([a-z])([A-Z])/', '$1 $2', $text)));
+
+        return \implode(' ', \array_map('ucfirst', \explode(' ', $words)));
     }
 
     /**
@@ -102,6 +129,23 @@ class DocblockFormatter implements ReflectorFormatter
     }
 
     /**
+     * Get a docblock vector template.
+     *
+     * @param string $type Vector type
+     * @param int $max Pad width
+     *
+     * @return string
+     */
+    private static function getVectorParamTemplate(string $type, int $max): string
+    {
+        if (!isset(self::$vectorParamTemplates[$type])) {
+            return \sprintf('%%-%ds', $max);
+        }
+
+        return \sprintf('<%s>%%-%ds</%s>', self::$vectorParamTemplates[$type], $max, self::$vectorParamTemplates[$type]);
+    }
+
+    /**
      * Format docblock tags.
      *
      * @param array $skip Tags to exclude
@@ -126,49 +170,5 @@ class DocblockFormatter implements ReflectorFormatter
         }
 
         return \implode("\n", $chunks);
-    }
-
-    /**
-     * Get a docblock vector template.
-     *
-     * @param string $type Vector type
-     * @param int    $max  Pad width
-     *
-     * @return string
-     */
-    private static function getVectorParamTemplate(string $type, int $max): string
-    {
-        if (!isset(self::$vectorParamTemplates[$type])) {
-            return \sprintf('%%-%ds', $max);
-        }
-
-        return \sprintf('<%s>%%-%ds</%s>', self::$vectorParamTemplates[$type], $max, self::$vectorParamTemplates[$type]);
-    }
-
-    /**
-     * Indent a string.
-     *
-     * @param string $text   String to indent
-     * @param string $indent (default: '  ')
-     *
-     * @return string
-     */
-    private static function indent(string $text, string $indent = '  '): string
-    {
-        return $indent.\str_replace("\n", "\n".$indent, $text);
-    }
-
-    /**
-     * Convert underscored or whitespace separated words into sentence case.
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    private static function inflect(string $text): string
-    {
-        $words = \trim(\preg_replace('/[\s_-]+/', ' ', \preg_replace('/([a-z])([A-Z])/', '$1 $2', $text)));
-
-        return \implode(' ', \array_map('ucfirst', \explode(' ', $words)));
     }
 }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 /**
@@ -37,10 +38,10 @@ final class TestSuite
 
     public function __construct(string $name, TestDirectoryCollection $directories, TestFileCollection $files, FileCollection $exclude)
     {
-        $this->name        = $name;
+        $this->name = $name;
         $this->directories = $directories;
-        $this->files       = $files;
-        $this->exclude     = $exclude;
+        $this->files = $files;
+        $this->exclude = $exclude;
     }
 
     public function name(): string

@@ -17,7 +17,7 @@ class Processor
     {
         $propertiesString = $this->cleanup($propertiesString);
 
-        $properties = (array) explode(';', $propertiesString);
+        $properties = (array)explode(';', $propertiesString);
         $keysToRemove = array();
         $numberOfProperties = count($properties);
 
@@ -60,6 +60,29 @@ class Processor
     }
 
     /**
+     * Converts an array of property-strings into objects
+     *
+     * @param string[] $properties
+     *
+     * @return Property[]
+     */
+    public function convertArrayToObjects(array $properties, Specificity $specificity = null)
+    {
+        $objects = array();
+
+        foreach ($properties as $property) {
+            $object = $this->convertToObject($property, $specificity);
+            if ($object === null) {
+                continue;
+            }
+
+            $objects[] = $object;
+        }
+
+        return $objects;
+    }
+
+    /**
      * Converts a property-string into an object
      *
      * @param string $property
@@ -82,29 +105,6 @@ class Processor
         }
 
         return new Property($name, $value, $specificity);
-    }
-
-    /**
-     * Converts an array of property-strings into objects
-     *
-     * @param string[] $properties
-     *
-     * @return Property[]
-     */
-    public function convertArrayToObjects(array $properties, Specificity $specificity = null)
-    {
-        $objects = array();
-
-        foreach ($properties as $property) {
-            $object = $this->convertToObject($property, $specificity);
-            if ($object === null) {
-                continue;
-            }
-
-            $objects[] = $object;
-        }
-
-        return $objects;
     }
 
     /**

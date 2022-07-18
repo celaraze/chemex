@@ -12,9 +12,6 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Downloader\ChangeReportInterface;
 use Composer\Downloader\DvcsDownloaderInterface;
 use Composer\Downloader\VcsCapableDownloaderInterface;
@@ -25,6 +22,9 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Tiago Ribeiro <tiago.ribeiro@seegno.com>
@@ -55,8 +55,7 @@ been modified locally.
 
 Read more at https://getcomposer.org/doc/03-cli.md#status
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -166,7 +165,7 @@ EOT
                     $indentedChanges = implode("\n", array_map(function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
-                    $io->write('<info>'.$path.'</info>:');
+                    $io->write('<info>' . $path . '</info>:');
                     $io->write($indentedChanges);
                 } else {
                     $io->write($path);
@@ -182,7 +181,7 @@ EOT
                     $indentedChanges = implode("\n", array_map(function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
-                    $io->write('<info>'.$path.'</info>:');
+                    $io->write('<info>' . $path . '</info>:');
                     $io->write($indentedChanges);
                 } else {
                     $io->write($path);
@@ -205,7 +204,7 @@ EOT
                         $previousVersion .= sprintf(' (%s)', $changes['previous']['ref']);
                     }
 
-                    $io->write('<info>'.$path.'</info>:');
+                    $io->write('<info>' . $path . '</info>:');
                     $io->write(sprintf('    From <comment>%s</comment> to <comment>%s</comment>', $previousVersion, $currentVersion));
                 } else {
                     $io->write($path);

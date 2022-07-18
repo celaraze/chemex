@@ -53,7 +53,7 @@ abstract class FileDumper implements DumperInterface
 
         // save a file for each domain
         foreach ($messages->getDomains() as $domain) {
-            $fullpath = $options['path'].'/'.$this->getRelativePath($domain, $messages->getLocale());
+            $fullpath = $options['path'] . '/' . $this->getRelativePath($domain, $messages->getLocale());
             if (!file_exists($fullpath)) {
                 $directory = \dirname($fullpath);
                 if (!file_exists($directory) && !@mkdir($directory, 0777, true)) {
@@ -61,11 +61,11 @@ abstract class FileDumper implements DumperInterface
                 }
             }
 
-            $intlDomain = $domain.MessageCatalogue::INTL_DOMAIN_SUFFIX;
+            $intlDomain = $domain . MessageCatalogue::INTL_DOMAIN_SUFFIX;
             $intlMessages = $messages->all($intlDomain);
 
             if ($intlMessages) {
-                $intlPath = $options['path'].'/'.$this->getRelativePath($intlDomain, $messages->getLocale());
+                $intlPath = $options['path'] . '/' . $this->getRelativePath($intlDomain, $messages->getLocale());
                 file_put_contents($intlPath, $this->formatCatalogue($messages, $intlDomain, $options));
 
                 $messages->replace([], $intlDomain);
@@ -85,16 +85,6 @@ abstract class FileDumper implements DumperInterface
     }
 
     /**
-     * Transforms a domain of a message catalogue to its string representation.
-     */
-    abstract public function formatCatalogue(MessageCatalogue $messages, string $domain, array $options = []): string;
-
-    /**
-     * Gets the file extension of the dumper.
-     */
-    abstract protected function getExtension(): string;
-
-    /**
      * Gets the relative file path using the template.
      */
     private function getRelativePath(string $domain, string $locale): string
@@ -105,4 +95,14 @@ abstract class FileDumper implements DumperInterface
             '%extension%' => $this->getExtension(),
         ]);
     }
+
+    /**
+     * Gets the file extension of the dumper.
+     */
+    abstract protected function getExtension(): string;
+
+    /**
+     * Transforms a domain of a message catalogue to its string representation.
+     */
+    abstract public function formatCatalogue(MessageCatalogue $messages, string $domain, array $options = []): string;
 }

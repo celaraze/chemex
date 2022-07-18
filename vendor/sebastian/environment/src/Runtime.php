@@ -7,13 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Environment;
 
-use const PHP_BINARY;
-use const PHP_BINDIR;
-use const PHP_MAJOR_VERSION;
-use const PHP_SAPI;
-use const PHP_VERSION;
 use function array_map;
 use function array_merge;
 use function defined;
@@ -29,6 +25,11 @@ use function php_ini_scanned_files;
 use function phpversion;
 use function sprintf;
 use function strpos;
+use const PHP_BINARY;
+use const PHP_BINDIR;
+use const PHP_MAJOR_VERSION;
+use const PHP_SAPI;
+use const PHP_VERSION;
 
 /**
  * Utility class for HHVM/PHP environment handling.
@@ -39,15 +40,6 @@ final class Runtime
      * @var string
      */
     private static $binary;
-
-    /**
-     * Returns true when Xdebug or PCOV is available or
-     * the runtime used is PHPDBG.
-     */
-    public function canCollectCodeCoverage(): bool
-    {
-        return $this->hasXdebug() || $this->hasPCOV() || $this->hasPHPDBGCodeCoverage();
-    }
 
     /**
      * Returns true when Zend OPcache is loaded, enabled,
@@ -64,6 +56,23 @@ final class Runtime
         }
 
         return true;
+    }
+
+    private function isOpcacheActive(): bool
+    {
+        if (!extension_loaded('Zend OPcache')) {
+            return false;
+        }
+
+        if ((PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') && ini_get('opcache.enable_cli') === '1') {
+            return true;
+        }
+
+        if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg' && ini_get('opcache.enable') === '1') {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -136,9 +145,12 @@ final class Runtime
         return self::$binary;
     }
 
-    public function getNameWithVersion(): string
+    /**
+     * Returns true when the runtime used is HHVM.
+     */
+    public function isHHVM(): bool
     {
-        return $this->getName() . ' ' . $this->getVersion();
+        return defined('HHVM_VERSION');
     }
 
     public function getNameWithVersionAndCodeCoverageDriver(): string
@@ -164,43 +176,13 @@ final class Runtime
         }
     }
 
-    public function getName(): string
+    /**
+     * Returns true when Xdebug or PCOV is available or
+     * the runtime used is PHPDBG.
+     */
+    public function canCollectCodeCoverage(): bool
     {
-        if ($this->isHHVM()) {
-            // @codeCoverageIgnoreStart
-            return 'HHVM';
-            // @codeCoverageIgnoreEnd
-        }
-
-        if ($this->isPHPDBG()) {
-            // @codeCoverageIgnoreStart
-            return 'PHPDBG';
-            // @codeCoverageIgnoreEnd
-        }
-
-        return 'PHP';
-    }
-
-    public function getVendorUrl(): string
-    {
-        if ($this->isHHVM()) {
-            // @codeCoverageIgnoreStart
-            return 'http://hhvm.com/';
-            // @codeCoverageIgnoreEnd
-        }
-
-        return 'https://secure.php.net/';
-    }
-
-    public function getVersion(): string
-    {
-        if ($this->isHHVM()) {
-            // @codeCoverageIgnoreStart
-            return HHVM_VERSION;
-            // @codeCoverageIgnoreEnd
-        }
-
-        return PHP_VERSION;
+        return $this->hasXdebug() || $this->hasPCOV() || $this->hasPHPDBGCodeCoverage();
     }
 
     /**
@@ -209,14 +191,6 @@ final class Runtime
     public function hasXdebug(): bool
     {
         return ($this->isPHP() || $this->isHHVM()) && extension_loaded('xdebug');
-    }
-
-    /**
-     * Returns true when the runtime used is HHVM.
-     */
-    public function isHHVM(): bool
-    {
-        return defined('HHVM_VERSION');
     }
 
     /**
@@ -236,6 +210,14 @@ final class Runtime
     }
 
     /**
+     * Returns true when the runtime used is PHP with PCOV loaded and enabled.
+     */
+    public function hasPCOV(): bool
+    {
+        return $this->isPHP() && extension_loaded('pcov') && ini_get('pcov.enabled');
+    }
+
+    /**
      * Returns true when the runtime used is PHP with the PHPDBG SAPI
      * and the phpdbg_*_oplog() functions are available (PHP >= 7.0).
      */
@@ -244,12 +226,48 @@ final class Runtime
         return $this->isPHPDBG();
     }
 
-    /**
-     * Returns true when the runtime used is PHP with PCOV loaded and enabled.
-     */
-    public function hasPCOV(): bool
+    public function getNameWithVersion(): string
     {
-        return $this->isPHP() && extension_loaded('pcov') && ini_get('pcov.enabled');
+        return $this->getName() . ' ' . $this->getVersion();
+    }
+
+    public function getName(): string
+    {
+        if ($this->isHHVM()) {
+            // @codeCoverageIgnoreStart
+            return 'HHVM';
+            // @codeCoverageIgnoreEnd
+        }
+
+        if ($this->isPHPDBG()) {
+            // @codeCoverageIgnoreStart
+            return 'PHPDBG';
+            // @codeCoverageIgnoreEnd
+        }
+
+        return 'PHP';
+    }
+
+    public function getVersion(): string
+    {
+        if ($this->isHHVM()) {
+            // @codeCoverageIgnoreStart
+            return HHVM_VERSION;
+            // @codeCoverageIgnoreEnd
+        }
+
+        return PHP_VERSION;
+    }
+
+    public function getVendorUrl(): string
+    {
+        if ($this->isHHVM()) {
+            // @codeCoverageIgnoreStart
+            return 'http://hhvm.com/';
+            // @codeCoverageIgnoreEnd
+        }
+
+        return 'https://secure.php.net/';
     }
 
     /**
@@ -266,7 +284,7 @@ final class Runtime
      */
     public function getCurrentSettings(array $values): array
     {
-        $diff  = [];
+        $diff = [];
         $files = [];
 
         if ($file = php_ini_loaded_file()) {
@@ -300,22 +318,5 @@ final class Runtime
         }
 
         return $diff;
-    }
-
-    private function isOpcacheActive(): bool
-    {
-        if (!extension_loaded('Zend OPcache')) {
-            return false;
-        }
-
-        if ((PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') && ini_get('opcache.enable_cli') === '1') {
-            return true;
-        }
-
-        if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg' && ini_get('opcache.enable') === '1') {
-            return true;
-        }
-
-        return false;
     }
 }

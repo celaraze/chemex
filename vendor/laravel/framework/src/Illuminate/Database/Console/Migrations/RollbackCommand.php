@@ -34,7 +34,7 @@ class RollbackCommand extends BaseCommand
     /**
      * Create a new migration rollback command instance.
      *
-     * @param  \Illuminate\Database\Migrations\Migrator  $migrator
+     * @param \Illuminate\Database\Migrations\Migrator $migrator
      * @return void
      */
     public function __construct(Migrator $migrator)
@@ -51,7 +51,7 @@ class RollbackCommand extends BaseCommand
      */
     public function handle()
     {
-        if (! $this->confirmToProceed()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 
@@ -59,7 +59,7 @@ class RollbackCommand extends BaseCommand
             $this->migrator->setOutput($this->output)->rollback(
                 $this->getMigrationPaths(), [
                     'pretend' => $this->option('pretend'),
-                    'step' => (int) $this->option('step'),
+                    'step' => (int)$this->option('step'),
                 ]
             );
         });

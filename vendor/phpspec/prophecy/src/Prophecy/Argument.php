@@ -48,7 +48,7 @@ class Argument
      * Checks that argument object has specific state.
      *
      * @param string $methodName
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return Token\ObjectStateToken
      */
@@ -67,16 +67,6 @@ class Argument
     public static function that($callback)
     {
         return new Token\CallbackToken($callback);
-    }
-
-    /**
-     * Matches any single value.
-     *
-     * @return Token\AnyValueToken
-     */
-    public static function any()
-    {
-        return new Token\AnyValueToken;
     }
 
     /**
@@ -116,7 +106,7 @@ class Argument
     /**
      * Checks that argument array contains (key, value) pair
      *
-     * @param mixed $key   exact value or token
+     * @param mixed $key exact value or token
      * @param mixed $value exact value or token
      *
      * @return Token\ArrayEntryToken
@@ -148,6 +138,16 @@ class Argument
     public static function containing($value)
     {
         return new Token\ArrayEntryToken(self::any(), $value);
+    }
+
+    /**
+     * Matches any single value.
+     *
+     * @return Token\AnyValueToken
+     */
+    public static function any()
+    {
+        return new Token\AnyValueToken;
     }
 
     /**

@@ -9,19 +9,19 @@ interface Exporter extends Excel
     /**
      * 设置导出数据.
      *
-     * @param  array|\Closure|\Generator|Exporters\ChunkQuery  $data
+     * @param array|\Closure|\Generator|Exporters\ChunkQuery $data
      * @return $this
      */
     public function data($data);
 
     /**
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function row(callable $callback);
 
     /**
-     * @param  Style  $style
+     * @param Style $style
      * @return $this
      */
     public function headingStyle($style);
@@ -29,7 +29,7 @@ interface Exporter extends Excel
     /**
      * 分批次导入数据.
      *
-     * @param  callable|callable[]  $callbacks
+     * @param callable|callable[] $callbacks
      * @return $this
      */
     public function chunk($callbacks);
@@ -37,7 +37,7 @@ interface Exporter extends Excel
     /**
      * 下载导出文件.
      *
-     * @param  string|null  $fileName
+     * @param string|null $fileName
      * @return mixed
      */
     public function download(string $fileName);
@@ -45,8 +45,8 @@ interface Exporter extends Excel
     /**
      * 存储导出文件.
      *
-     * @param  string  $filePath
-     * @param  array  $diskConfig
+     * @param string $filePath
+     * @param array $diskConfig
      * @return bool
      */
     public function store(string $filePath, array $diskConfig = []);

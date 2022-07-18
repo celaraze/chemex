@@ -57,6 +57,15 @@ abstract class AbstractSessionListener implements EventSubscriberInterface, Rese
         $this->sessionOptions = $sessionOptions;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => ['onKernelRequest', 128],
+            // low priority to come after regular response listeners
+            KernelEvents::RESPONSE => ['onKernelResponse', -1000],
+        ];
+    }
+
     public function onKernelRequest(RequestEvent $event)
     {
         if (!$event->isMainRequest()) {
@@ -87,6 +96,11 @@ abstract class AbstractSessionListener implements EventSubscriberInterface, Rese
             });
         }
     }
+
+    /**
+     * Gets the session object.
+     */
+    abstract protected function getSession(): ?SessionInterface;
 
     public function onKernelResponse(ResponseEvent $event)
     {
@@ -210,6 +224,25 @@ abstract class AbstractSessionListener implements EventSubscriberInterface, Rese
         }
     }
 
+    private function getSessionOptions(array $sessionOptions): array
+    {
+        $mergedSessionOptions = [];
+
+        foreach (session_get_cookie_params() as $key => $value) {
+            $mergedSessionOptions['cookie_' . $key] = $value;
+        }
+
+        foreach ($sessionOptions as $key => $value) {
+            // do the same logic as in the NativeSessionStorage
+            if ('cookie_secure' === $key && 'auto' === $value) {
+                continue;
+            }
+            $mergedSessionOptions[$key] = $value;
+        }
+
+        return $mergedSessionOptions;
+    }
+
     public function onSessionUsage(): void
     {
         if (!$this->debug) {
@@ -245,15 +278,6 @@ abstract class AbstractSessionListener implements EventSubscriberInterface, Rese
         throw new UnexpectedSessionUsageException('Session was used while the request was declared stateless.');
     }
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => ['onKernelRequest', 128],
-            // low priority to come after regular response listeners
-            KernelEvents::RESPONSE => ['onKernelResponse', -1000],
-        ];
-    }
-
     public function reset(): void
     {
         if (\PHP_SESSION_ACTIVE === session_status()) {
@@ -266,29 +290,5 @@ abstract class AbstractSessionListener implements EventSubscriberInterface, Rese
         if (!headers_sent()) { // session id can only be reset when no headers were so we check for headers_sent first
             session_id('');
         }
-    }
-
-    /**
-     * Gets the session object.
-     */
-    abstract protected function getSession(): ?SessionInterface;
-
-    private function getSessionOptions(array $sessionOptions): array
-    {
-        $mergedSessionOptions = [];
-
-        foreach (session_get_cookie_params() as $key => $value) {
-            $mergedSessionOptions['cookie_'.$key] = $value;
-        }
-
-        foreach ($sessionOptions as $key => $value) {
-            // do the same logic as in the NativeSessionStorage
-            if ('cookie_secure' === $key && 'auto' === $value) {
-                continue;
-            }
-            $mergedSessionOptions[$key] = $value;
-        }
-
-        return $mergedSessionOptions;
     }
 }

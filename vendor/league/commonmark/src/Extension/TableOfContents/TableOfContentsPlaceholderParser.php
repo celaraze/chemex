@@ -34,16 +34,6 @@ final class TableOfContentsPlaceholderParser extends AbstractBlockContinueParser
         $this->block = new TableOfContentsPlaceholder();
     }
 
-    public function getBlock(): TableOfContentsPlaceholder
-    {
-        return $this->block;
-    }
-
-    public function tryContinue(Cursor $cursor, BlockContinueParserInterface $activeBlockParser): ?BlockContinue
-    {
-        return BlockContinue::none();
-    }
-
     public static function blockStartParser(): BlockStartParserInterface
     {
         return new class () implements BlockStartParserInterface, ConfigurationAwareInterface {
@@ -70,5 +60,15 @@ final class TableOfContentsPlaceholderParser extends AbstractBlockContinueParser
                 $this->config = $configuration;
             }
         };
+    }
+
+    public function getBlock(): TableOfContentsPlaceholder
+    {
+        return $this->block;
+    }
+
+    public function tryContinue(Cursor $cursor, BlockContinueParserInterface $activeBlockParser): ?BlockContinue
+    {
+        return BlockContinue::none();
     }
 }

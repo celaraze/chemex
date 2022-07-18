@@ -35,30 +35,9 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         $this->data = $data;
     }
 
-    public function getType(): ?string
+    public function count(): int
     {
-        $item = $this->data[$this->position][$this->key];
-
-        if ($item instanceof Stub && Stub::TYPE_REF === $item->type && !$item->position) {
-            $item = $item->value;
-        }
-        if (!$item instanceof Stub) {
-            return \gettype($item);
-        }
-        if (Stub::TYPE_STRING === $item->type) {
-            return 'string';
-        }
-        if (Stub::TYPE_ARRAY === $item->type) {
-            return 'array';
-        }
-        if (Stub::TYPE_OBJECT === $item->type) {
-            return $item->class;
-        }
-        if (Stub::TYPE_RESOURCE === $item->type) {
-            return $item->class.' resource';
-        }
-
-        return null;
+        return \count($this->getValue());
     }
 
     /**
@@ -94,7 +73,7 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
 
             if ($recursive) {
                 if (Stub::TYPE_REF === $v->type && ($v = $this->getStub($v->value)) instanceof Stub) {
-                    $recursive = (array) $recursive;
+                    $recursive = (array)$recursive;
                     if (isset($recursive[$v->position])) {
                         continue;
                     }
@@ -107,9 +86,22 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         return $children;
     }
 
-    public function count(): int
+    private function getStub(mixed $item)
     {
-        return \count($this->getValue());
+        if (!$item || !\is_array($item)) {
+            return $item;
+        }
+
+        $stub = new Stub();
+        $stub->type = Stub::TYPE_ARRAY;
+        foreach ($item as $stub->class => $stub->position) {
+        }
+        if (isset($item[0])) {
+            $stub->cut = $item[0];
+        }
+        $stub->value = $stub->cut + ($stub->position ? \count($this->data[$stub->position]) : 0);
+
+        return $stub;
     }
 
     public function getIterator(): \Traversable
@@ -119,6 +111,65 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         }
 
         yield from $value;
+    }
+
+    public function offsetExists(mixed $key): bool
+    {
+        return $this->__isset($key);
+    }
+
+    public function __isset(string $key): bool
+    {
+        return null !== $this->seek($key);
+    }
+
+    /**
+     * Seeks to a specific key in nested data structures.
+     */
+    public function seek(string|int $key): ?static
+    {
+        $item = $this->data[$this->position][$this->key];
+
+        if ($item instanceof Stub && Stub::TYPE_REF === $item->type && !$item->position) {
+            $item = $item->value;
+        }
+        if (!($item = $this->getStub($item)) instanceof Stub || !$item->position) {
+            return null;
+        }
+        $keys = [$key];
+
+        switch ($item->type) {
+            case Stub::TYPE_OBJECT:
+                $keys[] = Caster::PREFIX_DYNAMIC . $key;
+                $keys[] = Caster::PREFIX_PROTECTED . $key;
+                $keys[] = Caster::PREFIX_VIRTUAL . $key;
+                $keys[] = "\0$item->class\0$key";
+            // no break
+            case Stub::TYPE_ARRAY:
+            case Stub::TYPE_RESOURCE:
+                break;
+            default:
+                return null;
+        }
+
+        $data = null;
+        $children = $this->data[$item->position];
+
+        foreach ($keys as $key) {
+            if (isset($children[$key]) || \array_key_exists($key, $children)) {
+                $data = clone $this;
+                $data->key = $key;
+                $data->position = $item->position;
+                break;
+            }
+        }
+
+        return $data;
+    }
+
+    public function offsetGet(mixed $key): mixed
+    {
+        return $this->__get($key);
     }
 
     public function __get(string $key)
@@ -132,29 +183,14 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         return null;
     }
 
-    public function __isset(string $key): bool
-    {
-        return null !== $this->seek($key);
-    }
-
-    public function offsetExists(mixed $key): bool
-    {
-        return $this->__isset($key);
-    }
-
-    public function offsetGet(mixed $key): mixed
-    {
-        return $this->__get($key);
-    }
-
     public function offsetSet(mixed $key, mixed $value): void
     {
-        throw new \BadMethodCallException(self::class.' objects are immutable.');
+        throw new \BadMethodCallException(self::class . ' objects are immutable.');
     }
 
     public function offsetUnset(mixed $key): void
     {
-        throw new \BadMethodCallException(self::class.' objects are immutable.');
+        throw new \BadMethodCallException(self::class . ' objects are immutable.');
     }
 
     public function __toString(): string
@@ -162,10 +198,36 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         $value = $this->getValue();
 
         if (!\is_array($value)) {
-            return (string) $value;
+            return (string)$value;
         }
 
         return sprintf('%s (count=%d)', $this->getType(), \count($value));
+    }
+
+    public function getType(): ?string
+    {
+        $item = $this->data[$this->position][$this->key];
+
+        if ($item instanceof Stub && Stub::TYPE_REF === $item->type && !$item->position) {
+            $item = $item->value;
+        }
+        if (!$item instanceof Stub) {
+            return \gettype($item);
+        }
+        if (Stub::TYPE_STRING === $item->type) {
+            return 'string';
+        }
+        if (Stub::TYPE_ARRAY === $item->type) {
+            return 'array';
+        }
+        if (Stub::TYPE_OBJECT === $item->type) {
+            return $item->class;
+        }
+        if (Stub::TYPE_RESOURCE === $item->type) {
+            return $item->class . ' resource';
+        }
+
+        return null;
     }
 
     /**
@@ -207,50 +269,6 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
     {
         $data = clone $this;
         $data->context = $context;
-
-        return $data;
-    }
-
-    /**
-     * Seeks to a specific key in nested data structures.
-     */
-    public function seek(string|int $key): ?static
-    {
-        $item = $this->data[$this->position][$this->key];
-
-        if ($item instanceof Stub && Stub::TYPE_REF === $item->type && !$item->position) {
-            $item = $item->value;
-        }
-        if (!($item = $this->getStub($item)) instanceof Stub || !$item->position) {
-            return null;
-        }
-        $keys = [$key];
-
-        switch ($item->type) {
-            case Stub::TYPE_OBJECT:
-                $keys[] = Caster::PREFIX_DYNAMIC.$key;
-                $keys[] = Caster::PREFIX_PROTECTED.$key;
-                $keys[] = Caster::PREFIX_VIRTUAL.$key;
-                $keys[] = "\0$item->class\0$key";
-                // no break
-            case Stub::TYPE_ARRAY:
-            case Stub::TYPE_RESOURCE:
-                break;
-            default:
-                return null;
-        }
-
-        $data = null;
-        $children = $this->data[$item->position];
-
-        foreach ($keys as $key) {
-            if (isset($children[$key]) || \array_key_exists($key, $children)) {
-                $data = clone $this;
-                $data->key = $key;
-                $data->position = $item->position;
-                break;
-            }
-        }
 
         return $data;
     }
@@ -343,7 +361,7 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
                     $item = clone $item;
                     $item->type = $item->class;
                     $item->class = $item->value;
-                    // no break
+                // no break
                 case Stub::TYPE_OBJECT:
                 case Stub::TYPE_RESOURCE:
                     $withChildren = $children && $cursor->depth !== $this->maxDepth && $this->maxItemsPerDepth;
@@ -400,23 +418,5 @@ class Data implements \ArrayAccess, \Countable, \IteratorAggregate
         }
 
         return $hashCut;
-    }
-
-    private function getStub(mixed $item)
-    {
-        if (!$item || !\is_array($item)) {
-            return $item;
-        }
-
-        $stub = new Stub();
-        $stub->type = Stub::TYPE_ARRAY;
-        foreach ($item as $stub->class => $stub->position) {
-        }
-        if (isset($item[0])) {
-            $stub->cut = $item[0];
-        }
-        $stub->value = $stub->cut + ($stub->position ? \count($this->data[$stub->position]) : 0);
-
-        return $stub;
     }
 }

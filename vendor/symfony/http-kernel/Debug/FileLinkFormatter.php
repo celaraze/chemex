@@ -48,6 +48,18 @@ class FileLinkFormatter
         $this->urlFormat = $urlFormat;
     }
 
+    /**
+     * @internal
+     */
+    public static function generateUrlFormat(UrlGeneratorInterface $router, string $routeName, string $queryString): ?string
+    {
+        try {
+            return $router->generate($routeName) . $queryString;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public function format(string $file, int $line)
     {
         if ($fmt = $this->getFileLinkFormat()) {
@@ -64,28 +76,6 @@ class FileLinkFormatter
         return false;
     }
 
-    /**
-     * @internal
-     */
-    public function __sleep(): array
-    {
-        $this->fileLinkFormat = $this->getFileLinkFormat();
-
-        return ['fileLinkFormat'];
-    }
-
-    /**
-     * @internal
-     */
-    public static function generateUrlFormat(UrlGeneratorInterface $router, string $routeName, string $queryString): ?string
-    {
-        try {
-            return $router->generate($routeName).$queryString;
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
     private function getFileLinkFormat(): array|false
     {
         if ($this->fileLinkFormat) {
@@ -97,12 +87,22 @@ class FileLinkFormatter
 
             if ($request instanceof Request && (!$this->urlFormat instanceof \Closure || $this->urlFormat = ($this->urlFormat)())) {
                 return [
-                    $request->getSchemeAndHttpHost().$this->urlFormat,
-                    $this->baseDir.\DIRECTORY_SEPARATOR, '',
+                    $request->getSchemeAndHttpHost() . $this->urlFormat,
+                    $this->baseDir . \DIRECTORY_SEPARATOR, '',
                 ];
             }
         }
 
         return false;
+    }
+
+    /**
+     * @internal
+     */
+    public function __sleep(): array
+    {
+        $this->fileLinkFormat = $this->getFileLinkFormat();
+
+        return ['fileLinkFormat'];
     }
 }

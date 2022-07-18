@@ -1,4 +1,3 @@
-
 import Helpers from './extensions/Helpers'
 import Translator from './extensions/Translator'
 
@@ -80,8 +79,8 @@ export default class Dcat {
     ready(callback, _window) {
         let _this = this;
 
-        if (! _window || _window === window) {
-            if (! waiting) {
+        if (!_window || _window === window) {
+            if (!waiting) {
                 return $(callback);
             }
 
@@ -127,8 +126,8 @@ export default class Dcat {
                 $this.attr('initialized', '1');
 
                 // 如果没有ID，则自动生成
-                if (! id) {
-                    id = "_"+self.helpers.random();
+                if (!id) {
+                    id = "_" + self.helpers.random();
                     $this.attr('id', id);
                 }
 
@@ -156,7 +155,7 @@ export default class Dcat {
      * 主动触发 ready 事件
      */
     triggerReady() {
-        if (! waiting) {
+        if (!waiting) {
             return;
         }
 

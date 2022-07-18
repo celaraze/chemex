@@ -54,7 +54,48 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     * @param  callable  $callback
+     * @param string $name
+     * @return $this
+     */
+    public function name(?string $name)
+    {
+        if (is_string($name)) {
+            $this->name = $name;
+        }
+
+        return $this;
+    }
+
+    /**
+     *  传false则禁用标题.
+     *
+     * @param array|false $headings
+     * @return $this
+     */
+    public function headings($headings)
+    {
+        if (is_array($headings)) {
+            $this->headings = $headings;
+        } elseif ($headings === false) {
+            $this->headings = false;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $data
+     * @param $name
+     * @param $headings
+     * @return Sheet
+     */
+    public static function make($data, $name, $headings)
+    {
+        return new static($data, $name, $headings);
+    }
+
+    /**
+     * @param callable $callback
      * @return $this
      */
     public function chunk(callable $callback)
@@ -73,23 +114,6 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     *  传false则禁用标题.
-     *
-     * @param  array|false  $headings
-     * @return $this
-     */
-    public function headings($headings)
-    {
-        if (is_array($headings)) {
-            $this->headings = $headings;
-        } elseif ($headings === false) {
-            $this->headings = false;
-        }
-
-        return $this;
-    }
-
-    /**
      * @return array|false
      */
     public function getHeadings()
@@ -98,7 +122,7 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     * @param  Style  $style
+     * @param Style $style
      * @return $this
      */
     public function headingStyle($style)
@@ -117,28 +141,7 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     * @param  string  $name
-     * @return $this
-     */
-    public function name(?string $name)
-    {
-        if (is_string($name)) {
-            $this->name = $name;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function row(\Closure $callback)
@@ -149,8 +152,8 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     * @param  array  $row
-     * @param  int  $line
+     * @param array $row
+     * @param int $line
      * @return array|Row
      */
     public function formatRow(array $row)
@@ -163,13 +166,10 @@ class Sheet implements Contracts\Exporters\Sheet
     }
 
     /**
-     * @param $data
-     * @param $name
-     * @param $headings
-     * @return Sheet
+     * @return string
      */
-    public static function make($data, $name, $headings)
+    public function getName()
     {
-        return new static($data, $name, $headings);
+        return $this->name;
     }
 }

@@ -81,7 +81,7 @@ return [
             case 'd':
             case 'D':
             case 'DDD':
-                return $number.'日';
+                return $number . '日';
             default:
                 return $number;
         }

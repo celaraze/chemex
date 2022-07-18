@@ -16,14 +16,12 @@ namespace Ramsey\Uuid\Rfc4122;
 
 use Ramsey\Uuid\Exception\InvalidBytesException;
 use Ramsey\Uuid\Uuid;
-
 use function decbin;
 use function str_pad;
 use function strlen;
 use function strpos;
 use function substr;
 use function unpack;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -33,11 +31,6 @@ use const STR_PAD_LEFT;
  */
 trait VariantTrait
 {
-    /**
-     * Returns the bytes that comprise the fields
-     */
-    abstract public function getBytes(): string;
-
     /**
      * Returns the variant identifier, according to RFC 4122, for the given bytes
      *
@@ -67,7 +60,7 @@ trait VariantTrait
         // three characters (three most-significant bits) to determine the
         // variant.
         $binary = str_pad(
-            decbin((int) $parts[5]),
+            decbin((int)$parts[5]),
             16,
             '0',
             STR_PAD_LEFT
@@ -87,4 +80,9 @@ trait VariantTrait
 
         return $variant;
     }
+
+    /**
+     * Returns the bytes that comprise the fields
+     */
+    abstract public function getBytes(): string;
 }

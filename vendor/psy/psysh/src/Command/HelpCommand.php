@@ -27,6 +27,16 @@ class HelpCommand extends Command
     private $command;
 
     /**
+     * Helper for setting a subcommand to retrieve help for.
+     *
+     * @param Command $command
+     */
+    public function setCommand(Command $command)
+    {
+        $this->command = $command;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -39,16 +49,6 @@ class HelpCommand extends Command
             ])
             ->setDescription('Show a list of commands. Type `help [foo]` for information about [foo].')
             ->setHelp('My. How meta.');
-    }
-
-    /**
-     * Helper for setting a subcommand to retrieve help for.
-     *
-     * @param Command $command
-     */
-    public function setCommand(Command $command)
-    {
-        $this->command = $command;
     }
 
     /**

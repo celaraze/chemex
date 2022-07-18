@@ -17,15 +17,18 @@ class Error extends Expr
      *
      * @param array $attributes Additional attributes
      */
-    public function __construct(array $attributes = []) {
+    public function __construct(array $attributes = [])
+    {
         $this->attributes = $attributes;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return [];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_Error';
     }
 }

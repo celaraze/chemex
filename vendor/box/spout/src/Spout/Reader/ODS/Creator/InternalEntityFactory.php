@@ -79,6 +79,15 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     }
 
     /**
+     * @param $xmlReader
+     * @return XMLProcessor
+     */
+    private function createXMLProcessor($xmlReader)
+    {
+        return new XMLProcessor($xmlReader);
+    }
+
+    /**
      * @param Cell[] $cells
      * @return Row
      */
@@ -102,15 +111,6 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     public function createXMLReader()
     {
         return new XMLReader();
-    }
-
-    /**
-     * @param $xmlReader
-     * @return XMLProcessor
-     */
-    private function createXMLProcessor($xmlReader)
-    {
-        return new XMLProcessor($xmlReader);
     }
 
     /**

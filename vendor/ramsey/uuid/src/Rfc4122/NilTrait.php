@@ -27,15 +27,15 @@ namespace Ramsey\Uuid\Rfc4122;
 trait NilTrait
 {
     /**
-     * Returns the bytes that comprise the fields
-     */
-    abstract public function getBytes(): string;
-
-    /**
      * Returns true if the byte string represents a nil UUID
      */
     public function isNil(): bool
     {
         return $this->getBytes() === "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
     }
+
+    /**
+     * Returns the bytes that comprise the fields
+     */
+    abstract public function getBytes(): string;
 }

@@ -14,57 +14,10 @@ trait CanImportMenu
 
     protected $menuValidationRules = [
         'parent' => 'nullable',
-        'title'  => 'required',
-        'uri'    => 'nullable',
-        'icon'   => 'nullable',
+        'title' => 'required',
+        'uri' => 'nullable',
+        'icon' => 'nullable',
     ];
-
-    /**
-     * 获取菜单节点.
-     *
-     * @return array
-     */
-    protected function menu()
-    {
-        return $this->menu;
-    }
-
-    /**
-     * 添加菜单.
-     *
-     * @param  array  $menu
-     *
-     * @throws \Exception
-     */
-    protected function addMenu(array $menu = [])
-    {
-        $menu = $menu ?: $this->menu();
-
-        if (! Arr::isAssoc($menu)) {
-            foreach ($menu as $v) {
-                $this->addMenu($v);
-            }
-
-            return;
-        }
-
-        if (! $this->validateMenu($menu)) {
-            return;
-        }
-
-        if ($menuModel = $this->getMenuModel()) {
-            $lastOrder = $menuModel::max('order');
-
-            $menuModel::create([
-                'parent_id' => $this->getParentMenuId($menu['parent'] ?? 0),
-                'order'     => $lastOrder + 1,
-                'title'     => $menu['title'],
-                'icon'      => (string) ($menu['icon'] ?? ''),
-                'uri'       => (string) ($menu['uri'] ?? ''),
-                'extension' => $this->getName(),
-            ]);
-        }
-    }
 
     /**
      * 刷新菜单.
@@ -79,33 +32,13 @@ trait CanImportMenu
     }
 
     /**
-     * 根据名称获取菜单ID.
-     *
-     * @param  int|string  $parent
-     * @return int
-     */
-    protected function getParentMenuId($parent)
-    {
-        if (is_numeric($parent)) {
-            return $parent;
-        }
-
-        $menuModel = $this->getMenuModel();
-
-        return $menuModel::query()
-            ->where('title', $parent)
-            ->where('extension', $this->getName())
-            ->value('id') ?: 0;
-    }
-
-    /**
      * 删除菜单.
      */
     protected function flushMenu()
     {
         $menuModel = $this->getMenuModel();
 
-        if (! $menuModel) {
+        if (!$menuModel) {
             return;
         }
 
@@ -114,10 +47,62 @@ trait CanImportMenu
             ->delete();
     }
 
+    protected function getMenuModel()
+    {
+        return config('admin.database.menu_model');
+    }
+
+    /**
+     * 添加菜单.
+     *
+     * @param array $menu
+     *
+     * @throws \Exception
+     */
+    protected function addMenu(array $menu = [])
+    {
+        $menu = $menu ?: $this->menu();
+
+        if (!Arr::isAssoc($menu)) {
+            foreach ($menu as $v) {
+                $this->addMenu($v);
+            }
+
+            return;
+        }
+
+        if (!$this->validateMenu($menu)) {
+            return;
+        }
+
+        if ($menuModel = $this->getMenuModel()) {
+            $lastOrder = $menuModel::max('order');
+
+            $menuModel::create([
+                'parent_id' => $this->getParentMenuId($menu['parent'] ?? 0),
+                'order' => $lastOrder + 1,
+                'title' => $menu['title'],
+                'icon' => (string)($menu['icon'] ?? ''),
+                'uri' => (string)($menu['uri'] ?? ''),
+                'extension' => $this->getName(),
+            ]);
+        }
+    }
+
+    /**
+     * 获取菜单节点.
+     *
+     * @return array
+     */
+    protected function menu()
+    {
+        return $this->menu;
+    }
+
     /**
      * 验证菜单字段格式是否正确.
      *
-     * @param  array  $menu
+     * @param array $menu
      * @return bool
      *
      * @throws \Exception
@@ -134,8 +119,23 @@ trait CanImportMenu
         return false;
     }
 
-    protected function getMenuModel()
+    /**
+     * 根据名称获取菜单ID.
+     *
+     * @param int|string $parent
+     * @return int
+     */
+    protected function getParentMenuId($parent)
     {
-        return config('admin.database.menu_model');
+        if (is_numeric($parent)) {
+            return $parent;
+        }
+
+        $menuModel = $this->getMenuModel();
+
+        return $menuModel::query()
+            ->where('title', $parent)
+            ->where('extension', $this->getName())
+            ->value('id') ?: 0;
     }
 }

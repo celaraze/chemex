@@ -18,7 +18,7 @@ class Lazy extends Widget
         $this->setRenderable($renderable);
         $this->load($load);
 
-        $this->elementClass = 'lazy-'.Str::random(10);
+        $this->elementClass = 'lazy-' . Str::random(10);
 
         $this->class(['lazy-box']);
     }
@@ -26,7 +26,7 @@ class Lazy extends Widget
     /**
      * 设置是否立即加载.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function load(bool $value)
@@ -34,6 +34,15 @@ class Lazy extends Widget
         $this->load = $value;
 
         return $this;
+    }
+
+    public function html()
+    {
+        $this->addScript();
+
+        return <<<HTML
+<div {$this->formatHtmlAttributes()}></div>
+HTML;
     }
 
     protected function addScript()
@@ -46,18 +55,9 @@ Dcat.init('{$this->getElementSelector()}', function (target) {
     {$this->getRenderableScript()}
 
     body.html('<div style="min-height:150px"></div>').loading();
-    
+
     {$loader}
 });
 JS;
-    }
-
-    public function html()
-    {
-        $this->addScript();
-
-        return <<<HTML
-<div {$this->formatHtmlAttributes()}></div>
-HTML;
     }
 }

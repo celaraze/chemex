@@ -18,31 +18,10 @@ use Illuminate\Support\Collection;
 trait HasDisplayers
 {
     /**
-     * Display using display abstract.
-     *
-     * @param  string  $abstract
-     * @param  array  $arguments
-     * @return Column
-     */
-    public function displayUsing($abstract, $arguments = [])
-    {
-        $grid = $this->grid;
-
-        $column = $this;
-
-        return $this->display(function ($value) use ($grid, $column, $abstract, $arguments) {
-            /** @var AbstractDisplayer $displayer */
-            $displayer = new $abstract($value, $grid, $column, $this);
-
-            return $displayer->display(...$arguments);
-        });
-    }
-
-    /**
      * Display column using array value map.
      *
-     * @param  array  $values
-     * @param  null  $default
+     * @param array $values
+     * @param null $default
      * @return $this
      */
     public function using(array $values, $default = null)
@@ -57,7 +36,7 @@ trait HasDisplayers
     }
 
     /**
-     * @param  string  $color
+     * @param string $color
      * @return $this
      */
     public function bold($color = null)
@@ -65,7 +44,7 @@ trait HasDisplayers
         $color = $color ?: Admin::color()->dark80();
 
         return $this->display(function ($value) use ($color) {
-            if (! $value) {
+            if (!$value) {
                 return $value;
             }
 
@@ -76,13 +55,13 @@ trait HasDisplayers
     /**
      * Display column with "long2ip".
      *
-     * @param  null  $default
+     * @param null $default
      * @return $this
      */
     public function long2ip($default = null)
     {
         return $this->display(function ($value) use ($default) {
-            if (! $value) {
+            if (!$value) {
                 return $default;
             }
 
@@ -93,7 +72,7 @@ trait HasDisplayers
     /**
      * Render this column with the given view.
      *
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function view($view)
@@ -108,30 +87,7 @@ trait HasDisplayers
     }
 
     /**
-     * @param  string  $val
-     * @return $this
-     */
-    public function prepend($val)
-    {
-        return $this->display(function ($v, $column) use (&$val) {
-            if ($val instanceof \Closure) {
-                $val = $val->call($this, $v, $column->getOriginal(), $column);
-            }
-
-            if (is_array($v)) {
-                array_unshift($v, $val);
-
-                return $v;
-            } elseif ($v instanceof Collection) {
-                return $v->prepend($val);
-            }
-
-            return $val.$v;
-        });
-    }
-
-    /**
-     * @param  string  $val
+     * @param string $val
      * @return $this
      */
     public function append($val)
@@ -149,14 +105,14 @@ trait HasDisplayers
                 return $v->push($val);
             }
 
-            return $v.$val;
+            return $v . $val;
         });
     }
 
     /**
      * Split a string by string.
      *
-     * @param  string  $d
+     * @param string $d
      * @return $this
      */
     public function explode(string $d = ',')
@@ -173,7 +129,7 @@ trait HasDisplayers
     /**
      * Display the fields in the email format as gavatar.
      *
-     * @param  int  $size
+     * @param int $size
      * @return $this
      */
     public function gravatar($size = 30)
@@ -192,14 +148,14 @@ trait HasDisplayers
     /**
      * Add a `dot` before column text.
      *
-     * @param  array  $options
-     * @param  string  $default
+     * @param array $options
+     * @param string $default
      * @return $this
      */
     public function dot($options = [], $default = 'default')
     {
         return $this->prepend(function ($_, $original) use ($options, $default) {
-            $style = is_null($original) ? $default : Arr::get((array) $options, $original, $default);
+            $style = is_null($original) ? $default : Arr::get((array)$options, $original, $default);
 
             $style = $style === 'default' ? 'dark70' : $style;
 
@@ -210,11 +166,34 @@ trait HasDisplayers
     }
 
     /**
+     * @param string $val
+     * @return $this
+     */
+    public function prepend($val)
+    {
+        return $this->display(function ($v, $column) use (&$val) {
+            if ($val instanceof \Closure) {
+                $val = $val->call($this, $v, $column->getOriginal(), $column);
+            }
+
+            if (is_array($v)) {
+                array_unshift($v, $val);
+
+                return $v;
+            } elseif ($v instanceof Collection) {
+                return $v->prepend($val);
+            }
+
+            return $val . $v;
+        });
+    }
+
+    /**
      * Show children of current node.
      *
-     * @param  bool  $showAll
-     * @param  bool  $sortable
-     * @param  mixed  $defaultParentId
+     * @param bool $showAll
+     * @param bool $sortable
+     * @param mixed $defaultParentId
      * @return $this
      */
     public function tree(bool $showAll = false, bool $sortable = true, $defaultParentId = null)
@@ -236,14 +215,35 @@ trait HasDisplayers
     }
 
     /**
+     * Display using display abstract.
+     *
+     * @param string $abstract
+     * @param array $arguments
+     * @return Column
+     */
+    public function displayUsing($abstract, $arguments = [])
+    {
+        $grid = $this->grid;
+
+        $column = $this;
+
+        return $this->display(function ($value) use ($grid, $column, $abstract, $arguments) {
+            /** @var AbstractDisplayer $displayer */
+            $displayer = new $abstract($value, $grid, $column, $this);
+
+            return $displayer->display(...$arguments);
+        });
+    }
+
+    /**
      * Display column using a grid row action.
      *
-     * @param  string  $action
+     * @param string $action
      * @return $this
      */
     public function action($action)
     {
-        if (! is_subclass_of($action, RowAction::class)) {
+        if (!is_subclass_of($action, RowAction::class)) {
             throw new InvalidArgumentException("Action class [$action] must be sub-class of [Dcat\Admin\Grid\RowAction]");
         }
 
@@ -263,8 +263,8 @@ trait HasDisplayers
     /**
      * Display column as boolean , `✓` for true, and `✗` for false.
      *
-     * @param  array  $map
-     * @param  bool  $default
+     * @param array $map
+     * @param bool $default
      * @return $this
      */
     public function bool(array $map = [], $default = false)

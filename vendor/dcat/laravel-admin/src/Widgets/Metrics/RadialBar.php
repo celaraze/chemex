@@ -47,6 +47,90 @@ class RadialBar extends Card
     protected $chartPullRight = false;
 
     /**
+     * 设置卡片底部内容.
+     *
+     * @param string|\Closure|Renderable $value
+     * @return $this
+     */
+    public function footer($value)
+    {
+        $this->footer = $value;
+
+        return $this;
+    }
+
+    /**
+     * 设置内容宽度.
+     *
+     * @param int $left
+     * @param int $right
+     * @return $this
+     */
+    public function contentWidth(int $left, int $right)
+    {
+        $this->contentWidth = [$left, $right];
+
+        return $this;
+    }
+
+    /**
+     * 图表位置靠右.
+     *
+     * @param bool $value
+     * @return $this
+     */
+    public function chartPullRight(bool $value = true)
+    {
+        $this->chartPullRight = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function renderContent()
+    {
+        $content = null;
+
+        if ($this->contentWidth[0]) {
+            $content = parent::renderContent();
+
+            $content = <<<HTML
+<div class="metric-content col-sm-{$this->contentWidth[0]}">
+    {$content}
+</div>
+HTML;
+        }
+
+        $justifyClass = $this->chartPullRight ? 'justify-content-between' : 'justify-content-center';
+
+        return <<<HTML
+<div class="card-content">
+    <div class="row">
+        {$content}
+
+        <div class="col-sm-{$this->contentWidth[1]} d-flex {$justifyClass}">
+            <div></div>
+            <div>{$this->renderChart()}</div>
+        </div>
+    </div>
+    <div class="metric-footer">
+        {$this->renderFooter()}
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * @return string
+     */
+    public function renderFooter()
+    {
+        return Helper::render($this->footer);
+    }
+
+    /**
      * 初始化.
      */
     protected function init()
@@ -109,89 +193,5 @@ class RadialBar extends Card
                 'dashArray' => 8,
             ],
         ];
-    }
-
-    /**
-     * 设置卡片底部内容.
-     *
-     * @param  string|\Closure|Renderable  $value
-     * @return $this
-     */
-    public function footer($value)
-    {
-        $this->footer = $value;
-
-        return $this;
-    }
-
-    /**
-     * 设置内容宽度.
-     *
-     * @param  int  $left
-     * @param  int  $right
-     * @return $this
-     */
-    public function contentWidth(int $left, int $right)
-    {
-        $this->contentWidth = [$left, $right];
-
-        return $this;
-    }
-
-    /**
-     * 图表位置靠右.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function chartPullRight(bool $value = true)
-    {
-        $this->chartPullRight = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function renderFooter()
-    {
-        return Helper::render($this->footer);
-    }
-
-    /**
-     * @return string
-     */
-    public function renderContent()
-    {
-        $content = null;
-
-        if ($this->contentWidth[0]) {
-            $content = parent::renderContent();
-
-            $content = <<<HTML
-<div class="metric-content col-sm-{$this->contentWidth[0]}">
-    {$content}
-</div>
-HTML;
-        }
-
-        $justifyClass = $this->chartPullRight ? 'justify-content-between' : 'justify-content-center';
-
-        return <<<HTML
-<div class="card-content">
-    <div class="row">
-        {$content}
-        
-        <div class="col-sm-{$this->contentWidth[1]} d-flex {$justifyClass}">
-            <div></div>
-            <div>{$this->renderChart()}</div>
-        </div>
-    </div>
-    <div class="metric-footer">
-        {$this->renderFooter()}
-    </div>
-</div>
-HTML;
     }
 }

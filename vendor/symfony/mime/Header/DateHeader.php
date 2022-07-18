@@ -53,7 +53,7 @@ final class DateHeader extends AbstractHeader
     public function setDateTime(\DateTimeInterface $dateTime)
     {
         if ($dateTime instanceof \DateTime) {
-            $immutable = new \DateTimeImmutable('@'.$dateTime->getTimestamp());
+            $immutable = new \DateTimeImmutable('@' . $dateTime->getTimestamp());
             $dateTime = $immutable->setTimezone($dateTime->getTimezone());
         }
         $this->dateTime = $dateTime;

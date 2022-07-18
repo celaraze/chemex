@@ -47,8 +47,8 @@ class Hg
     }
 
     /**
-     * @param callable    $commandCallable
-     * @param string      $url
+     * @param callable $commandCallable
+     * @param string $url
      * @param string|null $cwd
      *
      * @return void
@@ -85,7 +85,7 @@ class Hg
 
     /**
      * @param non-empty-string $message
-     * @param string           $url
+     * @param string $url
      *
      * @return never
      */

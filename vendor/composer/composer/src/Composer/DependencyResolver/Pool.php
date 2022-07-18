@@ -15,8 +15,8 @@ namespace Composer\DependencyResolver;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * A package pool contains all packages for dependency resolution
@@ -57,39 +57,6 @@ class Pool implements \Countable
     }
 
     /**
-     * @param  string $name
-     * @return array<string, string>
-     */
-    public function getRemovedVersions(string $name, ConstraintInterface $constraint): array
-    {
-        if (!isset($this->removedVersions[$name])) {
-            return array();
-        }
-
-        $result = array();
-        foreach ($this->removedVersions[$name] as $version => $prettyVersion) {
-            if ($constraint->matches(new Constraint('==', $version))) {
-                $result[$version] = $prettyVersion;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param  string $objectHash
-     * @return array<string, string>
-     */
-    public function getRemovedVersionsByPackage(string $objectHash): array
-    {
-        if (!isset($this->removedVersionsByPackage[$objectHash])) {
-            return array();
-        }
-
-        return $this->removedVersionsByPackage[$objectHash];
-    }
-
-    /**
      * @param BasePackage[] $packages
      * @return void
      */
@@ -109,22 +76,44 @@ class Pool implements \Countable
     }
 
     /**
+     * @param string $name
+     * @return array<string, string>
+     */
+    public function getRemovedVersions(string $name, ConstraintInterface $constraint): array
+    {
+        if (!isset($this->removedVersions[$name])) {
+            return array();
+        }
+
+        $result = array();
+        foreach ($this->removedVersions[$name] as $version => $prettyVersion) {
+            if ($constraint->matches(new Constraint('==', $version))) {
+                $result[$version] = $prettyVersion;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $objectHash
+     * @return array<string, string>
+     */
+    public function getRemovedVersionsByPackage(string $objectHash): array
+    {
+        if (!isset($this->removedVersionsByPackage[$objectHash])) {
+            return array();
+        }
+
+        return $this->removedVersionsByPackage[$objectHash];
+    }
+
+    /**
      * @return BasePackage[]
      */
     public function getPackages(): array
     {
         return $this->packages;
-    }
-
-    /**
-     * Retrieves the package object for a given package id.
-     *
-     * @param  int         $id
-     * @return BasePackage
-     */
-    public function packageById(int $id): BasePackage
-    {
-        return $this->packages[$id - 1];
     }
 
     /**
@@ -145,7 +134,7 @@ class Pool implements \Countable
      */
     public function whatProvides(string $name, ConstraintInterface $constraint = null): array
     {
-        $key = (string) $constraint;
+        $key = (string)$constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
@@ -154,7 +143,7 @@ class Pool implements \Countable
     }
 
     /**
-     * @param  string               $name       The package name to be searched for
+     * @param string $name The package name to be searched for
      * @param  ?ConstraintInterface $constraint A constraint that all returned
      *                                          packages must match or null to return all
      * @return BasePackage[]
@@ -177,39 +166,10 @@ class Pool implements \Countable
     }
 
     /**
-     * @param int $literal
-     * @return BasePackage
-     */
-    public function literalToPackage(int $literal): BasePackage
-    {
-        $packageId = abs($literal);
-
-        return $this->packageById($packageId);
-    }
-
-    /**
-     * @param int $literal
-     * @param array<int, BasePackage> $installedMap
-     * @return string
-     */
-    public function literalToPrettyString(int $literal, array $installedMap): string
-    {
-        $package = $this->literalToPackage($literal);
-
-        if (isset($installedMap[$package->id])) {
-            $prefix = ($literal > 0 ? 'keep' : 'remove');
-        } else {
-            $prefix = ($literal > 0 ? 'install' : 'don\'t install');
-        }
-
-        return $prefix.' '.$package->getPrettyString();
-    }
-
-    /**
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param  string              $name       Name of the package to be matched
+     * @param string $name Name of the package to be matched
      * @return bool
      */
     public function match(BasePackage $candidate, string $name, ConstraintInterface $constraint = null): bool
@@ -253,6 +213,46 @@ class Pool implements \Countable
     }
 
     /**
+     * @param int $literal
+     * @param array<int, BasePackage> $installedMap
+     * @return string
+     */
+    public function literalToPrettyString(int $literal, array $installedMap): string
+    {
+        $package = $this->literalToPackage($literal);
+
+        if (isset($installedMap[$package->id])) {
+            $prefix = ($literal > 0 ? 'keep' : 'remove');
+        } else {
+            $prefix = ($literal > 0 ? 'install' : 'don\'t install');
+        }
+
+        return $prefix . ' ' . $package->getPrettyString();
+    }
+
+    /**
+     * @param int $literal
+     * @return BasePackage
+     */
+    public function literalToPackage(int $literal): BasePackage
+    {
+        $packageId = abs($literal);
+
+        return $this->packageById($packageId);
+    }
+
+    /**
+     * Retrieves the package object for a given package id.
+     *
+     * @param int $id
+     * @return BasePackage
+     */
+    public function packageById(int $id): BasePackage
+    {
+        return $this->packages[$id - 1];
+    }
+
+    /**
      * @return bool
      */
     public function isUnacceptableFixedOrLockedPackage(BasePackage $package): bool
@@ -273,7 +273,7 @@ class Pool implements \Countable
         $str = "Pool:\n";
 
         foreach ($this->packages as $package) {
-            $str .= '- '.str_pad((string) $package->id, 6, ' ', STR_PAD_LEFT).': '.$package->getName()."\n";
+            $str .= '- ' . str_pad((string)$package->id, 6, ' ', STR_PAD_LEFT) . ': ' . $package->getName() . "\n";
         }
 
         return $str;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Lcobucci\JWT\Signer\Key;
 
 use Lcobucci\JWT\Signer\Key;
-
 use function file_exists;
 use function strpos;
 use function substr;
@@ -20,8 +19,17 @@ final class LocalFileReference implements Key
 
     private function __construct(string $path, string $passphrase)
     {
-        $this->path       = $path;
+        $this->path = $path;
         $this->passphrase = $passphrase;
+    }
+
+    public function contents(): string
+    {
+        if (!isset($this->contents)) {
+            $this->contents = InMemory::file($this->path)->contents();
+        }
+
+        return $this->contents;
     }
 
     /** @throws FileCouldNotBeRead */
@@ -31,20 +39,11 @@ final class LocalFileReference implements Key
             $path = substr($path, 7);
         }
 
-        if (! file_exists($path)) {
+        if (!file_exists($path)) {
             throw FileCouldNotBeRead::onPath($path);
         }
 
         return new self($path, $passphrase);
-    }
-
-    public function contents(): string
-    {
-        if (! isset($this->contents)) {
-            $this->contents = InMemory::file($this->path)->contents();
-        }
-
-        return $this->contents;
     }
 
     public function passphrase(): string

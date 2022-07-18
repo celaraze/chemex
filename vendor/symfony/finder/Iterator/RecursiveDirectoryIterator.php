@@ -67,7 +67,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
             $basePath .= $this->directorySeparator;
         }
 
-        return new SplFileInfo($basePath.$subPathname, $this->subPath, $subPathname);
+        return new SplFileInfo($basePath . $subPathname, $this->subPath, $subPathname);
     }
 
     public function hasChildren(bool $allowLinks = false): bool

@@ -44,10 +44,10 @@ class GenericRetryStrategy implements RetryStrategyInterface
 
     /**
      * @param array $statusCodes List of HTTP status codes that trigger a retry
-     * @param int   $delayMs     Amount of time to delay (or the initial value when multiplier is used)
-     * @param float $multiplier  Multiplier to apply to the delay each time a retry occurs
-     * @param int   $maxDelayMs  Maximum delay to allow (0 means no maximum)
-     * @param float $jitter      Probability of randomness int delay (0 = none, 1 = 100% random)
+     * @param int $delayMs Amount of time to delay (or the initial value when multiplier is used)
+     * @param float $multiplier Multiplier to apply to the delay each time a retry occurs
+     * @param int $maxDelayMs Maximum delay to allow (0 means no maximum)
+     * @param float $jitter Probability of randomness int delay (0 = none, 1 = 100% random)
      */
     public function __construct(array $statusCodes = self::DEFAULT_RETRY_STATUS_CODES, int $delayMs = 1000, float $multiplier = 2.0, int $maxDelayMs = 0, float $jitter = 0.1)
     {
@@ -110,6 +110,6 @@ class GenericRetryStrategy implements RetryStrategyInterface
             return $this->maxDelayMs;
         }
 
-        return (int) $delay;
+        return (int)$delay;
     }
 }

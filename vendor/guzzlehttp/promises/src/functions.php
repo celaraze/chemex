@@ -125,11 +125,11 @@ function inspect(PromiseInterface $promise)
  *
  * Returns an array of inspection state arrays.
  *
- * @see inspect for the inspection state array format.
- *
  * @param PromiseInterface[] $promises Traversable of promises to wait upon.
  *
  * @return array
+ *
+ * @see inspect for the inspection state array format.
  *
  * @deprecated inspect will be removed in guzzlehttp/promises:2.0. Use Utils::inspectAll instead.
  */
@@ -167,8 +167,8 @@ function unwrap($promises)
  * respective positions to the original array. If any promise in the array
  * rejects, the returned promise is rejected with the rejection reason.
  *
- * @param mixed $promises  Promises or values.
- * @param bool  $recursive If true, resolves new promises that might have been added to the stack during its own resolution.
+ * @param mixed $promises Promises or values.
+ * @param bool $recursive If true, resolves new promises that might have been added to the stack during its own resolution.
  *
  * @return PromiseInterface
  *
@@ -190,7 +190,7 @@ function all($promises, $recursive = false)
  * This promise is rejected with a {@see AggregateException} if the number of
  * fulfilled promises is less than the desired $count.
  *
- * @param int   $count    Total number of promises.
+ * @param int $count Total number of promises.
  * @param mixed $promises Promises or values.
  *
  * @return PromiseInterface
@@ -223,11 +223,11 @@ function any($promises)
  *
  * The returned promise is fulfilled with an array of inspection state arrays.
  *
- * @see inspect for the inspection state array format.
- *
  * @param mixed $promises Promises or values.
  *
  * @return PromiseInterface
+ *
+ * @see inspect for the inspection state array format.
  *
  * @deprecated settle will be removed in guzzlehttp/promises:2.0. Use Utils::settle instead.
  */
@@ -249,7 +249,7 @@ function settle($promises)
  * and the aggregate promise. The callback can invoke any necessary side
  * effects and choose to resolve or reject the aggregate if needed.
  *
- * @param mixed    $iterable    Iterator or array to iterate over.
+ * @param mixed $iterable Iterator or array to iterate over.
  * @param callable $onFulfilled
  * @param callable $onRejected
  *
@@ -261,7 +261,8 @@ function each(
     $iterable,
     callable $onFulfilled = null,
     callable $onRejected = null
-) {
+)
+{
     return Each::of($iterable, $onFulfilled, $onRejected);
 }
 
@@ -273,10 +274,10 @@ function each(
  * pending promises and returns a numeric concurrency limit value to allow for
  * dynamic a concurrency size.
  *
- * @param mixed        $iterable
+ * @param mixed $iterable
  * @param int|callable $concurrency
- * @param callable     $onFulfilled
- * @param callable     $onRejected
+ * @param callable $onFulfilled
+ * @param callable $onRejected
  *
  * @return PromiseInterface
  *
@@ -287,7 +288,8 @@ function each_limit(
     $concurrency,
     callable $onFulfilled = null,
     callable $onRejected = null
-) {
+)
+{
     return Each::ofLimit($iterable, $concurrency, $onFulfilled, $onRejected);
 }
 
@@ -296,9 +298,9 @@ function each_limit(
  * is rejected. If any promise is rejected, then the aggregate promise is
  * rejected with the encountered rejection.
  *
- * @param mixed        $iterable
+ * @param mixed $iterable
  * @param int|callable $concurrency
- * @param callable     $onFulfilled
+ * @param callable $onFulfilled
  *
  * @return PromiseInterface
  *
@@ -308,7 +310,8 @@ function each_limit_all(
     $iterable,
     $concurrency,
     callable $onFulfilled = null
-) {
+)
+{
     return Each::ofLimitAll($iterable, $concurrency, $onFulfilled);
 }
 
@@ -351,9 +354,9 @@ function is_settled(PromiseInterface $promise)
 /**
  * Create a new coroutine.
  *
- * @see Coroutine
- *
  * @return PromiseInterface
+ *
+ * @see Coroutine
  *
  * @deprecated coroutine will be removed in guzzlehttp/promises:2.0. Use Coroutine::of instead.
  */

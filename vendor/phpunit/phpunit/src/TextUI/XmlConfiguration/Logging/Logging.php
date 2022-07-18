@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\Logging;
 
 use PHPUnit\TextUI\XmlConfiguration\Exception;
@@ -52,12 +53,12 @@ final class Logging
 
     public function __construct(?Junit $junit, ?Text $text, ?TeamCity $teamCity, ?TestDoxHtml $testDoxHtml, ?TestDoxText $testDoxText, ?TestDoxXml $testDoxXml)
     {
-        $this->junit       = $junit;
-        $this->text        = $text;
-        $this->teamCity    = $teamCity;
+        $this->junit = $junit;
+        $this->text = $text;
+        $this->teamCity = $teamCity;
         $this->testDoxHtml = $testDoxHtml;
         $this->testDoxText = $testDoxText;
-        $this->testDoxXml  = $testDoxXml;
+        $this->testDoxXml = $testDoxXml;
     }
 
     public function hasJunit(): bool

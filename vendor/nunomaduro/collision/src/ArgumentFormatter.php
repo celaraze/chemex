@@ -34,7 +34,7 @@ final class ArgumentFormatter implements ArgumentFormatterContract
                     }
                     break;
                 case is_object($argument):
-                    $class    = get_class($argument);
+                    $class = get_class($argument);
                     $result[] = "Object($class)";
                     break;
             }

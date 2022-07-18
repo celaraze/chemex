@@ -6,8 +6,8 @@ class ProgressBar extends AbstractDisplayer
 {
     public function display($style = 'primary', $size = 'sm', $max = 100)
     {
-        $style = collect((array) $style)->map(function ($style) {
-            return 'progress-bar-'.$style;
+        $style = collect((array)$style)->map(function ($style) {
+            return 'progress-bar-' . $style;
         })->implode(' ');
 
         return <<<EOT

@@ -14,9 +14,9 @@ namespace Composer\Package\Version;
 
 use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\VersionParser as SemverVersionParser;
-use Composer\Semver\Semver;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Semver;
+use Composer\Semver\VersionParser as SemverVersionParser;
 
 class VersionParser extends SemverVersionParser
 {
@@ -24,6 +24,34 @@ class VersionParser extends SemverVersionParser
 
     /** @var array<string, ConstraintInterface> Constraint parsing cache */
     private static $constraints = array();
+
+    /**
+     * @param string $normalizedFrom
+     * @param string $normalizedTo
+     *
+     * @return bool
+     */
+    public static function isUpgrade(string $normalizedFrom, string $normalizedTo): bool
+    {
+        if ($normalizedFrom === $normalizedTo) {
+            return true;
+        }
+
+        if (in_array($normalizedFrom, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            $normalizedFrom = VersionParser::DEFAULT_BRANCH_ALIAS;
+        }
+        if (in_array($normalizedTo, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
+        }
+
+        if (strpos($normalizedFrom, 'dev-') === 0 || strpos($normalizedTo, 'dev-') === 0) {
+            return true;
+        }
+
+        $sorted = Semver::sort(array($normalizedTo, $normalizedFrom));
+
+        return $sorted[0] === $normalizedFrom;
+    }
 
     /**
      * @inheritDoc
@@ -55,7 +83,7 @@ class VersionParser extends SemverVersionParser
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = Preg::replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
             if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !Preg::isMatch('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
-                $pair .= ' '.$pairs[$i + 1];
+                $pair .= ' ' . $pairs[$i + 1];
                 $i++;
             }
 
@@ -68,33 +96,5 @@ class VersionParser extends SemverVersionParser
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $normalizedFrom
-     * @param string $normalizedTo
-     *
-     * @return bool
-     */
-    public static function isUpgrade(string $normalizedFrom, string $normalizedTo): bool
-    {
-        if ($normalizedFrom === $normalizedTo) {
-            return true;
-        }
-
-        if (in_array($normalizedFrom, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
-            $normalizedFrom = VersionParser::DEFAULT_BRANCH_ALIAS;
-        }
-        if (in_array($normalizedTo, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
-            $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
-        }
-
-        if (strpos($normalizedFrom, 'dev-') === 0 || strpos($normalizedTo, 'dev-') === 0) {
-            return true;
-        }
-
-        $sorted = Semver::sort(array($normalizedTo, $normalizedFrom));
-
-        return $sorted[0] === $normalizedFrom;
     }
 }

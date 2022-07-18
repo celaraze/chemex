@@ -44,9 +44,9 @@ final class StoreBuilder
     /**
      * Create a new store builder instance.
      *
-     * @param string[]    $paths
-     * @param string[]    $names
-     * @param bool        $shortCircuit
+     * @param string[] $paths
+     * @param string[] $names
+     * @param bool $shortCircuit
      * @param string|null $fileEncoding
      *
      * @return void

@@ -48,6 +48,6 @@ class MarkAliasInstalledOperation extends SolverOperation implements OperationIn
      */
     public function show($lock): string
     {
-        return 'Marking <info>'.$this->package->getPrettyName().'</info> (<comment>'.$this->package->getFullPrettyVersion().'</comment>) as installed, alias of <info>'.$this->package->getAliasOf()->getPrettyName().'</info> (<comment>'.$this->package->getAliasOf()->getFullPrettyVersion().'</comment>)';
+        return 'Marking <info>' . $this->package->getPrettyName() . '</info> (<comment>' . $this->package->getFullPrettyVersion() . '</comment>) as installed, alias of <info>' . $this->package->getAliasOf()->getPrettyName() . '</info> (<comment>' . $this->package->getAliasOf()->getFullPrettyVersion() . '</comment>)';
     }
 }

@@ -41,7 +41,7 @@ class ModelPropertyTypeNodeResolverExtension implements TypeNodeResolverExtensio
         }
 
         if ($typeNode instanceof GenericTypeNode && $typeNode->type->name === 'model-property') {
-            if (! $this->active) {
+            if (!$this->active) {
                 return new StringType();
             }
 

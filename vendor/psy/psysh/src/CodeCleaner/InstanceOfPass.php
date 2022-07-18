@@ -40,9 +40,9 @@ class InstanceOfPass extends CodeCleanerPass
     /**
      * Validate that the instanceof statement does not receive a scalar value or a non-class constant.
      *
+     * @param Node $node
      * @throws FatalErrorException if a scalar or a non-class constant is given
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

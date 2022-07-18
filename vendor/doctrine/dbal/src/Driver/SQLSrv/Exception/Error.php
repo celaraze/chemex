@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Doctrine\DBAL\Driver\SQLSrv\Exception;
 
 use Doctrine\DBAL\Driver\AbstractException;
-
 use function rtrim;
 use function sqlsrv_errors;
-
 use const SQLSRV_ERR_ERRORS;
 
 /**
@@ -20,11 +18,11 @@ final class Error extends AbstractException
 {
     public static function new(): self
     {
-        $message  = '';
+        $message = '';
         $sqlState = null;
-        $code     = 0;
+        $code = 0;
 
-        foreach ((array) sqlsrv_errors(SQLSRV_ERR_ERRORS) as $error) {
+        foreach ((array)sqlsrv_errors(SQLSRV_ERR_ERRORS) as $error) {
             $message .= 'SQLSTATE [' . $error['SQLSTATE'] . ', ' . $error['code'] . ']: ' . $error['message'] . "\n";
 
             if ($sqlState === null) {

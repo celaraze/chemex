@@ -3,7 +3,8 @@
         @foreach($tabObj->getTabs() as $tab)
             <li class="nav-item">
                 <a class="nav-link {{ $tab['active'] ? 'active' : '' }}" href="#{{ $tab['id'] }}" data-toggle="tab">
-                    {!! $tab['title'] !!} &nbsp;<i class="feather icon-alert-circle has-tab-error text-danger d-none"></i>
+                    {!! $tab['title'] !!} &nbsp;<i
+                        class="feather icon-alert-circle has-tab-error text-danger d-none"></i>
                 </a>
             </li>
         @endforeach
@@ -15,11 +16,11 @@
                     {!! $tab['layout']->build() !!}
                 @else
                     @if($tabObj->hasRows)
-                    <div class="ml-2 mb-2" style="margin-top: -1rem">
-                        @foreach($tab['fields'] as $field)
-                            {!! $field->render() !!}
-                        @endforeach
-                    </div>
+                        <div class="ml-2 mb-2" style="margin-top: -1rem">
+                            @foreach($tab['fields'] as $field)
+                                {!! $field->render() !!}
+                            @endforeach
+                        </div>
                     @else
                         @foreach($tab['fields'] as $field)
                             {!! $field->render() !!}

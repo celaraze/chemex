@@ -61,20 +61,12 @@ class IteratorSplFileInfo extends \SplFileInfo
         parent::__construct($filename);
 
         if (-1 !== $mtime = $this->getMTime()) {
-            $this->_hash = \md5($this->getPathname().$mtime);
+            $this->_hash = \md5($this->getPathname() . $mtime);
         }
 
         $this->_relativePath = $relativePath;
 
         return;
-    }
-
-    /**
-     * Get the hash.
-     */
-    public function getHash(): string
-    {
-        return $this->_hash;
     }
 
     /**
@@ -90,22 +82,11 @@ class IteratorSplFileInfo extends \SplFileInfo
     }
 
     /**
-     * Set relative path.
+     * Get the hash.
      */
-    public function setRelativePath(string $relativePath)
+    public function getHash(): string
     {
-        $old = $this->_relativePath;
-        $this->_relativePath = $relativePath;
-
-        return $old;
-    }
-
-    /**
-     * Get relative path (if given).
-     */
-    public function getRelativePath()
-    {
-        return $this->_relativePath;
+        return $this->_hash;
     }
 
     /**
@@ -118,5 +99,24 @@ class IteratorSplFileInfo extends \SplFileInfo
         }
 
         return \substr($this->getPathname(), \strlen($relative));
+    }
+
+    /**
+     * Get relative path (if given).
+     */
+    public function getRelativePath()
+    {
+        return $this->_relativePath;
+    }
+
+    /**
+     * Set relative path.
+     */
+    public function setRelativePath(string $relativePath)
+    {
+        $old = $this->_relativePath;
+        $this->_relativePath = $relativePath;
+
+        return $old;
     }
 }

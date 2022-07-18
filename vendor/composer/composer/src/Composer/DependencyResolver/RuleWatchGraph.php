@@ -81,10 +81,10 @@ class RuleWatchGraph
      * above example the rule was (-A|+B), then A turning true means that
      * B must now be decided true as well.
      *
-     * @param  int       $decidedLiteral The literal which was decided (A in our example)
-     * @param  int       $level          The level at which the decision took place and at which
+     * @param int $decidedLiteral The literal which was decided (A in our example)
+     * @param int $level The level at which the decision took place and at which
      *                                   all resulting decisions should be made.
-     * @param  Decisions $decisions      Used to check previous decisions and to
+     * @param Decisions $decisions Used to check previous decisions and to
      *                                   register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
@@ -151,9 +151,9 @@ class RuleWatchGraph
      *
      * The rule node's watched literals are updated accordingly.
      *
-     * @param int           $fromLiteral A literal the node used to watch
-     * @param int           $toLiteral   A literal the node should watch now
-     * @param RuleWatchNode $node        The rule node to be moved
+     * @param int $fromLiteral A literal the node used to watch
+     * @param int $toLiteral A literal the node should watch now
+     * @param RuleWatchNode $node The rule node to be moved
      * @return void
      */
     protected function moveWatch(int $fromLiteral, int $toLiteral, RuleWatchNode $node): void

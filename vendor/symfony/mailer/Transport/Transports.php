@@ -70,6 +70,6 @@ final class Transports implements TransportInterface
 
     public function __toString(): string
     {
-        return '['.implode(',', array_keys($this->transports)).']';
+        return '[' . implode(',', array_keys($this->transports)) . ']';
     }
 }

@@ -31,8 +31,8 @@ class LockableFile
     /**
      * Create a new File instance.
      *
-     * @param  string  $path
-     * @param  string  $mode
+     * @param string $path
+     * @param string $mode
      * @return void
      */
     public function __construct($path, $mode)
@@ -46,12 +46,12 @@ class LockableFile
     /**
      * Create the file's directory if necessary.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     protected function ensureDirectoryExists($path)
     {
-        if (! file_exists(dirname($path))) {
+        if (!file_exists(dirname($path))) {
             @mkdir(dirname($path), 0777, true);
         }
     }
@@ -59,8 +59,8 @@ class LockableFile
     /**
      * Create the file resource.
      *
-     * @param  string  $path
-     * @param  string  $mode
+     * @param string $path
+     * @param string $mode
      * @return void
      *
      * @throws \Exception
@@ -69,15 +69,15 @@ class LockableFile
     {
         $this->handle = @fopen($path, $mode);
 
-        if (! $this->handle) {
-            throw new Exception('Unable to create lockable file: '.$path.'. Please ensure you have permission to create files in this location.');
+        if (!$this->handle) {
+            throw new Exception('Unable to create lockable file: ' . $path . '. Please ensure you have permission to create files in this location.');
         }
     }
 
     /**
      * Read the file contents.
      *
-     * @param  int|null  $length
+     * @param int|null $length
      * @return string
      */
     public function read($length = null)
@@ -100,7 +100,7 @@ class LockableFile
     /**
      * Write to the file.
      *
-     * @param  string  $contents
+     * @param string $contents
      * @return string
      */
     public function write($contents)
@@ -129,14 +129,14 @@ class LockableFile
     /**
      * Get a shared lock on the file.
      *
-     * @param  bool  $block
+     * @param bool $block
      * @return $this
      *
      * @throws \Illuminate\Contracts\Filesystem\LockTimeoutException
      */
     public function getSharedLock($block = false)
     {
-        if (! flock($this->handle, LOCK_SH | ($block ? 0 : LOCK_NB))) {
+        if (!flock($this->handle, LOCK_SH | ($block ? 0 : LOCK_NB))) {
             throw new LockTimeoutException("Unable to acquire file lock at path [{$this->path}].");
         }
 
@@ -148,32 +148,18 @@ class LockableFile
     /**
      * Get an exclusive lock on the file.
      *
-     * @param  bool  $block
+     * @param bool $block
      * @return bool
      *
      * @throws \Illuminate\Contracts\Filesystem\LockTimeoutException
      */
     public function getExclusiveLock($block = false)
     {
-        if (! flock($this->handle, LOCK_EX | ($block ? 0 : LOCK_NB))) {
+        if (!flock($this->handle, LOCK_EX | ($block ? 0 : LOCK_NB))) {
             throw new LockTimeoutException("Unable to acquire file lock at path [{$this->path}].");
         }
 
         $this->isLocked = true;
-
-        return $this;
-    }
-
-    /**
-     * Release the lock on the file.
-     *
-     * @return $this
-     */
-    public function releaseLock()
-    {
-        flock($this->handle, LOCK_UN);
-
-        $this->isLocked = false;
 
         return $this;
     }
@@ -190,5 +176,19 @@ class LockableFile
         }
 
         return fclose($this->handle);
+    }
+
+    /**
+     * Release the lock on the file.
+     *
+     * @return $this
+     */
+    public function releaseLock()
+    {
+        flock($this->handle, LOCK_UN);
+
+        $this->isLocked = false;
+
+        return $this;
     }
 }

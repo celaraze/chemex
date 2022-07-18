@@ -30,9 +30,9 @@ class Response implements Arrayable
     /**
      * Create a new response.
      *
-     * @param  bool  $allowed
-     * @param  string  $message
-     * @param  mixed  $code
+     * @param bool $allowed
+     * @param string $message
+     * @param mixed $code
      * @return void
      */
     public function __construct($allowed, $message = '', $code = null)
@@ -45,8 +45,8 @@ class Response implements Arrayable
     /**
      * Create a new "allow" Response.
      *
-     * @param  string|null  $message
-     * @param  mixed  $code
+     * @param string|null $message
+     * @param mixed $code
      * @return \Illuminate\Auth\Access\Response
      */
     public static function allow($message = null, $code = null)
@@ -57,13 +57,40 @@ class Response implements Arrayable
     /**
      * Create a new "deny" Response.
      *
-     * @param  string|null  $message
-     * @param  mixed  $code
+     * @param string|null $message
+     * @param mixed $code
      * @return \Illuminate\Auth\Access\Response
      */
     public static function deny($message = null, $code = null)
     {
         return new static(false, $message, $code);
+    }
+
+    /**
+     * Throw authorization exception if response was denied.
+     *
+     * @return \Illuminate\Auth\Access\Response
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function authorize()
+    {
+        if ($this->denied()) {
+            throw (new AuthorizationException($this->message(), $this->code()))
+                ->setResponse($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Determine if the response was denied.
+     *
+     * @return bool
+     */
+    public function denied()
+    {
+        return !$this->allowed();
     }
 
     /**
@@ -74,16 +101,6 @@ class Response implements Arrayable
     public function allowed()
     {
         return $this->allowed;
-    }
-
-    /**
-     * Determine if the response was denied.
-     *
-     * @return bool
-     */
-    public function denied()
-    {
-        return ! $this->allowed();
     }
 
     /**
@@ -107,23 +124,6 @@ class Response implements Arrayable
     }
 
     /**
-     * Throw authorization exception if response was denied.
-     *
-     * @return \Illuminate\Auth\Access\Response
-     *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    public function authorize()
-    {
-        if ($this->denied()) {
-            throw (new AuthorizationException($this->message(), $this->code()))
-                        ->setResponse($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * Convert the response to an array.
      *
      * @return array
@@ -144,6 +144,6 @@ class Response implements Arrayable
      */
     public function __toString()
     {
-        return (string) $this->message();
+        return (string)$this->message();
     }
 }

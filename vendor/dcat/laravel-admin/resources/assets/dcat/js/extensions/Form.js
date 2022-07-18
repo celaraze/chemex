@@ -1,9 +1,8 @@
-
 import '../jquery-form/jquery.form.min';
 
 let formCallbacks = {
-        before: [], success: [], error: []
-    };
+    before: [], success: [], error: []
+};
 
 class Form {
     constructor(options) {
@@ -33,13 +32,17 @@ class Form {
             // 自动移除表单错误信息
             autoRemoveError: true,
             // 表单提交之前事件监听，返回false可以中止表单继续提交
-            before: function () {},
+            before: function () {
+            },
             // 表单提交之后事件监听，返回false可以中止后续逻辑
-            after: function () {},
+            after: function () {
+            },
             // 成功事件，返回false可以中止后续逻辑
-            success: function () {},
+            success: function () {
+            },
             // 失败事件，返回false可以中止后续逻辑
-            error: function () {},
+            error: function () {
+            },
         }, options);
 
         _this.originalValues = {};
@@ -53,7 +56,7 @@ class Form {
         let _this = this;
         let confirm = _this.options.confirm;
 
-        if (! confirm.title) {
+        if (!confirm.title) {
             return _this.submit();
         }
 
@@ -111,7 +114,7 @@ class Form {
                     return;
                 }
 
-                if (response.redirect === false || ! options.redirect) {
+                if (response.redirect === false || !options.redirect) {
                     if (response.data && response.data.then) {
                         delete response.data['then'];
                         delete response.data['then'];
@@ -140,7 +143,7 @@ class Form {
                     var error = JSON.parse(response.responseText),
                         key;
 
-                    if (response.status != 422 || ! error || ! Dcat.helpers.isset(error, 'errors')) {
+                    if (response.status != 422 || !error || !Dcat.helpers.isset(error, 'errors')) {
                         let json = response.responseJSON;
                         if (json && json.message) {
                             return Dcat.error(json.message);
@@ -190,7 +193,7 @@ class Form {
         // 保存字段原始数据
         _this.originalValues[column] = _this.getFieldValue($field);
 
-        if (! $field) {
+        if (!$field) {
             if (Dcat.helpers.len(errors) && errors.length) {
                 Dcat.error(errors.join("  \n  "));
             }
@@ -227,7 +230,7 @@ class Form {
 
     // 判断值是否改变
     isValueChanged($field, column) {
-        return ! Dcat.helpers.equal(this.originalValues[column], this.getFieldValue($field));
+        return !Dcat.helpers.equal(this.originalValues[column], this.getFieldValue($field));
     }
 
     // 获取字段jq对象
@@ -278,9 +281,9 @@ class Form {
         // tab页下没有错误信息了，隐藏title的错误图标
         let tab;
 
-        if (! queryTabByField(this, $field).find('.'+errorClass).length) {
+        if (!queryTabByField(this, $field).find('.' + errorClass).length) {
             tab = queryTabTitleError(this, $field);
-            if (! tab.hasClass('d-none')) {
+            if (!tab.hasClass('d-none')) {
                 tab.addClass('d-none');
             }
         }
@@ -303,7 +306,7 @@ class Form {
         // 移除tab表单tab标题错误信息
         for (column in _this._errColumns) {
             tab = queryTabTitleError(_this._errColumns[column]);
-            if (! tab.hasClass('d-none')) {
+            if (!tab.hasClass('d-none')) {
                 tab.addClass('d-none');
             }
         }
@@ -336,7 +339,7 @@ function removeErrorWhenValChanged(form, $field, column) {
 
     $field.one('change', remove);
     $field.off('blur', remove).on('blur', function () {
-        if (form.isValueChanged($field, column))  {
+        if (form.isValueChanged($field, column)) {
             remove();
         }
     });
@@ -344,7 +347,7 @@ function removeErrorWhenValChanged(form, $field, column) {
     // 表单值发生变化就移除错误信息
     let interval = function () {
         setTimeout(function () {
-            if (! $field.length) {
+            if (!$field.length) {
                 return;
             }
             if (form.isValueChanged($field, column)) {
@@ -363,11 +366,10 @@ function getTabId(form, $field) {
     return $field.parents(form.options.tabSelector).attr('id');
 }
 
-function queryTabByField(form, $field)
-{
+function queryTabByField(form, $field) {
     let tabId = getTabId(form, $field);
 
-    if (! tabId) {
+    if (!tabId) {
         return $('<none></none>');
     }
 

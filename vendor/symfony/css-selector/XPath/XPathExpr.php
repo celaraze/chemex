@@ -38,19 +38,19 @@ class XPathExpr
         }
     }
 
-    public function getElement(): string
-    {
-        return $this->element;
-    }
-
     /**
      * @return $this
      */
-    public function addCondition(string $condition): static
+    public function addStarPrefix(): static
     {
-        $this->condition = $this->condition ? sprintf('(%s) and (%s)', $this->condition, $condition) : $condition;
+        $this->path .= '*/';
 
         return $this;
+    }
+
+    public function getElement(): string
+    {
+        return $this->element;
     }
 
     public function getCondition(): string
@@ -64,7 +64,7 @@ class XPathExpr
     public function addNameTest(): static
     {
         if ('*' !== $this->element) {
-            $this->addCondition('name() = '.Translator::getXpathLiteral($this->element));
+            $this->addCondition('name() = ' . Translator::getXpathLiteral($this->element));
             $this->element = '*';
         }
 
@@ -74,9 +74,9 @@ class XPathExpr
     /**
      * @return $this
      */
-    public function addStarPrefix(): static
+    public function addCondition(string $condition): static
     {
-        $this->path .= '*/';
+        $this->condition = $this->condition ? sprintf('(%s) and (%s)', $this->condition, $condition) : $condition;
 
         return $this;
     }
@@ -88,7 +88,7 @@ class XPathExpr
      */
     public function join(string $combiner, self $expr): static
     {
-        $path = $this->__toString().$combiner;
+        $path = $this->__toString() . $combiner;
 
         if ('*/' !== $expr->path) {
             $path .= $expr->path;
@@ -103,9 +103,9 @@ class XPathExpr
 
     public function __toString(): string
     {
-        $path = $this->path.$this->element;
-        $condition = null === $this->condition || '' === $this->condition ? '' : '['.$this->condition.']';
+        $path = $this->path . $this->element;
+        $condition = null === $this->condition || '' === $this->condition ? '' : '[' . $this->condition . ']';
 
-        return $path.$condition;
+        return $path . $condition;
     }
 }

@@ -7,14 +7,100 @@ use Illuminate\Support\Manager;
 class SessionManager extends Manager
 {
     /**
+     * Determine if requests for the same session should wait for each to finish before executing.
+     *
+     * @return bool
+     */
+    public function shouldBlock()
+    {
+        return $this->config->get('session.block', false);
+    }
+
+    /**
+     * Get the name of the cache store / driver that should be used to acquire session locks.
+     *
+     * @return string|null
+     */
+    public function blockDriver()
+    {
+        return $this->config->get('session.block_store');
+    }
+
+    /**
+     * Get the session configuration.
+     *
+     * @return array
+     */
+    public function getSessionConfig()
+    {
+        return $this->config->get('session');
+    }
+
+    /**
+     * Get the default session driver name.
+     *
+     * @return string
+     */
+    public function getDefaultDriver()
+    {
+        return $this->config->get('session.driver');
+    }
+
+    /**
+     * Set the default session driver name.
+     *
+     * @param string $name
+     * @return void
+     */
+    public function setDefaultDriver($name)
+    {
+        $this->config->set('session.driver', $name);
+    }
+
+    /**
      * Call a custom driver creator.
      *
-     * @param  string  $driver
+     * @param string $driver
      * @return mixed
      */
     protected function callCustomCreator($driver)
     {
         return $this->buildSession(parent::callCustomCreator($driver));
+    }
+
+    /**
+     * Build the session instance.
+     *
+     * @param \SessionHandlerInterface $handler
+     * @return \Illuminate\Session\Store
+     */
+    protected function buildSession($handler)
+    {
+        return $this->config->get('session.encrypt')
+            ? $this->buildEncryptedSession($handler)
+            : new Store(
+                $this->config->get('session.cookie'),
+                $handler,
+                $id = null,
+                $this->config->get('session.serialization', 'php')
+            );
+    }
+
+    /**
+     * Build the encrypted session instance.
+     *
+     * @param \SessionHandlerInterface $handler
+     * @return \Illuminate\Session\EncryptedStore
+     */
+    protected function buildEncryptedSession($handler)
+    {
+        return new EncryptedStore(
+            $this->config->get('session.cookie'),
+            $handler,
+            $this->container['encrypter'],
+            $id = null,
+            $this->config->get('session.serialization', 'php'),
+        );
     }
 
     /**
@@ -114,6 +200,33 @@ class SessionManager extends Manager
     }
 
     /**
+     * Create an instance of a cache driven driver.
+     *
+     * @param string $driver
+     * @return \Illuminate\Session\Store
+     */
+    protected function createCacheBased($driver)
+    {
+        return $this->buildSession($this->createCacheHandler($driver));
+    }
+
+    /**
+     * Create the cache based session handler instance.
+     *
+     * @param string $driver
+     * @return \Illuminate\Session\CacheBasedSessionHandler
+     */
+    protected function createCacheHandler($driver)
+    {
+        $store = $this->config->get('session.store') ?: $driver;
+
+        return new CacheBasedSessionHandler(
+            clone $this->container->make('cache')->store($store),
+            $this->config->get('session.lifetime')
+        );
+    }
+
+    /**
      * Create an instance of the Memcached session driver.
      *
      * @return \Illuminate\Session\Store
@@ -147,118 +260,5 @@ class SessionManager extends Manager
     protected function createDynamodbDriver()
     {
         return $this->createCacheBased('dynamodb');
-    }
-
-    /**
-     * Create an instance of a cache driven driver.
-     *
-     * @param  string  $driver
-     * @return \Illuminate\Session\Store
-     */
-    protected function createCacheBased($driver)
-    {
-        return $this->buildSession($this->createCacheHandler($driver));
-    }
-
-    /**
-     * Create the cache based session handler instance.
-     *
-     * @param  string  $driver
-     * @return \Illuminate\Session\CacheBasedSessionHandler
-     */
-    protected function createCacheHandler($driver)
-    {
-        $store = $this->config->get('session.store') ?: $driver;
-
-        return new CacheBasedSessionHandler(
-            clone $this->container->make('cache')->store($store),
-            $this->config->get('session.lifetime')
-        );
-    }
-
-    /**
-     * Build the session instance.
-     *
-     * @param  \SessionHandlerInterface  $handler
-     * @return \Illuminate\Session\Store
-     */
-    protected function buildSession($handler)
-    {
-        return $this->config->get('session.encrypt')
-                ? $this->buildEncryptedSession($handler)
-                : new Store(
-                    $this->config->get('session.cookie'),
-                    $handler,
-                    $id = null,
-                    $this->config->get('session.serialization', 'php')
-                );
-    }
-
-    /**
-     * Build the encrypted session instance.
-     *
-     * @param  \SessionHandlerInterface  $handler
-     * @return \Illuminate\Session\EncryptedStore
-     */
-    protected function buildEncryptedSession($handler)
-    {
-        return new EncryptedStore(
-            $this->config->get('session.cookie'),
-            $handler,
-            $this->container['encrypter'],
-            $id = null,
-            $this->config->get('session.serialization', 'php'),
-        );
-    }
-
-    /**
-     * Determine if requests for the same session should wait for each to finish before executing.
-     *
-     * @return bool
-     */
-    public function shouldBlock()
-    {
-        return $this->config->get('session.block', false);
-    }
-
-    /**
-     * Get the name of the cache store / driver that should be used to acquire session locks.
-     *
-     * @return string|null
-     */
-    public function blockDriver()
-    {
-        return $this->config->get('session.block_store');
-    }
-
-    /**
-     * Get the session configuration.
-     *
-     * @return array
-     */
-    public function getSessionConfig()
-    {
-        return $this->config->get('session');
-    }
-
-    /**
-     * Get the default session driver name.
-     *
-     * @return string
-     */
-    public function getDefaultDriver()
-    {
-        return $this->config->get('session.driver');
-    }
-
-    /**
-     * Set the default session driver name.
-     *
-     * @param  string  $name
-     * @return void
-     */
-    public function setDefaultDriver($name)
-    {
-        $this->config->set('session.driver', $name);
     }
 }

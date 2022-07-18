@@ -66,17 +66,6 @@ class JsonPointer
     }
 
     /**
-     * @return array
-     */
-    private function encodePropertyPaths()
-    {
-        return array_map(
-            array($this, 'encodePath'),
-            $this->getPropertyPaths()
-        );
-    }
-
-    /**
      * @param string $path
      *
      * @return string
@@ -84,32 +73,6 @@ class JsonPointer
     private function decodePath($path)
     {
         return strtr($path, array('~1' => '/', '~0' => '~', '%25' => '%'));
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
-    private function encodePath($path)
-    {
-        return strtr($path, array('/' => '~1', '~' => '~0', '%' => '%25'));
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getPropertyPaths()
-    {
-        return $this->propertyPaths;
     }
 
     /**
@@ -128,17 +91,44 @@ class JsonPointer
     /**
      * @return string
      */
+    public function __toString()
+    {
+        return $this->getFilename() . $this->getPropertyPathAsString();
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+    /**
+     * @return string
+     */
     public function getPropertyPathAsString()
     {
         return rtrim('#/' . implode('/', $this->encodePropertyPaths()), '/');
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function __toString()
+    private function encodePropertyPaths()
     {
-        return $this->getFilename() . $this->getPropertyPathAsString();
+        return array_map(
+            array($this, 'encodePath'),
+            $this->getPropertyPaths()
+        );
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPropertyPaths()
+    {
+        return $this->propertyPaths;
     }
 
     /**
@@ -157,5 +147,15 @@ class JsonPointer
     public function fromDefault()
     {
         return $this->fromDefault;
+    }
+
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    private function encodePath($path)
+    {
+        return strtr($path, array('/' => '~1', '~' => '~0', '%' => '%25'));
     }
 }

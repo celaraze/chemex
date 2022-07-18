@@ -138,11 +138,11 @@ class Container
                         $builder->setInstanceMock(true);
                         $builder->addTarget('stdClass');
                         $builder->setName($type);
-                    } elseif (substr($type, strlen($type)-1, 1) == ']') {
+                    } elseif (substr($type, strlen($type) - 1, 1) == ']') {
                         $parts = explode('[', $type);
                         if (!class_exists($parts[0], true) && !interface_exists($parts[0], true)) {
                             throw new \Mockery\Exception('Can only create a partial mock from'
-                            . ' an existing class or interface');
+                                . ' an existing class or interface');
                         }
                         $class = $parts[0];
                         $parts[1] = str_replace(' ', '', $parts[1]);
@@ -232,8 +232,48 @@ class Container
         return $mock;
     }
 
-    public function instanceMock()
+    /**
+     * see http://php.net/manual/en/language.oop5.basic.php
+     * @param string $className
+     * @return bool
+     */
+    public function isValidClassName($className)
     {
+        $pos = strpos($className, '\\');
+        if ($pos === 0) {
+            $className = substr($className, 1); // remove the first backslash
+        }
+        // all the namespaces and class name should match the regex
+        $invalidNames = array_filter(explode('\\', $className), function ($name) {
+            return !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name);
+        });
+        return empty($invalidNames);
+    }
+
+    protected function checkForNamedMockClashes($config)
+    {
+        $name = $config->getName();
+
+        if (!$name) {
+            return;
+        }
+
+        $hash = $config->getHash();
+
+        if (isset($this->_namedMocks[$name])) {
+            if ($hash !== $this->_namedMocks[$name]) {
+                throw new \Mockery\Exception(
+                    "The mock named '$name' has been already defined with a different mock configuration"
+                );
+            }
+        }
+
+        $this->_namedMocks[$name] = $hash;
+    }
+
+    public function getGenerator()
+    {
+        return $this->_generator;
     }
 
     public function getLoader()
@@ -241,9 +281,53 @@ class Container
         return $this->_loader;
     }
 
-    public function getGenerator()
+    protected function _getInstance($mockName, $constructorArgs = null)
     {
-        return $this->_generator;
+        if ($constructorArgs !== null) {
+            $r = new \ReflectionClass($mockName);
+            return $r->newInstanceArgs($constructorArgs);
+        }
+
+        try {
+            $instantiator = new Instantiator();
+            $instance = $instantiator->instantiate($mockName);
+        } catch (\Exception $ex) {
+            $internalMockName = $mockName . '_Internal';
+
+            if (!class_exists($internalMockName)) {
+                eval("class $internalMockName extends $mockName {" .
+                    'public function __construct() {}' .
+                    '}');
+            }
+
+            $instance = new $internalMockName();
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Store a mock and set its container reference
+     *
+     * @param \Mockery\Mock $mock
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    public function rememberMock(\Mockery\LegacyMockInterface $mock)
+    {
+        if (!isset($this->_mocks[get_class($mock)])) {
+            $this->_mocks[get_class($mock)] = $mock;
+        } else {
+            /**
+             * This condition triggers for an instance mock where origin mock
+             * is already remembered
+             */
+            $this->_mocks[] = $mock;
+        }
+        return $mock;
+    }
+
+    public function instanceMock()
+    {
     }
 
     /**
@@ -275,8 +359,8 @@ class Container
     /**
      *  Tear down tasks for this container
      *
-     * @throws \Exception
      * @return void
+     * @throws \Exception
      */
     public function mockery_teardown()
     {
@@ -301,6 +385,19 @@ class Container
     }
 
     /**
+     * Reset the container to its original state
+     *
+     * @return void
+     */
+    public function mockery_close()
+    {
+        foreach ($this->_mocks as $mock) {
+            $mock->mockery_teardown();
+        }
+        $this->_mocks = array();
+    }
+
+    /**
      * Retrieves all exceptions thrown by mocks
      *
      * @return array
@@ -314,19 +411,6 @@ class Container
         }
 
         return $e;
-    }
-
-    /**
-     * Reset the container to its original state
-     *
-     * @return void
-     */
-    public function mockery_close()
-    {
-        foreach ($this->_mocks as $mock) {
-            $mock->mockery_teardown();
-        }
-        $this->_mocks = array();
     }
 
     /**
@@ -362,18 +446,6 @@ class Container
     }
 
     /**
-     * Set current ordered number
-     *
-     * @param int $order
-     * @return int The current order number that was set
-     */
-    public function mockery_setCurrentOrder($order)
-    {
-        $this->_currentOrder = $order;
-        return $this->_currentOrder;
-    }
-
-    /**
      * Get current ordered number
      *
      * @return int
@@ -388,8 +460,8 @@ class Container
      *
      * @param string $method
      * @param int $order
-     * @throws \Mockery\Exception
      * @return void
+     * @throws \Mockery\Exception
      */
     public function mockery_validateOrder($method, $order, \Mockery\LegacyMockInterface $mock)
     {
@@ -408,6 +480,18 @@ class Container
     }
 
     /**
+     * Set current ordered number
+     *
+     * @param int $order
+     * @return int The current order number that was set
+     */
+    public function mockery_setCurrentOrder($order)
+    {
+        $this->_currentOrder = $order;
+        return $this->_currentOrder;
+    }
+
+    /**
      * Gets the count of expectations on the mocks
      *
      * @return int
@@ -419,26 +503,6 @@ class Container
             $count += $mock->mockery_getExpectationCount();
         }
         return $count;
-    }
-
-    /**
-     * Store a mock and set its container reference
-     *
-     * @param \Mockery\Mock $mock
-     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    public function rememberMock(\Mockery\LegacyMockInterface $mock)
-    {
-        if (!isset($this->_mocks[get_class($mock)])) {
-            $this->_mocks[get_class($mock)] = $mock;
-        } else {
-            /**
-             * This condition triggers for an instance mock where origin mock
-             * is already remembered
-             */
-            $this->_mocks[] = $mock;
-        }
-        return $mock;
     }
 
     /**
@@ -467,69 +531,5 @@ class Container
         if (isset($this->_mocks[$reference])) {
             return $this->_mocks[$reference];
         }
-    }
-
-    protected function _getInstance($mockName, $constructorArgs = null)
-    {
-        if ($constructorArgs !== null) {
-            $r = new \ReflectionClass($mockName);
-            return $r->newInstanceArgs($constructorArgs);
-        }
-
-        try {
-            $instantiator = new Instantiator();
-            $instance = $instantiator->instantiate($mockName);
-        } catch (\Exception $ex) {
-            $internalMockName = $mockName . '_Internal';
-
-            if (!class_exists($internalMockName)) {
-                eval("class $internalMockName extends $mockName {" .
-                        'public function __construct() {}' .
-                    '}');
-            }
-
-            $instance = new $internalMockName();
-        }
-
-        return $instance;
-    }
-
-    protected function checkForNamedMockClashes($config)
-    {
-        $name = $config->getName();
-
-        if (!$name) {
-            return;
-        }
-
-        $hash = $config->getHash();
-
-        if (isset($this->_namedMocks[$name])) {
-            if ($hash !== $this->_namedMocks[$name]) {
-                throw new \Mockery\Exception(
-                    "The mock named '$name' has been already defined with a different mock configuration"
-                );
-            }
-        }
-
-        $this->_namedMocks[$name] = $hash;
-    }
-
-    /**
-     * see http://php.net/manual/en/language.oop5.basic.php
-     * @param string $className
-     * @return bool
-     */
-    public function isValidClassName($className)
-    {
-        $pos = strpos($className, '\\');
-        if ($pos === 0) {
-            $className = substr($className, 1); // remove the first backslash
-        }
-        // all the namespaces and class name should match the regex
-        $invalidNames = array_filter(explode('\\', $className), function ($name) {
-            return !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $name);
-        });
-        return empty($invalidNames);
     }
 }

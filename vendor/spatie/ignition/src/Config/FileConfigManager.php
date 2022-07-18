@@ -23,7 +23,7 @@ class FileConfigManager implements ConfigManager
     {
         $path = $this->retrievePath($path);
 
-        if (! $this->isValidWritablePath($path)) {
+        if (!$this->isValidWritablePath($path)) {
             return '';
         }
 
@@ -39,6 +39,19 @@ class FileConfigManager implements ConfigManager
         return $this->initPathFromEnvironment();
     }
 
+    protected function initPathFromEnvironment(): string
+    {
+        if (!empty($_SERVER['HOMEDRIVE']) && !empty($_SERVER['HOMEPATH'])) {
+            return $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
+        }
+
+        if (!empty(getenv('HOME'))) {
+            return getenv('HOME');
+        }
+
+        return '';
+    }
+
     protected function isValidWritablePath(string $path): bool
     {
         return @file_exists($path) && @is_writable($path);
@@ -47,19 +60,6 @@ class FileConfigManager implements ConfigManager
     protected function preparePath(string $path): string
     {
         return rtrim($path, DIRECTORY_SEPARATOR);
-    }
-
-    protected function initPathFromEnvironment(): string
-    {
-        if (! empty($_SERVER['HOMEDRIVE']) && ! empty($_SERVER['HOMEPATH'])) {
-            return $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
-        }
-
-        if (! empty(getenv('HOME'))) {
-            return getenv('HOME');
-        }
-
-        return '';
     }
 
     protected function initFile(): string
@@ -75,7 +75,7 @@ class FileConfigManager implements ConfigManager
 
     protected function readFromFile()
     {
-        if (! $this->isValidFile()) {
+        if (!$this->isValidFile()) {
             return [];
         }
 
@@ -100,7 +100,7 @@ class FileConfigManager implements ConfigManager
     /** {@inheritDoc} */
     public function save(array $options): bool
     {
-        if (! $this->createFile()) {
+        if (!$this->createFile()) {
             return false;
         }
 
@@ -109,7 +109,7 @@ class FileConfigManager implements ConfigManager
 
     protected function createFile(): bool
     {
-        if (! $this->isValidPath()) {
+        if (!$this->isValidPath()) {
             return false;
         }
 
@@ -133,7 +133,7 @@ class FileConfigManager implements ConfigManager
 
     protected function writeToFile(string $content): bool
     {
-        if (! $this->isValidFile()) {
+        if (!$this->isValidFile()) {
             return false;
         }
 

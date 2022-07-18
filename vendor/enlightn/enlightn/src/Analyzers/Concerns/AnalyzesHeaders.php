@@ -53,9 +53,9 @@ trait AnalyzesHeaders
     /**
      * Get the headers on the URL.
      *
-     * @param  string|null  $url
-     * @param  string  $header
-     * @param  array  $options
+     * @param string|null $url
+     * @param string $header
+     * @param array $options
      * @return array
      */
     protected function getHeadersOnUrl($url, string $header, $options = [])

@@ -115,8 +115,8 @@ class Psr4Autoloader
             // replace namespace separators with directory separators
             // in the relative class name, append with .php
             $file = $baseDir
-                  . \str_replace('\\', '/', $relativeClass)
-                  . '.php';
+                . \str_replace('\\', '/', $relativeClass)
+                . '.php';
 
             // if the mapped file exists, require it
             if ($this->requireFile($file)) {

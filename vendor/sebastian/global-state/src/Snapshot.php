@@ -7,9 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\GlobalState;
 
-use const PHP_VERSION_ID;
+use ReflectionClass;
+use SebastianBergmann\ObjectReflector\ObjectReflector;
+use SebastianBergmann\RecursionContext\Context;
+use Throwable;
 use function array_keys;
 use function array_merge;
 use function array_reverse;
@@ -28,10 +32,7 @@ use function is_resource;
 use function is_scalar;
 use function serialize;
 use function unserialize;
-use ReflectionClass;
-use SebastianBergmann\ObjectReflector\ObjectReflector;
-use SebastianBergmann\RecursionContext\Context;
-use Throwable;
+use const PHP_VERSION_ID;
 
 /**
  * A snapshot of global state.
@@ -143,66 +144,6 @@ class Snapshot
         }
     }
 
-    public function excludeList(): ExcludeList
-    {
-        return $this->excludeList;
-    }
-
-    public function globalVariables(): array
-    {
-        return $this->globalVariables;
-    }
-
-    public function superGlobalVariables(): array
-    {
-        return $this->superGlobalVariables;
-    }
-
-    public function superGlobalArrays(): array
-    {
-        return $this->superGlobalArrays;
-    }
-
-    public function staticAttributes(): array
-    {
-        return $this->staticAttributes;
-    }
-
-    public function iniSettings(): array
-    {
-        return $this->iniSettings;
-    }
-
-    public function includedFiles(): array
-    {
-        return $this->includedFiles;
-    }
-
-    public function constants(): array
-    {
-        return $this->constants;
-    }
-
-    public function functions(): array
-    {
-        return $this->functions;
-    }
-
-    public function interfaces(): array
-    {
-        return $this->interfaces;
-    }
-
-    public function classes(): array
-    {
-        return $this->classes;
-    }
-
-    public function traits(): array
-    {
-        return $this->traits;
-    }
-
     /**
      * Creates a snapshot user-defined constants.
      */
@@ -262,6 +203,22 @@ class Snapshot
     }
 
     /**
+     * Returns a list of all super-global variable arrays.
+     */
+    private function setupSuperGlobalArrays(): void
+    {
+        $this->superGlobalArrays = [
+            '_ENV',
+            '_POST',
+            '_GET',
+            '_COOKIE',
+            '_SERVER',
+            '_FILES',
+            '_REQUEST',
+        ];
+    }
+
+    /**
      * Creates a snapshot of all global and super-global variables.
      */
     private function snapshotGlobals(): void
@@ -283,6 +240,11 @@ class Snapshot
         }
     }
 
+    public function superGlobalArrays(): array
+    {
+        return $this->superGlobalArrays;
+    }
+
     /**
      * Creates a snapshot a super-global variable array.
      */
@@ -296,60 +258,6 @@ class Snapshot
                 $this->superGlobalVariables[$superGlobalArray][$key] = unserialize(serialize($value));
             }
         }
-    }
-
-    /**
-     * Creates a snapshot of all static attributes in user-defined classes.
-     */
-    private function snapshotStaticAttributes(): void
-    {
-        foreach ($this->classes as $className) {
-            $class    = new ReflectionClass($className);
-            $snapshot = [];
-
-            foreach ($class->getProperties() as $attribute) {
-                if ($attribute->isStatic()) {
-                    $name = $attribute->getName();
-
-                    if ($this->excludeList->isStaticAttributeExcluded($className, $name)) {
-                        continue;
-                    }
-
-                    $attribute->setAccessible(true);
-
-                    if (PHP_VERSION_ID >= 70400 && !$attribute->isInitialized()) {
-                        continue;
-                    }
-
-                    $value = $attribute->getValue();
-
-                    if ($this->canBeSerialized($value)) {
-                        /* @noinspection UnserializeExploitsInspection */
-                        $snapshot[$name] = unserialize(serialize($value));
-                    }
-                }
-            }
-
-            if (!empty($snapshot)) {
-                $this->staticAttributes[$className] = $snapshot;
-            }
-        }
-    }
-
-    /**
-     * Returns a list of all super-global variable arrays.
-     */
-    private function setupSuperGlobalArrays(): void
-    {
-        $this->superGlobalArrays = [
-            '_ENV',
-            '_POST',
-            '_GET',
-            '_COOKIE',
-            '_SERVER',
-            '_FILES',
-            '_REQUEST',
-        ];
     }
 
     private function canBeSerialized($variable): bool
@@ -439,5 +347,98 @@ class Snapshot
         }
 
         return $result;
+    }
+
+    /**
+     * Creates a snapshot of all static attributes in user-defined classes.
+     */
+    private function snapshotStaticAttributes(): void
+    {
+        foreach ($this->classes as $className) {
+            $class = new ReflectionClass($className);
+            $snapshot = [];
+
+            foreach ($class->getProperties() as $attribute) {
+                if ($attribute->isStatic()) {
+                    $name = $attribute->getName();
+
+                    if ($this->excludeList->isStaticAttributeExcluded($className, $name)) {
+                        continue;
+                    }
+
+                    $attribute->setAccessible(true);
+
+                    if (PHP_VERSION_ID >= 70400 && !$attribute->isInitialized()) {
+                        continue;
+                    }
+
+                    $value = $attribute->getValue();
+
+                    if ($this->canBeSerialized($value)) {
+                        /* @noinspection UnserializeExploitsInspection */
+                        $snapshot[$name] = unserialize(serialize($value));
+                    }
+                }
+            }
+
+            if (!empty($snapshot)) {
+                $this->staticAttributes[$className] = $snapshot;
+            }
+        }
+    }
+
+    public function excludeList(): ExcludeList
+    {
+        return $this->excludeList;
+    }
+
+    public function globalVariables(): array
+    {
+        return $this->globalVariables;
+    }
+
+    public function superGlobalVariables(): array
+    {
+        return $this->superGlobalVariables;
+    }
+
+    public function staticAttributes(): array
+    {
+        return $this->staticAttributes;
+    }
+
+    public function iniSettings(): array
+    {
+        return $this->iniSettings;
+    }
+
+    public function includedFiles(): array
+    {
+        return $this->includedFiles;
+    }
+
+    public function constants(): array
+    {
+        return $this->constants;
+    }
+
+    public function functions(): array
+    {
+        return $this->functions;
+    }
+
+    public function interfaces(): array
+    {
+        return $this->interfaces;
+    }
+
+    public function classes(): array
+    {
+        return $this->classes;
+    }
+
+    public function traits(): array
+    {
+        return $this->traits;
     }
 }

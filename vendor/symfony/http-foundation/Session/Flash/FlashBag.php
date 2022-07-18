@@ -70,9 +70,9 @@ class FlashBag implements FlashBagInterface
     /**
      * {@inheritdoc}
      */
-    public function peekAll(): array
+    public function has(string $type): bool
     {
-        return $this->flashes;
+        return \array_key_exists($type, $this->flashes) && $this->flashes[$type];
     }
 
     /**
@@ -94,20 +94,9 @@ class FlashBag implements FlashBagInterface
     /**
      * {@inheritdoc}
      */
-    public function all(): array
-    {
-        $return = $this->peekAll();
-        $this->flashes = [];
-
-        return $return;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function set(string $type, string|array $messages)
     {
-        $this->flashes[$type] = (array) $messages;
+        $this->flashes[$type] = (array)$messages;
     }
 
     /**
@@ -116,14 +105,6 @@ class FlashBag implements FlashBagInterface
     public function setAll(array $messages)
     {
         $this->flashes = $messages;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function has(string $type): bool
-    {
-        return \array_key_exists($type, $this->flashes) && $this->flashes[$type];
     }
 
     /**
@@ -148,5 +129,24 @@ class FlashBag implements FlashBagInterface
     public function clear(): mixed
     {
         return $this->all();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function all(): array
+    {
+        $return = $this->peekAll();
+        $this->flashes = [];
+
+        return $return;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function peekAll(): array
+    {
+        return $this->flashes;
     }
 }

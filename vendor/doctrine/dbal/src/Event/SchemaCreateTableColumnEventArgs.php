@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Event;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
-
 use function array_merge;
 use function func_get_args;
 use function is_array;
@@ -29,8 +28,8 @@ class SchemaCreateTableColumnEventArgs extends SchemaEventArgs
 
     public function __construct(Column $column, Table $table, AbstractPlatform $platform)
     {
-        $this->column   = $column;
-        $this->table    = $table;
+        $this->column = $column;
+        $this->table = $table;
         $this->platform = $platform;
     }
 

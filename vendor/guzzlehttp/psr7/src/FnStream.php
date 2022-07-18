@@ -38,6 +38,28 @@ final class FnStream implements StreamInterface
     }
 
     /**
+     * Adds custom functionality to an underlying stream by intercepting
+     * specific method calls.
+     *
+     * @param StreamInterface $stream Stream to decorate
+     * @param array<string, callable> $methods Hash of method name to a closure
+     *
+     * @return FnStream
+     */
+    public static function decorate(StreamInterface $stream, array $methods)
+    {
+        // If any of the required methods were not provided, then simply
+        // proxy to the decorated stream.
+        foreach (array_diff(self::SLOTS, array_keys($methods)) as $diff) {
+            /** @var callable $callable */
+            $callable = [$stream, $diff];
+            $methods[$diff] = $callable;
+        }
+
+        return new self($methods);
+    }
+
+    /**
      * Lazily determine which methods are not implemented.
      *
      * @throws \BadMethodCallException
@@ -68,28 +90,6 @@ final class FnStream implements StreamInterface
         throw new \LogicException('FnStream should never be unserialized');
     }
 
-    /**
-     * Adds custom functionality to an underlying stream by intercepting
-     * specific method calls.
-     *
-     * @param StreamInterface         $stream  Stream to decorate
-     * @param array<string, callable> $methods Hash of method name to a closure
-     *
-     * @return FnStream
-     */
-    public static function decorate(StreamInterface $stream, array $methods)
-    {
-        // If any of the required methods were not provided, then simply
-        // proxy to the decorated stream.
-        foreach (array_diff(self::SLOTS, array_keys($methods)) as $diff) {
-            /** @var callable $callable */
-            $callable = [$stream, $diff];
-            $methods[$diff] = $callable;
-        }
-
-        return new self($methods);
-    }
-
     public function __toString(): string
     {
         try {
@@ -98,7 +98,7 @@ final class FnStream implements StreamInterface
             if (\PHP_VERSION_ID >= 70400) {
                 throw $e;
             }
-            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string) $e), E_USER_ERROR);
+            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string)$e), E_USER_ERROR);
             return '';
         }
     }

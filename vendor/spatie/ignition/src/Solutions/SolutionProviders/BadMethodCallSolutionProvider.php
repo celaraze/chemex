@@ -14,9 +14,33 @@ class BadMethodCallSolutionProvider implements HasSolutionsForThrowable
 {
     protected const REGEX = '/([a-zA-Z\\\\]+)::([a-zA-Z]+)/m';
 
+    public function getSolutions(Throwable $throwable): array
+    {
+        return [
+            BaseSolution::create('Bad Method Call')
+                ->setSolutionDescription($this->getSolutionDescription($throwable)),
+        ];
+    }
+
+    public function getSolutionDescription(Throwable $throwable): string
+    {
+        if (!$this->canSolve($throwable)) {
+            return '';
+        }
+
+        /** @phpstan-ignore-next-line */
+        extract($this->getClassAndMethodFromExceptionMessage($throwable->getMessage()), EXTR_OVERWRITE);
+
+        $possibleMethod = $this->findPossibleMethod($class ?? '', $method ?? '');
+
+        $class ??= 'UnknownClass';
+
+        return "Did you mean {$class}::{$possibleMethod?->name}() ?";
+    }
+
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof BadMethodCallException) {
+        if (!$throwable instanceof BadMethodCallException) {
             return false;
         }
 
@@ -27,30 +51,6 @@ class BadMethodCallSolutionProvider implements HasSolutionsForThrowable
         return true;
     }
 
-    public function getSolutions(Throwable $throwable): array
-    {
-        return [
-            BaseSolution::create('Bad Method Call')
-            ->setSolutionDescription($this->getSolutionDescription($throwable)),
-        ];
-    }
-
-    public function getSolutionDescription(Throwable $throwable): string
-    {
-        if (! $this->canSolve($throwable)) {
-            return '';
-        }
-
-        /** @phpstan-ignore-next-line  */
-        extract($this->getClassAndMethodFromExceptionMessage($throwable->getMessage()), EXTR_OVERWRITE);
-
-        $possibleMethod = $this->findPossibleMethod($class ?? '', $method ?? '');
-
-        $class ??= 'UnknownClass';
-
-        return "Did you mean {$class}::{$possibleMethod?->name}() ?";
-    }
-
     /**
      * @param string $message
      *
@@ -58,7 +58,7 @@ class BadMethodCallSolutionProvider implements HasSolutionsForThrowable
      */
     protected function getClassAndMethodFromExceptionMessage(string $message): ?array
     {
-        if (! preg_match(self::REGEX, $message, $matches)) {
+        if (!preg_match(self::REGEX, $message, $matches)) {
             return null;
         }
 

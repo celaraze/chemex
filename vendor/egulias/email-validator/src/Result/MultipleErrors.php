@@ -19,38 +19,38 @@ class MultipleErrors extends InvalidEmail
     {
     }
 
-    public function addReason(Reason $reason) : void
+    public function addReason(Reason $reason): void
     {
         $this->reasons[$reason->code()] = $reason;
+    }
+
+    public function code(): int
+    {
+        return 0;
     }
 
     /**
      * @return Reason[]
      */
-    public function getReasons() : array
+    public function getReasons(): array
     {
         return $this->reasons;
     }
 
-    public function reason() : Reason
+    public function reason(): Reason
     {
         return 0 !== count($this->reasons)
             ? current($this->reasons)
             : new EmptyReason();
     }
 
-    public function description() : string
+    public function description(): string
     {
         $description = '';
-        foreach($this->reasons as $reason) {
+        foreach ($this->reasons as $reason) {
             $description .= $reason->description() . PHP_EOL;
         }
 
         return $description;
-    }
-
-    public function code() : int
-    {
-        return 0;
     }
 }

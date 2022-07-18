@@ -43,24 +43,16 @@ final class ModelFindExtension implements DynamicStaticMethodReturnTypeExtension
     /**
      * {@inheritdoc}
      */
-    public function getClass(): string
-    {
-        return Model::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function isStaticMethodSupported(MethodReflection $methodReflection): bool
     {
         $methodName = $methodReflection->getName();
 
-        if (! Str::startsWith($methodName, 'find')) {
+        if (!Str::startsWith($methodName, 'find')) {
             return false;
         }
 
-        if (! $this->reflectionProvider->getClass(Builder::class)->hasNativeMethod($methodName) &&
-            ! $this->reflectionProvider->getClass(QueryBuilder::class)->hasNativeMethod($methodName)) {
+        if (!$this->reflectionProvider->getClass(Builder::class)->hasNativeMethod($methodName) &&
+            !$this->reflectionProvider->getClass(QueryBuilder::class)->hasNativeMethod($methodName)) {
             return false;
         }
 
@@ -70,11 +62,20 @@ final class ModelFindExtension implements DynamicStaticMethodReturnTypeExtension
     /**
      * {@inheritdoc}
      */
+    public function getClass(): string
+    {
+        return Model::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getTypeFromStaticMethodCall(
         MethodReflection $methodReflection,
-        StaticCall $methodCall,
-        Scope $scope
-    ): Type {
+        StaticCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         if (count($methodCall->getArgs()) < 1) {
             return new ErrorType();
         }

@@ -9,10 +9,10 @@ class MultipleSelect extends Select
     /**
      * Load options for other select when change.
      *
-     * @param  string  $target
-     * @param  string  $resourceUrl
-     * @param  string  $idField
-     * @param  string  $textField
+     * @param string $target
+     * @param string $resourceUrl
+     * @param string $idField
+     * @param string $textField
      * @return $this
      */
     public function loadMore($target, $resourceUrl, $idField = 'id', $textField = 'text'): self
@@ -25,7 +25,7 @@ $(document).on('change', ".{$this->getElementClass()}", function () {
     var ids = $(this).find("option:selected").map(function(index,elem) {
             return $(elem).val();
         }).get().join(',');
-     
+
     $.ajax("$resourceUrl?q="+ids).then(function (data) {
         target.find("option").remove();
         $.each(data, function (i, item) {
@@ -34,7 +34,7 @@ $(document).on('change', ".{$this->getElementClass()}", function () {
                 text : item.$textField
             }));
         });
-        
+
         $(target).trigger('change');
     });
 });

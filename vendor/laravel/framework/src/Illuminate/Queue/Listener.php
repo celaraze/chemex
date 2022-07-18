@@ -46,7 +46,7 @@ class Listener
     /**
      * Create a new queue listener.
      *
-     * @param  string  $commandPath
+     * @param string $commandPath
      * @return void
      */
     public function __construct($commandPath)
@@ -55,31 +55,11 @@ class Listener
     }
 
     /**
-     * Get the PHP binary.
-     *
-     * @return string
-     */
-    protected function phpBinary()
-    {
-        return (new PhpExecutableFinder)->find(false);
-    }
-
-    /**
-     * Get the Artisan binary.
-     *
-     * @return string
-     */
-    protected function artisanBinary()
-    {
-        return defined('ARTISAN_BINARY') ? ARTISAN_BINARY : 'artisan';
-    }
-
-    /**
      * Listen to the given queue connection.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  \Illuminate\Queue\ListenerOptions  $options
+     * @param string $connection
+     * @param string $queue
+     * @param \Illuminate\Queue\ListenerOptions $options
      * @return void
      */
     public function listen($connection, $queue, ListenerOptions $options)
@@ -94,9 +74,9 @@ class Listener
     /**
      * Create a new Symfony process for the worker.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  \Illuminate\Queue\ListenerOptions  $options
+     * @param string $connection
+     * @param string $queue
+     * @param \Illuminate\Queue\ListenerOptions $options
      * @return \Symfony\Component\Process\Process
      */
     public function makeProcess($connection, $queue, ListenerOptions $options)
@@ -124,23 +104,11 @@ class Listener
     }
 
     /**
-     * Add the environment option to the given command.
-     *
-     * @param  array  $command
-     * @param  \Illuminate\Queue\ListenerOptions  $options
-     * @return array
-     */
-    protected function addEnvironment($command, ListenerOptions $options)
-    {
-        return array_merge($command, ["--env={$options->environment}"]);
-    }
-
-    /**
      * Create the command with the listener options.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  \Illuminate\Queue\ListenerOptions  $options
+     * @param string $connection
+     * @param string $queue
+     * @param \Illuminate\Queue\ListenerOptions $options
      * @return array
      */
     protected function createCommand($connection, $queue, ListenerOptions $options)
@@ -158,15 +126,47 @@ class Listener
             "--sleep={$options->sleep}",
             "--tries={$options->maxTries}",
         ], function ($value) {
-            return ! is_null($value);
+            return !is_null($value);
         });
+    }
+
+    /**
+     * Get the PHP binary.
+     *
+     * @return string
+     */
+    protected function phpBinary()
+    {
+        return (new PhpExecutableFinder)->find(false);
+    }
+
+    /**
+     * Get the Artisan binary.
+     *
+     * @return string
+     */
+    protected function artisanBinary()
+    {
+        return defined('ARTISAN_BINARY') ? ARTISAN_BINARY : 'artisan';
+    }
+
+    /**
+     * Add the environment option to the given command.
+     *
+     * @param array $command
+     * @param \Illuminate\Queue\ListenerOptions $options
+     * @return array
+     */
+    protected function addEnvironment($command, ListenerOptions $options)
+    {
+        return array_merge($command, ["--env={$options->environment}"]);
     }
 
     /**
      * Run the given process.
      *
-     * @param  \Symfony\Component\Process\Process  $process
-     * @param  int  $memory
+     * @param \Symfony\Component\Process\Process $process
+     * @param int $memory
      * @return void
      */
     public function runProcess(Process $process, $memory)
@@ -186,8 +186,8 @@ class Listener
     /**
      * Handle output from the worker process.
      *
-     * @param  int  $type
-     * @param  string  $line
+     * @param int $type
+     * @param string $line
      * @return void
      */
     protected function handleWorkerOutput($type, $line)
@@ -200,7 +200,7 @@ class Listener
     /**
      * Determine if the memory limit has been exceeded.
      *
-     * @param  int  $memoryLimit
+     * @param int $memoryLimit
      * @return bool
      */
     public function memoryExceeded($memoryLimit)
@@ -221,7 +221,7 @@ class Listener
     /**
      * Set the output handler callback.
      *
-     * @param  \Closure  $outputHandler
+     * @param \Closure $outputHandler
      * @return void
      */
     public function setOutputHandler(Closure $outputHandler)

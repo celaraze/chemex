@@ -15,12 +15,12 @@ class ReflectionHelper
      *
      * Standard \ReflectionClass->getProperties() does not return private properties from ancestor classes.
      *
-     * @author muratyaman@gmail.com
-     * @see http://php.net/manual/en/reflectionclass.getproperties.php
-     *
      * @param ReflectionClass $ref
      *
      * @return ReflectionProperty[]
+     * @author muratyaman@gmail.com
+     * @see http://php.net/manual/en/reflectionclass.getproperties.php
+     *
      */
     public static function getProperties(ReflectionClass $ref)
     {
@@ -50,10 +50,10 @@ class ReflectionHelper
      * @param object|string $object
      * @param string $name
      *
-     * @throws PropertyException
+     * @return ReflectionProperty
      * @throws ReflectionException
      *
-     * @return ReflectionProperty
+     * @throws PropertyException
      */
     public static function getProperty($object, $name)
     {

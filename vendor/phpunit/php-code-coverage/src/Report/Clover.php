@@ -7,8 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report;
 
+use DOMDocument;
+use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\Driver\WriteOperationFailedException;
+use SebastianBergmann\CodeCoverage\Node\File;
+use SebastianBergmann\CodeCoverage\Util\Filesystem;
 use function count;
 use function dirname;
 use function file_put_contents;
@@ -17,11 +23,6 @@ use function ksort;
 use function max;
 use function range;
 use function time;
-use DOMDocument;
-use SebastianBergmann\CodeCoverage\CodeCoverage;
-use SebastianBergmann\CodeCoverage\Driver\WriteOperationFailedException;
-use SebastianBergmann\CodeCoverage\Node\File;
-use SebastianBergmann\CodeCoverage\Util\Filesystem;
 
 final class Clover
 {
@@ -30,9 +31,9 @@ final class Clover
      */
     public function process(CodeCoverage $coverage, ?string $target = null, ?string $name = null): string
     {
-        $time = (string) time();
+        $time = (string)time();
 
-        $xmlDocument               = new DOMDocument('1.0', 'UTF-8');
+        $xmlDocument = new DOMDocument('1.0', 'UTF-8');
         $xmlDocument->formatOutput = true;
 
         $xmlCoverage = $xmlDocument->createElement('coverage');
@@ -49,7 +50,7 @@ final class Clover
         $xmlCoverage->appendChild($xmlProject);
 
         $packages = [];
-        $report   = $coverage->getReport();
+        $report = $coverage->getReport();
 
         foreach ($report as $item) {
             if (!$item instanceof File) {
@@ -61,16 +62,16 @@ final class Clover
             $xmlFile = $xmlDocument->createElement('file');
             $xmlFile->setAttribute('name', $item->pathAsString());
 
-            $classes      = $item->classesAndTraits();
+            $classes = $item->classesAndTraits();
             $coverageData = $item->lineCoverageData();
-            $lines        = [];
-            $namespace    = 'global';
+            $lines = [];
+            $namespace = 'global';
 
             foreach ($classes as $className => $class) {
-                $classStatements        = 0;
+                $classStatements = 0;
                 $coveredClassStatements = 0;
-                $coveredMethods         = 0;
-                $classMethods           = 0;
+                $coveredMethods = 0;
+                $classMethods = 0;
 
                 foreach ($class['methods'] as $methodName => $method) {
                     if ($method['executableLines'] == 0) {
@@ -94,12 +95,12 @@ final class Clover
                     }
 
                     $lines[$method['startLine']] = [
-                        'ccn'        => $method['ccn'],
-                        'count'      => $methodCount,
-                        'crap'       => $method['crap'],
-                        'type'       => 'method',
+                        'ccn' => $method['ccn'],
+                        'count' => $methodCount,
+                        'crap' => $method['crap'],
+                        'type' => 'method',
                         'visibility' => $method['visibility'],
-                        'name'       => $methodName,
+                        'name' => $methodName,
                     ];
                 }
 
@@ -142,15 +143,15 @@ final class Clover
                 $xmlFile->appendChild($xmlClass);
 
                 $xmlMetrics = $xmlDocument->createElement('metrics');
-                $xmlMetrics->setAttribute('complexity', (string) $class['ccn']);
-                $xmlMetrics->setAttribute('methods', (string) $classMethods);
-                $xmlMetrics->setAttribute('coveredmethods', (string) $coveredMethods);
-                $xmlMetrics->setAttribute('conditionals', (string) $class['executableBranches']);
-                $xmlMetrics->setAttribute('coveredconditionals', (string) $class['executedBranches']);
-                $xmlMetrics->setAttribute('statements', (string) $classStatements);
-                $xmlMetrics->setAttribute('coveredstatements', (string) $coveredClassStatements);
-                $xmlMetrics->setAttribute('elements', (string) ($classMethods + $classStatements + $class['executableBranches']));
-                $xmlMetrics->setAttribute('coveredelements', (string) ($coveredMethods + $coveredClassStatements + $class['executedBranches']));
+                $xmlMetrics->setAttribute('complexity', (string)$class['ccn']);
+                $xmlMetrics->setAttribute('methods', (string)$classMethods);
+                $xmlMetrics->setAttribute('coveredmethods', (string)$coveredMethods);
+                $xmlMetrics->setAttribute('conditionals', (string)$class['executableBranches']);
+                $xmlMetrics->setAttribute('coveredconditionals', (string)$class['executedBranches']);
+                $xmlMetrics->setAttribute('statements', (string)$classStatements);
+                $xmlMetrics->setAttribute('coveredstatements', (string)$coveredClassStatements);
+                $xmlMetrics->setAttribute('elements', (string)($classMethods + $classStatements + $class['executableBranches']));
+                $xmlMetrics->setAttribute('coveredelements', (string)($coveredMethods + $coveredClassStatements + $class['executedBranches']));
                 $xmlClass->appendChild($xmlMetrics);
             }
 
@@ -168,7 +169,7 @@ final class Clover
 
             foreach ($lines as $line => $data) {
                 $xmlLine = $xmlDocument->createElement('line');
-                $xmlLine->setAttribute('num', (string) $line);
+                $xmlLine->setAttribute('num', (string)$line);
                 $xmlLine->setAttribute('type', $data['type']);
 
                 if (isset($data['name'])) {
@@ -180,31 +181,31 @@ final class Clover
                 }
 
                 if (isset($data['ccn'])) {
-                    $xmlLine->setAttribute('complexity', (string) $data['ccn']);
+                    $xmlLine->setAttribute('complexity', (string)$data['ccn']);
                 }
 
                 if (isset($data['crap'])) {
-                    $xmlLine->setAttribute('crap', (string) $data['crap']);
+                    $xmlLine->setAttribute('crap', (string)$data['crap']);
                 }
 
-                $xmlLine->setAttribute('count', (string) $data['count']);
+                $xmlLine->setAttribute('count', (string)$data['count']);
                 $xmlFile->appendChild($xmlLine);
             }
 
             $linesOfCode = $item->linesOfCode();
 
             $xmlMetrics = $xmlDocument->createElement('metrics');
-            $xmlMetrics->setAttribute('loc', (string) $linesOfCode['linesOfCode']);
-            $xmlMetrics->setAttribute('ncloc', (string) $linesOfCode['nonCommentLinesOfCode']);
-            $xmlMetrics->setAttribute('classes', (string) $item->numberOfClassesAndTraits());
-            $xmlMetrics->setAttribute('methods', (string) $item->numberOfMethods());
-            $xmlMetrics->setAttribute('coveredmethods', (string) $item->numberOfTestedMethods());
-            $xmlMetrics->setAttribute('conditionals', (string) $item->numberOfExecutableBranches());
-            $xmlMetrics->setAttribute('coveredconditionals', (string) $item->numberOfExecutedBranches());
-            $xmlMetrics->setAttribute('statements', (string) $item->numberOfExecutableLines());
-            $xmlMetrics->setAttribute('coveredstatements', (string) $item->numberOfExecutedLines());
-            $xmlMetrics->setAttribute('elements', (string) ($item->numberOfMethods() + $item->numberOfExecutableLines() + $item->numberOfExecutableBranches()));
-            $xmlMetrics->setAttribute('coveredelements', (string) ($item->numberOfTestedMethods() + $item->numberOfExecutedLines() + $item->numberOfExecutedBranches()));
+            $xmlMetrics->setAttribute('loc', (string)$linesOfCode['linesOfCode']);
+            $xmlMetrics->setAttribute('ncloc', (string)$linesOfCode['nonCommentLinesOfCode']);
+            $xmlMetrics->setAttribute('classes', (string)$item->numberOfClassesAndTraits());
+            $xmlMetrics->setAttribute('methods', (string)$item->numberOfMethods());
+            $xmlMetrics->setAttribute('coveredmethods', (string)$item->numberOfTestedMethods());
+            $xmlMetrics->setAttribute('conditionals', (string)$item->numberOfExecutableBranches());
+            $xmlMetrics->setAttribute('coveredconditionals', (string)$item->numberOfExecutedBranches());
+            $xmlMetrics->setAttribute('statements', (string)$item->numberOfExecutableLines());
+            $xmlMetrics->setAttribute('coveredstatements', (string)$item->numberOfExecutedLines());
+            $xmlMetrics->setAttribute('elements', (string)($item->numberOfMethods() + $item->numberOfExecutableLines() + $item->numberOfExecutableBranches()));
+            $xmlMetrics->setAttribute('coveredelements', (string)($item->numberOfTestedMethods() + $item->numberOfExecutedLines() + $item->numberOfExecutedBranches()));
             $xmlFile->appendChild($xmlMetrics);
 
             if ($namespace === 'global') {
@@ -226,18 +227,18 @@ final class Clover
         $linesOfCode = $report->linesOfCode();
 
         $xmlMetrics = $xmlDocument->createElement('metrics');
-        $xmlMetrics->setAttribute('files', (string) count($report));
-        $xmlMetrics->setAttribute('loc', (string) $linesOfCode['linesOfCode']);
-        $xmlMetrics->setAttribute('ncloc', (string) $linesOfCode['nonCommentLinesOfCode']);
-        $xmlMetrics->setAttribute('classes', (string) $report->numberOfClassesAndTraits());
-        $xmlMetrics->setAttribute('methods', (string) $report->numberOfMethods());
-        $xmlMetrics->setAttribute('coveredmethods', (string) $report->numberOfTestedMethods());
-        $xmlMetrics->setAttribute('conditionals', (string) $report->numberOfExecutableBranches());
-        $xmlMetrics->setAttribute('coveredconditionals', (string) $report->numberOfExecutedBranches());
-        $xmlMetrics->setAttribute('statements', (string) $report->numberOfExecutableLines());
-        $xmlMetrics->setAttribute('coveredstatements', (string) $report->numberOfExecutedLines());
-        $xmlMetrics->setAttribute('elements', (string) ($report->numberOfMethods() + $report->numberOfExecutableLines() + $report->numberOfExecutableBranches()));
-        $xmlMetrics->setAttribute('coveredelements', (string) ($report->numberOfTestedMethods() + $report->numberOfExecutedLines() + $report->numberOfExecutedBranches()));
+        $xmlMetrics->setAttribute('files', (string)count($report));
+        $xmlMetrics->setAttribute('loc', (string)$linesOfCode['linesOfCode']);
+        $xmlMetrics->setAttribute('ncloc', (string)$linesOfCode['nonCommentLinesOfCode']);
+        $xmlMetrics->setAttribute('classes', (string)$report->numberOfClassesAndTraits());
+        $xmlMetrics->setAttribute('methods', (string)$report->numberOfMethods());
+        $xmlMetrics->setAttribute('coveredmethods', (string)$report->numberOfTestedMethods());
+        $xmlMetrics->setAttribute('conditionals', (string)$report->numberOfExecutableBranches());
+        $xmlMetrics->setAttribute('coveredconditionals', (string)$report->numberOfExecutedBranches());
+        $xmlMetrics->setAttribute('statements', (string)$report->numberOfExecutableLines());
+        $xmlMetrics->setAttribute('coveredstatements', (string)$report->numberOfExecutedLines());
+        $xmlMetrics->setAttribute('elements', (string)($report->numberOfMethods() + $report->numberOfExecutableLines() + $report->numberOfExecutableBranches()));
+        $xmlMetrics->setAttribute('coveredelements', (string)($report->numberOfTestedMethods() + $report->numberOfExecutedLines() + $report->numberOfExecutedBranches()));
         $xmlProject->appendChild($xmlMetrics);
 
         $buffer = $xmlDocument->saveXML();

@@ -16,10 +16,11 @@ that are called and execute tasks for that specific event.
 > Adldap2 are fired irrespective of the current connection or provider in use.
 >
 > This means that when using multiple LDAP connections, the same events will be fired.
-> 
+>
 > This allows you to set listeners on events that occur for all LDAP connections you utilize.
 >
-> If you are required to determine which events are fired from alternate connections, see [below](#determining-the-connection).
+> If you are required to determine which events are fired from alternate connections,
+> see [below](#determining-the-connection).
 
 To register a listener on an event, retrieve the event dispatcher and call the `listen()` method:
 
@@ -90,7 +91,8 @@ $dispatcher->listen(Saving::class, function (Saving $event) {
 
 You can register listeners using the `*` as a wildcard parameter to catch multiple events with the same listener.
 
-Wildcard listeners will receive the event name as their first argument, and the entire event data array as their second argument:
+Wildcard listeners will receive the event name as their first argument, and the entire event data array as their second
+argument:
 
 ```php
 $dispatcher = Adldap::getEventDispatcher();
@@ -153,9 +155,12 @@ Here is a list of all events that are fired:
 |---|---|
 | Adldap\Auth\Events\Attempting | When any authentication attempt is called via: `$provider->auth()->attempt()` |
 | Adldap\Auth\Events\Passed | When any authentication attempts pass via: `$provider->auth()->attempt()` |
-| Adldap\Auth\Events\Failed | When any authentication attempts fail via: `$provider->auth()->attempt()` *Or* `$provider->auth()->bind()` |
-| Adldap\Auth\Events\Binding | When any LDAP bind attempts occur via: `$provider->auth()->attempt()` *Or* `$provider->auth()->bind()` |
-| Adldap\Auth\Events\Bound | When any LDAP bind attempts are successful via: `$provider->auth()->attempt()` *Or* `$provider->auth()->bind()` |
+| Adldap\Auth\Events\Failed | When any authentication attempts fail via: `$provider->auth()->attempt()` *
+Or* `$provider->auth()->bind()` |
+| Adldap\Auth\Events\Binding | When any LDAP bind attempts occur via: `$provider->auth()->attempt()` *
+Or* `$provider->auth()->bind()` |
+| Adldap\Auth\Events\Bound | When any LDAP bind attempts are successful via: `$provider->auth()->attempt()` *
+Or* `$provider->auth()->bind()` |
 
 ### Model Events
 
@@ -168,8 +173,10 @@ Here is a list of all events that are fired:
 | Adldap\Models\Events\Saving | When a model is in the process of being saved via: `$model->save()` |
 | Adldap\Models\Events\Saved | When a model has been successfully saved via: `$model->save()` |
 | Adldap\Models\Events\Creating | When a model is being created via: `$model->save()` *Or* `$model->create()` |
-| Adldap\Models\Events\Created | When a model has been successfully created via: `$model->save()` *Or* `$model->create()` |
+| Adldap\Models\Events\Created | When a model has been successfully created via: `$model->save()` *
+Or* `$model->create()` |
 | Adldap\Models\Events\Updating | When a model is being updated via: `$model->save()` *Or* `$model->update()` |
-| Adldap\Models\Events\Updated | When a model has been successfully updated via: `$model->save()` *Or* `$model->update()` |
+| Adldap\Models\Events\Updated | When a model has been successfully updated via: `$model->save()` *
+Or* `$model->update()` |
 | Adldap\Models\Events\Deleting | When a model is being deleted via: `$model->delete()` |
 | Adldap\Models\Events\Deleted | When a model has been successfully deleted via: `$model->delete()` |

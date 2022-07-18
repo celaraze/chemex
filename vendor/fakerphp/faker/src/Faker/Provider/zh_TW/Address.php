@@ -352,11 +352,6 @@ class Address extends \Faker\Provider\Address
 
     protected static $postcode = ['###-##', '###'];
 
-    public function street()
-    {
-        return static::randomElement(static::$street);
-    }
-
     public static function randomChineseNumber()
     {
         $digits = [
@@ -386,19 +381,6 @@ class Address extends \Faker\Provider\Address
         return static::randomFloat(6, 120, 122);
     }
 
-    public function city()
-    {
-        $county = static::randomElement(array_keys(static::$city));
-        $city = static::randomElement(static::$city[$county]);
-
-        return $county . $city;
-    }
-
-    public function state()
-    {
-        return '臺灣省';
-    }
-
     public static function stateAbbr()
     {
         return '臺';
@@ -417,5 +399,23 @@ class Address extends \Faker\Provider\Address
     public static function secondaryAddress()
     {
         return (static::randomNumber(2) + 1) . static::randomElement(static::$secondaryAddressSuffix);
+    }
+
+    public function street()
+    {
+        return static::randomElement(static::$street);
+    }
+
+    public function city()
+    {
+        $county = static::randomElement(array_keys(static::$city));
+        $city = static::randomElement(static::$city[$county]);
+
+        return $county . $city;
+    }
+
+    public function state()
+    {
+        return '臺灣省';
     }
 }

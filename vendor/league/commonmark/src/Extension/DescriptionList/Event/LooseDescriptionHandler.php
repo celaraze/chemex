@@ -26,12 +26,12 @@ final class LooseDescriptionHandler
     public function __invoke(DocumentParsedEvent $event): void
     {
         foreach ($event->getDocument()->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $description) {
-            if (! $description instanceof Description) {
+            if (!$description instanceof Description) {
                 continue;
             }
 
             // Does this description need to be added to a list?
-            if (! $description->parent() instanceof DescriptionList) {
+            if (!$description->parent() instanceof DescriptionList) {
                 $list = new DescriptionList();
                 // Taking any preceding paragraphs with it
                 if (($paragraph = $description->previous()) instanceof Paragraph) {
@@ -43,7 +43,7 @@ final class LooseDescriptionHandler
             }
 
             // Is this description preceded by a paragraph that should really be a term?
-            if (! (($paragraph = $description->previous()) instanceof Paragraph)) {
+            if (!(($paragraph = $description->previous()) instanceof Paragraph)) {
                 continue;
             }
 

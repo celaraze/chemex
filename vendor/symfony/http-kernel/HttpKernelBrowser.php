@@ -89,9 +89,9 @@ class HttpKernelBrowser extends AbstractBrowser
         foreach (get_declared_classes() as $class) {
             if (str_starts_with($class, 'ComposerAutoloaderInit')) {
                 $r = new \ReflectionClass($class);
-                $file = \dirname($r->getFileName(), 2).'/autoload.php';
+                $file = \dirname($r->getFileName(), 2) . '/autoload.php';
                 if (file_exists($file)) {
-                    $requires .= 'require_once '.var_export($file, true).";\n";
+                    $requires .= 'require_once ' . var_export($file, true) . ";\n";
                 }
             }
         }
@@ -111,7 +111,7 @@ $requires
 \$request = unserialize($request);
 EOF;
 
-        return $code.$this->getHandleScript();
+        return $code . $this->getHandleScript();
     }
 
     protected function getHandleScript()

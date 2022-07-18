@@ -34,11 +34,16 @@
         "psr-4": {
             "React\\Promise\\": "src/"
         },
-        "files": ["src/functions_include.php"]
+        "files": [
+            "src/functions_include.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "React\\Promise\\": ["tests", "tests/fixtures"]
+            "React\\Promise\\": [
+                "tests",
+                "tests/fixtures"
+            ]
         }
     },
     "keywords": [

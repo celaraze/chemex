@@ -23,8 +23,8 @@ class TagSet
     /**
      * Create a new TagSet instance.
      *
-     * @param  \Illuminate\Contracts\Cache\Store  $store
-     * @param  array  $names
+     * @param \Illuminate\Contracts\Cache\Store $store
+     * @param array $names
      * @return void
      */
     public function __construct(Store $store, array $names = [])
@@ -44,19 +44,6 @@ class TagSet
     }
 
     /**
-     * Reset the tag and return the new tag identifier.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    public function resetTag($name)
-    {
-        $this->store->forever($this->tagKey($name), $id = str_replace('.', '', uniqid('', true)));
-
-        return $id;
-    }
-
-    /**
      * Flush all the tags in the set.
      *
      * @return void
@@ -69,11 +56,22 @@ class TagSet
     /**
      * Flush the tag from the cache.
      *
-     * @param  string  $name
+     * @param string $name
      */
     public function flushTag($name)
     {
         $this->store->forget($this->tagKey($name));
+    }
+
+    /**
+     * Get the tag identifier key for a given tag.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function tagKey($name)
+    {
+        return 'tag:' . $name . ':key';
     }
 
     /**
@@ -99,7 +97,7 @@ class TagSet
     /**
      * Get the unique tag identifier for a given tag.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     public function tagId($name)
@@ -108,14 +106,16 @@ class TagSet
     }
 
     /**
-     * Get the tag identifier key for a given tag.
+     * Reset the tag and return the new tag identifier.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
-    public function tagKey($name)
+    public function resetTag($name)
     {
-        return 'tag:'.$name.':key';
+        $this->store->forever($this->tagKey($name), $id = str_replace('.', '', uniqid('', true)));
+
+        return $id;
     }
 
     /**

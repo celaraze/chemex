@@ -43,8 +43,8 @@ class CSRFAnalyzer extends SecurityAnalyzer
     /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -61,8 +61,16 @@ class CSRFAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application is not adequately protected from CSRF attacks. There are {$this->unprotectedRoutes->count()} "
-            ."unprotected routes, which include: {$this->formatUnprotectedRoutes()}. This can be very dangerous and you must "
-            ."resolve this by adding CSRF middleware to your web routes.";
+            . "unprotected routes, which include: {$this->formatUnprotectedRoutes()}. This can be very dangerous and you must "
+            . "resolve this by adding CSRF middleware to your web routes.";
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatUnprotectedRoutes()
+    {
+        return $this->unprotectedRoutes->join(', ', ' and ');
     }
 
     /**
@@ -80,18 +88,6 @@ class CSRFAnalyzer extends SecurityAnalyzer
         }
 
         $this->markFailed();
-    }
-
-    /**
-     * Determine whether to skip the analyzer.
-     *
-     * @return bool
-     * @throws \ReflectionException
-     */
-    public function skip()
-    {
-        // Skip this analyzer if the app is stateless or does not use cookies (app does not need CSRF protection).
-        return $this->appIsStateless() || ! $this->appUsesCookies();
     }
 
     /**
@@ -139,27 +135,31 @@ class CSRFAnalyzer extends SecurityAnalyzer
         $this->unprotectedRoutes = collect($this->router->getRoutes())->filter(function ($route) {
             // Exclude the whitelisted route methods that don't need protection
             return collect($route->methods())->contains(function ($method) {
-                return ! in_array($method, ['HEAD', 'GET', 'OPTIONS']);
+                return !in_array($method, ['HEAD', 'GET', 'OPTIONS']);
             });
         })->filter(function ($route) {
             // Get the routes that don't apply the VerifyCsrfToken middleware
-            return ! $this->routeUsesMiddleware($route, VerifyCsrfToken::class);
+            return !$this->routeUsesMiddleware($route, VerifyCsrfToken::class);
         })->filter(function ($route) {
             // Exclude the routes that are API routes (do not need CSRF protection)
-            return ! Str::is('/api/*', $route->uri());
+            return !Str::is('/api/*', $route->uri());
         })->map(function ($route) {
             // Prettify unprotected routes to display in error message
-            return '['.implode(',', $route->methods()).'] '.$route->uri();
+            return '[' . implode(',', $route->methods()) . '] ' . $route->uri();
         });
 
         return $this->unprotectedRoutes->count() == 0;
     }
 
     /**
-     * @return string
+     * Determine whether to skip the analyzer.
+     *
+     * @return bool
+     * @throws \ReflectionException
      */
-    protected function formatUnprotectedRoutes()
+    public function skip()
     {
-        return $this->unprotectedRoutes->join(', ', ' and ');
+        // Skip this analyzer if the app is stateless or does not use cookies (app does not need CSRF protection).
+        return $this->appIsStateless() || !$this->appUsesCookies();
     }
 }

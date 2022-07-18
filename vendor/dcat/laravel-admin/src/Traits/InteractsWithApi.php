@@ -41,7 +41,7 @@ trait InteractsWithApi
      */
     protected $requestScripts = [
         'fetching' => [],
-        'fetched'  => [],
+        'fetched' => [],
     ];
 
     /**
@@ -50,21 +50,11 @@ trait InteractsWithApi
     protected $parameters = [];
 
     /**
-     * 返回请求附带参数.
-     *
-     * @return array
-     */
-    public function parameters(): array
-    {
-        return $this->parameters;
-    }
-
-    /**
      * 设置请求地址.
      *
-     * @param  string  $method
-     * @param  string  $url
-     * @param  array  $query
+     * @param string $method
+     * @param string $url
+     * @param array $query
      * @return $this
      */
     public function request(string $method, string $url, array $query = [])
@@ -76,71 +66,23 @@ trait InteractsWithApi
     }
 
     /**
-     * 获取请求地址
-     *
-     * @return string
-     */
-    public function getRequestUrl()
-    {
-        return $this->url ?: route(admin_api_route_name('value'));
-    }
-
-    /**
-     * 获取请求方法.
-     *
-     * @return string
-     */
-    public function getRequestMethod()
-    {
-        return $this->method;
-    }
-
-    /**
-     * 设置URI标识.
-     *
-     * @return string
-     */
-    public function getUriKey()
-    {
-        return $this->uriKey ?: static::class;
-    }
-
-    /**
-     * 获取js代码.
-     *
-     * @return array
-     */
-    public function getRequestScripts()
-    {
-        return $this->requestScripts;
-    }
-
-    /**
      * 设置点击抓取数据的按钮的css选择器.
      *
-     * @param  string|array  $selector
+     * @param string|array $selector
      * @return $this
      */
     public function click($selector)
     {
         $this->requestSelectors =
-            array_merge($this->requestSelectors, (array) $selector);
+            array_merge($this->requestSelectors, (array)$selector);
 
         return $this;
     }
 
     /**
-     * @return array
-     */
-    public function getRequestSelectors()
-    {
-        return $this->requestSelectors;
-    }
-
-    /**
      * 设置抓取数据时执行的js代码.
      *
-     * @param  string|\Closure  $script
+     * @param string|\Closure $script
      * @return $this
      */
     public function fetching($script)
@@ -153,7 +95,7 @@ trait InteractsWithApi
     /**
      * 设置抓取完数据后执行的js代码.
      *
-     * @param  string|\Closure  $script
+     * @param string|\Closure $script
      * @return $this
      */
     public function fetched($script)
@@ -164,26 +106,13 @@ trait InteractsWithApi
     }
 
     /**
-     * 判断是否使用请求接口功能.
-     *
-     * @return bool
-     */
-    public function allowBuildRequest()
-    {
-        return (
-            $this->url
-            || method_exists($this, 'handle')
-        ) ? true : false;
-    }
-
-    /**
      * 构建请求数据js代码.
      *
      * @return null|string
      */
     public function buildRequestScript()
     {
-        if (! $this->allowBuildRequest()) {
+        if (!$this->allowBuildRequest()) {
             return;
         }
 
@@ -227,18 +156,61 @@ JS;
     }
 
     /**
+     * 判断是否使用请求接口功能.
+     *
+     * @return bool
+     */
+    public function allowBuildRequest()
+    {
+        return (
+            $this->url
+            || method_exists($this, 'handle')
+        ) ? true : false;
+    }
+
+    /**
      * @return string
      */
     private function formatRequestData()
     {
         $data = [
-            '_key'   => $this->getUriKey(),
+            '_key' => $this->getUriKey(),
             '_token' => csrf_token(),
         ];
 
         return json_encode(
             array_merge($this->parameters(), $data)
         );
+    }
+
+    /**
+     * 设置URI标识.
+     *
+     * @return string
+     */
+    public function getUriKey()
+    {
+        return $this->uriKey ?: static::class;
+    }
+
+    /**
+     * 返回请求附带参数.
+     *
+     * @return array
+     */
+    public function parameters(): array
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * 获取请求地址
+     *
+     * @return string
+     */
+    public function getRequestUrl()
+    {
+        return $this->url ?: route(admin_api_route_name('value'));
     }
 
     /**
@@ -262,7 +234,7 @@ JS;
     /**
      * 合并.
      *
-     * @param  static  $self
+     * @param static $self
      * @return $this
      */
     public function merge($self)
@@ -279,5 +251,33 @@ JS;
         $this->requestScripts['fetched'] = array_merge($this->requestScripts['fetched'], $scripts['fetched']);
 
         return $this;
+    }
+
+    /**
+     * 获取请求方法.
+     *
+     * @return string
+     */
+    public function getRequestMethod()
+    {
+        return $this->method;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRequestSelectors()
+    {
+        return $this->requestSelectors;
+    }
+
+    /**
+     * 获取js代码.
+     *
+     * @return array
+     */
+    public function getRequestScripts()
+    {
+        return $this->requestScripts;
     }
 }

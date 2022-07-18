@@ -36,6 +36,13 @@ class TranslatorImmutable extends Translator
         return parent::setDirectories($directories);
     }
 
+    private function disallowMutation($method)
+    {
+        if ($this->constructed) {
+            throw new ImmutableException($method . ' not allowed on ' . static::class);
+        }
+    }
+
     public function setLocale($locale)
     {
         $this->disallowMutation(__METHOD__);
@@ -88,12 +95,5 @@ class TranslatorImmutable extends Translator
         $this->disallowMutation(__METHOD__);
 
         parent::setFallbackLocales($locales);
-    }
-
-    private function disallowMutation($method)
-    {
-        if ($this->constructed) {
-            throw new ImmutableException($method.' not allowed on '.static::class);
-        }
     }
 }

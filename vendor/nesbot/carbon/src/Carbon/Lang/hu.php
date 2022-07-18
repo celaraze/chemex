@@ -103,11 +103,11 @@ return [
         'sameDay' => '[ma] LT[-kor]',
         'nextDay' => '[holnap] LT[-kor]',
         'nextWeek' => function (CarbonInterface $date) use ($huWeekEndings) {
-            return '['.$huWeekEndings[$date->dayOfWeek].'] LT[-kor]';
+            return '[' . $huWeekEndings[$date->dayOfWeek] . '] LT[-kor]';
         },
         'lastDay' => '[tegnap] LT[-kor]',
         'lastWeek' => function (CarbonInterface $date) use ($huWeekEndings) {
-            return '[múlt '.$huWeekEndings[$date->dayOfWeek].'] LT[-kor]';
+            return '[múlt ' . $huWeekEndings[$date->dayOfWeek] . '] LT[-kor]';
         },
         'sameElse' => 'L',
     ],

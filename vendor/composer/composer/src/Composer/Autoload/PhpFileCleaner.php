@@ -48,6 +48,17 @@ class PhpFileCleaner
     private $index = 0;
 
     /**
+     * @param string $contents
+     * @param int $maxMatches
+     */
+    public function __construct(string $contents, int $maxMatches)
+    {
+        $this->contents = $contents;
+        $this->len = \strlen($this->contents);
+        $this->maxMatches = $maxMatches;
+    }
+
+    /**
      * @param string[] $types
      * @return void
      */
@@ -57,22 +68,11 @@ class PhpFileCleaner
             self::$typeConfig[$type[0]] = array(
                 'name' => $type,
                 'length' => \strlen($type),
-                'pattern' => '{.\b(?<![\$:>])'.$type.'\s++[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+}Ais',
+                'pattern' => '{.\b(?<![\$:>])' . $type . '\s++[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+}Ais',
             );
         }
 
-        self::$restPattern = '{[^?"\'</'.implode('', array_keys(self::$typeConfig)).']+}A';
-    }
-
-    /**
-     * @param string $contents
-     * @param int $maxMatches
-     */
-    public function __construct(string $contents, int $maxMatches)
-    {
-        $this->contents = $contents;
-        $this->len = \strlen($this->contents);
-        $this->maxMatches = $maxMatches;
+        self::$restPattern = '{[^?"\'</' . implode('', array_keys(self::$typeConfig)) . ']+}A';
     }
 
     /**
@@ -165,6 +165,15 @@ class PhpFileCleaner
     }
 
     /**
+     * @param string $char
+     * @return bool
+     */
+    private function peek(string $char): bool
+    {
+        return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
+    }
+
+    /**
      * @param string $delimiter
      * @return void
      */
@@ -185,32 +194,13 @@ class PhpFileCleaner
     }
 
     /**
-     * @return void
+     * @param non-empty-string $regex
+     * @param null|array<int, string> $match
+     * @return bool
      */
-    private function skipComment(): void
+    private function match($regex, array &$match = null): bool
     {
-        $this->index += 2;
-        while ($this->index < $this->len) {
-            if ($this->contents[$this->index] === '*' && $this->peek('/')) {
-                $this->index += 2;
-                break;
-            }
-
-            $this->index += 1;
-        }
-    }
-
-    /**
-     * @return void
-     */
-    private function skipToNewline(): void
-    {
-        while ($this->index < $this->len) {
-            if ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n") {
-                return;
-            }
-            $this->index += 1;
-        }
+        return Preg::isMatch($regex, $this->contents, $match, 0, $this->index);
     }
 
     /**
@@ -221,7 +211,7 @@ class PhpFileCleaner
     {
         $firstDelimiterChar = $delimiter[0];
         $delimiterLength = \strlen($delimiter);
-        $delimiterPattern = '{'.preg_quote($delimiter).'(?![a-zA-Z0-9_\x80-\xff])}A';
+        $delimiterPattern = '{' . preg_quote($delimiter) . '(?![a-zA-Z0-9_\x80-\xff])}A';
 
         while ($this->index < $this->len) {
             // check if we find the delimiter after some spaces/tabs
@@ -257,21 +247,31 @@ class PhpFileCleaner
     }
 
     /**
-     * @param string $char
-     * @return bool
+     * @return void
      */
-    private function peek(string $char): bool
+    private function skipToNewline(): void
     {
-        return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
+        while ($this->index < $this->len) {
+            if ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n") {
+                return;
+            }
+            $this->index += 1;
+        }
     }
 
     /**
-     * @param non-empty-string $regex
-     * @param null|array<int, string> $match
-     * @return bool
+     * @return void
      */
-    private function match($regex, array &$match = null): bool
+    private function skipComment(): void
     {
-        return Preg::isMatch($regex, $this->contents, $match, 0, $this->index);
+        $this->index += 2;
+        while ($this->index < $this->len) {
+            if ($this->contents[$this->index] === '*' && $this->peek('/')) {
+                $this->index += 2;
+                break;
+            }
+
+            $this->index += 1;
+        }
     }
 }

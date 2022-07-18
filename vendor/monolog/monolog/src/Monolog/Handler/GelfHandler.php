@@ -12,9 +12,9 @@
 namespace Monolog\Handler;
 
 use Gelf\PublisherInterface;
-use Monolog\Logger;
-use Monolog\Formatter\GelfMessageFormatter;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\GelfMessageFormatter;
+use Monolog\Logger;
 
 /**
  * Handler to send messages to a Graylog2 (http://www.graylog2.org) server

@@ -12,13 +12,13 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Perforce;
 use Composer\Util\Http\Response;
+use Composer\Util\Perforce;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -31,6 +31,18 @@ class PerforceDriver extends VcsDriver
     protected $branch;
     /** @var ?Perforce */
     protected $perforce = null;
+
+    /**
+     * @inheritDoc
+     */
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
+    {
+        if ($deep || Preg::isMatch('#\b(perforce|p4)\b#i', $url)) {
+            return Perforce::checkServerExists($url, new ProcessExecutor($io));
+        }
+
+        return false;
+    }
 
     /**
      * @inheritDoc
@@ -68,6 +80,14 @@ class PerforceDriver extends VcsDriver
 
         $repoDir = $this->config->get('cache-vcs-dir') . '/' . $this->depot;
         $this->perforce = Perforce::create($repoConfig, $this->getUrl(), $repoDir, $this->process, $this->io);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
     }
 
     /**
@@ -134,14 +154,6 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getUrl(): string
-    {
-        return $this->url;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function hasComposerFile(string $identifier): bool
     {
         $composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
@@ -155,18 +167,6 @@ class PerforceDriver extends VcsDriver
     public function getContents(string $url): Response
     {
         throw new \BadMethodCallException('Not implemented/used in PerforceDriver');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
-    {
-        if ($deep || Preg::isMatch('#\b(perforce|p4)\b#i', $url)) {
-            return Perforce::checkServerExists($url, new ProcessExecutor($io));
-        }
-
-        return false;
     }
 
     /**

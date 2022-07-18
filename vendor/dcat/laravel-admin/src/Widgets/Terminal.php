@@ -18,9 +18,20 @@ class Terminal extends Widget
         $this->class('dump');
     }
 
+    public function content($content)
+    {
+        if ($content instanceof StringOutput) {
+            $content = $content->getContent();
+        }
+
+        $this->content = &$content;
+
+        return $this;
+    }
+
     /**
-     * @param  string  $command
-     * @param  array  $parameters
+     * @param string $command
+     * @param array $parameters
      * @return static
      */
     public static function call(string $command, array $parameters = [])
@@ -39,17 +50,6 @@ class Terminal extends Widget
     public function transparent()
     {
         return $this->style('background:transparent!important;color:#fff;');
-    }
-
-    public function content($content)
-    {
-        if ($content instanceof StringOutput) {
-            $content = $content->getContent();
-        }
-
-        $this->content = &$content;
-
-        return $this;
     }
 
     public function render()

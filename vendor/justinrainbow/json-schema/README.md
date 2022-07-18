@@ -83,6 +83,7 @@ is_int($request->refundAmount); // true
 ```
 
 A shorthand method is also available:
+
 ```PHP
 $validator->coerce($request, $schema);
 // equivalent to $validator->validate($data, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
@@ -177,6 +178,7 @@ $jsonValidator->validate($jsonToValidateObject, $jsonSchemaObject);
 ```
 
 ### Configuration Options
+
 A number of flags are available to alter the behavior of the validator. These can be passed as the
 third argument to `Validator::validate()`, or can be provided as the third argument to
 `Factory::__construct()` if you wish to persist them across multiple `validate()` calls.

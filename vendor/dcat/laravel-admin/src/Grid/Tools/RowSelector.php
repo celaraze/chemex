@@ -101,7 +101,7 @@ HTML;
 <div class="vs-checkbox-con vs-checkbox-{$this->style} checkbox-grid checkbox-grid-column">
     <input type="checkbox" class="{$this->grid->getRowName()}-checkbox" data-id="{$id}" {$checked} {$disabled} data-label="{$title}">
     <span class="vs-checkbox"><span class="vs-checkbox--check"><i class="vs-icon feather icon-check"></i></span></span>
-</div>        
+</div>
 EOT;
     }
 
@@ -114,40 +114,13 @@ EOT;
             <<<JS
 var selector = Dcat.RowSelector({
     checkboxSelector: '.{$this->grid->getRowName()}-checkbox',
-    selectAllSelector: '.{$this->grid->getSelectAllName()}', 
+    selectAllSelector: '.{$this->grid->getSelectAllName()}',
     clickRow: {$clickable},
     background: '{$background}',
 });
 Dcat.grid.addSelector(selector, '{$this->grid->getName()}');
 JS
         );
-    }
-
-    protected function shouldChecked($row)
-    {
-        return $this->isSelectedRow($row, $this->checked);
-    }
-
-    protected function shouldDisable($row)
-    {
-        return $this->isSelectedRow($row, $this->disabled);
-    }
-
-    protected function isSelectedRow($row, $value)
-    {
-        if ($value instanceof \Closure) {
-            return $value->call($row, $row);
-        }
-
-        if (is_array($value)) {
-            foreach ($value as $v) {
-                if (((int) $v) === $row->_index) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     protected function getTitle($row, $id)
@@ -164,5 +137,32 @@ JS
         $label = $row->name ?: $row->title;
 
         return $label ?: ($row->username ?: $id);
+    }
+
+    protected function shouldChecked($row)
+    {
+        return $this->isSelectedRow($row, $this->checked);
+    }
+
+    protected function isSelectedRow($row, $value)
+    {
+        if ($value instanceof \Closure) {
+            return $value->call($row, $row);
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                if (((int)$v) === $row->_index) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected function shouldDisable($row)
+    {
+        return $this->isSelectedRow($row, $this->disabled);
     }
 }

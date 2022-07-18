@@ -9,8 +9,8 @@ class BackedEnumCaseNotFoundException extends RuntimeException
     /**
      * Create a new exception instance.
      *
-     * @param  string  $backedEnumClass
-     * @param  string  $case
+     * @param string $backedEnumClass
+     * @param string $case
      * @return void
      */
     public function __construct($backedEnumClass, $case)

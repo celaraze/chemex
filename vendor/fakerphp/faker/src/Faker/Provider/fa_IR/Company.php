@@ -29,9 +29,9 @@ class Company extends \Faker\Provider\Company
     ];
 
     /**
+     * @return string
      * @example 'شرکت'
      *
-     * @return string
      */
     public static function companyPrefix()
     {
@@ -39,9 +39,9 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
+     * @return string
      * @example 'سرمایه گذاری'
      *
-     * @return string
      */
     public static function companyField()
     {
@@ -49,9 +49,9 @@ class Company extends \Faker\Provider\Company
     }
 
     /**
+     * @return string
      * @example 'تمام وقت'
      *
-     * @return string
      */
     public function contract()
     {

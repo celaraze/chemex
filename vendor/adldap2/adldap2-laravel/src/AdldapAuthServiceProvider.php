@@ -32,7 +32,7 @@ class AdldapAuthServiceProvider extends ServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
-            $config = __DIR__.'/Config/auth.php';
+            $config = __DIR__ . '/Config/auth.php';
 
             $this->publishes([
                 $config => config_path('ldap_auth.php'),
@@ -41,6 +41,39 @@ class AdldapAuthServiceProvider extends ServiceProvider
 
         // Register the import command.
         $this->commands(Import::class);
+    }
+
+    /**
+     * Returns a new Adldap user provider.
+     *
+     * @param Hasher $hasher
+     * @param array $config
+     *
+     * @return \Illuminate\Contracts\Auth\UserProvider
+     * @throws RuntimeException
+     *
+     */
+    protected function makeUserProvider(Hasher $hasher, array $config)
+    {
+        $provider = Config::get('ldap_auth.provider', DatabaseUserProvider::class);
+
+        // The DatabaseUserProvider requires a model to be configured
+        // in the configuration. We will validate this here.
+        if (is_a($provider, DatabaseUserProvider::class, $allowString = true)) {
+            // We will try to retrieve their model from the config file,
+            // otherwise we will try to use the providers config array.
+            $model = Config::get('ldap_auth.model') ?? Arr::get($config, 'model');
+
+            if (!$model) {
+                throw new RuntimeException(
+                    "No model is configured. You must configure a model to use with the {$provider}."
+                );
+            }
+
+            return new $provider($hasher, $model);
+        }
+
+        return new $provider();
     }
 
     /**
@@ -70,39 +103,6 @@ class AdldapAuthServiceProvider extends ServiceProvider
                 Event::listen($event, $listener);
             }
         }
-    }
-
-    /**
-     * Returns a new Adldap user provider.
-     *
-     * @param Hasher $hasher
-     * @param array  $config
-     *
-     * @throws RuntimeException
-     *
-     * @return \Illuminate\Contracts\Auth\UserProvider
-     */
-    protected function makeUserProvider(Hasher $hasher, array $config)
-    {
-        $provider = Config::get('ldap_auth.provider', DatabaseUserProvider::class);
-
-        // The DatabaseUserProvider requires a model to be configured
-        // in the configuration. We will validate this here.
-        if (is_a($provider, DatabaseUserProvider::class, $allowString = true)) {
-            // We will try to retrieve their model from the config file,
-            // otherwise we will try to use the providers config array.
-            $model = Config::get('ldap_auth.model') ?? Arr::get($config, 'model');
-
-            if (! $model) {
-                throw new RuntimeException(
-                    "No model is configured. You must configure a model to use with the {$provider}."
-                );
-            }
-
-            return new $provider($hasher, $model);
-        }
-
-        return new $provider();
     }
 
     /**

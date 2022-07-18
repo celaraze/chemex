@@ -43,15 +43,15 @@ abstract class AbstractRequestRateLimiter implements RequestRateLimiterInterface
         return $minimalRateLimit;
     }
 
+    /**
+     * @return LimiterInterface[] a set of limiters using keys extracted from the request
+     */
+    abstract protected function getLimiters(Request $request): array;
+
     public function reset(Request $request): void
     {
         foreach ($this->getLimiters($request) as $limiter) {
             $limiter->reset();
         }
     }
-
-    /**
-     * @return LimiterInterface[] a set of limiters using keys extracted from the request
-     */
-    abstract protected function getLimiters(Request $request): array;
 }

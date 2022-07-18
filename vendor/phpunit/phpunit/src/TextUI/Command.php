@@ -7,35 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI;
 
-use const PATH_SEPARATOR;
-use const PHP_EOL;
-use const STDIN;
-use function array_keys;
-use function assert;
-use function class_exists;
-use function copy;
-use function extension_loaded;
-use function fgets;
-use function file_get_contents;
-use function file_put_contents;
-use function get_class;
-use function getcwd;
-use function ini_get;
-use function ini_set;
-use function is_callable;
-use function is_dir;
-use function is_file;
-use function is_string;
-use function printf;
-use function realpath;
-use function sort;
-use function sprintf;
-use function stream_resolve_include_path;
-use function strpos;
-use function trim;
-use function version_compare;
 use PHPUnit\Framework\TestSuite;
 use PHPUnit\Runner\Extension\PharLoader;
 use PHPUnit\Runner\StandardTestSuiteLoader;
@@ -61,6 +35,33 @@ use SebastianBergmann\CodeCoverage\Filter;
 use SebastianBergmann\CodeCoverage\StaticAnalysis\CacheWarmer;
 use SebastianBergmann\Timer\Timer;
 use Throwable;
+use function array_keys;
+use function assert;
+use function class_exists;
+use function copy;
+use function extension_loaded;
+use function fgets;
+use function file_get_contents;
+use function file_put_contents;
+use function get_class;
+use function getcwd;
+use function ini_get;
+use function ini_set;
+use function is_callable;
+use function is_dir;
+use function is_file;
+use function is_string;
+use function printf;
+use function realpath;
+use function sort;
+use function sprintf;
+use function stream_resolve_include_path;
+use function strpos;
+use function trim;
+use function version_compare;
+use const PATH_SEPARATOR;
+use const PHP_EOL;
+use const STDIN;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -97,7 +98,7 @@ class Command
         } catch (Throwable $t) {
             throw new RuntimeException(
                 $t->getMessage(),
-                (int) $t->getCode(),
+                (int)$t->getCode(),
                 $t
             );
         }
@@ -158,14 +159,6 @@ class Command
         }
 
         return $return;
-    }
-
-    /**
-     * Create a TestRunner, override in subclasses.
-     */
-    protected function createRunner(): TestRunner
-    {
-        return new TestRunner($this->arguments['loader']);
     }
 
     /**
@@ -351,7 +344,7 @@ class Command
             if (!isset($this->arguments['noExtensions']) && $phpunitConfiguration->hasExtensionsDirectory() && extension_loaded('phar')) {
                 $result = (new PharLoader)->loadPharExtensionsInDirectory($phpunitConfiguration->extensionsDirectory());
 
-                $this->arguments['loadedExtensions']    = $result['loadedExtensions'];
+                $this->arguments['loadedExtensions'] = $result['loadedExtensions'];
                 $this->arguments['notLoadedExtensions'] = $result['notLoadedExtensions'];
 
                 unset($result);
@@ -416,6 +409,139 @@ class Command
         }
     }
 
+    private function exitWithErrorMessage(string $message): void
+    {
+        $this->printVersionString();
+
+        print $message . PHP_EOL;
+
+        exit(TestRunner::FAILURE_EXIT);
+    }
+
+    private function printVersionString(): void
+    {
+        if ($this->versionStringPrinted) {
+            return;
+        }
+
+        print Version::getVersionString() . PHP_EOL . PHP_EOL;
+
+        $this->versionStringPrinted = true;
+    }
+
+    private function generateConfiguration(): void
+    {
+        $this->printVersionString();
+
+        print 'Generating phpunit.xml in ' . getcwd() . PHP_EOL . PHP_EOL;
+        print 'Bootstrap script (relative to path shown above; default: vendor/autoload.php): ';
+
+        $bootstrapScript = trim(fgets(STDIN));
+
+        print 'Tests directory (relative to path shown above; default: tests): ';
+
+        $testsDirectory = trim(fgets(STDIN));
+
+        print 'Source directory (relative to path shown above; default: src): ';
+
+        $src = trim(fgets(STDIN));
+
+        print 'Cache directory (relative to path shown above; default: .phpunit.cache): ';
+
+        $cacheDirectory = trim(fgets(STDIN));
+
+        if ($bootstrapScript === '') {
+            $bootstrapScript = 'vendor/autoload.php';
+        }
+
+        if ($testsDirectory === '') {
+            $testsDirectory = 'tests';
+        }
+
+        if ($src === '') {
+            $src = 'src';
+        }
+
+        if ($cacheDirectory === '') {
+            $cacheDirectory = '.phpunit.cache';
+        }
+
+        $generator = new Generator;
+
+        file_put_contents(
+            'phpunit.xml',
+            $generator->generateDefaultConfiguration(
+                Version::series(),
+                $bootstrapScript,
+                $testsDirectory,
+                $src,
+                $cacheDirectory
+            )
+        );
+
+        print PHP_EOL . 'Generated phpunit.xml in ' . getcwd() . '.' . PHP_EOL;
+        print 'Make sure to exclude the ' . $cacheDirectory . ' directory from version control.' . PHP_EOL;
+
+        exit(TestRunner::SUCCESS_EXIT);
+    }
+
+    protected function handleVersionCheck(): void
+    {
+        $this->printVersionString();
+
+        $latestVersion = file_get_contents('https://phar.phpunit.de/latest-version-of/phpunit');
+        $isOutdated = version_compare($latestVersion, Version::id(), '>');
+
+        if ($isOutdated) {
+            printf(
+                'You are not using the latest version of PHPUnit.' . PHP_EOL .
+                'The latest version is PHPUnit %s.' . PHP_EOL,
+                $latestVersion
+            );
+        } else {
+            print 'You are using the latest version of PHPUnit.' . PHP_EOL;
+        }
+
+        exit(TestRunner::SUCCESS_EXIT);
+    }
+
+    /**
+     * Show the help message.
+     */
+    protected function showHelp(): void
+    {
+        $this->printVersionString();
+        (new Help)->writeToConsole();
+    }
+
+    private function handleCustomOptions(array $unrecognizedOptions): void
+    {
+        foreach ($unrecognizedOptions as $name => $value) {
+            if (isset($this->longOptions[$name])) {
+                $handler = $this->longOptions[$name];
+            }
+
+            $name .= '=';
+
+            if (isset($this->longOptions[$name])) {
+                $handler = $this->longOptions[$name];
+            }
+
+            if (isset($handler) && is_callable([$this, $handler])) {
+                $this->{$handler}($value);
+
+                unset($handler);
+            }
+        }
+    }
+
+    /**
+     * Custom callback for test suite discovery.
+     */
+    protected function handleCustomTestSuite(): void
+    {
+    }
+
     /**
      * Handles the loading of the PHPUnit\Runner\TestSuiteLoader implementation.
      *
@@ -450,7 +576,7 @@ class Command
             } catch (\ReflectionException $e) {
                 throw new ReflectionException(
                     $e->getMessage(),
-                    (int) $e->getCode(),
+                    (int)$e->getCode(),
                     $e
                 );
             }
@@ -477,6 +603,77 @@ class Command
         );
 
         return null;
+    }
+
+    private function configurationFileInDirectory(string $directory): ?string
+    {
+        $candidates = [
+            $directory . '/phpunit.xml',
+            $directory . '/phpunit.xml.dist',
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return realpath($candidate);
+            }
+        }
+
+        return null;
+    }
+
+    private function migrateConfiguration(string $filename): void
+    {
+        $this->printVersionString();
+
+        if (!(new SchemaDetector)->detect($filename)->detected()) {
+            print $filename . ' does not need to be migrated.' . PHP_EOL;
+
+            exit(TestRunner::EXCEPTION_EXIT);
+        }
+
+        copy($filename, $filename . '.bak');
+
+        print 'Created backup:         ' . $filename . '.bak' . PHP_EOL;
+
+        try {
+            file_put_contents(
+                $filename,
+                (new Migrator)->migrate($filename)
+            );
+
+            print 'Migrated configuration: ' . $filename . PHP_EOL;
+        } catch (Throwable $t) {
+            print 'Migration failed: ' . $t->getMessage() . PHP_EOL;
+
+            exit(TestRunner::EXCEPTION_EXIT);
+        }
+
+        exit(TestRunner::SUCCESS_EXIT);
+    }
+
+    /**
+     * Loads a bootstrap file.
+     */
+    protected function handleBootstrap(string $filename): void
+    {
+        try {
+            FileLoader::checkAndLoad($filename);
+        } catch (Throwable $t) {
+            if ($t instanceof \PHPUnit\Exception) {
+                $this->exitWithErrorMessage($t->getMessage());
+            }
+
+            $this->exitWithErrorMessage(
+                sprintf(
+                    'Error in bootstrap script: %s:%s%s%s%s',
+                    get_class($t),
+                    PHP_EOL,
+                    $t->getMessage(),
+                    PHP_EOL,
+                    $t->getTraceAsString()
+                )
+            );
+        }
     }
 
     /**
@@ -519,7 +716,7 @@ class Command
         } catch (\ReflectionException $e) {
             throw new ReflectionException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
             // @codeCoverageIgnoreEnd
@@ -553,85 +750,66 @@ class Command
         return $class->newInstance($outputStream);
     }
 
-    /**
-     * Loads a bootstrap file.
-     */
-    protected function handleBootstrap(string $filename): void
-    {
-        try {
-            FileLoader::checkAndLoad($filename);
-        } catch (Throwable $t) {
-            if ($t instanceof \PHPUnit\Exception) {
-                $this->exitWithErrorMessage($t->getMessage());
-            }
-
-            $this->exitWithErrorMessage(
-                sprintf(
-                    'Error in bootstrap script: %s:%s%s%s%s',
-                    get_class($t),
-                    PHP_EOL,
-                    $t->getMessage(),
-                    PHP_EOL,
-                    $t->getTraceAsString()
-                )
-            );
-        }
-    }
-
-    protected function handleVersionCheck(): void
+    private function handleWarmCoverageCache(XmlConfiguration\Configuration $configuration): void
     {
         $this->printVersionString();
 
-        $latestVersion = file_get_contents('https://phar.phpunit.de/latest-version-of/phpunit');
-        $isOutdated    = version_compare($latestVersion, Version::id(), '>');
-
-        if ($isOutdated) {
-            printf(
-                'You are not using the latest version of PHPUnit.' . PHP_EOL .
-                'The latest version is PHPUnit %s.' . PHP_EOL,
-                $latestVersion
-            );
+        if (isset($this->arguments['coverageCacheDirectory'])) {
+            $cacheDirectory = $this->arguments['coverageCacheDirectory'];
+        } elseif ($configuration->codeCoverage()->hasCacheDirectory()) {
+            $cacheDirectory = $configuration->codeCoverage()->cacheDirectory()->path();
         } else {
-            print 'You are using the latest version of PHPUnit.' . PHP_EOL;
+            print 'Cache for static analysis has not been configured' . PHP_EOL;
+
+            exit(TestRunner::EXCEPTION_EXIT);
         }
+
+        $filter = new Filter;
+
+        if ($configuration->codeCoverage()->hasNonEmptyListOfFilesToBeIncludedInCodeCoverageReport()) {
+            (new FilterMapper)->map(
+                $filter,
+                $configuration->codeCoverage()
+            );
+        } elseif (isset($this->arguments['coverageFilter'])) {
+            if (!is_array($this->arguments['coverageFilter'])) {
+                $coverageFilterDirectories = [$this->arguments['coverageFilter']];
+            } else {
+                $coverageFilterDirectories = $this->arguments['coverageFilter'];
+            }
+
+            foreach ($coverageFilterDirectories as $coverageFilterDirectory) {
+                $filter->includeDirectory($coverageFilterDirectory);
+            }
+        } else {
+            print 'Filter for code coverage has not been configured' . PHP_EOL;
+
+            exit(TestRunner::EXCEPTION_EXIT);
+        }
+
+        $timer = new Timer;
+        $timer->start();
+
+        print 'Warming cache for static analysis ... ';
+
+        (new CacheWarmer)->warmCache(
+            $cacheDirectory,
+            !$configuration->codeCoverage()->disableCodeCoverageIgnore(),
+            $configuration->codeCoverage()->ignoreDeprecatedCodeUnits(),
+            $filter
+        );
+
+        print 'done [' . $timer->stop()->asString() . ']' . PHP_EOL;
 
         exit(TestRunner::SUCCESS_EXIT);
     }
 
     /**
-     * Show the help message.
+     * Create a TestRunner, override in subclasses.
      */
-    protected function showHelp(): void
+    protected function createRunner(): TestRunner
     {
-        $this->printVersionString();
-        (new Help)->writeToConsole();
-    }
-
-    /**
-     * Custom callback for test suite discovery.
-     */
-    protected function handleCustomTestSuite(): void
-    {
-    }
-
-    private function printVersionString(): void
-    {
-        if ($this->versionStringPrinted) {
-            return;
-        }
-
-        print Version::getVersionString() . PHP_EOL . PHP_EOL;
-
-        $this->versionStringPrinted = true;
-    }
-
-    private function exitWithErrorMessage(string $message): void
-    {
-        $this->printVersionString();
-
-        print $message . PHP_EOL;
-
-        exit(TestRunner::FAILURE_EXIT);
+        return new TestRunner($this->arguments['loader']);
     }
 
     private function handleListGroups(TestSuite $suite, bool $exit): int
@@ -724,182 +902,5 @@ class Command
         }
 
         return TestRunner::SUCCESS_EXIT;
-    }
-
-    private function generateConfiguration(): void
-    {
-        $this->printVersionString();
-
-        print 'Generating phpunit.xml in ' . getcwd() . PHP_EOL . PHP_EOL;
-        print 'Bootstrap script (relative to path shown above; default: vendor/autoload.php): ';
-
-        $bootstrapScript = trim(fgets(STDIN));
-
-        print 'Tests directory (relative to path shown above; default: tests): ';
-
-        $testsDirectory = trim(fgets(STDIN));
-
-        print 'Source directory (relative to path shown above; default: src): ';
-
-        $src = trim(fgets(STDIN));
-
-        print 'Cache directory (relative to path shown above; default: .phpunit.cache): ';
-
-        $cacheDirectory = trim(fgets(STDIN));
-
-        if ($bootstrapScript === '') {
-            $bootstrapScript = 'vendor/autoload.php';
-        }
-
-        if ($testsDirectory === '') {
-            $testsDirectory = 'tests';
-        }
-
-        if ($src === '') {
-            $src = 'src';
-        }
-
-        if ($cacheDirectory === '') {
-            $cacheDirectory = '.phpunit.cache';
-        }
-
-        $generator = new Generator;
-
-        file_put_contents(
-            'phpunit.xml',
-            $generator->generateDefaultConfiguration(
-                Version::series(),
-                $bootstrapScript,
-                $testsDirectory,
-                $src,
-                $cacheDirectory
-            )
-        );
-
-        print PHP_EOL . 'Generated phpunit.xml in ' . getcwd() . '.' . PHP_EOL;
-        print 'Make sure to exclude the ' . $cacheDirectory . ' directory from version control.' . PHP_EOL;
-
-        exit(TestRunner::SUCCESS_EXIT);
-    }
-
-    private function migrateConfiguration(string $filename): void
-    {
-        $this->printVersionString();
-
-        if (!(new SchemaDetector)->detect($filename)->detected()) {
-            print $filename . ' does not need to be migrated.' . PHP_EOL;
-
-            exit(TestRunner::EXCEPTION_EXIT);
-        }
-
-        copy($filename, $filename . '.bak');
-
-        print 'Created backup:         ' . $filename . '.bak' . PHP_EOL;
-
-        try {
-            file_put_contents(
-                $filename,
-                (new Migrator)->migrate($filename)
-            );
-
-            print 'Migrated configuration: ' . $filename . PHP_EOL;
-        } catch (Throwable $t) {
-            print 'Migration failed: ' . $t->getMessage() . PHP_EOL;
-
-            exit(TestRunner::EXCEPTION_EXIT);
-        }
-
-        exit(TestRunner::SUCCESS_EXIT);
-    }
-
-    private function handleCustomOptions(array $unrecognizedOptions): void
-    {
-        foreach ($unrecognizedOptions as $name => $value) {
-            if (isset($this->longOptions[$name])) {
-                $handler = $this->longOptions[$name];
-            }
-
-            $name .= '=';
-
-            if (isset($this->longOptions[$name])) {
-                $handler = $this->longOptions[$name];
-            }
-
-            if (isset($handler) && is_callable([$this, $handler])) {
-                $this->{$handler}($value);
-
-                unset($handler);
-            }
-        }
-    }
-
-    private function handleWarmCoverageCache(XmlConfiguration\Configuration $configuration): void
-    {
-        $this->printVersionString();
-
-        if (isset($this->arguments['coverageCacheDirectory'])) {
-            $cacheDirectory = $this->arguments['coverageCacheDirectory'];
-        } elseif ($configuration->codeCoverage()->hasCacheDirectory()) {
-            $cacheDirectory = $configuration->codeCoverage()->cacheDirectory()->path();
-        } else {
-            print 'Cache for static analysis has not been configured' . PHP_EOL;
-
-            exit(TestRunner::EXCEPTION_EXIT);
-        }
-
-        $filter = new Filter;
-
-        if ($configuration->codeCoverage()->hasNonEmptyListOfFilesToBeIncludedInCodeCoverageReport()) {
-            (new FilterMapper)->map(
-                $filter,
-                $configuration->codeCoverage()
-            );
-        } elseif (isset($this->arguments['coverageFilter'])) {
-            if (!is_array($this->arguments['coverageFilter'])) {
-                $coverageFilterDirectories = [$this->arguments['coverageFilter']];
-            } else {
-                $coverageFilterDirectories = $this->arguments['coverageFilter'];
-            }
-
-            foreach ($coverageFilterDirectories as $coverageFilterDirectory) {
-                $filter->includeDirectory($coverageFilterDirectory);
-            }
-        } else {
-            print 'Filter for code coverage has not been configured' . PHP_EOL;
-
-            exit(TestRunner::EXCEPTION_EXIT);
-        }
-
-        $timer = new Timer;
-        $timer->start();
-
-        print 'Warming cache for static analysis ... ';
-
-        (new CacheWarmer)->warmCache(
-            $cacheDirectory,
-            !$configuration->codeCoverage()->disableCodeCoverageIgnore(),
-            $configuration->codeCoverage()->ignoreDeprecatedCodeUnits(),
-            $filter
-        );
-
-        print 'done [' . $timer->stop()->asString() . ']' . PHP_EOL;
-
-        exit(TestRunner::SUCCESS_EXIT);
-    }
-
-    private function configurationFileInDirectory(string $directory): ?string
-    {
-        $candidates = [
-            $directory . '/phpunit.xml',
-            $directory . '/phpunit.xml.dist',
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (is_file($candidate)) {
-                return realpath($candidate);
-            }
-        }
-
-        return null;
     }
 }

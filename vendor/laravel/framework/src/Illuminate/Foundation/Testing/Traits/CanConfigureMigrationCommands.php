@@ -23,6 +23,16 @@ trait CanConfigureMigrationCommands
     }
 
     /**
+     * Determine the specific seeder class that should be used when refreshing the database.
+     *
+     * @return mixed
+     */
+    protected function seeder()
+    {
+        return property_exists($this, 'seeder') ? $this->seeder : false;
+    }
+
+    /**
      * Determine if views should be dropped when refreshing the database.
      *
      * @return bool
@@ -50,15 +60,5 @@ trait CanConfigureMigrationCommands
     protected function shouldSeed()
     {
         return property_exists($this, 'seed') ? $this->seed : false;
-    }
-
-    /**
-     * Determine the specific seeder class that should be used when refreshing the database.
-     *
-     * @return mixed
-     */
-    protected function seeder()
-    {
-        return property_exists($this, 'seeder') ? $this->seeder : false;
     }
 }

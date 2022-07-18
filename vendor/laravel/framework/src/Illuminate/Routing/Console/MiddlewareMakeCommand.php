@@ -12,13 +12,6 @@ class MiddlewareMakeCommand extends GeneratorCommand
     use CreatesMatchingTest;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:middleware';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -28,7 +21,12 @@ class MiddlewareMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:middleware';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:middleware';
     /**
      * The console command description.
      *
@@ -56,24 +54,24 @@ class MiddlewareMakeCommand extends GeneratorCommand
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : __DIR__.$stub;
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Http\Middleware';
+        return $rootNamespace . '\Http\Middleware';
     }
 }

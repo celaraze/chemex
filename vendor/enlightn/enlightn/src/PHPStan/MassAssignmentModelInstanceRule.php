@@ -27,13 +27,13 @@ class MassAssignmentModelInstanceRule implements Rule
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier
-            || ! in_array($methodName = $node->name->toString(), ['forceFill', 'fill', 'update'])) {
+        if (!$node->name instanceof Node\Identifier
+            || !in_array($methodName = $node->name->toString(), ['forceFill', 'fill', 'update'])) {
             // We are only looking for fill(...) or forceFill(...) method calls
             return [];
         }
 
-        if (! $this->isCalledOn($node->var, $scope, Model::class)) {
+        if (!$this->isCalledOn($node->var, $scope, Model::class)) {
             // Method was not called on a Model, so no errors.
             return [];
         }
@@ -42,7 +42,7 @@ class MassAssignmentModelInstanceRule implements Rule
             return [
                 sprintf(
                     "Call to %s method on a Model instance with request data may result in a "
-                    ."mass assignment vulnerability.",
+                    . "mass assignment vulnerability.",
                     $methodName
                 ),
             ];

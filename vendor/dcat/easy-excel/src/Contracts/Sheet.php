@@ -47,7 +47,7 @@ interface Sheet
     public function getSheet();
 
     /**
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function filter(callable $callback);
@@ -61,7 +61,7 @@ interface Sheet
      *      ...
      * });
      *
-     * @param  callable|null  $callback
+     * @param callable|null $callback
      * @return $this
      */
     public function each(callable $callback);
@@ -75,8 +75,8 @@ interface Sheet
      *      ...
      * });
      *
-     * @param  int  $size
-     * @param  callable  $callback
+     * @param int $size
+     * @param callable $callback
      * @return \Dcat\EasyExcel\Importers\Sheet
      */
     public function chunk(int $size, callable $callback);

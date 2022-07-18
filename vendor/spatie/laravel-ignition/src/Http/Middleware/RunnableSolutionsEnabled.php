@@ -8,7 +8,7 @@ class RunnableSolutionsEnabled
 {
     public function handle($request, Closure $next)
     {
-        if (! $this->ignitionEnabled()) {
+        if (!$this->ignitionEnabled()) {
             abort(404);
         }
 

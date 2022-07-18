@@ -33,14 +33,14 @@ class StrictConfirmationQuestion extends Question
     /**
      * Constructor.s
      *
-     * @param string $question         The question to ask to the user
-     * @param bool   $default          The default answer to return, true or false
-     * @param non-empty-string $trueAnswerRegex  A regex to match the "yes" answer
+     * @param string $question The question to ask to the user
+     * @param bool $default The default answer to return, true or false
+     * @param non-empty-string $trueAnswerRegex A regex to match the "yes" answer
      * @param non-empty-string $falseAnswerRegex A regex to match the "no" answer
      */
     public function __construct(string $question, bool $default = true, string $trueAnswerRegex = '/^y(?:es)?$/i', string $falseAnswerRegex = '/^no?$/i')
     {
-        parent::__construct($question, (bool) $default);
+        parent::__construct($question, (bool)$default);
 
         $this->trueAnswerRegex = $trueAnswerRegex;
         $this->falseAnswerRegex = $falseAnswerRegex;

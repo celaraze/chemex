@@ -2,7 +2,12 @@
     "name": "symfony/polyfill-php80",
     "type": "library",
     "description": "Symfony polyfill backporting some PHP 8.0+ features to lower PHP versions",
-    "keywords": ["polyfill", "shim", "compatibility", "portable"],
+    "keywords": [
+        "polyfill",
+        "shim",
+        "compatibility",
+        "portable"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -23,9 +28,15 @@
         "php": ">=7.1"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Polyfill\\Php80\\": "" },
-        "files": [ "bootstrap.php" ],
-        "classmap": [ "Resources/stubs" ]
+        "psr-4": {
+            "Symfony\\Polyfill\\Php80\\": ""
+        },
+        "files": [
+            "bootstrap.php"
+        ],
+        "classmap": [
+            "Resources/stubs"
+        ]
     },
     "minimum-stability": "dev",
     "extra": {

@@ -23,10 +23,10 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     /**
      * Create a new paginator instance.
      *
-     * @param  mixed  $items
-     * @param  int  $perPage
-     * @param  int|null  $currentPage
-     * @param  array  $options  (path, query, fragment, pageName)
+     * @param mixed $items
+     * @param int $perPage
+     * @param int|null $currentPage
+     * @param array $options (path, query, fragment, pageName)
      * @return void
      */
     public function __construct($items, $perPage, $currentPage = null, array $options = [])
@@ -47,20 +47,20 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     /**
      * Get the current page for the request.
      *
-     * @param  int  $currentPage
+     * @param int $currentPage
      * @return int
      */
     protected function setCurrentPage($currentPage)
     {
         $currentPage = $currentPage ?: static::resolveCurrentPage();
 
-        return $this->isValidPageNumber($currentPage) ? (int) $currentPage : 1;
+        return $this->isValidPageNumber($currentPage) ? (int)$currentPage : 1;
     }
 
     /**
      * Set the items for the paginator.
      *
-     * @param  mixed  $items
+     * @param mixed $items
      * @return void
      */
     protected function setItems($items)
@@ -73,22 +73,10 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     }
 
     /**
-     * Get the URL for the next page.
-     *
-     * @return string|null
-     */
-    public function nextPageUrl()
-    {
-        if ($this->hasMorePages()) {
-            return $this->url($this->currentPage() + 1);
-        }
-    }
-
-    /**
      * Render the paginator using the given view.
      *
-     * @param  string|null  $view
-     * @param  array  $data
+     * @param string|null $view
+     * @param array $data
      * @return string
      */
     public function links($view = null, $data = [])
@@ -99,8 +87,8 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     /**
      * Render the paginator using the given view.
      *
-     * @param  string|null  $view
-     * @param  array  $data
+     * @param string|null $view
+     * @param array $data
      * @return \Illuminate\Contracts\Support\Htmlable
      */
     public function render($view = null, $data = [])
@@ -113,7 +101,7 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     /**
      * Manually indicate that the paginator does have more pages.
      *
-     * @param  bool  $hasMore
+     * @param bool $hasMore
      * @return $this
      */
     public function hasMorePagesWhen($hasMore = true)
@@ -124,13 +112,24 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     }
 
     /**
-     * Determine if there are more items in the data source.
+     * Convert the object to its JSON representation.
      *
-     * @return bool
+     * @param int $options
+     * @return string
      */
-    public function hasMorePages()
+    public function toJson($options = 0)
     {
-        return $this->hasMore;
+        return json_encode($this->jsonSerialize(), $options);
+    }
+
+    /**
+     * Convert the object into something JSON serializable.
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     /**
@@ -154,23 +153,24 @@ class Paginator extends AbstractPaginator implements Arrayable, ArrayAccess, Cou
     }
 
     /**
-     * Convert the object into something JSON serializable.
+     * Get the URL for the next page.
      *
-     * @return array
+     * @return string|null
      */
-    public function jsonSerialize(): array
+    public function nextPageUrl()
     {
-        return $this->toArray();
+        if ($this->hasMorePages()) {
+            return $this->url($this->currentPage() + 1);
+        }
     }
 
     /**
-     * Convert the object to its JSON representation.
+     * Determine if there are more items in the data source.
      *
-     * @param  int  $options
-     * @return string
+     * @return bool
      */
-    public function toJson($options = 0)
+    public function hasMorePages()
     {
-        return json_encode($this->jsonSerialize(), $options);
+        return $this->hasMore;
     }
 }

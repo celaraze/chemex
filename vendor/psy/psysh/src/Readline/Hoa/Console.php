@@ -82,36 +82,30 @@ class Console
      * Pipe mode: whiteout.
      */
     const IS_WHITEOUT = 7;
-
-    /**
-     * Advanced interaction is on.
-     */
-    private static $_advanced = null;
-
-    /**
-     * Previous STTY configuration.
-     */
-    private static $_old = null;
-
     /**
      * Mode.
      */
     protected static $_mode = [];
-
     /**
      * Input.
      */
     protected static $_input = null;
-
     /**
      * Output.
      */
     protected static $_output = null;
-
     /**
      * Tput.
      */
     protected static $_tput = null;
+    /**
+     * Advanced interaction is on.
+     */
+    private static $_advanced = null;
+    /**
+     * Previous STTY configuration.
+     */
+    private static $_old = null;
 
     /**
      * Prepare the environment for advanced interactions.
@@ -139,17 +133,15 @@ class Console
     }
 
     /**
-     * Restore previous interaction options.
+     * Check whether a certain pipe is a character device (keyboard, screen
+     * etc.).
+     * For example:
+     *     $ php Mode.php
+     * In this case, self::isDirect(STDOUT) will return true.
      */
-    public static function restoreInteraction()
+    public static function isDirect($pipe): bool
     {
-        if (null === self::$_old) {
-            return;
-        }
-
-        ConsoleProcessus::execute('stty '.self::$_old.' < /dev/tty', false);
-
-        return;
+        return self::IS_CHARACTER === self::getMode($pipe);
     }
 
     /**
@@ -158,7 +150,7 @@ class Console
      */
     public static function getMode($pipe = \STDIN): int
     {
-        $_pipe = (int) $pipe;
+        $_pipe = (int)$pipe;
 
         if (isset(self::$_mode[$_pipe])) {
             return self::$_mode[$_pipe];
@@ -201,7 +193,7 @@ class Console
             case 0120000:
                 $mode = self::IS_LINK;
 
-                 break;
+                break;
 
             // socket.
             case 0140000:
@@ -223,15 +215,17 @@ class Console
     }
 
     /**
-     * Check whether a certain pipe is a character device (keyboard, screen
-     * etc.).
-     * For example:
-     *     $ php Mode.php
-     * In this case, self::isDirect(STDOUT) will return true.
+     * Restore previous interaction options.
      */
-    public static function isDirect($pipe): bool
+    public static function restoreInteraction()
     {
-        return self::IS_CHARACTER === self::getMode($pipe);
+        if (null === self::$_old) {
+            return;
+        }
+
+        ConsoleProcessus::execute('stty ' . self::$_old . ' < /dev/tty', false);
+
+        return;
     }
 
     /**
@@ -264,17 +258,6 @@ class Console
     }
 
     /**
-     * Set input layer.
-     */
-    public static function setInput(ConsoleInput $input)
-    {
-        $old = static::$_input;
-        static::$_input = $input;
-
-        return $old;
-    }
-
-    /**
      * Get input layer.
      */
     public static function getInput(): ConsoleInput
@@ -287,12 +270,12 @@ class Console
     }
 
     /**
-     * Set output layer.
+     * Set input layer.
      */
-    public static function setOutput(ConsoleOutput $output)
+    public static function setInput(ConsoleInput $input)
     {
-        $old = static::$_output;
-        static::$_output = $output;
+        $old = static::$_input;
+        static::$_input = $input;
 
         return $old;
     }
@@ -310,12 +293,12 @@ class Console
     }
 
     /**
-     * Set tput.
+     * Set output layer.
      */
-    public static function setTput(ConsoleTput $tput)
+    public static function setOutput(ConsoleOutput $output)
     {
-        $old = static::$_tput;
-        static::$_tput = $tput;
+        $old = static::$_output;
+        static::$_output = $output;
 
         return $old;
     }
@@ -330,6 +313,17 @@ class Console
         }
 
         return static::$_tput;
+    }
+
+    /**
+     * Set tput.
+     */
+    public static function setTput(ConsoleTput $tput)
+    {
+        $old = static::$_tput;
+        static::$_tput = $tput;
+
+        return $old;
     }
 
     /**

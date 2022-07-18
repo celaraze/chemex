@@ -62,7 +62,7 @@ use Illuminate\Support\DateFactory;
  * @method static int getWeekEndsAt()
  * @method static int getWeekStartsAt()
  * @method static mixed executeWithLocale($locale, $func)
- * @method static mixed use(mixed $handler)
+ * @method static mixed use (mixed $handler)
  * @method static string getLocale()
  * @method static string pluralUnit(string $unit)
  * @method static string singularUnit(string $unit)
@@ -104,12 +104,12 @@ class Date extends Facade
     /**
      * Resolve the facade root instance from the container.
      *
-     * @param  string  $name
+     * @param string $name
      * @return mixed
      */
     protected static function resolveFacadeInstance($name)
     {
-        if (! isset(static::$resolvedInstance[$name]) && ! isset(static::$app, static::$app[$name])) {
+        if (!isset(static::$resolvedInstance[$name]) && !isset(static::$app, static::$app[$name])) {
             $class = static::DEFAULT_FACADE;
 
             static::swap(new $class);

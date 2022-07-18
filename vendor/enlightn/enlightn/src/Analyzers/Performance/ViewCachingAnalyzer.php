@@ -8,32 +8,29 @@ use Symfony\Component\Finder\Finder;
 class ViewCachingAnalyzer extends PerformanceAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'View caching is configured properly.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MINOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
 
     /**
      * Execute the analyzer.
@@ -58,28 +55,11 @@ class ViewCachingAnalyzer extends PerformanceAnalyzer
 
         if ($viewCount > $compiledViewCount) {
             $this->errorMessage = "Your views are not cached in a non-local environment. "
-                ."View caching enables a performance improvement and it is recommended to "
-                ."enable this in production.";
+                . "View caching enables a performance improvement and it is recommended to "
+                . "enable this in production.";
 
             $this->markFailed();
         }
-    }
-
-    /**
-     * Get the Blade files in the given path.
-     *
-     * @param  array  $paths
-     * @return \Illuminate\Support\Collection
-     */
-    protected function bladeFilesIn(array $paths)
-    {
-        return collect(
-            Finder::create()
-                ->in($paths)
-                ->exclude('vendor')
-                ->name('*.blade.php')
-                ->files()
-        );
     }
 
     /**
@@ -94,5 +74,22 @@ class ViewCachingAnalyzer extends PerformanceAnalyzer
         return collect($finder->getPaths())->merge(
             collect($finder->getHints())->flatten()
         )->unique();
+    }
+
+    /**
+     * Get the Blade files in the given path.
+     *
+     * @param array $paths
+     * @return \Illuminate\Support\Collection
+     */
+    protected function bladeFilesIn(array $paths)
+    {
+        return collect(
+            Finder::create()
+                ->in($paths)
+                ->exclude('vendor')
+                ->name('*.blade.php')
+                ->files()
+        );
     }
 }

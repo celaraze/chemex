@@ -28,8 +28,8 @@ class SchemaDumped
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @param  string  $path
+     * @param \Illuminate\Database\Connection $connection
+     * @param string $path
      * @return void
      */
     public function __construct($connection, $path)

@@ -1,4 +1,5 @@
 <?php
+
 namespace DeepCopy\TypeFilter\Spl;
 
 use DeepCopy\DeepCopy;

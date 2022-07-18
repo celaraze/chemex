@@ -7,14 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\GlobalState;
 
-use const PHP_EOL;
 use function is_array;
 use function is_scalar;
 use function serialize;
 use function sprintf;
 use function var_export;
+use const PHP_EOL;
 
 /**
  * Exports parts of a Snapshot as PHP code.
@@ -32,6 +33,35 @@ final class CodeExporter
                 $name,
                 $this->exportVariable($value)
             );
+        }
+
+        return $result;
+    }
+
+    private function exportVariable($variable): string
+    {
+        if (is_scalar($variable) || null === $variable ||
+            (is_array($variable) && $this->arrayOnlyContainsScalars($variable))) {
+            return var_export($variable, true);
+        }
+
+        return 'unserialize(' . var_export(serialize($variable), true) . ')';
+    }
+
+    private function arrayOnlyContainsScalars(array $array): bool
+    {
+        $result = true;
+
+        foreach ($array as $element) {
+            if (is_array($element)) {
+                $result = $this->arrayOnlyContainsScalars($element);
+            } elseif (!is_scalar($element) && null !== $element) {
+                $result = false;
+            }
+
+            if ($result === false) {
+                break;
+            }
         }
 
         return $result;
@@ -73,35 +103,6 @@ EOT;
                 $this->exportVariable($key),
                 $this->exportVariable($value)
             );
-        }
-
-        return $result;
-    }
-
-    private function exportVariable($variable): string
-    {
-        if (is_scalar($variable) || null === $variable ||
-            (is_array($variable) && $this->arrayOnlyContainsScalars($variable))) {
-            return var_export($variable, true);
-        }
-
-        return 'unserialize(' . var_export(serialize($variable), true) . ')';
-    }
-
-    private function arrayOnlyContainsScalars(array $array): bool
-    {
-        $result = true;
-
-        foreach ($array as $element) {
-            if (is_array($element)) {
-                $result = $this->arrayOnlyContainsScalars($element);
-            } elseif (!is_scalar($element) && null !== $element) {
-                $result = false;
-            }
-
-            if ($result === false) {
-                break;
-            }
         }
 
         return $result;

@@ -25,9 +25,23 @@ trait HasHeader
     protected $headers = [];
 
     /**
+     * Add a column sortable to column header.
+     *
+     * @param string $columnName
+     * @param string $cast
+     * @return $this
+     */
+    public function sortable($columnName = null, $cast = null)
+    {
+        $sorter = new Sorter($this->grid, $columnName ?: $this->getName(), $cast);
+
+        return $this->addHeader($sorter);
+    }
+
+    /**
      * Add contents to column header.
      *
-     * @param  string|Renderable|Htmlable  $header
+     * @param string|Renderable|Htmlable $header
      * @return $this
      */
     public function addHeader($header)
@@ -43,22 +57,23 @@ trait HasHeader
     }
 
     /**
-     * Add a column sortable to column header.
-     *
-     * @param  string  $columnName
-     * @param  string  $cast
+     * @param string|\Closure $valueKey
      * @return $this
      */
-    public function sortable($columnName = null, $cast = null)
+    public function filterByValue($valueKey = null)
     {
-        $sorter = new Sorter($this->grid, $columnName ?: $this->getName(), $cast);
-
-        return $this->addHeader($sorter);
+        return $this->filter(
+            Grid\Column\Filter\Equal::make()
+                ->valueFilter($valueKey)
+                ->hide()
+        );
     }
 
     /**
      * Set column filter.
      *
+     * @param Grid\Column\Filter|string $filter
+     * @return $this
      * @example
      *      $grid->username()->filter();
      *
@@ -76,43 +91,28 @@ trait HasHeader
      *          Grid\Column\Filter\Equal::make(__('admin.created_at'))->date()
      *      );
      *
-     * @param  Grid\Column\Filter|string  $filter
-     * @return $this
      */
     public function filter($filter = null)
     {
         $valueKey = is_string($filter) || $filter instanceof \Closure ? $filter : null;
 
-        if (! $filter || $valueKey) {
+        if (!$filter || $valueKey) {
             $filter = Grid\Column\Filter\Equal::make()->valueFilter($valueKey);
         }
 
-        if (! $filter instanceof Grid\Column\Filter) {
-            throw new RuntimeException('The "$filter" must be a type of '.Grid\Column\Filter::class.'.');
+        if (!$filter instanceof Grid\Column\Filter) {
+            throw new RuntimeException('The "$filter" must be a type of ' . Grid\Column\Filter::class . '.');
         }
 
         return $this->addHeader($filter);
     }
 
     /**
-     * @param  string|\Closure  $valueKey
-     * @return $this
-     */
-    public function filterByValue($valueKey = null)
-    {
-        return $this->filter(
-            Grid\Column\Filter\Equal::make()
-                ->valueFilter($valueKey)
-                ->hide()
-        );
-    }
-
-    /**
      * Add a help tooltip to column header.
      *
-     * @param  string|\Closure  $message
-     * @param  null|string  $style  'green', 'blue', 'red', 'purple'
-     * @param  null|string  $placement  'bottom', 'left', 'right', 'top'
+     * @param string|\Closure $message
+     * @param null|string $style 'green', 'blue', 'red', 'purple'
+     * @param null|string $placement 'bottom', 'left', 'right', 'top'
      * @return $this
      */
     public function help($message, ?string $style = null, ?string $placement = null)
@@ -123,7 +123,7 @@ trait HasHeader
     /**
      * Add a binding based on filter to the model query.
      *
-     * @param  Model  $model
+     * @param Model $model
      */
     public function bindFilterQuery(Model $model)
     {
@@ -139,7 +139,7 @@ trait HasHeader
      */
     public function renderHeader()
     {
-        if (! $this->headers) {
+        if (!$this->headers) {
             return '';
         }
         $headers = implode(

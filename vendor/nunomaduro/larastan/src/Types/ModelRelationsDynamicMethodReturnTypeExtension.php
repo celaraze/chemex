@@ -41,15 +41,15 @@ class ModelRelationsDynamicMethodReturnTypeExtension implements DynamicMethodRet
 
         $returnType = $variants->getReturnType();
 
-        if (! $returnType instanceof ObjectType) {
+        if (!$returnType instanceof ObjectType) {
             return false;
         }
 
-        if (! (new ObjectType(Relation::class))->isSuperTypeOf($returnType)->yes()) {
+        if (!(new ObjectType(Relation::class))->isSuperTypeOf($returnType)->yes()) {
             return false;
         }
 
-        if (! $methodReflection->getDeclaringClass()->hasNativeMethod($methodReflection->getName())) {
+        if (!$methodReflection->getDeclaringClass()->hasNativeMethod($methodReflection->getName())) {
             return false;
         }
 
@@ -74,18 +74,19 @@ class ModelRelationsDynamicMethodReturnTypeExtension implements DynamicMethodRet
     }
 
     /**
-     * @param  MethodReflection  $methodReflection
-     * @param  MethodCall  $methodCall
-     * @param  Scope  $scope
+     * @param MethodReflection $methodReflection
+     * @param MethodCall $methodCall
+     * @param Scope $scope
      * @return Type
      *
      * @throws ShouldNotHappenException
      */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         /** @var ObjectType $returnType */
         $returnType = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 

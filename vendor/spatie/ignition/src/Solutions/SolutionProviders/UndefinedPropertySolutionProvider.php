@@ -15,39 +15,22 @@ class UndefinedPropertySolutionProvider implements HasSolutionsForThrowable
     protected const REGEX = '/([a-zA-Z\\\\]+)::\$([a-zA-Z]+)/m';
     protected const MINIMUM_SIMILARITY = 80;
 
-    public function canSolve(Throwable $throwable): bool
-    {
-        if (! $throwable instanceof ErrorException) {
-            return false;
-        }
-
-        if (is_null($this->getClassAndPropertyFromExceptionMessage($throwable->getMessage()))) {
-            return false;
-        }
-
-        if (! $this->similarPropertyExists($throwable)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getSolutions(Throwable $throwable): array
     {
         return [
             BaseSolution::create('Unknown Property')
-            ->setSolutionDescription($this->getSolutionDescription($throwable)),
+                ->setSolutionDescription($this->getSolutionDescription($throwable)),
         ];
     }
 
     public function getSolutionDescription(Throwable $throwable): string
     {
-        if (! $this->canSolve($throwable) || ! $this->similarPropertyExists($throwable)) {
+        if (!$this->canSolve($throwable) || !$this->similarPropertyExists($throwable)) {
             return '';
         }
 
         extract(
-            /** @phpstan-ignore-next-line */
+        /** @phpstan-ignore-next-line */
             $this->getClassAndPropertyFromExceptionMessage($throwable->getMessage()),
             EXTR_OVERWRITE,
         );
@@ -59,14 +42,21 @@ class UndefinedPropertySolutionProvider implements HasSolutionsForThrowable
         return "Did you mean {$class}::\${$possibleProperty->name} ?";
     }
 
-    protected function similarPropertyExists(Throwable $throwable): bool
+    public function canSolve(Throwable $throwable): bool
     {
-        /** @phpstan-ignore-next-line  */
-        extract($this->getClassAndPropertyFromExceptionMessage($throwable->getMessage()), EXTR_OVERWRITE);
+        if (!$throwable instanceof ErrorException) {
+            return false;
+        }
 
-        $possibleProperty = $this->findPossibleProperty($class ?? '', $property ?? '');
+        if (is_null($this->getClassAndPropertyFromExceptionMessage($throwable->getMessage()))) {
+            return false;
+        }
 
-        return $possibleProperty !== null;
+        if (!$this->similarPropertyExists($throwable)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -76,7 +66,7 @@ class UndefinedPropertySolutionProvider implements HasSolutionsForThrowable
      */
     protected function getClassAndPropertyFromExceptionMessage(string $message): ?array
     {
-        if (! preg_match(self::REGEX, $message, $matches)) {
+        if (!preg_match(self::REGEX, $message, $matches)) {
             return null;
         }
 
@@ -84,6 +74,16 @@ class UndefinedPropertySolutionProvider implements HasSolutionsForThrowable
             'class' => $matches[1],
             'property' => $matches[2],
         ];
+    }
+
+    protected function similarPropertyExists(Throwable $throwable): bool
+    {
+        /** @phpstan-ignore-next-line */
+        extract($this->getClassAndPropertyFromExceptionMessage($throwable->getMessage()), EXTR_OVERWRITE);
+
+        $possibleProperty = $this->findPossibleProperty($class ?? '', $property ?? '');
+
+        return $possibleProperty !== null;
     }
 
     /**

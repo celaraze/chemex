@@ -17,7 +17,7 @@ abstract class TrustHosts
     /**
      * Create a new middleware instance.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param \Illuminate\Contracts\Foundation\Application $app
      * @return void
      */
     public function __construct(Application $app)
@@ -26,17 +26,10 @@ abstract class TrustHosts
     }
 
     /**
-     * Get the host patterns that should be trusted.
-     *
-     * @return array
-     */
-    abstract public function hosts();
-
-    /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return \Illuminate\Http\Response
      */
     public function handle(Request $request, $next)
@@ -55,9 +48,16 @@ abstract class TrustHosts
      */
     protected function shouldSpecifyTrustedHosts()
     {
-        return ! $this->app->environment('local') &&
-               ! $this->app->runningUnitTests();
+        return !$this->app->environment('local') &&
+            !$this->app->runningUnitTests();
     }
+
+    /**
+     * Get the host patterns that should be trusted.
+     *
+     * @return array
+     */
+    abstract public function hosts();
 
     /**
      * Get a regular expression matching the application URL and all of its subdomains.
@@ -67,7 +67,7 @@ abstract class TrustHosts
     protected function allSubdomainsOfApplicationUrl()
     {
         if ($host = parse_url($this->app['config']->get('app.url'), PHP_URL_HOST)) {
-            return '^(.+\.)?'.preg_quote($host).'$';
+            return '^(.+\.)?' . preg_quote($host) . '$';
         }
     }
 }

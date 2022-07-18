@@ -44,7 +44,7 @@ final class PrioritizedList implements \IteratorAggregate
     public function add($item, int $priority): void
     {
         $this->list[$priority][] = $item;
-        $this->optimized         = null;
+        $this->optimized = null;
     }
 
     /**

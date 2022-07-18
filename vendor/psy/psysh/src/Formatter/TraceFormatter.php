@@ -22,17 +22,17 @@ class TraceFormatter
     /**
      * Format the trace of the given exception.
      *
-     * @param \Throwable    $throwable  The error or exception with a backtrace
-     * @param FilterOptions $filter     (default: null)
-     * @param int           $count      (default: PHP_INT_MAX)
-     * @param bool          $includePsy (default: true)
+     * @param \Throwable $throwable The error or exception with a backtrace
+     * @param FilterOptions $filter (default: null)
+     * @param int $count (default: PHP_INT_MAX)
+     * @param bool $includePsy (default: true)
      *
      * @return string[] Formatted stacktrace lines
      */
     public static function formatTrace(\Throwable $throwable, FilterOptions $filter = null, int $count = null, bool $includePsy = true): array
     {
         if ($cwd = \getcwd()) {
-            $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR).\DIRECTORY_SEPARATOR;
+            $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
         }
 
         if ($count === null) {
@@ -44,9 +44,9 @@ class TraceFormatter
         $trace = $throwable->getTrace();
         \array_unshift($trace, [
             'function' => '',
-            'file'     => $throwable->getFile() !== null ? $throwable->getFile() : 'n/a',
-            'line'     => $throwable->getLine() !== null ? $throwable->getLine() : 'n/a',
-            'args'     => [],
+            'file' => $throwable->getFile() !== null ? $throwable->getFile() : 'n/a',
+            'line' => $throwable->getLine() !== null ? $throwable->getLine() : 'n/a',
+            'args' => [],
         ]);
 
         if (!$includePsy) {
@@ -68,7 +68,7 @@ class TraceFormatter
 
             // Make file paths relative to cwd
             if ($cwd !== false) {
-                $file = \preg_replace('/^'.\preg_quote($cwd, '/').'/', '', $file);
+                $file = \preg_replace('/^' . \preg_quote($cwd, '/') . '/', '', $file);
             }
 
             // Leave execution loop out of the `eval()'d code` lines

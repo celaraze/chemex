@@ -21,8 +21,8 @@ class AnonymousComponent extends Component
     /**
      * Create a new anonymous component instance.
      *
-     * @param  string  $view
-     * @param  array  $data
+     * @param string $view
+     * @param array $data
      * @return void
      */
     public function __construct($view, $data)

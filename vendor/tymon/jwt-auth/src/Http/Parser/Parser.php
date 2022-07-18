@@ -16,6 +16,12 @@ use Illuminate\Http\Request;
 class Parser
 {
     /**
+     * The request.
+     *
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+    /**
      * The chain.
      *
      * @var array
@@ -23,17 +29,10 @@ class Parser
     private $chain;
 
     /**
-     * The request.
-     *
-     * @var \Illuminate\Http\Request
-     */
-    protected $request;
-
-    /**
      * Constructor.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array  $chain
+     * @param \Illuminate\Http\Request $request
+     * @param array $chain
      * @return void
      */
     public function __construct(Request $request, array $chain = [])
@@ -53,22 +52,9 @@ class Parser
     }
 
     /**
-     * Add a new parser to the chain.
-     *
-     * @param  array|\Tymon\JWTAuth\Contracts\Http\Parser  $parsers
-     * @return $this
-     */
-    public function addParser($parsers)
-    {
-        $this->chain = array_merge($this->chain, is_array($parsers) ? $parsers : [$parsers]);
-
-        return $this;
-    }
-
-    /**
      * Set the order of the parser chain.
      *
-     * @param  array  $chain
+     * @param array $chain
      * @return $this
      */
     public function setChain(array $chain)
@@ -79,14 +65,37 @@ class Parser
     }
 
     /**
+     * Add a new parser to the chain.
+     *
+     * @param array|\Tymon\JWTAuth\Contracts\Http\Parser $parsers
+     * @return $this
+     */
+    public function addParser($parsers)
+    {
+        $this->chain = array_merge($this->chain, is_array($parsers) ? $parsers : [$parsers]);
+
+        return $this;
+    }
+
+    /**
      * Alias for setting the order of the chain.
      *
-     * @param  array  $chain
+     * @param array $chain
      * @return $this
      */
     public function setChainOrder(array $chain)
     {
         return $this->setChain($chain);
+    }
+
+    /**
+     * Check whether a token exists in the chain.
+     *
+     * @return bool
+     */
+    public function hasToken()
+    {
+        return $this->parseToken() !== null;
     }
 
     /**
@@ -105,19 +114,9 @@ class Parser
     }
 
     /**
-     * Check whether a token exists in the chain.
-     *
-     * @return bool
-     */
-    public function hasToken()
-    {
-        return $this->parseToken() !== null;
-    }
-
-    /**
      * Set the request instance.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return $this
      */
     public function setRequest(Request $request)

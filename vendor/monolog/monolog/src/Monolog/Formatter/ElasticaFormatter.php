@@ -33,8 +33,8 @@ class ElasticaFormatter extends NormalizerFormatter
     protected $type;
 
     /**
-     * @param string  $index Elastic Search index name
-     * @param ?string $type  Elastic Search document type, deprecated as of Elastica 7
+     * @param string $index Elastic Search index name
+     * @param ?string $type Elastic Search document type, deprecated as of Elastica 7
      */
     public function __construct(string $index, ?string $type)
     {
@@ -55,20 +55,6 @@ class ElasticaFormatter extends NormalizerFormatter
         return $this->getDocument($record);
     }
 
-    public function getIndex(): string
-    {
-        return $this->index;
-    }
-
-    /**
-     * @deprecated since Elastica 7 type has no effect
-     */
-    public function getType(): string
-    {
-        /** @phpstan-ignore-next-line */
-        return $this->type;
-    }
-
     /**
      * Convert a log message into an Elastica Document
      *
@@ -85,5 +71,19 @@ class ElasticaFormatter extends NormalizerFormatter
         $document->setIndex($this->index);
 
         return $document;
+    }
+
+    public function getIndex(): string
+    {
+        return $this->index;
+    }
+
+    /**
+     * @deprecated since Elastica 7 type has no effect
+     */
+    public function getType(): string
+    {
+        /** @phpstan-ignore-next-line */
+        return $this->type;
     }
 }

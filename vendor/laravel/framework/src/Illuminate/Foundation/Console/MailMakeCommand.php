@@ -14,13 +14,6 @@ class MailMakeCommand extends GeneratorCommand
     use CreatesMatchingTest;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:mail';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -30,7 +23,12 @@ class MailMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:mail';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:mail';
     /**
      * The console command description.
      *
@@ -52,7 +50,7 @@ class MailMakeCommand extends GeneratorCommand
      */
     public function handle()
     {
-        if (parent::handle() === false && ! $this->option('force')) {
+        if (parent::handle() === false && !$this->option('force')) {
             return;
         }
 
@@ -69,31 +67,14 @@ class MailMakeCommand extends GeneratorCommand
     protected function writeMarkdownTemplate()
     {
         $path = $this->viewPath(
-            str_replace('.', '/', $this->getView()).'.blade.php'
+            str_replace('.', '/', $this->getView()) . '.blade.php'
         );
 
-        if (! $this->files->isDirectory(dirname($path))) {
+        if (!$this->files->isDirectory(dirname($path))) {
             $this->files->makeDirectory(dirname($path), 0755, true);
         }
 
-        $this->files->put($path, file_get_contents(__DIR__.'/stubs/markdown.stub'));
-    }
-
-    /**
-     * Build the class with the given name.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function buildClass($name)
-    {
-        $class = parent::buildClass($name);
-
-        if ($this->option('markdown') !== false) {
-            $class = str_replace(['DummyView', '{{ view }}'], $this->getView(), $class);
-        }
-
-        return $class;
+        $this->files->put($path, file_get_contents(__DIR__ . '/stubs/markdown.stub'));
     }
 
     /**
@@ -105,15 +86,32 @@ class MailMakeCommand extends GeneratorCommand
     {
         $view = $this->option('markdown');
 
-        if (! $view) {
+        if (!$view) {
             $name = str_replace('\\', '/', $this->argument('name'));
 
-            $view = 'mail.'.collect(explode('/', $name))
-                ->map(fn ($part) => Str::kebab($part))
-                ->implode('.');
+            $view = 'mail.' . collect(explode('/', $name))
+                    ->map(fn($part) => Str::kebab($part))
+                    ->implode('.');
         }
 
         return $view;
+    }
+
+    /**
+     * Build the class with the given name.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function buildClass($name)
+    {
+        $class = parent::buildClass($name);
+
+        if ($this->option('markdown') !== false) {
+            $class = str_replace(['DummyView', '{{ view }}'], $this->getView(), $class);
+        }
+
+        return $class;
     }
 
     /**
@@ -132,25 +130,25 @@ class MailMakeCommand extends GeneratorCommand
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : __DIR__.$stub;
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Mail';
+        return $rootNamespace . '\Mail';
     }
 
     /**

@@ -52,6 +52,11 @@ class TimeDataCollector extends DataCollector implements LateDataCollectorInterf
         ];
     }
 
+    public function getStartTime(): float
+    {
+        return $this->data['start_time'];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -119,11 +124,6 @@ class TimeDataCollector extends DataCollector implements LateDataCollectorInterf
         }
 
         return $this->data['events']['__section__']->getOrigin() - $this->getStartTime();
-    }
-
-    public function getStartTime(): float
-    {
-        return $this->data['start_time'];
     }
 
     public function isStopwatchInstalled(): bool

@@ -29,6 +29,15 @@ class TraceableUrlMatcher extends UrlMatcher
 
     protected $traces;
 
+    public function getTracesForRequest(Request $request)
+    {
+        $this->request = $request;
+        $traces = $this->getTraces($request->getPathInfo());
+        $this->request = null;
+
+        return $traces;
+    }
+
     public function getTraces(string $pathinfo)
     {
         $this->traces = [];
@@ -39,15 +48,6 @@ class TraceableUrlMatcher extends UrlMatcher
         }
 
         return $this->traces;
-    }
-
-    public function getTracesForRequest(Request $request)
-    {
-        $this->request = $request;
-        $traces = $this->getTraces($request->getPathInfo());
-        $this->request = null;
-
-        return $traces;
     }
 
     protected function matchCollection(string $pathinfo, RouteCollection $routes): array

@@ -43,11 +43,11 @@ class DebugHandlersListener implements EventSubscriberInterface
     private bool $hasTerminatedWithException = false;
 
     /**
-     * @param callable|null  $exceptionHandler A handler that must support \Throwable instances that will be called on Exception
-     * @param array|int|null $levels           An array map of E_* to LogLevel::* or an integer bit field of E_* constants
-     * @param int|null       $throwAt          Thrown errors in a bit field of E_* constants, or null to keep the current value
-     * @param bool           $scream           Enables/disables screaming mode, where even silenced errors are logged
-     * @param bool           $scope            Enables/disables scoping mode
+     * @param callable|null $exceptionHandler A handler that must support \Throwable instances that will be called on Exception
+     * @param array|int|null $levels An array map of E_* to LogLevel::* or an integer bit field of E_* constants
+     * @param int|null $throwAt Thrown errors in a bit field of E_* constants, or null to keep the current value
+     * @param bool $scream Enables/disables screaming mode, where even silenced errors are logged
+     * @param bool $scope Enables/disables scoping mode
      */
     public function __construct(callable $exceptionHandler = null, LoggerInterface $logger = null, array|int|null $levels = \E_ALL, ?int $throwAt = \E_ALL, bool $scream = true, bool $scope = true, LoggerInterface $deprecationLogger = null)
     {
@@ -62,6 +62,17 @@ class DebugHandlersListener implements EventSubscriberInterface
         $this->scream = $scream;
         $this->scope = $scope;
         $this->deprecationLogger = $deprecationLogger;
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        $events = [KernelEvents::REQUEST => ['configure', 2048]];
+
+        if (\defined('Symfony\Component\Console\ConsoleEvents::COMMAND')) {
+            $events[ConsoleEvents::COMMAND] = ['configure', 2048];
+        }
+
+        return $events;
     }
 
     /**
@@ -169,16 +180,5 @@ class DebugHandlersListener implements EventSubscriberInterface
         if ($this->logger && $defaultLoggerLevels) {
             $handler->setDefaultLogger($this->logger, $defaultLoggerLevels);
         }
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        $events = [KernelEvents::REQUEST => ['configure', 2048]];
-
-        if (\defined('Symfony\Component\Console\ConsoleEvents::COMMAND')) {
-            $events[ConsoleEvents::COMMAND] = ['configure', 2048];
-        }
-
-        return $events;
     }
 }

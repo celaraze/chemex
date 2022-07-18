@@ -35,7 +35,7 @@ use Illuminate\Support\Collection;
  * @method Field\TimeRange timeRange($start, $end, $label = '')
  * @method Field\Number number($column, $label = '')
  * @method Field\Currency currency($column, $label = '')
- * @method Field\SwitchField switch($column, $label = '')
+ * @method Field\SwitchField switch ($column, $label = '')
  * @method Field\Display display($column, $label = '')
  * @method Field\Rate rate($column, $label = '')
  * @method Field\Divide divider(string $title = null)
@@ -97,7 +97,7 @@ class EmbeddedForm
     /**
      * EmbeddedForm constructor.
      *
-     * @param  string  $column
+     * @param string $column
      */
     public function __construct($column)
     {
@@ -119,7 +119,7 @@ class EmbeddedForm
     /**
      * Set parent form for this form.
      *
-     * @param  Form  $parent
+     * @param Form $parent
      * @return $this
      */
     public function setParent($parent)
@@ -140,9 +140,42 @@ class EmbeddedForm
     }
 
     /**
+     * Prepare for insert or update.
+     *
+     * @param array $input
+     * @return mixed
+     */
+    public function prepare($input)
+    {
+        foreach ($input as $key => $record) {
+            $this->setFieldOriginalValue($key);
+            $input[$key] = $this->prepareValue($key, $record);
+        }
+
+        return $input;
+    }
+
+    /**
+     * Set original data for each field.
+     *
+     * @param string $key
+     * @return void
+     */
+    protected function setFieldOriginalValue($key)
+    {
+        if (Helper::keyExists($key, $this->original)) {
+            $values = $this->original[$key];
+
+            $this->fields->each(function (Field $field) use ($values) {
+                $field->setOriginal($values);
+            });
+        }
+    }
+
+    /**
      * Set original values for fields.
      *
-     * @param  array  $data
+     * @param array $data
      * @return $this
      */
     public function setOriginal($data)
@@ -161,32 +194,16 @@ class EmbeddedForm
     }
 
     /**
-     * Prepare for insert or update.
-     *
-     * @param  array  $input
-     * @return mixed
-     */
-    public function prepare($input)
-    {
-        foreach ($input as $key => $record) {
-            $this->setFieldOriginalValue($key);
-            $input[$key] = $this->prepareValue($key, $record);
-        }
-
-        return $input;
-    }
-
-    /**
      * Do prepare work for each field.
      *
-     * @param  string  $key
-     * @param  string  $record
+     * @param string $key
+     * @param string $record
      * @return mixed
      */
     protected function prepareValue($key, $record)
     {
         $field = $this->fields->first(function (Field $field) use ($key) {
-            return in_array($key, (array) $field->column());
+            return in_array($key, (array)$field->column());
         });
 
         if (method_exists($field, 'prepare')) {
@@ -197,26 +214,9 @@ class EmbeddedForm
     }
 
     /**
-     * Set original data for each field.
-     *
-     * @param  string  $key
-     * @return void
-     */
-    protected function setFieldOriginalValue($key)
-    {
-        if (Helper::keyExists($key, $this->original)) {
-            $values = $this->original[$key];
-
-            $this->fields->each(function (Field $field) use ($values) {
-                $field->setOriginal($values);
-            });
-        }
-    }
-
-    /**
      * Fill data to all fields in form.
      *
-     * @param  array  $data
+     * @param array $data
      * @return $this
      */
     public function fill(array $data)
@@ -229,9 +229,57 @@ class EmbeddedForm
     }
 
     /**
+     * Add nested-form fields dynamically.
+     *
+     * @param string $method
+     * @param array $arguments
+     * @return Field|$this
+     */
+    public function __call($method, $arguments)
+    {
+        if ($className = Form::findFieldClass($method)) {
+            $column = Arr::get($arguments, 0, '');
+
+            /** @var Field $field */
+            $field = new $className($column, array_slice($arguments, 1));
+
+            $field->setForm($this->parent);
+
+            $this->pushField($field);
+
+            return $field;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a field to form.
+     *
+     * @param Field $field
+     * @return $this
+     */
+    public function pushField(Field $field)
+    {
+        $field = $this->formatField($field);
+
+        $this->fields->push($field);
+
+        $field->setRelation([
+            'relation' => $this->column,
+        ]);
+
+        $this->callResolvingFieldCallbacks($field);
+
+        $field::requireAssets();
+
+        return $this;
+    }
+
+    /**
      * Format form, set `element name` `error key` and `element class`.
      *
-     * @param  Field  $field
+     * @param Field $field
      * @return Field
      */
     protected function formatField(Field $field)
@@ -267,53 +315,5 @@ class EmbeddedForm
     protected function formatClass(string $column)
     {
         return str_replace('.', '-', $column);
-    }
-
-    /**
-     * Add a field to form.
-     *
-     * @param  Field  $field
-     * @return $this
-     */
-    public function pushField(Field $field)
-    {
-        $field = $this->formatField($field);
-
-        $this->fields->push($field);
-
-        $field->setRelation([
-            'relation' => $this->column,
-        ]);
-
-        $this->callResolvingFieldCallbacks($field);
-
-        $field::requireAssets();
-
-        return $this;
-    }
-
-    /**
-     * Add nested-form fields dynamically.
-     *
-     * @param  string  $method
-     * @param  array  $arguments
-     * @return Field|$this
-     */
-    public function __call($method, $arguments)
-    {
-        if ($className = Form::findFieldClass($method)) {
-            $column = Arr::get($arguments, 0, '');
-
-            /** @var Field $field */
-            $field = new $className($column, array_slice($arguments, 1));
-
-            $field->setForm($this->parent);
-
-            $this->pushField($field);
-
-            return $field;
-        }
-
-        return $this;
     }
 }

@@ -7,7 +7,6 @@ use Doctrine\DBAL\Platforms\SQLServer;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
-
 use function assert;
 use function count;
 use function is_string;
@@ -44,215 +43,6 @@ SQL
     /**
      * {@inheritdoc}
      */
-    protected function _getPortableSequenceDefinition($sequence)
-    {
-        return new Sequence($sequence['name'], (int) $sequence['increment'], (int) $sequence['start_value']);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableTableColumnDefinition($tableColumn)
-    {
-        $dbType = strtok($tableColumn['type'], '(), ');
-        assert(is_string($dbType));
-
-        $fixed   = null;
-        $length  = (int) $tableColumn['length'];
-        $default = $tableColumn['default'];
-
-        if (! isset($tableColumn['name'])) {
-            $tableColumn['name'] = '';
-        }
-
-        if ($default !== null) {
-            $default = $this->parseDefaultExpression($default);
-        }
-
-        switch ($dbType) {
-            case 'nchar':
-            case 'nvarchar':
-            case 'ntext':
-                // Unicode data requires 2 bytes per character
-                $length /= 2;
-                break;
-
-            case 'varchar':
-                // TEXT type is returned as VARCHAR(MAX) with a length of -1
-                if ($length === -1) {
-                    $dbType = 'text';
-                }
-
-                break;
-
-            case 'varbinary':
-                if ($length === -1) {
-                    $dbType = 'blob';
-                }
-
-                break;
-        }
-
-        if ($dbType === 'char' || $dbType === 'nchar' || $dbType === 'binary') {
-            $fixed = true;
-        }
-
-        $type                   = $this->_platform->getDoctrineTypeMapping($dbType);
-        $type                   = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
-        $tableColumn['comment'] = $this->removeDoctrineTypeFromComment($tableColumn['comment'], $type);
-
-        $options = [
-            'unsigned'      => false,
-            'fixed'         => (bool) $fixed,
-            'default'       => $default,
-            'notnull'       => (bool) $tableColumn['notnull'],
-            'scale'         => $tableColumn['scale'],
-            'precision'     => $tableColumn['precision'],
-            'autoincrement' => (bool) $tableColumn['autoincrement'],
-            'comment'       => $tableColumn['comment'] !== '' ? $tableColumn['comment'] : null,
-        ];
-
-        if ($length !== 0 && ($type === 'text' || $type === 'string' || $type === 'binary')) {
-            $options['length'] = $length;
-        }
-
-        $column = new Column($tableColumn['name'], Type::getType($type), $options);
-
-        if (isset($tableColumn['collation']) && $tableColumn['collation'] !== 'NULL') {
-            $column->setPlatformOption('collation', $tableColumn['collation']);
-        }
-
-        return $column;
-    }
-
-    private function parseDefaultExpression(string $value): ?string
-    {
-        while (preg_match('/^\((.*)\)$/s', $value, $matches)) {
-            $value = $matches[1];
-        }
-
-        if ($value === 'NULL') {
-            return null;
-        }
-
-        if (preg_match('/^\'(.*)\'$/s', $value, $matches) === 1) {
-            $value = str_replace("''", "'", $matches[1]);
-        }
-
-        if ($value === 'getdate()') {
-            return $this->_platform->getCurrentTimestampSQL();
-        }
-
-        return $value;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableTableForeignKeysList($tableForeignKeys)
-    {
-        $foreignKeys = [];
-
-        foreach ($tableForeignKeys as $tableForeignKey) {
-            $name = $tableForeignKey['ForeignKey'];
-
-            if (! isset($foreignKeys[$name])) {
-                $foreignKeys[$name] = [
-                    'local_columns' => [$tableForeignKey['ColumnName']],
-                    'foreign_table' => $tableForeignKey['ReferenceTableName'],
-                    'foreign_columns' => [$tableForeignKey['ReferenceColumnName']],
-                    'name' => $name,
-                    'options' => [
-                        'onUpdate' => str_replace('_', ' ', $tableForeignKey['update_referential_action_desc']),
-                        'onDelete' => str_replace('_', ' ', $tableForeignKey['delete_referential_action_desc']),
-                    ],
-                ];
-            } else {
-                $foreignKeys[$name]['local_columns'][]   = $tableForeignKey['ColumnName'];
-                $foreignKeys[$name]['foreign_columns'][] = $tableForeignKey['ReferenceColumnName'];
-            }
-        }
-
-        return parent::_getPortableTableForeignKeysList($foreignKeys);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableTableIndexesList($tableIndexes, $tableName = null)
-    {
-        foreach ($tableIndexes as &$tableIndex) {
-            $tableIndex['non_unique'] = (bool) $tableIndex['non_unique'];
-            $tableIndex['primary']    = (bool) $tableIndex['primary'];
-            $tableIndex['flags']      = $tableIndex['flags'] ? [$tableIndex['flags']] : null;
-        }
-
-        return parent::_getPortableTableIndexesList($tableIndexes, $tableName);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableTableForeignKeyDefinition($tableForeignKey)
-    {
-        return new ForeignKeyConstraint(
-            $tableForeignKey['local_columns'],
-            $tableForeignKey['foreign_table'],
-            $tableForeignKey['foreign_columns'],
-            $tableForeignKey['name'],
-            $tableForeignKey['options']
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableTableDefinition($table)
-    {
-        if (isset($table['schema_name']) && $table['schema_name'] !== 'dbo') {
-            return $table['schema_name'] . '.' . $table['name'];
-        }
-
-        return $table['name'];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableDatabaseDefinition($database)
-    {
-        return $database['name'];
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @deprecated Use {@see listSchemaNames()} instead.
-     */
-    protected function getPortableNamespaceDefinition(array $namespace)
-    {
-        Deprecation::triggerIfCalledFromOutside(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4503',
-            'SQLServerSchemaManager::getPortableNamespaceDefinition() is deprecated,'
-                . ' use SQLServerSchemaManager::listSchemaNames() instead.'
-        );
-
-        return $namespace['name'];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function _getPortableViewDefinition($view)
-    {
-        // @todo
-        return new View($view['name'], $view['definition']);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function listTableIndexes($table)
     {
         $sql = $this->_platform->getListTableIndexesSQL($table, $this->_conn->getDatabase());
@@ -268,6 +58,20 @@ SQL
         }
 
         return $this->_getPortableTableIndexesList($tableIndexes, $table);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableTableIndexesList($tableIndexes, $tableName = null)
+    {
+        foreach ($tableIndexes as &$tableIndex) {
+            $tableIndex['non_unique'] = (bool)$tableIndex['non_unique'];
+            $tableIndex['primary'] = (bool)$tableIndex['primary'];
+            $tableIndex['flags'] = $tableIndex['flags'] ? [$tableIndex['flags']] : null;
+        }
+
+        return parent::_getPortableTableIndexesList($tableIndexes, $tableName);
     }
 
     /**
@@ -367,5 +171,200 @@ SQL
         }
 
         return $this->databaseCollation;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableSequenceDefinition($sequence)
+    {
+        return new Sequence($sequence['name'], (int)$sequence['increment'], (int)$sequence['start_value']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableTableColumnDefinition($tableColumn)
+    {
+        $dbType = strtok($tableColumn['type'], '(), ');
+        assert(is_string($dbType));
+
+        $fixed = null;
+        $length = (int)$tableColumn['length'];
+        $default = $tableColumn['default'];
+
+        if (!isset($tableColumn['name'])) {
+            $tableColumn['name'] = '';
+        }
+
+        if ($default !== null) {
+            $default = $this->parseDefaultExpression($default);
+        }
+
+        switch ($dbType) {
+            case 'nchar':
+            case 'nvarchar':
+            case 'ntext':
+                // Unicode data requires 2 bytes per character
+                $length /= 2;
+                break;
+
+            case 'varchar':
+                // TEXT type is returned as VARCHAR(MAX) with a length of -1
+                if ($length === -1) {
+                    $dbType = 'text';
+                }
+
+                break;
+
+            case 'varbinary':
+                if ($length === -1) {
+                    $dbType = 'blob';
+                }
+
+                break;
+        }
+
+        if ($dbType === 'char' || $dbType === 'nchar' || $dbType === 'binary') {
+            $fixed = true;
+        }
+
+        $type = $this->_platform->getDoctrineTypeMapping($dbType);
+        $type = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
+        $tableColumn['comment'] = $this->removeDoctrineTypeFromComment($tableColumn['comment'], $type);
+
+        $options = [
+            'unsigned' => false,
+            'fixed' => (bool)$fixed,
+            'default' => $default,
+            'notnull' => (bool)$tableColumn['notnull'],
+            'scale' => $tableColumn['scale'],
+            'precision' => $tableColumn['precision'],
+            'autoincrement' => (bool)$tableColumn['autoincrement'],
+            'comment' => $tableColumn['comment'] !== '' ? $tableColumn['comment'] : null,
+        ];
+
+        if ($length !== 0 && ($type === 'text' || $type === 'string' || $type === 'binary')) {
+            $options['length'] = $length;
+        }
+
+        $column = new Column($tableColumn['name'], Type::getType($type), $options);
+
+        if (isset($tableColumn['collation']) && $tableColumn['collation'] !== 'NULL') {
+            $column->setPlatformOption('collation', $tableColumn['collation']);
+        }
+
+        return $column;
+    }
+
+    private function parseDefaultExpression(string $value): ?string
+    {
+        while (preg_match('/^\((.*)\)$/s', $value, $matches)) {
+            $value = $matches[1];
+        }
+
+        if ($value === 'NULL') {
+            return null;
+        }
+
+        if (preg_match('/^\'(.*)\'$/s', $value, $matches) === 1) {
+            $value = str_replace("''", "'", $matches[1]);
+        }
+
+        if ($value === 'getdate()') {
+            return $this->_platform->getCurrentTimestampSQL();
+        }
+
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableTableForeignKeysList($tableForeignKeys)
+    {
+        $foreignKeys = [];
+
+        foreach ($tableForeignKeys as $tableForeignKey) {
+            $name = $tableForeignKey['ForeignKey'];
+
+            if (!isset($foreignKeys[$name])) {
+                $foreignKeys[$name] = [
+                    'local_columns' => [$tableForeignKey['ColumnName']],
+                    'foreign_table' => $tableForeignKey['ReferenceTableName'],
+                    'foreign_columns' => [$tableForeignKey['ReferenceColumnName']],
+                    'name' => $name,
+                    'options' => [
+                        'onUpdate' => str_replace('_', ' ', $tableForeignKey['update_referential_action_desc']),
+                        'onDelete' => str_replace('_', ' ', $tableForeignKey['delete_referential_action_desc']),
+                    ],
+                ];
+            } else {
+                $foreignKeys[$name]['local_columns'][] = $tableForeignKey['ColumnName'];
+                $foreignKeys[$name]['foreign_columns'][] = $tableForeignKey['ReferenceColumnName'];
+            }
+        }
+
+        return parent::_getPortableTableForeignKeysList($foreignKeys);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableTableForeignKeyDefinition($tableForeignKey)
+    {
+        return new ForeignKeyConstraint(
+            $tableForeignKey['local_columns'],
+            $tableForeignKey['foreign_table'],
+            $tableForeignKey['foreign_columns'],
+            $tableForeignKey['name'],
+            $tableForeignKey['options']
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableTableDefinition($table)
+    {
+        if (isset($table['schema_name']) && $table['schema_name'] !== 'dbo') {
+            return $table['schema_name'] . '.' . $table['name'];
+        }
+
+        return $table['name'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableDatabaseDefinition($database)
+    {
+        return $database['name'];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @deprecated Use {@see listSchemaNames()} instead.
+     */
+    protected function getPortableNamespaceDefinition(array $namespace)
+    {
+        Deprecation::triggerIfCalledFromOutside(
+            'doctrine/dbal',
+            'https://github.com/doctrine/dbal/issues/4503',
+            'SQLServerSchemaManager::getPortableNamespaceDefinition() is deprecated,'
+            . ' use SQLServerSchemaManager::listSchemaNames() instead.'
+        );
+
+        return $namespace['name'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function _getPortableViewDefinition($view)
+    {
+        // @todo
+        return new View($view['name'], $view['definition']);
     }
 }

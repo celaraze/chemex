@@ -7,9 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
-use function func_get_args;
 use ArrayAccess;
 use Countable;
 use DOMDocument;
@@ -70,12 +70,13 @@ use PHPUnit\Framework\MockObject\Stub\ReturnSelf as ReturnSelfStub;
 use PHPUnit\Framework\MockObject\Stub\ReturnStub;
 use PHPUnit\Framework\MockObject\Stub\ReturnValueMap as ReturnValueMapStub;
 use Throwable;
+use function func_get_args;
 
 if (!function_exists('PHPUnit\Framework\assertArrayHasKey')) {
     /**
      * Asserts that an array has a specified key.
      *
-     * @param int|string        $key
+     * @param int|string $key
      * @param array|ArrayAccess $array
      *
      * @throws ExpectationFailedException
@@ -96,7 +97,7 @@ if (!function_exists('PHPUnit\Framework\assertArrayNotHasKey')) {
     /**
      * Asserts that an array does not have a specified key.
      *
-     * @param int|string        $key
+     * @param int|string $key
      * @param array|ArrayAccess $array
      *
      * @throws ExpectationFailedException

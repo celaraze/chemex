@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\BaseMatcher;
 use Hamcrest\Description;
 
@@ -16,14 +18,18 @@ class IsNull extends BaseMatcher
     private static $_INSTANCE;
     private static $_NOT_INSTANCE;
 
-    public function matches($item)
+    /**
+     * Matches if value is not null.
+     *
+     * @factory
+     */
+    public static function notNullValue()
     {
-        return is_null($item);
-    }
+        if (!self::$_NOT_INSTANCE) {
+            self::$_NOT_INSTANCE = IsNot::not(self::nullValue());
+        }
 
-    public function describeTo(Description $description)
-    {
-        $description->appendText('null');
+        return self::$_NOT_INSTANCE;
     }
 
     /**
@@ -40,17 +46,13 @@ class IsNull extends BaseMatcher
         return self::$_INSTANCE;
     }
 
-    /**
-     * Matches if value is not null.
-     *
-     * @factory
-     */
-    public static function notNullValue()
+    public function matches($item)
     {
-        if (!self::$_NOT_INSTANCE) {
-            self::$_NOT_INSTANCE = IsNot::not(self::nullValue());
-        }
+        return is_null($item);
+    }
 
-        return self::$_NOT_INSTANCE;
+    public function describeTo(Description $description)
+    {
+        $description->appendText('null');
     }
 }

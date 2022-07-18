@@ -2,16 +2,16 @@
 
 namespace Adldap\Schemas;
 
-use Adldap\Models\User;
-use Adldap\Models\Entry;
-use Adldap\Models\Group;
-use Adldap\Models\Contact;
-use Adldap\Models\Printer;
 use Adldap\Models\Computer;
+use Adldap\Models\Contact;
 use Adldap\Models\Container;
+use Adldap\Models\Entry;
+use Adldap\Models\ForeignSecurityPrincipal;
+use Adldap\Models\Group;
 use Adldap\Models\Organization;
 use Adldap\Models\OrganizationalUnit;
-use Adldap\Models\ForeignSecurityPrincipal;
+use Adldap\Models\Printer;
+use Adldap\Models\User;
 
 abstract class Schema implements SchemaInterface
 {
@@ -98,14 +98,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function computerModel()
-    {
-        return Computer::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function configurationNamingContext()
     {
         return 'configurationnamingcontext';
@@ -117,22 +109,6 @@ abstract class Schema implements SchemaInterface
     public function contact()
     {
         return 'contact';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function contactModel()
-    {
-        return Contact::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function containerModel()
-    {
-        return Container::class;
     }
 
     /**
@@ -293,14 +269,6 @@ abstract class Schema implements SchemaInterface
     public function firstName()
     {
         return 'givenname';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function groupModel()
-    {
-        return Group::class;
     }
 
     /**
@@ -482,14 +450,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function member()
-    {
-        return 'member';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function memberIdentifier()
     {
         return 'distinguishedname';
@@ -516,7 +476,15 @@ abstract class Schema implements SchemaInterface
      */
     public function memberRange($from, $to)
     {
-        return $this->member().";range={$from}-{$to}";
+        return $this->member() . ";range={$from}-{$to}";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function member()
+    {
+        return 'member';
     }
 
     /**
@@ -634,9 +602,35 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
+    public function objectClassModelMap()
+    {
+        return [
+            $this->objectClassComputer() => $this->computerModel(),
+            $this->objectClassContact() => $this->contactModel(),
+            $this->objectClassPerson() => $this->userModel(),
+            $this->objectClassGroup() => $this->groupModel(),
+            $this->objectClassContainer() => $this->containerModel(),
+            $this->objectClassPrinter() => $this->printerModel(),
+            $this->objectClassOrganization() => $this->organizationModel(),
+            $this->objectClassOu() => $this->organizationalUnitModel(),
+            $this->objectClassForeignSecurityPrincipal() => $this->foreignSecurityPrincipalModel(),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function objectClassComputer()
     {
         return 'computer';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function computerModel()
+    {
+        return Computer::class;
     }
 
     /**
@@ -650,6 +644,30 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
+    public function contactModel()
+    {
+        return Contact::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function userModel()
+    {
+        return User::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function groupModel()
+    {
+        return Group::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function objectClassContainer()
     {
         return 'container';
@@ -658,9 +676,9 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function objectClassOrganization()
+    public function containerModel()
     {
-        return 'organization';
+        return Container::class;
     }
 
     /**
@@ -674,9 +692,33 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function objectClassUser()
+    public function printerModel()
     {
-        return 'user';
+        return Printer::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function objectClassOrganization()
+    {
+        return 'organization';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function organizationModel()
+    {
+        return Organization::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function organizationalUnitModel()
+    {
+        return OrganizationalUnit::class;
     }
 
     /**
@@ -690,19 +732,9 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function objectClassModelMap()
+    public function foreignSecurityPrincipalModel()
     {
-        return [
-            $this->objectClassComputer()                    => $this->computerModel(),
-            $this->objectClassContact()                     => $this->contactModel(),
-            $this->objectClassPerson()                      => $this->userModel(),
-            $this->objectClassGroup()                       => $this->groupModel(),
-            $this->objectClassContainer()                   => $this->containerModel(),
-            $this->objectClassPrinter()                     => $this->printerModel(),
-            $this->objectClassOrganization()                => $this->organizationModel(),
-            $this->objectClassOu()                          => $this->organizationalUnitModel(),
-            $this->objectClassForeignSecurityPrincipal()    => $this->foreignSecurityPrincipalModel(),
-        ];
+        return ForeignSecurityPrincipal::class;
     }
 
     /**
@@ -764,33 +796,9 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function organizationalPerson()
-    {
-        return 'organizationalperson';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function organizationalUnit()
     {
         return 'organizationalunit';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function organizationalUnitModel()
-    {
-        return OrganizationalUnit::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function organizationModel()
-    {
-        return Organization::class;
     }
 
     /**
@@ -815,14 +823,6 @@ abstract class Schema implements SchemaInterface
     public function passwordLastSet()
     {
         return 'pwdlastset';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function person()
-    {
-        return 'person';
     }
 
     /**
@@ -927,14 +927,6 @@ abstract class Schema implements SchemaInterface
     public function printerMemory()
     {
         return 'printmemory';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function printerModel()
-    {
-        return Printer::class;
     }
 
     /**
@@ -1148,14 +1140,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function top()
-    {
-        return 'top';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function true()
     {
         return 'TRUE';
@@ -1212,14 +1196,6 @@ abstract class Schema implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public function userModel()
-    {
-        return User::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function userObjectClasses(): array
     {
         return [
@@ -1228,6 +1204,38 @@ abstract class Schema implements SchemaInterface
             $this->organizationalPerson(),
             $this->objectClassUser(),
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function top()
+    {
+        return 'top';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function person()
+    {
+        return 'person';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function organizationalPerson()
+    {
+        return 'organizationalperson';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function objectClassUser()
+    {
+        return 'user';
     }
 
     /**
@@ -1252,13 +1260,5 @@ abstract class Schema implements SchemaInterface
     public function versionNumber()
     {
         return 'versionnumber';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function foreignSecurityPrincipalModel()
-    {
-        return ForeignSecurityPrincipal::class;
     }
 }

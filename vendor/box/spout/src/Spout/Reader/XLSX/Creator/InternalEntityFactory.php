@@ -73,7 +73,8 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
         $isSheetVisible,
         $optionsManager,
         $sharedStringsManager
-    ) {
+    )
+    {
         $rowIterator = $this->createRowIterator($filePath, $sheetDataXMLFilePath, $optionsManager, $sharedStringsManager);
 
         return new Sheet($rowIterator, $sheetIndex, $sheetName, $isSheetActive, $isSheetVisible);
@@ -118,6 +119,23 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     }
 
     /**
+     * @return XMLReader
+     */
+    public function createXMLReader()
+    {
+        return new XMLReader();
+    }
+
+    /**
+     * @param $xmlReader
+     * @return XMLProcessor
+     */
+    public function createXMLProcessor($xmlReader)
+    {
+        return new XMLProcessor($xmlReader);
+    }
+
+    /**
      * @param Cell[] $cells
      * @return Row
      */
@@ -141,22 +159,5 @@ class InternalEntityFactory implements InternalEntityFactoryInterface
     public function createZipArchive()
     {
         return new \ZipArchive();
-    }
-
-    /**
-     * @return XMLReader
-     */
-    public function createXMLReader()
-    {
-        return new XMLReader();
-    }
-
-    /**
-     * @param $xmlReader
-     * @return XMLProcessor
-     */
-    public function createXMLProcessor($xmlReader)
-    {
-        return new XMLProcessor($xmlReader);
     }
 }

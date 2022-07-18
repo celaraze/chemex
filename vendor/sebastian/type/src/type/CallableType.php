@@ -7,8 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
+use Closure;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionObject;
 use function assert;
 use function class_exists;
 use function count;
@@ -17,10 +22,6 @@ use function function_exists;
 use function is_array;
 use function is_object;
 use function is_string;
-use Closure;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionObject;
 
 final class CallableType extends Type
 {
@@ -74,21 +75,6 @@ final class CallableType extends Type
         return false;
     }
 
-    public function name(): string
-    {
-        return 'callable';
-    }
-
-    public function allowsNull(): bool
-    {
-        return $this->allowsNull;
-    }
-
-    public function isCallable(): bool
-    {
-        return true;
-    }
-
     private function isClosure(ObjectType $type): bool
     {
         return !$type->className()->isNamespaced() && $type->className()->simpleName() === Closure::class;
@@ -108,7 +94,7 @@ final class CallableType extends Type
         } catch (ReflectionException $e) {
             throw new RuntimeException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
             // @codeCoverageIgnoreEnd
@@ -128,25 +114,6 @@ final class CallableType extends Type
         }
 
         return function_exists($type->value());
-    }
-
-    private function isObjectCallback(SimpleType $type): bool
-    {
-        if (!is_array($type->value())) {
-            return false;
-        }
-
-        if (count($type->value()) !== 2) {
-            return false;
-        }
-
-        if (!is_object($type->value()[0]) || !is_string($type->value()[1])) {
-            return false;
-        }
-
-        [$object, $methodName] = $type->value();
-
-        return (new ReflectionObject($object))->hasMethod($methodName);
     }
 
     private function isClassCallback(SimpleType $type): bool
@@ -190,12 +157,46 @@ final class CallableType extends Type
         } catch (ReflectionException $e) {
             throw new RuntimeException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
             // @codeCoverageIgnoreEnd
         }
 
         return false;
+    }
+
+    private function isObjectCallback(SimpleType $type): bool
+    {
+        if (!is_array($type->value())) {
+            return false;
+        }
+
+        if (count($type->value()) !== 2) {
+            return false;
+        }
+
+        if (!is_object($type->value()[0]) || !is_string($type->value()[1])) {
+            return false;
+        }
+
+        [$object, $methodName] = $type->value();
+
+        return (new ReflectionObject($object))->hasMethod($methodName);
+    }
+
+    public function name(): string
+    {
+        return 'callable';
+    }
+
+    public function allowsNull(): bool
+    {
+        return $this->allowsNull;
+    }
+
+    public function isCallable(): bool
+    {
+        return true;
     }
 }

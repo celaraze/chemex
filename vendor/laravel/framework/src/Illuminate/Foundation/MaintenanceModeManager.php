@@ -7,6 +7,16 @@ use Illuminate\Support\Manager;
 class MaintenanceModeManager extends Manager
 {
     /**
+     * Get the default driver name.
+     *
+     * @return string
+     */
+    public function getDefaultDriver(): string
+    {
+        return $this->config->get('app.maintenance.driver', 'file');
+    }
+
+    /**
      * Create an instance of the file based maintenance driver.
      *
      * @return \Illuminate\Foundation\FileBasedMaintenanceMode
@@ -30,15 +40,5 @@ class MaintenanceModeManager extends Manager
             $this->config->get('app.maintenance.store') ?: $this->config->get('cache.default'),
             'illuminate:foundation:down'
         );
-    }
-
-    /**
-     * Get the default driver name.
-     *
-     * @return string
-     */
-    public function getDefaultDriver(): string
-    {
-        return $this->config->get('app.maintenance.driver', 'file');
     }
 }

@@ -26,7 +26,7 @@ class ArrayEntryToken implements TokenInterface
     private $value;
 
     /**
-     * @param mixed $key   exact value or token
+     * @param mixed $key exact value or token
      * @param mixed $value exact value or token
      */
     public function __construct($key, $value)
@@ -36,13 +36,24 @@ class ArrayEntryToken implements TokenInterface
     }
 
     /**
+     * Wraps non token $value into ExactValueToken
+     *
+     * @param $value
+     * @return TokenInterface
+     */
+    private function wrapIntoExactValueToken($value)
+    {
+        return $value instanceof TokenInterface ? $value : new ExactValueToken($value);
+    }
+
+    /**
      * Scores half of combined scores from key and value tokens for same entry. Capped at 8.
      * If argument implements \ArrayAccess without \Traversable, then key token is restricted to ExactValueToken.
      *
      * @param array|\ArrayAccess|\Traversable $argument
      *
-     * @throws \Prophecy\Exception\InvalidArgumentException
      * @return bool|int
+     * @throws \Prophecy\Exception\InvalidArgumentException
      */
     public function scoreArgument($argument)
     {
@@ -58,13 +69,46 @@ class ArrayEntryToken implements TokenInterface
             return false;
         }
 
-        $keyScores = array_map(array($this->key,'scoreArgument'), array_keys($argument));
-        $valueScores = array_map(array($this->value,'scoreArgument'), $argument);
+        $keyScores = array_map(array($this->key, 'scoreArgument'), array_keys($argument));
+        $valueScores = array_map(array($this->value, 'scoreArgument'), $argument);
         $scoreEntry = function ($value, $key) {
             return $value && $key ? min(8, ($key + $value) / 2) : false;
         };
 
         return max(array_map($scoreEntry, $valueScores, $keyScores));
+    }
+
+    /**
+     * Converts instance of \ArrayAccess to key => value array entry
+     *
+     * @param \ArrayAccess $object
+     *
+     * @return array|null
+     * @throws \Prophecy\Exception\InvalidArgumentException
+     */
+    private function convertArrayAccessToEntry(\ArrayAccess $object)
+    {
+        if (!$this->key instanceof ExactValueToken) {
+            throw new InvalidArgumentException(sprintf(
+                'You can only use exact value tokens to match key of ArrayAccess object' . PHP_EOL .
+                'But you used `%s`.',
+                $this->key
+            ));
+        }
+
+        $key = $this->key->getValue();
+
+        return $object->offsetExists($key) ? array($key => $object[$key]) : array();
+    }
+
+    /**
+     * Returns value
+     *
+     * @return TokenInterface
+     */
+    public function getValue()
+    {
+        return $this->value;
     }
 
     /**
@@ -95,49 +139,5 @@ class ArrayEntryToken implements TokenInterface
     public function getKey()
     {
         return $this->key;
-    }
-
-    /**
-     * Returns value
-     *
-     * @return TokenInterface
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * Wraps non token $value into ExactValueToken
-     *
-     * @param $value
-     * @return TokenInterface
-     */
-    private function wrapIntoExactValueToken($value)
-    {
-        return $value instanceof TokenInterface ? $value : new ExactValueToken($value);
-    }
-
-    /**
-     * Converts instance of \ArrayAccess to key => value array entry
-     *
-     * @param \ArrayAccess $object
-     *
-     * @return array|null
-     * @throws \Prophecy\Exception\InvalidArgumentException
-     */
-    private function convertArrayAccessToEntry(\ArrayAccess $object)
-    {
-        if (!$this->key instanceof ExactValueToken) {
-            throw new InvalidArgumentException(sprintf(
-                'You can only use exact value tokens to match key of ArrayAccess object'.PHP_EOL.
-                'But you used `%s`.',
-                $this->key
-            ));
-        }
-
-        $key = $this->key->getValue();
-
-        return $object->offsetExists($key) ? array($key => $object[$key]) : array();
     }
 }

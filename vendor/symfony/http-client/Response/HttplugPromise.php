@@ -38,6 +38,17 @@ final class HttplugPromise implements HttplugPromiseInterface
         ));
     }
 
+    private function wrapThenCallback(?callable $callback): ?callable
+    {
+        if (null === $callback) {
+            return null;
+        }
+
+        return static function ($value) use ($callback) {
+            return Create::promiseFor($callback($value));
+        };
+    }
+
     public function cancel(): void
     {
         $this->promise->cancel();
@@ -65,16 +76,5 @@ final class HttplugPromise implements HttplugPromiseInterface
         }
 
         return $result;
-    }
-
-    private function wrapThenCallback(?callable $callback): ?callable
-    {
-        if (null === $callback) {
-            return null;
-        }
-
-        return static function ($value) use ($callback) {
-            return Create::promiseFor($callback($value));
-        };
     }
 }

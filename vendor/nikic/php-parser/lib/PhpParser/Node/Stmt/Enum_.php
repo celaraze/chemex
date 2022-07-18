@@ -12,15 +12,16 @@ class Enum_ extends ClassLike
     public $implements;
 
     /**
-     * @param string|Node\Identifier|null $name       Name
-     * @param array                       $subNodes   Array of the following optional subnodes:
+     * @param string|Node\Identifier|null $name Name
+     * @param array $subNodes Array of the following optional subnodes:
      *                                                'scalarType'  => null    : Scalar type
      *                                                'implements'  => array() : Names of implemented interfaces
      *                                                'stmts'       => array() : Statements
      *                                                'attrGroups'  => array() : PHP attribute groups
-     * @param array                       $attributes Additional attributes
+     * @param array $attributes Additional attributes
      */
-    public function __construct($name, array $subNodes = [], array $attributes = []) {
+    public function __construct($name, array $subNodes = [], array $attributes = [])
+    {
         $this->name = \is_string($name) ? new Node\Identifier($name) : $name;
         $this->scalarType = $subNodes['scalarType'] ?? null;
         $this->implements = $subNodes['implements'] ?? [];
@@ -30,11 +31,13 @@ class Enum_ extends ClassLike
         parent::__construct($attributes);
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['attrGroups', 'name', 'scalarType', 'implements', 'stmts'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Stmt_Enum';
     }
 }

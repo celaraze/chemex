@@ -13,7 +13,7 @@ trait HasQuickCreate
     protected $quickCreate;
 
     /**
-     * @param  Closure  $callback
+     * @param Closure $callback
      * @return $this
      */
     public function quickCreate(\Closure $callback)
@@ -32,7 +32,7 @@ trait HasQuickCreate
      */
     public function hasQuickCreate()
     {
-        return ! is_null($this->quickCreate);
+        return !is_null($this->quickCreate);
     }
 
     /**

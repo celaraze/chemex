@@ -41,7 +41,9 @@
         "symfony/stopwatch": "^5.4|^6.0"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Component\\HttpClient\\": "" },
+        "psr-4": {
+            "Symfony\\Component\\HttpClient\\": ""
+        },
         "exclude-from-classmap": [
             "/Tests/"
         ]

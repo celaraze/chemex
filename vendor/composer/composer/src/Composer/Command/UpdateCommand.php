@@ -16,18 +16,18 @@ use Composer\Composer;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
+use Composer\Package\Link;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\Version\VersionParser;
-use Composer\Util\HttpDownloader;
 use Composer\Semver\Constraint\MultiConstraint;
-use Composer\Package\Link;
+use Composer\Util\HttpDownloader;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
@@ -104,8 +104,7 @@ To select packages names interactively with auto-completion use <info>-i</info>.
 
 Read more at https://getcomposer.org/doc/03-cli.md#update-u
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -153,7 +152,7 @@ EOT
             } elseif (isset($rootDevRequires[$package])) {
                 $rootDevRequires[$package] = $this->appendConstraintToLink($rootDevRequires[$package], $constraint);
             } else {
-                throw new \UnexpectedValueException('Only root package requirements can receive temporary constraints and '.$package.' is not one');
+                throw new \UnexpectedValueException('Only root package requirements can receive temporary constraints and ' . $package . ' is not one');
             }
         }
         $rootPackage->setRequires($rootRequires);
@@ -231,14 +230,34 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
-            ->setPreferLowest($input->getOption('prefer-lowest'))
-        ;
+            ->setPreferLowest($input->getOption('prefer-lowest'));
 
         if ($input->getOption('no-plugins')) {
             $install->disablePlugins();
         }
 
         return $install->run();
+    }
+
+    /**
+     * @param string $constraint
+     * @return Link
+     */
+    private function appendConstraintToLink(Link $link, string $constraint): Link
+    {
+        $parser = new VersionParser;
+        $oldPrettyString = $link->getConstraint()->getPrettyString();
+        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
+        $newConstraint->setPrettyString($oldPrettyString . ', ' . $constraint);
+
+        return new Link(
+            $link->getSource(),
+            $link->getTarget(),
+            $newConstraint,
+            /** @phpstan-ignore-next-line */
+            $link->getDescription(),
+            $link->getPrettyConstraint() . ', ' . $constraint
+        );
     }
 
     /**
@@ -306,26 +325,5 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
-    }
-
-    /**
-     * @param string $constraint
-     * @return Link
-     */
-    private function appendConstraintToLink(Link $link, string $constraint): Link
-    {
-        $parser = new VersionParser;
-        $oldPrettyString = $link->getConstraint()->getPrettyString();
-        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
-        $newConstraint->setPrettyString($oldPrettyString.', '.$constraint);
-
-        return new Link(
-            $link->getSource(),
-            $link->getTarget(),
-            $newConstraint,
-            /** @phpstan-ignore-next-line */
-            $link->getDescription(),
-            $link->getPrettyConstraint() . ', ' . $constraint
-        );
     }
 }

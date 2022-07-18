@@ -17,7 +17,7 @@ class Excel
     /**
      * 导入.
      *
-     * @param  string|UploadedFile  $filePath
+     * @param string|UploadedFile $filePath
      * @return Contracts\Importer
      */
     public static function import($filePath): Contracts\Importer
@@ -28,7 +28,7 @@ class Excel
     /**
      * 导出.
      *
-     * @param  array|\Closure|\Generator  $data
+     * @param array|\Closure|\Generator $data
      * @return Contracts\Exporter
      */
     public static function export($data = null): Contracts\Exporter
@@ -37,9 +37,9 @@ class Excel
     }
 
     /**
-     * @param  array|\Closure|\Generator  $data
-     * @param  null  $sheetName
-     * @param  null  $headings
+     * @param array|\Closure|\Generator $data
+     * @param null $sheetName
+     * @param null $headings
      * @return Contracts\Exporters\Sheet
      */
     public static function createSheet($data = null, $sheetName = null, array $headings = []): Contracts\Exporters\Sheet
@@ -48,7 +48,7 @@ class Excel
     }
 
     /**
-     * @param  mixed  ...$params
+     * @param mixed ...$params
      * @return Factory
      */
     public static function xlsx(...$params)
@@ -57,7 +57,7 @@ class Excel
     }
 
     /**
-     * @param  mixed  ...$params
+     * @param mixed ...$params
      * @return Factory
      */
     public static function csv(...$params)
@@ -66,7 +66,7 @@ class Excel
     }
 
     /**
-     * @param  mixed  ...$params
+     * @param mixed ...$params
      * @return Factory
      */
     public static function ods(...$params)

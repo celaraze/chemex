@@ -17,7 +17,7 @@ class Enum implements Rule
     /**
      * Create a new rule instance.
      *
-     * @param  string  $type
+     * @param string $type
      * @return void
      */
     public function __construct($type)
@@ -28,18 +28,18 @@ class Enum implements Rule
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
      * @return bool
      */
     public function passes($attribute, $value)
     {
-        if (is_null($value) || ! function_exists('enum_exists') || ! enum_exists($this->type) || ! method_exists($this->type, 'tryFrom')) {
+        if (is_null($value) || !function_exists('enum_exists') || !enum_exists($this->type) || !method_exists($this->type, 'tryFrom')) {
             return false;
         }
 
         try {
-            return ! is_null($this->type::tryFrom($value));
+            return !is_null($this->type::tryFrom($value));
         } catch (TypeError $e) {
             return false;
         }

@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Core;
 
 class IsCollectionContainingTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Core\IsCollectionContaining::hasItem(equalTo('irrelevant'));
-    }
 
     public function testMatchesACollectionThatContainsAnElementMatchingTheGivenMatcher()
     {
@@ -87,5 +83,10 @@ class IsCollectionContainingTest extends \Hamcrest\AbstractMatcherTest
             array('e', 'c', 'b', 'd'), // 'a' missing
             'should not match list unless it contains all items'
         );
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Core\IsCollectionContaining::hasItem(equalTo('irrelevant'));
     }
 }

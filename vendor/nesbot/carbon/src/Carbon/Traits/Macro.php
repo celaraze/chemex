@@ -37,6 +37,10 @@ trait Macro
     /**
      * Register a custom macro.
      *
+     * @param string $name
+     * @param object|callable $macro
+     *
+     * @return void
      * @example
      * ```
      * $userSettings = [
@@ -49,10 +53,6 @@ trait Macro
      * echo Carbon::yesterday()->hours(11)->userFormat();
      * ```
      *
-     * @param string          $name
-     * @param object|callable $macro
-     *
-     * @return void
      */
     public static function macro($name, $macro)
     {
@@ -72,7 +72,7 @@ trait Macro
      * Register a custom macro.
      *
      * @param object|callable $macro
-     * @param int             $priority marco with higher priority is tried first
+     * @param int $priority marco with higher priority is tried first
      *
      * @return void
      */
@@ -84,30 +84,6 @@ trait Macro
         }
 
         static::$globalGenericMacros[$priority][] = $macro;
-    }
-
-    /**
-     * Checks if macro is registered globally.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public static function hasMacro($name)
-    {
-        return isset(static::$globalMacros[$name]);
-    }
-
-    /**
-     * Get the raw callable macro registered globally for a given name.
-     *
-     * @param string $name
-     *
-     * @return callable|null
-     */
-    public static function getMacro($name)
-    {
-        return static::$globalMacros[$name] ?? null;
     }
 
     /**
@@ -123,6 +99,18 @@ trait Macro
     }
 
     /**
+     * Checks if macro is registered globally.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public static function hasMacro($name)
+    {
+        return isset(static::$globalMacros[$name]);
+    }
+
+    /**
      * Get the raw callable macro registered globally or locally for a given name.
      *
      * @param string $name
@@ -132,5 +120,17 @@ trait Macro
     public function getLocalMacro($name)
     {
         return ($this->localMacros ?? [])[$name] ?? static::getMacro($name);
+    }
+
+    /**
+     * Get the raw callable macro registered globally for a given name.
+     *
+     * @param string $name
+     *
+     * @return callable|null
+     */
+    public static function getMacro($name)
+    {
+        return static::$globalMacros[$name] ?? null;
     }
 }

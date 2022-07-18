@@ -9,7 +9,7 @@ class FileBasedMaintenanceMode implements MaintenanceModeContract
     /**
      * Take the application down for maintenance.
      *
-     * @param  array  $payload
+     * @param array $payload
      * @return void
      */
     public function activate(array $payload): void
@@ -18,6 +18,16 @@ class FileBasedMaintenanceMode implements MaintenanceModeContract
             $this->path(),
             json_encode($payload, JSON_PRETTY_PRINT)
         );
+    }
+
+    /**
+     * Get the path where the file is stored that signals that the application is down for maintenance.
+     *
+     * @return string
+     */
+    protected function path(): string
+    {
+        return storage_path('framework/down');
     }
 
     /**
@@ -50,15 +60,5 @@ class FileBasedMaintenanceMode implements MaintenanceModeContract
     public function data(): array
     {
         return json_decode(file_get_contents($this->path()), true);
-    }
-
-    /**
-     * Get the path where the file is stored that signals that the application is down for maintenance.
-     *
-     * @return string
-     */
-    protected function path(): string
-    {
-        return storage_path('framework/down');
     }
 }

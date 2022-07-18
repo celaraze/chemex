@@ -24,6 +24,20 @@ final class SpecReader
 
     /**
      * @return iterable<string, array{input: string, output: string, type: string, section: string, number: int}>
+     *
+     * @throws \RuntimeException if the file cannot be loaded
+     */
+    public static function readFile(string $filename): iterable
+    {
+        if (($data = \file_get_contents($filename)) === false) {
+            throw new \RuntimeException(\sprintf('Failed to load spec from %s', $filename));
+        }
+
+        return self::read($data);
+    }
+
+    /**
+     * @return iterable<string, array{input: string, output: string, type: string, section: string, number: int}>
      */
     public static function read(string $data): iterable
     {
@@ -35,7 +49,7 @@ final class SpecReader
         \preg_match_all('/^`{32} (example ?\w*)\n([\s\S]*?)^\.\n([\s\S]*?)^`{32}$|^#{1,6} *(.*)$/m', $data, $matches, PREG_SET_ORDER);
 
         $currentSection = 'Example';
-        $exampleNumber  = 0;
+        $exampleNumber = 0;
 
         foreach ($matches as $match) {
             if (isset($match[4])) {
@@ -44,26 +58,12 @@ final class SpecReader
             }
 
             yield \trim($currentSection . ' #' . $exampleNumber) => [
-                'input'   => \str_replace('→', "\t", $match[2]),
-                'output'  => \str_replace('→', "\t", $match[3]),
-                'type'    => $match[1],
+                'input' => \str_replace('→', "\t", $match[2]),
+                'output' => \str_replace('→', "\t", $match[3]),
+                'type' => $match[1],
                 'section' => $currentSection,
-                'number'  => $exampleNumber++,
+                'number' => $exampleNumber++,
             ];
         }
-    }
-
-    /**
-     * @return iterable<string, array{input: string, output: string, type: string, section: string, number: int}>
-     *
-     * @throws \RuntimeException if the file cannot be loaded
-     */
-    public static function readFile(string $filename): iterable
-    {
-        if (($data = \file_get_contents($filename)) === false) {
-            throw new \RuntimeException(\sprintf('Failed to load spec from %s', $filename));
-        }
-
-        return self::read($data);
     }
 }

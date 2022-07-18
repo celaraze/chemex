@@ -6,7 +6,8 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/enlightn/security-checker.svg?style=flat-square)](https://packagist.org/packages/enlightn/security-checker)
 
 The Enlightn Security Checker is a command line tool that checks if your
-application uses dependencies with known security vulnerabilities. It uses the [Security Advisories Database](https://github.com/FriendsOfPHP/security-advisories).
+application uses dependencies with known security vulnerabilities. It uses
+the [Security Advisories Database](https://github.com/FriendsOfPHP/security-advisories).
 
 ## Installation Options
 
@@ -22,19 +23,23 @@ composer global require enlightn/security-checker
 composer require --dev enlightn/security-checker
 ```
 
-3. Instead of installing via Composer, you may also download the [security-checker.phar](https://www.laravel-enlightn.com/security-checker.phar) file. Then, in the commands below you can replace `security-checker` with `security-checker.phar`.
+3. Instead of installing via Composer, you may also download
+   the [security-checker.phar](https://www.laravel-enlightn.com/security-checker.phar) file. Then, in the commands below
+   you can replace `security-checker` with `security-checker.phar`.
 
 ## Usage
 
-To check for security vulnerabilities in your dependencies, you may run the `security:check` command: 
+To check for security vulnerabilities in your dependencies, you may run the `security:check` command:
 
 ```bash
 php security-checker security:check /path/to/composer.lock
 ```
 
-This command will return a success status code of `0` if there are no vulnerabilities and `1` if there is at least one vulnerability.
+This command will return a success status code of `0` if there are no vulnerabilities and `1` if there is at least one
+vulnerability.
 
-**Note**: You would need to provide the full path of the security-checker executable if the directory is not in your path. For instance:
+**Note**: You would need to provide the full path of the security-checker executable if the directory is not in your
+path. For instance:
 
 ```bash
 php vendor/bin/security-checker security:check /path/to/composer.lock
@@ -44,7 +49,8 @@ php vendor/bin/security-checker security:check /path/to/composer.lock
 
 ### Format
 
-By default, this command displays the result in ANSI. You may use the `--format` option to display the result in JSON instead:
+By default, this command displays the result in ANSI. You may use the `--format` option to display the result in JSON
+instead:
 
 ```bash
 php security-checker security:check /path/to/composer.lock --format=json
@@ -52,7 +58,8 @@ php security-checker security:check /path/to/composer.lock --format=json
 
 ### Exclude Dev Dependencies
 
-If you would like to exclude dev dependencies from the vulnerabilities scanning, you may use the `--no-dev` option (defaults to false):
+If you would like to exclude dev dependencies from the vulnerabilities scanning, you may use the `--no-dev` option (
+defaults to false):
 
 ```bash
 php security-checker security:check /path/to/composer.lock --no-dev
@@ -60,7 +67,8 @@ php security-checker security:check /path/to/composer.lock --no-dev
 
 ### Allow vulnerabilities
 
-If you would like to exclude some vulnerabilities, you may use the `--allow-list` option by passing the CVE identifier, or the CVE title. You can pass multiple values as well:
+If you would like to exclude some vulnerabilities, you may use the `--allow-list` option by passing the CVE identifier,
+or the CVE title. You can pass multiple values as well:
 
 ```bash
 php security-checker security:check /path/to/composer.lock --allow-list CVE-2018-15133 --allow-list "untrusted X-XSRF-TOKEN value"
@@ -70,7 +78,9 @@ Do not forget to wrap the title with quotes
 
 ### Custom Directory for Caching Advisories Database
 
-By default, the `SecurityChecker` API and the `security:check` command use the directory returned by the `sys_get_temp_dir` PHP function for storing the cached advisories database. If you wish to modify the directory, you may use the `--temp-dir` option:
+By default, the `SecurityChecker` API and the `security:check` command use the directory returned by
+the `sys_get_temp_dir` PHP function for storing the cached advisories database. If you wish to modify the directory, you
+may use the `--temp-dir` option:
 
 ```bash
 php security-checker security:check /path/to/composer.lock --temp-dir=/tmp
@@ -86,7 +96,8 @@ use Enlightn\SecurityChecker\SecurityChecker;
 $result = (new SecurityChecker)->check('/path/to/composer.lock');
 ```
 
-The result above is an associative array. The key is the package name and the value is an array of vulnerabilities based on your package version. An example of the JSON encoded version is as below:
+The result above is an associative array. The key is the package name and the value is an array of vulnerabilities based
+on your package version. An example of the JSON encoded version is as below:
 
 ```json
 {
@@ -104,7 +115,8 @@ The result above is an associative array. The key is the package name and the va
 
 ## Contribution Guide
 
-Thank you for considering contributing to the Enlightn security-checker project! The contribution guide can be found [here](https://www.laravel-enlightn.com/docs/getting-started/contribution-guide.html).
+Thank you for considering contributing to the Enlightn security-checker project! The contribution guide can be
+found [here](https://www.laravel-enlightn.com/docs/getting-started/contribution-guide.html).
 
 ## License
 

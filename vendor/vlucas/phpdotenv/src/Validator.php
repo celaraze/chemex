@@ -29,11 +29,11 @@ class Validator
      * Create a new validator instance.
      *
      * @param \Dotenv\Repository\RepositoryInterface $repository
-     * @param string[]                               $variables
-     *
-     * @throws \Dotenv\Exception\ValidationException
+     * @param string[] $variables
      *
      * @return void
+     * @throws \Dotenv\Exception\ValidationException
+     *
      */
     public function __construct(RepositoryInterface $repository, array $variables)
     {
@@ -44,9 +44,9 @@ class Validator
     /**
      * Assert that each variable is present.
      *
+     * @return \Dotenv\Validator
      * @throws \Dotenv\Exception\ValidationException
      *
-     * @return \Dotenv\Validator
      */
     public function required()
     {
@@ -59,107 +59,14 @@ class Validator
     }
 
     /**
-     * Assert that each variable is not empty.
-     *
-     * @throws \Dotenv\Exception\ValidationException
-     *
-     * @return \Dotenv\Validator
-     */
-    public function notEmpty()
-    {
-        return $this->assertNullable(
-            static function (string $value) {
-                return Str::len(\trim($value)) > 0;
-            },
-            'is empty'
-        );
-    }
-
-    /**
-     * Assert that each specified variable is an integer.
-     *
-     * @throws \Dotenv\Exception\ValidationException
-     *
-     * @return \Dotenv\Validator
-     */
-    public function isInteger()
-    {
-        return $this->assertNullable(
-            static function (string $value) {
-                return \ctype_digit($value);
-            },
-            'is not an integer'
-        );
-    }
-
-    /**
-     * Assert that each specified variable is a boolean.
-     *
-     * @throws \Dotenv\Exception\ValidationException
-     *
-     * @return \Dotenv\Validator
-     */
-    public function isBoolean()
-    {
-        return $this->assertNullable(
-            static function (string $value) {
-                if ($value === '') {
-                    return false;
-                }
-
-                return \filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE) !== null;
-            },
-            'is not a boolean'
-        );
-    }
-
-    /**
-     * Assert that each variable is amongst the given choices.
-     *
-     * @param string[] $choices
-     *
-     * @throws \Dotenv\Exception\ValidationException
-     *
-     * @return \Dotenv\Validator
-     */
-    public function allowedValues(array $choices)
-    {
-        return $this->assertNullable(
-            static function (string $value) use ($choices) {
-                return \in_array($value, $choices, true);
-            },
-            \sprintf('is not one of [%s]', \implode(', ', $choices))
-        );
-    }
-
-    /**
-     * Assert that each variable matches the given regular expression.
-     *
-     * @param string $regex
-     *
-     * @throws \Dotenv\Exception\ValidationException
-     *
-     * @return \Dotenv\Validator
-     */
-    public function allowedRegexValues(string $regex)
-    {
-        return $this->assertNullable(
-            static function (string $value) use ($regex) {
-                return Regex::matches($regex, $value)->success()->getOrElse(false);
-            },
-            \sprintf('does not match "%s"', $regex)
-        );
-    }
-
-    /**
      * Assert that the callback returns true for each variable.
      *
      * @param callable(?string):bool $callback
-     * @param string                 $message
-     *
-     * @throws \Dotenv\Exception\ValidationException
+     * @param string $message
      *
      * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
      */
     public function assert(callable $callback, string $message)
     {
@@ -182,16 +89,33 @@ class Validator
     }
 
     /**
+     * Assert that each variable is not empty.
+     *
+     * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
+     */
+    public function notEmpty()
+    {
+        return $this->assertNullable(
+            static function (string $value) {
+                return Str::len(\trim($value)) > 0;
+            },
+            'is empty'
+        );
+    }
+
+    /**
      * Assert that the callback returns true for each variable.
      *
      * Skip checking null variable values.
      *
      * @param callable(string):bool $callback
-     * @param string                $message
-     *
-     * @throws \Dotenv\Exception\ValidationException
+     * @param string $message
      *
      * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
      */
     public function assertNullable(callable $callback, string $message)
     {
@@ -204,6 +128,82 @@ class Validator
                 return $callback($value);
             },
             $message
+        );
+    }
+
+    /**
+     * Assert that each specified variable is an integer.
+     *
+     * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
+     */
+    public function isInteger()
+    {
+        return $this->assertNullable(
+            static function (string $value) {
+                return \ctype_digit($value);
+            },
+            'is not an integer'
+        );
+    }
+
+    /**
+     * Assert that each specified variable is a boolean.
+     *
+     * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
+     */
+    public function isBoolean()
+    {
+        return $this->assertNullable(
+            static function (string $value) {
+                if ($value === '') {
+                    return false;
+                }
+
+                return \filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE) !== null;
+            },
+            'is not a boolean'
+        );
+    }
+
+    /**
+     * Assert that each variable is amongst the given choices.
+     *
+     * @param string[] $choices
+     *
+     * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
+     */
+    public function allowedValues(array $choices)
+    {
+        return $this->assertNullable(
+            static function (string $value) use ($choices) {
+                return \in_array($value, $choices, true);
+            },
+            \sprintf('is not one of [%s]', \implode(', ', $choices))
+        );
+    }
+
+    /**
+     * Assert that each variable matches the given regular expression.
+     *
+     * @param string $regex
+     *
+     * @return \Dotenv\Validator
+     * @throws \Dotenv\Exception\ValidationException
+     *
+     */
+    public function allowedRegexValues(string $regex)
+    {
+        return $this->assertNullable(
+            static function (string $value) use ($regex) {
+                return Regex::matches($regex, $value)->success()->getOrElse(false);
+            },
+            \sprintf('does not match "%s"', $regex)
         );
     }
 }

@@ -34,147 +34,6 @@ class Group extends Entry
     }
 
     /**
-     * Returns the group's member names only.
-     *
-     * @return array
-     */
-    public function getMemberNames()
-    {
-        $members = [];
-
-        $dns = $this->getAttribute($this->schema->member()) ?: [];
-
-        foreach ($dns as $dn) {
-            $exploded = Utilities::explodeDn($dn);
-
-            if (array_key_exists(0, $exploded)) {
-                $members[] = $exploded[0];
-            }
-        }
-
-        return $members;
-    }
-
-    /**
-     * Sets the groups members using an array of user DNs.
-     *
-     * @param array $entries
-     *
-     * @return $this
-     */
-    public function setMembers(array $entries)
-    {
-        return $this->setAttribute($this->schema->member(), $entries);
-    }
-
-    /**
-     * Adds multiple entries to the current group.
-     *
-     * @param array $members
-     *
-     * @return bool
-     */
-    public function addMembers(array $members)
-    {
-        $members = array_map(function ($member) {
-            return $member instanceof Model
-                ? $member->getDn()
-                : $member;
-        }, $members);
-
-        $mod = $this->newBatchModification(
-            $this->schema->member(),
-            LDAP_MODIFY_BATCH_ADD,
-            $members
-        );
-
-        return $this->addModification($mod)->save();
-    }
-
-    /**
-     * Adds an entry to the current group.
-     *
-     * @param string|Entry $member
-     *
-     * @throws InvalidArgumentException When the given entry is empty or contains no distinguished name.
-     *
-     * @return bool
-     */
-    public function addMember($member)
-    {
-        $member = ($member instanceof Model ? $member->getDn() : $member);
-
-        if (is_null($member)) {
-            throw new InvalidArgumentException(
-                'Cannot add member to group. The members distinguished name cannot be null.'
-            );
-        }
-
-        $mod = $this->newBatchModification(
-            $this->schema->member(),
-            LDAP_MODIFY_BATCH_ADD,
-            [$member]
-        );
-
-        return $this->addModification($mod)->save();
-    }
-
-    /**
-     * Removes an entry from the current group.
-     *
-     * @param string|Entry $member
-     *
-     * @throws InvalidArgumentException
-     *
-     * @return bool
-     */
-    public function removeMember($member)
-    {
-        $member = ($member instanceof Model ? $member->getDn() : $member);
-
-        if (is_null($member)) {
-            throw new InvalidArgumentException(
-                'Cannot remove member to group. The members distinguished name cannot be null.'
-            );
-        }
-
-        $mod = $this->newBatchModification(
-            $this->schema->member(),
-            LDAP_MODIFY_BATCH_REMOVE,
-            [$member]
-        );
-
-        return $this->addModification($mod)->save();
-    }
-
-    /**
-     * Removes all members from the current group.
-     *
-     * @return bool
-     */
-    public function removeMembers()
-    {
-        $mod = $this->newBatchModification(
-            $this->schema->member(),
-            LDAP_MODIFY_BATCH_REMOVE_ALL
-        );
-
-        return $this->addModification($mod)->save();
-    }
-
-    /**
-     * Returns the group type integer.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms675935(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public function getGroupType()
-    {
-        return $this->getFirstAttribute($this->schema->groupType());
-    }
-
-    /**
      * Retrieves group members by the specified model attribute.
      *
      * @param $attribute
@@ -284,5 +143,146 @@ class Group extends Entry
         }
 
         return $members;
+    }
+
+    /**
+     * Returns the group's member names only.
+     *
+     * @return array
+     */
+    public function getMemberNames()
+    {
+        $members = [];
+
+        $dns = $this->getAttribute($this->schema->member()) ?: [];
+
+        foreach ($dns as $dn) {
+            $exploded = Utilities::explodeDn($dn);
+
+            if (array_key_exists(0, $exploded)) {
+                $members[] = $exploded[0];
+            }
+        }
+
+        return $members;
+    }
+
+    /**
+     * Sets the groups members using an array of user DNs.
+     *
+     * @param array $entries
+     *
+     * @return $this
+     */
+    public function setMembers(array $entries)
+    {
+        return $this->setAttribute($this->schema->member(), $entries);
+    }
+
+    /**
+     * Adds multiple entries to the current group.
+     *
+     * @param array $members
+     *
+     * @return bool
+     */
+    public function addMembers(array $members)
+    {
+        $members = array_map(function ($member) {
+            return $member instanceof Model
+                ? $member->getDn()
+                : $member;
+        }, $members);
+
+        $mod = $this->newBatchModification(
+            $this->schema->member(),
+            LDAP_MODIFY_BATCH_ADD,
+            $members
+        );
+
+        return $this->addModification($mod)->save();
+    }
+
+    /**
+     * Adds an entry to the current group.
+     *
+     * @param string|Entry $member
+     *
+     * @return bool
+     * @throws InvalidArgumentException When the given entry is empty or contains no distinguished name.
+     *
+     */
+    public function addMember($member)
+    {
+        $member = ($member instanceof Model ? $member->getDn() : $member);
+
+        if (is_null($member)) {
+            throw new InvalidArgumentException(
+                'Cannot add member to group. The members distinguished name cannot be null.'
+            );
+        }
+
+        $mod = $this->newBatchModification(
+            $this->schema->member(),
+            LDAP_MODIFY_BATCH_ADD,
+            [$member]
+        );
+
+        return $this->addModification($mod)->save();
+    }
+
+    /**
+     * Removes an entry from the current group.
+     *
+     * @param string|Entry $member
+     *
+     * @return bool
+     * @throws InvalidArgumentException
+     *
+     */
+    public function removeMember($member)
+    {
+        $member = ($member instanceof Model ? $member->getDn() : $member);
+
+        if (is_null($member)) {
+            throw new InvalidArgumentException(
+                'Cannot remove member to group. The members distinguished name cannot be null.'
+            );
+        }
+
+        $mod = $this->newBatchModification(
+            $this->schema->member(),
+            LDAP_MODIFY_BATCH_REMOVE,
+            [$member]
+        );
+
+        return $this->addModification($mod)->save();
+    }
+
+    /**
+     * Removes all members from the current group.
+     *
+     * @return bool
+     */
+    public function removeMembers()
+    {
+        $mod = $this->newBatchModification(
+            $this->schema->member(),
+            LDAP_MODIFY_BATCH_REMOVE_ALL
+        );
+
+        return $this->addModification($mod)->save();
+    }
+
+    /**
+     * Returns the group type integer.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms675935(v=vs.85).aspx
+     *
+     * @return string
+     */
+    public function getGroupType()
+    {
+        return $this->getFirstAttribute($this->schema->groupType());
     }
 }

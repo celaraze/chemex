@@ -21,9 +21,9 @@
 namespace Mockery\Adapter\Phpunit;
 
 use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestListener as PHPUnitTestListener;
 use PHPUnit\Framework\TestListenerDefaultImplementation;
 use PHPUnit\Framework\TestSuite;
-use PHPUnit\Framework\TestListener as PHPUnitTestListener;
 
 class TestListener implements PHPUnitTestListener
 {

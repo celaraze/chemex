@@ -12,7 +12,7 @@ class ProcessUtils
     /**
      * Escapes a string to be used as a shell argument.
      *
-     * @param  string  $argument
+     * @param string $argument
      * @return string
      */
     public static function escapeArgument($argument)
@@ -34,7 +34,7 @@ class ProcessUtils
                     $escapedArgument .= '\\"';
                 } elseif (self::isSurroundedBy($part, '%')) {
                     // Avoid environment variable expansion
-                    $escapedArgument .= '^%"'.substr($part, 1, -1).'"^%';
+                    $escapedArgument .= '^%"' . substr($part, 1, -1) . '"^%';
                 } else {
                     // escape trailing backslash
                     if (str_ends_with($part, '\\')) {
@@ -46,20 +46,20 @@ class ProcessUtils
             }
 
             if ($quote) {
-                $escapedArgument = '"'.$escapedArgument.'"';
+                $escapedArgument = '"' . $escapedArgument . '"';
             }
 
             return $escapedArgument;
         }
 
-        return "'".str_replace("'", "'\\''", $argument)."'";
+        return "'" . str_replace("'", "'\\''", $argument) . "'";
     }
 
     /**
      * Is the given string surrounded by the given character?
      *
-     * @param  string  $arg
-     * @param  string  $char
+     * @param string $arg
+     * @param string $char
      * @return bool
      */
     protected static function isSurroundedBy($arg, $char)

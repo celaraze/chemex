@@ -3,14 +3,13 @@
 use Tightenco\Collect\Support\Arr;
 use Tightenco\Collect\Support\Collection;
 use Tightenco\Collect\Support\HigherOrderTapProxy;
-use Symfony\Component\VarDumper\VarDumper;
 
-if (! class_exists(Illuminate\Support\Collection::class)) {
-    if (! function_exists('collect')) {
+if (!class_exists(Illuminate\Support\Collection::class)) {
+    if (!function_exists('collect')) {
         /**
          * Create a collection from the given value.
          *
-         * @param  mixed  $value
+         * @param mixed $value
          * @return \Tightenco\Collect\Support\Collection
          */
         function collect($value = null)
@@ -19,11 +18,11 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         }
     }
 
-    if (! function_exists('value')) {
+    if (!function_exists('value')) {
         /**
          * Return the default value of the given value.
          *
-         * @param  mixed  $value
+         * @param mixed $value
          * @return mixed
          */
         function value($value, ...$args)
@@ -32,13 +31,13 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         }
     }
 
-    if (! function_exists('data_get')) {
+    if (!function_exists('data_get')) {
         /**
          * Get an item from an array or object using "dot" notation.
          *
-         * @param  mixed  $target
-         * @param  string|array|int|null  $key
-         * @param  mixed  $default
+         * @param mixed $target
+         * @param string|array|int|null $key
+         * @param mixed $default
          * @return mixed
          */
         function data_get($target, $key, $default = null)
@@ -59,7 +58,7 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
                 if ($segment === '*') {
                     if ($target instanceof Collection) {
                         $target = $target->all();
-                    } elseif (! is_array($target)) {
+                    } elseif (!is_array($target)) {
                         return value($default);
                     }
 
@@ -85,12 +84,12 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         }
     }
 
-    if (! function_exists('tap')) {
+    if (!function_exists('tap')) {
         /**
          * Call the given Closure with the given value then return the value.
          *
-         * @param  mixed  $value
-         * @param  callable|null  $callback
+         * @param mixed $value
+         * @param callable|null $callback
          * @return mixed
          */
         function tap($value, $callback = null)
@@ -105,11 +104,11 @@ if (! class_exists(Illuminate\Support\Collection::class)) {
         }
     }
 
-    if (! function_exists('class_basename')) {
+    if (!function_exists('class_basename')) {
         /**
          * Get the class "basename" of the given object / class.
          *
-         * @param  string|object  $class
+         * @param string|object $class
          * @return string
          */
         function class_basename($class)

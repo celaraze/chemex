@@ -104,7 +104,7 @@ class FactoryParameter
         }
 
         // PHP 7.0 doesn't have named types, but 7.1+ does
-        $name = $type instanceof ReflectionNamedType ? $type->getName() : (string) $type;
+        $name = $type instanceof ReflectionNamedType ? $type->getName() : (string)$type;
 
         return $type->isBuiltin() ? $name : sprintf('\\%s', $name);
     }

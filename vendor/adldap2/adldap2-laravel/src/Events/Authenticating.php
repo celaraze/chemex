@@ -23,7 +23,7 @@ class Authenticating
     /**
      * Constructor.
      *
-     * @param User   $user
+     * @param User $user
      * @param string $username
      */
     public function __construct(User $user, $username = '')

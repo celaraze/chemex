@@ -12,19 +12,22 @@ class PostInc extends Expr
     /**
      * Constructs a post increment node.
      *
-     * @param Expr  $var        Variable
+     * @param Expr $var Variable
      * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $var, array $attributes = []) {
+    public function __construct(Expr $var, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->var = $var;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['var'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_PostInc';
     }
 }

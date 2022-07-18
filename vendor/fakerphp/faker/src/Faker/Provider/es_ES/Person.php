@@ -4,8 +4,6 @@ namespace Faker\Provider\es_ES;
 
 class Person extends \Faker\Provider\Person
 {
-    private static $crcMap = ['T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E', 'T'];
-
     protected static $maleNameFormats = [
         '{{firstNameMale}} {{lastName}}',
         '{{firstNameMale}} {{lastName}}',
@@ -15,7 +13,6 @@ class Person extends \Faker\Provider\Person
         '{{titleMale}} {{firstNameMale}} {{lastName}} {{suffix}}',
         '{{firstNameMale}} {{lastName}} {{suffix}}',
     ];
-
     protected static $femaleNameFormats = [
         '{{firstNameFemale}} {{lastName}}',
         '{{firstNameFemale}} {{lastName}}',
@@ -25,7 +22,6 @@ class Person extends \Faker\Provider\Person
         '{{firstNameFemale}} {{lastName}} {{suffix}}',
         '{{titleFemale}} {{firstNameFemale}} {{lastName}} {{suffix}}',
     ];
-
     /**
      * {@link} http://www.ine.es/daco/daco42/nombyapel/nombyapel.htm
      * {@link} http://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177009&menu=ultiDatos&idp=1254734710990
@@ -54,9 +50,8 @@ class Person extends \Faker\Provider\Person
         'Víctor',
         'Yago', 'Yeray',
     ];
-
     protected static $firstNameFemale = [
-        'Abril', 'Adriana', 'África', 'Aina', 'Ainara', 'Ainhoa', 'Aitana', 'Alba', 'Alejandra', 'Alexandra', 'Alexia', 'Alicia', 'Alma', 'Amparo', 'Ana', 'Ana Isabel', 'Ana María', 'Andrea',  'Ángela', 'Ángeles', 'Antonia', 'Ariadna', 'Aurora',
+        'Abril', 'Adriana', 'África', 'Aina', 'Ainara', 'Ainhoa', 'Aitana', 'Alba', 'Alejandra', 'Alexandra', 'Alexia', 'Alicia', 'Alma', 'Amparo', 'Ana', 'Ana Isabel', 'Ana María', 'Andrea', 'Ángela', 'Ángeles', 'Antonia', 'Ariadna', 'Aurora',
         'Beatriz', 'Berta', 'Blanca',
         'Candela', 'Carla', 'Carlota', 'Carmen', 'Carolina', 'Celia', 'Clara', 'Claudia', 'Cristina',
         'Daniela', 'Diana',
@@ -64,10 +59,10 @@ class Person extends \Faker\Provider\Person
         'Fátima', 'Francisca',
         'Gabriela', 'Gloria',
         'Helena',
-        'Inés', 'Inmaculada', 'Irene',  'Isabel',
+        'Inés', 'Inmaculada', 'Irene', 'Isabel',
         'Josefa', 'Jimena', 'Juana', 'Julia',
         'Laia', 'Lara', 'Laura', 'Leire', 'Lorena', 'Lidia', 'Lola', 'Lucía', 'Luisa', 'Luna',
-        'Malak', 'Manuela', 'Mar', 'Mara', 'Margarita', 'María', 'María Ángeles', 'María Carmen', 'María Dolores', 'María Pilar', 'Marina', 'Marta',  'Martina', 'Mireia', 'Miriam',
+        'Malak', 'Manuela', 'Mar', 'Mara', 'Margarita', 'María', 'María Ángeles', 'María Carmen', 'María Dolores', 'María Pilar', 'Marina', 'Marta', 'Martina', 'Mireia', 'Miriam',
         'Nadia', 'Nahia', 'Naia', 'Naiara', 'Natalia', 'Nayara', 'Nerea', 'Nil', 'Noa', 'Noelia', 'Nora', 'Nuria',
         'Olivia', 'Olga', 'Ona',
         'Paola', 'Patricia', 'Pau', 'Paula', 'Pilar',
@@ -79,7 +74,6 @@ class Person extends \Faker\Provider\Person
         'Yaiza', 'Yolanda',
         'Zoe',
     ];
-
     protected static $lastName = [
         'Abad', 'Abeyta', 'Abrego', 'Abreu', 'Acevedo', 'Acosta', 'Acuña', 'Adame', 'Adorno', 'Agosto', 'Aguado', 'Aguayo', 'Aguilar', 'Aguilera', 'Aguirre', 'Alanis', 'Alaniz', 'Alarcón', 'Alba', 'Alcala', 'Alcaráz', 'Alcántar', 'Alejandro', 'Alemán', 'Alfaro', 'Alfonso', 'Alicea', 'Almanza', 'Almaráz', 'Almonte', 'Alonso', 'Alonzo', 'Altamirano', 'Alva', 'Alvarado', 'Álvarez', 'Amador', 'Amaya', 'Anaya', 'Andreu', 'Andrés', 'Anguiano', 'Angulo', 'Antón', 'Aparicio', 'Apodaca', 'Aponte', 'Aragón', 'Aranda', 'Araña', 'Arce', 'Archuleta', 'Arellano', 'Arenas', 'Arevalo', 'Arguello', 'Arias', 'Armas', 'Armendáriz', 'Armenta', 'Armijo', 'Arredondo', 'Arreola', 'Arriaga', 'Arribas', 'Arroyo', 'Arteaga', 'Asensio', 'Atencio', 'Ávalos', 'Ávila', 'Avilés', 'Ayala', 'Baca', 'Badillo', 'Baeza', 'Bahena', 'Balderas',
         'Ballesteros', 'Banda', 'Barajas', 'Barela', 'Barragán', 'Barraza', 'Barrera', 'Barreto', 'Barrientos', 'Barrios', 'Barroso', 'Batista', 'Bautista', 'Bañuelos', 'Becerra', 'Beltrán', 'Benavides', 'Benavídez', 'Benito', 'Benítez', 'Bermejo', 'Bermúdez', 'Bernal', 'Berríos', 'Blanco', 'Blasco', 'Blázquez', 'Bonilla', 'Borrego', 'Botello', 'Bravo', 'Briones', 'Briseño', 'Brito', 'Bueno', 'Burgos', 'Bustamante', 'Bustos', 'Báez', 'Betancourt',
@@ -105,14 +99,11 @@ class Person extends \Faker\Provider\Person
         'Ybarra', 'Yáñez',
         'Zambrano', 'Zamora', 'Zamudio', 'Zapata', 'Zaragoza', 'Zarate', 'Zavala', 'Zayas', 'Zelaya', 'Zepeda', 'Zúñiga',
     ];
-
     protected static $titleMale = ['Sr.', 'D.', 'Dr.', 'Lic.', 'Ing.'];
-
     protected static $titleFemale = ['Sra.', 'Srta.', 'Dña', 'Dr.', 'Lic.', 'Ing.'];
-
-    private static $suffix = ['Hijo', 'Segundo', 'Tercero'];
-
     protected static $licenceCodes = ['AM', 'A1', 'A2', 'A', 'B', 'B+E', 'C1', 'C1+E', 'C', 'C+E', 'D1', 'D1+E', 'D', 'D+E'];
+    private static $crcMap = ['T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E', 'T'];
+    private static $suffix = ['Hijo', 'Segundo', 'Tercero'];
 
     /**
      * @example 'Hijo'

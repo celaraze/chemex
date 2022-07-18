@@ -10,34 +10,30 @@ use Illuminate\Support\Collection;
 class Tab
 {
     /**
+     * @var bool
+     */
+    public $hasRows = false;
+    /**
      * @var Form|WidgetForm
      */
     protected $form;
-
     /**
      * @var Collection
      */
     protected $tabs;
-
     /**
      * @var int
      */
     protected $offset = 0;
-
     /**
      * @var int
      */
     protected $columnOffset = 0;
 
     /**
-     * @var bool
-     */
-    public $hasRows = false;
-
-    /**
      * Tab constructor.
      *
-     * @param  Form|WidgetForm  $form
+     * @param Form|WidgetForm $form
      */
     public function __construct($form)
     {
@@ -49,10 +45,10 @@ class Tab
     /**
      * Append a tab section.
      *
-     * @param  string  $title
-     * @param  \Closure  $content
-     * @param  bool  $active
-     * @param  string  $id
+     * @param string $title
+     * @param \Closure $content
+     * @param bool $active
+     * @param string $id
      * @return $this
      */
     public function append($title, \Closure $content, bool $active = false, ?string $id = null)
@@ -62,7 +58,7 @@ class Tab
         $fields = $this->collectFields();
         $layout = $this->collectColumnLayout();
 
-        $id = $id ?: ('tab-form-'.($this->tabs->count() + 1).'-'.mt_rand(0, 9999));
+        $id = $id ?: ('tab-form-' . ($this->tabs->count() + 1) . '-' . mt_rand(0, 9999));
 
         $this->tabs->push(compact('id', 'title', 'fields', 'active', 'layout'));
 
@@ -89,7 +85,7 @@ class Tab
 
             foreach ($rowFields as $field) {
                 if (($index = array_search($field, $all)) !== false) {
-                    if (! $match) {
+                    if (!$match) {
                         $fields->put($index, $row);
                     } else {
                         $fields->pull($index);
@@ -121,8 +117,8 @@ class Tab
     /**
      * Set true for some one tab by title or id.
      *
-     * @param  string  $value
-     * @param  string  $field
+     * @param string $value
+     * @param string $field
      */
     public function active(string $value, string $field = 'title')
     {
@@ -138,7 +134,7 @@ class Tab
     /**
      * Set true for some one tab by key.
      *
-     * @param  int  $index
+     * @param int $index
      */
     public function activeByIndex(int $index = 0)
     {

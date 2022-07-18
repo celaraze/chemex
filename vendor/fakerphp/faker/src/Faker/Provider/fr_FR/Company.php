@@ -54,123 +54,10 @@ class Company extends \Faker\Provider\Company
     protected static $companySuffix = ['SA', 'S.A.', 'SARL', 'S.A.R.L.', 'SAS', 'S.A.S.', 'et Fils'];
 
     protected static $siretNicFormats = ['####', '0###', '00#%'];
-
-    /**
-     * Returns a random catch phrase noun.
-     *
-     * @return string
-     */
-    public function catchPhraseNoun()
-    {
-        return static::randomElement(static::$noun);
-    }
-
-    /**
-     * Returns a random catch phrase attribute.
-     *
-     * @return string
-     */
-    public function catchPhraseAttribute()
-    {
-        return static::randomElement(static::$attribute);
-    }
-
-    /**
-     * Returns a random catch phrase verb.
-     *
-     * @return string
-     */
-    public function catchPhraseVerb()
-    {
-        return static::randomElement(static::$verb);
-    }
-
-    /**
-     * Generates a french catch phrase.
-     *
-     * @return string
-     */
-    public function catchPhrase()
-    {
-        do {
-            $format = static::randomElement(static::$catchPhraseFormats);
-            $catchPhrase = ucfirst($this->generator->parse($format));
-
-            if ($this->isCatchPhraseValid($catchPhrase)) {
-                break;
-            }
-        } while (true);
-
-        return $catchPhrase;
-    }
-
-    /**
-     * Generates a siret number (14 digits) that passes the Luhn check.
-     *
-     * @see http://fr.wikipedia.org/wiki/Syst%C3%A8me_d'identification_du_r%C3%A9pertoire_des_%C3%A9tablissements
-     *
-     * @return string
-     */
-    public function siret($formatted = true)
-    {
-        $siret = self::siren(false);
-        $nicFormat = static::randomElement(static::$siretNicFormats);
-        $siret .= $this->numerify($nicFormat);
-        $siret .= Luhn::computeCheckDigit($siret);
-
-        if ($formatted) {
-            $siret = substr($siret, 0, 3) . ' ' . substr($siret, 3, 3) . ' ' . substr($siret, 6, 3) . ' ' . substr($siret, 9, 5);
-        }
-
-        return $siret;
-    }
-
-    /**
-     * Generates a siren number (9 digits) that passes the Luhn check.
-     *
-     * @see http://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27identification_du_r%C3%A9pertoire_des_entreprises
-     *
-     * @return string
-     */
-    public static function siren($formatted = true)
-    {
-        $siren = self::numerify('%#######');
-        $siren .= Luhn::computeCheckDigit($siren);
-
-        if ($formatted) {
-            $siren = substr($siren, 0, 3) . ' ' . substr($siren, 3, 3) . ' ' . substr($siren, 6, 3);
-        }
-
-        return $siren;
-    }
-
     /**
      * @var array An array containing string which should not appear twice in a catch phrase.
      */
     protected static $wordsWhichShouldNotAppearTwice = ['sécurité', 'simpl'];
-
-    /**
-     * Validates a french catch phrase.
-     *
-     * @param string $catchPhrase The catch phrase to validate.
-     *
-     * @return bool (true if valid, false otherwise)
-     */
-    protected static function isCatchPhraseValid($catchPhrase)
-    {
-        foreach (static::$wordsWhichShouldNotAppearTwice as $word) {
-            // Fastest way to check if a piece of word does not appear twice.
-            $beginPos = strpos($catchPhrase, $word);
-            $endPos = strrpos($catchPhrase, $word);
-
-            if ($beginPos !== false && $beginPos != $endPos) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     /**
      * @see http://www.pole-emploi.fr/candidat/le-code-rome-et-les-fiches-metiers-@/article.jspz?id=60702
      * @note Randomly took 300 from this list
@@ -477,4 +364,115 @@ class Company extends \Faker\Provider\Company
         'Vidéo-jockey',
         'Vitrier',
     ];
+
+    /**
+     * Returns a random catch phrase noun.
+     *
+     * @return string
+     */
+    public function catchPhraseNoun()
+    {
+        return static::randomElement(static::$noun);
+    }
+
+    /**
+     * Returns a random catch phrase attribute.
+     *
+     * @return string
+     */
+    public function catchPhraseAttribute()
+    {
+        return static::randomElement(static::$attribute);
+    }
+
+    /**
+     * Returns a random catch phrase verb.
+     *
+     * @return string
+     */
+    public function catchPhraseVerb()
+    {
+        return static::randomElement(static::$verb);
+    }
+
+    /**
+     * Generates a french catch phrase.
+     *
+     * @return string
+     */
+    public function catchPhrase()
+    {
+        do {
+            $format = static::randomElement(static::$catchPhraseFormats);
+            $catchPhrase = ucfirst($this->generator->parse($format));
+
+            if ($this->isCatchPhraseValid($catchPhrase)) {
+                break;
+            }
+        } while (true);
+
+        return $catchPhrase;
+    }
+
+    /**
+     * Validates a french catch phrase.
+     *
+     * @param string $catchPhrase The catch phrase to validate.
+     *
+     * @return bool (true if valid, false otherwise)
+     */
+    protected static function isCatchPhraseValid($catchPhrase)
+    {
+        foreach (static::$wordsWhichShouldNotAppearTwice as $word) {
+            // Fastest way to check if a piece of word does not appear twice.
+            $beginPos = strpos($catchPhrase, $word);
+            $endPos = strrpos($catchPhrase, $word);
+
+            if ($beginPos !== false && $beginPos != $endPos) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Generates a siret number (14 digits) that passes the Luhn check.
+     *
+     * @see http://fr.wikipedia.org/wiki/Syst%C3%A8me_d'identification_du_r%C3%A9pertoire_des_%C3%A9tablissements
+     *
+     * @return string
+     */
+    public function siret($formatted = true)
+    {
+        $siret = self::siren(false);
+        $nicFormat = static::randomElement(static::$siretNicFormats);
+        $siret .= $this->numerify($nicFormat);
+        $siret .= Luhn::computeCheckDigit($siret);
+
+        if ($formatted) {
+            $siret = substr($siret, 0, 3) . ' ' . substr($siret, 3, 3) . ' ' . substr($siret, 6, 3) . ' ' . substr($siret, 9, 5);
+        }
+
+        return $siret;
+    }
+
+    /**
+     * Generates a siren number (9 digits) that passes the Luhn check.
+     *
+     * @see http://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27identification_du_r%C3%A9pertoire_des_entreprises
+     *
+     * @return string
+     */
+    public static function siren($formatted = true)
+    {
+        $siren = self::numerify('%#######');
+        $siren .= Luhn::computeCheckDigit($siren);
+
+        if ($formatted) {
+            $siren = substr($siren, 0, 3) . ' ' . substr($siren, 3, 3) . ' ' . substr($siren, 6, 3);
+        }
+
+        return $siren;
+    }
 }

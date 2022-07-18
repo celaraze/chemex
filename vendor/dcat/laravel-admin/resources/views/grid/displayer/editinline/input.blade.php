@@ -5,13 +5,13 @@
 @endsection
 
 <script>
-@section('popover-content')
+    @section('popover-content')
     $template.find('input').attr('value', $trigger.data('value'));
-@endsection
+    @endsection
 
-@section('popover-shown')
+    @section('popover-shown')
     @if(! empty($mask))
     $popover.find('.ie-input').inputmask({!! admin_javascript_json($mask) !!});
     @endif
-@endsection
+    @endsection
 </script>

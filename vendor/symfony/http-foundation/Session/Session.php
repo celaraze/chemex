@@ -57,6 +57,22 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     /**
      * {@inheritdoc}
      */
+    public function getName(): string
+    {
+        return $this->storage->getName();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function registerBag(SessionBagInterface $bag)
+    {
+        $this->storage->registerBag(new SessionBagProxy($bag, $this->data, $this->usageIndex, $this->usageReporter));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function start(): bool
     {
         return $this->storage->start();
@@ -68,6 +84,26 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     public function has(string $name): bool
     {
         return $this->getAttributeBag()->has($name);
+    }
+
+    /**
+     * Gets the attributebag interface.
+     *
+     * Note that this method was added to help with IDE autocompletion.
+     */
+    private function getAttributeBag(): AttributeBagInterface
+    {
+        return $this->getBag($this->attributeName);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getBag(string $name): SessionBagInterface
+    {
+        $bag = $this->storage->getBag($name);
+
+        return method_exists($bag, 'getBag') ? $bag->getBag() : $bag;
     }
 
     /**
@@ -89,14 +125,6 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     /**
      * {@inheritdoc}
      */
-    public function all(): array
-    {
-        return $this->getAttributeBag()->all();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function replace(array $attributes)
     {
         $this->getAttributeBag()->replace($attributes);
@@ -111,22 +139,6 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function clear()
-    {
-        $this->getAttributeBag()->clear();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isStarted(): bool
-    {
-        return $this->storage->isStarted();
-    }
-
-    /**
      * Returns an iterator for attributes.
      *
      * @return \ArrayIterator<string, mixed>
@@ -134,6 +146,14 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->getAttributeBag()->all());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function all(): array
+    {
+        return $this->getAttributeBag()->all();
     }
 
     /**
@@ -172,11 +192,27 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     /**
      * {@inheritdoc}
      */
+    public function isStarted(): bool
+    {
+        return $this->storage->isStarted();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function invalidate(int $lifetime = null): bool
     {
         $this->storage->clear();
 
         return $this->migrate(true, $lifetime);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clear()
+    {
+        $this->getAttributeBag()->clear();
     }
 
     /**
@@ -198,14 +234,6 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     /**
      * {@inheritdoc}
      */
-    public function getId(): string
-    {
-        return $this->storage->getId();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setId(string $id)
     {
         if ($this->storage->getId() !== $id) {
@@ -216,9 +244,9 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     /**
      * {@inheritdoc}
      */
-    public function getName(): string
+    public function getId(): string
     {
-        return $this->storage->getName();
+        return $this->storage->getId();
     }
 
     /**
@@ -243,38 +271,10 @@ class Session implements SessionInterface, \IteratorAggregate, \Countable
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function registerBag(SessionBagInterface $bag)
-    {
-        $this->storage->registerBag(new SessionBagProxy($bag, $this->data, $this->usageIndex, $this->usageReporter));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getBag(string $name): SessionBagInterface
-    {
-        $bag = $this->storage->getBag($name);
-
-        return method_exists($bag, 'getBag') ? $bag->getBag() : $bag;
-    }
-
-    /**
      * Gets the flashbag interface.
      */
     public function getFlashBag(): FlashBagInterface
     {
         return $this->getBag($this->flashName);
-    }
-
-    /**
-     * Gets the attributebag interface.
-     *
-     * Note that this method was added to help with IDE autocompletion.
-     */
-    private function getAttributeBag(): AttributeBagInterface
-    {
-        return $this->getBag($this->attributeName);
     }
 }

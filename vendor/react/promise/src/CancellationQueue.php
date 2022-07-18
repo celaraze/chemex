@@ -17,19 +17,6 @@ class CancellationQueue
         $this->drain();
     }
 
-    public function enqueue($cancellable)
-    {
-        if (!\is_object($cancellable) || !\method_exists($cancellable, 'then') || !\method_exists($cancellable, 'cancel')) {
-            return;
-        }
-
-        $length = \array_push($this->queue, $cancellable);
-
-        if ($this->started && 1 === $length) {
-            $this->drain();
-        }
-    }
-
     private function drain()
     {
         for ($i = key($this->queue); isset($this->queue[$i]); $i++) {
@@ -51,5 +38,18 @@ class CancellationQueue
         }
 
         $this->queue = [];
+    }
+
+    public function enqueue($cancellable)
+    {
+        if (!\is_object($cancellable) || !\method_exists($cancellable, 'then') || !\method_exists($cancellable, 'cancel')) {
+            return;
+        }
+
+        $length = \array_push($this->queue, $cancellable);
+
+        if ($this->started && 1 === $length) {
+            $this->drain();
+        }
     }
 }

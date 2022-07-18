@@ -16,24 +16,23 @@ use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
-use Composer\Package\AliasPackage;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilterRepository;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RootPackageRepository;
@@ -104,8 +103,7 @@ lists all packages available.
 
 Read more at https://getcomposer.org/doc/03-cli.md#show
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -274,7 +272,7 @@ EOT
                     $hint .= ', try using --all (-a) to show all available packages';
                 }
 
-                throw new \InvalidArgumentException('Package "' . $packageFilter . '" not found'.$hint.'.');
+                throw new \InvalidArgumentException('Package "' . $packageFilter . '" not found' . $hint . '.');
             }
         }
 
@@ -328,7 +326,7 @@ EOT
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
             usort($packages, function (BasePackage $a, BasePackage $b): int {
-                return strcmp((string) $a, (string) $b);
+                return strcmp((string)$a, (string)$b);
             });
             $arrayTree = array();
             foreach ($packages as $package) {
@@ -351,7 +349,7 @@ EOT
         $packages = array();
         $packageFilterRegex = null;
         if (null !== $packageFilter) {
-            $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+            $packageFilterRegex = '{^' . str_replace('\\*', '.*?', preg_quote($packageFilter)) . '$}i';
         }
 
         $packageListFilter = array();
@@ -566,7 +564,7 @@ EOT
                 foreach ($packages as $package) {
                     $link = $package['source'] ?? $package['homepage'] ?? '';
                     if ($link !== '') {
-                        $io->write($indent . '<href='.OutputFormatter::escape($link).'>'.$package['name'].'</>'. str_repeat(' ', $nameLength - strlen($package['name'])), false);
+                        $io->write($indent . '<href=' . OutputFormatter::escape($link) . '>' . $package['name'] . '</>' . str_repeat(' ', $nameLength - strlen($package['name'])), false);
                     } else {
                         $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
                     }
@@ -612,33 +610,33 @@ EOT
     }
 
     /**
-     * @return string[]
+     * Init styles for tree
+     *
+     * @return void
      */
-    protected function getRootRequires(): array
+    protected function initStyles(OutputInterface $output): void
     {
-        $rootPackage = $this->requireComposer()->getPackage();
-
-        return array_map(
-            'strtolower',
-            array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+        $this->colors = array(
+            'green',
+            'yellow',
+            'cyan',
+            'magenta',
+            'blue',
         );
-    }
 
-    /**
-     * @return array|string|string[]
-     */
-    protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
-    {
-        return $this->updateStatusToVersionStyle($this->getUpdateStatus($latestPackage, $package));
+        foreach ($this->colors as $color) {
+            $style = new OutputFormatterStyle($color);
+            $output->getFormatter()->setStyle($color, $style);
+        }
     }
 
     /**
      * finds a package by name and version if provided
      *
-     * @param  string                     $name
-     * @param  ConstraintInterface|string $version
-     * @throws \InvalidArgumentException
+     * @param string $name
+     * @param ConstraintInterface|string $version
      * @return array{CompletePackageInterface|null, array<string, string>}
+     * @throws \InvalidArgumentException
      */
     protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, string $name, $version = null): array
     {
@@ -682,185 +680,300 @@ EOT
     }
 
     /**
-     * Prints package info.
+     * Find package requires and child requires
      *
-     * @param array<string, string>    $versions
-     * @param PackageInterface|null    $latestPackage
-     *
-     * @return void
+     * @param array<PackageInterface> $bucket
+     * @return array<PackageInterface>
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
     {
-        $io = $this->getIO();
+        $requires = $package->getRequires();
 
-        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
-        $this->printLinks($package, Link::TYPE_REQUIRE);
-        $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
-
-        if ($package->getSuggests()) {
-            $io->write("\n<info>suggests</info>");
-            foreach ($package->getSuggests() as $suggested => $reason) {
-                $io->write($suggested . ' <comment>' . $reason . '</comment>');
-            }
-        }
-
-        $this->printLinks($package, Link::TYPE_PROVIDE);
-        $this->printLinks($package, Link::TYPE_CONFLICT);
-        $this->printLinks($package, Link::TYPE_REPLACE);
-    }
-
-    /**
-     * Prints package metadata.
-     *
-     * @param array<string, string>    $versions
-     * @param PackageInterface|null    $latestPackage
-     *
-     * @return void
-     */
-    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
-    {
-        $io = $this->getIO();
-        $io->write('<info>name</info>     : ' . $package->getPrettyName());
-        $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
-        $this->printVersions($package, $versions, $installedRepo);
-        if ($latestPackage) {
-            $style = $this->getVersionStyle($latestPackage, $package);
-            $io->write('<info>latest</info>   : <'.$style.'>' . $latestPackage->getPrettyVersion() . '</'.$style.'>');
-        } else {
-            $latestPackage = $package;
-        }
-        $io->write('<info>type</info>     : ' . $package->getType());
-        $this->printLicenses($package);
-        $io->write('<info>homepage</info> : ' . $package->getHomepage());
-        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
-        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
-        if ($installedRepo->hasPackage($package)) {
-            $io->write('<info>path</info>     : ' . sprintf('%s', realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package))));
-        }
-        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
-
-        if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
-            $replacement = ($latestPackage->getReplacementPackage() !== null)
-                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
-                : null;
-
-            $io->writeError(
-                sprintf('<warning>Attention: This package is abandoned and no longer maintained.%s</warning>', $replacement)
-            );
-        }
-
-        if ($package->getSupport()) {
-            $io->write("\n<info>support</info>");
-            foreach ($package->getSupport() as $type => $value) {
-                $io->write('<comment>' . $type . '</comment> : '.$value);
-            }
-        }
-
-        if ($package->getAutoload()) {
-            $io->write("\n<info>autoload</info>");
-            $autoloadConfig = $package->getAutoload();
-            foreach ($autoloadConfig as $type => $autoloads) {
-                $io->write('<comment>' . $type . '</comment>');
-
-                if ($type === 'psr-0' || $type === 'psr-4') {
-                    foreach ($autoloads as $name => $path) {
-                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+        foreach ($repo->getPackages() as $candidate) {
+            foreach ($candidate->getNames() as $name) {
+                if (isset($requires[$name])) {
+                    if (!in_array($candidate, $bucket, true)) {
+                        $bucket[] = $candidate;
+                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
                     }
-                } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloadConfig[$type]));
-                }
-            }
-            if ($package->getIncludePaths()) {
-                $io->write('<comment>include-path</comment>');
-                $io->write(implode(', ', $package->getIncludePaths()));
-            }
-        }
-    }
-
-    /**
-     * Prints all available versions of this package and highlights the installed one if any.
-     *
-     * @param array<string, string> $versions
-     *
-     * @return void
-     */
-    protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo): void
-    {
-        $versions = array_keys($versions);
-        $versions = Semver::rsort($versions);
-
-        // highlight installed version
-        if ($installedPackages = $installedRepo->findPackages($package->getName())) {
-            foreach ($installedPackages as $installedPackage) {
-                $installedVersion = $installedPackage->getPrettyVersion();
-                $key = array_search($installedVersion, $versions);
-                if (false !== $key) {
-                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+                    break;
                 }
             }
         }
 
-        $versions = implode(', ', $versions);
-
-        $this->getIO()->write('<info>versions</info> : ' . $versions);
+        return $bucket;
     }
 
     /**
-     * print link objects
+     * Generate the package tree
      *
-     * @param string                   $linkType
-     * @param string                   $title
+     * @return array<string, array<int, array<string, mixed[]|string>>|string|null>
+     */
+    protected function generatePackageTree(
+        PackageInterface    $package,
+        InstalledRepository $installedRepo,
+        RepositoryInterface $remoteRepos
+    ): array
+    {
+        $requires = $package->getRequires();
+        ksort($requires);
+        $children = array();
+        foreach ($requires as $requireName => $require) {
+            $packagesInTree = array($package->getName(), $requireName);
+
+            $treeChildDesc = array(
+                'name' => $requireName,
+                'version' => $require->getPrettyConstraint(),
+            );
+
+            $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
+
+            if ($deepChildren) {
+                $treeChildDesc['requires'] = $deepChildren;
+            }
+
+            $children[] = $treeChildDesc;
+        }
+        $tree = array(
+            'name' => $package->getPrettyName(),
+            'version' => $package->getPrettyVersion(),
+            'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : '',
+        );
+
+        if ($children) {
+            $tree['requires'] = $children;
+        }
+
+        return $tree;
+    }
+
+    /**
+     * Display a package tree
      *
+     * @param string $name
+     * @param string[] $packagesInTree
+     * @return array<int, array<string, array<int, array<string, string>>|string>>
+     */
+    protected function addTree(
+        string              $name,
+        Link                $link,
+        InstalledRepository $installedRepo,
+        RepositoryInterface $remoteRepos,
+        array               $packagesInTree
+    ): array
+    {
+        $children = array();
+        list($package) = $this->getPackage(
+            $installedRepo,
+            $remoteRepos,
+            $name,
+            $link->getPrettyConstraint() === 'self.version' ? $link->getConstraint() : $link->getPrettyConstraint()
+        );
+        if (is_object($package)) {
+            $requires = $package->getRequires();
+            ksort($requires);
+            foreach ($requires as $requireName => $require) {
+                $currentTree = $packagesInTree;
+
+                $treeChildDesc = array(
+                    'name' => $requireName,
+                    'version' => $require->getPrettyConstraint(),
+                );
+
+                if (!in_array($requireName, $currentTree, true)) {
+                    $currentTree[] = $requireName;
+                    $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $currentTree);
+                    if ($deepChildren) {
+                        $treeChildDesc['requires'] = $deepChildren;
+                    }
+                }
+
+                $children[] = $treeChildDesc;
+            }
+        }
+
+        return $children;
+    }
+
+    /**
+     * Display the tree
+     *
+     * @param array<int, array<string, string|mixed[]>> $arrayTree
      * @return void
      */
-    protected function printLinks(CompletePackageInterface $package, string $linkType, string $title = null): void
+    protected function displayPackageTree(array $arrayTree): void
     {
-        $title = $title ?: $linkType;
         $io = $this->getIO();
-        if ($links = $package->{'get'.ucfirst($linkType)}()) {
-            $io->write("\n<info>" . $title . "</info>");
+        foreach ($arrayTree as $package) {
+            $io->write(sprintf('<info>%s</info>', $package['name']), false);
+            $io->write(' ' . $package['version'], false);
+            $io->write(' ' . strtok($package['description'], "\r\n"));
 
-            foreach ($links as $link) {
-                $io->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+            if (isset($package['requires'])) {
+                $requires = $package['requires'];
+                $treeBar = '├';
+                $j = 0;
+                $total = count($requires);
+                foreach ($requires as $require) {
+                    $requireName = $require['name'];
+                    $j++;
+                    if ($j === $total) {
+                        $treeBar = '└';
+                    }
+                    $level = 1;
+                    $color = $this->colors[$level];
+                    $info = sprintf(
+                        '%s──<%s>%s</%s> %s',
+                        $treeBar,
+                        $color,
+                        $requireName,
+                        $color,
+                        $require['version']
+                    );
+                    $this->writeTreeLine($info);
+
+                    $treeBar = str_replace('└', ' ', $treeBar);
+                    $packagesInTree = array($package['name'], $requireName);
+
+                    $this->displayTree($require, $packagesInTree, $treeBar, $level + 1);
+                }
             }
         }
     }
 
     /**
-     * Prints the licenses of a package with metadata
+     * @param string $line
      *
      * @return void
      */
-    protected function printLicenses(CompletePackageInterface $package): void
+    private function writeTreeLine(string $line): void
     {
-        $spdxLicenses = new SpdxLicenses();
-
-        $licenses = $package->getLicense();
         $io = $this->getIO();
-
-        foreach ($licenses as $licenseId) {
-            $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
-
-            if (!$license) {
-                $out = $licenseId;
-            } else {
-                // is license OSI approved?
-                if ($license[1] === true) {
-                    $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
-                } else {
-                    $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
-                }
-            }
-
-            $io->write('<info>license</info>  : ' . $out);
+        if (!$io->isDecorated()) {
+            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
         }
+
+        $io->write($line);
+    }
+
+    /**
+     * Display a package tree
+     *
+     * @param array<string, array<int, array<string, mixed[]|string>>|string|null>|string $package
+     * @param array<int, string|mixed[]> $packagesInTree
+     * @param string $previousTreeBar
+     * @param int $level
+     *
+     * @return void
+     */
+    protected function displayTree(
+        $package,
+        array $packagesInTree,
+        string $previousTreeBar = '├',
+        int $level = 1
+    ): void
+    {
+        $previousTreeBar = str_replace('├', '│', $previousTreeBar);
+        if (is_array($package) && isset($package['requires'])) {
+            $requires = $package['requires'];
+            $treeBar = $previousTreeBar . '  ├';
+            $i = 0;
+            $total = count($requires);
+            foreach ($requires as $require) {
+                $currentTree = $packagesInTree;
+                $i++;
+                if ($i === $total) {
+                    $treeBar = $previousTreeBar . '  └';
+                }
+                $colorIdent = $level % count($this->colors);
+                $color = $this->colors[$colorIdent];
+
+                $circularWarn = in_array(
+                    $require['name'],
+                    $currentTree,
+                    true
+                ) ? '(circular dependency aborted here)' : '';
+                $info = rtrim(sprintf(
+                    '%s──<%s>%s</%s> %s %s',
+                    $treeBar,
+                    $color,
+                    $require['name'],
+                    $color,
+                    $require['version'],
+                    $circularWarn
+                ));
+                $this->writeTreeLine($info);
+
+                $treeBar = str_replace('└', ' ', $treeBar);
+
+                $currentTree[] = $require['name'];
+                $this->displayTree($require, $currentTree, $treeBar, $level + 1);
+            }
+        }
+    }
+
+    /**
+     * Given a package, this finds the latest package matching it
+     */
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
+    {
+        // find the latest version allowed in this repo set
+        $name = $package->getName();
+        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
+        $stability = $composer->getPackage()->getMinimumStability();
+        $flags = $composer->getPackage()->getStabilityFlags();
+        if (isset($flags[$name])) {
+            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
+        }
+
+        $bestStability = $stability;
+        if ($composer->getPackage()->getPreferStable()) {
+            $bestStability = $package->getStability();
+        }
+
+        $targetVersion = null;
+        if (0 === strpos($package->getVersion(), 'dev-')) {
+            $targetVersion = $package->getVersion();
+        }
+
+        if ($targetVersion === null && $minorOnly) {
+            $targetVersion = '^' . $package->getVersion();
+        }
+
+        if ($targetVersion === null && $patchOnly) {
+            $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
+            $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
+            while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
+                $trimmedVersion .= '.0';
+            }
+            $targetVersion = '~' . $trimmedVersion;
+        }
+
+        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter);
+        while ($candidate instanceof AliasPackage) {
+            $candidate = $candidate->getAliasOf();
+        }
+
+        return $candidate !== false ? $candidate : null;
+    }
+
+    /**
+     * @return RepositorySet
+     */
+    private function getRepositorySet(Composer $composer): RepositorySet
+    {
+        if (!$this->repositorySet) {
+            $this->repositorySet = new RepositorySet($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
+            $this->repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+        }
+
+        return $this->repositorySet;
     }
 
     /**
      * Prints package info in JSON format.
      *
-     * @param array<string, string>    $versions
+     * @param array<string, string> $versions
      *
      * @return void
      */
@@ -1038,214 +1151,136 @@ EOT
     }
 
     /**
-     * Init styles for tree
+     * Prints package info.
+     *
+     * @param array<string, string> $versions
+     * @param PackageInterface|null $latestPackage
      *
      * @return void
      */
-    protected function initStyles(OutputInterface $output): void
-    {
-        $this->colors = array(
-            'green',
-            'yellow',
-            'cyan',
-            'magenta',
-            'blue',
-        );
-
-        foreach ($this->colors as $color) {
-            $style = new OutputFormatterStyle($color);
-            $output->getFormatter()->setStyle($color, $style);
-        }
-    }
-
-    /**
-     * Display the tree
-     *
-     * @param array<int, array<string, string|mixed[]>> $arrayTree
-     * @return void
-     */
-    protected function displayPackageTree(array $arrayTree): void
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
     {
         $io = $this->getIO();
-        foreach ($arrayTree as $package) {
-            $io->write(sprintf('<info>%s</info>', $package['name']), false);
-            $io->write(' ' . $package['version'], false);
-            $io->write(' ' . strtok($package['description'], "\r\n"));
 
-            if (isset($package['requires'])) {
-                $requires = $package['requires'];
-                $treeBar = '├';
-                $j = 0;
-                $total = count($requires);
-                foreach ($requires as $require) {
-                    $requireName = $require['name'];
-                    $j++;
-                    if ($j === $total) {
-                        $treeBar = '└';
-                    }
-                    $level = 1;
-                    $color = $this->colors[$level];
-                    $info = sprintf(
-                        '%s──<%s>%s</%s> %s',
-                        $treeBar,
-                        $color,
-                        $requireName,
-                        $color,
-                        $require['version']
-                    );
-                    $this->writeTreeLine($info);
+        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
+        $this->printLinks($package, Link::TYPE_REQUIRE);
+        $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
 
-                    $treeBar = str_replace('└', ' ', $treeBar);
-                    $packagesInTree = array($package['name'], $requireName);
-
-                    $this->displayTree($require, $packagesInTree, $treeBar, $level + 1);
-                }
+        if ($package->getSuggests()) {
+            $io->write("\n<info>suggests</info>");
+            foreach ($package->getSuggests() as $suggested => $reason) {
+                $io->write($suggested . ' <comment>' . $reason . '</comment>');
             }
         }
+
+        $this->printLinks($package, Link::TYPE_PROVIDE);
+        $this->printLinks($package, Link::TYPE_CONFLICT);
+        $this->printLinks($package, Link::TYPE_REPLACE);
     }
 
     /**
-     * Generate the package tree
+     * Prints package metadata.
      *
-     * @return array<string, array<int, array<string, mixed[]|string>>|string|null>
-     */
-    protected function generatePackageTree(
-        PackageInterface $package,
-        InstalledRepository $installedRepo,
-        RepositoryInterface $remoteRepos
-    ): array {
-        $requires = $package->getRequires();
-        ksort($requires);
-        $children = array();
-        foreach ($requires as $requireName => $require) {
-            $packagesInTree = array($package->getName(), $requireName);
-
-            $treeChildDesc = array(
-                'name' => $requireName,
-                'version' => $require->getPrettyConstraint(),
-            );
-
-            $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
-
-            if ($deepChildren) {
-                $treeChildDesc['requires'] = $deepChildren;
-            }
-
-            $children[] = $treeChildDesc;
-        }
-        $tree = array(
-            'name' => $package->getPrettyName(),
-            'version' => $package->getPrettyVersion(),
-            'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : '',
-        );
-
-        if ($children) {
-            $tree['requires'] = $children;
-        }
-
-        return $tree;
-    }
-
-    /**
-     * Display a package tree
-     *
-     * @param array<string, array<int, array<string, mixed[]|string>>|string|null>|string $package
-     * @param array<int, string|mixed[]> $packagesInTree
-     * @param string $previousTreeBar
-     * @param int $level
+     * @param array<string, string> $versions
+     * @param PackageInterface|null $latestPackage
      *
      * @return void
      */
-    protected function displayTree(
-        $package,
-        array $packagesInTree,
-        string $previousTreeBar = '├',
-        int $level = 1
-    ): void {
-        $previousTreeBar = str_replace('├', '│', $previousTreeBar);
-        if (is_array($package) && isset($package['requires'])) {
-            $requires = $package['requires'];
-            $treeBar = $previousTreeBar . '  ├';
-            $i = 0;
-            $total = count($requires);
-            foreach ($requires as $require) {
-                $currentTree = $packagesInTree;
-                $i++;
-                if ($i === $total) {
-                    $treeBar = $previousTreeBar . '  └';
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
+    {
+        $io = $this->getIO();
+        $io->write('<info>name</info>     : ' . $package->getPrettyName());
+        $io->write('<info>descrip.</info> : ' . $package->getDescription());
+        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
+        $this->printVersions($package, $versions, $installedRepo);
+        if ($latestPackage) {
+            $style = $this->getVersionStyle($latestPackage, $package);
+            $io->write('<info>latest</info>   : <' . $style . '>' . $latestPackage->getPrettyVersion() . '</' . $style . '>');
+        } else {
+            $latestPackage = $package;
+        }
+        $io->write('<info>type</info>     : ' . $package->getType());
+        $this->printLicenses($package);
+        $io->write('<info>homepage</info> : ' . $package->getHomepage());
+        $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
+        $io->write('<info>dist</info>     : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getDistType(), $package->getDistUrl(), $package->getDistReference()));
+        if ($installedRepo->hasPackage($package)) {
+            $io->write('<info>path</info>     : ' . sprintf('%s', realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package))));
+        }
+        $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
+
+        if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
+            $replacement = ($latestPackage->getReplacementPackage() !== null)
+                ? ' The author suggests using the ' . $latestPackage->getReplacementPackage() . ' package instead.'
+                : null;
+
+            $io->writeError(
+                sprintf('<warning>Attention: This package is abandoned and no longer maintained.%s</warning>', $replacement)
+            );
+        }
+
+        if ($package->getSupport()) {
+            $io->write("\n<info>support</info>");
+            foreach ($package->getSupport() as $type => $value) {
+                $io->write('<comment>' . $type . '</comment> : ' . $value);
+            }
+        }
+
+        if ($package->getAutoload()) {
+            $io->write("\n<info>autoload</info>");
+            $autoloadConfig = $package->getAutoload();
+            foreach ($autoloadConfig as $type => $autoloads) {
+                $io->write('<comment>' . $type . '</comment>');
+
+                if ($type === 'psr-0' || $type === 'psr-4') {
+                    foreach ($autoloads as $name => $path) {
+                        $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
+                    }
+                } elseif ($type === 'classmap') {
+                    $io->write(implode(', ', $autoloadConfig[$type]));
                 }
-                $colorIdent = $level % count($this->colors);
-                $color = $this->colors[$colorIdent];
-
-                $circularWarn = in_array(
-                    $require['name'],
-                    $currentTree,
-                    true
-                ) ? '(circular dependency aborted here)' : '';
-                $info = rtrim(sprintf(
-                    '%s──<%s>%s</%s> %s %s',
-                    $treeBar,
-                    $color,
-                    $require['name'],
-                    $color,
-                    $require['version'],
-                    $circularWarn
-                ));
-                $this->writeTreeLine($info);
-
-                $treeBar = str_replace('└', ' ', $treeBar);
-
-                $currentTree[] = $require['name'];
-                $this->displayTree($require, $currentTree, $treeBar, $level + 1);
+            }
+            if ($package->getIncludePaths()) {
+                $io->write('<comment>include-path</comment>');
+                $io->write(implode(', ', $package->getIncludePaths()));
             }
         }
     }
 
     /**
-     * Display a package tree
+     * Prints all available versions of this package and highlights the installed one if any.
      *
-     * @param  string   $name
-     * @param  string[] $packagesInTree
-     * @return array<int, array<string, array<int, array<string, string>>|string>>
+     * @param array<string, string> $versions
+     *
+     * @return void
      */
-    protected function addTree(
-        string $name,
-        Link $link,
-        InstalledRepository $installedRepo,
-        RepositoryInterface $remoteRepos,
-        array $packagesInTree
-    ): array {
-        $children = array();
-        list($package) = $this->getPackage(
-            $installedRepo,
-            $remoteRepos,
-            $name,
-            $link->getPrettyConstraint() === 'self.version' ? $link->getConstraint() : $link->getPrettyConstraint()
-        );
-        if (is_object($package)) {
-            $requires = $package->getRequires();
-            ksort($requires);
-            foreach ($requires as $requireName => $require) {
-                $currentTree = $packagesInTree;
+    protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo): void
+    {
+        $versions = array_keys($versions);
+        $versions = Semver::rsort($versions);
 
-                $treeChildDesc = array(
-                    'name' => $requireName,
-                    'version' => $require->getPrettyConstraint(),
-                );
-
-                if (!in_array($requireName, $currentTree, true)) {
-                    $currentTree[] = $requireName;
-                    $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $currentTree);
-                    if ($deepChildren) {
-                        $treeChildDesc['requires'] = $deepChildren;
-                    }
+        // highlight installed version
+        if ($installedPackages = $installedRepo->findPackages($package->getName())) {
+            foreach ($installedPackages as $installedPackage) {
+                $installedVersion = $installedPackage->getPrettyVersion();
+                $key = array_search($installedVersion, $versions);
+                if (false !== $key) {
+                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
                 }
-
-                $children[] = $treeChildDesc;
             }
         }
 
-        return $children;
+        $versions = implode(', ', $versions);
+
+        $this->getIO()->write('<info>versions</info> : ' . $versions);
+    }
+
+    /**
+     * @return array|string|string[]
+     */
+    protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
+    {
+        return $this->updateStatusToVersionStyle($this->getUpdateStatus($latestPackage, $package));
     }
 
     /**
@@ -1271,7 +1306,7 @@ EOT
 
         $constraint = $package->getVersion();
         if (0 !== strpos($constraint, 'dev-')) {
-            $constraint = '^'.$constraint;
+            $constraint = '^' . $constraint;
         }
         if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
             // it needs an immediate semver-compliant upgrade
@@ -1283,100 +1318,66 @@ EOT
     }
 
     /**
-     * @param string $line
+     * Prints the licenses of a package with metadata
      *
      * @return void
      */
-    private function writeTreeLine(string $line): void
+    protected function printLicenses(CompletePackageInterface $package): void
     {
+        $spdxLicenses = new SpdxLicenses();
+
+        $licenses = $package->getLicense();
         $io = $this->getIO();
-        if (!$io->isDecorated()) {
-            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
-        }
 
-        $io->write($line);
-    }
+        foreach ($licenses as $licenseId) {
+            $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
-    /**
-     * Given a package, this finds the latest package matching it
-     */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
-    {
-        // find the latest version allowed in this repo set
-        $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
-        $stability = $composer->getPackage()->getMinimumStability();
-        $flags = $composer->getPackage()->getStabilityFlags();
-        if (isset($flags[$name])) {
-            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
-        }
-
-        $bestStability = $stability;
-        if ($composer->getPackage()->getPreferStable()) {
-            $bestStability = $package->getStability();
-        }
-
-        $targetVersion = null;
-        if (0 === strpos($package->getVersion(), 'dev-')) {
-            $targetVersion = $package->getVersion();
-        }
-
-        if ($targetVersion === null && $minorOnly) {
-            $targetVersion = '^' . $package->getVersion();
-        }
-
-        if ($targetVersion === null && $patchOnly) {
-            $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
-            $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
-            while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
-                $trimmedVersion .= '.0';
-            }
-            $targetVersion = '~' . $trimmedVersion;
-        }
-
-        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter);
-        while ($candidate instanceof AliasPackage) {
-            $candidate = $candidate->getAliasOf();
-        }
-
-        return $candidate !== false ? $candidate : null;
-    }
-
-    /**
-     * @return RepositorySet
-     */
-    private function getRepositorySet(Composer $composer): RepositorySet
-    {
-        if (!$this->repositorySet) {
-            $this->repositorySet = new RepositorySet($composer->getPackage()->getMinimumStability(), $composer->getPackage()->getStabilityFlags());
-            $this->repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
-        }
-
-        return $this->repositorySet;
-    }
-
-    /**
-     * Find package requires and child requires
-     *
-     * @param  array<PackageInterface> $bucket
-     * @return array<PackageInterface>
-     */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
-    {
-        $requires = $package->getRequires();
-
-        foreach ($repo->getPackages() as $candidate) {
-            foreach ($candidate->getNames() as $name) {
-                if (isset($requires[$name])) {
-                    if (!in_array($candidate, $bucket, true)) {
-                        $bucket[] = $candidate;
-                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
-                    }
-                    break;
+            if (!$license) {
+                $out = $licenseId;
+            } else {
+                // is license OSI approved?
+                if ($license[1] === true) {
+                    $out = sprintf('%s (%s) (OSI approved) %s', $license[0], $licenseId, $license[2]);
+                } else {
+                    $out = sprintf('%s (%s) %s', $license[0], $licenseId, $license[2]);
                 }
             }
-        }
 
-        return $bucket;
+            $io->write('<info>license</info>  : ' . $out);
+        }
+    }
+
+    /**
+     * print link objects
+     *
+     * @param string $linkType
+     * @param string $title
+     *
+     * @return void
+     */
+    protected function printLinks(CompletePackageInterface $package, string $linkType, string $title = null): void
+    {
+        $title = $title ?: $linkType;
+        $io = $this->getIO();
+        if ($links = $package->{'get' . ucfirst($linkType)}()) {
+            $io->write("\n<info>" . $title . "</info>");
+
+            foreach ($links as $link) {
+                $io->write($link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+            }
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getRootRequires(): array
+    {
+        $rootPackage = $this->requireComposer()->getPackage();
+
+        return array_map(
+            'strtolower',
+            array_keys(array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()))
+        );
     }
 }

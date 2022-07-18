@@ -37,7 +37,7 @@ final class UrlEncoder
             return $uri;
         }
 
-        if (! \mb_check_encoding($uri, 'UTF-8')) {
+        if (!\mb_check_encoding($uri, 'UTF-8')) {
             throw new UnexpectedEncodingException('Unexpected encoding - UTF-8 or ASCII was expected');
         }
 
@@ -51,7 +51,7 @@ final class UrlEncoder
             if ($code === '%' && $i + 2 < $l) {
                 if (\preg_match('/^[0-9a-f]{2}$/i', $chars[$i + 1] . $chars[$i + 2]) === 1) {
                     $result .= '%' . $chars[$i + 1] . $chars[$i + 2];
-                    $i      += 2;
+                    $i += 2;
                     continue;
                 }
             }

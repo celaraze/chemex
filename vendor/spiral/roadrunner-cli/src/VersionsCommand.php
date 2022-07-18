@@ -15,8 +15,8 @@ use Spiral\RoadRunner\Console\Command\ArchitectureOption;
 use Spiral\RoadRunner\Console\Command\OperatingSystemOption;
 use Spiral\RoadRunner\Console\Command\StabilityOption;
 use Spiral\RoadRunner\Console\Command\VersionFilterOption;
-use Spiral\RoadRunner\Console\Repository\ReleaseInterface;
 use Spiral\RoadRunner\Console\Environment\Stability;
+use Spiral\RoadRunner\Console\Repository\ReleaseInterface;
 use Spiral\RoadRunner\Version;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -91,8 +91,7 @@ class VersionsCommand extends Command
             ->sortByVersion()
             ->minimumStability($this->stability->get($input, $io))
             ->filter(static fn(ReleaseInterface $release): bool => \count($release->getAssets()) > 0)
-            ->satisfies($this->version->get($input, $io))
-        ;
+            ->satisfies($this->version->get($input, $io));
 
         foreach ($versions as $version) {
             $rows[] = [
@@ -106,49 +105,6 @@ class VersionsCommand extends Command
         $io->table(['Release', 'Stability', 'Binaries', 'Compatibility'], $rows);
 
         return 0;
-    }
-
-    /**
-     * @param ReleaseInterface $release
-     * @param InputInterface $input
-     * @param StyleInterface $io
-     * @return string
-     */
-    private function compatibilityToString(ReleaseInterface $release, InputInterface $input, StyleInterface $io): string
-    {
-        $template = '<fg=red> ✖ </> (reason: <comment>%s</comment>)';
-
-        // Validate version
-        if (! $release->satisfies(Version::constraint())) {
-            return \sprintf($template, 'incompatible version');
-        }
-
-        // Validate assets
-        $assets = $release->getAssets();
-
-        if ($assets->empty()) {
-            return \sprintf($template, 'no binaries');
-        }
-
-        // Validate OS
-        $assets = $assets->whereOperatingSystem(
-            $os = $this->os->get($input, $io)
-        );
-
-        if ($assets->empty()) {
-            return \sprintf($template, 'no assembly for ' . $os);
-        }
-
-        // Validate architecture
-        $assets = $assets->whereArchitecture(
-            $arch = $this->arch->get($input, $io)
-        );
-
-        if ($assets->empty()) {
-            return \sprintf($template, 'no assembly for ' . $arch);
-        }
-
-        return '<fg=green> ✓ </>';
     }
 
     /**
@@ -193,13 +149,55 @@ class VersionsCommand extends Command
     private function assetsToString(ReleaseInterface $release): string
     {
         $count = $release->getAssets()
-            ->count()
-        ;
+            ->count();
 
         if ($count > 0) {
             return \sprintf('<fg=green> ✓ </> (<comment>%d</comment>)', $count);
         }
 
         return '<fg=red> ✖ </>';
+    }
+
+    /**
+     * @param ReleaseInterface $release
+     * @param InputInterface $input
+     * @param StyleInterface $io
+     * @return string
+     */
+    private function compatibilityToString(ReleaseInterface $release, InputInterface $input, StyleInterface $io): string
+    {
+        $template = '<fg=red> ✖ </> (reason: <comment>%s</comment>)';
+
+        // Validate version
+        if (!$release->satisfies(Version::constraint())) {
+            return \sprintf($template, 'incompatible version');
+        }
+
+        // Validate assets
+        $assets = $release->getAssets();
+
+        if ($assets->empty()) {
+            return \sprintf($template, 'no binaries');
+        }
+
+        // Validate OS
+        $assets = $assets->whereOperatingSystem(
+            $os = $this->os->get($input, $io)
+        );
+
+        if ($assets->empty()) {
+            return \sprintf($template, 'no assembly for ' . $os);
+        }
+
+        // Validate architecture
+        $assets = $assets->whereArchitecture(
+            $arch = $this->arch->get($input, $io)
+        );
+
+        if ($assets->empty()) {
+            return \sprintf($template, 'no assembly for ' . $arch);
+        }
+
+        return '<fg=green> ✓ </>';
     }
 }

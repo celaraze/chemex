@@ -68,13 +68,6 @@ abstract class Job
     abstract public function getJobId();
 
     /**
-     * Get the raw body of the job.
-     *
-     * @return string
-     */
-    abstract public function getRawBody();
-
-    /**
      * Get the UUID of the job.
      *
      * @return string|null
@@ -83,6 +76,23 @@ abstract class Job
     {
         return $this->payload()['uuid'] ?? null;
     }
+
+    /**
+     * Get the decoded body of the job.
+     *
+     * @return array
+     */
+    public function payload()
+    {
+        return json_decode($this->getRawBody(), true);
+    }
+
+    /**
+     * Get the raw body of the job.
+     *
+     * @return string
+     */
+    abstract public function getRawBody();
 
     /**
      * Fire the job.
@@ -99,44 +109,25 @@ abstract class Job
     }
 
     /**
-     * Delete the job from the queue.
+     * Resolve the given class.
      *
-     * @return void
+     * @param string $class
+     * @return mixed
      */
-    public function delete()
+    protected function resolve($class)
     {
-        $this->deleted = true;
-    }
-
-    /**
-     * Determine if the job has been deleted.
-     *
-     * @return bool
-     */
-    public function isDeleted()
-    {
-        return $this->deleted;
+        return $this->container->make($class);
     }
 
     /**
      * Release the job back into the queue after (n) seconds.
      *
-     * @param  int  $delay
+     * @param int $delay
      * @return void
      */
     public function release($delay = 0)
     {
         $this->released = true;
-    }
-
-    /**
-     * Determine if the job was released back into the queue.
-     *
-     * @return bool
-     */
-    public function isReleased()
-    {
-        return $this->released;
     }
 
     /**
@@ -150,6 +141,26 @@ abstract class Job
     }
 
     /**
+     * Determine if the job has been deleted.
+     *
+     * @return bool
+     */
+    public function isDeleted()
+    {
+        return $this->deleted;
+    }
+
+    /**
+     * Determine if the job was released back into the queue.
+     *
+     * @return bool
+     */
+    public function isReleased()
+    {
+        return $this->released;
+    }
+
+    /**
      * Determine if the job has been marked as a failure.
      *
      * @return bool
@@ -160,19 +171,9 @@ abstract class Job
     }
 
     /**
-     * Mark the job as "failed".
-     *
-     * @return void
-     */
-    public function markAsFailed()
-    {
-        $this->failed = true;
-    }
-
-    /**
      * Delete the job, call the "failed" method, and raise the failed job event.
      *
-     * @param  \Throwable|null  $e
+     * @param \Throwable|null $e
      * @return void
      */
     public function fail($e = null)
@@ -198,9 +199,29 @@ abstract class Job
     }
 
     /**
+     * Mark the job as "failed".
+     *
+     * @return void
+     */
+    public function markAsFailed()
+    {
+        $this->failed = true;
+    }
+
+    /**
+     * Delete the job from the queue.
+     *
+     * @return void
+     */
+    public function delete()
+    {
+        $this->deleted = true;
+    }
+
+    /**
      * Process an exception that caused the job to fail.
      *
-     * @param  \Throwable|null  $e
+     * @param \Throwable|null $e
      * @return void
      */
     protected function failed($e)
@@ -215,17 +236,6 @@ abstract class Job
     }
 
     /**
-     * Resolve the given class.
-     *
-     * @param  string  $class
-     * @return mixed
-     */
-    protected function resolve($class)
-    {
-        return $this->container->make($class);
-    }
-
-    /**
      * Get the resolved job handler instance.
      *
      * @return mixed
@@ -233,16 +243,6 @@ abstract class Job
     public function getResolvedJob()
     {
         return $this->instance;
-    }
-
-    /**
-     * Get the decoded body of the job.
-     *
-     * @return array
-     */
-    public function payload()
-    {
-        return json_decode($this->getRawBody(), true);
     }
 
     /**
@@ -306,16 +306,6 @@ abstract class Job
     }
 
     /**
-     * Get the name of the queued job class.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->payload()['job'];
-    }
-
-    /**
      * Get the resolved name of the queued job class.
      *
      * Resolves the name of "wrapped" jobs such as class-based handlers.
@@ -325,6 +315,16 @@ abstract class Job
     public function resolveName()
     {
         return JobName::resolve($this->getName(), $this->payload());
+    }
+
+    /**
+     * Get the name of the queued job class.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->payload()['job'];
     }
 
     /**

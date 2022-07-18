@@ -12,7 +12,7 @@ class Input extends Editable
 
     public function display($options = [])
     {
-        if (! empty($options['mask'])) {
+        if (!empty($options['mask'])) {
             Admin::requireAssets('@jquery.inputmask');
         }
 

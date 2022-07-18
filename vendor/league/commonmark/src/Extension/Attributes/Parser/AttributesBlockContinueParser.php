@@ -32,7 +32,7 @@ final class AttributesBlockContinueParser extends AbstractBlockContinueParser
 
     /**
      * @param array<string, mixed> $attributes The attributes identified by the block start parser
-     * @param AbstractBlock        $container  The node we were in when these attributes were discovered
+     * @param AbstractBlock $container The node we were in when these attributes were discovered
      */
     public function __construct(array $attributes, AbstractBlock $container)
     {
@@ -79,7 +79,7 @@ final class AttributesBlockContinueParser extends AbstractBlockContinueParser
     {
         // Attributes appearing at the very end of the document won't have any last lines to check
         // so we can make that determination here
-        if (! $this->hasSubsequentLine) {
+        if (!$this->hasSubsequentLine) {
             $this->block->setTarget(Attributes::TARGET_PREVIOUS);
         }
 

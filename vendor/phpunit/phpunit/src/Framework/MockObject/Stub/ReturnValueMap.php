@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Stub;
 
+use PHPUnit\Framework\MockObject\Invocation;
 use function array_pop;
 use function count;
 use function is_array;
-use PHPUnit\Framework\MockObject\Invocation;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit

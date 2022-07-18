@@ -60,19 +60,9 @@ use Illuminate\Http\Client\Factory;
 class Http extends Facade
 {
     /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return Factory::class;
-    }
-
-    /**
      * Register a stub callable that will intercept requests and be able to return stub responses.
      *
-     * @param  \Closure|array  $callback
+     * @param \Closure|array $callback
      * @return \Illuminate\Http\Client\Factory
      */
     public static function fake($callback = null)
@@ -85,7 +75,7 @@ class Http extends Facade
     /**
      * Register a response sequence for the given URL pattern.
      *
-     * @param  string  $urlPattern
+     * @param string $urlPattern
      * @return \Illuminate\Http\Client\ResponseSequence
      */
     public static function fakeSequence(string $urlPattern = '*')
@@ -112,8 +102,8 @@ class Http extends Facade
     /**
      * Stub the given URL using the given callback.
      *
-     * @param  string  $url
-     * @param  \Illuminate\Http\Client\Response|\GuzzleHttp\Promise\PromiseInterface|callable  $callback
+     * @param string $url
+     * @param \Illuminate\Http\Client\Response|\GuzzleHttp\Promise\PromiseInterface|callable $callback
      * @return \Illuminate\Http\Client\Factory
      */
     public static function stubUrl($url, $callback)
@@ -121,5 +111,15 @@ class Http extends Facade
         return tap(static::getFacadeRoot(), function ($fake) use ($url, $callback) {
             static::swap($fake->stubUrl($url, $callback));
         });
+    }
+
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return Factory::class;
     }
 }

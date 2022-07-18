@@ -69,7 +69,7 @@ JS
                 );
 
                 PHPUnit::assertTrue(
-                    (bool) ($isHidden[0] ?? false),
+                    (bool)($isHidden[0] ?? false),
                     "Element [{$fullSelector}] is displayed."
                 );
 
@@ -152,8 +152,7 @@ JS
 
     public function makeDelayBrowser($browser)
     {
-        return new class($browser)
-        {
+        return new class($browser) {
             protected $browser;
 
             protected $callbacks = [];
@@ -166,7 +165,7 @@ JS
             public function __call($method, $arguments = [])
             {
                 $this->callbacks[] = [
-                    'method'    => $method,
+                    'method' => $method,
                     'arguments' => $arguments,
                 ];
 

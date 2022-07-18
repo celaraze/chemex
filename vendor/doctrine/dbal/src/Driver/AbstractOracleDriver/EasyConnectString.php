@@ -23,21 +23,6 @@ final class EasyConnectString
         $this->string = $string;
     }
 
-    public function __toString(): string
-    {
-        return $this->string;
-    }
-
-    /**
-     * Creates the object from an array representation
-     *
-     * @param mixed[] $params
-     */
-    public static function fromArray(array $params): self
-    {
-        return new self(self::renderParams($params));
-    }
-
     /**
      * Creates the object from the given DBAL connection parameters.
      *
@@ -49,7 +34,7 @@ final class EasyConnectString
             return new self($params['connectstring']);
         }
 
-        if (! isset($params['host'])) {
+        if (!isset($params['host'])) {
             return new self($params['dbname'] ?? '');
         }
 
@@ -71,7 +56,7 @@ final class EasyConnectString
             $connectData['INSTANCE_NAME'] = $params['instancename'];
         }
 
-        if (! empty($params['pooled'])) {
+        if (!empty($params['pooled'])) {
             $connectData['SERVER'] = 'POOLED';
         }
 
@@ -85,6 +70,16 @@ final class EasyConnectString
                 'CONNECT_DATA' => $connectData,
             ],
         ]);
+    }
+
+    /**
+     * Creates the object from an array representation
+     *
+     * @param mixed[] $params
+     */
+    public static function fromArray(array $params): self
+    {
+        return new self(self::renderParams($params));
     }
 
     /**
@@ -116,6 +111,11 @@ final class EasyConnectString
             return self::renderParams($value);
         }
 
-        return (string) $value;
+        return (string)$value;
+    }
+
+    public function __toString(): string
+    {
+        return $this->string;
     }
 }

@@ -27,7 +27,7 @@ class ConsoleSectionOutput extends StreamOutput
     private Terminal $terminal;
 
     /**
-     * @param resource               $stream
+     * @param resource $stream
      * @param ConsoleSectionOutput[] $sections
      */
     public function __construct($stream, array &$sections, int $verbosity, bool $decorated, OutputFormatterInterface $formatter)
@@ -36,6 +36,15 @@ class ConsoleSectionOutput extends StreamOutput
         array_unshift($sections, $this);
         $this->sections = &$sections;
         $this->terminal = new Terminal();
+    }
+
+    /**
+     * Overwrites the previous output with a new message.
+     */
+    public function overwrite(string|iterable $message)
+    {
+        $this->clear();
+        $this->writeln($message);
     }
 
     /**
@@ -59,32 +68,6 @@ class ConsoleSectionOutput extends StreamOutput
         $this->lines -= $lines;
 
         parent::doWrite($this->popStreamContentUntilCurrentSection($lines), false);
-    }
-
-    /**
-     * Overwrites the previous output with a new message.
-     */
-    public function overwrite(string|iterable $message)
-    {
-        $this->clear();
-        $this->writeln($message);
-    }
-
-    public function getContent(): string
-    {
-        return implode('', $this->content);
-    }
-
-    /**
-     * @internal
-     */
-    public function addContent(string $input)
-    {
-        foreach (explode(\PHP_EOL, $input) as $lineContent) {
-            $this->lines += ceil($this->getDisplayLength($lineContent) / $this->terminal->getWidth()) ?: 1;
-            $this->content[] = $lineContent;
-            $this->content[] = \PHP_EOL;
-        }
     }
 
     /**
@@ -132,6 +115,23 @@ class ConsoleSectionOutput extends StreamOutput
         }
 
         return implode('', array_reverse($erasedContent));
+    }
+
+    public function getContent(): string
+    {
+        return implode('', $this->content);
+    }
+
+    /**
+     * @internal
+     */
+    public function addContent(string $input)
+    {
+        foreach (explode(\PHP_EOL, $input) as $lineContent) {
+            $this->lines += ceil($this->getDisplayLength($lineContent) / $this->terminal->getWidth()) ?: 1;
+            $this->content[] = $lineContent;
+            $this->content[] = \PHP_EOL;
+        }
     }
 
     private function getDisplayLength(string $text): int

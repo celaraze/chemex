@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Rule;
 
-use function sprintf;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Invocation as BaseInvocation;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -34,11 +35,6 @@ final class InvokedCount extends InvocationOrder
     public function isNever(): bool
     {
         return $this->expectedCount === 0;
-    }
-
-    public function toString(): string
-    {
-        return 'invoked ' . $this->expectedCount . ' time(s)';
     }
 
     public function matches(BaseInvocation $invocation): bool
@@ -98,5 +94,10 @@ final class InvokedCount extends InvocationOrder
 
             throw new ExpectationFailedException($message);
         }
+    }
+
+    public function toString(): string
+    {
+        return 'invoked ' . $this->expectedCount . ' time(s)';
     }
 }

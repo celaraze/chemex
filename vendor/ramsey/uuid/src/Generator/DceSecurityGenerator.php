@@ -20,14 +20,12 @@ use Ramsey\Uuid\Provider\DceSecurityProviderInterface;
 use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Type\Integer as IntegerObject;
 use Ramsey\Uuid\Uuid;
-
 use function hex2bin;
 use function in_array;
 use function pack;
 use function str_pad;
 use function strlen;
 use function substr_replace;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -68,21 +66,23 @@ class DceSecurityGenerator implements DceSecurityGeneratorInterface
     private $dceSecurityProvider;
 
     public function __construct(
-        NumberConverterInterface $numberConverter,
-        TimeGeneratorInterface $timeGenerator,
+        NumberConverterInterface     $numberConverter,
+        TimeGeneratorInterface       $timeGenerator,
         DceSecurityProviderInterface $dceSecurityProvider
-    ) {
+    )
+    {
         $this->numberConverter = $numberConverter;
         $this->timeGenerator = $timeGenerator;
         $this->dceSecurityProvider = $dceSecurityProvider;
     }
 
     public function generate(
-        int $localDomain,
+        int            $localDomain,
         ?IntegerObject $localIdentifier = null,
-        ?Hexadecimal $node = null,
-        ?int $clockSeq = null
-    ): string {
+        ?Hexadecimal   $node = null,
+        ?int           $clockSeq = null
+    ): string
+    {
         if (!in_array($localDomain, self::DOMAINS)) {
             throw new DceSecurityException(
                 'Local domain must be a valid DCE Security domain'
@@ -138,7 +138,7 @@ class DceSecurityGenerator implements DceSecurityGeneratorInterface
         }
 
         $domainByte = pack('n', $localDomain)[1];
-        $identifierBytes = (string) hex2bin(str_pad($identifierHex, 8, '0', STR_PAD_LEFT));
+        $identifierBytes = (string)hex2bin(str_pad($identifierHex, 8, '0', STR_PAD_LEFT));
 
         if ($node instanceof Hexadecimal) {
             $node = $node->toString();

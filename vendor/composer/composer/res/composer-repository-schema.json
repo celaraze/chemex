@@ -3,15 +3,33 @@
     "description": "A representation of packages metadata.",
     "type": "object",
     "oneOf": [
-        { "required": [ "packages" ] },
-        { "required": [ "providers" ] },
-        { "required": [ "provider-includes", "providers-url" ] }
+        {
+            "required": [
+                "packages"
+            ]
+        },
+        {
+            "required": [
+                "providers"
+            ]
+        },
+        {
+            "required": [
+                "provider-includes",
+                "providers-url"
+            ]
+        }
     ],
     "properties": {
         "packages": {
-            "type": ["object", "array"],
+            "type": [
+                "object",
+                "array"
+            ],
             "description": "A hashmap of package names in the form of <vendor>/<name>.",
-            "additionalProperties": { "$ref": "#/definitions/versions" }
+            "additionalProperties": {
+                "$ref": "#/definitions/versions"
+            }
         },
         "providers-url": {
             "type": "string",
@@ -20,12 +38,16 @@
         "provider-includes": {
             "type": "object",
             "description": "A hashmap of provider listings.",
-            "additionalProperties": { "$ref": "#/definitions/provider" }
+            "additionalProperties": {
+                "$ref": "#/definitions/provider"
+            }
         },
         "providers": {
             "type": "object",
             "description": "A hashmap of package names in the form of <vendor>/<name>.",
-            "additionalProperties": { "$ref": "#/definitions/provider" }
+            "additionalProperties": {
+                "$ref": "#/definitions/provider"
+            }
         },
         "notify-batch": {
             "type": "string",
@@ -44,56 +66,111 @@
         "versions": {
             "type": "object",
             "description": "A hashmap of versions and their metadata.",
-            "additionalProperties": { "$ref": "#/definitions/version" }
+            "additionalProperties": {
+                "$ref": "#/definitions/version"
+            }
         },
         "version": {
             "type": "object",
             "oneOf": [
-                { "$ref": "#/definitions/package" },
-                { "$ref": "#/definitions/metapackage" }
+                {
+                    "$ref": "#/definitions/package"
+                },
+                {
+                    "$ref": "#/definitions/metapackage"
+                }
             ]
         },
         "package-base": {
             "properties": {
-                "name": { "type": "string" },
-                "type": { "type": "string" },
-                "version": { "type": "string" },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
                 "version_normalized": {
                     "type": "string",
                     "description": "Normalized version, optional but can save computational time on client side."
                 },
-                "autoload": { "type": "object" },
-                "require": { "type": "object" },
-                "replace": { "type": "object" },
-                "conflict": { "type": "object" },
-                "provide": { "type": "object" },
-                "time": { "type": "string" }
+                "autoload": {
+                    "type": "object"
+                },
+                "require": {
+                    "type": "object"
+                },
+                "replace": {
+                    "type": "object"
+                },
+                "conflict": {
+                    "type": "object"
+                },
+                "provide": {
+                    "type": "object"
+                },
+                "time": {
+                    "type": "string"
+                }
             },
             "additionalProperties": true
         },
         "package": {
             "allOf": [
-                { "$ref": "#/definitions/package-base" },
+                {
+                    "$ref": "#/definitions/package-base"
+                },
                 {
                     "properties": {
-                        "dist": { "type": "object" },
-                        "source": { "type": "object" }
+                        "dist": {
+                            "type": "object"
+                        },
+                        "source": {
+                            "type": "object"
+                        }
                     }
                 },
-                { "oneOf": [
-                    { "required": [ "name", "version", "source" ] },
-                    { "required": [ "name", "version", "dist" ] }
-                ] }
+                {
+                    "oneOf": [
+                        {
+                            "required": [
+                                "name",
+                                "version",
+                                "source"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "name",
+                                "version",
+                                "dist"
+                            ]
+                        }
+                    ]
+                }
             ]
         },
         "metapackage": {
             "allOf": [
-                { "$ref": "#/definitions/package-base" },
+                {
+                    "$ref": "#/definitions/package-base"
+                },
                 {
                     "properties": {
-                        "type": { "type": "string", "enum": [ "metapackage" ] }
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "metapackage"
+                            ]
+                        }
                     },
-                    "required": [ "name", "version", "type" ]
+                    "required": [
+                        "name",
+                        "version",
+                        "type"
+                    ]
                 }
             ]
         },

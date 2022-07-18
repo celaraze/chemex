@@ -12,7 +12,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-
 use function array_keys;
 use function assert;
 use function is_bool;
@@ -39,21 +38,21 @@ class RunSqlCommand extends Command
     protected function configure()
     {
         $this
-        ->setName('dbal:run-sql')
-        ->setDescription('Executes arbitrary SQL directly from the command line.')
-        ->setDefinition([
-            new InputOption('connection', null, InputOption::VALUE_REQUIRED, 'The named database connection'),
-            new InputArgument('sql', InputArgument::REQUIRED, 'The SQL statement to execute.'),
-            new InputOption('depth', null, InputOption::VALUE_REQUIRED, 'Dumping depth of result set (deprecated).'),
-            new InputOption('force-fetch', null, InputOption::VALUE_NONE, 'Forces fetching the result.'),
-        ])
-        ->setHelp(<<<EOT
+            ->setName('dbal:run-sql')
+            ->setDescription('Executes arbitrary SQL directly from the command line.')
+            ->setDefinition([
+                new InputOption('connection', null, InputOption::VALUE_REQUIRED, 'The named database connection'),
+                new InputArgument('sql', InputArgument::REQUIRED, 'The SQL statement to execute.'),
+                new InputOption('depth', null, InputOption::VALUE_REQUIRED, 'Dumping depth of result set (deprecated).'),
+                new InputOption('force-fetch', null, InputOption::VALUE_NONE, 'Forces fetching the result.'),
+            ])
+            ->setHelp(<<<EOT
 The <info>%command.name%</info> command executes the given SQL query and
 outputs the results:
 
 <info>php %command.full_name% "SELECT * FROM users"</info>
 EOT
-        );
+            );
     }
 
     /**
@@ -66,7 +65,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $conn = $this->getConnection($input);
-        $io   = new SymfonyStyle($input, $output);
+        $io = new SymfonyStyle($input, $output);
 
         $sql = $input->getArgument('sql');
 

@@ -23,7 +23,7 @@ $xml = simplexml_load_string(file_get_contents('https://gitlab.freedesktop.org/x
 foreach ($xml as $node) {
     $exts = [];
     foreach ($node->glob as $glob) {
-        $pattern = (string) $glob['pattern'];
+        $pattern = (string)$glob['pattern'];
         if ('*' != $pattern[0] || '.' != $pattern[1]) {
             continue;
         }
@@ -35,25 +35,25 @@ foreach ($xml as $node) {
         continue;
     }
 
-    $mt = strtolower((string) $node['type']);
+    $mt = strtolower((string)$node['type']);
     $new[$mt] = array_merge($new[$mt] ?? [], $exts);
     foreach ($node->alias as $alias) {
-        $mt = strtolower((string) $alias['type']);
+        $mt = strtolower((string)$alias['type']);
         $new[$mt] = array_merge($new[$mt] ?? [], $exts);
     }
 }
 
 // load current map
-$data = file_get_contents($output = __DIR__.'/../../MimeTypes.php');
+$data = file_get_contents($output = __DIR__ . '/../../MimeTypes.php');
 $current = [];
 $pre = '';
 $post = '';
 foreach (explode("\n", $data) as $line) {
     if (!preg_match("{^        '([^']+/[^']+)' => \['(.+)'\],$}", $line, $matches)) {
         if (!$current) {
-            $pre .= $line."\n";
+            $pre .= $line . "\n";
         } else {
-            $post .= $line."\n";
+            $post .= $line . "\n";
         }
         continue;
     }
@@ -148,14 +148,14 @@ foreach (explode("\n", $data) as $line) {
                 $updated .= sprintf("        '%s' => ['%s'],\n", $ext, implode("', '", array_unique($mimeTypes)));
             }
         }
-        $updated .= $line."\n";
+        $updated .= $line . "\n";
         continue;
     }
     $state = 1;
 }
 
-$updated = preg_replace('{Updated from upstream on .+?\.}', 'Updated from upstream on '.date('Y-m-d'), $updated, -1);
+$updated = preg_replace('{Updated from upstream on .+?\.}', 'Updated from upstream on ' . date('Y-m-d'), $updated, -1);
 
-file_put_contents($output, rtrim($updated, "\n")."\n");
+file_put_contents($output, rtrim($updated, "\n") . "\n");
 
 echo "Done.\n";

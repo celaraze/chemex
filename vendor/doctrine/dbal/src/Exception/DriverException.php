@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Driver\Exception as TheDriverException;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Query;
-
 use function assert;
 
 /**
@@ -23,10 +22,10 @@ class DriverException extends Exception implements TheDriverException
     private $query;
 
     /**
+     * @param TheDriverException $driverException The DBAL driver exception to chain.
+     * @param Query|null $query The SQL query that triggered the exception, if any.
      * @internal
      *
-     * @param TheDriverException $driverException The DBAL driver exception to chain.
-     * @param Query|null         $query           The SQL query that triggered the exception, if any.
      */
     public function __construct(TheDriverException $driverException, ?Query $query)
     {

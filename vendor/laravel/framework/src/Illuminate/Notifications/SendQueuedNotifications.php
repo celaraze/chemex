@@ -60,9 +60,9 @@ class SendQueuedNotifications implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param  \Illuminate\Notifications\Notifiable|\Illuminate\Support\Collection  $notifiables
-     * @param  \Illuminate\Notifications\Notification  $notification
-     * @param  array|null  $channels
+     * @param \Illuminate\Notifications\Notifiable|\Illuminate\Support\Collection $notifiables
+     * @param \Illuminate\Notifications\Notification $notification
+     * @param array|null $channels
      * @return void
      */
     public function __construct($notifiables, $notification, array $channels = null)
@@ -79,7 +79,7 @@ class SendQueuedNotifications implements ShouldQueue
     /**
      * Wrap the notifiable(s) in a collection.
      *
-     * @param  \Illuminate\Notifications\Notifiable|\Illuminate\Support\Collection  $notifiables
+     * @param \Illuminate\Notifications\Notifiable|\Illuminate\Support\Collection $notifiables
      * @return \Illuminate\Support\Collection
      */
     protected function wrapNotifiables($notifiables)
@@ -96,7 +96,7 @@ class SendQueuedNotifications implements ShouldQueue
     /**
      * Send the notifications.
      *
-     * @param  \Illuminate\Notifications\ChannelManager  $manager
+     * @param \Illuminate\Notifications\ChannelManager $manager
      * @return void
      */
     public function handle(ChannelManager $manager)
@@ -117,7 +117,7 @@ class SendQueuedNotifications implements ShouldQueue
     /**
      * Call the failed method on the notification instance.
      *
-     * @param  \Throwable  $e
+     * @param \Throwable $e
      * @return void
      */
     public function failed($e)
@@ -134,7 +134,7 @@ class SendQueuedNotifications implements ShouldQueue
      */
     public function backoff()
     {
-        if (! method_exists($this->notification, 'backoff') && ! isset($this->notification->backoff)) {
+        if (!method_exists($this->notification, 'backoff') && !isset($this->notification->backoff)) {
             return;
         }
 
@@ -148,7 +148,7 @@ class SendQueuedNotifications implements ShouldQueue
      */
     public function retryUntil()
     {
-        if (! method_exists($this->notification, 'retryUntil') && ! isset($this->notification->retryUntil)) {
+        if (!method_exists($this->notification, 'retryUntil') && !isset($this->notification->retryUntil)) {
             return;
         }
 

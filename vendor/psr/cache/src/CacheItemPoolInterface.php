@@ -22,12 +22,12 @@ interface CacheItemPoolInterface
      * @param string $key
      *   The key for which to return the corresponding Cache Item.
      *
+     * @return CacheItemInterface
+     *   The corresponding Cache Item.
      * @throws InvalidArgumentException
      *   If the $key string is not a legal value a \Psr\Cache\InvalidArgumentException
      *   MUST be thrown.
      *
-     * @return CacheItemInterface
-     *   The corresponding Cache Item.
      */
     public function getItem(string $key): CacheItemInterface;
 
@@ -37,15 +37,15 @@ interface CacheItemPoolInterface
      * @param string[] $keys
      *   An indexed array of keys of items to retrieve.
      *
-     * @throws InvalidArgumentException
-     *   If any of the keys in $keys are not a legal value a \Psr\Cache\InvalidArgumentException
-     *   MUST be thrown.
-     *
      * @return iterable
      *   An iterable collection of Cache Items keyed by the cache keys of
      *   each item. A Cache item will be returned for each key, even if that
      *   key is not found. However, if no keys are specified then an empty
      *   traversable MUST be returned instead.
+     * @throws InvalidArgumentException
+     *   If any of the keys in $keys are not a legal value a \Psr\Cache\InvalidArgumentException
+     *   MUST be thrown.
+     *
      */
     public function getItems(array $keys = []): iterable;
 
@@ -59,12 +59,12 @@ interface CacheItemPoolInterface
      * @param string $key
      *   The key for which to check existence.
      *
+     * @return bool
+     *   True if item exists in the cache, false otherwise.
      * @throws InvalidArgumentException
      *   If the $key string is not a legal value a \Psr\Cache\InvalidArgumentException
      *   MUST be thrown.
      *
-     * @return bool
-     *   True if item exists in the cache, false otherwise.
      */
     public function hasItem(string $key): bool;
 
@@ -82,12 +82,12 @@ interface CacheItemPoolInterface
      * @param string $key
      *   The key to delete.
      *
+     * @return bool
+     *   True if the item was successfully removed. False if there was an error.
      * @throws InvalidArgumentException
      *   If the $key string is not a legal value a \Psr\Cache\InvalidArgumentException
      *   MUST be thrown.
      *
-     * @return bool
-     *   True if the item was successfully removed. False if there was an error.
      */
     public function deleteItem(string $key): bool;
 
@@ -97,12 +97,12 @@ interface CacheItemPoolInterface
      * @param string[] $keys
      *   An array of keys that should be removed from the pool.
      *
+     * @return bool
+     *   True if the items were successfully removed. False if there was an error.
      * @throws InvalidArgumentException
      *   If any of the keys in $keys are not a legal value a \Psr\Cache\InvalidArgumentException
      *   MUST be thrown.
      *
-     * @return bool
-     *   True if the items were successfully removed. False if there was an error.
      */
     public function deleteItems(array $keys): bool;
 

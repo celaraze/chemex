@@ -33,131 +33,14 @@ class Sudo
     }
 
     /**
-     * Assign the value of a property of an object, bypassing visibility restrictions.
-     *
-     * @param object $object
-     * @param string $property property name
-     * @param mixed  $value
-     *
-     * @return mixed Value of $object->property
-     */
-    public static function assignProperty($object, string $property, $value)
-    {
-        $prop = static::getProperty(new \ReflectionObject($object), $property);
-        $prop->setValue($object, $value);
-
-        return $value;
-    }
-
-    /**
-     * Call a method on an object, bypassing visibility restrictions.
-     *
-     * @param object $object
-     * @param string $method  method name
-     * @param mixed  $args...
-     *
-     * @return mixed
-     */
-    public static function callMethod($object, string $method, $args = null)
-    {
-        $args = \func_get_args();
-        $object = \array_shift($args);
-        $method = \array_shift($args);
-
-        $refl = new \ReflectionObject($object);
-        $reflMethod = $refl->getMethod($method);
-        $reflMethod->setAccessible(true);
-
-        return $reflMethod->invokeArgs($object, $args);
-    }
-
-    /**
-     * Fetch a property of a class, bypassing visibility restrictions.
-     *
-     * @param string|object $class    class name or instance
-     * @param string        $property property name
-     *
-     * @return mixed Value of $class::$property
-     */
-    public static function fetchStaticProperty($class, string $property)
-    {
-        $prop = static::getProperty(new \ReflectionClass($class), $property);
-        $prop->setAccessible(true);
-
-        return $prop->getValue();
-    }
-
-    /**
-     * Assign the value of a static property of a class, bypassing visibility restrictions.
-     *
-     * @param string|object $class    class name or instance
-     * @param string        $property property name
-     * @param mixed         $value
-     *
-     * @return mixed Value of $class::$property
-     */
-    public static function assignStaticProperty($class, string $property, $value)
-    {
-        $prop = static::getProperty(new \ReflectionClass($class), $property);
-        $prop->setValue($value);
-
-        return $value;
-    }
-
-    /**
-     * Call a static method on a class, bypassing visibility restrictions.
-     *
-     * @param string|object $class   class name or instance
-     * @param string        $method  method name
-     * @param mixed         $args...
-     *
-     * @return mixed
-     */
-    public static function callStatic($class, string $method, $args = null)
-    {
-        $args = \func_get_args();
-        $class = \array_shift($args);
-        $method = \array_shift($args);
-
-        $refl = new \ReflectionClass($class);
-        $reflMethod = $refl->getMethod($method);
-        $reflMethod->setAccessible(true);
-
-        return $reflMethod->invokeArgs(null, $args);
-    }
-
-    /**
-     * Fetch a class constant, bypassing visibility restrictions.
-     *
-     * @param string|object $class class name or instance
-     * @param string        $const constant name
-     *
-     * @return mixed
-     */
-    public static function fetchClassConst($class, string $const)
-    {
-        $refl = new \ReflectionClass($class);
-
-        do {
-            if ($refl->hasConstant($const)) {
-                return $refl->getConstant($const);
-            }
-
-            $refl = $refl->getParentClass();
-        } while ($refl !== false);
-
-        return false;
-    }
-
-    /**
      * Get a ReflectionProperty from an object (or its parent classes).
      *
-     * @throws \ReflectionException if neither the object nor any of its parents has this property
-     *
      * @param \ReflectionClass $refl
-     * @param string           $property property name
+     * @param string $property property name
      *
      * @return \ReflectionProperty
+     * @throws \ReflectionException if neither the object nor any of its parents has this property
+     *
      */
     private static function getProperty(\ReflectionClass $refl, string $property): \ReflectionProperty
     {
@@ -178,5 +61,122 @@ class Sudo
         } while ($refl !== false);
 
         throw $firstException;
+    }
+
+    /**
+     * Assign the value of a property of an object, bypassing visibility restrictions.
+     *
+     * @param object $object
+     * @param string $property property name
+     * @param mixed $value
+     *
+     * @return mixed Value of $object->property
+     */
+    public static function assignProperty($object, string $property, $value)
+    {
+        $prop = static::getProperty(new \ReflectionObject($object), $property);
+        $prop->setValue($object, $value);
+
+        return $value;
+    }
+
+    /**
+     * Call a method on an object, bypassing visibility restrictions.
+     *
+     * @param object $object
+     * @param string $method method name
+     * @param mixed $args ...
+     *
+     * @return mixed
+     */
+    public static function callMethod($object, string $method, $args = null)
+    {
+        $args = \func_get_args();
+        $object = \array_shift($args);
+        $method = \array_shift($args);
+
+        $refl = new \ReflectionObject($object);
+        $reflMethod = $refl->getMethod($method);
+        $reflMethod->setAccessible(true);
+
+        return $reflMethod->invokeArgs($object, $args);
+    }
+
+    /**
+     * Fetch a property of a class, bypassing visibility restrictions.
+     *
+     * @param string|object $class class name or instance
+     * @param string $property property name
+     *
+     * @return mixed Value of $class::$property
+     */
+    public static function fetchStaticProperty($class, string $property)
+    {
+        $prop = static::getProperty(new \ReflectionClass($class), $property);
+        $prop->setAccessible(true);
+
+        return $prop->getValue();
+    }
+
+    /**
+     * Assign the value of a static property of a class, bypassing visibility restrictions.
+     *
+     * @param string|object $class class name or instance
+     * @param string $property property name
+     * @param mixed $value
+     *
+     * @return mixed Value of $class::$property
+     */
+    public static function assignStaticProperty($class, string $property, $value)
+    {
+        $prop = static::getProperty(new \ReflectionClass($class), $property);
+        $prop->setValue($value);
+
+        return $value;
+    }
+
+    /**
+     * Call a static method on a class, bypassing visibility restrictions.
+     *
+     * @param string|object $class class name or instance
+     * @param string $method method name
+     * @param mixed $args ...
+     *
+     * @return mixed
+     */
+    public static function callStatic($class, string $method, $args = null)
+    {
+        $args = \func_get_args();
+        $class = \array_shift($args);
+        $method = \array_shift($args);
+
+        $refl = new \ReflectionClass($class);
+        $reflMethod = $refl->getMethod($method);
+        $reflMethod->setAccessible(true);
+
+        return $reflMethod->invokeArgs(null, $args);
+    }
+
+    /**
+     * Fetch a class constant, bypassing visibility restrictions.
+     *
+     * @param string|object $class class name or instance
+     * @param string $const constant name
+     *
+     * @return mixed
+     */
+    public static function fetchClassConst($class, string $const)
+    {
+        $refl = new \ReflectionClass($class);
+
+        do {
+            if ($refl->hasConstant($const)) {
+                return $refl->getConstant($const);
+            }
+
+            $refl = $refl->getParentClass();
+        } while ($refl !== false);
+
+        return false;
     }
 }

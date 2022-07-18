@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Event;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\ColumnDiff;
 use Doctrine\DBAL\Schema\TableDiff;
-
 use function array_merge;
 use function func_get_args;
 use function is_array;
@@ -30,8 +29,8 @@ class SchemaAlterTableChangeColumnEventArgs extends SchemaEventArgs
     public function __construct(ColumnDiff $columnDiff, TableDiff $tableDiff, AbstractPlatform $platform)
     {
         $this->columnDiff = $columnDiff;
-        $this->tableDiff  = $tableDiff;
-        $this->platform   = $platform;
+        $this->tableDiff = $tableDiff;
+        $this->platform = $platform;
     }
 
     /**

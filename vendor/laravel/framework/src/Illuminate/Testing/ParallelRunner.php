@@ -52,8 +52,8 @@ class ParallelRunner implements RunnerInterface
     /**
      * Creates a new test runner instance.
      *
-     * @param  \ParaTest\Runners\PHPUnit\Options  $options
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+     * @param \ParaTest\Runners\PHPUnit\Options $options
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @return void
      */
     public function __construct(Options $options, OutputInterface $output)
@@ -74,7 +74,7 @@ class ParallelRunner implements RunnerInterface
     /**
      * Set the application resolver callback.
      *
-     * @param  \Closure|null  $resolver
+     * @param \Closure|null $resolver
      * @return void
      */
     public static function resolveApplicationUsing($resolver)
@@ -85,7 +85,7 @@ class ParallelRunner implements RunnerInterface
     /**
      * Set the runner resolver callback.
      *
-     * @param  \Closure|null  $resolver
+     * @param \Closure|null $resolver
      * @return void
      */
     public static function resolveRunnerUsing($resolver)
@@ -116,26 +116,16 @@ class ParallelRunner implements RunnerInterface
     }
 
     /**
-     * Returns the highest exit code encountered throughout the course of test execution.
-     *
-     * @return int
-     */
-    public function getExitCode(): int
-    {
-        return $this->runner->getExitCode();
-    }
-
-    /**
      * Apply the given callback for each process.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return void
      */
     protected function forEachProcess($callback)
     {
         collect(range(1, $this->options->processes()))->each(function ($token) use ($callback) {
             tap($this->createApplication(), function ($app) use ($callback, $token) {
-                ParallelTesting::resolveTokenUsing(fn () => $token);
+                ParallelTesting::resolveTokenUsing(fn() => $token);
 
                 $callback($app);
             })->flush();
@@ -153,14 +143,13 @@ class ParallelRunner implements RunnerInterface
     {
         $applicationResolver = static::$applicationResolver ?: function () {
             if (trait_exists(\Tests\CreatesApplication::class)) {
-                $applicationCreator = new class
-                {
+                $applicationCreator = new class {
                     use \Tests\CreatesApplication;
                 };
 
                 return $applicationCreator->createApplication();
-            } elseif (file_exists(getcwd().'/bootstrap/app.php')) {
-                $app = require getcwd().'/bootstrap/app.php';
+            } elseif (file_exists(getcwd() . '/bootstrap/app.php')) {
+                $app = require getcwd() . '/bootstrap/app.php';
 
                 $app->make(Kernel::class)->bootstrap();
 
@@ -171,5 +160,15 @@ class ParallelRunner implements RunnerInterface
         };
 
         return $applicationResolver();
+    }
+
+    /**
+     * Returns the highest exit code encountered throughout the course of test execution.
+     *
+     * @return int
+     */
+    public function getExitCode(): int
+    {
+        return $this->runner->getExitCode();
     }
 }

@@ -38,14 +38,14 @@ class AppDebugHideAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "You haven't set any variables to hide in debug mode while your application seems to be in a non-local "
-                ."environment and set to debug mode. This can be very dangerous as users will be able to view detailed "
-                ."error messages along with sensitive environment variables.";
+            . "environment and set to debug mode. This can be very dangerous as users will be able to view detailed "
+            . "error messages along with sensitive environment variables.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
@@ -64,6 +64,6 @@ class AppDebugHideAnalyzer extends SecurityAnalyzer
      */
     public function skip()
     {
-        return ! class_exists(\Whoops\Handler\Handler::class);
+        return !class_exists(\Whoops\Handler\Handler::class);
     }
 }

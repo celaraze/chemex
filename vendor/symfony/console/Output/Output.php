@@ -33,8 +33,8 @@ abstract class Output implements OutputInterface
     private OutputFormatterInterface $formatter;
 
     /**
-     * @param int|null                      $verbosity The verbosity level (one of the VERBOSITY constants in OutputInterface)
-     * @param bool                          $decorated Whether to decorate messages
+     * @param int|null $verbosity The verbosity level (one of the VERBOSITY constants in OutputInterface)
+     * @param bool $decorated Whether to decorate messages
      * @param OutputFormatterInterface|null $formatter Output formatter instance (null to use default OutputFormatter)
      */
     public function __construct(?int $verbosity = self::VERBOSITY_NORMAL, bool $decorated = false, OutputFormatterInterface $formatter = null)
@@ -42,22 +42,6 @@ abstract class Output implements OutputInterface
         $this->verbosity = $verbosity ?? self::VERBOSITY_NORMAL;
         $this->formatter = $formatter ?? new OutputFormatter();
         $this->formatter->setDecorated($decorated);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setFormatter(OutputFormatterInterface $formatter)
-    {
-        $this->formatter = $formatter;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFormatter(): OutputFormatterInterface
-    {
-        return $this->formatter;
     }
 
     /**
@@ -71,25 +55,25 @@ abstract class Output implements OutputInterface
     /**
      * {@inheritdoc}
      */
+    public function getFormatter(): OutputFormatterInterface
+    {
+        return $this->formatter;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setFormatter(OutputFormatterInterface $formatter)
+    {
+        $this->formatter = $formatter;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isDecorated(): bool
     {
         return $this->formatter->isDecorated();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setVerbosity(int $level)
-    {
-        $this->verbosity = $level;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getVerbosity(): int
-    {
-        return $this->verbosity;
     }
 
     /**
@@ -165,6 +149,22 @@ abstract class Output implements OutputInterface
 
             $this->doWrite($message ?? '', $newline);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getVerbosity(): int
+    {
+        return $this->verbosity;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setVerbosity(int $level)
+    {
+        $this->verbosity = $level;
     }
 
     /**

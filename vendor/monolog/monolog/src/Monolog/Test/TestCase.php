@@ -11,9 +11,9 @@
 
 namespace Monolog\Test;
 
-use Monolog\Logger;
 use Monolog\DateTimeImmutable;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Logger;
 
 /**
  * Lets you easily generate log records and a dummy formatter for testing purposes
@@ -37,27 +37,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param mixed[] $context
-     *
-     * @return array Record
-     *
-     * @phpstan-param  Level $level
-     * @phpstan-return Record
-     */
-    protected function getRecord(int $level = Logger::WARNING, string $message = 'test', array $context = []): array
-    {
-        return [
-            'message' => (string) $message,
-            'context' => $context,
-            'level' => $level,
-            'level_name' => Logger::getLevelName($level),
-            'channel' => 'test',
-            'datetime' => new DateTimeImmutable(true),
-            'extra' => [],
-        ];
-    }
-
-    /**
      * @phpstan-return Record[]
      */
     protected function getMultipleRecords(): array
@@ -68,6 +47,27 @@ class TestCase extends \PHPUnit\Framework\TestCase
             $this->getRecord(Logger::INFO, 'information'),
             $this->getRecord(Logger::WARNING, 'warning'),
             $this->getRecord(Logger::ERROR, 'error'),
+        ];
+    }
+
+    /**
+     * @param mixed[] $context
+     *
+     * @return array Record
+     *
+     * @phpstan-param  Level $level
+     * @phpstan-return Record
+     */
+    protected function getRecord(int $level = Logger::WARNING, string $message = 'test', array $context = []): array
+    {
+        return [
+            'message' => (string)$message,
+            'context' => $context,
+            'level' => $level,
+            'level_name' => Logger::getLevelName($level),
+            'channel' => 'test',
+            'datetime' => new DateTimeImmutable(true),
+            'extra' => [],
         ];
     }
 

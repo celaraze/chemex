@@ -20,10 +20,8 @@ use Ramsey\Uuid\Math\RoundingMode;
 use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Type\Integer as IntegerObject;
 use Ramsey\Uuid\Type\Time;
-
 use function explode;
 use function str_pad;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -117,7 +115,7 @@ class GenericTimeConverter implements TimeConverterInterface
             new IntegerObject(self::SECOND_INTERVALS)
         );
 
-        $split = explode('.', (string) $unixTimestamp, 2);
+        $split = explode('.', (string)$unixTimestamp, 2);
 
         return new Time($split[0], $split[1] ?? 0);
     }

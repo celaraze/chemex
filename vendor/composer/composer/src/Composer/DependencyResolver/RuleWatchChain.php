@@ -24,18 +24,6 @@ namespace Composer\DependencyResolver;
 class RuleWatchChain extends \SplDoublyLinkedList
 {
     /**
-     * Moves the internal iterator to the specified offset
-     *
-     * @param int $offset The offset to seek to.
-     * @return void
-     */
-    public function seek(int $offset): void
-    {
-        $this->rewind();
-        for ($i = 0; $i < $offset; $i++, $this->next());
-    }
-
-    /**
      * Removes the current element from the list
      *
      * As SplDoublyLinkedList only allows deleting a particular offset and
@@ -50,5 +38,17 @@ class RuleWatchChain extends \SplDoublyLinkedList
         $offset = $this->key();
         $this->offsetUnset($offset);
         $this->seek($offset);
+    }
+
+    /**
+     * Moves the internal iterator to the specified offset
+     *
+     * @param int $offset The offset to seek to.
+     * @return void
+     */
+    public function seek(int $offset): void
+    {
+        $this->rewind();
+        for ($i = 0; $i < $offset; $i++, $this->next()) ;
     }
 }

@@ -48,9 +48,9 @@ class ConsoleIO extends BaseIO
     /**
      * Constructor.
      *
-     * @param InputInterface  $input     The input instance
-     * @param OutputInterface $output    The output instance
-     * @param HelperSet       $helperSet The helperSet instance
+     * @param InputInterface $input The input instance
+     * @param OutputInterface $output The output instance
+     * @param HelperSet $helperSet The helperSet instance
      */
     public function __construct(InputInterface $input, OutputInterface $output, HelperSet $helperSet)
     {
@@ -125,6 +125,61 @@ class ConsoleIO extends BaseIO
     }
 
     /**
+     * @param string[]|string $messages
+     * @param bool $newline
+     * @param bool $stderr
+     * @param int $verbosity
+     * @param bool $raw
+     *
+     * @return void
+     */
+    private function doWrite($messages, bool $newline, bool $stderr, int $verbosity, bool $raw = false): void
+    {
+        $sfVerbosity = $this->verbosityMap[$verbosity];
+        if ($sfVerbosity > $this->output->getVerbosity()) {
+            return;
+        }
+
+        if ($raw) {
+            if ($sfVerbosity === OutputInterface::OUTPUT_NORMAL) {
+                $sfVerbosity = OutputInterface::OUTPUT_RAW;
+            } else {
+                $sfVerbosity |= OutputInterface::OUTPUT_RAW;
+            }
+        }
+
+        if (null !== $this->startTime) {
+            $memoryUsage = memory_get_usage() / 1024 / 1024;
+            $timeSpent = microtime(true) - $this->startTime;
+            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent): string {
+                return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
+            }, (array)$messages);
+        }
+
+        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
+            $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
+            $this->lastMessageErr = implode($newline ? "\n" : '', (array)$messages);
+
+            return;
+        }
+
+        $this->output->write($messages, $newline, $sfVerbosity);
+        $this->lastMessage = implode($newline ? "\n" : '', (array)$messages);
+    }
+
+    /**
+     * @return OutputInterface
+     */
+    private function getErrorOutput(): OutputInterface
+    {
+        if ($this->output instanceof ConsoleOutputInterface) {
+            return $this->output->getErrorOutput();
+        }
+
+        return $this->output;
+    }
+
+    /**
      * @inheritDoc
      */
     public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL)
@@ -149,49 +204,6 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param string[]|string $messages
-     * @param bool                 $newline
-     * @param bool                 $stderr
-     * @param int                  $verbosity
-     * @param bool                 $raw
-     *
-     * @return void
-     */
-    private function doWrite($messages, bool $newline, bool $stderr, int $verbosity, bool $raw = false): void
-    {
-        $sfVerbosity = $this->verbosityMap[$verbosity];
-        if ($sfVerbosity > $this->output->getVerbosity()) {
-            return;
-        }
-
-        if ($raw) {
-            if ($sfVerbosity === OutputInterface::OUTPUT_NORMAL) {
-                $sfVerbosity = OutputInterface::OUTPUT_RAW;
-            } else {
-                $sfVerbosity |= OutputInterface::OUTPUT_RAW;
-            }
-        }
-
-        if (null !== $this->startTime) {
-            $memoryUsage = memory_get_usage() / 1024 / 1024;
-            $timeSpent = microtime(true) - $this->startTime;
-            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent): string {
-                return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
-            }, (array) $messages);
-        }
-
-        if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {
-            $this->output->getErrorOutput()->write($messages, $newline, $sfVerbosity);
-            $this->lastMessageErr = implode($newline ? "\n" : '', (array) $messages);
-
-            return;
-        }
-
-        $this->output->write($messages, $newline, $sfVerbosity);
-        $this->lastMessage = implode($newline ? "\n" : '', (array) $messages);
-    }
-
-    /**
      * @inheritDoc
      */
     public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL)
@@ -200,26 +212,18 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @inheritDoc
-     */
-    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL)
-    {
-        $this->doOverwrite($messages, $newline, $size, true, $verbosity);
-    }
-
-    /**
      * @param string[]|string $messages
-     * @param bool         $newline
-     * @param int|null     $size
-     * @param bool         $stderr
-     * @param int          $verbosity
+     * @param bool $newline
+     * @param int|null $size
+     * @param bool $stderr
+     * @param int $verbosity
      *
      * @return void
      */
     private function doOverwrite($messages, bool $newline, ?int $size, bool $stderr, int $verbosity): void
     {
         // messages can be an array, let's convert it to string anyway
-        $messages = implode($newline ? "\n" : '', (array) $messages);
+        $messages = implode($newline ? "\n" : '', (array)$messages);
 
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
@@ -255,7 +259,15 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param  int         $max
+     * @inheritDoc
+     */
+    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL)
+    {
+        $this->doOverwrite($messages, $newline, $size, true, $verbosity);
+    }
+
+    /**
+     * @param int $max
      * @return ProgressBar
      */
     public function getProgressBar(int $max = 0)
@@ -266,11 +278,11 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function ask($question, $default = null)
+    public function askConfirmation($question, $default = true)
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new Question($question, $default);
+        $question = new StrictConfirmationQuestion($question, $default);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
@@ -278,11 +290,11 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function askConfirmation($question, $default = true)
+    public function ask($question, $default = null)
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new StrictConfirmationQuestion($question, $default);
+        $question = new Question($question, $default);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
@@ -329,28 +341,16 @@ class ConsoleIO extends BaseIO
         $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
 
         if (!is_array($result)) {
-            return (string) array_search($result, $choices, true);
+            return (string)array_search($result, $choices, true);
         }
 
         $results = array();
         foreach ($choices as $index => $choice) {
             if (in_array($choice, $result, true)) {
-                $results[] = (string) $index;
+                $results[] = (string)$index;
             }
         }
 
         return $results;
-    }
-
-    /**
-     * @return OutputInterface
-     */
-    private function getErrorOutput(): OutputInterface
-    {
-        if ($this->output instanceof ConsoleOutputInterface) {
-            return $this->output->getErrorOutput();
-        }
-
-        return $this->output;
     }
 }

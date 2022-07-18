@@ -42,17 +42,17 @@ class LogstashFormatter extends NormalizerFormatter
     protected $contextKey;
 
     /**
-     * @param string      $applicationName The application that sends the data, used as the "type" field of logstash
-     * @param string|null $systemName      The system/machine name, used as the "source" field of logstash, defaults to the hostname of the machine
-     * @param string      $extraKey        The key for extra keys inside logstash "fields", defaults to extra
-     * @param string      $contextKey      The key for context keys inside logstash "fields", defaults to context
+     * @param string $applicationName The application that sends the data, used as the "type" field of logstash
+     * @param string|null $systemName The system/machine name, used as the "source" field of logstash, defaults to the hostname of the machine
+     * @param string $extraKey The key for extra keys inside logstash "fields", defaults to extra
+     * @param string $contextKey The key for context keys inside logstash "fields", defaults to context
      */
     public function __construct(string $applicationName, ?string $systemName = null, string $extraKey = 'extra', string $contextKey = 'context')
     {
         // logstash requires a ISO 8601 format date with optional millisecond precision.
         parent::__construct('Y-m-d\TH:i:s.uP');
 
-        $this->systemName = $systemName === null ? (string) gethostname() : $systemName;
+        $this->systemName = $systemName === null ? (string)gethostname() : $systemName;
         $this->applicationName = $applicationName;
         $this->extraKey = $extraKey;
         $this->contextKey = $contextKey;

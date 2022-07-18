@@ -24,8 +24,8 @@ class TestComponent
     /**
      * Create a new test component instance.
      *
-     * @param  \Illuminate\View\Component  $component
-     * @param  \Illuminate\View\View  $view
+     * @param \Illuminate\View\Component $component
+     * @param \Illuminate\View\View $view
      * @return void
      */
     public function __construct($component, $view)
@@ -38,15 +38,15 @@ class TestComponent
     /**
      * Assert that the given string is contained within the rendered component.
      *
-     * @param  string  $value
-     * @param  bool  $escape
+     * @param string $value
+     * @param bool $escape
      * @return $this
      */
     public function assertSee($value, $escape = true)
     {
         $value = $escape ? e($value) : $value;
 
-        PHPUnit::assertStringContainsString((string) $value, $this->rendered);
+        PHPUnit::assertStringContainsString((string)$value, $this->rendered);
 
         return $this;
     }
@@ -54,8 +54,8 @@ class TestComponent
     /**
      * Assert that the given strings are contained in order within the rendered component.
      *
-     * @param  array  $values
-     * @param  bool  $escape
+     * @param array $values
+     * @param bool $escape
      * @return $this
      */
     public function assertSeeInOrder(array $values, $escape = true)
@@ -70,15 +70,15 @@ class TestComponent
     /**
      * Assert that the given string is contained within the rendered component text.
      *
-     * @param  string  $value
-     * @param  bool  $escape
+     * @param string $value
+     * @param bool $escape
      * @return $this
      */
     public function assertSeeText($value, $escape = true)
     {
         $value = $escape ? e($value) : $value;
 
-        PHPUnit::assertStringContainsString((string) $value, strip_tags($this->rendered));
+        PHPUnit::assertStringContainsString((string)$value, strip_tags($this->rendered));
 
         return $this;
     }
@@ -86,8 +86,8 @@ class TestComponent
     /**
      * Assert that the given strings are contained in order within the rendered component text.
      *
-     * @param  array  $values
-     * @param  bool  $escape
+     * @param array $values
+     * @param bool $escape
      * @return $this
      */
     public function assertSeeTextInOrder(array $values, $escape = true)
@@ -102,15 +102,15 @@ class TestComponent
     /**
      * Assert that the given string is not contained within the rendered component.
      *
-     * @param  string  $value
-     * @param  bool  $escape
+     * @param string $value
+     * @param bool $escape
      * @return $this
      */
     public function assertDontSee($value, $escape = true)
     {
         $value = $escape ? e($value) : $value;
 
-        PHPUnit::assertStringNotContainsString((string) $value, $this->rendered);
+        PHPUnit::assertStringNotContainsString((string)$value, $this->rendered);
 
         return $this;
     }
@@ -118,15 +118,15 @@ class TestComponent
     /**
      * Assert that the given string is not contained within the rendered component text.
      *
-     * @param  string  $value
-     * @param  bool  $escape
+     * @param string $value
+     * @param bool $escape
      * @return $this
      */
     public function assertDontSeeText($value, $escape = true)
     {
         $value = $escape ? e($value) : $value;
 
-        PHPUnit::assertStringNotContainsString((string) $value, strip_tags($this->rendered));
+        PHPUnit::assertStringNotContainsString((string)$value, strip_tags($this->rendered));
 
         return $this;
     }
@@ -144,7 +144,7 @@ class TestComponent
     /**
      * Dynamically access properties on the underlying component.
      *
-     * @param  string  $attribute
+     * @param string $attribute
      * @return mixed
      */
     public function __get($attribute)
@@ -155,8 +155,8 @@ class TestComponent
     /**
      * Dynamically call methods on the underlying component.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

@@ -16,7 +16,7 @@ class LogBroadcaster extends Broadcaster
     /**
      * Create a new broadcaster instance.
      *
-     * @param  \Psr\Log\LoggerInterface  $logger
+     * @param \Psr\Log\LoggerInterface $logger
      * @return void
      */
     public function __construct(LoggerInterface $logger)
@@ -49,6 +49,6 @@ class LogBroadcaster extends Broadcaster
 
         $payload = json_encode($payload, JSON_PRETTY_PRINT);
 
-        $this->logger->info('Broadcasting ['.$event.'] on channels ['.$channels.'] with payload:'.PHP_EOL.$payload);
+        $this->logger->info('Broadcasting [' . $event . '] on channels [' . $channels . '] with payload:' . PHP_EOL . $payload);
     }
 }

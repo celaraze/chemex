@@ -50,7 +50,7 @@ class FileDictLoader implements DictLoaderInterface
             $segment = $this->path . '/' . sprintf($this->segmentName, $i);
 
             if (file_exists($segment)) {
-                $dictionary = (array) include $segment;
+                $dictionary = (array)include $segment;
                 $callback($dictionary);
             }
         }
@@ -66,7 +66,7 @@ class FileDictLoader implements DictLoaderInterface
         $surnames = $this->path . '/surnames';
 
         if (file_exists($surnames)) {
-            $dictionary = (array) include $surnames;
+            $dictionary = (array)include $surnames;
             $callback($dictionary);
         }
     }

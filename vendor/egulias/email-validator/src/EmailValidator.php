@@ -28,7 +28,7 @@ class EmailValidator
     }
 
     /**
-     * @param string          $email
+     * @param string $email
      * @param EmailValidation $emailValidation
      * @return bool
      */
@@ -39,14 +39,6 @@ class EmailValidator
         $this->error = $emailValidation->getError();
 
         return $isValid;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasWarnings()
-    {
-        return !empty($this->warnings);
     }
 
     /**
@@ -63,5 +55,13 @@ class EmailValidator
     public function getError()
     {
         return $this->error;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function hasWarnings()
+    {
+        return !empty($this->warnings);
     }
 }

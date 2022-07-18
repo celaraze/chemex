@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/fa.php', [
+return array_replace_recursive(require __DIR__ . '/fa.php', [
     'weekdays' => ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'],
     'weekdays_short' => ['ی.', 'د.', 'س.', 'چ.', 'پ.', 'ج.', 'ش.'],
     'weekdays_min' => ['ی.', 'د.', 'س.', 'چ.', 'پ.', 'ج.', 'ش.'],

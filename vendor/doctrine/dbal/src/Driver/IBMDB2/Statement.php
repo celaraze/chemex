@@ -10,7 +10,6 @@ use Doctrine\DBAL\Driver\IBMDB2\Exception\StatementError;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
 use Doctrine\DBAL\Driver\Statement as StatementInterface;
 use Doctrine\DBAL\ParameterType;
-
 use function assert;
 use function db2_bind_param;
 use function db2_execute;
@@ -23,7 +22,6 @@ use function ksort;
 use function stream_copy_to_stream;
 use function stream_get_meta_data;
 use function tmpfile;
-
 use const DB2_BINARY;
 use const DB2_CHAR;
 use const DB2_LONG;
@@ -47,9 +45,9 @@ final class Statement implements StatementInterface
     private $lobs = [];
 
     /**
+     * @param resource $stmt
      * @internal The statement can be only instantiated by its driver connection.
      *
-     * @param resource $stmt
      */
     public function __construct($stmt)
     {
@@ -85,7 +83,7 @@ final class Statement implements StatementInterface
                 }
 
                 $handle = $this->createTemporaryFile();
-                $path   = stream_get_meta_data($handle)['uri'];
+                $path = stream_get_meta_data($handle)['uri'];
 
                 $this->bind($param, $path, DB2_PARAM_FILE, DB2_BINARY);
 
@@ -101,7 +99,7 @@ final class Statement implements StatementInterface
     }
 
     /**
-     * @param int   $position Parameter position
+     * @param int $position Parameter position
      * @param mixed $variable
      *
      * @throws Exception
@@ -110,9 +108,25 @@ final class Statement implements StatementInterface
     {
         $this->bindParam[$position] =& $variable;
 
-        if (! db2_bind_param($this->stmt, $position, 'variable', $parameterType, $dataType)) {
+        if (!db2_bind_param($this->stmt, $position, 'variable', $parameterType, $dataType)) {
             throw StatementError::new($this->stmt);
         }
+    }
+
+    /**
+     * @return resource
+     *
+     * @throws Exception
+     */
+    private function createTemporaryFile()
+    {
+        $handle = @tmpfile();
+
+        if ($handle === false) {
+            throw CannotCreateTemporaryFile::new(error_get_last());
+        }
+
+        return $handle;
     }
 
     /**
@@ -153,22 +167,6 @@ final class Statement implements StatementInterface
         }
 
         return new Result($this->stmt);
-    }
-
-    /**
-     * @return resource
-     *
-     * @throws Exception
-     */
-    private function createTemporaryFile()
-    {
-        $handle = @tmpfile();
-
-        if ($handle === false) {
-            throw CannotCreateTemporaryFile::new(error_get_last());
-        }
-
-        return $handle;
     }
 
     /**

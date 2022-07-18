@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject;
 
+use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 use function call_user_func_array;
 use function func_get_args;
-use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 
 /**
  * @internal This trait is not covered by the backward compatibility promise for PHPUnit

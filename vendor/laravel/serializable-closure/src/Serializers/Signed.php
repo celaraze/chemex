@@ -25,7 +25,7 @@ class Signed implements Serializable
     /**
      * Creates a new serializable closure instance.
      *
-     * @param  \Closure  $closure
+     * @param \Closure $closure
      * @return void
      */
     public function __construct($closure)
@@ -44,23 +44,13 @@ class Signed implements Serializable
     }
 
     /**
-     * Gets the closure.
-     *
-     * @return \Closure
-     */
-    public function getClosure()
-    {
-        return $this->closure;
-    }
-
-    /**
      * Get the serializable representation of the closure.
      *
      * @return array
      */
     public function __serialize()
     {
-        if (! static::$signer) {
+        if (!static::$signer) {
             throw new MissingSecretKeyException();
         }
 
@@ -72,17 +62,27 @@ class Signed implements Serializable
     /**
      * Restore the closure after serialization.
      *
-     * @param  array  $signature
+     * @param array $signature
      * @return void
      *
      * @throws \Laravel\SerializableClosure\Exceptions\InvalidSignatureException
      */
     public function __unserialize($signature)
     {
-        if (static::$signer && ! static::$signer->verify($signature)) {
+        if (static::$signer && !static::$signer->verify($signature)) {
             throw new InvalidSignatureException();
         }
 
         $this->closure = unserialize($signature['serializable'])->getClosure();
+    }
+
+    /**
+     * Gets the closure.
+     *
+     * @return \Closure
+     */
+    public function getClosure()
+    {
+        return $this->closure;
     }
 }

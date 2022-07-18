@@ -25,7 +25,6 @@ use Ramsey\Uuid\Type\Integer as IntegerObject;
 use Ramsey\Uuid\UuidFactory;
 use Ramsey\Uuid\UuidInterface;
 use ValueError;
-
 use function assert;
 use function bin2hex;
 use function hex2bin;
@@ -103,18 +102,6 @@ final class LazyUuidFromString implements UuidInterface
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @param string $serialized
-     *
-     * @psalm-param non-empty-string $serialized
-     */
-    public function unserialize($serialized): void
-    {
-        $this->uuid = $serialized;
-    }
-
-    /**
      * @param array{string: string} $data
      *
      * @psalm-param array{string: non-empty-string} $data
@@ -130,11 +117,16 @@ final class LazyUuidFromString implements UuidInterface
         $this->unserialize($data['string']);
     }
 
-    /** @psalm-suppress DeprecatedMethod */
-    public function getNumberConverter(): NumberConverterInterface
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $serialized
+     *
+     * @psalm-param non-empty-string $serialized
+     */
+    public function unserialize($serialized): void
     {
-        return ($this->unwrapped ?? $this->unwrap())
-            ->getNumberConverter();
+        $this->uuid = $serialized;
     }
 
     /**
@@ -146,6 +138,21 @@ final class LazyUuidFromString implements UuidInterface
     {
         return ($this->unwrapped ?? $this->unwrap())
             ->getFieldsHex();
+    }
+
+    /**
+     * @psalm-suppress ImpureMethodCall the retrieval of the factory is a clear violation of purity here: this is a
+     *                                  known pitfall of the design of this library, where a value object contains
+     *                                  a mutable reference to a factory. We use a fixed factory here, so the violation
+     *                                  will not have real-world effects, as this object is only instantiated with the
+     *                                  default factory settings/features.
+     * @psalm-suppress InaccessibleProperty property {@see $unwrapped} is used as a cache: we don't expose it to the
+     *                                      outside world, so we should be fine here.
+     */
+    private function unwrap(): UuidInterface
+    {
+        return $this->unwrapped = (new UuidFactory())
+            ->fromString($this->uuid);
     }
 
     /** @psalm-suppress DeprecatedMethod */
@@ -239,13 +246,6 @@ final class LazyUuidFromString implements UuidInterface
             ->getVariant();
     }
 
-    /** @psalm-suppress DeprecatedMethod */
-    public function getVersion(): ?int
-    {
-        return ($this->unwrapped ?? $this->unwrap())
-            ->getVersion();
-    }
-
     public function compareTo(UuidInterface $other): int
     {
         return ($this->unwrapped ?? $this->unwrap())
@@ -254,11 +254,16 @@ final class LazyUuidFromString implements UuidInterface
 
     public function equals(?object $other): bool
     {
-        if (! $other instanceof UuidInterface) {
+        if (!$other instanceof UuidInterface) {
             return false;
         }
 
         return $this->uuid === $other->toString();
+    }
+
+    public function toString(): string
+    {
+        return $this->uuid;
     }
 
     /**
@@ -271,30 +276,13 @@ final class LazyUuidFromString implements UuidInterface
     public function getBytes(): string
     {
         /** @phpstan-ignore-next-line PHPStan complains that this is not a non-empty-string. */
-        return (string) hex2bin(str_replace('-', '', $this->uuid));
-    }
-
-    public function getFields(): FieldsInterface
-    {
-        return ($this->unwrapped ?? $this->unwrap())
-            ->getFields();
-    }
-
-    public function getHex(): Hexadecimal
-    {
-        return ($this->unwrapped ?? $this->unwrap())
-            ->getHex();
+        return (string)hex2bin(str_replace('-', '', $this->uuid));
     }
 
     public function getInteger(): IntegerObject
     {
         return ($this->unwrapped ?? $this->unwrap())
             ->getInteger();
-    }
-
-    public function toString(): string
-    {
-        return $this->uuid;
     }
 
     public function __toString(): string
@@ -329,6 +317,19 @@ final class LazyUuidFromString implements UuidInterface
                     ->getClockSeqHiAndReserved()
                     ->toString()
             );
+    }
+
+    /** @psalm-suppress DeprecatedMethod */
+    public function getNumberConverter(): NumberConverterInterface
+    {
+        return ($this->unwrapped ?? $this->unwrap())
+            ->getNumberConverter();
+    }
+
+    public function getFields(): FieldsInterface
+    {
+        return ($this->unwrapped ?? $this->unwrap())
+            ->getFields();
     }
 
     /**
@@ -395,6 +396,12 @@ final class LazyUuidFromString implements UuidInterface
 
         return $instance->getNumberConverter()
             ->fromHex(substr($instance->getHex()->toString(), 16));
+    }
+
+    public function getHex(): Hexadecimal
+    {
+        return ($this->unwrapped ?? $this->unwrap())
+            ->getHex();
     }
 
     /**
@@ -536,6 +543,13 @@ final class LazyUuidFromString implements UuidInterface
             ->fromHex($fields->getTimestamp()->toString());
     }
 
+    /** @psalm-suppress DeprecatedMethod */
+    public function getVersion(): ?int
+    {
+        return ($this->unwrapped ?? $this->unwrap())
+            ->getVersion();
+    }
+
     public function toUuidV1(): UuidV1
     {
         $instance = ($this->unwrapped ?? $this->unwrap());
@@ -556,20 +570,5 @@ final class LazyUuidFromString implements UuidInterface
         assert($instance instanceof UuidV6);
 
         return $instance;
-    }
-
-    /**
-     * @psalm-suppress ImpureMethodCall the retrieval of the factory is a clear violation of purity here: this is a
-     *                                  known pitfall of the design of this library, where a value object contains
-     *                                  a mutable reference to a factory. We use a fixed factory here, so the violation
-     *                                  will not have real-world effects, as this object is only instantiated with the
-     *                                  default factory settings/features.
-     * @psalm-suppress InaccessibleProperty property {@see $unwrapped} is used as a cache: we don't expose it to the
-     *                                      outside world, so we should be fine here.
-     */
-    private function unwrap(): UuidInterface
-    {
-        return $this->unwrapped = (new UuidFactory())
-            ->fromString($this->uuid);
     }
 }

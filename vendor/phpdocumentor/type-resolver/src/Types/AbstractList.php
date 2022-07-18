@@ -40,9 +40,9 @@ abstract class AbstractList implements Type
             $valueType = new Mixed_();
         }
 
-        $this->valueType      = $valueType;
+        $this->valueType = $valueType;
         $this->defaultKeyType = new Compound([new String_(), new Integer()]);
-        $this->keyType        = $keyType;
+        $this->keyType = $keyType;
     }
 
     /**

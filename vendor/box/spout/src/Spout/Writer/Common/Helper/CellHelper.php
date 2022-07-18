@@ -35,7 +35,7 @@ class CellHelper
                 $columnLetters = \chr($capitalAAsciiValue + $modulus) . $columnLetters;
 
                 // substracting 1 because it's zero-based
-                $columnIndexZeroBased = (int) ($columnIndexZeroBased / 26) - 1;
+                $columnIndexZeroBased = (int)($columnIndexZeroBased / 26) - 1;
             } while ($columnIndexZeroBased >= 0);
 
             self::$columnIndexToColumnLettersCache[$originalColumnIndex] = $columnLetters;

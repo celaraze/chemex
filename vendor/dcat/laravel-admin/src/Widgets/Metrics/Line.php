@@ -71,20 +71,6 @@ class Line extends Card
     ];
 
     /**
-     * 初始化.
-     */
-    protected function init()
-    {
-        parent::init();
-
-        // 使用图表
-        $this->useChart();
-
-        // 兼容图表显示不全问题
-        $this->chart->style('margin-right:-6px;');
-    }
-
-    /**
      * 设置线条为直线.
      *
      * @return $this
@@ -119,5 +105,19 @@ class Line extends Card
     {$this->renderChart()}
 </div>
 HTML;
+    }
+
+    /**
+     * 初始化.
+     */
+    protected function init()
+    {
+        parent::init();
+
+        // 使用图表
+        $this->useChart();
+
+        // 兼容图表显示不全问题
+        $this->chart->style('margin-right:-6px;');
     }
 }

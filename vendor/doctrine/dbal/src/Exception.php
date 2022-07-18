@@ -4,7 +4,6 @@ namespace Doctrine\DBAL;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
-
 use function get_class;
 use function gettype;
 use function implode;
@@ -49,7 +48,7 @@ class Exception extends \Exception
     /**
      * Returns a new instance for an invalid specified platform version.
      *
-     * @param string $version        The invalid platform version given.
+     * @param string $version The invalid platform version given.
      * @param string $expectedFormat The expected platform version format.
      */
     public static function invalidPlatformVersionSpecified(string $version, string $expectedFormat): self

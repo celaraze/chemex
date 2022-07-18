@@ -26,14 +26,6 @@ final class ResponseHeaderSame extends Constraint
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return sprintf('has header "%s" with value "%s"', $this->headerName, $this->expectedValue);
-    }
-
-    /**
      * @param Response $response
      *
      * {@inheritdoc}
@@ -50,6 +42,14 @@ final class ResponseHeaderSame extends Constraint
      */
     protected function failureDescription($response): string
     {
-        return 'the Response '.$this->toString();
+        return 'the Response ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return sprintf('has header "%s" with value "%s"', $this->headerName, $this->expectedValue);
     }
 }

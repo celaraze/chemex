@@ -48,12 +48,13 @@ Composer home directory.
 ### Command line global credential editing
 
 For all authentication methods it is possible to edit them using the command line;
- - [http-basic](#command-line-http-basic)
- - [Inline http-basic](#command-line-inline-http-basic)
- - [gitlab-oauth](#command-line-gitlab-oauth)
- - [gitlab-token](#command-line-gitlab-token)
- - [github-oauth](#command-line-github-oauth)
- - [bitbucket-oauth](#command-line-bitbucket-oauth)
+
+- [http-basic](#command-line-http-basic)
+- [Inline http-basic](#command-line-inline-http-basic)
+- [gitlab-oauth](#command-line-gitlab-oauth)
+- [gitlab-token](#command-line-gitlab-token)
+- [github-oauth](#command-line-github-oauth)
+- [bitbucket-oauth](#command-line-bitbucket-oauth)
 
 ### Manually editing global authentication credentials
 
@@ -67,13 +68,14 @@ php composer.phar config --global --editor [--auth]
 ```
 
 For specific authentication implementations, see their sections;
- - [http-basic](#manual-http-basic)
- - [Inline http-basic](#manual-inline-http-basic)
- - [custom header](#manual-custom-token-authentication)
- - [gitlab-oauth](#manual-gitlab-oauth)
- - [gitlab-token](#manual-gitlab-token)
- - [github-oauth](#manual-github-oauth)
- - [bitbucket-oauth](#manual-bitbucket-oauth)
+
+- [http-basic](#manual-http-basic)
+- [Inline http-basic](#manual-inline-http-basic)
+- [custom header](#manual-custom-token-authentication)
+- [gitlab-oauth](#manual-gitlab-oauth)
+- [gitlab-token](#manual-gitlab-token)
+- [github-oauth](#manual-github-oauth)
+- [bitbucket-oauth](#manual-bitbucket-oauth)
 
 Manually editing this file instead of using the command line may result in invalid json errors.
 To fix this you need to open the file in an editor and fix the error. To find the location of
@@ -141,7 +143,8 @@ For the inline http-basic authentication method the credentials are not stored i
 `auth.json` in the project or globally, but in the `composer.json` or global configuration
 in the same place where the Composer repository definition is defined.
 
-Make sure that the username and password are encoded according to [RFC 3986](http://www.faqs.org/rfcs/rfc3986.html) (2.1. Percent-Encoding).
+Make sure that the username and password are encoded according to [RFC 3986](http://www.faqs.org/rfcs/rfc3986.html) (
+2.1. Percent-Encoding).
 If the username e.g. is an email address it needs to be passed as `name%40example.com`.
 
 ### Command line inline http-basic
@@ -223,8 +226,11 @@ php composer.phar config [--global] --editor --auth
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
 > [`gitlab-domains`](../06-config.md#gitlab-domains) section should also contain the url.
 
-To create a new access token, go to your [access tokens section on GitLab](https://gitlab.com/-/profile/personal_access_tokens)
-(or the equivalent URL on your private instance) and create a new token. See also [the GitLab access token documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token) for more information.
+To create a new access token, go to
+your [access tokens section on GitLab](https://gitlab.com/-/profile/personal_access_tokens)
+(or the equivalent URL on your private instance) and create a new token. See
+also [the GitLab access token documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token)
+for more information.
 
 When creating a gitlab token manually, make sure it has either the `read_api` or `api` scope.
 
@@ -250,13 +256,21 @@ php composer.phar config [--global] --editor --auth
 
 ## github-oauth
 
-To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new).
+To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens)
+and [generate a new token](https://github.com/settings/tokens/new).
 
-For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such tokens grant read-only access to public information.
+For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in
+the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such
+tokens grant read-only access to public information.
 
-For private repositories, the `repo` scope is needed. Note that the token will be given broad read/write access to all of your private repositories and much more - see the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) for a complete list. As of writing (November 2021), it seems not to be possible to further limit permissions for such tokens.
+For private repositories, the `repo` scope is needed. Note that the token will be given broad read/write access to all
+of your private repositories and much more - see
+the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) for a
+complete list. As of writing (November 2021), it seems not to be possible to further limit permissions for such tokens.
 
-Read more about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token), or subscribe to the [roadmap item for better scoped tokens in GitHub](https://github.com/github/roadmap/issues/184).
+Read more
+about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+, or subscribe to the [roadmap item for better scoped tokens in GitHub](https://github.com/github/roadmap/issues/184).
 
 ### Command line github-oauth
 
@@ -280,7 +294,11 @@ php composer.phar config [--global] --editor --auth
 
 ## bitbucket-oauth
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to
+create an OAuth consumer to use the driver, please refer
+to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You
+will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and
+is not used by Composer.
 
 ### Command line bitbucket-oauth
 

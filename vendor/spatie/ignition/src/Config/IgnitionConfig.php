@@ -10,11 +10,6 @@ class IgnitionConfig implements Arrayable
 {
     private ConfigManager $manager;
 
-    public static function loadFromConfigFile(): self
-    {
-        return (new self())->loadConfigFile();
-    }
-
     /**
      * @param array<string, mixed> $options
      */
@@ -24,118 +19,6 @@ class IgnitionConfig implements Arrayable
 
         $this->options = array_merge($defaultOptions, $options);
         $this->manager = $this->initConfigManager();
-    }
-
-    public function setOption(string $name, string $value): self
-    {
-        $this->options[$name] = $value;
-
-        return $this;
-    }
-
-    private function initConfigManager(): ConfigManager
-    {
-        try {
-            return app(ConfigManager::class);
-        } catch (Throwable) {
-            return new FileConfigManager();
-        }
-    }
-
-    /** @param array<string, string> $options */
-    public function merge(array $options): self
-    {
-        $this->options = array_merge($this->options, $options);
-
-        return $this;
-    }
-
-    public function loadConfigFile(): self
-    {
-        $this->merge($this->getConfigOptions());
-
-        return $this;
-    }
-
-    /** @return array<string, mixed> */
-    public function getConfigOptions(): array
-    {
-        return $this->manager->load();
-    }
-
-    /**
-     * @param array<string, mixed> $options
-     * @return bool
-     */
-    public function saveValues(array $options): bool
-    {
-        return $this->manager->save($options);
-    }
-
-    public function hideSolutions(): bool
-    {
-        return $this->options['hide_solutions'] ?? false;
-    }
-
-    public function editor(): ?string
-    {
-        return $this->options['editor'] ?? null;
-    }
-
-    /**
-     * @return array<string, mixed> $options
-     */
-    public function editorOptions(): array
-    {
-        return $this->options['editor_options'] ?? [];
-    }
-
-    public function remoteSitesPath(): ?string
-    {
-        return $this->options['remote_sites_path'] ?? null;
-    }
-
-    public function localSitesPath(): ?string
-    {
-        return $this->options['local_sites_path'] ?? null;
-    }
-
-    public function theme(): ?string
-    {
-        return $this->options['theme'] ?? null;
-    }
-
-    public function shareButtonEnabled(): bool
-    {
-        return (bool)($this->options['enable_share_button'] ?? false);
-    }
-
-    public function shareEndpoint(): string
-    {
-        return $this->options['share_endpoint']
-            ?? $this->getDefaultOptions()['share_endpoint'];
-    }
-
-    public function runnableSolutionsEnabled(): bool
-    {
-        return (bool)($this->options['enable_runnable_solutions'] ?? false);
-    }
-
-    /** @return array<string, mixed> */
-    public function toArray(): array
-    {
-        return [
-            'editor' => $this->editor(),
-            'theme' => $this->theme(),
-            'hideSolutions' => $this->hideSolutions(),
-            'remoteSitesPath' => $this->remoteSitesPath(),
-            'localSitesPath' => $this->localSitesPath(),
-            'enableShareButton' => $this->shareButtonEnabled(),
-            'enableRunnableSolutions' => $this->runnableSolutionsEnabled(),
-            'directorySeparator' => DIRECTORY_SEPARATOR,
-            'editorOptions' => $this->editorOptions(),
-            'shareEndpoint' => $this->shareEndpoint(),
-        ];
     }
 
     /**
@@ -206,5 +89,122 @@ class IgnitionConfig implements Arrayable
                 ],
             ],
         ];
+    }
+
+    private function initConfigManager(): ConfigManager
+    {
+        try {
+            return app(ConfigManager::class);
+        } catch (Throwable) {
+            return new FileConfigManager();
+        }
+    }
+
+    public static function loadFromConfigFile(): self
+    {
+        return (new self())->loadConfigFile();
+    }
+
+    public function loadConfigFile(): self
+    {
+        $this->merge($this->getConfigOptions());
+
+        return $this;
+    }
+
+    /** @param array<string, string> $options */
+    public function merge(array $options): self
+    {
+        $this->options = array_merge($this->options, $options);
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getConfigOptions(): array
+    {
+        return $this->manager->load();
+    }
+
+    public function setOption(string $name, string $value): self
+    {
+        $this->options[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @return bool
+     */
+    public function saveValues(array $options): bool
+    {
+        return $this->manager->save($options);
+    }
+
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'editor' => $this->editor(),
+            'theme' => $this->theme(),
+            'hideSolutions' => $this->hideSolutions(),
+            'remoteSitesPath' => $this->remoteSitesPath(),
+            'localSitesPath' => $this->localSitesPath(),
+            'enableShareButton' => $this->shareButtonEnabled(),
+            'enableRunnableSolutions' => $this->runnableSolutionsEnabled(),
+            'directorySeparator' => DIRECTORY_SEPARATOR,
+            'editorOptions' => $this->editorOptions(),
+            'shareEndpoint' => $this->shareEndpoint(),
+        ];
+    }
+
+    public function editor(): ?string
+    {
+        return $this->options['editor'] ?? null;
+    }
+
+    public function theme(): ?string
+    {
+        return $this->options['theme'] ?? null;
+    }
+
+    public function hideSolutions(): bool
+    {
+        return $this->options['hide_solutions'] ?? false;
+    }
+
+    public function remoteSitesPath(): ?string
+    {
+        return $this->options['remote_sites_path'] ?? null;
+    }
+
+    public function localSitesPath(): ?string
+    {
+        return $this->options['local_sites_path'] ?? null;
+    }
+
+    public function shareButtonEnabled(): bool
+    {
+        return (bool)($this->options['enable_share_button'] ?? false);
+    }
+
+    public function runnableSolutionsEnabled(): bool
+    {
+        return (bool)($this->options['enable_runnable_solutions'] ?? false);
+    }
+
+    /**
+     * @return array<string, mixed> $options
+     */
+    public function editorOptions(): array
+    {
+        return $this->options['editor_options'] ?? [];
+    }
+
+    public function shareEndpoint(): string
+    {
+        return $this->options['share_endpoint']
+            ?? $this->getDefaultOptions()['share_endpoint'];
     }
 }

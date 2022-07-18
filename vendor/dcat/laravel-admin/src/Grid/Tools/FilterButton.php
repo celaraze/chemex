@@ -19,25 +19,52 @@ class FilterButton extends AbstractTool
     protected $btnClassName;
 
     /**
+     * @return mixed
+     */
+    protected function renderScopes()
+    {
+        return $this->filter()->scopes()->map->render()->implode("\r\n");
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render()
+    {
+        $filter = $this->filter();
+
+        $scopres = $filter->scopes();
+        $filters = $filter->filters();
+        $valueCount = $filter->countConditions();
+
+        if ($scopres->isEmpty() && !$filters) {
+            return;
+        }
+
+        $this->addScript();
+
+        $onlyScopes = ((!$filters || $this->parent->option('filter') === false) && !$scopres->isEmpty()) ? true : false;
+
+        $variables = [
+            'scopes' => $scopres,
+            'current_label' => $this->currentScopeLabel(),
+            'url_no_scopes' => $filter->urlWithoutScopes(),
+            'btn_class' => $this->getElementClassName(),
+            'expand' => $filter->expand,
+            'filter_text' => true,
+            'only_scopes' => $onlyScopes,
+            'valueCount' => $valueCount,
+        ];
+
+        return view($this->view, $variables)->render();
+    }
+
+    /**
      * @return \Dcat\Admin\Grid\Filter
      */
     protected function filter()
     {
         return $this->parent->filter();
-    }
-
-    /**
-     * Get button class name.
-     *
-     * @return string
-     */
-    protected function getElementClassName()
-    {
-        if (! $this->btnClassName) {
-            $this->btnClassName = 'filter-btn-'.Str::random(8);
-        }
-
-        return $this->btnClassName;
     }
 
     /**
@@ -111,11 +138,17 @@ JS;
     }
 
     /**
-     * @return mixed
+     * Get button class name.
+     *
+     * @return string
      */
-    protected function renderScopes()
+    protected function getElementClassName()
     {
-        return $this->filter()->scopes()->map->render()->implode("\r\n");
+        if (!$this->btnClassName) {
+            $this->btnClassName = 'filter-btn-' . Str::random(8);
+        }
+
+        return $this->btnClassName;
     }
 
     /**
@@ -130,38 +163,5 @@ JS;
         }
 
         return '';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
-    {
-        $filter = $this->filter();
-
-        $scopres = $filter->scopes();
-        $filters = $filter->filters();
-        $valueCount = $filter->countConditions();
-
-        if ($scopres->isEmpty() && ! $filters) {
-            return;
-        }
-
-        $this->addScript();
-
-        $onlyScopes = ((! $filters || $this->parent->option('filter') === false) && ! $scopres->isEmpty()) ? true : false;
-
-        $variables = [
-            'scopes'        => $scopres,
-            'current_label' => $this->currentScopeLabel(),
-            'url_no_scopes' => $filter->urlWithoutScopes(),
-            'btn_class'     => $this->getElementClassName(),
-            'expand'        => $filter->expand,
-            'filter_text'   => true,
-            'only_scopes'   => $onlyScopes,
-            'valueCount'    => $valueCount,
-        ];
-
-        return view($this->view, $variables)->render();
     }
 }

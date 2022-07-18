@@ -29,7 +29,6 @@ In package nette/utils you will find a set of [useful classes](https://doc.nette
 - [Validation](https://doc.nette.org/validators) - validate inputs
 - [Type](https://doc.nette.org/type) - PHP data type
 
-
 Installation
 ------------
 

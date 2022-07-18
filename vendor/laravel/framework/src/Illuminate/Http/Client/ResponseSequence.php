@@ -33,7 +33,7 @@ class ResponseSequence
     /**
      * Create a new response sequence.
      *
-     * @param  array  $responses
+     * @param array $responses
      * @return void
      */
     public function __construct(array $responses)
@@ -44,9 +44,9 @@ class ResponseSequence
     /**
      * Push a response to the sequence.
      *
-     * @param  string|array|null  $body
-     * @param  int  $status
-     * @param  array  $headers
+     * @param string|array|null $body
+     * @param int $status
+     * @param array $headers
      * @return $this
      */
     public function push($body = null, int $status = 200, array $headers = [])
@@ -59,10 +59,23 @@ class ResponseSequence
     }
 
     /**
+     * Push a response to the sequence.
+     *
+     * @param mixed $response
+     * @return $this
+     */
+    public function pushResponse($response)
+    {
+        $this->responses[] = $response;
+
+        return $this;
+    }
+
+    /**
      * Push a response with the given status code to the sequence.
      *
-     * @param  int  $status
-     * @param  array  $headers
+     * @param int $status
+     * @param array $headers
      * @return $this
      */
     public function pushStatus(int $status, array $headers = [])
@@ -75,9 +88,9 @@ class ResponseSequence
     /**
      * Push response with the contents of a file as the body to the sequence.
      *
-     * @param  string  $filePath
-     * @param  int  $status
-     * @param  array  $headers
+     * @param string $filePath
+     * @param int $status
+     * @param array $headers
      * @return $this
      */
     public function pushFile(string $filePath, int $status = 200, array $headers = [])
@@ -90,22 +103,19 @@ class ResponseSequence
     }
 
     /**
-     * Push a response to the sequence.
+     * Make the sequence return a default response when it is empty.
      *
-     * @param  mixed  $response
      * @return $this
      */
-    public function pushResponse($response)
+    public function dontFailWhenEmpty()
     {
-        $this->responses[] = $response;
-
-        return $this;
+        return $this->whenEmpty(Factory::response());
     }
 
     /**
      * Make the sequence return a default response when it is empty.
      *
-     * @param  \GuzzleHttp\Promise\PromiseInterface|\Closure  $response
+     * @param \GuzzleHttp\Promise\PromiseInterface|\Closure $response
      * @return $this
      */
     public function whenEmpty($response)
@@ -114,16 +124,6 @@ class ResponseSequence
         $this->emptyResponse = $response;
 
         return $this;
-    }
-
-    /**
-     * Make the sequence return a default response when it is empty.
-     *
-     * @return $this
-     */
-    public function dontFailWhenEmpty()
-    {
-        return $this->whenEmpty(Factory::response());
     }
 
     /**
@@ -149,7 +149,7 @@ class ResponseSequence
             throw new OutOfBoundsException('A request was made, but the response sequence is empty.');
         }
 
-        if (! $this->failWhenEmpty && count($this->responses) === 0) {
+        if (!$this->failWhenEmpty && count($this->responses) === 0) {
             return value($this->emptyResponse ?? Factory::response());
         }
 

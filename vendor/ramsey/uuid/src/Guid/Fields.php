@@ -22,7 +22,6 @@ use Ramsey\Uuid\Rfc4122\VariantTrait;
 use Ramsey\Uuid\Rfc4122\VersionTrait;
 use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Uuid;
-
 use function bin2hex;
 use function dechex;
 use function hexdec;
@@ -32,7 +31,6 @@ use function str_pad;
 use function strlen;
 use function substr;
 use function unpack;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -86,9 +84,60 @@ final class Fields implements FieldsInterface
         }
     }
 
+    private function isCorrectVariant(): bool
+    {
+        if ($this->isNil()) {
+            return true;
+        }
+
+        $variant = $this->getVariant();
+
+        return $variant === Uuid::RFC_4122 || $variant === Uuid::RESERVED_MICROSOFT;
+    }
+
     public function getBytes(): string
     {
         return $this->bytes;
+    }
+
+    public function getTimestamp(): Hexadecimal
+    {
+        return new Hexadecimal(sprintf(
+            '%03x%04s%08s',
+            hexdec($this->getTimeHiAndVersion()->toString()) & 0x0fff,
+            $this->getTimeMid()->toString(),
+            $this->getTimeLow()->toString()
+        ));
+    }
+
+    public function getTimeHiAndVersion(): Hexadecimal
+    {
+        // Swap the bytes from little endian to network byte order.
+        /** @var array $hex */
+        $hex = unpack(
+            'H*',
+            pack(
+                'v',
+                hexdec(bin2hex(substr($this->bytes, 6, 2)))
+            )
+        );
+
+        return new Hexadecimal((string)($hex[1] ?? ''));
+    }
+
+    public function getTimeMid(): Hexadecimal
+    {
+        // Swap the bytes from little endian to network byte order.
+        /** @var array $hex */
+        $hex = unpack(
+            'H*',
+            pack(
+                'v',
+                hexdec(bin2hex(substr($this->bytes, 4, 2)))
+            )
+        );
+
+        return new Hexadecimal((string)($hex[1] ?? ''));
     }
 
     public function getTimeLow(): Hexadecimal
@@ -104,47 +153,7 @@ final class Fields implements FieldsInterface
             )
         );
 
-        return new Hexadecimal((string) ($hex[1] ?? ''));
-    }
-
-    public function getTimeMid(): Hexadecimal
-    {
-        // Swap the bytes from little endian to network byte order.
-        /** @var array $hex */
-        $hex = unpack(
-            'H*',
-            pack(
-                'v',
-                hexdec(bin2hex(substr($this->bytes, 4, 2)))
-            )
-        );
-
-        return new Hexadecimal((string) ($hex[1] ?? ''));
-    }
-
-    public function getTimeHiAndVersion(): Hexadecimal
-    {
-        // Swap the bytes from little endian to network byte order.
-        /** @var array $hex */
-        $hex = unpack(
-            'H*',
-            pack(
-                'v',
-                hexdec(bin2hex(substr($this->bytes, 6, 2)))
-            )
-        );
-
-        return new Hexadecimal((string) ($hex[1] ?? ''));
-    }
-
-    public function getTimestamp(): Hexadecimal
-    {
-        return new Hexadecimal(sprintf(
-            '%03x%04s%08s',
-            hexdec($this->getTimeHiAndVersion()->toString()) & 0x0fff,
-            $this->getTimeMid()->toString(),
-            $this->getTimeLow()->toString()
-        ));
+        return new Hexadecimal((string)($hex[1] ?? ''));
     }
 
     public function getClockSeq(): Hexadecimal
@@ -178,17 +187,6 @@ final class Fields implements FieldsInterface
         /** @var array $parts */
         $parts = unpack('n*', $this->bytes);
 
-        return ((int) $parts[4] >> 4) & 0x00f;
-    }
-
-    private function isCorrectVariant(): bool
-    {
-        if ($this->isNil()) {
-            return true;
-        }
-
-        $variant = $this->getVariant();
-
-        return $variant === Uuid::RFC_4122 || $variant === Uuid::RESERVED_MICROSOFT;
+        return ((int)$parts[4] >> 4) & 0x00f;
     }
 }

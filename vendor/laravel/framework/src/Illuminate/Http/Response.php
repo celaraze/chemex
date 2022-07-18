@@ -21,9 +21,9 @@ class Response extends SymfonyResponse
     /**
      * Create a new HTTP response.
      *
-     * @param  mixed  $content
-     * @param  int  $status
-     * @param  array  $headers
+     * @param mixed $content
+     * @param int $status
+     * @param array $headers
      * @return void
      *
      * @throws \InvalidArgumentException
@@ -40,7 +40,7 @@ class Response extends SymfonyResponse
     /**
      * Set the content on the response.
      *
-     * @param  mixed  $content
+     * @param mixed $content
      * @return $this
      *
      * @throws \InvalidArgumentException
@@ -77,22 +77,22 @@ class Response extends SymfonyResponse
     /**
      * Determine if the given content should be turned into JSON.
      *
-     * @param  mixed  $content
+     * @param mixed $content
      * @return bool
      */
     protected function shouldBeJson($content)
     {
         return $content instanceof Arrayable ||
-               $content instanceof Jsonable ||
-               $content instanceof ArrayObject ||
-               $content instanceof JsonSerializable ||
-               is_array($content);
+            $content instanceof Jsonable ||
+            $content instanceof ArrayObject ||
+            $content instanceof JsonSerializable ||
+            is_array($content);
     }
 
     /**
      * Morph the given content into JSON.
      *
-     * @param  mixed  $content
+     * @param mixed $content
      * @return string
      */
     protected function morphToJson($content)

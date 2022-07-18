@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection;
 
 use InvalidArgumentException;
 use phpDocumentor\Reflection\Types\Context;
-
 use function explode;
 use function implode;
 use function strpos;

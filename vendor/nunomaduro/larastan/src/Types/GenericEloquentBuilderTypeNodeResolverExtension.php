@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NunoMaduro\Larastan\Types;
 
-use function count;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use PHPStan\Analyser\NameScope;
@@ -15,12 +14,13 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function count;
 
 class GenericEloquentBuilderTypeNodeResolverExtension implements TypeNodeResolverExtension
 {
     public function resolve(TypeNode $typeNode, NameScope $nameScope): ?Type
     {
-        if (! $typeNode instanceof UnionTypeNode || count($typeNode->types) !== 2) {
+        if (!$typeNode instanceof UnionTypeNode || count($typeNode->types) !== 2) {
             return null;
         }
 

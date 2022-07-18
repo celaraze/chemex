@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace Ramsey\Collection\Tool;
 
 use Ramsey\Collection\Exception\ValueExtractionException;
-
 use function get_class;
 use function method_exists;
 use function property_exists;

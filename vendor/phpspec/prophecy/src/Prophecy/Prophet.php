@@ -11,17 +11,17 @@
 
 namespace Prophecy;
 
+use Prophecy\Call\CallCenter;
 use Prophecy\Doubler\CachedDoubler;
+use Prophecy\Doubler\ClassPatch;
 use Prophecy\Doubler\Doubler;
 use Prophecy\Doubler\LazyDouble;
-use Prophecy\Doubler\ClassPatch;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\RevealerInterface;
-use Prophecy\Prophecy\Revealer;
-use Prophecy\Call\CallCenter;
-use Prophecy\Util\StringUtil;
-use Prophecy\Exception\Prediction\PredictionException;
 use Prophecy\Exception\Prediction\AggregateException;
+use Prophecy\Exception\Prediction\PredictionException;
+use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophecy\Revealer;
+use Prophecy\Prophecy\RevealerInterface;
+use Prophecy\Util\StringUtil;
 
 /**
  * Prophet creates prophecies.
@@ -42,15 +42,16 @@ class Prophet
     /**
      * Initializes Prophet.
      *
-     * @param null|Doubler           $doubler
+     * @param null|Doubler $doubler
      * @param null|RevealerInterface $revealer
-     * @param null|StringUtil        $util
+     * @param null|StringUtil $util
      */
     public function __construct(
-        Doubler $doubler = null,
+        Doubler           $doubler = null,
         RevealerInterface $revealer = null,
-        StringUtil $util = null
-    ) {
+        StringUtil        $util = null
+    )
+    {
         if (null === $doubler) {
             $doubler = new CachedDoubler();
             $doubler->registerClassPatch(new ClassPatch\SplFileInfoPatch);
@@ -64,9 +65,9 @@ class Prophet
             $doubler->registerClassPatch(new ClassPatch\KeywordPatch);
         }
 
-        $this->doubler  = $doubler;
+        $this->doubler = $doubler;
         $this->revealer = $revealer ?: new Revealer;
-        $this->util     = $util ?: new StringUtil;
+        $this->util = $util ?: new StringUtil;
     }
 
     /**

@@ -86,8 +86,8 @@ class XMLProcessor
      * Resumes the reading of the XML file where it was left off.
      * Stops whenever a callback indicates that reading should stop or at the end of the file.
      *
-     * @throws \Box\Spout\Reader\Exception\XMLProcessingException
      * @return void
+     * @throws \Box\Spout\Reader\Exception\XMLProcessingException
      */
     public function readUntilStopped()
     {

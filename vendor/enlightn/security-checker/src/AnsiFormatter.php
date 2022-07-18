@@ -36,21 +36,21 @@ class AnsiFormatter implements FormatterInterface
             $output->write("\n");
 
             foreach ($result as $dependency => $issues) {
-                $dependencyFullName = $dependency.' ('.$issues['version'].')';
-                $output->writeln('<info>'.$dependencyFullName."\n".str_repeat(
-                    '-',
-                    strlen($dependencyFullName)
-                )."</>\n");
+                $dependencyFullName = $dependency . ' (' . $issues['version'] . ')';
+                $output->writeln('<info>' . $dependencyFullName . "\n" . str_repeat(
+                        '-',
+                        strlen($dependencyFullName)
+                    ) . "</>\n");
 
                 foreach ($issues['advisories'] as $issue => $details) {
                     $output->write(' * ');
-                    if (! empty($details['cve'])) {
-                        $output->write('<comment>'.$details['cve'].': </comment>');
+                    if (!empty($details['cve'])) {
+                        $output->write('<comment>' . $details['cve'] . ': </comment>');
                     }
                     $output->writeln($details['title']);
 
-                    if (! empty($details['link'])) {
-                        $output->writeln('   '.$details['link']);
+                    if (!empty($details['link'])) {
+                        $output->writeln('   ' . $details['link']);
                     }
 
                     $output->writeln('');

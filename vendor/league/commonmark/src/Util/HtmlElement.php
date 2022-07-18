@@ -31,14 +31,14 @@ final class HtmlElement implements \Stringable
     private bool $selfClosing;
 
     /**
-     * @param string                                $tagName     Name of the HTML tag
-     * @param array<string, string|string[]|bool>   $attributes  Array of attributes (values should be unescaped)
-     * @param \Stringable|\Stringable[]|string|null $contents    Inner contents, pre-escaped if needed
-     * @param bool                                  $selfClosing Whether the tag is self-closing
+     * @param string $tagName Name of the HTML tag
+     * @param array<string, string|string[]|bool> $attributes Array of attributes (values should be unescaped)
+     * @param \Stringable|\Stringable[]|string|null $contents Inner contents, pre-escaped if needed
+     * @param bool $selfClosing Whether the tag is self-closing
      */
     public function __construct(string $tagName, array $attributes = [], $contents = '', bool $selfClosing = false)
     {
-        $this->tagName     = $tagName;
+        $this->tagName = $tagName;
         $this->selfClosing = $selfClosing;
 
         foreach ($attributes as $name => $value) {
@@ -46,6 +46,20 @@ final class HtmlElement implements \Stringable
         }
 
         $this->setContents($contents ?? '');
+    }
+
+    /**
+     * @param string|string[]|bool $value
+     */
+    public function setAttribute(string $key, $value): self
+    {
+        if (\is_array($value)) {
+            $this->attributes[$key] = \implode(' ', \array_unique($value));
+        } else {
+            $this->attributes[$key] = $value;
+        }
+
+        return $this;
     }
 
     /** @psalm-immutable */
@@ -75,27 +89,13 @@ final class HtmlElement implements \Stringable
     }
 
     /**
-     * @param string|string[]|bool $value
-     */
-    public function setAttribute(string $key, $value): self
-    {
-        if (\is_array($value)) {
-            $this->attributes[$key] = \implode(' ', \array_unique($value));
-        } else {
-            $this->attributes[$key] = $value;
-        }
-
-        return $this;
-    }
-
-    /**
      * @return \Stringable|\Stringable[]|string
      *
      * @psalm-immutable
      */
     public function getContents(bool $asString = true)
     {
-        if (! $asString) {
+        if (!$asString) {
             return $this->contents;
         }
 
@@ -114,6 +114,20 @@ final class HtmlElement implements \Stringable
         $this->contents = $contents ?? ''; // @phpstan-ignore-line
 
         return $this;
+    }
+
+    /** @psalm-immutable */
+    private function getContentsAsString(): string
+    {
+        if (\is_string($this->contents)) {
+            return $this->contents;
+        }
+
+        if (\is_array($this->contents)) {
+            return \implode('', $this->contents);
+        }
+
+        return (string)$this->contents;
     }
 
     /** @psalm-immutable */
@@ -142,19 +156,5 @@ final class HtmlElement implements \Stringable
         }
 
         return $result;
-    }
-
-    /** @psalm-immutable */
-    private function getContentsAsString(): string
-    {
-        if (\is_string($this->contents)) {
-            return $this->contents;
-        }
-
-        if (\is_array($this->contents)) {
-            return \implode('', $this->contents);
-        }
-
-        return (string) $this->contents;
     }
 }

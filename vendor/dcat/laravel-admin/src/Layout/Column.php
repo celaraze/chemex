@@ -25,7 +25,7 @@ class Column implements Renderable
      * Column constructor.
      *
      * @param $content
-     * @param  int  $width
+     * @param int $width
      */
     public function __construct($content, $width = 12)
     {
@@ -41,8 +41,7 @@ class Column implements Renderable
         // if null, or $this->width is empty array, set as "md" => "12"
         if (is_null($width) || (is_array($width) && count($width) === 0)) {
             $this->width['md'] = 12;
-        }
-        // $this->width is number(old version), set as "md" => $width
+        } // $this->width is number(old version), set as "md" => $width
         elseif (is_numeric($width)) {
             $this->width['md'] = $width;
         } else {
@@ -52,7 +51,7 @@ class Column implements Renderable
 
     protected function normalizeWidth($width)
     {
-        return (int) ($width < 1 ? round(12 * $width) : $width);
+        return (int)($width < 1 ? round(12 * $width) : $width);
     }
 
     /**
@@ -76,7 +75,7 @@ class Column implements Renderable
      */
     public function row($content)
     {
-        if (! $content instanceof \Closure) {
+        if (!$content instanceof \Closure) {
             $row = new Row($content);
         } else {
             $row = new Row();
@@ -105,7 +104,7 @@ class Column implements Renderable
             $html .= Helper::render($content);
         }
 
-        return $html.$this->endColumn();
+        return $html . $this->endColumn();
     }
 
     /**

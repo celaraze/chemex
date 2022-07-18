@@ -32,10 +32,10 @@ interface DeprecatedUuidInterface
     public function getNumberConverter(): NumberConverterInterface;
 
     /**
+     * @return string[]
      * @deprecated Use {@see UuidInterface::getFields()} to get a
      *     {@see FieldsInterface} instance.
      *
-     * @return string[]
      */
     public function getFieldsHex(): array;
 

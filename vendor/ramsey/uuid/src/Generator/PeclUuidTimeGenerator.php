@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Generator;
 
 use function uuid_create;
 use function uuid_parse;
-
 use const UUID_TYPE_TIME;
 
 /**

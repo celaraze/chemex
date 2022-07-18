@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeUnit;
 
-use function array_merge;
-use function count;
 use Countable;
 use IteratorAggregate;
+use function array_merge;
+use function count;
 
 final class CodeUnitCollection implements Countable, IteratorAggregate
 {
@@ -20,6 +21,15 @@ final class CodeUnitCollection implements Countable, IteratorAggregate
      * @psalm-var list<CodeUnit>
      */
     private $codeUnits = [];
+
+    private function __construct()
+    {
+    }
+
+    public static function fromList(CodeUnit ...$items): self
+    {
+        return self::fromArray($items);
+    }
 
     /**
      * @psalm-param list<CodeUnit> $items
@@ -35,21 +45,9 @@ final class CodeUnitCollection implements Countable, IteratorAggregate
         return $collection;
     }
 
-    public static function fromList(CodeUnit ...$items): self
+    private function add(CodeUnit $item): void
     {
-        return self::fromArray($items);
-    }
-
-    private function __construct()
-    {
-    }
-
-    /**
-     * @psalm-return list<CodeUnit>
-     */
-    public function asArray(): array
-    {
-        return $this->codeUnits;
+        $this->codeUnits[] = $item;
     }
 
     public function getIterator(): CodeUnitCollectionIterator
@@ -77,8 +75,11 @@ final class CodeUnitCollection implements Countable, IteratorAggregate
         );
     }
 
-    private function add(CodeUnit $item): void
+    /**
+     * @psalm-return list<CodeUnit>
+     */
+    public function asArray(): array
     {
-        $this->codeUnits[] = $item;
+        return $this->codeUnits;
     }
 }

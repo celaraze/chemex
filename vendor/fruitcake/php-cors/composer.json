@@ -1,7 +1,11 @@
 {
     "name": "fruitcake/php-cors",
     "description": "Cross-origin resource sharing library for the Symfony HttpFoundation",
-    "keywords": ["cors", "symfony", "laravel"],
+    "keywords": [
+        "cors",
+        "symfony",
+        "laravel"
+    ],
     "homepage": "https://github.com/fruitcake/php-cors",
     "type": "library",
     "license": "MIT",

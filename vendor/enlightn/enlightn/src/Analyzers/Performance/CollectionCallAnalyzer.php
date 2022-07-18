@@ -38,9 +38,9 @@ class CollectionCallAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your application performs some aggregations at the Laravel Collection level instead of the database "
-            ."query level. For example, a `Model::all()->count()` call can easily be replaced with a `Model::count()`. "
-            ."Aggregations on collections result in heavy database queries and unneeded Collection loops. This should "
-            ."be avoided for better application performance.";
+            . "query level. For example, a `Model::all()->count()` call can easily be replaced with a `Model::count()`. "
+            . "Aggregations on collections result in heavy database queries and unneeded Collection loops. This should "
+            . "be avoided for better application performance.";
     }
 
     /**

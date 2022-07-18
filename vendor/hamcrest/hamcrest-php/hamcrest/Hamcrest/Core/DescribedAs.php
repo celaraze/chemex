@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\BaseMatcher;
 use Hamcrest\Description;
 use Hamcrest\Matcher;
@@ -14,17 +16,31 @@ use Hamcrest\Matcher;
 class DescribedAs extends BaseMatcher
 {
 
+    const ARG_PATTERN = '/%([0-9]+)/';
     private $_descriptionTemplate;
     private $_matcher;
     private $_values;
-
-    const ARG_PATTERN = '/%([0-9]+)/';
 
     public function __construct($descriptionTemplate, Matcher $matcher, array $values)
     {
         $this->_descriptionTemplate = $descriptionTemplate;
         $this->_matcher = $matcher;
         $this->_values = $values;
+    }
+
+    /**
+     * Wraps an existing matcher and overrides the description when it fails.
+     *
+     * @factory ...
+     */
+    public static function describedAs(/* $description, Hamcrest\Matcher $matcher, $values... */)
+    {
+        $args = func_get_args();
+        $description = array_shift($args);
+        $matcher = array_shift($args);
+        $values = $args;
+
+        return new self($description, $matcher, $values);
     }
 
     public function matches($item)
@@ -49,20 +65,5 @@ class DescribedAs extends BaseMatcher
         if ($textStart < strlen($this->_descriptionTemplate)) {
             $description->appendText(substr($this->_descriptionTemplate, $textStart));
         }
-    }
-
-    /**
-     * Wraps an existing matcher and overrides the description when it fails.
-     *
-     * @factory ...
-     */
-    public static function describedAs(/* $description, Hamcrest\Matcher $matcher, $values... */)
-    {
-        $args = func_get_args();
-        $description = array_shift($args);
-        $matcher = array_shift($args);
-        $values = $args;
-
-        return new self($description, $matcher, $values);
     }
 }

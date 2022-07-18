@@ -21,20 +21,6 @@ class XLSX implements EscaperInterface
     private $controlCharactersEscapingReverseMap;
 
     /**
-     * Initializes the control characters if not already done
-     */
-    protected function initIfNeeded()
-    {
-        if (!$this->isAlreadyInitialized) {
-            $this->escapableControlCharactersPattern = $this->getEscapableControlCharactersPattern();
-            $this->controlCharactersEscapingMap = $this->getControlCharactersEscapingMap();
-            $this->controlCharactersEscapingReverseMap = \array_flip($this->controlCharactersEscapingMap);
-
-            $this->isAlreadyInitialized = true;
-        }
-    }
-
-    /**
      * Escapes the given string to make it compatible with XLSX
      *
      * @param string $string The string to escape
@@ -53,24 +39,17 @@ class XLSX implements EscaperInterface
     }
 
     /**
-     * Unescapes the given string to make it compatible with XLSX
-     *
-     * @param string $string The string to unescape
-     * @return string The unescaped string
+     * Initializes the control characters if not already done
      */
-    public function unescape($string)
+    protected function initIfNeeded()
     {
-        $this->initIfNeeded();
+        if (!$this->isAlreadyInitialized) {
+            $this->escapableControlCharactersPattern = $this->getEscapableControlCharactersPattern();
+            $this->controlCharactersEscapingMap = $this->getControlCharactersEscapingMap();
+            $this->controlCharactersEscapingReverseMap = \array_flip($this->controlCharactersEscapingMap);
 
-        // ==============
-        // =   WARNING  =
-        // ==============
-        // It is assumed that the given string has already had its XML entities decoded.
-        // This is true if the string is coming from a DOMNode (as DOMNode already decode XML entities on creation).
-        // Therefore there is no need to call "htmlspecialchars_decode()".
-        $unescapedString = $this->unescapeControlCharacters($string);
-
-        return $unescapedString;
+            $this->isAlreadyInitialized = true;
+        }
     }
 
     /**
@@ -81,10 +60,10 @@ class XLSX implements EscaperInterface
         // control characters values are from 0 to 1F (hex values) in the ASCII table
         // some characters should not be escaped though: "\t", "\r" and "\n".
         return '[\x00-\x08' .
-                // skipping "\t" (0x9) and "\n" (0xA)
-                '\x0B-\x0C' .
-                // skipping "\r" (0xD)
-                '\x0E-\x1F]';
+            // skipping "\t" (0x9) and "\n" (0xA)
+            '\x0B-\x0C' .
+            // skipping "\r" (0xD)
+            '\x0E-\x1F]';
     }
 
     /**
@@ -150,6 +129,27 @@ class XLSX implements EscaperInterface
     protected function escapeEscapeCharacter($string)
     {
         return \preg_replace('/_(x[\dA-F]{4})_/', '_x005F_$1_', $string);
+    }
+
+    /**
+     * Unescapes the given string to make it compatible with XLSX
+     *
+     * @param string $string The string to unescape
+     * @return string The unescaped string
+     */
+    public function unescape($string)
+    {
+        $this->initIfNeeded();
+
+        // ==============
+        // =   WARNING  =
+        // ==============
+        // It is assumed that the given string has already had its XML entities decoded.
+        // This is true if the string is coming from a DOMNode (as DOMNode already decode XML entities on creation).
+        // Therefore there is no need to call "htmlspecialchars_decode()".
+        $unescapedString = $this->unescapeControlCharacters($string);
+
+        return $unescapedString;
     }
 
     /**

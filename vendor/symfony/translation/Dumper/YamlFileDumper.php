@@ -45,7 +45,7 @@ class YamlFileDumper extends FileDumper
             $data = ArrayConverter::expandToTree($data);
         }
 
-        if (isset($options['inline']) && ($inline = (int) $options['inline']) > 0) {
+        if (isset($options['inline']) && ($inline = (int)$options['inline']) > 0) {
             return Yaml::dump($data, $inline);
         }
 

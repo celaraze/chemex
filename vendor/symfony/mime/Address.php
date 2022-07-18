@@ -55,35 +55,19 @@ final class Address
         }
     }
 
-    public function getAddress(): string
+    /**
+     * @param array<Address|string> $addresses
+     *
+     * @return Address[]
+     */
+    public static function createArray(array $addresses): array
     {
-        return $this->address;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getEncodedAddress(): string
-    {
-        self::$encoder ??= new IdnAddressEncoder();
-
-        return self::$encoder->encodeString($this->address);
-    }
-
-    public function toString(): string
-    {
-        return ($n = $this->getEncodedName()) ? $n.' <'.$this->getEncodedAddress().'>' : $this->getEncodedAddress();
-    }
-
-    public function getEncodedName(): string
-    {
-        if ('' === $this->getName()) {
-            return '';
+        $addrs = [];
+        foreach ($addresses as $address) {
+            $addrs[] = self::create($address);
         }
 
-        return sprintf('"%s"', preg_replace('/"/u', '\"', $this->getName()));
+        return $addrs;
     }
 
     public static function create(self|string $address): self
@@ -103,18 +87,34 @@ final class Address
         return new self($matches['addrSpec'], trim($matches['displayName'], ' \'"'));
     }
 
-    /**
-     * @param array<Address|string> $addresses
-     *
-     * @return Address[]
-     */
-    public static function createArray(array $addresses): array
+    public function getAddress(): string
     {
-        $addrs = [];
-        foreach ($addresses as $address) {
-            $addrs[] = self::create($address);
+        return $this->address;
+    }
+
+    public function toString(): string
+    {
+        return ($n = $this->getEncodedName()) ? $n . ' <' . $this->getEncodedAddress() . '>' : $this->getEncodedAddress();
+    }
+
+    public function getEncodedName(): string
+    {
+        if ('' === $this->getName()) {
+            return '';
         }
 
-        return $addrs;
+        return sprintf('"%s"', preg_replace('/"/u', '\"', $this->getName()));
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getEncodedAddress(): string
+    {
+        self::$encoder ??= new IdnAddressEncoder();
+
+        return self::$encoder->encodeString($this->address);
     }
 }

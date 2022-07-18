@@ -8,7 +8,6 @@ use Doctrine\DBAL\Tools\Console\Command\RunSqlCommand;
 use Exception;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-
 use function assert;
 
 /**
@@ -52,9 +51,9 @@ class ConsoleRunner
     /**
      * Prints the instructions to create a configuration file
      *
+     * @return void
      * @deprecated This method will be removed without replacement.
      *
-     * @return void
      */
     public static function printCliConfigTemplate()
     {

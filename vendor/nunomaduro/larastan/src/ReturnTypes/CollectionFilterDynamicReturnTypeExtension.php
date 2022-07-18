@@ -41,12 +41,13 @@ class CollectionFilterDynamicReturnTypeExtension implements DynamicMethodReturnT
 
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $calledOnType = $scope->getType($methodCall->var);
 
-        if (! $calledOnType instanceof \PHPStan\Type\Generic\GenericObjectType) {
+        if (!$calledOnType instanceof \PHPStan\Type\Generic\GenericObjectType) {
             return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
         }
 
@@ -86,7 +87,7 @@ class CollectionFilterDynamicReturnTypeExtension implements DynamicMethodReturnT
         }
 
         if ($var !== null && $expr !== null) {
-            if (! $var instanceof Variable || ! is_string($var->name)) {
+            if (!$var instanceof Variable || !is_string($var->name)) {
                 throw new \PHPStan\ShouldNotHappenException();
             }
 

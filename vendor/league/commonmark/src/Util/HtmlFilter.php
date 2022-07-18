@@ -28,7 +28,7 @@ final class HtmlFilter
     /**
      * Runs the given HTML through the given filter
      *
-     * @param string $html   HTML input to be filtered
+     * @param string $html HTML input to be filtered
      * @param string $filter One of the HtmlFilter constants
      *
      * @return string Filtered HTML

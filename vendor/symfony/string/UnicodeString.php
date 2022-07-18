@@ -44,7 +44,7 @@ class UnicodeString extends AbstractUnicodeString
     public function append(string ...$suffix): static
     {
         $str = clone $this;
-        $str->string = $this->string.(1 >= \count($suffix) ? ($suffix[0] ?? '') : implode('', $suffix));
+        $str->string = $this->string . (1 >= \count($suffix) ? ($suffix[0] ?? '') : implode('', $suffix));
         normalizer_is_normalized($str->string) ?: $str->string = normalizer_normalize($str->string);
 
         if (false === $str->string) {
@@ -69,7 +69,7 @@ class UnicodeString extends AbstractUnicodeString
             $rx .= '\X{65535}';
             $length -= 65535;
         }
-        $rx .= '\X{'.$length.'})/u';
+        $rx .= '\X{' . $length . '})/u';
 
         $str = clone $this;
         $chunks = [];
@@ -208,7 +208,7 @@ class UnicodeString extends AbstractUnicodeString
     public function prepend(string ...$prefix): static
     {
         $str = clone $this;
-        $str->string = (1 >= \count($prefix) ? ($prefix[0] ?? '') : implode('', $prefix)).$this->string;
+        $str->string = (1 >= \count($prefix) ? ($prefix[0] ?? '') : implode('', $prefix)) . $this->string;
         normalizer_is_normalized($str->string) ?: $str->string = normalizer_normalize($str->string);
 
         if (false === $str->string) {
@@ -230,11 +230,11 @@ class UnicodeString extends AbstractUnicodeString
 
             while ('' !== $tail && false !== $i = $indexOf($tail, $from)) {
                 $slice = grapheme_substr($tail, 0, $i);
-                $result .= $slice.$to;
+                $result .= $slice . $to;
                 $tail = substr($tail, \strlen($slice) + \strlen($from));
             }
 
-            $str->string = $result.$tail;
+            $str->string = $result . $tail;
             normalizer_is_normalized($str->string) ?: $str->string = normalizer_normalize($str->string);
 
             if (false === $str->string) {
@@ -257,7 +257,7 @@ class UnicodeString extends AbstractUnicodeString
     {
         $str = clone $this;
 
-        $str->string = (string) grapheme_substr($this->string, $start, $length ?? 2147483647);
+        $str->string = (string)grapheme_substr($this->string, $start, $length ?? 2147483647);
 
         return $str;
     }
@@ -289,7 +289,7 @@ class UnicodeString extends AbstractUnicodeString
         }
 
         if (null !== $flags) {
-            return parent::split($delimiter.'u', $limit, $flags);
+            return parent::split($delimiter . 'u', $limit, $flags);
         }
 
         normalizer_is_normalized($delimiter) ?: $delimiter = normalizer_normalize($delimiter);
@@ -341,7 +341,7 @@ class UnicodeString extends AbstractUnicodeString
     public function __wakeup()
     {
         if (!\is_string($this->string)) {
-            throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+            throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
         }
 
         normalizer_is_normalized($this->string) ?: $this->string = normalizer_normalize($this->string);

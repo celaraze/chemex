@@ -11,9 +11,9 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LogmaticFormatter;
+use Monolog\Logger;
 
 /**
  * @author Julien Breux <julien.breux@gmail.com>
@@ -36,10 +36,10 @@ class LogmaticHandler extends SocketHandler
     private $appname;
 
     /**
-     * @param string     $token    Log token supplied by Logmatic.
-     * @param string     $hostname Host name supplied by Logmatic.
-     * @param string     $appname  Application name supplied by Logmatic.
-     * @param bool       $useSSL   Whether or not SSL encryption should be used.
+     * @param string $token Log token supplied by Logmatic.
+     * @param string $hostname Host name supplied by Logmatic.
+     * @param string $appname Application name supplied by Logmatic.
+     * @param bool $useSSL Whether or not SSL encryption should be used.
      *
      * @throws MissingExtensionException If SSL encryption is set to true and OpenSSL is missing
      */
@@ -47,15 +47,16 @@ class LogmaticHandler extends SocketHandler
         string $token,
         string $hostname = '',
         string $appname = '',
-        bool $useSSL = true,
-        $level = Logger::DEBUG,
-        bool $bubble = true,
-        bool $persistent = false,
-        float $timeout = 0.0,
-        float $writingTimeout = 10.0,
+        bool   $useSSL = true,
+               $level = Logger::DEBUG,
+        bool   $bubble = true,
+        bool   $persistent = false,
+        float  $timeout = 0.0,
+        float  $writingTimeout = 10.0,
         ?float $connectionTimeout = null,
-        ?int $chunkSize = null
-    ) {
+        ?int   $chunkSize = null
+    )
+    {
         if ($useSSL && !extension_loaded('openssl')) {
             throw new MissingExtensionException('The OpenSSL PHP extension is required to use SSL encrypted connection for LogmaticHandler');
         }
@@ -76,7 +77,7 @@ class LogmaticHandler extends SocketHandler
 
         $this->logToken = $token;
         $this->hostname = $hostname;
-        $this->appname  = $appname;
+        $this->appname = $appname;
     }
 
     /**

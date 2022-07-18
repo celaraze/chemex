@@ -122,5 +122,6 @@ Avoids licensing issues with prettify, and uses a maintaned, modern project.
 
 Backwards compatibility breaking changes:
 
-* `Run` class is now `final`. If you inherited from `Run`, please now instead use a custom `SystemFacade` injected into the `Run` constructor, or contribute your changes to our core.
+* `Run` class is now `final`. If you inherited from `Run`, please now instead use a custom `SystemFacade` injected into
+  the `Run` constructor, or contribute your changes to our core.
 * PHP < 5.5 support dropped.

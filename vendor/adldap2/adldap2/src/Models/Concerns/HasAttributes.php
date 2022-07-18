@@ -64,19 +64,6 @@ trait HasAttributes
     }
 
     /**
-     * Synchronizes the models original attributes
-     * with the model's current attributes.
-     *
-     * @return $this
-     */
-    public function syncOriginal()
-    {
-        $this->original = $this->attributes;
-
-        return $this;
-    }
-
-    /**
      * Returns the models attribute with the specified key.
      *
      * If a sub-key is specified, it will try and
@@ -104,48 +91,43 @@ trait HasAttributes
     }
 
     /**
-     * Returns the first attribute by the specified key.
+     * Returns a normalized attribute key.
      *
      * @param string $key
      *
-     * @return mixed
+     * @return string
      */
-    public function getFirstAttribute($key)
+    protected function normalizeAttributeKey($key)
     {
-        return $this->getAttribute($key, 0);
+        return strtolower($key);
     }
 
     /**
-     * Returns all of the models attributes.
+     * Returns true / false if the specified attribute
+     * exists in the attributes array.
      *
-     * @return array
+     * @param int|string $key
+     * @param int|string $subKey
+     *
+     * @return bool
      */
-    public function getAttributes()
+    public function hasAttribute($key, $subKey = null)
     {
-        return $this->attributes;
-    }
+        // Normalize key.
+        $key = $this->normalizeAttributeKey($key);
 
-    /**
-     * Fills the entry with the supplied attributes.
-     *
-     * @param array $attributes
-     *
-     * @return $this
-     */
-    public function fill(array $attributes = [])
-    {
-        foreach ($attributes as $key => $value) {
-            $this->setAttribute($key, $value);
+        if (is_null($subKey)) {
+            return Arr::has($this->attributes, $key);
         }
 
-        return $this;
+        return Arr::has($this->attributes, "$key.$subKey");
     }
 
     /**
      * Sets an attributes value by the specified key and sub-key.
      *
      * @param int|string $key
-     * @param mixed      $value
+     * @param mixed $value
      * @param int|string $subKey
      *
      * @return $this
@@ -171,10 +153,38 @@ trait HasAttributes
     }
 
     /**
+     * Returns the first attribute by the specified key.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function getFirstAttribute($key)
+    {
+        return $this->getAttribute($key, 0);
+    }
+
+    /**
+     * Fills the entry with the supplied attributes.
+     *
+     * @param array $attributes
+     *
+     * @return $this
+     */
+    public function fill(array $attributes = [])
+    {
+        foreach ($attributes as $key => $value) {
+            $this->setAttribute($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Sets the first attributes value by the specified key.
      *
      * @param int|string $key
-     * @param mixed      $value
+     * @param mixed $value
      *
      * @return $this
      */
@@ -225,7 +235,7 @@ trait HasAttributes
     /**
      * Filters the count key recursively from raw LDAP attributes.
      *
-     * @param array        $attributes
+     * @param array $attributes
      * @param array|string $keys
      *
      * @return array
@@ -244,24 +254,16 @@ trait HasAttributes
     }
 
     /**
-     * Returns true / false if the specified attribute
-     * exists in the attributes array.
+     * Synchronizes the models original attributes
+     * with the model's current attributes.
      *
-     * @param int|string $key
-     * @param int|string $subKey
-     *
-     * @return bool
+     * @return $this
      */
-    public function hasAttribute($key, $subKey = null)
+    public function syncOriginal()
     {
-        // Normalize key.
-        $key = $this->normalizeAttributeKey($key);
+        $this->original = $this->attributes;
 
-        if (is_null($subKey)) {
-            return Arr::has($this->attributes, $key);
-        }
-
-        return Arr::has($this->attributes, "$key.$subKey");
+        return $this;
     }
 
     /**
@@ -273,6 +275,16 @@ trait HasAttributes
     public function countAttributes()
     {
         return count($this->getAttributes());
+    }
+
+    /**
+     * Returns all of the models attributes.
+     *
+     * @return array
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
     }
 
     /**
@@ -306,18 +318,6 @@ trait HasAttributes
     }
 
     /**
-     * Returns a normalized attribute key.
-     *
-     * @param string $key
-     *
-     * @return string
-     */
-    protected function normalizeAttributeKey($key)
-    {
-        return strtolower($key);
-    }
-
-    /**
      * Determine if the new and old values for a given key are equivalent.
      *
      * @param string $key
@@ -338,8 +338,8 @@ trait HasAttributes
             return true;
         }
 
-        return  is_numeric($current) &&
-                is_numeric($original) &&
-                strcmp((string) $current, (string) $original) === 0;
+        return is_numeric($current) &&
+            is_numeric($original) &&
+            strcmp((string)$current, (string)$original) === 0;
     }
 }

@@ -15,25 +15,29 @@ class FuncCall extends CallLike
     /**
      * Constructs a function call node.
      *
-     * @param Node\Name|Expr                           $name       Function name
-     * @param array<Node\Arg|Node\VariadicPlaceholder> $args       Arguments
-     * @param array                                    $attributes Additional attributes
+     * @param Node\Name|Expr $name Function name
+     * @param array<Node\Arg|Node\VariadicPlaceholder> $args Arguments
+     * @param array $attributes Additional attributes
      */
-    public function __construct($name, array $args = [], array $attributes = []) {
+    public function __construct($name, array $args = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->name = $name;
         $this->args = $args;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['name', 'args'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_FuncCall';
     }
 
-    public function getRawArgs(): array {
+    public function getRawArgs(): array
+    {
         return $this->args;
     }
 }

@@ -16,7 +16,7 @@ interface Claim
     /**
      * Set the claim value, and call a validate method.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return $this
      *
      * @throws \Tymon\JWTAuth\Exceptions\InvalidClaimException
@@ -33,7 +33,7 @@ interface Claim
     /**
      * Set the claim name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function setName($name);
@@ -48,7 +48,7 @@ interface Claim
     /**
      * Validate the Claim value.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function validateCreate($value);

@@ -16,14 +16,14 @@ trait InteractsWithBroadcasting
     /**
      * Broadcast the event using a specific broadcaster.
      *
-     * @param  array|string|null  $connection
+     * @param array|string|null $connection
      * @return $this
      */
     public function broadcastVia($connection = null)
     {
         $this->broadcastConnection = is_null($connection)
-                        ? [null]
-                        : Arr::wrap($connection);
+            ? [null]
+            : Arr::wrap($connection);
 
         return $this;
     }

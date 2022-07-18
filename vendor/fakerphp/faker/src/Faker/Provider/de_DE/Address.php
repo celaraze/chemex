@@ -96,6 +96,19 @@ class Address extends \Faker\Provider\Address
         "{{streetAddress}}\n{{postcode}} {{city}}",
     ];
 
+    /**
+     * @example 'Berlin'
+     */
+    public static function state()
+    {
+        return static::randomElement(static::$state);
+    }
+
+    public static function buildingNumber()
+    {
+        return static::regexify(self::numerify(static::randomElement(static::$buildingNumber)));
+    }
+
     public function cityName()
     {
         return static::randomElement(static::$cityNames);
@@ -109,18 +122,5 @@ class Address extends \Faker\Provider\Address
     public function streetSuffixLong()
     {
         return static::randomElement(static::$streetSuffixLong);
-    }
-
-    /**
-     * @example 'Berlin'
-     */
-    public static function state()
-    {
-        return static::randomElement(static::$state);
-    }
-
-    public static function buildingNumber()
-    {
-        return static::regexify(self::numerify(static::randomElement(static::$buildingNumber)));
     }
 }

@@ -8,10 +8,10 @@ function includeIfExists($file)
     }
 }
 
-if ((!$loader = includeIfExists(__DIR__.'/vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../autoload.php'))) {
-    die('You must have Composer installed and must run the composer install CLI command.'.PHP_EOL.
-        'Download Composer from the website: https://getcomposer.org/download/'.PHP_EOL.
-        'Then, run the "composer install" command.'.PHP_EOL);
+if ((!$loader = includeIfExists(__DIR__ . '/vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__ . '/../../autoload.php'))) {
+    die('You must have Composer installed and must run the composer install CLI command.' . PHP_EOL .
+        'Download Composer from the website: https://getcomposer.org/download/' . PHP_EOL .
+        'Then, run the "composer install" command.' . PHP_EOL);
 }
 
 use Enlightn\SecurityChecker\SecurityCheckerCommand;

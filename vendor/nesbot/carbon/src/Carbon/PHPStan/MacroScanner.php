@@ -42,9 +42,9 @@ final class MacroScanner
      *
      * @param string $methodName
      *
+     * @return Macro
      * @throws ReflectionException
      *
-     * @return Macro
      */
     public function getMethod(string $className, string $methodName): Macro
     {

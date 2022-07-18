@@ -41,19 +41,12 @@ class Condition
         $this->column = $column;
     }
 
-    public function then(\Closure $closure)
-    {
-        $this->next[] = $closure;
-
-        return $this;
-    }
-
     public function else(\Closure $next = null)
     {
         $self = $this;
 
         $condition = $this->column->if(function () use ($self) {
-            return ! $self->getResult();
+            return !$self->getResult();
         });
 
         if ($next) {
@@ -63,54 +56,23 @@ class Condition
         return $condition;
     }
 
+    public function getResult()
+    {
+        return $this->result;
+    }
+
+    public function then(\Closure $closure)
+    {
+        $this->next[] = $closure;
+
+        return $this;
+    }
+
     public function process()
     {
         if ($this->is()) {
             $this->callCallbacks($this->next);
         }
-    }
-
-    public function end()
-    {
-        return $this->if(function () {
-            return true;
-        });
-    }
-
-    protected function callCallbacks(array $callbacks)
-    {
-        if (! $callbacks) {
-            return;
-        }
-
-        $column = $this->copy();
-
-        foreach ($callbacks as $callback) {
-            $this->call($callback, $column);
-        }
-
-        $this->setColumnDisplayers($column->getDisplayCallbacks());
-    }
-
-    public function reset()
-    {
-        $this->setColumnDisplayers($this->original->getDisplayCallbacks());
-    }
-
-    public function setColumnDisplayers(array $callbacks)
-    {
-        $this->column->setDisplayCallbacks($callbacks);
-    }
-
-    protected function copy()
-    {
-        $column = clone $this->original;
-
-        $column->setOriginalModel($this->column->getOriginalModel());
-        $column->setOriginal($this->column->getOriginal());
-        $column->setValue($this->column->getValue());
-
-        return $column;
     }
 
     public function is()
@@ -124,16 +86,54 @@ class Condition
         return $this->result = $condition ? true : false;
     }
 
-    public function getResult()
-    {
-        return $this->result;
-    }
-
     protected function call(\Closure $callback, $column = null)
     {
         $column = $column ?: $this->column;
 
         return $callback->call($this->column->getOriginalModel(), $column);
+    }
+
+    protected function callCallbacks(array $callbacks)
+    {
+        if (!$callbacks) {
+            return;
+        }
+
+        $column = $this->copy();
+
+        foreach ($callbacks as $callback) {
+            $this->call($callback, $column);
+        }
+
+        $this->setColumnDisplayers($column->getDisplayCallbacks());
+    }
+
+    protected function copy()
+    {
+        $column = clone $this->original;
+
+        $column->setOriginalModel($this->column->getOriginalModel());
+        $column->setOriginal($this->column->getOriginal());
+        $column->setValue($this->column->getValue());
+
+        return $column;
+    }
+
+    public function setColumnDisplayers(array $callbacks)
+    {
+        $this->column->setDisplayCallbacks($callbacks);
+    }
+
+    public function end()
+    {
+        return $this->if(function () {
+            return true;
+        });
+    }
+
+    public function reset()
+    {
+        $this->setColumnDisplayers($this->original->getDisplayCallbacks());
     }
 
     public function __call($name, $arguments)

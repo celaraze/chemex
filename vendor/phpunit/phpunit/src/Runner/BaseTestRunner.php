@@ -7,16 +7,17 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Runner;
 
-use function is_dir;
-use function is_file;
-use function substr;
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\TestSuite;
 use ReflectionClass;
 use ReflectionException;
 use SebastianBergmann\FileIterator\Facade as FileIteratorFacade;
+use function is_dir;
+use function is_file;
+use function substr;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -67,14 +68,6 @@ abstract class BaseTestRunner
      * @var string
      */
     public const SUITE_METHODNAME = 'suite';
-
-    /**
-     * Returns the loader to be used.
-     */
-    public function getLoader(): TestSuiteLoader
-    {
-        return new StandardTestSuiteLoader;
-    }
 
     /**
      * Returns the Test corresponding to the given suite.
@@ -147,10 +140,11 @@ abstract class BaseTestRunner
     }
 
     /**
-     * Clears the status message.
+     * Returns the loader to be used.
      */
-    protected function clearStatus(): void
+    public function getLoader(): TestSuiteLoader
     {
+        return new StandardTestSuiteLoader;
     }
 
     /**
@@ -158,4 +152,11 @@ abstract class BaseTestRunner
      * a test suite.
      */
     abstract protected function runFailed(string $message): void;
+
+    /**
+     * Clears the status message.
+     */
+    protected function clearStatus(): void
+    {
+    }
 }

@@ -26,22 +26,22 @@ final class Run implements RunInterface
     /**
      * @var bool
      */
-    private $allowQuit       = true;
+    private $allowQuit = true;
 
     /**
      * @var bool
      */
-    private $sendOutput      = true;
+    private $sendOutput = true;
 
     /**
      * @var integer|false
      */
-    private $sendHttpCode    = 500;
+    private $sendHttpCode = 500;
 
     /**
      * @var integer|false
      */
-    private $sendExitCode    = 1;
+    private $sendExitCode = 1;
 
     /**
      * @var HandlerInterface[]
@@ -85,6 +85,31 @@ final class Run implements RunInterface
     }
 
     /**
+     * Resolves the giving handler.
+     *
+     * @param callable|HandlerInterface $handler
+     *
+     * @return HandlerInterface
+     *
+     * @throws InvalidArgumentException
+     */
+    private function resolveHandler($handler)
+    {
+        if (is_callable($handler)) {
+            $handler = new CallbackHandler($handler);
+        }
+
+        if (!$handler instanceof HandlerInterface) {
+            throw new InvalidArgumentException(
+                "Handler must be a callable, or instance of "
+                . "Whoops\\Handler\\HandlerInterface"
+            );
+        }
+
+        return $handler;
+    }
+
+    /**
      * Explicitly request your handler runs as the first of all currently registered handlers.
      *
      * @param callable|HandlerInterface $handler
@@ -115,9 +140,9 @@ final class Run implements RunInterface
     /**
      * Removes and returns the last handler pushed to the handler stack.
      *
+     * @return HandlerInterface|null
      * @see Run::removeFirstHandler(), Run::removeLastHandler()
      *
-     * @return HandlerInterface|null
      */
     public function popHandler()
     {
@@ -208,26 +233,10 @@ final class Run implements RunInterface
     }
 
     /**
-     * Should Whoops allow Handlers to force the script to quit?
-     *
-     * @param bool|int $exit
-     *
-     * @return bool
-     */
-    public function allowQuit($exit = null)
-    {
-        if (func_num_args() == 0) {
-            return $this->allowQuit;
-        }
-
-        return $this->allowQuit = (bool) $exit;
-    }
-
-    /**
      * Silence particular errors in particular files.
      *
      * @param array|string $patterns List or a single regex pattern to match.
-     * @param int          $levels   Defaults to E_STRICT | E_DEPRECATED.
+     * @param int $levels Defaults to E_STRICT | E_DEPRECATED.
      *
      * @return Run
      */
@@ -242,7 +251,7 @@ final class Run implements RunInterface
                         "levels" => $levels,
                     ];
                 },
-                (array) $patterns
+                (array)$patterns
             )
         );
 
@@ -260,79 +269,73 @@ final class Run implements RunInterface
     }
 
     /**
-     * Should Whoops send HTTP error code to the browser if possible?
-     * Whoops will by default send HTTP code 500, but you may wish to
-     * use 502, 503, or another 5xx family code.
+     * Special case to deal with Fatal errors and the like.
      *
-     * @param bool|int $code
-     *
-     * @return int|false
-     *
-     * @throws InvalidArgumentException
+     * @return void
      */
-    public function sendHttpCode($code = null)
+    public function handleShutdown()
     {
-        if (func_num_args() == 0) {
-            return $this->sendHttpCode;
-        }
+        // If we reached this step, we are in shutdown handler.
+        // An exception thrown in a shutdown handler will not be propagated
+        // to the exception handler. Pass that information along.
+        $this->canThrowExceptions = false;
 
-        if (!$code) {
-            return $this->sendHttpCode = false;
-        }
-
-        if ($code === true) {
-            $code = 500;
-        }
-
-        if ($code < 400 || 600 <= $code) {
-            throw new InvalidArgumentException(
-                "Invalid status code '$code', must be 4xx or 5xx"
+        $error = $this->system->getLastError();
+        if ($error && Misc::isLevelFatal($error['type'])) {
+            // If there was a fatal error,
+            // it was not handled in handleError yet.
+            $this->allowQuit = false;
+            $this->handleError(
+                $error['type'],
+                $error['message'],
+                $error['file'],
+                $error['line']
             );
         }
-
-        return $this->sendHttpCode = $code;
     }
 
     /**
-     * Should Whoops exit with a specific code on the CLI if possible?
-     * Whoops will exit with 1 by default, but you can specify something else.
+     * Converts generic PHP errors to \ErrorException instances, before passing them off to be handled.
      *
-     * @param int $code
+     * This method MUST be compatible with set_error_handler.
      *
-     * @return int
-     *
-     * @throws InvalidArgumentException
-     */
-    public function sendExitCode($code = null)
-    {
-        if (func_num_args() == 0) {
-            return $this->sendExitCode;
-        }
-
-        if ($code < 0 || 255 <= $code) {
-            throw new InvalidArgumentException(
-                "Invalid status code '$code', must be between 0 and 254"
-            );
-        }
-
-        return $this->sendExitCode = (int) $code;
-    }
-
-    /**
-     * Should Whoops push output directly to the client?
-     * If this is false, output will be returned by handleException.
-     *
-     * @param bool|int $send
+     * @param int $level
+     * @param string $message
+     * @param string|null $file
+     * @param int|null $line
      *
      * @return bool
+     *
+     * @throws ErrorException
      */
-    public function writeToOutput($send = null)
+    public function handleError($level, $message, $file = null, $line = null)
     {
-        if (func_num_args() == 0) {
-            return $this->sendOutput;
+        if ($level & $this->system->getErrorReportingLevel()) {
+            foreach ($this->silencedPatterns as $entry) {
+                $pathMatches = (bool)preg_match($entry["pattern"], $file);
+                $levelMatches = $level & $entry["levels"];
+                if ($pathMatches && $levelMatches) {
+                    // Ignore the error, abort handling
+                    // See https://github.com/filp/whoops/issues/418
+                    return true;
+                }
+            }
+
+            // XXX we pass $level for the "code" param only for BC reasons.
+            // see https://github.com/filp/whoops/issues/267
+            $exception = new ErrorException($message, /*code*/ $level, /*severity*/ $level, $file, $line);
+            if ($this->canThrowExceptions) {
+                throw $exception;
+            } else {
+                $this->handleException($exception);
+            }
+            // Do not propagate errors which were already handled by Whoops.
+            return true;
         }
 
-        return $this->sendOutput = (bool) $send;
+        // Propagate error to the next handler, allows error_get_last() to
+        // work on silenced errors.
+        return false;
     }
 
     /**
@@ -419,76 +422,6 @@ final class Run implements RunInterface
     }
 
     /**
-     * Converts generic PHP errors to \ErrorException instances, before passing them off to be handled.
-     *
-     * This method MUST be compatible with set_error_handler.
-     *
-     * @param int         $level
-     * @param string      $message
-     * @param string|null $file
-     * @param int|null    $line
-     *
-     * @return bool
-     *
-     * @throws ErrorException
-     */
-    public function handleError($level, $message, $file = null, $line = null)
-    {
-        if ($level & $this->system->getErrorReportingLevel()) {
-            foreach ($this->silencedPatterns as $entry) {
-                $pathMatches = (bool) preg_match($entry["pattern"], $file);
-                $levelMatches = $level & $entry["levels"];
-                if ($pathMatches && $levelMatches) {
-                    // Ignore the error, abort handling
-                    // See https://github.com/filp/whoops/issues/418
-                    return true;
-                }
-            }
-
-            // XXX we pass $level for the "code" param only for BC reasons.
-            // see https://github.com/filp/whoops/issues/267
-            $exception = new ErrorException($message, /*code*/ $level, /*severity*/ $level, $file, $line);
-            if ($this->canThrowExceptions) {
-                throw $exception;
-            } else {
-                $this->handleException($exception);
-            }
-            // Do not propagate errors which were already handled by Whoops.
-            return true;
-        }
-
-        // Propagate error to the next handler, allows error_get_last() to
-        // work on silenced errors.
-        return false;
-    }
-
-    /**
-     * Special case to deal with Fatal errors and the like.
-     *
-     * @return void
-     */
-    public function handleShutdown()
-    {
-        // If we reached this step, we are in shutdown handler.
-        // An exception thrown in a shutdown handler will not be propagated
-        // to the exception handler. Pass that information along.
-        $this->canThrowExceptions = false;
-
-        $error = $this->system->getLastError();
-        if ($error && Misc::isLevelFatal($error['type'])) {
-            // If there was a fatal error,
-            // it was not handled in handleError yet.
-            $this->allowQuit = false;
-            $this->handleError(
-                $error['type'],
-                $error['message'],
-                $error['file'],
-                $error['line']
-            );
-        }
-    }
-
-    /**
      * @param Throwable $exception
      *
      * @return Inspector
@@ -499,28 +432,36 @@ final class Run implements RunInterface
     }
 
     /**
-     * Resolves the giving handler.
+     * Should Whoops allow Handlers to force the script to quit?
      *
-     * @param callable|HandlerInterface $handler
+     * @param bool|int $exit
      *
-     * @return HandlerInterface
-     *
-     * @throws InvalidArgumentException
+     * @return bool
      */
-    private function resolveHandler($handler)
+    public function allowQuit($exit = null)
     {
-        if (is_callable($handler)) {
-            $handler = new CallbackHandler($handler);
+        if (func_num_args() == 0) {
+            return $this->allowQuit;
         }
 
-        if (!$handler instanceof HandlerInterface) {
-            throw new InvalidArgumentException(
-                "Handler must be a callable, or instance of "
-                . "Whoops\\Handler\\HandlerInterface"
-            );
+        return $this->allowQuit = (bool)$exit;
+    }
+
+    /**
+     * Should Whoops push output directly to the client?
+     * If this is false, output will be returned by handleException.
+     *
+     * @param bool|int $send
+     *
+     * @return bool
+     */
+    public function writeToOutput($send = null)
+    {
+        if (func_num_args() == 0) {
+            return $this->sendOutput;
         }
 
-        return $handler;
+        return $this->sendOutput = (bool)$send;
     }
 
     /**
@@ -541,5 +482,64 @@ final class Run implements RunInterface
         echo $output;
 
         return $this;
+    }
+
+    /**
+     * Should Whoops send HTTP error code to the browser if possible?
+     * Whoops will by default send HTTP code 500, but you may wish to
+     * use 502, 503, or another 5xx family code.
+     *
+     * @param bool|int $code
+     *
+     * @return int|false
+     *
+     * @throws InvalidArgumentException
+     */
+    public function sendHttpCode($code = null)
+    {
+        if (func_num_args() == 0) {
+            return $this->sendHttpCode;
+        }
+
+        if (!$code) {
+            return $this->sendHttpCode = false;
+        }
+
+        if ($code === true) {
+            $code = 500;
+        }
+
+        if ($code < 400 || 600 <= $code) {
+            throw new InvalidArgumentException(
+                "Invalid status code '$code', must be 4xx or 5xx"
+            );
+        }
+
+        return $this->sendHttpCode = $code;
+    }
+
+    /**
+     * Should Whoops exit with a specific code on the CLI if possible?
+     * Whoops will exit with 1 by default, but you can specify something else.
+     *
+     * @param int $code
+     *
+     * @return int
+     *
+     * @throws InvalidArgumentException
+     */
+    public function sendExitCode($code = null)
+    {
+        if (func_num_args() == 0) {
+            return $this->sendExitCode;
+        }
+
+        if ($code < 0 || 255 <= $code) {
+            throw new InvalidArgumentException(
+                "Invalid status code '$code', must be between 0 and 254"
+            );
+        }
+
+        return $this->sendExitCode = (int)$code;
     }
 }

@@ -60,8 +60,7 @@ It's also possible to get raw list of commands (useful for embedding command run
 
   <info>%command.full_name% --raw</info>
 EOF
-            )
-        ;
+            );
     }
 
     /**

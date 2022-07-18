@@ -8,14 +8,12 @@ use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Driver\FetchUtils;
 use Doctrine\DBAL\Driver\OCI8\Exception\Error;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
-
 use function oci_cancel;
 use function oci_error;
 use function oci_fetch_all;
 use function oci_fetch_array;
 use function oci_num_fields;
 use function oci_num_rows;
-
 use const OCI_ASSOC;
 use const OCI_FETCHSTATEMENT_BY_COLUMN;
 use const OCI_FETCHSTATEMENT_BY_ROW;
@@ -29,9 +27,9 @@ final class Result implements ResultInterface
     private $statement;
 
     /**
+     * @param resource $statement
      * @internal The result can be only instantiated by its driver connection or statement.
      *
-     * @param resource $statement
      */
     public function __construct($statement)
     {
@@ -44,6 +42,22 @@ final class Result implements ResultInterface
     public function fetchNumeric()
     {
         return $this->fetch(OCI_NUM);
+    }
+
+    /**
+     * @return mixed|false
+     *
+     * @throws Exception
+     */
+    private function fetch(int $mode)
+    {
+        $result = oci_fetch_array($this->statement, $mode | OCI_RETURN_NULLS | OCI_RETURN_LOBS);
+
+        if ($result === false && oci_error($this->statement) !== false) {
+            throw Error::new($this->statement);
+        }
+
+        return $result;
     }
 
     /**
@@ -68,6 +82,22 @@ final class Result implements ResultInterface
     public function fetchAllNumeric(): array
     {
         return $this->fetchAll(OCI_NUM, OCI_FETCHSTATEMENT_BY_ROW);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function fetchAll(int $mode, int $fetchStructure): array
+    {
+        oci_fetch_all(
+            $this->statement,
+            $result,
+            0,
+            -1,
+            $mode | OCI_RETURN_NULLS | $fetchStructure | OCI_RETURN_LOBS
+        );
+
+        return $result;
     }
 
     /**
@@ -111,37 +141,5 @@ final class Result implements ResultInterface
     public function free(): void
     {
         oci_cancel($this->statement);
-    }
-
-    /**
-     * @return mixed|false
-     *
-     * @throws Exception
-     */
-    private function fetch(int $mode)
-    {
-        $result = oci_fetch_array($this->statement, $mode | OCI_RETURN_NULLS | OCI_RETURN_LOBS);
-
-        if ($result === false && oci_error($this->statement) !== false) {
-            throw Error::new($this->statement);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    private function fetchAll(int $mode, int $fetchStructure): array
-    {
-        oci_fetch_all(
-            $this->statement,
-            $result,
-            0,
-            -1,
-            $mode | OCI_RETURN_NULLS | $fetchStructure | OCI_RETURN_LOBS
-        );
-
-        return $result;
     }
 }

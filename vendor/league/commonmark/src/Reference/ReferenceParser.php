@@ -81,6 +81,22 @@ final class ReferenceParser
         return $this->references;
     }
 
+    private function finishReference(): void
+    {
+        if (!$this->referenceValid) {
+            return;
+        }
+
+        /** @psalm-suppress PossiblyNullArgument -- these can't possibly be null if we're in this state */
+        $this->references[] = new Reference($this->label, $this->destination, $this->title);
+
+        $this->label = null;
+        $this->referenceValid = false;
+        $this->destination = null;
+        $this->title = '';
+        $this->titleDelimiter = null;
+    }
+
     public function hasReferences(): bool
     {
         return $this->references !== [];
@@ -95,7 +111,7 @@ final class ReferenceParser
         $this->paragraph .= $line;
 
         $cursor = new Cursor($line);
-        while (! $cursor->isAtEnd()) {
+        while (!$cursor->isAtEnd()) {
             $result = false;
             switch ($this->state) {
                 case self::PARAGRAPH:
@@ -122,7 +138,7 @@ final class ReferenceParser
                     break;
             }
 
-            if (! $result) {
+            if (!$result) {
                 $this->state = self::PARAGRAPH;
 
                 return;
@@ -213,7 +229,7 @@ final class ReferenceParser
             // Destination was at end of line, so this is a valid reference for sure (and maybe a title).
             // If not at end of line, wait for title to be valid first.
             $this->referenceValid = true;
-            $this->paragraph      = '';
+            $this->paragraph = '';
         } elseif ($advanced === 0) {
             // spec: The title must be separated from the link destination by whitespace
             return false;
@@ -282,7 +298,7 @@ final class ReferenceParser
 
         $this->title .= $title;
 
-        if (! $endDelimiterFound && $cursor->isAtEnd()) {
+        if (!$endDelimiterFound && $cursor->isAtEnd()) {
             // Title still going, continue on next line
             $this->title .= "\n";
 
@@ -291,7 +307,7 @@ final class ReferenceParser
 
         // We either hit the end delimiter or some extra whitespace
         $cursor->advanceToNextNonSpaceOrTab();
-        if (! $cursor->isAtEnd()) {
+        if (!$cursor->isAtEnd()) {
             // spec: No further non-whitespace characters may occur on the line.
             return false;
         }
@@ -304,21 +320,5 @@ final class ReferenceParser
         $this->state = self::START_DEFINITION;
 
         return true;
-    }
-
-    private function finishReference(): void
-    {
-        if (! $this->referenceValid) {
-            return;
-        }
-
-        /** @psalm-suppress PossiblyNullArgument -- these can't possibly be null if we're in this state */
-        $this->references[] = new Reference($this->label, $this->destination, $this->title);
-
-        $this->label          = null;
-        $this->referenceValid = false;
-        $this->destination    = null;
-        $this->title          = '';
-        $this->titleDelimiter = null;
     }
 }

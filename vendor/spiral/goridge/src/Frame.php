@@ -43,11 +43,11 @@ final class Frame
      *
      * @var positive-int
      */
-    public const CODEC_RAW     = 0x04;
-    public const CODEC_JSON    = 0x08;
+    public const CODEC_RAW = 0x04;
+    public const CODEC_JSON = 0x08;
     public const CODEC_MSGPACK = 0x10;
-    public const CODEC_GOB     = 0x20;
-    public const CODEC_PROTO   = 0x80;
+    public const CODEC_GOB = 0x20;
+    public const CODEC_PROTO = 0x80;
     /**#@-*/
 
     /**#@+
@@ -86,41 +86,6 @@ final class Frame
         $this->payload = $body;
         $this->options = $options;
         $this->flags = $flags;
-    }
-
-    /**
-     * @param int ...$flag
-     */
-    public function setFlag(int ...$flag): void
-    {
-        foreach ($flag as $f) {
-            if ($f > 255) {
-                throw new InvalidArgumentException('Flags can be byte only');
-            }
-
-            $this->flags |= $f;
-        }
-    }
-
-    /**
-     * @param int $flag
-     * @return bool
-     */
-    public function hasFlag(int $flag): bool
-    {
-        if ($flag > 255) {
-            throw new InvalidArgumentException('Flags can be byte only');
-        }
-
-        return ($this->flags & $flag) !== 0;
-    }
-
-    /**
-     * @param int ...$options
-     */
-    public function setOptions(int ...$options): void
-    {
-        $this->options = $options;
     }
 
     /**
@@ -179,5 +144,40 @@ final class Frame
         $options = \array_values(\unpack('L*', \substr($body, 0, $header[1] * 4)));
 
         return new self(\substr($body, $header[1] * 4), $options, $header[0]);
+    }
+
+    /**
+     * @param int ...$flag
+     */
+    public function setFlag(int ...$flag): void
+    {
+        foreach ($flag as $f) {
+            if ($f > 255) {
+                throw new InvalidArgumentException('Flags can be byte only');
+            }
+
+            $this->flags |= $f;
+        }
+    }
+
+    /**
+     * @param int $flag
+     * @return bool
+     */
+    public function hasFlag(int $flag): bool
+    {
+        if ($flag > 255) {
+            throw new InvalidArgumentException('Flags can be byte only');
+        }
+
+        return ($this->flags & $flag) !== 0;
+    }
+
+    /**
+     * @param int ...$options
+     */
+    public function setOptions(int ...$options): void
+    {
+        $this->options = $options;
     }
 }

@@ -36,7 +36,16 @@ abstract class Filter implements Renderable
     protected $display = true;
 
     /**
-     * @param  Column  $column
+     * @param array ...$params
+     * @return static
+     */
+    public static function make(...$params)
+    {
+        return new static(...$params);
+    }
+
+    /**
+     * @param Column $column
      */
     public function setParent(Column $column)
     {
@@ -53,86 +62,6 @@ abstract class Filter implements Renderable
         foreach ($this->resolvings as $closure) {
             $closure($this);
         }
-    }
-
-    /**
-     * @return Column
-     */
-    public function parent()
-    {
-        return $this->parent;
-    }
-
-    /**
-     * @param  \Closure  $callback
-     * @return $this
-     */
-    public function resolving(\Closure $callback)
-    {
-        $this->resolvings[] = $callback;
-
-        return $this;
-    }
-
-    /**
-     * @param  string  $name
-     * @return $this
-     */
-    public function setColumnName(string $name)
-    {
-        $this->columnName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get column name.
-     *
-     * @return string
-     */
-    public function getColumnName()
-    {
-        return str_replace(['.', '->'], '_', $this->getOriginalColumnName());
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOriginalColumnName()
-    {
-        return $this->columnName ?: $this->parent->getName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getQueryName()
-    {
-        return $this->parent->grid()->makeName(
-            'filter-'.$this->getColumnName()
-        );
-    }
-
-    /**
-     * Get filter value of this column.
-     *
-     * @param  string  $default
-     * @return array|\Illuminate\Http\Request|string
-     */
-    public function value($default = '')
-    {
-        return request($this->getQueryName(), $default);
-    }
-
-    /**
-     * @param  mixed  $model
-     * @param  string  $query
-     * @param mixed array $params
-     * @return void
-     */
-    protected function withQuery($model, string $query, array $params)
-    {
-        Helper::withQueryCondition($model, $this->getOriginalColumnName(), $query, $params);
     }
 
     /**
@@ -153,17 +82,90 @@ abstract class Filter implements Renderable
     }
 
     /**
+     * Get filter value of this column.
+     *
+     * @param string $default
+     * @return array|\Illuminate\Http\Request|string
+     */
+    public function value($default = '')
+    {
+        return request($this->getQueryName(), $default);
+    }
+
+    /**
      * @return string
      */
-    protected function renderFormButtons()
+    public function getQueryName()
     {
-        return <<<HMLT
-<li class="dropdown-divider"></li>
-<li>
-    <button class="btn btn-sm btn-primary column-filter-submit "><i class="feather icon-search"></i></button>&nbsp;
-    <a href="{$this->urlWithoutFilter()}" class="btn btn-sm btn-default"><i class="feather icon-rotate-ccw"></i></a>
-</li>
-HMLT;
+        return $this->parent->grid()->makeName(
+            'filter-' . $this->getColumnName()
+        );
+    }
+
+    /**
+     * Get column name.
+     *
+     * @return string
+     */
+    public function getColumnName()
+    {
+        return str_replace(['.', '->'], '_', $this->getOriginalColumnName());
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function setColumnName(string $name)
+    {
+        $this->columnName = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOriginalColumnName()
+    {
+        return $this->columnName ?: $this->parent->getName();
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldDisplay()
+    {
+        return $this->display;
+    }
+
+    /**
+     * @return string
+     */
+    protected function urlWithoutFilter()
+    {
+        return Helper::fullUrlWithoutQuery([
+            $this->getQueryName(),
+        ]);
+    }
+
+    /**
+     * @return Column
+     */
+    public function parent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param \Closure $callback
+     * @return $this
+     */
+    public function resolving(\Closure $callback)
+    {
+        $this->resolvings[] = $callback;
+
+        return $this;
     }
 
     /**
@@ -182,26 +184,15 @@ HMLT;
     }
 
     /**
-     * @return string
+     * @return $this
      */
-    protected function urlWithoutFilter()
+    public function hide()
     {
-        return Helper::fullUrlWithoutQuery([
-            $this->getQueryName(),
-        ]);
+        return $this->display(false);
     }
 
     /**
-     * @param  string  $key
-     * @return array|null|string
-     */
-    protected function trans($key)
-    {
-        return __("admin.{$key}");
-    }
-
-    /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function display(bool $value)
@@ -212,26 +203,10 @@ HMLT;
     }
 
     /**
-     * @return $this
-     */
-    public function hide()
-    {
-        return $this->display(false);
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldDisplay()
-    {
-        return $this->display;
-    }
-
-    /**
      * Add a query binding.
      *
-     * @param  mixed  $value
-     * @param  Model  $model
+     * @param mixed $value
+     * @param Model $model
      */
     public function addBinding($value, Model $model)
     {
@@ -247,11 +222,36 @@ HMLT;
     }
 
     /**
-     * @param  array  ...$params
-     * @return static
+     * @param mixed $model
+     * @param string $query
+     * @param mixed array $params
+     * @return void
      */
-    public static function make(...$params)
+    protected function withQuery($model, string $query, array $params)
     {
-        return new static(...$params);
+        Helper::withQueryCondition($model, $this->getOriginalColumnName(), $query, $params);
+    }
+
+    /**
+     * @return string
+     */
+    protected function renderFormButtons()
+    {
+        return <<<HMLT
+<li class="dropdown-divider"></li>
+<li>
+    <button class="btn btn-sm btn-primary column-filter-submit "><i class="feather icon-search"></i></button>&nbsp;
+    <a href="{$this->urlWithoutFilter()}" class="btn btn-sm btn-default"><i class="feather icon-rotate-ccw"></i></a>
+</li>
+HMLT;
+    }
+
+    /**
+     * @param string $key
+     * @return array|null|string
+     */
+    protected function trans($key)
+    {
+        return __("admin.{$key}");
     }
 }

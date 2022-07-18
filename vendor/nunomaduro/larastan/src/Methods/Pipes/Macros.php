@@ -22,17 +22,6 @@ final class Macros implements PipeContract
 {
     use Concerns\HasContainer;
 
-    private function hasIndirectTraitUse(ClassReflection $class, string $traitName): bool
-    {
-        foreach ($class->getTraits() as $trait) {
-            if ($this->hasIndirectTraitUse($trait, $traitName)) {
-                return true;
-            }
-        }
-
-        return $class->hasTraitUse($traitName);
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -53,8 +42,8 @@ final class Macros implements PipeContract
                 $className = get_class($concrete);
 
                 if ($className && $passable->getReflectionProvider()
-                    ->getClass($className)
-                    ->hasTraitUse(Macroable::class)) {
+                        ->getClass($className)
+                        ->hasTraitUse(Macroable::class)) {
                     $macroTraitProperty = 'macros';
                 }
             }
@@ -89,8 +78,19 @@ final class Macros implements PipeContract
             }
         }
 
-        if (! $found) {
+        if (!$found) {
             $next($passable);
         }
+    }
+
+    private function hasIndirectTraitUse(ClassReflection $class, string $traitName): bool
+    {
+        foreach ($class->getTraits() as $trait) {
+            if ($this->hasIndirectTraitUse($trait, $traitName)) {
+                return true;
+            }
+        }
+
+        return $class->hasTraitUse($traitName);
     }
 }

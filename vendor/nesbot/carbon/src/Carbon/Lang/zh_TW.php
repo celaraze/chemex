@@ -9,4 +9,4 @@
  * file that was distributed with this source code.
  */
 
-return require __DIR__.'/zh_Hant_TW.php';
+return require __DIR__ . '/zh_Hant_TW.php';

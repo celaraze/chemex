@@ -19,29 +19,6 @@ abstract class TypeNodeAbstract
         $this->guardIsValidType();
     }
 
-    public function canUseNullShorthand(): bool
-    {
-        return isset($this->types['null']) && count($this->types) <= 2;
-    }
-
-    public function getTypes(): array
-    {
-        return array_values($this->types);
-    }
-
-    public function getNonNullTypes(): array
-    {
-        $nonNullTypes = $this->types;
-        unset($nonNullTypes['null']);
-
-        return array_values($nonNullTypes);
-    }
-
-    protected function prefixWithNsSeparator(string $type): string
-    {
-        return '\\' . ltrim($type, '\\');
-    }
-
     protected function getRealType(string $type): string
     {
         switch ($type) {
@@ -76,6 +53,11 @@ abstract class TypeNodeAbstract
         }
     }
 
+    protected function prefixWithNsSeparator(string $type): string
+    {
+        return '\\' . ltrim($type, '\\');
+    }
+
     protected function guardIsValidType()
     {
         if ($this->types == ['null' => 'null']) {
@@ -93,5 +75,23 @@ abstract class TypeNodeAbstract
         if (\PHP_VERSION_ID >= 80000 && isset($this->types['mixed']) && count($this->types) !== 1) {
             throw new DoubleException('mixed cannot be part of a union');
         }
+    }
+
+    public function canUseNullShorthand(): bool
+    {
+        return isset($this->types['null']) && count($this->types) <= 2;
+    }
+
+    public function getTypes(): array
+    {
+        return array_values($this->types);
+    }
+
+    public function getNonNullTypes(): array
+    {
+        $nonNullTypes = $this->types;
+        unset($nonNullTypes['null']);
+
+        return array_values($nonNullTypes);
     }
 }

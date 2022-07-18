@@ -2,7 +2,6 @@
 
 namespace Spatie\LaravelIgnition\Views;
 
-use Exception;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
@@ -58,6 +57,21 @@ class ViewExceptionMapper
         return $exception;
     }
 
+    /**
+     * Look at the previous exceptions to find the original exception.
+     * This is usually the first Exception that is not a ViewException.
+     */
+    protected function getRealException(Throwable $exception): Throwable
+    {
+        $rootException = $exception->getPrevious() ?? $exception;
+
+        while ($rootException instanceof ViewException && $rootException->getPrevious()) {
+            $rootException = $rootException->getPrevious();
+        }
+
+        return $rootException;
+    }
+
     protected function createException(Throwable $baseException): IgnitionViewException
     {
         $viewExceptionClass = $baseException instanceof ProvidesSolution
@@ -78,38 +92,6 @@ class ViewExceptionMapper
         );
     }
 
-    protected function modifyViewsInTrace(IgnitionViewException $exception): void
-    {
-        $trace = Collection::make($exception->getPrevious()->getTrace())
-            ->map(function ($trace) {
-                if ($originalPath = $this->findCompiledView(Arr::get($trace, 'file', ''))) {
-                    $trace['file'] = $originalPath;
-                    $trace['line'] = $this->getBladeLineNumber($trace['file'], $trace['line']);
-                }
-
-                return $trace;
-            })->toArray();
-
-        $traceProperty = new ReflectionProperty('Exception', 'trace');
-        $traceProperty->setAccessible(true);
-        $traceProperty->setValue($exception, $trace);
-    }
-
-    /**
-     * Look at the previous exceptions to find the original exception.
-     * This is usually the first Exception that is not a ViewException.
-     */
-    protected function getRealException(Throwable $exception): Throwable
-    {
-        $rootException = $exception->getPrevious() ?? $exception;
-
-        while ($rootException instanceof ViewException && $rootException->getPrevious()) {
-            $rootException = $rootException->getPrevious();
-        }
-
-        return $rootException;
-    }
-
     protected function findCompiledView(string $compiledPath): ?string
     {
         $this->knownPaths ??= $this->getKnownPaths();
@@ -121,7 +103,7 @@ class ViewExceptionMapper
     {
         $compilerEngineReflection = new ReflectionClass($this->compilerEngine);
 
-        if (! $compilerEngineReflection->hasProperty('lastCompiled') && $compilerEngineReflection->hasProperty('engine')) {
+        if (!$compilerEngineReflection->hasProperty('lastCompiled') && $compilerEngineReflection->hasProperty('engine')) {
             $compilerEngine = $compilerEngineReflection->getProperty('engine');
             $compilerEngine->setAccessible(true);
             $compilerEngine = $compilerEngine->getValue($this->compilerEngine);
@@ -149,6 +131,23 @@ class ViewExceptionMapper
         return $this->bladeSourceMapCompiler->detectLineNumber($view, $compiledLineNumber);
     }
 
+    protected function modifyViewsInTrace(IgnitionViewException $exception): void
+    {
+        $trace = Collection::make($exception->getPrevious()->getTrace())
+            ->map(function ($trace) {
+                if ($originalPath = $this->findCompiledView(Arr::get($trace, 'file', ''))) {
+                    $trace['file'] = $originalPath;
+                    $trace['line'] = $this->getBladeLineNumber($trace['file'], $trace['line']);
+                }
+
+                return $trace;
+            })->toArray();
+
+        $traceProperty = new ReflectionProperty('Exception', 'trace');
+        $traceProperty->setAccessible(true);
+        $traceProperty->setValue($exception, $trace);
+    }
+
     protected function getViewData(Throwable $exception): array
     {
         foreach ($exception->getTrace() as $frame) {
@@ -168,7 +167,7 @@ class ViewExceptionMapper
         // __env and app. We try to filter them out.
         return array_filter($data, function ($value, $key) {
             if ($key === 'app') {
-                return ! $value instanceof Application;
+                return !$value instanceof Application;
             }
 
             return $key !== '__env';

@@ -76,10 +76,10 @@ $transformDiff = function ($input) {
 
 return [
     'ago' => function ($time) use ($transformDiff) {
-        return 'pirms '.$transformDiff($time);
+        return 'pirms ' . $transformDiff($time);
     },
     'from_now' => function ($time) use ($transformDiff) {
-        return 'pēc '.$transformDiff($time);
+        return 'pēc ' . $transformDiff($time);
     },
 
     'year' => '0 gadu|:count gads|:count gadi',
@@ -161,14 +161,14 @@ return [
         'nextDay' => '[rīt] [plkst.] LT',
         'nextWeek' => function (CarbonInterface $current, CarbonInterface $other) use ($daysOfWeekLocativum) {
             if ($current->week !== $other->week) {
-                return '[nākošo] ['.$daysOfWeekLocativum[$current->dayOfWeek].'] [plkst.] LT';
+                return '[nākošo] [' . $daysOfWeekLocativum[$current->dayOfWeek] . '] [plkst.] LT';
             }
 
-            return '['.$daysOfWeekLocativum[$current->dayOfWeek].'] [plkst.] LT';
+            return '[' . $daysOfWeekLocativum[$current->dayOfWeek] . '] [plkst.] LT';
         },
         'lastDay' => '[vakar] [plkst.] LT',
         'lastWeek' => function (CarbonInterface $current) use ($daysOfWeekLocativum) {
-            return '[pagājušo] ['.$daysOfWeekLocativum[$current->dayOfWeek].'] [plkst.] LT';
+            return '[pagājušo] [' . $daysOfWeekLocativum[$current->dayOfWeek] . '] [plkst.] LT';
         },
         'sameElse' => 'L',
     ],

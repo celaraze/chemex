@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 /**
@@ -18,18 +19,6 @@ abstract class Operator extends Constraint
      * Returns the name of this operator.
      */
     abstract public function operator(): string;
-
-    /**
-     * Returns this operator's precedence.
-     *
-     * @see https://www.php.net/manual/en/language.operators.precedence.php
-     */
-    abstract public function precedence(): int;
-
-    /**
-     * Returns the number of operands.
-     */
-    abstract public function arity(): int;
 
     /**
      * Validates $constraint argument.
@@ -49,7 +38,19 @@ abstract class Operator extends Constraint
     protected function constraintNeedsParentheses(Constraint $constraint): bool
     {
         return $constraint instanceof self &&
-               $constraint->arity() > 1 &&
-               $this->precedence() <= $constraint->precedence();
+            $constraint->arity() > 1 &&
+            $this->precedence() <= $constraint->precedence();
     }
+
+    /**
+     * Returns the number of operands.
+     */
+    abstract public function arity(): int;
+
+    /**
+     * Returns this operator's precedence.
+     *
+     * @see https://www.php.net/manual/en/language.operators.precedence.php
+     */
+    abstract public function precedence(): int;
 }

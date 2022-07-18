@@ -57,7 +57,7 @@ class Writer extends WriterAbstract
      */
     public function setShouldAddBOM($shouldAddBOM)
     {
-        $this->optionsManager->setOption(Options::SHOULD_ADD_BOM, (bool) $shouldAddBOM);
+        $this->optionsManager->setOption(Options::SHOULD_ADD_BOM, (bool)$shouldAddBOM);
 
         return $this;
     }
@@ -79,8 +79,8 @@ class Writer extends WriterAbstract
      * Adds a row to the currently opened writer.
      *
      * @param Row $row The row containing cells and styles
-     * @throws IOException If unable to write data
      * @return void
+     * @throws IOException If unable to write data
      */
     protected function addRowToWriter(Row $row)
     {

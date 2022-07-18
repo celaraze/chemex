@@ -11,7 +11,7 @@ class Label extends AbstractDisplayer
 
     public function display($style = 'primary', $max = null)
     {
-        if (! $value = $this->value($max)) {
+        if (!$value = $this->value($max)) {
             return;
         }
 
@@ -29,6 +29,18 @@ class Label extends AbstractDisplayer
         })->implode(' ');
     }
 
+    protected function value($max)
+    {
+        $values = Helper::array($this->value);
+
+        if ($max && count($values) > $max) {
+            $values = array_slice($values, 0, $max);
+            $values[] = '...';
+        }
+
+        return $values;
+    }
+
     protected function formatStyle($style)
     {
         $background = 'style="background:#d2d6de;color: #555"';
@@ -40,17 +52,5 @@ class Label extends AbstractDisplayer
         }
 
         return $background;
-    }
-
-    protected function value($max)
-    {
-        $values = Helper::array($this->value);
-
-        if ($max && count($values) > $max) {
-            $values = array_slice($values, 0, $max);
-            $values[] = '...';
-        }
-
-        return $values;
     }
 }

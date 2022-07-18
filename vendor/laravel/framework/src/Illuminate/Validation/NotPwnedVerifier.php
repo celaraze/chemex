@@ -25,8 +25,8 @@ class NotPwnedVerifier implements UncompromisedVerifier
     /**
      * Create a new uncompromised verifier.
      *
-     * @param  \Illuminate\Http\Client\Factory  $factory
-     * @param  int|null  $timeout
+     * @param \Illuminate\Http\Client\Factory $factory
+     * @param int|null $timeout
      * @return void
      */
     public function __construct($factory, $timeout = null)
@@ -38,7 +38,7 @@ class NotPwnedVerifier implements UncompromisedVerifier
     /**
      * Verify that the given data has not been compromised in public breaches.
      *
-     * @param  array  $data
+     * @param array $data
      * @return bool
      */
     public function verify($data)
@@ -46,29 +46,29 @@ class NotPwnedVerifier implements UncompromisedVerifier
         $value = $data['value'];
         $threshold = $data['threshold'];
 
-        if (empty($value = (string) $value)) {
+        if (empty($value = (string)$value)) {
             return false;
         }
 
         [$hash, $hashPrefix] = $this->getHash($value);
 
-        return ! $this->search($hashPrefix)
+        return !$this->search($hashPrefix)
             ->contains(function ($line) use ($hash, $hashPrefix, $threshold) {
                 [$hashSuffix, $count] = explode(':', $line);
 
-                return $hashPrefix.$hashSuffix == $hash && $count > $threshold;
+                return $hashPrefix . $hashSuffix == $hash && $count > $threshold;
             });
     }
 
     /**
      * Get the hash and its first 5 chars.
      *
-     * @param  string  $value
+     * @param string $value
      * @return array
      */
     protected function getHash($value)
     {
-        $hash = strtoupper(sha1((string) $value));
+        $hash = strtoupper(sha1((string)$value));
 
         $hashPrefix = substr($hash, 0, 5);
 
@@ -78,7 +78,7 @@ class NotPwnedVerifier implements UncompromisedVerifier
     /**
      * Search by the given hash prefix and returns all occurrences of leaked passwords.
      *
-     * @param  string  $hashPrefix
+     * @param string $hashPrefix
      * @return \Illuminate\Support\Collection
      */
     protected function search($hashPrefix)
@@ -87,7 +87,7 @@ class NotPwnedVerifier implements UncompromisedVerifier
             $response = $this->factory->withHeaders([
                 'Add-Padding' => true,
             ])->timeout($this->timeout)->get(
-                'https://api.pwnedpasswords.com/range/'.$hashPrefix
+                'https://api.pwnedpasswords.com/range/' . $hashPrefix
             );
         } catch (Exception $e) {
             report($e);

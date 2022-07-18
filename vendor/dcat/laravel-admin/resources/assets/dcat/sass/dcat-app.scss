@@ -18,19 +18,19 @@
 @import "./mixins/scrollbar";
 
 html {
-  font-size: 14px;
-  height: 100%;
-  letter-spacing: .01rem;
+    font-size: 14px;
+    height: 100%;
+    letter-spacing: .01rem;
 }
 
 html body {
-  background-color: $body-bg;
-  color: $font-color;
+    background-color: $body-bg;
+    color: $font-color;
 }
 
 .body-bg,
 .content-wrapper {
-  background: $body-bg;
+    background: $body-bg;
 }
 
 // 滚动条
@@ -43,11 +43,11 @@ html body {
 
 // 字体
 body, .header-navbar, .navigation, .breadcrumb, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-family: $font-family-sans-serif;
+    font-family: $font-family-sans-serif;
 }
 
 li {
-  list-style-type: none;
+    list-style-type: none;
 }
 
 // 颜色class定义

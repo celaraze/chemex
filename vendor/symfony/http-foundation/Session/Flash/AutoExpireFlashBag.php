@@ -76,6 +76,14 @@ class AutoExpireFlashBag implements FlashBagInterface
     /**
      * {@inheritdoc}
      */
+    public function has(string $type): bool
+    {
+        return \array_key_exists($type, $this->flashes['display']) && $this->flashes['display'][$type];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function peekAll(): array
     {
         return \array_key_exists('display', $this->flashes) ? $this->flashes['display'] : [];
@@ -103,17 +111,6 @@ class AutoExpireFlashBag implements FlashBagInterface
     /**
      * {@inheritdoc}
      */
-    public function all(): array
-    {
-        $return = $this->flashes['display'];
-        $this->flashes['display'] = [];
-
-        return $return;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setAll(array $messages)
     {
         $this->flashes['new'] = $messages;
@@ -124,15 +121,7 @@ class AutoExpireFlashBag implements FlashBagInterface
      */
     public function set(string $type, string|array $messages)
     {
-        $this->flashes['new'][$type] = (array) $messages;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function has(string $type): bool
-    {
-        return \array_key_exists($type, $this->flashes['display']) && $this->flashes['display'][$type];
+        $this->flashes['new'][$type] = (array)$messages;
     }
 
     /**
@@ -157,5 +146,16 @@ class AutoExpireFlashBag implements FlashBagInterface
     public function clear(): mixed
     {
         return $this->all();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function all(): array
+    {
+        $return = $this->flashes['display'];
+        $this->flashes['display'] = [];
+
+        return $return;
     }
 }

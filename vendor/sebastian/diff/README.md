@@ -13,7 +13,8 @@ You can add this library as a local, per-project dependency to your project usin
 composer require sebastian/diff
 ```
 
-If you only need this library during development, for instance to run your project's test suite, then you should add it as a development-time dependency:
+If you only need this library during development, for instance to run your project's test suite, then you should add it
+as a development-time dependency:
 
 ```
 composer require --dev sebastian/diff
@@ -34,6 +35,7 @@ print $differ->diff('foo', 'bar');
 ```
 
 The code above yields the output below:
+
 ```diff
 --- Original
 +++ New

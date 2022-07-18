@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
 use function count;
@@ -29,6 +30,38 @@ final class UnionType extends Type
         $this->ensureOnlyValidTypes(...$types);
 
         $this->types = $types;
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    private function ensureMinimumOfTwoTypes(Type ...$types): void
+    {
+        if (count($types) < 2) {
+            throw new RuntimeException(
+                'A union type must be composed of at least two types'
+            );
+        }
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    private function ensureOnlyValidTypes(Type ...$types): void
+    {
+        foreach ($types as $type) {
+            if ($type instanceof UnknownType) {
+                throw new RuntimeException(
+                    'A union type must not be composed of an unknown type'
+                );
+            }
+
+            if ($type instanceof VoidType) {
+                throw new RuntimeException(
+                    'A union type must not be composed of a void type'
+                );
+            }
+        }
     }
 
     public function isAssignable(Type $other): bool
@@ -74,37 +107,5 @@ final class UnionType extends Type
     public function isUnion(): bool
     {
         return true;
-    }
-
-    /**
-     * @throws RuntimeException
-     */
-    private function ensureMinimumOfTwoTypes(Type ...$types): void
-    {
-        if (count($types) < 2) {
-            throw new RuntimeException(
-                'A union type must be composed of at least two types'
-            );
-        }
-    }
-
-    /**
-     * @throws RuntimeException
-     */
-    private function ensureOnlyValidTypes(Type ...$types): void
-    {
-        foreach ($types as $type) {
-            if ($type instanceof UnknownType) {
-                throw new RuntimeException(
-                    'A union type must not be composed of an unknown type'
-                );
-            }
-
-            if ($type instanceof VoidType) {
-                throw new RuntimeException(
-                    'A union type must not be composed of a void type'
-                );
-            }
-        }
     }
 }

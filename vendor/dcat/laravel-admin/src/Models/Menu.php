@@ -20,9 +20,9 @@ class Menu extends Model implements Sortable
     use HasDateTimeFormatter,
         MenuCache,
         ModelTree {
-            allNodes as treeAllNodes;
-            ModelTree::boot as treeBoot;
-        }
+        allNodes as treeAllNodes;
+        ModelTree::boot as treeBoot;
+    }
 
     /**
      * @var array
@@ -41,7 +41,7 @@ class Menu extends Model implements Sortable
     /**
      * Create a new Eloquent model instance.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -57,6 +57,37 @@ class Menu extends Model implements Sortable
         $this->setConnection($connection);
 
         $this->setTable(config('admin.database.menu_table'));
+    }
+
+    /**
+     * Determine if enable menu bind role.
+     *
+     * @return bool
+     */
+    public static function withRole()
+    {
+        return (bool)config('admin.permission.enable');
+    }
+
+    /**
+     * Detach models from the relationship.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        static::treeBoot();
+
+        static::deleting(function ($model) {
+            $model->roles()->detach();
+            $model->permissions()->detach();
+
+            $model->flushCache();
+        });
+
+        static::saved(function ($model) {
+            $model->flushCache();
+        });
     }
 
     /**
@@ -85,7 +116,7 @@ class Menu extends Model implements Sortable
     /**
      * Get all elements.
      *
-     * @param  bool  $force
+     * @param bool $force
      * @return static[]|\Illuminate\Support\Collection
      */
     public function allNodes(bool $force = false)
@@ -123,36 +154,5 @@ class Menu extends Model implements Sortable
     public static function withPermission()
     {
         return config('admin.menu.bind_permission') && config('admin.permission.enable');
-    }
-
-    /**
-     * Determine if enable menu bind role.
-     *
-     * @return bool
-     */
-    public static function withRole()
-    {
-        return (bool) config('admin.permission.enable');
-    }
-
-    /**
-     * Detach models from the relationship.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        static::treeBoot();
-
-        static::deleting(function ($model) {
-            $model->roles()->detach();
-            $model->permissions()->detach();
-
-            $model->flushCache();
-        });
-
-        static::saved(function ($model) {
-            $model->flushCache();
-        });
     }
 }

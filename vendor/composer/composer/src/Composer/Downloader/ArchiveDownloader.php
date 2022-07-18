@@ -12,11 +12,11 @@
 
 namespace Composer\Downloader;
 
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
-use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
-use Composer\DependencyResolver\Operation\InstallOperation;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Base downloader for archives
@@ -73,12 +73,12 @@ abstract class ArchiveDownloader extends FileDownloader
         // clean up the target directory, unless it contains the vendor dir, as the vendor dir contains
         // the archive to be extracted. This is the case when installing with create-project in the current directory
         // but in that case we ensure the directory is empty already in ProjectInstaller so no need to empty it here.
-        if (false === strpos($this->filesystem->normalizePath($vendorDir), $this->filesystem->normalizePath($path.DIRECTORY_SEPARATOR))) {
+        if (false === strpos($this->filesystem->normalizePath($vendorDir), $this->filesystem->normalizePath($path . DIRECTORY_SEPARATOR))) {
             $this->filesystem->emptyDirectory($path);
         }
 
         do {
-            $temporaryDir = $vendorDir.'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+            $temporaryDir = $vendorDir . '/composer/' . substr(md5(uniqid('', true)), 0, 8);
         } while (is_dir($temporaryDir));
 
         $this->addCleanupPath($package, $temporaryDir);
@@ -121,7 +121,7 @@ abstract class ArchiveDownloader extends FileDownloader
             /**
              * Returns the folder content, excluding .DS_Store
              *
-             * @param  string         $dir Directory
+             * @param string $dir Directory
              * @return \SplFileInfo[]
              */
             $getFolderContent = function ($dir): array {
@@ -142,8 +142,8 @@ abstract class ArchiveDownloader extends FileDownloader
              * that the source directory gets merged into the target one if the target exists. Otherwise rename() by default would
              * put the source into the target e.g. src/ => target/src/ (assuming target exists) instead of src/ => target/
              *
-             * @param  string $from Directory
-             * @param  string $to   Directory
+             * @param string $from Directory
+             * @param string $to Directory
              * @return void
              */
             $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
@@ -151,10 +151,10 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
-                    $file = (string) $file;
+                    $file = (string)$file;
                     if (is_dir($to . '/' . basename($file))) {
                         if (!is_dir($file)) {
-                            throw new \RuntimeException('Installing '.$package.' would lead to overwriting the '.$to.'/'.basename($file).' directory with a file from the package, invalid operation.');
+                            throw new \RuntimeException('Installing ' . $package . ' would lead to overwriting the ' . $to . '/' . basename($file) . ' directory with a file from the package, invalid operation.');
                         }
                         $renameRecursively($file, $to . '/' . basename($file));
                     } else {
@@ -177,12 +177,12 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             $contentDir = $getFolderContent($temporaryDir);
-            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir((string) reset($contentDir));
+            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir((string)reset($contentDir));
 
             if ($renameAsOne) {
                 // if the target $path is clear, we can rename the whole package in one go instead of looping over the contents
                 if ($singleDirAtTopLevel) {
-                    $extractedDir = (string) reset($contentDir);
+                    $extractedDir = (string)reset($contentDir);
                 } else {
                     $extractedDir = $temporaryDir;
                 }
@@ -191,7 +191,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 // only one dir in the archive, extract its contents out of it
                 $from = $temporaryDir;
                 if ($singleDirAtTopLevel) {
-                    $from = (string) reset($contentDir);
+                    $from = (string)reset($contentDir);
                 }
 
                 $renameRecursively($from, $path);

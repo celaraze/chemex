@@ -14,7 +14,6 @@ use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\Deprecations\Deprecation;
 use InvalidArgumentException;
-
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -35,7 +34,6 @@ use function str_replace;
 use function strpos;
 use function strtoupper;
 use function substr_count;
-
 use const PREG_OFFSET_CAPTURE;
 
 /**
@@ -53,17 +51,9 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getCurrentTimeSQL()
-    {
-        return $this->getConvertExpression('time', 'GETDATE()');
-    }
-
-    /**
      * Returns an expression that converts an expression of one data type to another.
      *
-     * @param string $dataType   The target native data type. Alias data types cannot be used.
+     * @param string $dataType The target native data type. Alias data types cannot be used.
      * @param string $expression The SQL expression to convert.
      */
     private function getConvertExpression($dataType, $expression): string
@@ -74,15 +64,9 @@ class SQLServerPlatform extends AbstractPlatform
     /**
      * {@inheritdoc}
      */
-    protected function getDateArithmeticIntervalExpression($date, $operator, $interval, $unit)
+    public function getCurrentTimeSQL()
     {
-        $factorClause = '';
-
-        if ($operator === '-') {
-            $factorClause = '-1 * ';
-        }
-
-        return 'DATEADD(' . $unit . ', ' . $factorClause . $interval . ', ' . $date . ')';
+        return $this->getConvertExpression('time', 'GETDATE()');
     }
 
     /**
@@ -209,16 +193,16 @@ class SQLServerPlatform extends AbstractPlatform
      */
     public function getDropForeignKeySQL($foreignKey, $table)
     {
-        if (! $foreignKey instanceof ForeignKeyConstraint) {
+        if (!$foreignKey instanceof ForeignKeyConstraint) {
             $foreignKey = new Identifier($foreignKey);
         }
 
-        if (! $table instanceof Table) {
+        if (!$table instanceof Table) {
             $table = new Identifier($table);
         }
 
         $foreignKey = $foreignKey->getQuotedName($this);
-        $table      = $table->getQuotedName($this);
+        $table = $table->getQuotedName($this);
 
         return 'ALTER TABLE ' . $table . ' DROP CONSTRAINT ' . $foreignKey;
     }
@@ -230,7 +214,7 @@ class SQLServerPlatform extends AbstractPlatform
     {
         if ($index instanceof Index) {
             $index = $index->getQuotedName($this);
-        } elseif (! is_string($index)) {
+        } elseif (!is_string($index)) {
             throw new InvalidArgumentException(
                 __METHOD__ . '() expects $index parameter to be string or ' . Index::class . '.'
             );
@@ -238,90 +222,13 @@ class SQLServerPlatform extends AbstractPlatform
 
         if ($table instanceof Table) {
             $table = $table->getQuotedName($this);
-        } elseif (! is_string($table)) {
+        } elseif (!is_string($table)) {
             throw new InvalidArgumentException(
                 __METHOD__ . '() expects $table parameter to be string or ' . Table::class . '.'
             );
         }
 
         return 'DROP INDEX ' . $index . ' ON ' . $table;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function _getCreateTableSQL($name, array $columns, array $options = [])
-    {
-        $defaultConstraintsSql = [];
-        $commentsSql           = [];
-
-        $tableComment = $options['comment'] ?? null;
-        if ($tableComment !== null) {
-            $commentsSql[] = $this->getCommentOnTableSQL($name, $tableComment);
-        }
-
-        // @todo does other code breaks because of this?
-        // force primary keys to be not null
-        foreach ($columns as &$column) {
-            if (! empty($column['primary'])) {
-                $column['notnull'] = true;
-            }
-
-            // Build default constraints SQL statements.
-            if (isset($column['default'])) {
-                $defaultConstraintsSql[] = 'ALTER TABLE ' . $name .
-                    ' ADD' . $this->getDefaultConstraintDeclarationSQL($name, $column);
-            }
-
-            if (empty($column['comment']) && ! is_numeric($column['comment'])) {
-                continue;
-            }
-
-            $commentsSql[] = $this->getCreateColumnCommentSQL($name, $column['name'], $column['comment']);
-        }
-
-        $columnListSql = $this->getColumnDeclarationListSQL($columns);
-
-        if (isset($options['uniqueConstraints']) && ! empty($options['uniqueConstraints'])) {
-            foreach ($options['uniqueConstraints'] as $constraintName => $definition) {
-                $columnListSql .= ', ' . $this->getUniqueConstraintDeclarationSQL($constraintName, $definition);
-            }
-        }
-
-        if (isset($options['primary']) && ! empty($options['primary'])) {
-            $flags = '';
-            if (isset($options['primary_index']) && $options['primary_index']->hasFlag('nonclustered')) {
-                $flags = ' NONCLUSTERED';
-            }
-
-            $columnListSql .= ', PRIMARY KEY' . $flags
-                . ' (' . implode(', ', array_unique(array_values($options['primary']))) . ')';
-        }
-
-        $query = 'CREATE TABLE ' . $name . ' (' . $columnListSql;
-
-        $check = $this->getCheckDeclarationSQL($columns);
-        if (! empty($check)) {
-            $query .= ', ' . $check;
-        }
-
-        $query .= ')';
-
-        $sql = [$query];
-
-        if (isset($options['indexes']) && ! empty($options['indexes'])) {
-            foreach ($options['indexes'] as $index) {
-                $sql[] = $this->getCreateIndexSQL($index, $name);
-            }
-        }
-
-        if (isset($options['foreignKeys'])) {
-            foreach ((array) $options['foreignKeys'] as $definition) {
-                $sql[] = $this->getCreateForeignKeySQL($definition, $name);
-            }
-        }
-
-        return array_merge($sql, $commentsSql, $defaultConstraintsSql);
     }
 
     /**
@@ -345,128 +252,13 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
-     * Returns the SQL statement for creating a column comment.
-     *
-     * SQL Server does not support native column comments,
-     * therefore the extended properties functionality is used
-     * as a workaround to store them.
-     * The property name used to store column comments is "MS_Description"
-     * which provides compatibility with SQL Server Management Studio,
-     * as column comments are stored in the same property there when
-     * specifying a column's "Description" attribute.
-     *
-     * @param string      $tableName  The quoted table name to which the column belongs.
-     * @param string      $columnName The quoted column name to create the comment for.
-     * @param string|null $comment    The column's comment.
-     *
-     * @return string
-     */
-    protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
-    {
-        if (strpos($tableName, '.') !== false) {
-            [$schemaSQL, $tableSQL] = explode('.', $tableName);
-            $schemaSQL              = $this->quoteStringLiteral($schemaSQL);
-            $tableSQL               = $this->quoteStringLiteral($tableSQL);
-        } else {
-            $schemaSQL = "'dbo'";
-            $tableSQL  = $this->quoteStringLiteral($tableName);
-        }
-
-        return $this->getAddExtendedPropertySQL(
-            'MS_Description',
-            $comment,
-            'SCHEMA',
-            $schemaSQL,
-            'TABLE',
-            $tableSQL,
-            'COLUMN',
-            $columnName
-        );
-    }
-
-    /**
-     * Returns the SQL snippet for declaring a default constraint.
-     *
-     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
-     *
-     * @param string  $table  Name of the table to return the default constraint declaration for.
-     * @param mixed[] $column Column definition.
-     *
-     * @return string
-     *
-     * @throws InvalidArgumentException
-     */
-    public function getDefaultConstraintDeclarationSQL($table, array $column)
-    {
-        if (! isset($column['default'])) {
-            throw new InvalidArgumentException("Incomplete column definition. 'default' required.");
-        }
-
-        $columnName = new Identifier($column['name']);
-
-        return ' CONSTRAINT ' .
-            $this->generateDefaultConstraintName($table, $column['name']) .
-            $this->getDefaultValueDeclarationSQL($column) .
-            ' FOR ' . $columnName->getQuotedName($this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getCreateIndexSQL(Index $index, $table)
-    {
-        $constraint = parent::getCreateIndexSQL($index, $table);
-
-        if ($index->isUnique() && ! $index->isPrimary()) {
-            $constraint = $this->_appendUniqueConstraintDefinition($constraint, $index);
-        }
-
-        return $constraint;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getCreateIndexSQLFlags(Index $index)
-    {
-        $type = '';
-        if ($index->isUnique()) {
-            $type .= 'UNIQUE ';
-        }
-
-        if ($index->hasFlag('clustered')) {
-            $type .= 'CLUSTERED ';
-        } elseif ($index->hasFlag('nonclustered')) {
-            $type .= 'NONCLUSTERED ';
-        }
-
-        return $type;
-    }
-
-    /**
-     * Extend unique key constraint with required filters
-     *
-     * @param string $sql
-     */
-    private function _appendUniqueConstraintDefinition($sql, Index $index): string
-    {
-        $fields = [];
-
-        foreach ($index->getQuotedColumns($this) as $field) {
-            $fields[] = $field . ' IS NOT NULL';
-        }
-
-        return $sql . ' WHERE ' . implode(' AND ', $fields);
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getAlterTableSQL(TableDiff $diff)
     {
-        $queryParts  = [];
-        $sql         = [];
-        $columnSql   = [];
+        $queryParts = [];
+        $sql = [];
+        $columnSql = [];
         $commentsSql = [];
 
         foreach ($diff->addedColumns as $column) {
@@ -474,7 +266,7 @@ class SQLServerPlatform extends AbstractPlatform
                 continue;
             }
 
-            $columnDef    = $column->toArray();
+            $columnDef = $column->toArray();
             $addColumnSql = 'ADD ' . $this->getColumnDeclarationSQL($column->getQuotedName($this), $columnDef);
             if (isset($columnDef['default'])) {
                 $addColumnSql .= ' CONSTRAINT ' .
@@ -486,7 +278,7 @@ class SQLServerPlatform extends AbstractPlatform
 
             $comment = $this->getColumnComment($column);
 
-            if (empty($comment) && ! is_numeric($comment)) {
+            if (empty($comment) && !is_numeric($comment)) {
                 continue;
             }
 
@@ -510,13 +302,13 @@ class SQLServerPlatform extends AbstractPlatform
                 continue;
             }
 
-            $column     = $columnDiff->column;
-            $comment    = $this->getColumnComment($column);
-            $hasComment = ! empty($comment) || is_numeric($comment);
+            $column = $columnDiff->column;
+            $comment = $this->getColumnComment($column);
+            $hasComment = !empty($comment) || is_numeric($comment);
 
             if ($columnDiff->fromColumn instanceof Column) {
-                $fromComment    = $this->getColumnComment($columnDiff->fromColumn);
-                $hasFromComment = ! empty($fromComment) || is_numeric($fromComment);
+                $fromComment = $this->getColumnComment($columnDiff->fromColumn);
+                $hasFromComment = !empty($fromComment) || is_numeric($fromComment);
 
                 if ($hasFromComment && $hasComment && $fromComment !== $comment) {
                     $commentsSql[] = $this->getAlterColumnCommentSQL(
@@ -524,9 +316,9 @@ class SQLServerPlatform extends AbstractPlatform
                         $column->getQuotedName($this),
                         $comment
                     );
-                } elseif ($hasFromComment && ! $hasComment) {
+                } elseif ($hasFromComment && !$hasComment) {
                     $commentsSql[] = $this->getDropColumnCommentSQL($diff->name, $column->getQuotedName($this));
-                } elseif (! $hasFromComment && $hasComment) {
+                } elseif (!$hasFromComment && $hasComment) {
                     $commentsSql[] = $this->getCreateColumnCommentSQL(
                         $diff->name,
                         $column->getQuotedName($this),
@@ -552,11 +344,11 @@ class SQLServerPlatform extends AbstractPlatform
             $columnDef = $column->toArray();
 
             $queryParts[] = 'ALTER COLUMN ' .
-                    $this->getColumnDeclarationSQL($column->getQuotedName($this), $columnDef);
+                $this->getColumnDeclarationSQL($column->getQuotedName($this), $columnDef);
 
             if (
-                ! isset($columnDef['default'])
-                || (! $requireDropDefaultConstraint && ! $columnDiff->hasChanged('default'))
+                !isset($columnDef['default'])
+                || (!$requireDropDefaultConstraint && !$columnDiff->hasChanged('default'))
             ) {
                 continue;
             }
@@ -632,28 +424,287 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
-     * Returns the SQL clause for adding a default constraint in an ALTER TABLE statement.
+     * {@inheritdoc}
      *
-     * @param string $tableName The name of the table to generate the clause for.
-     * @param Column $column    The column to generate the clause for.
+     * Modifies column declaration order as it differs in Microsoft SQL Server.
      */
-    private function getAlterTableAddDefaultConstraintClause($tableName, Column $column): string
+    public function getColumnDeclarationSQL($name, array $column)
     {
-        $columnDef         = $column->toArray();
-        $columnDef['name'] = $column->getQuotedName($this);
+        if (isset($column['columnDefinition'])) {
+            $columnDef = $this->getCustomTypeDeclarationSQL($column);
+        } else {
+            $collation = !empty($column['collation']) ?
+                ' ' . $this->getColumnCollationDeclarationSQL($column['collation']) : '';
 
-        return 'ADD' . $this->getDefaultConstraintDeclarationSQL($tableName, $columnDef);
+            $notnull = !empty($column['notnull']) ? ' NOT NULL' : '';
+
+            $unique = !empty($column['unique']) ?
+                ' ' . $this->getUniqueFieldDeclarationSQL() : '';
+
+            $check = !empty($column['check']) ?
+                ' ' . $column['check'] : '';
+
+            $typeDecl = $column['type']->getSQLDeclaration($column, $this);
+            $columnDef = $typeDecl . $collation . $notnull . $unique . $check;
+        }
+
+        return $name . ' ' . $columnDef;
     }
 
     /**
-     * Returns the SQL clause for dropping an existing default constraint in an ALTER TABLE statement.
+     * Returns a unique default constraint name for a table and column.
      *
-     * @param string $tableName  The name of the table to generate the clause for.
-     * @param string $columnName The name of the column to generate the clause for.
+     * @param string $table Name of the table to generate the unique default constraint name for.
+     * @param string $column Name of the column in the table to generate the unique default constraint name for.
      */
-    private function getAlterTableDropDefaultConstraintClause($tableName, $columnName): string
+    private function generateDefaultConstraintName($table, $column): string
     {
-        return 'DROP CONSTRAINT ' . $this->generateDefaultConstraintName($tableName, $columnName);
+        return 'DF_' . $this->generateIdentifierName($table) . '_' . $this->generateIdentifierName($column);
+    }
+
+    /**
+     * Returns a hash value for a given identifier.
+     *
+     * @param string $identifier Identifier to generate a hash value for.
+     */
+    private function generateIdentifierName($identifier): string
+    {
+        // Always generate name for unquoted identifiers to ensure consistency.
+        $identifier = new Identifier($identifier);
+
+        return strtoupper(dechex(crc32($identifier->getName())));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getName()
+    {
+        return 'mssql';
+    }
+
+    /**
+     * Returns the SQL statement for creating a column comment.
+     *
+     * SQL Server does not support native column comments,
+     * therefore the extended properties functionality is used
+     * as a workaround to store them.
+     * The property name used to store column comments is "MS_Description"
+     * which provides compatibility with SQL Server Management Studio,
+     * as column comments are stored in the same property there when
+     * specifying a column's "Description" attribute.
+     *
+     * @param string $tableName The quoted table name to which the column belongs.
+     * @param string $columnName The quoted column name to create the comment for.
+     * @param string|null $comment The column's comment.
+     *
+     * @return string
+     */
+    protected function getCreateColumnCommentSQL($tableName, $columnName, $comment)
+    {
+        if (strpos($tableName, '.') !== false) {
+            [$schemaSQL, $tableSQL] = explode('.', $tableName);
+            $schemaSQL = $this->quoteStringLiteral($schemaSQL);
+            $tableSQL = $this->quoteStringLiteral($tableSQL);
+        } else {
+            $schemaSQL = "'dbo'";
+            $tableSQL = $this->quoteStringLiteral($tableName);
+        }
+
+        return $this->getAddExtendedPropertySQL(
+            'MS_Description',
+            $comment,
+            'SCHEMA',
+            $schemaSQL,
+            'TABLE',
+            $tableSQL,
+            'COLUMN',
+            $columnName
+        );
+    }
+
+    /**
+     * Returns the SQL statement for adding an extended property to a database object.
+     *
+     * @param string $name The name of the property to add.
+     * @param string|null $value The value of the property to add.
+     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
+     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
+     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
+     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
+     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
+     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
+     *
+     * @return string
+     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
+     *
+     * @link http://msdn.microsoft.com/en-us/library/ms180047%28v=sql.90%29.aspx
+     *
+     */
+    public function getAddExtendedPropertySQL(
+        $name,
+        $value = null,
+        $level0Type = null,
+        $level0Name = null,
+        $level1Type = null,
+        $level1Name = null,
+        $level2Type = null,
+        $level2Name = null
+    )
+    {
+        return 'EXEC sp_addextendedproperty ' .
+            'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string)$value) . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level0Type) . ', ' . $level0Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level1Type) . ', ' . $level1Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level2Type) . ', ' . $level2Name;
+    }
+
+    /**
+     * Returns the SQL statement for altering a column comment.
+     *
+     * SQL Server does not support native column comments,
+     * therefore the extended properties functionality is used
+     * as a workaround to store them.
+     * The property name used to store column comments is "MS_Description"
+     * which provides compatibility with SQL Server Management Studio,
+     * as column comments are stored in the same property there when
+     * specifying a column's "Description" attribute.
+     *
+     * @param string $tableName The quoted table name to which the column belongs.
+     * @param string $columnName The quoted column name to alter the comment for.
+     * @param string|null $comment The column's comment.
+     *
+     * @return string
+     */
+    protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
+    {
+        if (strpos($tableName, '.') !== false) {
+            [$schemaSQL, $tableSQL] = explode('.', $tableName);
+            $schemaSQL = $this->quoteStringLiteral($schemaSQL);
+            $tableSQL = $this->quoteStringLiteral($tableSQL);
+        } else {
+            $schemaSQL = "'dbo'";
+            $tableSQL = $this->quoteStringLiteral($tableName);
+        }
+
+        return $this->getUpdateExtendedPropertySQL(
+            'MS_Description',
+            $comment,
+            'SCHEMA',
+            $schemaSQL,
+            'TABLE',
+            $tableSQL,
+            'COLUMN',
+            $columnName
+        );
+    }
+
+    /**
+     * Returns the SQL statement for updating an extended property of a database object.
+     *
+     * @param string $name The name of the property to update.
+     * @param string|null $value The value of the property to update.
+     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
+     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
+     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
+     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
+     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
+     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
+     *
+     * @return string
+     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
+     *
+     * @link http://msdn.microsoft.com/en-us/library/ms186885%28v=sql.90%29.aspx
+     *
+     */
+    public function getUpdateExtendedPropertySQL(
+        $name,
+        $value = null,
+        $level0Type = null,
+        $level0Name = null,
+        $level1Type = null,
+        $level1Name = null,
+        $level2Type = null,
+        $level2Name = null
+    )
+    {
+        return 'EXEC sp_updateextendedproperty ' .
+            'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string)$value) . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level0Type) . ', ' . $level0Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level1Type) . ', ' . $level1Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level2Type) . ', ' . $level2Name;
+    }
+
+    /**
+     * Returns the SQL statement for dropping a column comment.
+     *
+     * SQL Server does not support native column comments,
+     * therefore the extended properties functionality is used
+     * as a workaround to store them.
+     * The property name used to store column comments is "MS_Description"
+     * which provides compatibility with SQL Server Management Studio,
+     * as column comments are stored in the same property there when
+     * specifying a column's "Description" attribute.
+     *
+     * @param string $tableName The quoted table name to which the column belongs.
+     * @param string $columnName The quoted column name to drop the comment for.
+     *
+     * @return string
+     */
+    protected function getDropColumnCommentSQL($tableName, $columnName)
+    {
+        if (strpos($tableName, '.') !== false) {
+            [$schemaSQL, $tableSQL] = explode('.', $tableName);
+            $schemaSQL = $this->quoteStringLiteral($schemaSQL);
+            $tableSQL = $this->quoteStringLiteral($tableSQL);
+        } else {
+            $schemaSQL = "'dbo'";
+            $tableSQL = $this->quoteStringLiteral($tableName);
+        }
+
+        return $this->getDropExtendedPropertySQL(
+            'MS_Description',
+            'SCHEMA',
+            $schemaSQL,
+            'TABLE',
+            $tableSQL,
+            'COLUMN',
+            $columnName
+        );
+    }
+
+    /**
+     * Returns the SQL statement for dropping an extended property from a database object.
+     *
+     * @param string $name The name of the property to drop.
+     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
+     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
+     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
+     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
+     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
+     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
+     *
+     * @return string
+     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
+     *
+     * @link http://technet.microsoft.com/en-gb/library/ms178595%28v=sql.90%29.aspx
+     *
+     */
+    public function getDropExtendedPropertySQL(
+        $name,
+        $level0Type = null,
+        $level0Name = null,
+        $level1Type = null,
+        $level1Name = null,
+        $level2Type = null,
+        $level2Name = null
+    )
+    {
+        return 'EXEC sp_dropextendedproperty ' .
+            'N' . $this->quoteStringLiteral($name) . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level0Type) . ', ' . $level0Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level1Type) . ', ' . $level1Name . ', ' .
+            'N' . $this->quoteStringLiteral((string)$level2Type) . ', ' . $level2Name;
     }
 
     /**
@@ -668,7 +719,7 @@ class SQLServerPlatform extends AbstractPlatform
     {
         // We can only decide whether to drop an existing default constraint
         // if we know the original default value.
-        if (! $columnDiff->fromColumn instanceof Column) {
+        if (!$columnDiff->fromColumn instanceof Column) {
             return false;
         }
 
@@ -690,198 +741,54 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
-     * Returns the SQL statement for altering a column comment.
+     * Returns the SQL clause for dropping an existing default constraint in an ALTER TABLE statement.
      *
-     * SQL Server does not support native column comments,
-     * therefore the extended properties functionality is used
-     * as a workaround to store them.
-     * The property name used to store column comments is "MS_Description"
-     * which provides compatibility with SQL Server Management Studio,
-     * as column comments are stored in the same property there when
-     * specifying a column's "Description" attribute.
+     * @param string $tableName The name of the table to generate the clause for.
+     * @param string $columnName The name of the column to generate the clause for.
+     */
+    private function getAlterTableDropDefaultConstraintClause($tableName, $columnName): string
+    {
+        return 'DROP CONSTRAINT ' . $this->generateDefaultConstraintName($tableName, $columnName);
+    }
+
+    /**
+     * Returns the SQL clause for adding a default constraint in an ALTER TABLE statement.
      *
-     * @param string      $tableName  The quoted table name to which the column belongs.
-     * @param string      $columnName The quoted column name to alter the comment for.
-     * @param string|null $comment    The column's comment.
+     * @param string $tableName The name of the table to generate the clause for.
+     * @param Column $column The column to generate the clause for.
+     */
+    private function getAlterTableAddDefaultConstraintClause($tableName, Column $column): string
+    {
+        $columnDef = $column->toArray();
+        $columnDef['name'] = $column->getQuotedName($this);
+
+        return 'ADD' . $this->getDefaultConstraintDeclarationSQL($tableName, $columnDef);
+    }
+
+    /**
+     * Returns the SQL snippet for declaring a default constraint.
+     *
+     * @param string $table Name of the table to return the default constraint declaration for.
+     * @param mixed[] $column Column definition.
      *
      * @return string
+     *
+     * @throws InvalidArgumentException
+     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
+     *
      */
-    protected function getAlterColumnCommentSQL($tableName, $columnName, $comment)
+    public function getDefaultConstraintDeclarationSQL($table, array $column)
     {
-        if (strpos($tableName, '.') !== false) {
-            [$schemaSQL, $tableSQL] = explode('.', $tableName);
-            $schemaSQL              = $this->quoteStringLiteral($schemaSQL);
-            $tableSQL               = $this->quoteStringLiteral($tableSQL);
-        } else {
-            $schemaSQL = "'dbo'";
-            $tableSQL  = $this->quoteStringLiteral($tableName);
+        if (!isset($column['default'])) {
+            throw new InvalidArgumentException("Incomplete column definition. 'default' required.");
         }
 
-        return $this->getUpdateExtendedPropertySQL(
-            'MS_Description',
-            $comment,
-            'SCHEMA',
-            $schemaSQL,
-            'TABLE',
-            $tableSQL,
-            'COLUMN',
-            $columnName
-        );
-    }
+        $columnName = new Identifier($column['name']);
 
-    /**
-     * Returns the SQL statement for dropping a column comment.
-     *
-     * SQL Server does not support native column comments,
-     * therefore the extended properties functionality is used
-     * as a workaround to store them.
-     * The property name used to store column comments is "MS_Description"
-     * which provides compatibility with SQL Server Management Studio,
-     * as column comments are stored in the same property there when
-     * specifying a column's "Description" attribute.
-     *
-     * @param string $tableName  The quoted table name to which the column belongs.
-     * @param string $columnName The quoted column name to drop the comment for.
-     *
-     * @return string
-     */
-    protected function getDropColumnCommentSQL($tableName, $columnName)
-    {
-        if (strpos($tableName, '.') !== false) {
-            [$schemaSQL, $tableSQL] = explode('.', $tableName);
-            $schemaSQL              = $this->quoteStringLiteral($schemaSQL);
-            $tableSQL               = $this->quoteStringLiteral($tableSQL);
-        } else {
-            $schemaSQL = "'dbo'";
-            $tableSQL  = $this->quoteStringLiteral($tableName);
-        }
-
-        return $this->getDropExtendedPropertySQL(
-            'MS_Description',
-            'SCHEMA',
-            $schemaSQL,
-            'TABLE',
-            $tableSQL,
-            'COLUMN',
-            $columnName
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getRenameIndexSQL($oldIndexName, Index $index, $tableName)
-    {
-        return [sprintf(
-            "EXEC sp_rename N'%s.%s', N'%s', N'INDEX'",
-            $tableName,
-            $oldIndexName,
-            $index->getQuotedName($this)
-        ),
-        ];
-    }
-
-    /**
-     * Returns the SQL statement for adding an extended property to a database object.
-     *
-     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
-     *
-     * @link http://msdn.microsoft.com/en-us/library/ms180047%28v=sql.90%29.aspx
-     *
-     * @param string      $name       The name of the property to add.
-     * @param string|null $value      The value of the property to add.
-     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
-     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
-     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
-     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
-     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
-     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
-     *
-     * @return string
-     */
-    public function getAddExtendedPropertySQL(
-        $name,
-        $value = null,
-        $level0Type = null,
-        $level0Name = null,
-        $level1Type = null,
-        $level1Name = null,
-        $level2Type = null,
-        $level2Name = null
-    ) {
-        return 'EXEC sp_addextendedproperty ' .
-            'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value) . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level0Type) . ', ' . $level0Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level1Type) . ', ' . $level1Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level2Type) . ', ' . $level2Name;
-    }
-
-    /**
-     * Returns the SQL statement for dropping an extended property from a database object.
-     *
-     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
-     *
-     * @link http://technet.microsoft.com/en-gb/library/ms178595%28v=sql.90%29.aspx
-     *
-     * @param string      $name       The name of the property to drop.
-     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
-     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
-     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
-     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
-     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
-     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
-     *
-     * @return string
-     */
-    public function getDropExtendedPropertySQL(
-        $name,
-        $level0Type = null,
-        $level0Name = null,
-        $level1Type = null,
-        $level1Name = null,
-        $level2Type = null,
-        $level2Name = null
-    ) {
-        return 'EXEC sp_dropextendedproperty ' .
-            'N' . $this->quoteStringLiteral($name) . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level0Type) . ', ' . $level0Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level1Type) . ', ' . $level1Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level2Type) . ', ' . $level2Name;
-    }
-
-    /**
-     * Returns the SQL statement for updating an extended property of a database object.
-     *
-     * @internal The method should be only used from within the SQLServerPlatform class hierarchy.
-     *
-     * @link http://msdn.microsoft.com/en-us/library/ms186885%28v=sql.90%29.aspx
-     *
-     * @param string      $name       The name of the property to update.
-     * @param string|null $value      The value of the property to update.
-     * @param string|null $level0Type The type of the object at level 0 the property belongs to.
-     * @param string|null $level0Name The name of the object at level 0 the property belongs to.
-     * @param string|null $level1Type The type of the object at level 1 the property belongs to.
-     * @param string|null $level1Name The name of the object at level 1 the property belongs to.
-     * @param string|null $level2Type The type of the object at level 2 the property belongs to.
-     * @param string|null $level2Name The name of the object at level 2 the property belongs to.
-     *
-     * @return string
-     */
-    public function getUpdateExtendedPropertySQL(
-        $name,
-        $value = null,
-        $level0Type = null,
-        $level0Name = null,
-        $level1Type = null,
-        $level1Name = null,
-        $level2Type = null,
-        $level2Name = null
-    ) {
-        return 'EXEC sp_updateextendedproperty ' .
-            'N' . $this->quoteStringLiteral($name) . ', N' . $this->quoteStringLiteral((string) $value) . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level0Type) . ', ' . $level0Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level1Type) . ', ' . $level1Name . ', ' .
-            'N' . $this->quoteStringLiteral((string) $level2Type) . ', ' . $level2Name;
+        return ' CONSTRAINT ' .
+            $this->generateDefaultConstraintName($table, $column['name']) .
+            $this->getDefaultValueDeclarationSQL($column) .
+            ' FOR ' . $columnName->getQuotedName($this);
     }
 
     /**
@@ -937,7 +844,28 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
-     * @param string      $table
+     * Returns the where clause to filter schema and table name in a query.
+     *
+     * @param string $table The full qualified name of the table.
+     * @param string $schemaColumn The name of the column to compare the schema to in the where clause.
+     * @param string $tableColumn The name of the column to compare the table to in the where clause.
+     */
+    private function getTableWhereClause($table, $schemaColumn, $tableColumn): string
+    {
+        if (strpos($table, '.') !== false) {
+            [$schema, $table] = explode('.', $table);
+            $schema = $this->quoteStringLiteral($schema);
+            $table = $this->quoteStringLiteral($table);
+        } else {
+            $schema = 'SCHEMA_NAME()';
+            $table = $this->quoteStringLiteral($table);
+        }
+
+        return sprintf('(%s = %s AND %s = %s)', $tableColumn, $table, $schemaColumn, $schema);
+    }
+
+    /**
+     * @param string $table
      * @param string|null $database
      *
      * @return string
@@ -958,8 +886,8 @@ class SQLServerPlatform extends AbstractPlatform
                 INNER JOIN sys.objects AS o ON o.OBJECT_ID = fc.referenced_object_id
                 ON f.OBJECT_ID = fc.constraint_object_id
                 WHERE ' .
-                $this->getTableWhereClause($table, 'SCHEMA_NAME (f.schema_id)', 'OBJECT_NAME (f.parent_object_id)') .
-                ' ORDER BY fc.constraint_column_id';
+            $this->getTableWhereClause($table, 'SCHEMA_NAME (f.schema_id)', 'OBJECT_NAME (f.parent_object_id)') .
+            ' ORDER BY fc.constraint_column_id';
     }
 
     /**
@@ -993,27 +921,6 @@ class SQLServerPlatform extends AbstractPlatform
         return "SELECT name, definition FROM sysobjects
                     INNER JOIN sys.sql_modules ON sysobjects.id = sys.sql_modules.object_id
                 WHERE type = 'V' ORDER BY name";
-    }
-
-    /**
-     * Returns the where clause to filter schema and table name in a query.
-     *
-     * @param string $table        The full qualified name of the table.
-     * @param string $schemaColumn The name of the column to compare the schema to in the where clause.
-     * @param string $tableColumn  The name of the column to compare the table to in the where clause.
-     */
-    private function getTableWhereClause($table, $schemaColumn, $tableColumn): string
-    {
-        if (strpos($table, '.') !== false) {
-            [$schema, $table] = explode('.', $table);
-            $schema           = $this->quoteStringLiteral($schema);
-            $table            = $this->quoteStringLiteral($table);
-        } else {
-            $schema = 'SCHEMA_NAME()';
-            $table  = $this->quoteStringLiteral($table);
-        }
-
-        return sprintf('(%s = %s AND %s = %s)', $tableColumn, $table, $schemaColumn, $schema);
     }
 
     /**
@@ -1101,7 +1008,7 @@ class SQLServerPlatform extends AbstractPlatform
             'doctrine/dbal',
             'https://github.com/doctrine/dbal/issues/4503',
             'SQLServerPlatform::getListNamespacesSQL() is deprecated,'
-                . ' use SQLServerSchemaManager::listSchemaNames() instead.'
+            . ' use SQLServerSchemaManager::listSchemaNames() instead.'
         );
 
         return "SELECT name FROM sys.schemas WHERE name NOT IN('guest', 'INFORMATION_SCHEMA', 'sys')";
@@ -1151,6 +1058,14 @@ class SQLServerPlatform extends AbstractPlatform
     /**
      * {@inheritDoc}
      */
+    protected function _getCommonIntegerTypeDeclarationSQL(array $column)
+    {
+        return !empty($column['autoincrement']) ? ' IDENTITY' : '';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getBigIntTypeDeclarationSQL(array $column)
     {
         return 'BIGINT' . $this->_getCommonIntegerTypeDeclarationSQL($column);
@@ -1187,31 +1102,11 @@ class SQLServerPlatform extends AbstractPlatform
     {
         $length = $column['length'] ?? null;
 
-        if (! isset($column['fixed'])) {
+        if (!isset($column['fixed'])) {
             return sprintf('VARCHAR(%d)', $length ?? 255);
         }
 
         return sprintf('CHAR(%d)', $length ?? 255);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
-    {
-        return $fixed
-            ? ($length > 0 ? 'NCHAR(' . $length . ')' : 'CHAR(255)')
-            : ($length > 0 ? 'NVARCHAR(' . $length . ')' : 'NVARCHAR(255)');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
-    {
-        return $fixed
-            ? 'BINARY(' . ($length > 0 ? $length : 255) . ')'
-            : 'VARBINARY(' . ($length > 0 ? $length : 255) . ')';
     }
 
     /**
@@ -1228,14 +1123,6 @@ class SQLServerPlatform extends AbstractPlatform
     public function getClobTypeDeclarationSQL(array $column)
     {
         return 'VARCHAR(MAX)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function _getCommonIntegerTypeDeclarationSQL(array $column)
-    {
-        return ! empty($column['autoincrement']) ? ' IDENTITY' : '';
     }
 
     /**
@@ -1275,54 +1162,18 @@ class SQLServerPlatform extends AbstractPlatform
     /**
      * {@inheritDoc}
      */
-    protected function doModifyLimitQuery($query, $limit, $offset)
-    {
-        if ($limit === null && $offset <= 0) {
-            return $query;
-        }
-
-        if ($this->shouldAddOrderBy($query)) {
-            if (preg_match('/^SELECT\s+DISTINCT/im', $query) > 0) {
-                // SQL Server won't let us order by a non-selected column in a DISTINCT query,
-                // so we have to do this madness. This says, order by the first column in the
-                // result. SQL Server's docs say that a nonordered query's result order is non-
-                // deterministic anyway, so this won't do anything that a bunch of update and
-                // deletes to the table wouldn't do anyway.
-                $query .= ' ORDER BY 1';
-            } else {
-                // In another DBMS, we could do ORDER BY 0, but SQL Server gets angry if you
-                // use constant expressions in the order by list.
-                $query .= ' ORDER BY (SELECT 0)';
-            }
-        }
-
-        // This looks somewhat like MYSQL, but limit/offset are in inverse positions
-        // Supposedly SQL:2008 core standard.
-        // Per TSQL spec, FETCH NEXT n ROWS ONLY is not valid without OFFSET n ROWS.
-        $query .= sprintf(' OFFSET %d ROWS', $offset);
-
-        if ($limit !== null) {
-            $query .= sprintf(' FETCH NEXT %d ROWS ONLY', $limit);
-        }
-
-        return $query;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function convertBooleans($item)
     {
         if (is_array($item)) {
             foreach ($item as $key => $value) {
-                if (! is_bool($value) && ! is_numeric($value)) {
+                if (!is_bool($value) && !is_numeric($value)) {
                     continue;
                 }
 
-                $item[$key] = (int) (bool) $value;
+                $item[$key] = (int)(bool)$value;
             }
         } elseif (is_bool($item) || is_numeric($item)) {
-            $item = (int) (bool) $item;
+            $item = (int)(bool)$item;
         }
 
         return $item;
@@ -1374,53 +1225,6 @@ class SQLServerPlatform extends AbstractPlatform
     public function getDateTimeTzFormatString()
     {
         return 'Y-m-d H:i:s.u P';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getName()
-    {
-        return 'mssql';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function initializeDoctrineTypeMappings()
-    {
-        $this->doctrineTypeMapping = [
-            'bigint'           => 'bigint',
-            'binary'           => 'binary',
-            'bit'              => 'boolean',
-            'blob'             => 'blob',
-            'char'             => 'string',
-            'date'             => 'date',
-            'datetime'         => 'datetime',
-            'datetime2'        => 'datetime',
-            'datetimeoffset'   => 'datetimetz',
-            'decimal'          => 'decimal',
-            'double'           => 'float',
-            'double precision' => 'float',
-            'float'            => 'float',
-            'image'            => 'blob',
-            'int'              => 'integer',
-            'money'            => 'integer',
-            'nchar'            => 'string',
-            'ntext'            => 'text',
-            'numeric'          => 'decimal',
-            'nvarchar'         => 'string',
-            'real'             => 'float',
-            'smalldatetime'    => 'datetime',
-            'smallint'         => 'smallint',
-            'smallmoney'       => 'integer',
-            'text'             => 'text',
-            'time'             => 'time',
-            'tinyint'          => 'smallint',
-            'uniqueidentifier' => 'guid',
-            'varbinary'        => 'binary',
-            'varchar'          => 'string',
-        ];
     }
 
     /**
@@ -1488,23 +1292,6 @@ class SQLServerPlatform extends AbstractPlatform
 
     /**
      * {@inheritDoc}
-     *
-     * @deprecated Implement {@see createReservedKeywordsList()} instead.
-     */
-    protected function getReservedKeywordsClass()
-    {
-        Deprecation::triggerIfCalledFromOutside(
-            'doctrine/dbal',
-            'https://github.com/doctrine/dbal/issues/4510',
-            'SQLServerPlatform::getReservedKeywordsClass() is deprecated,'
-                . ' use SQLServerPlatform::createReservedKeywordsList() instead.'
-        );
-
-        return Keywords\SQLServer2012Keywords::class;
-    }
-
-    /**
-     * {@inheritDoc}
      */
     public function quoteSingleIdentifier($str)
     {
@@ -1529,85 +1316,14 @@ class SQLServerPlatform extends AbstractPlatform
         return 'VARBINARY(MAX)';
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * Modifies column declaration order as it differs in Microsoft SQL Server.
-     */
-    public function getColumnDeclarationSQL($name, array $column)
-    {
-        if (isset($column['columnDefinition'])) {
-            $columnDef = $this->getCustomTypeDeclarationSQL($column);
-        } else {
-            $collation = ! empty($column['collation']) ?
-                ' ' . $this->getColumnCollationDeclarationSQL($column['collation']) : '';
-
-            $notnull = ! empty($column['notnull']) ? ' NOT NULL' : '';
-
-            $unique = ! empty($column['unique']) ?
-                ' ' . $this->getUniqueFieldDeclarationSQL() : '';
-
-            $check = ! empty($column['check']) ?
-                ' ' . $column['check'] : '';
-
-            $typeDecl  = $column['type']->getSQLDeclaration($column, $this);
-            $columnDef = $typeDecl . $collation . $notnull . $unique . $check;
-        }
-
-        return $name . ' ' . $columnDef;
-    }
-
     public function columnsEqual(Column $column1, Column $column2): bool
     {
-        if (! parent::columnsEqual($column1, $column2)) {
+        if (!parent::columnsEqual($column1, $column2)) {
             return false;
         }
 
         return $this->getDefaultValueDeclarationSQL($column1->toArray())
             === $this->getDefaultValueDeclarationSQL($column2->toArray());
-    }
-
-    protected function getLikeWildcardCharacters(): string
-    {
-        return parent::getLikeWildcardCharacters() . '[]^';
-    }
-
-    /**
-     * Returns a unique default constraint name for a table and column.
-     *
-     * @param string $table  Name of the table to generate the unique default constraint name for.
-     * @param string $column Name of the column in the table to generate the unique default constraint name for.
-     */
-    private function generateDefaultConstraintName($table, $column): string
-    {
-        return 'DF_' . $this->generateIdentifierName($table) . '_' . $this->generateIdentifierName($column);
-    }
-
-    /**
-     * Returns a hash value for a given identifier.
-     *
-     * @param string $identifier Identifier to generate a hash value for.
-     */
-    private function generateIdentifierName($identifier): string
-    {
-        // Always generate name for unquoted identifiers to ensure consistency.
-        $identifier = new Identifier($identifier);
-
-        return strtoupper(dechex(crc32($identifier->getName())));
-    }
-
-    protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
-    {
-        return sprintf(
-            <<<'SQL'
-                EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-                  @value=N%s, @level0type=N'SCHEMA', @level0name=N'dbo',
-                  @level1type=N'TABLE', @level1name=N%s
-                SQL
-            ,
-            $this->quoteStringLiteral((string) $comment),
-            $this->quoteStringLiteral($tableName)
-        );
     }
 
     public function getListTableMetadataSQL(string $table): string
@@ -1628,13 +1344,237 @@ class SQLServerPlatform extends AbstractPlatform
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getDateArithmeticIntervalExpression($date, $operator, $interval, $unit)
+    {
+        $factorClause = '';
+
+        if ($operator === '-') {
+            $factorClause = '-1 * ';
+        }
+
+        return 'DATEADD(' . $unit . ', ' . $factorClause . $interval . ', ' . $date . ')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function _getCreateTableSQL($name, array $columns, array $options = [])
+    {
+        $defaultConstraintsSql = [];
+        $commentsSql = [];
+
+        $tableComment = $options['comment'] ?? null;
+        if ($tableComment !== null) {
+            $commentsSql[] = $this->getCommentOnTableSQL($name, $tableComment);
+        }
+
+        // @todo does other code breaks because of this?
+        // force primary keys to be not null
+        foreach ($columns as &$column) {
+            if (!empty($column['primary'])) {
+                $column['notnull'] = true;
+            }
+
+            // Build default constraints SQL statements.
+            if (isset($column['default'])) {
+                $defaultConstraintsSql[] = 'ALTER TABLE ' . $name .
+                    ' ADD' . $this->getDefaultConstraintDeclarationSQL($name, $column);
+            }
+
+            if (empty($column['comment']) && !is_numeric($column['comment'])) {
+                continue;
+            }
+
+            $commentsSql[] = $this->getCreateColumnCommentSQL($name, $column['name'], $column['comment']);
+        }
+
+        $columnListSql = $this->getColumnDeclarationListSQL($columns);
+
+        if (isset($options['uniqueConstraints']) && !empty($options['uniqueConstraints'])) {
+            foreach ($options['uniqueConstraints'] as $constraintName => $definition) {
+                $columnListSql .= ', ' . $this->getUniqueConstraintDeclarationSQL($constraintName, $definition);
+            }
+        }
+
+        if (isset($options['primary']) && !empty($options['primary'])) {
+            $flags = '';
+            if (isset($options['primary_index']) && $options['primary_index']->hasFlag('nonclustered')) {
+                $flags = ' NONCLUSTERED';
+            }
+
+            $columnListSql .= ', PRIMARY KEY' . $flags
+                . ' (' . implode(', ', array_unique(array_values($options['primary']))) . ')';
+        }
+
+        $query = 'CREATE TABLE ' . $name . ' (' . $columnListSql;
+
+        $check = $this->getCheckDeclarationSQL($columns);
+        if (!empty($check)) {
+            $query .= ', ' . $check;
+        }
+
+        $query .= ')';
+
+        $sql = [$query];
+
+        if (isset($options['indexes']) && !empty($options['indexes'])) {
+            foreach ($options['indexes'] as $index) {
+                $sql[] = $this->getCreateIndexSQL($index, $name);
+            }
+        }
+
+        if (isset($options['foreignKeys'])) {
+            foreach ((array)$options['foreignKeys'] as $definition) {
+                $sql[] = $this->getCreateForeignKeySQL($definition, $name);
+            }
+        }
+
+        return array_merge($sql, $commentsSql, $defaultConstraintsSql);
+    }
+
+    protected function getCommentOnTableSQL(string $tableName, ?string $comment): string
+    {
+        return sprintf(
+            <<<'SQL'
+                EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+                  @value=N%s, @level0type=N'SCHEMA', @level0name=N'dbo',
+                  @level1type=N'TABLE', @level1name=N%s
+                SQL
+            ,
+            $this->quoteStringLiteral((string)$comment),
+            $this->quoteStringLiteral($tableName)
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getCreateIndexSQL(Index $index, $table)
+    {
+        $constraint = parent::getCreateIndexSQL($index, $table);
+
+        if ($index->isUnique() && !$index->isPrimary()) {
+            $constraint = $this->_appendUniqueConstraintDefinition($constraint, $index);
+        }
+
+        return $constraint;
+    }
+
+    /**
+     * Extend unique key constraint with required filters
+     *
+     * @param string $sql
+     */
+    private function _appendUniqueConstraintDefinition($sql, Index $index): string
+    {
+        $fields = [];
+
+        foreach ($index->getQuotedColumns($this) as $field) {
+            $fields[] = $field . ' IS NOT NULL';
+        }
+
+        return $sql . ' WHERE ' . implode(' AND ', $fields);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getCreateIndexSQLFlags(Index $index)
+    {
+        $type = '';
+        if ($index->isUnique()) {
+            $type .= 'UNIQUE ';
+        }
+
+        if ($index->hasFlag('clustered')) {
+            $type .= 'CLUSTERED ';
+        } elseif ($index->hasFlag('nonclustered')) {
+            $type .= 'NONCLUSTERED ';
+        }
+
+        return $type;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRenameIndexSQL($oldIndexName, Index $index, $tableName)
+    {
+        return [sprintf(
+            "EXEC sp_rename N'%s.%s', N'%s', N'INDEX'",
+            $tableName,
+            $oldIndexName,
+            $index->getQuotedName($this)
+        ),
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getVarcharTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $fixed
+            ? ($length > 0 ? 'NCHAR(' . $length . ')' : 'CHAR(255)')
+            : ($length > 0 ? 'NVARCHAR(' . $length . ')' : 'NVARCHAR(255)');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getBinaryTypeDeclarationSQLSnippet($length, $fixed)
+    {
+        return $fixed
+            ? 'BINARY(' . ($length > 0 ? $length : 255) . ')'
+            : 'VARBINARY(' . ($length > 0 ? $length : 255) . ')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function doModifyLimitQuery($query, $limit, $offset)
+    {
+        if ($limit === null && $offset <= 0) {
+            return $query;
+        }
+
+        if ($this->shouldAddOrderBy($query)) {
+            if (preg_match('/^SELECT\s+DISTINCT/im', $query) > 0) {
+                // SQL Server won't let us order by a non-selected column in a DISTINCT query,
+                // so we have to do this madness. This says, order by the first column in the
+                // result. SQL Server's docs say that a nonordered query's result order is non-
+                // deterministic anyway, so this won't do anything that a bunch of update and
+                // deletes to the table wouldn't do anyway.
+                $query .= ' ORDER BY 1';
+            } else {
+                // In another DBMS, we could do ORDER BY 0, but SQL Server gets angry if you
+                // use constant expressions in the order by list.
+                $query .= ' ORDER BY (SELECT 0)';
+            }
+        }
+
+        // This looks somewhat like MYSQL, but limit/offset are in inverse positions
+        // Supposedly SQL:2008 core standard.
+        // Per TSQL spec, FETCH NEXT n ROWS ONLY is not valid without OFFSET n ROWS.
+        $query .= sprintf(' OFFSET %d ROWS', $offset);
+
+        if ($limit !== null) {
+            $query .= sprintf(' FETCH NEXT %d ROWS ONLY', $limit);
+        }
+
+        return $query;
+    }
+
+    /**
      * @param string $query
      */
     private function shouldAddOrderBy($query): bool
     {
         // Find the position of the last instance of ORDER BY and ensure it is not within a parenthetical statement
         // but can be in a newline
-        $matches      = [];
+        $matches = [];
         $matchesCount = preg_match_all('/[\\s]+order\\s+by\\s/im', $query, $matches, PREG_OFFSET_CAPTURE);
         if ($matchesCount === 0) {
             return true;
@@ -1647,8 +1587,8 @@ class SQLServerPlatform extends AbstractPlatform
         // number of closed brackets after the occurrence of the clause,
         // it means that ORDER BY is included in the query being checked
         while ($matchesCount > 0) {
-            $orderByPos          = $matches[0][--$matchesCount][1];
-            $openBracketsCount   = substr_count($query, '(', $orderByPos);
+            $orderByPos = $matches[0][--$matchesCount][1];
+            $openBracketsCount = substr_count($query, '(', $orderByPos);
             $closedBracketsCount = substr_count($query, ')', $orderByPos);
             if ($openBracketsCount === $closedBracketsCount) {
                 return false;
@@ -1656,5 +1596,66 @@ class SQLServerPlatform extends AbstractPlatform
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function initializeDoctrineTypeMappings()
+    {
+        $this->doctrineTypeMapping = [
+            'bigint' => 'bigint',
+            'binary' => 'binary',
+            'bit' => 'boolean',
+            'blob' => 'blob',
+            'char' => 'string',
+            'date' => 'date',
+            'datetime' => 'datetime',
+            'datetime2' => 'datetime',
+            'datetimeoffset' => 'datetimetz',
+            'decimal' => 'decimal',
+            'double' => 'float',
+            'double precision' => 'float',
+            'float' => 'float',
+            'image' => 'blob',
+            'int' => 'integer',
+            'money' => 'integer',
+            'nchar' => 'string',
+            'ntext' => 'text',
+            'numeric' => 'decimal',
+            'nvarchar' => 'string',
+            'real' => 'float',
+            'smalldatetime' => 'datetime',
+            'smallint' => 'smallint',
+            'smallmoney' => 'integer',
+            'text' => 'text',
+            'time' => 'time',
+            'tinyint' => 'smallint',
+            'uniqueidentifier' => 'guid',
+            'varbinary' => 'binary',
+            'varchar' => 'string',
+        ];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated Implement {@see createReservedKeywordsList()} instead.
+     */
+    protected function getReservedKeywordsClass()
+    {
+        Deprecation::triggerIfCalledFromOutside(
+            'doctrine/dbal',
+            'https://github.com/doctrine/dbal/issues/4510',
+            'SQLServerPlatform::getReservedKeywordsClass() is deprecated,'
+            . ' use SQLServerPlatform::createReservedKeywordsList() instead.'
+        );
+
+        return Keywords\SQLServer2012Keywords::class;
+    }
+
+    protected function getLikeWildcardCharacters(): string
+    {
+        return parent::getLikeWildcardCharacters() . '[]^';
     }
 }

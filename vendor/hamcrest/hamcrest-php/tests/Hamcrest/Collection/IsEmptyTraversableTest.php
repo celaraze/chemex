@@ -1,15 +1,11 @@
 <?php
+
 namespace Hamcrest\Collection;
 
 use Hamcrest\AbstractMatcherTest;
 
 class IsEmptyTraversableTest extends AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return IsEmptyTraversable::emptyTraversable();
-    }
 
     public function testEmptyMatcherMatchesWhenEmpty()
     {
@@ -73,5 +69,10 @@ class IsEmptyTraversableTest extends AbstractMatcherTest
     public function testNonEmptyNonEmptyMatcherHasAReadableDescription()
     {
         $this->assertDescription('a non-empty traversable', nonEmptyTraversable());
+    }
+
+    protected function createMatcher()
+    {
+        return IsEmptyTraversable::emptyTraversable();
     }
 }

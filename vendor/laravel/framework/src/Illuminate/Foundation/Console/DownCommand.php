@@ -14,6 +14,16 @@ use Throwable;
 class DownCommand extends Command
 {
     /**
+     * The name of the console command.
+     *
+     * This name is used to identify the command during lazy loading.
+     *
+     * @var string|null
+     *
+     * @deprecated
+     */
+    protected static $defaultName = 'down';
+    /**
      * The console command signature.
      *
      * @var string
@@ -24,18 +34,6 @@ class DownCommand extends Command
                                  {--refresh= : The number of seconds after which the browser may refresh}
                                  {--secret= : The secret phrase that may be used to bypass maintenance mode}
                                  {--status=503 : The status code that should be used when returning the maintenance mode response}';
-
-    /**
-     * The name of the console command.
-     *
-     * This name is used to identify the command during lazy loading.
-     *
-     * @var string|null
-     *
-     * @deprecated
-     */
-    protected static $defaultName = 'down';
-
     /**
      * The console command description.
      *
@@ -61,7 +59,7 @@ class DownCommand extends Command
 
             file_put_contents(
                 storage_path('framework/maintenance.php'),
-                file_get_contents(__DIR__.'/stubs/maintenance-mode.stub')
+                file_get_contents(__DIR__ . '/stubs/maintenance-mode.stub')
             );
 
             $this->laravel->get('events')->dispatch(MaintenanceModeEnabled::class);
@@ -89,7 +87,7 @@ class DownCommand extends Command
             'retry' => $this->getRetryTime(),
             'refresh' => $this->option('refresh'),
             'secret' => $this->option('secret'),
-            'status' => (int) $this->option('status', 503),
+            'status' => (int)$this->option('status', 503),
             'template' => $this->option('render') ? $this->prerenderView() : null,
         ];
     }
@@ -116,10 +114,22 @@ class DownCommand extends Command
     protected function redirectPath()
     {
         if ($this->option('redirect') && $this->option('redirect') !== '/') {
-            return '/'.trim($this->option('redirect'), '/');
+            return '/' . trim($this->option('redirect'), '/');
         }
 
         return $this->option('redirect');
+    }
+
+    /**
+     * Get the number of seconds the client should wait before retrying their request.
+     *
+     * @return int|null
+     */
+    protected function getRetryTime()
+    {
+        $retry = $this->option('retry');
+
+        return is_numeric($retry) && $retry > 0 ? (int)$retry : null;
     }
 
     /**
@@ -134,17 +144,5 @@ class DownCommand extends Command
         return view($this->option('render'), [
             'retryAfter' => $this->option('retry'),
         ])->render();
-    }
-
-    /**
-     * Get the number of seconds the client should wait before retrying their request.
-     *
-     * @return int|null
-     */
-    protected function getRetryTime()
-    {
-        $retry = $this->option('retry');
-
-        return is_numeric($retry) && $retry > 0 ? (int) $retry : null;
     }
 }

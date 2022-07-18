@@ -7,7 +7,8 @@ Please note we have a [code of conduct](#Code of Conduct), please follow it in a
 
 ## Pull Request Process
 
-When doing a PR to v2 remember that you also have to do the PR port to v3, or tests confirming the bug is not reproducible.
+When doing a PR to v2 remember that you also have to do the PR port to v3, or tests confirming the bug is not
+reproducible.
 
 1. Supported version is v3. If you are fixing a bug in v2, please port to v3
 2. Use the title as a brief description of the changes
@@ -18,6 +19,7 @@ When doing a PR to v2 remember that you also have to do the PR port to v3, or te
 5. Add your Twitter handle (if you have) so we can thank you there.
 
 ## License
+
 By contributing, you agree that your contributions will be licensed under its MIT License.
 
 ## Code of Conduct
@@ -127,7 +129,7 @@ Violating these terms may lead to a permanent ban.
 #### 4. Permanent Ban
 
 **Community Impact**: Demonstrating a pattern of violation of community
-standards, including sustained inappropriate behavior,  harassment of an
+standards, including sustained inappropriate behavior, harassment of an
 individual, or aggression toward or disparagement of classes of individuals.
 
 **Consequence**: A permanent ban from any sort of public interaction within
@@ -147,7 +149,11 @@ For answers to common questions about this code of conduct, see the FAQ at
 at [https://www.contributor-covenant.org/translations][translations].
 
 [homepage]: https://www.contributor-covenant.org
+
 [v2.0]: https://www.contributor-covenant.org/version/2/0/code_of_conduct.html
+
 [Mozilla CoC]: https://github.com/mozilla/diversity
+
 [FAQ]: https://www.contributor-covenant.org/faq
+
 [translations]: https://www.contributor-covenant.org/translations

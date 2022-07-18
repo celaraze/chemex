@@ -1,5 +1,7 @@
 <style>
-    td .form-group {margin-bottom: 0 !important;}
+    td .form-group {
+        margin-bottom: 0 !important;
+    }
 </style>
 
 <div class="{{$viewClass['form-group']}} {{ $class }}">
@@ -8,7 +10,7 @@
 
     <div class="{{$viewClass['field']}}">
         <span name="{{$name}}"></span>
-        <input name="{{ $name }}[{{ \Dcat\Admin\Form\Field\KeyValue::DEFAULT_FLAG_NAME }}]" type="hidden" />
+        <input name="{{ $name }}[{{ \Dcat\Admin\Form\Field\KeyValue::DEFAULT_FLAG_NAME }}]" type="hidden"/>
 
         <div class="help-block with-errors"></div>
 
@@ -29,7 +31,8 @@
                             <div class="col-sm-12">
                                 <div class="help-block with-errors"></div>
 
-                                <input name="{{ $name }}[keys][{{ $loop->index }}]" value="{{ $k }}" class="form-control" required/>
+                                <input name="{{ $name }}[keys][{{ $loop->index }}]" value="{{ $k }}"
+                                       class="form-control" required/>
 
                             </div>
                         </div>
@@ -38,7 +41,8 @@
                         <div class="form-group">
                             <div class="col-sm-12">
                                 <div class="help-block with-errors"></div>
-                                <input name="{{ $name }}[values][{{ $loop->index }}]" value="{{ $v }}" class="form-control" />
+                                <input name="{{ $name }}[values][{{ $loop->index }}]" value="{{ $v }}"
+                                       class="form-control"/>
                             </div>
                         </div>
                     </td>
@@ -81,7 +85,7 @@
                 <div class="form-group  ">
                     <div class="col-sm-12">
                         <div class="help-block with-errors"></div>
-                        <input name="{{ $name }}[values][{key}]" class="form-control" />
+                        <input name="{{ $name }}[values][{key}]" class="form-control"/>
                     </div>
                 </div>
             </td>

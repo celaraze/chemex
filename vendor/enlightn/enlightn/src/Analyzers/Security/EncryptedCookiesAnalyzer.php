@@ -35,8 +35,8 @@ class EncryptedCookiesAnalyzer extends SecurityAnalyzer
     /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -53,8 +53,8 @@ class EncryptedCookiesAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application's cookies are not encrypted. This exposes your application to a wide variety "
-            ."of security risks and potential attacks. An easy fix would be to add the EncryptCookies middleware "
-            ."shipped with Laravel.";
+            . "of security risks and potential attacks. An easy fix would be to add the EncryptCookies middleware "
+            . "shipped with Laravel.";
     }
 
     /**
@@ -81,6 +81,6 @@ class EncryptedCookiesAnalyzer extends SecurityAnalyzer
     public function skip()
     {
         // Skip this analyzer if the app is stateless (e.g. API only apps) or doesn't use cookies.
-        return $this->appIsStateless() || ! $this->appUsesCookies();
+        return $this->appIsStateless() || !$this->appUsesCookies();
     }
 }

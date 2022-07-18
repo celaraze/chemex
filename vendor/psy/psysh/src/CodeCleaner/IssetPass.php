@@ -28,9 +28,9 @@ class IssetPass extends CodeCleanerPass
     const EXCEPTION_MSG = 'Cannot use isset() on the result of an expression (you can use "null !== expression" instead)';
 
     /**
+     * @param Node $node
      * @throws FatalErrorException
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

@@ -4,88 +4,88 @@
 
 // Background colors (theme colors)
 @each $name, $color in $theme-colors {
-  @include background-variant($name, $color);
+    @include background-variant($name, $color);
 }
 
 // Background colors (colors)
 @each $name, $color in $colors {
-  @include background-variant($name, $color);
+    @include background-variant($name, $color);
 }
 
 .bg-gray {
-  background-color: $gray-500;
-  color: color-yiq($gray-500);
+    background-color: $gray-500;
+    color: color-yiq($gray-500);
 }
 
 .bg-gray-light {
-  background-color: lighten($gray-200, 3%);
-  color: color-yiq(lighten($gray-200, 3%)) !important;
+    background-color: lighten($gray-200, 3%);
+    color: color-yiq(lighten($gray-200, 3%)) !important;
 }
 
 .bg-black {
-  background-color: $black;
-  color: color-yiq($black) !important;
+    background-color: $black;
+    color: color-yiq($black) !important;
 }
 
 .bg-white {
-  background-color: $white;
-  color: color-yiq($white) !important;
+    background-color: $white;
+    color: color-yiq($white) !important;
 }
 
 // Gradient Background colors (theme colors)
 @each $name, $color in $theme-colors {
-  @include background-gradient-variant($name, $color);
+    @include background-gradient-variant($name, $color);
 }
 
 // Gradient Background colors (colors)
 @each $name, $color in $colors {
-  @include background-gradient-variant($name, $color);
+    @include background-gradient-variant($name, $color);
 }
 
 // Backgrund Color Disabled
 [class^='bg-'].disabled {
-  opacity: .65;
+    opacity: .65;
 }
 
 // Text muted hover
 a.text-muted:hover {
-  color: theme-color(primary) !important;
+    color: theme-color(primary) !important;
 }
 
 // Link Styles
 .link-muted {
-  color: darken($gray-500, 30%);
+    color: darken($gray-500, 30%);
 
-  &:hover,
-  &:focus {
-    color: darken($gray-500, 40%);
-  }
+    &:hover,
+    &:focus {
+        color: darken($gray-500, 40%);
+    }
 }
 
 .link-black {
-  color: $gray-600;
+    color: $gray-600;
 
-  &:hover,
-  &:focus {
-    color: lighten($gray-500, 20%);
-  }
+    &:hover,
+    &:focus {
+        color: lighten($gray-500, 20%);
+    }
 }
 
 // Accent colors (theme colors)
 @each $name, $color in $theme-colors {
-  @include accent-variant($name, $color);
+    @include accent-variant($name, $color);
 }
 
 // Accent colors (colors)
 @each $name, $color in $colors {
-  @include accent-variant($name, $color);
+    @include accent-variant($name, $color);
 }
 
 // Accent button override fix
 [class*="accent-"] {
-  @each $name, $color in $theme-colors {
-    a.btn-#{$name} {
-      color: color-yiq($color);
+    @each $name, $color in $theme-colors {
+        a.btn-#{$name} {
+            color: color-yiq($color);
+        }
     }
-  }
 }

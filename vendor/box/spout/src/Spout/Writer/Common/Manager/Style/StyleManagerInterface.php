@@ -26,5 +26,5 @@ interface StyleManagerInterface
      * @param Cell $cell
      * @return PossiblyUpdatedStyle The eventually updated style
      */
-    public function applyExtraStylesIfNeeded(Cell $cell) : PossiblyUpdatedStyle;
+    public function applyExtraStylesIfNeeded(Cell $cell): PossiblyUpdatedStyle;
 }

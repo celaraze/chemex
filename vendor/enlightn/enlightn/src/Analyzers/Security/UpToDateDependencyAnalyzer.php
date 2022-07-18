@@ -36,7 +36,7 @@ class UpToDateDependencyAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application's dependencies are not up-to-date. These may include bug fixes and/or security "
-                ."patches.";
+            . "patches.";
     }
 
     /**
@@ -49,13 +49,13 @@ class UpToDateDependencyAnalyzer extends SecurityAnalyzer
     {
         // First string match is for Composer 1 and the second one is for Composer 2.
         // First check is for all dependencies and second check is for production dependencies.
-        if (! Str::contains(
-            $composer->installDryRun(),
-            ['Nothing to install or update', 'Nothing to install, update or remove']
-        ) && ! Str::contains(
-            $composer->installDryRun(['--no-dev']),
-            ['Nothing to install or update', 'Nothing to install, update or remove']
-        )) {
+        if (!Str::contains(
+                $composer->installDryRun(),
+                ['Nothing to install or update', 'Nothing to install, update or remove']
+            ) && !Str::contains(
+                $composer->installDryRun(['--no-dev']),
+                ['Nothing to install or update', 'Nothing to install, update or remove']
+            )) {
             $this->markFailed();
         }
     }

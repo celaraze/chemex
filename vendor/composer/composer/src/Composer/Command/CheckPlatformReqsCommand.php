@@ -13,13 +13,13 @@
 namespace Composer\Command;
 
 use Composer\Package\Link;
+use Composer\Repository\InstalledRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\RootPackageRepository;
-use Composer\Repository\InstalledRepository;
 
 class CheckPlatformReqsCommand extends BaseCommand
 {
@@ -53,20 +53,20 @@ EOT
         $requires = array();
         $removePackages = array();
         if ($input->getOption('lock')) {
-            $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements using the lock file</info>');
+            $this->getIO()->writeError('<info>Checking ' . ($input->getOption('no-dev') ? 'non-dev ' : '') . 'platform requirements using the lock file</info>');
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
         } else {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
             // fallback to lockfile if installed repo is empty
             if (!$installedRepo->getPackages()) {
-                $this->getIO()->writeError('<warning>No vendor dir present, checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements from the lock file</warning>');
+                $this->getIO()->writeError('<warning>No vendor dir present, checking ' . ($input->getOption('no-dev') ? 'non-dev ' : '') . 'platform requirements from the lock file</warning>');
                 $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
             } else {
                 if ($input->getOption('no-dev')) {
                     $removePackages = $installedRepo->getDevPackageNames();
                 }
 
-                $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements for packages in the vendor dir</info>');
+                $this->getIO()->writeError('<info>Checking ' . ($input->getOption('no-dev') ? 'non-dev ' : '') . 'platform requirements for packages in the vendor dir</info>');
             }
         }
         if (!$input->getOption('no-dev')) {
@@ -127,7 +127,7 @@ EOT
                                     $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                                     $candidateConstraint->getPrettyString(),
                                     $link,
-                                    '<error>failed</error>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
+                                    '<error>failed</error>' . ($candidate->getName() === $require ? '' : ' <comment>provided by ' . $candidate->getPrettyName() . '</comment>'),
                                 );
 
                                 // skip to next candidate
@@ -139,7 +139,7 @@ EOT
                             $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                             $candidateConstraint->getPrettyString(),
                             null,
-                            '<info>success</info>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
+                            '<info>success</info>' . ($candidate->getName() === $require ? '' : ' <comment>provided by ' . $candidate->getPrettyName() . '</comment>'),
                         );
 
                         // candidate matched, skip to next requirement

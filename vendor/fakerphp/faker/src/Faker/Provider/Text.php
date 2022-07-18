@@ -7,9 +7,9 @@ abstract class Text extends Base
     protected static $baseText = '';
     protected static $separator = ' ';
     protected static $separatorLen = 1;
+    protected static $textStartsWithUppercase = true;
     protected $explodedText;
     protected $consecutiveWords = [];
-    protected static $textStartsWithUppercase = true;
 
     /**
      * Generate a text string by the Markov chain algorithm.
@@ -18,19 +18,19 @@ abstract class Text extends Base
      * generates a weighted table with the specified number of words as the index and the
      * possible following words as the value.
      *
-     * @example 'Alice, swallowing down her flamingo, and began by taking the little golden key'
-     *
      * @param int $maxNbChars Maximum number of characters the text should contain (minimum: 10)
-     * @param int $indexSize  Determines how many words are considered for the generation of the next word.
+     * @param int $indexSize Determines how many words are considered for the generation of the next word.
      *                        The minimum is 1, and it produces a higher level of randomness, although the
      *                        generated text usually doesn't make sense. Higher index sizes (up to 5)
      *                        produce more correct text, at the price of less randomness.
      *
      * @return string
+     * @example 'Alice, swallowing down her flamingo, and began by taking the little golden key'
+     *
      */
     public function realText($maxNbChars = 200, $indexSize = 2)
     {
-        return $this->realTextBetween((int) round($maxNbChars * 0.8), $maxNbChars, $indexSize);
+        return $this->realTextBetween((int)round($maxNbChars * 0.8), $maxNbChars, $indexSize);
     }
 
     /**
@@ -40,16 +40,16 @@ abstract class Text extends Base
      * generates a weighted table with the specified number of words as the index and the
      * possible following words as the value.
      *
-     * @example 'Alice, swallowing down her flamingo, and began by taking the little golden key'
-     *
      * @param int $minNbChars Minimum number of characters the text should contain (maximum: 8)
      * @param int $maxNbChars Maximum number of characters the text should contain (minimum: 10)
-     * @param int $indexSize  Determines how many words are considered for the generation of the next word.
+     * @param int $indexSize Determines how many words are considered for the generation of the next word.
      *                        The minimum is 1, and it produces a higher level of randomness, although the
      *                        generated text usually doesn't make sense. Higher index sizes (up to 5)
      *                        produce more correct text, at the price of less randomness.
      *
      * @return string
+     * @example 'Alice, swallowing down her flamingo, and began by taking the little golden key'
+     *
      */
     public function realTextBetween($minNbChars = 160, $maxNbChars = 200, $indexSize = 2)
     {
@@ -87,48 +87,6 @@ abstract class Text extends Base
         } while (static::strlen($result) <= $minNbChars);
 
         return $result;
-    }
-
-    /**
-     * @param int   $maxNbChars
-     * @param array $words
-     *
-     * @return string
-     */
-    protected function generateText($maxNbChars, $words)
-    {
-        $result = [];
-        $resultLength = 0;
-        // take a random starting point
-        $next = static::randomKey($words);
-
-        while ($resultLength < $maxNbChars && isset($words[$next])) {
-            // fetch a random word to append
-            $word = static::randomElement($words[$next]);
-
-            // calculate next index
-            $currentWords = static::explode($next);
-            $currentWords[] = $word;
-            array_shift($currentWords);
-            $next = static::implode($currentWords);
-
-            // ensure text starts with an uppercase letter
-            if ($resultLength == 0 && !static::validStart($word)) {
-                continue;
-            }
-
-            // append the element
-            $result[] = $word;
-            $resultLength += static::strlen($word) + static::$separatorLen;
-        }
-
-        // remove the element that caused the text to overflow
-        array_pop($result);
-
-        // build result
-        $result = static::implode($result);
-
-        return static::appendEnd($result);
     }
 
     protected function getConsecutiveWords($indexSize)
@@ -179,9 +137,46 @@ abstract class Text extends Base
         return implode(static::$separator, $words);
     }
 
-    protected static function strlen($text)
+    /**
+     * @param int $maxNbChars
+     * @param array $words
+     *
+     * @return string
+     */
+    protected function generateText($maxNbChars, $words)
     {
-        return function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+        $result = [];
+        $resultLength = 0;
+        // take a random starting point
+        $next = static::randomKey($words);
+
+        while ($resultLength < $maxNbChars && isset($words[$next])) {
+            // fetch a random word to append
+            $word = static::randomElement($words[$next]);
+
+            // calculate next index
+            $currentWords = static::explode($next);
+            $currentWords[] = $word;
+            array_shift($currentWords);
+            $next = static::implode($currentWords);
+
+            // ensure text starts with an uppercase letter
+            if ($resultLength == 0 && !static::validStart($word)) {
+                continue;
+            }
+
+            // append the element
+            $result[] = $word;
+            $resultLength += static::strlen($word) + static::$separatorLen;
+        }
+
+        // remove the element that caused the text to overflow
+        array_pop($result);
+
+        // build result
+        $result = static::implode($result);
+
+        return static::appendEnd($result);
     }
 
     protected static function validStart($word)
@@ -193,6 +188,11 @@ abstract class Text extends Base
         }
 
         return $isValid;
+    }
+
+    protected static function strlen($text)
+    {
+        return function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
     }
 
     protected static function appendEnd($text)

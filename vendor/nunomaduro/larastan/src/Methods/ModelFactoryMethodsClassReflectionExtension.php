@@ -23,15 +23,15 @@ class ModelFactoryMethodsClassReflectionExtension implements MethodsClassReflect
     public function hasMethod(ClassReflection $classReflection, string $methodName): bool
     {
         // Class only available on Laravel 8
-        if (! class_exists('\Illuminate\Database\Eloquent\Factories\Factory')) {
+        if (!class_exists('\Illuminate\Database\Eloquent\Factories\Factory')) {
             return false;
         }
 
-        if (! $classReflection->isSubclassOf(Factory::class)) {
+        if (!$classReflection->isSubclassOf(Factory::class)) {
             return false;
         }
 
-        if (! Str::startsWith($methodName, ['for', 'has'])) {
+        if (!Str::startsWith($methodName, ['for', 'has'])) {
             return false;
         }
 
@@ -54,10 +54,10 @@ class ModelFactoryMethodsClassReflectionExtension implements MethodsClassReflect
 
     public function getMethod(
         ClassReflection $classReflection,
-        string $methodName
-    ): MethodReflection {
-        return new class($classReflection, $methodName) implements MethodReflection
-        {
+        string          $methodName
+    ): MethodReflection
+    {
+        return new class($classReflection, $methodName) implements MethodReflection {
             /** @var ClassReflection */
             private $classReflection;
 

@@ -37,28 +37,16 @@ class Factory implements FactoryInterface
     private function bootDefaultMatchers(): void
     {
         $this->extend($this->matcher('zip',
-            static fn (\SplFileInfo $info): ArchiveInterface => new ZipPharArchive($info)
+            static fn(\SplFileInfo $info): ArchiveInterface => new ZipPharArchive($info)
         ));
 
         $this->extend($this->matcher('tar.gz',
-            static fn (\SplFileInfo $info): ArchiveInterface => new TarPharArchive($info)
+            static fn(\SplFileInfo $info): ArchiveInterface => new TarPharArchive($info)
         ));
 
         $this->extend($this->matcher('phar',
-            static fn (\SplFileInfo $info): ArchiveInterface => new PharArchive($info)
+            static fn(\SplFileInfo $info): ArchiveInterface => new PharArchive($info)
         ));
-    }
-
-    /**
-     * @param string $extension
-     * @param ArchiveMatcher $then
-     * @return ArchiveMatcher
-     */
-    private function matcher(string $extension, \Closure $then): \Closure
-    {
-        return static fn (\SplFileInfo $info): ?ArchiveInterface =>
-            \str_ends_with(\strtolower($info->getFilename()), '.' . $extension) ? $then($info) : null
-        ;
     }
 
     /**
@@ -72,29 +60,13 @@ class Factory implements FactoryInterface
     }
 
     /**
-     * @param \SplFileInfo $file
-     * @return ArchiveInterface
+     * @param string $extension
+     * @param ArchiveMatcher $then
+     * @return ArchiveMatcher
      */
-    public function create(\SplFileInfo $file): ArchiveInterface
+    private function matcher(string $extension, \Closure $then): \Closure
     {
-        $errors = [];
-
-        foreach ($this->matchers as $matcher) {
-            try {
-                if ($archive = $matcher($file)) {
-                    return $archive;
-                }
-            } catch (\Throwable $e) {
-                $errors[] = '  - ' . $e->getMessage();
-                continue;
-            }
-        }
-
-        $error = \sprintf('Can not open the archive "%s":%s', $file->getFilename(), \PHP_EOL) .
-            \implode(\PHP_EOL, $errors)
-        ;
-
-        throw new \InvalidArgumentException($error);
+        return static fn(\SplFileInfo $info): ?ArchiveInterface => \str_ends_with(\strtolower($info->getFilename()), '.' . $extension) ? $then($info) : null;
     }
 
     /**
@@ -126,7 +98,7 @@ class Factory implements FactoryInterface
     private function getTempDirectory(?string $temp): string
     {
         if ($temp) {
-            if (! \is_dir($temp) || ! \is_writable($temp)) {
+            if (!\is_dir($temp) || !\is_writable($temp)) {
                 throw new \LogicException(\sprintf('Directory "%s" is not writeable', $temp));
             }
 
@@ -134,5 +106,30 @@ class Factory implements FactoryInterface
         }
 
         return \sys_get_temp_dir();
+    }
+
+    /**
+     * @param \SplFileInfo $file
+     * @return ArchiveInterface
+     */
+    public function create(\SplFileInfo $file): ArchiveInterface
+    {
+        $errors = [];
+
+        foreach ($this->matchers as $matcher) {
+            try {
+                if ($archive = $matcher($file)) {
+                    return $archive;
+                }
+            } catch (\Throwable $e) {
+                $errors[] = '  - ' . $e->getMessage();
+                continue;
+            }
+        }
+
+        $error = \sprintf('Can not open the archive "%s":%s', $file->getFilename(), \PHP_EOL) .
+            \implode(\PHP_EOL, $errors);
+
+        throw new \InvalidArgumentException($error);
     }
 }

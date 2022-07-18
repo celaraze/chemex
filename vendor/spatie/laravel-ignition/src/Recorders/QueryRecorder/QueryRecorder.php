@@ -18,9 +18,10 @@ class QueryRecorder
 
     public function __construct(
         Application $app,
-        bool $reportBindings = true,
-        ?int $maxQueries = null
-    ) {
+        bool        $reportBindings = true,
+        ?int        $maxQueries = null
+    )
+    {
         $this->app = $app;
         $this->reportBindings = $reportBindings;
         $this->maxQueries = $maxQueries;
@@ -28,7 +29,7 @@ class QueryRecorder
 
     public function start(): self
     {
-        /** @phpstan-ignore-next-line  */
+        /** @phpstan-ignore-next-line */
         $this->app['events']->listen(QueryExecuted::class, [$this, 'record']);
 
         return $this;

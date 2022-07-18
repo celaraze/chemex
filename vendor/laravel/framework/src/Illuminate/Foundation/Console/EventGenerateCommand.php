@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class EventGenerateCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'event:generate';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class EventGenerateCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'event:generate';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'event:generate';
     /**
      * The console command description.
      *
@@ -55,13 +53,13 @@ class EventGenerateCommand extends Command
     /**
      * Make the event and listeners for the given event.
      *
-     * @param  string  $event
-     * @param  array  $listeners
+     * @param string $event
+     * @param array $listeners
      * @return void
      */
     protected function makeEventAndListeners($event, $listeners)
     {
-        if (! str_contains($event, '\\')) {
+        if (!str_contains($event, '\\')) {
             return;
         }
 
@@ -73,8 +71,8 @@ class EventGenerateCommand extends Command
     /**
      * Make the listeners for the given event.
      *
-     * @param  string  $event
-     * @param  array  $listeners
+     * @param string $event
+     * @param array $listeners
      * @return void
      */
     protected function makeListeners($event, $listeners)

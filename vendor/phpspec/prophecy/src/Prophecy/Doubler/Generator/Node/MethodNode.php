@@ -74,7 +74,7 @@ class MethodNode
 
     public function setStatic($static = true)
     {
-        $this->static = (bool) $static;
+        $this->static = (bool)$static;
     }
 
     public function returnsReference()
@@ -85,11 +85,6 @@ class MethodNode
     public function setReturnsReference()
     {
         $this->returnsReference = true;
-    }
-
-    public function getName()
-    {
-        return $this->name;
     }
 
     public function addArgument(ArgumentNode $argument)
@@ -106,12 +101,52 @@ class MethodNode
     }
 
     /**
-     * @deprecated use getReturnTypeNode instead
      * @return bool
+     * @deprecated use getReturnTypeNode instead
      */
     public function hasReturnType()
     {
-        return (bool) $this->returnTypeNode->getNonNullTypes();
+        return (bool)$this->returnTypeNode->getNonNullTypes();
+    }
+
+    /**
+     * @param string $type
+     * @deprecated use setReturnTypeNode instead
+     */
+    public function setReturnType($type = null)
+    {
+        $this->returnTypeNode = ($type === '' || $type === null) ? new ReturnTypeNode() : new ReturnTypeNode($type);
+    }
+
+    /**
+     * @param bool $bool
+     * @deprecated use setReturnTypeNode instead
+     */
+    public function setNullableReturnType($bool = true)
+    {
+        if ($bool) {
+            $this->returnTypeNode = new ReturnTypeNode('null', ...$this->returnTypeNode->getTypes());
+        } else {
+            $this->returnTypeNode = new ReturnTypeNode(...$this->returnTypeNode->getNonNullTypes());
+        }
+    }
+
+    /**
+     * @return string|null
+     * @deprecated use getReturnTypeNode instead
+     */
+    public function getReturnType()
+    {
+        if ($types = $this->returnTypeNode->getNonNullTypes()) {
+            return $types[0];
+        }
+
+        return null;
+    }
+
+    public function getReturnTypeNode(): ReturnTypeNode
+    {
+        return $this->returnTypeNode;
     }
 
     public function setReturnTypeNode(ReturnTypeNode $returnTypeNode): void
@@ -120,54 +155,21 @@ class MethodNode
     }
 
     /**
-     * @deprecated use setReturnTypeNode instead
-     * @param string $type
-     */
-    public function setReturnType($type = null)
-    {
-        $this->returnTypeNode = ($type === '' || $type === null) ? new ReturnTypeNode() : new ReturnTypeNode($type);
-    }
-
-    /**
-     * @deprecated use setReturnTypeNode instead
-     * @param bool $bool
-     */
-    public function setNullableReturnType($bool = true)
-    {
-        if ($bool) {
-            $this->returnTypeNode = new ReturnTypeNode('null', ...$this->returnTypeNode->getTypes());
-        }
-        else {
-            $this->returnTypeNode = new ReturnTypeNode(...$this->returnTypeNode->getNonNullTypes());
-        }
-    }
-
-    /**
-     * @deprecated use getReturnTypeNode instead
-     * @return string|null
-     */
-    public function getReturnType()
-    {
-        if ($types = $this->returnTypeNode->getNonNullTypes())
-        {
-            return $types[0];
-        }
-
-        return null;
-    }
-
-    public function getReturnTypeNode() : ReturnTypeNode
-    {
-        return $this->returnTypeNode;
-    }
-
-    /**
-     * @deprecated use getReturnTypeNode instead
      * @return bool
+     * @deprecated use getReturnTypeNode instead
      */
     public function hasNullableReturnType()
     {
         return $this->returnTypeNode->canUseNullShorthand();
+    }
+
+    public function getCode()
+    {
+        if ($this->returnsReference) {
+            return "throw new \Prophecy\Exception\Doubler\ReturnByReferenceException('Returning by reference not supported', get_class(\$this), '{$this->name}');";
+        }
+
+        return (string)$this->code;
     }
 
     /**
@@ -176,16 +178,6 @@ class MethodNode
     public function setCode($code)
     {
         $this->code = $code;
-    }
-
-    public function getCode()
-    {
-        if ($this->returnsReference)
-        {
-            return "throw new \Prophecy\Exception\Doubler\ReturnByReferenceException('Returning by reference not supported', get_class(\$this), '{$this->name}');";
-        }
-
-        return (string) $this->code;
     }
 
     public function useParentCode()
@@ -197,12 +189,17 @@ class MethodNode
         );
     }
 
+    public function getName()
+    {
+        return $this->name;
+    }
+
     private function generateArgument(ArgumentNode $arg)
     {
-        $argument = '$'.$arg->getName();
+        $argument = '$' . $arg->getName();
 
         if ($arg->isVariadic()) {
-            $argument = '...'.$argument;
+            $argument = '...' . $argument;
         }
 
         return $argument;

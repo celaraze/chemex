@@ -6,14 +6,12 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\DB2Platform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
-
 use function array_change_key_case;
 use function preg_match;
 use function str_replace;
 use function strpos;
 use function strtolower;
 use function substr;
-
 use const CASE_LOWER;
 
 /**
@@ -40,6 +38,38 @@ class DB2SchemaManager extends AbstractSchemaManager
 
     /**
      * {@inheritdoc}
+     */
+    protected function _getPortableTablesList($tables)
+    {
+        $tableNames = [];
+        foreach ($tables as $tableRow) {
+            $tableRow = array_change_key_case($tableRow, CASE_LOWER);
+            $tableNames[] = $tableRow['name'];
+        }
+
+        return $tableNames;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listTableDetails($name): Table
+    {
+        $table = parent::listTableDetails($name);
+
+        $sql = $this->_platform->getListTableCommentsSQL($name);
+
+        $tableOptions = $this->_conn->fetchAssociative($sql);
+
+        if ($tableOptions !== false) {
+            $table->addOption('comment', $tableOptions['REMARKS']);
+        }
+
+        return $table;
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @throws Exception
      */
@@ -47,9 +77,9 @@ class DB2SchemaManager extends AbstractSchemaManager
     {
         $tableColumn = array_change_key_case($tableColumn, CASE_LOWER);
 
-        $length    = null;
-        $fixed     = null;
-        $scale     = false;
+        $length = null;
+        $fixed = null;
+        $scale = false;
         $precision = false;
 
         $default = null;
@@ -65,7 +95,7 @@ class DB2SchemaManager extends AbstractSchemaManager
         $type = $this->_platform->getDoctrineTypeMapping($tableColumn['typename']);
 
         if (isset($tableColumn['comment'])) {
-            $type                   = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
+            $type = $this->extractDoctrineTypeFromComment($tableColumn['comment'], $type);
             $tableColumn['comment'] = $this->removeDoctrineTypeFromComment($tableColumn['comment'], $type);
         }
 
@@ -76,7 +106,7 @@ class DB2SchemaManager extends AbstractSchemaManager
                 }
 
                 $length = $tableColumn['length'];
-                $fixed  = false;
+                $fixed = false;
                 break;
 
             case 'character':
@@ -85,7 +115,7 @@ class DB2SchemaManager extends AbstractSchemaManager
                 }
 
                 $length = $tableColumn['length'];
-                $fixed  = true;
+                $fixed = true;
                 break;
 
             case 'clob':
@@ -95,28 +125,28 @@ class DB2SchemaManager extends AbstractSchemaManager
             case 'decimal':
             case 'double':
             case 'real':
-                $scale     = $tableColumn['scale'];
+                $scale = $tableColumn['scale'];
                 $precision = $tableColumn['length'];
                 break;
         }
 
         $options = [
-            'length'        => $length,
-            'unsigned'      => false,
-            'fixed'         => (bool) $fixed,
-            'default'       => $default,
-            'autoincrement' => (bool) $tableColumn['autoincrement'],
-            'notnull'       => $tableColumn['nulls'] === 'N',
-            'scale'         => null,
-            'precision'     => null,
-            'comment'       => isset($tableColumn['comment']) && $tableColumn['comment'] !== ''
+            'length' => $length,
+            'unsigned' => false,
+            'fixed' => (bool)$fixed,
+            'default' => $default,
+            'autoincrement' => (bool)$tableColumn['autoincrement'],
+            'notnull' => $tableColumn['nulls'] === 'N',
+            'scale' => null,
+            'precision' => null,
+            'comment' => isset($tableColumn['comment']) && $tableColumn['comment'] !== ''
                 ? $tableColumn['comment']
                 : null,
             'platformOptions' => [],
         ];
 
         if ($scale !== null && $precision !== null) {
-            $options['scale']     = $scale;
+            $options['scale'] = $scale;
             $options['precision'] = $precision;
         }
 
@@ -126,25 +156,11 @@ class DB2SchemaManager extends AbstractSchemaManager
     /**
      * {@inheritdoc}
      */
-    protected function _getPortableTablesList($tables)
-    {
-        $tableNames = [];
-        foreach ($tables as $tableRow) {
-            $tableRow     = array_change_key_case($tableRow, CASE_LOWER);
-            $tableNames[] = $tableRow['name'];
-        }
-
-        return $tableNames;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function _getPortableTableIndexesList($tableIndexes, $tableName = null)
     {
         foreach ($tableIndexes as &$tableIndexRow) {
-            $tableIndexRow            = array_change_key_case($tableIndexRow, CASE_LOWER);
-            $tableIndexRow['primary'] = (bool) $tableIndexRow['primary'];
+            $tableIndexRow = array_change_key_case($tableIndexRow, CASE_LOWER);
+            $tableIndexRow['primary'] = (bool)$tableIndexRow['primary'];
         }
 
         return parent::_getPortableTableIndexesList($tableIndexes, $tableName);
@@ -174,19 +190,19 @@ class DB2SchemaManager extends AbstractSchemaManager
         foreach ($tableForeignKeys as $tableForeignKey) {
             $tableForeignKey = array_change_key_case($tableForeignKey, CASE_LOWER);
 
-            if (! isset($foreignKeys[$tableForeignKey['index_name']])) {
+            if (!isset($foreignKeys[$tableForeignKey['index_name']])) {
                 $foreignKeys[$tableForeignKey['index_name']] = [
-                    'local_columns'   => [$tableForeignKey['local_column']],
-                    'foreign_table'   => $tableForeignKey['foreign_table'],
+                    'local_columns' => [$tableForeignKey['local_column']],
+                    'foreign_table' => $tableForeignKey['foreign_table'],
                     'foreign_columns' => [$tableForeignKey['foreign_column']],
-                    'name'            => $tableForeignKey['index_name'],
-                    'options'         => [
+                    'name' => $tableForeignKey['index_name'],
+                    'options' => [
                         'onUpdate' => $tableForeignKey['on_update'],
                         'onDelete' => $tableForeignKey['on_delete'],
                     ],
                 ];
             } else {
-                $foreignKeys[$tableForeignKey['index_name']]['local_columns'][]   = $tableForeignKey['local_column'];
+                $foreignKeys[$tableForeignKey['index_name']]['local_columns'][] = $tableForeignKey['local_column'];
                 $foreignKeys[$tableForeignKey['index_name']]['foreign_columns'][] = $tableForeignKey['foreign_column'];
             }
         }
@@ -227,23 +243,5 @@ class DB2SchemaManager extends AbstractSchemaManager
         }
 
         return new View($view['name'], $sql);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function listTableDetails($name): Table
-    {
-        $table = parent::listTableDetails($name);
-
-        $sql = $this->_platform->getListTableCommentsSQL($name);
-
-        $tableOptions = $this->_conn->fetchAssociative($sql);
-
-        if ($tableOptions !== false) {
-            $table->addOption('comment', $tableOptions['REMARKS']);
-        }
-
-        return $table;
     }
 }

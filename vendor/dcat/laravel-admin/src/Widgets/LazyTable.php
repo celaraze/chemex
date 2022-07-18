@@ -38,15 +38,15 @@ class LazyTable extends Widget
     /**
      * LazyTable constructor.
      *
-     * @param  LazyRenderable  $renderable
-     * @param  bool  $load
+     * @param LazyRenderable $renderable
+     * @param bool $load
      */
     public function __construct(LazyRenderable $renderable = null, bool $load = true)
     {
         $this->from($renderable);
         $this->load($load);
 
-        $this->elementClass = 'async-table-'.Str::random(10);
+        $this->elementClass = 'async-table-' . Str::random(10);
 
         $this->class(['async-table']);
     }
@@ -54,16 +54,29 @@ class LazyTable extends Widget
     /**
      * 设置异步表格实例.
      *
-     * @param  LazyRenderable|null  $renderable
+     * @param LazyRenderable|null $renderable
      * @return $this
      */
     public function from(?LazyRenderable $renderable)
     {
-        if (! $renderable) {
+        if (!$renderable) {
             return $this;
         }
 
         $this->renderable = $renderable;
+
+        return $this;
+    }
+
+    /**
+     * 设置是否自动加载.
+     *
+     * @param bool $value
+     * @return $this
+     */
+    public function load(bool $value)
+    {
+        $this->load = $value;
 
         return $this;
     }
@@ -77,40 +90,38 @@ class LazyTable extends Widget
     }
 
     /**
-     * 设置是否自动加载.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function load(bool $value)
-    {
-        $this->load = $value;
-
-        return $this;
-    }
-
-    /**
-     * 设置是否启用表格简化模式.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function simple(bool $value = true)
-    {
-        $this->simple = $value;
-
-        return $this;
-    }
-
-    /**
      * 监听异步渲染完成事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onLoad(string $script)
     {
         $this->loadScript .= "\$this.on('table:loaded', function (event) { {$script} });";
+
+        return $this;
+    }
+
+    public function render()
+    {
+        if ($this->simple !== null) {
+            $this->renderable->simple($this->simple);
+        }
+
+        $this->addScript();
+
+        return parent::render();
+    }
+
+    /**
+     * 设置是否启用表格简化模式.
+     *
+     * @param bool $value
+     * @return $this
+     */
+    public function simple(bool $value = true)
+    {
+        $this->simple = $value;
 
         return $this;
     }
@@ -133,24 +144,13 @@ JS;
      */
     protected function getLoadScript()
     {
-        if (! $this->load) {
+        if (!$this->load) {
             return;
         }
 
         return <<<'JS'
 $this.trigger('table:load');
 JS;
-    }
-
-    public function render()
-    {
-        if ($this->simple !== null) {
-            $this->renderable->simple($this->simple);
-        }
-
-        $this->addScript();
-
-        return parent::render();
     }
 
     public function html()
@@ -160,7 +160,7 @@ JS;
         ]);
 
         return <<<HTML
-<div {$this->formatHtmlAttributes()} style="min-height: 200px"></div>        
+<div {$this->formatHtmlAttributes()} style="min-height: 200px"></div>
 HTML;
     }
 }

@@ -14,21 +14,24 @@ class DeclareDeclare extends Node\Stmt
     /**
      * Constructs a declare key=>value pair node.
      *
-     * @param string|Node\Identifier $key        Key
-     * @param Node\Expr              $value      Value
-     * @param array                  $attributes Additional attributes
+     * @param string|Node\Identifier $key Key
+     * @param Node\Expr $value Value
+     * @param array $attributes Additional attributes
      */
-    public function __construct($key, Node\Expr $value, array $attributes = []) {
+    public function __construct($key, Node\Expr $value, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->key = \is_string($key) ? new Node\Identifier($key) : $key;
         $this->value = $value;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['key', 'value'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_DeclareDeclare';
     }
 }

@@ -66,13 +66,19 @@ abstract class TestCase extends BaseTestCase
     protected $setUpHasRun = false;
 
     /**
-     * Creates the application.
+     * Register a callback to be run after the application is created.
      *
-     * Needs to be implemented by subclasses.
-     *
-     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @param callable $callback
+     * @return void
      */
-    abstract public function createApplication();
+    public function afterApplicationCreated(callable $callback)
+    {
+        $this->afterApplicationCreatedCallbacks[] = $callback;
+
+        if ($this->setUpHasRun) {
+            $callback();
+        }
+    }
 
     /**
      * Setup the test environment.
@@ -83,7 +89,7 @@ abstract class TestCase extends BaseTestCase
     {
         Facade::clearResolvedInstances();
 
-        if (! $this->app) {
+        if (!$this->app) {
             $this->refreshApplication();
 
             ParallelTesting::callSetUpTestCaseCallbacks($this);
@@ -109,6 +115,15 @@ abstract class TestCase extends BaseTestCase
     {
         $this->app = $this->createApplication();
     }
+
+    /**
+     * Creates the application.
+     *
+     * Needs to be implemented by subclasses.
+     *
+     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    abstract public function createApplication();
 
     /**
      * Boot the testing helper traits.
@@ -144,16 +159,27 @@ abstract class TestCase extends BaseTestCase
         }
 
         foreach ($uses as $trait) {
-            if (method_exists($this, $method = 'setUp'.class_basename($trait))) {
+            if (method_exists($this, $method = 'setUp' . class_basename($trait))) {
                 $this->{$method}();
             }
 
-            if (method_exists($this, $method = 'tearDown'.class_basename($trait))) {
-                $this->beforeApplicationDestroyed(fn () => $this->{$method}());
+            if (method_exists($this, $method = 'tearDown' . class_basename($trait))) {
+                $this->beforeApplicationDestroyed(fn() => $this->{$method}());
             }
         }
 
         return $uses;
+    }
+
+    /**
+     * Register a callback to be run before the application is destroyed.
+     *
+     * @param callable $callback
+     * @return void
+     */
+    protected function beforeApplicationDestroyed(callable $callback)
+    {
+        $this->beforeApplicationDestroyedCallbacks[] = $callback;
     }
 
     /**
@@ -193,7 +219,7 @@ abstract class TestCase extends BaseTestCase
             try {
                 Mockery::close();
             } catch (InvalidCountException $e) {
-                if (! Str::contains($e->getMethodName(), ['doWrite', 'askQuestion'])) {
+                if (!Str::contains($e->getMethodName(), ['doWrite', 'askQuestion'])) {
                     throw $e;
                 }
             }
@@ -220,32 +246,6 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Register a callback to be run after the application is created.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    public function afterApplicationCreated(callable $callback)
-    {
-        $this->afterApplicationCreatedCallbacks[] = $callback;
-
-        if ($this->setUpHasRun) {
-            $callback();
-        }
-    }
-
-    /**
-     * Register a callback to be run before the application is destroyed.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    protected function beforeApplicationDestroyed(callable $callback)
-    {
-        $this->beforeApplicationDestroyedCallbacks[] = $callback;
-    }
-
-    /**
      * Execute the application's pre-destruction callbacks.
      *
      * @return void
@@ -256,7 +256,7 @@ abstract class TestCase extends BaseTestCase
             try {
                 $callback();
             } catch (Throwable $e) {
-                if (! $this->callbackException) {
+                if (!$this->callbackException) {
                     $this->callbackException = $e;
                 }
             }

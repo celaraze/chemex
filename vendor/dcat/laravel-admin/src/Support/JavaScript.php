@@ -16,7 +16,7 @@ class JavaScript
 
     public function __construct($script)
     {
-        $this->id = 'js('.Str::random().')';
+        $this->id = 'js(' . Str::random() . ')';
 
         $this->value($script);
     }
@@ -24,7 +24,7 @@ class JavaScript
     /**
      * 设置或获取代码内容.
      *
-     * @param  mixed  $script
+     * @param mixed $script
      * @return mixed
      */
     public function value($script = null)
@@ -33,42 +33,22 @@ class JavaScript
             return static::$scripts[$this->id];
         }
 
-        static::$scripts[$this->id] = (string) value($script);
+        static::$scripts[$this->id] = (string)value($script);
     }
 
     /**
-     * @param  string|\Closure  $script
+     * @param string|\Closure $script
      * @return string
      */
     public static function make($script)
     {
-        return (string) new static($script);
-    }
-
-    /**
-     * 获取所有代码
-     *
-     * @return array
-     */
-    public static function all()
-    {
-        return static::$scripts;
-    }
-
-    /**
-     * 删除代码.
-     *
-     * @param  string  $id
-     */
-    public static function delete(string $id)
-    {
-        unset(static::$scripts[$id]);
+        return (string)new static($script);
     }
 
     /**
      * 格式化为js代码.
      *
-     * @param  array|Arrayable  $value
+     * @param array|Arrayable $value
      * @return string
      */
     public static function format($value)
@@ -88,6 +68,26 @@ class JavaScript
         }
 
         return $value;
+    }
+
+    /**
+     * 获取所有代码
+     *
+     * @return array
+     */
+    public static function all()
+    {
+        return static::$scripts;
+    }
+
+    /**
+     * 删除代码.
+     *
+     * @param string $id
+     */
+    public static function delete(string $id)
+    {
+        unset(static::$scripts[$id]);
     }
 
     /**

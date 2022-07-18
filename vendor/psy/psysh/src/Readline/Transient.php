@@ -24,6 +24,17 @@ class Transient implements Readline
     private $stdin;
 
     /**
+     * Transient Readline constructor.
+     */
+    public function __construct($historyFile = null, $historySize = 0, $eraseDups = false)
+    {
+        // don't do anything with the history file...
+        $this->history = [];
+        $this->historySize = $historySize;
+        $this->eraseDups = $eraseDups;
+    }
+
+    /**
      * Transient Readline is always supported.
      *
      * {@inheritdoc}
@@ -39,17 +50,6 @@ class Transient implements Readline
     public static function supportsBracketedPaste(): bool
     {
         return false;
-    }
-
-    /**
-     * Transient Readline constructor.
-     */
-    public function __construct($historyFile = null, $historySize = 0, $eraseDups = false)
-    {
-        // don't do anything with the history file...
-        $this->history = [];
-        $this->historySize = $historySize;
-        $this->eraseDups = $eraseDups;
     }
 
     /**
@@ -106,15 +106,35 @@ class Transient implements Readline
     /**
      * {@inheritdoc}
      *
+     * @return false|string
      * @throws BreakException if user hits Ctrl+D
      *
-     * @return false|string
      */
     public function readline(string $prompt = null)
     {
         echo $prompt;
 
         return \rtrim(\fgets($this->getStdin()), "\n\r");
+    }
+
+    /**
+     * Get a STDIN file handle.
+     *
+     * @return resource
+     * @throws BreakException if user hits Ctrl+D
+     *
+     */
+    private function getStdin()
+    {
+        if (!isset($this->stdin)) {
+            $this->stdin = \fopen('php://stdin', 'r');
+        }
+
+        if (\feof($this->stdin)) {
+            throw new BreakException('Ctrl+D');
+        }
+
+        return $this->stdin;
     }
 
     /**
@@ -131,25 +151,5 @@ class Transient implements Readline
     public function writeHistory(): bool
     {
         return true;
-    }
-
-    /**
-     * Get a STDIN file handle.
-     *
-     * @throws BreakException if user hits Ctrl+D
-     *
-     * @return resource
-     */
-    private function getStdin()
-    {
-        if (!isset($this->stdin)) {
-            $this->stdin = \fopen('php://stdin', 'r');
-        }
-
-        if (\feof($this->stdin)) {
-            throw new BreakException('Ctrl+D');
-        }
-
-        return $this->stdin;
     }
 }

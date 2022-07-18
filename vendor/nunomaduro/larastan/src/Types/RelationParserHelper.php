@@ -38,7 +38,8 @@ class RelationParserHelper
 
     public function findRelatedModelInRelationMethod(
         MethodReflection $methodReflection
-    ): ?string {
+    ): ?string
+    {
         if ($methodReflection instanceof PhpMethodReflection && $methodReflection->getDeclaringTrait() !== null) {
             $fileName = $methodReflection->getDeclaringTrait()->getFileName();
         } else {
@@ -65,7 +66,7 @@ class RelationParserHelper
         /** @var Node\Stmt\Return_|null $returnStmt */
         $returnStmt = $this->findReturn($relationMethod);
 
-        if ($returnStmt === null || ! $returnStmt->expr instanceof MethodCall) {
+        if ($returnStmt === null || !$returnStmt->expr instanceof MethodCall) {
             return null;
         }
 
@@ -100,7 +101,7 @@ class RelationParserHelper
         if ($argType instanceof GenericClassStringType) {
             $modelType = $argType->getGenericType();
 
-            if (! $modelType instanceof ObjectType) {
+            if (!$modelType instanceof ObjectType) {
                 return null;
             }
 
@@ -115,8 +116,8 @@ class RelationParserHelper
     }
 
     /**
-     * @param  string  $method
-     * @param  mixed  $statements
+     * @param string $method
+     * @param mixed $statements
      * @return Node|null
      */
     private function findMethod(string $method, $statements): ?Node

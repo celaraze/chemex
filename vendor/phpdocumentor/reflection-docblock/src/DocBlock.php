@@ -42,31 +42,42 @@ final class DocBlock
 
     /**
      * @param DocBlock\Tag[] $tags
-     * @param Types\Context  $context  The context in which the DocBlock occurs.
-     * @param Location       $location The location within the file that this DocBlock occurs in.
+     * @param Types\Context $context The context in which the DocBlock occurs.
+     * @param Location $location The location within the file that this DocBlock occurs in.
      */
     public function __construct(
-        string $summary = '',
+        string                $summary = '',
         ?DocBlock\Description $description = null,
-        array $tags = [],
-        ?Types\Context $context = null,
-        ?Location $location = null,
-        bool $isTemplateStart = false,
-        bool $isTemplateEnd = false
-    ) {
+        array                 $tags = [],
+        ?Types\Context        $context = null,
+        ?Location             $location = null,
+        bool                  $isTemplateStart = false,
+        bool                  $isTemplateEnd = false
+    )
+    {
         Assert::allIsInstanceOf($tags, Tag::class);
 
-        $this->summary     = $summary;
+        $this->summary = $summary;
         $this->description = $description ?: new DocBlock\Description('');
         foreach ($tags as $tag) {
             $this->addTag($tag);
         }
 
-        $this->context  = $context;
+        $this->context = $context;
         $this->location = $location;
 
-        $this->isTemplateEnd   = $isTemplateEnd;
+        $this->isTemplateEnd = $isTemplateEnd;
         $this->isTemplateStart = $isTemplateStart;
+    }
+
+    /**
+     * Adds a tag to this DocBlock.
+     *
+     * @param Tag $tag The tag to add.
+     */
+    private function addTag(Tag $tag): void
+    {
+        $this->tags[] = $tag;
     }
 
     public function getSummary(): string
@@ -130,13 +141,26 @@ final class DocBlock
     }
 
     /**
-     * Returns the tags for this DocBlock.
+     * Returns an array of tags with type matching the given name. If no tags are found
+     * an empty array is returned.
      *
-     * @return Tag[]
+     * @param string $name String to search by.
+     *
+     * @return TagWithType[]
      */
-    public function getTags(): array
+    public function getTagsWithTypeByName(string $name): array
     {
-        return $this->tags;
+        $result = [];
+
+        foreach ($this->getTagsByName($name) as $tag) {
+            if (!$tag instanceof TagWithType) {
+                continue;
+            }
+
+            $result[] = $tag;
+        }
+
+        return $result;
     }
 
     /**
@@ -163,26 +187,13 @@ final class DocBlock
     }
 
     /**
-     * Returns an array of tags with type matching the given name. If no tags are found
-     * an empty array is returned.
+     * Returns the tags for this DocBlock.
      *
-     * @param string $name String to search by.
-     *
-     * @return TagWithType[]
+     * @return Tag[]
      */
-    public function getTagsWithTypeByName(string $name): array
+    public function getTags(): array
     {
-        $result = [];
-
-        foreach ($this->getTagsByName($name) as $tag) {
-            if (!$tag instanceof TagWithType) {
-                continue;
-            }
-
-            $result[] = $tag;
-        }
-
-        return $result;
+        return $this->tags;
     }
 
     /**
@@ -214,15 +225,5 @@ final class DocBlock
                 break;
             }
         }
-    }
-
-    /**
-     * Adds a tag to this DocBlock.
-     *
-     * @param Tag $tag The tag to add.
-     */
-    private function addTag(Tag $tag): void
-    {
-        $this->tags[] = $tag;
     }
 }

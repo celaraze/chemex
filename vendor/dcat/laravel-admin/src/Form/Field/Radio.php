@@ -19,33 +19,9 @@ class Radio extends Field
     protected $inline = true;
 
     /**
-     * @param  array|\Closure|string  $options
-     * @return $this
-     */
-    public function options($options = [])
-    {
-        if ($options instanceof \Closure) {
-            $this->options = $options;
-
-            return $this;
-        }
-
-        $this->options = Helper::array($options);
-
-        return $this;
-    }
-
-    public function inline(bool $inline)
-    {
-        $this->inline = $inline;
-
-        return $this;
-    }
-
-    /**
      * "info", "primary", "inverse", "danger", "success", "purple".
      *
-     * @param  string  $style
+     * @param string $style
      * @return $this
      */
     public function style(string $style)
@@ -85,5 +61,29 @@ class Radio extends Field
         ]);
 
         return parent::render();
+    }
+
+    /**
+     * @param array|\Closure|string $options
+     * @return $this
+     */
+    public function options($options = [])
+    {
+        if ($options instanceof \Closure) {
+            $this->options = $options;
+
+            return $this;
+        }
+
+        $this->options = Helper::array($options);
+
+        return $this;
+    }
+
+    public function inline(bool $inline)
+    {
+        $this->inline = $inline;
+
+        return $this;
     }
 }

@@ -13,12 +13,12 @@
 namespace Composer\IO;
 
 use Composer\Pcre\Preg;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Output\StreamOutput;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -31,8 +31,8 @@ class BufferIO extends ConsoleIO
     protected $output;
 
     /**
-     * @param string                        $input
-     * @param int                           $verbosity
+     * @param string $input
+     * @param int $verbosity
      * @param OutputFormatterInterface|null $formatter
      */
     public function __construct(string $input = '', int $verbosity = StreamOutput::VERBOSITY_NORMAL, OutputFormatterInterface $formatter = null)
@@ -64,7 +64,7 @@ class BufferIO extends ConsoleIO
             }
 
             // TODO reverse parse the string, skipping span tags and \033\[([0-9;]+)m(.*?)\033\[0m style blobs
-            return rtrim($matches[1])."\n";
+            return rtrim($matches[1]) . "\n";
         }, $output);
 
         return $output;
@@ -73,9 +73,9 @@ class BufferIO extends ConsoleIO
     /**
      * @param string[] $inputs
      *
+     * @return void
      * @see createStream
      *
-     * @return void
      */
     public function setUserInputs(array $inputs): void
     {
@@ -97,7 +97,7 @@ class BufferIO extends ConsoleIO
         $stream = fopen('php://memory', 'r+');
 
         foreach ($inputs as $input) {
-            fwrite($stream, $input.PHP_EOL);
+            fwrite($stream, $input . PHP_EOL);
         }
 
         rewind($stream);

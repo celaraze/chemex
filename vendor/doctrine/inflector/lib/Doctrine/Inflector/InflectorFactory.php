@@ -11,7 +11,6 @@ use Doctrine\Inflector\Rules\Portuguese;
 use Doctrine\Inflector\Rules\Spanish;
 use Doctrine\Inflector\Rules\Turkish;
 use InvalidArgumentException;
-
 use function sprintf;
 
 final class InflectorFactory

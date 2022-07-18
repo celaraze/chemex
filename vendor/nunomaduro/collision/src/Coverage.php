@@ -17,23 +17,11 @@ use Symfony\Component\Console\Terminal;
 final class Coverage
 {
     /**
-     * Returns the coverage path.
-     */
-    public static function getPath(): string
-    {
-        return implode(DIRECTORY_SEPARATOR, [
-            dirname(__DIR__),
-            '.temp',
-            'coverage',
-        ]);
-    }
-
-    /**
      * Runs true there is any code coverage driver available.
      */
     public static function isAvailable(): bool
     {
-        if (! (new Runtime())->canCollectCodeCoverage()) {
+        if (!(new Runtime())->canCollectCodeCoverage()) {
             return false;
         }
 
@@ -94,7 +82,7 @@ final class Coverage
             if (!$file instanceof File) {
                 continue;
             }
-            $dirname  = dirname($file->id());
+            $dirname = dirname($file->id());
             $basename = basename($file->id(), '.php');
 
             $name = $dirname === '.' ? $basename : implode(DIRECTORY_SEPARATOR, [
@@ -151,6 +139,18 @@ final class Coverage
     }
 
     /**
+     * Returns the coverage path.
+     */
+    public static function getPath(): string
+    {
+        return implode(DIRECTORY_SEPARATOR, [
+            dirname(__DIR__),
+            '.temp',
+            'coverage',
+        ]);
+    }
+
+    /**
      * Generates an array of missing coverage on the following format:.
      *
      * ```
@@ -173,7 +173,7 @@ final class Coverage
             }
 
             if ($shouldBeNewLine) {
-                $array[]         = (string) $line;
+                $array[] = (string)$line;
                 $shouldBeNewLine = false;
 
                 return $array;
@@ -182,7 +182,7 @@ final class Coverage
             $lastKey = count($array) - 1;
 
             if (array_key_exists($lastKey, $array) && str_contains($array[$lastKey], '..')) {
-                [$from]          = explode('..', $array[$lastKey]);
+                [$from] = explode('..', $array[$lastKey]);
                 $array[$lastKey] = $line > $from ? sprintf('%s..%s', $from, $line) : sprintf('%s..%s', $line, $from);
 
                 return $array;

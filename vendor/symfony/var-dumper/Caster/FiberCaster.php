@@ -36,7 +36,7 @@ final class FiberCaster
             $status = 'not started';
         }
 
-        $a[$prefix.'status'] = $status;
+        $a[$prefix . 'status'] = $status;
 
         return $a;
     }

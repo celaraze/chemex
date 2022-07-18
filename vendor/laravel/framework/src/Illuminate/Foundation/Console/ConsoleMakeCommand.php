@@ -14,13 +14,6 @@ class ConsoleMakeCommand extends GeneratorCommand
     use CreatesMatchingTest;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:command';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -30,7 +23,12 @@ class ConsoleMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:command';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:command';
     /**
      * The console command description.
      *
@@ -48,8 +46,8 @@ class ConsoleMakeCommand extends GeneratorCommand
     /**
      * Replace the class name for the given stub.
      *
-     * @param  string  $stub
-     * @param  string  $name
+     * @param string $stub
+     * @param string $name
      * @return string
      */
     protected function replaceClass($stub, $name)
@@ -70,18 +68,18 @@ class ConsoleMakeCommand extends GeneratorCommand
 
         return file_exists($customPath = $this->laravel->basePath(trim($relativePath, '/')))
             ? $customPath
-            : __DIR__.$relativePath;
+            : __DIR__ . $relativePath;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Console\Commands';
+        return $rootNamespace . '\Console\Commands';
     }
 
     /**

@@ -60,31 +60,31 @@ class CompilingMatcher
      * Evaluates the expression: $constraint match $operator $version
      *
      * @param ConstraintInterface $constraint
-     * @param int                 $operator
+     * @param int $operator
      * @phpstan-param Constraint::OP_*  $operator
-     * @param string              $version
+     * @param string $version
      *
      * @return mixed
      */
     public static function match(ConstraintInterface $constraint, $operator, $version)
     {
-        $resultCacheKey = $operator.$constraint.';'.$version;
+        $resultCacheKey = $operator . $constraint . ';' . $version;
 
         if (isset(self::$resultCache[$resultCacheKey])) {
             return self::$resultCache[$resultCacheKey];
         }
 
         if (self::$enabled === null) {
-            self::$enabled = !\in_array('eval', explode(',', (string) ini_get('disable_functions')), true);
+            self::$enabled = !\in_array('eval', explode(',', (string)ini_get('disable_functions')), true);
         }
         if (!self::$enabled) {
             return self::$resultCache[$resultCacheKey] = $constraint->matches(new Constraint(self::$transOpInt[$operator], $version));
         }
 
-        $cacheKey = $operator.$constraint;
+        $cacheKey = $operator . $constraint;
         if (!isset(self::$compiledCheckerCache[$cacheKey])) {
             $code = $constraint->compile($operator);
-            self::$compiledCheckerCache[$cacheKey] = $function = eval('return function($v, $b){return '.$code.';};');
+            self::$compiledCheckerCache[$cacheKey] = $function = eval('return function($v, $b){return ' . $code . ';};');
         } else {
             $function = self::$compiledCheckerCache[$cacheKey];
         }

@@ -26,15 +26,15 @@ class MassAssignmentBuilderInstanceRule implements Rule
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier
-            || ! in_array($methodName = $node->name->toString(), [
+        if (!$node->name instanceof Node\Identifier
+            || !in_array($methodName = $node->name->toString(), [
                 'update', 'insert', 'upsert', 'insertOrIgnore', 'insertUsing', 'insertGetId', 'updateOrInsert',
             ])) {
             // Method name must match blacklisted names.
             return [];
         }
 
-        if (! $this->isCalledOnBuilder($node->var, $scope)) {
+        if (!$this->isCalledOnBuilder($node->var, $scope)) {
             // Method was not called on a Builder, so no errors.
             return [];
         }
@@ -43,7 +43,7 @@ class MassAssignmentBuilderInstanceRule implements Rule
             return [
                 sprintf(
                     "Call to %s method on an Eloquent/query builder instance with request data may result in a "
-                    ."mass assignment vulnerability.",
+                    . "mass assignment vulnerability.",
                     $methodName
                 ),
             ];

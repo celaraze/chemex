@@ -57,7 +57,7 @@ final class Collection extends AbstractList
      */
     public function __toString(): string
     {
-        $objectType = (string) ($this->fqsen ?? 'object');
+        $objectType = (string)($this->fqsen ?? 'object');
 
         if ($this->keyType === null) {
             return $objectType . '<' . $this->valueType . '>';

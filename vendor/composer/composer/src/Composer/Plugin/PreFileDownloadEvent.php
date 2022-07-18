@@ -55,11 +55,11 @@ class PreFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string         $name           The event name
+     * @param string $name The event name
      * @param HttpDownloader $httpDownloader
-     * @param string         $processedUrl
-     * @param string         $type
-     * @param mixed          $context
+     * @param string $processedUrl
+     * @param string $type
+     * @param mixed $context
      */
     public function __construct(string $name, HttpDownloader $httpDownloader, string $processedUrl, string $type, $context = null)
     {

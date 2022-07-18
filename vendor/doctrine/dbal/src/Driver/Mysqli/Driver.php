@@ -10,7 +10,6 @@ use Doctrine\DBAL\Driver\Mysqli\Initializer\Options;
 use Doctrine\DBAL\Driver\Mysqli\Initializer\Secure;
 use mysqli;
 use mysqli_sql_exception;
-
 use function count;
 
 final class Driver extends AbstractMySQLDriver
@@ -22,8 +21,8 @@ final class Driver extends AbstractMySQLDriver
      */
     public function connect(array $params)
     {
-        if (! empty($params['persistent'])) {
-            if (! isset($params['host'])) {
+        if (!empty($params['persistent'])) {
+            if (!isset($params['host'])) {
                 throw HostRequired::forPersistentConnection();
             }
 
@@ -47,7 +46,7 @@ final class Driver extends AbstractMySQLDriver
             $preInitializers = $this->withOptions($preInitializers, $driverOptions);
         }
 
-        $preInitializers  = $this->withSecure($preInitializers, $params);
+        $preInitializers = $this->withSecure($preInitializers, $params);
         $postInitializers = $this->withCharset($postInitializers, $params);
 
         $connection = new mysqli();
@@ -70,7 +69,7 @@ final class Driver extends AbstractMySQLDriver
             throw ConnectionFailed::upcast($e);
         }
 
-        if (! $success) {
+        if (!$success) {
             throw ConnectionFailed::new($connection);
         }
 
@@ -83,7 +82,7 @@ final class Driver extends AbstractMySQLDriver
 
     /**
      * @param list<Initializer> $initializers
-     * @param array<int,mixed>  $options
+     * @param array<int,mixed> $options
      *
      * @return list<Initializer>
      */
@@ -97,7 +96,7 @@ final class Driver extends AbstractMySQLDriver
     }
 
     /**
-     * @param list<Initializer>   $initializers
+     * @param list<Initializer> $initializers
      * @param array<string,mixed> $params
      *
      * @return list<Initializer>
@@ -112,9 +111,9 @@ final class Driver extends AbstractMySQLDriver
             isset($params['ssl_cipher'])
         ) {
             $initializers[] = new Secure(
-                $params['ssl_key']    ?? '',
-                $params['ssl_cert']   ?? '',
-                $params['ssl_ca']     ?? '',
+                $params['ssl_key'] ?? '',
+                $params['ssl_cert'] ?? '',
+                $params['ssl_ca'] ?? '',
                 $params['ssl_capath'] ?? '',
                 $params['ssl_cipher'] ?? ''
             );
@@ -124,7 +123,7 @@ final class Driver extends AbstractMySQLDriver
     }
 
     /**
-     * @param list<Initializer>   $initializers
+     * @param list<Initializer> $initializers
      * @param array<string,mixed> $params
      *
      * @return list<Initializer>

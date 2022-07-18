@@ -86,13 +86,13 @@ class PhpStringTokenParser
     /**
      * Parses escape sequences in strings (all string types apart from single quoted).
      *
-     * @param string      $str   String without quotes
+     * @param string $str String without quotes
      * @param string|null $quote Quote type
      */
     public static function parseEscapeSequences(string $str, string $quote = null): string
     {
         if (null !== $quote) {
-            $str = str_replace('\\'.$quote, $quote, $str);
+            $str = str_replace('\\' . $quote, $quote, $str);
         }
 
         return preg_replace_callback(
@@ -100,6 +100,25 @@ class PhpStringTokenParser
             [__CLASS__, 'parseCallback'],
             $str
         );
+    }
+
+    /**
+     * Parses a constant doc string.
+     *
+     * @param string $startToken Doc string start token content (<<<SMTHG)
+     * @param string $str String token content
+     */
+    public static function parseDocString(string $startToken, string $str): string
+    {
+        // strip last newline (thanks tokenizer for sticking it into the string!)
+        $str = preg_replace('~(\r\n|\n|\r)$~', '', $str);
+
+        // nowdoc string
+        if (str_contains($startToken, '\'')) {
+            return $str;
+        }
+
+        return self::parseEscapeSequences($str, null);
     }
 
     private static function parseCallback(array $matches): string
@@ -113,24 +132,5 @@ class PhpStringTokenParser
         } else {
             return \chr(octdec($str));
         }
-    }
-
-    /**
-     * Parses a constant doc string.
-     *
-     * @param string $startToken Doc string start token content (<<<SMTHG)
-     * @param string $str        String token content
-     */
-    public static function parseDocString(string $startToken, string $str): string
-    {
-        // strip last newline (thanks tokenizer for sticking it into the string!)
-        $str = preg_replace('~(\r\n|\n|\r)$~', '', $str);
-
-        // nowdoc string
-        if (str_contains($startToken, '\'')) {
-            return $str;
-        }
-
-        return self::parseEscapeSequences($str, null);
     }
 }

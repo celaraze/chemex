@@ -10,13 +10,6 @@ use Symfony\Component\Console\Input\InputOption;
 class RuleMakeCommand extends GeneratorCommand
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:rule';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class RuleMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:rule';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:rule';
     /**
      * The console command description.
      *
@@ -44,7 +42,7 @@ class RuleMakeCommand extends GeneratorCommand
     /**
      * Build the class with the given name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
@@ -77,18 +75,18 @@ class RuleMakeCommand extends GeneratorCommand
 
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : __DIR__.$stub;
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Rules';
+        return $rootNamespace . '\Rules';
     }
 
     /**

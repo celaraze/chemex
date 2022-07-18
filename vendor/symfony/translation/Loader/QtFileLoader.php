@@ -52,17 +52,17 @@ class QtFileLoader implements LoaderInterface
         libxml_clear_errors();
 
         $xpath = new \DOMXPath($dom);
-        $nodes = $xpath->evaluate('//TS/context/name[text()="'.$domain.'"]');
+        $nodes = $xpath->evaluate('//TS/context/name[text()="' . $domain . '"]');
 
         $catalogue = new MessageCatalogue($locale);
         if (1 == $nodes->length) {
             $translations = $nodes->item(0)->nextSibling->parentNode->parentNode->getElementsByTagName('message');
             foreach ($translations as $translation) {
-                $translationValue = (string) $translation->getElementsByTagName('translation')->item(0)->nodeValue;
+                $translationValue = (string)$translation->getElementsByTagName('translation')->item(0)->nodeValue;
 
                 if (!empty($translationValue)) {
                     $catalogue->set(
-                        (string) $translation->getElementsByTagName('source')->item(0)->nodeValue,
+                        (string)$translation->getElementsByTagName('source')->item(0)->nodeValue,
                         $translationValue,
                         $domain
                     );

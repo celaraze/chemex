@@ -16,7 +16,7 @@ class BatchDispatched
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Bus\Batch  $batch
+     * @param \Illuminate\Bus\Batch $batch
      * @return void
      */
     public function __construct(Batch $batch)

@@ -19,7 +19,6 @@ use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\DocBlock\StandardTagFactory;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use Webmozart\Assert\Assert;
-
 use function preg_match;
 
 /**
@@ -30,15 +29,28 @@ final class Generic extends BaseTag implements Factory\StaticMethod
     /**
      * Parses a tag and populates the member variables.
      *
-     * @param string      $name        Name of the tag.
+     * @param string $name Name of the tag.
      * @param Description $description The contents of the given tag.
      */
     public function __construct(string $name, ?Description $description = null)
     {
         $this->validateTagName($name);
 
-        $this->name        = $name;
+        $this->name = $name;
         $this->description = $description;
+    }
+
+    /**
+     * Validates if the tag name matches the expected format, otherwise throws an exception.
+     */
+    private function validateTagName(string $name): void
+    {
+        if (!preg_match('/^' . StandardTagFactory::REGEX_TAGNAME . '$/u', $name)) {
+            throw new InvalidArgumentException(
+                'The tag name "' . $name . '" is not wellformed. Tags may only consist of letters, underscores, '
+                . 'hyphens and backslashes.'
+            );
+        }
     }
 
     /**
@@ -47,11 +59,12 @@ final class Generic extends BaseTag implements Factory\StaticMethod
      * @return static
      */
     public static function create(
-        string $body,
-        string $name = '',
+        string              $body,
+        string              $name = '',
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::stringNotEmpty($name);
         Assert::notNull($descriptionFactory);
 
@@ -72,18 +85,5 @@ final class Generic extends BaseTag implements Factory\StaticMethod
         }
 
         return $description;
-    }
-
-    /**
-     * Validates if the tag name matches the expected format, otherwise throws an exception.
-     */
-    private function validateTagName(string $name): void
-    {
-        if (!preg_match('/^' . StandardTagFactory::REGEX_TAGNAME . '$/u', $name)) {
-            throw new InvalidArgumentException(
-                'The tag name "' . $name . '" is not wellformed. Tags may only consist of letters, underscores, '
-                . 'hyphens and backslashes.'
-            );
-        }
     }
 }

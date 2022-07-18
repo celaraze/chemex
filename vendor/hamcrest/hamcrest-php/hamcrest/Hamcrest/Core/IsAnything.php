@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\BaseMatcher;
 use Hamcrest\Description;
 
@@ -20,16 +22,6 @@ class IsAnything extends BaseMatcher
         $this->_message = $message;
     }
 
-    public function matches($item)
-    {
-        return true;
-    }
-
-    public function describeTo(Description $description)
-    {
-        $description->appendText($this->_message);
-    }
-
     /**
      * This matcher always evaluates to true.
      *
@@ -41,5 +33,15 @@ class IsAnything extends BaseMatcher
     public static function anything($description = 'ANYTHING')
     {
         return new self($description);
+    }
+
+    public function matches($item)
+    {
+        return true;
+    }
+
+    public function describeTo(Description $description)
+    {
+        $description->appendText($this->_message);
     }
 }

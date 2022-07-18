@@ -47,90 +47,20 @@ class Exporter
      * @var array
      */
     protected $options = [
-        'show_export_all'           => true,
-        'show_export_current_page'  => true,
+        'show_export_all' => true,
+        'show_export_current_page' => true,
         'show_export_selected_rows' => true,
-        'chunk_size'                => 5000,
+        'chunk_size' => 5000,
     ];
 
     /**
      * Create a new Exporter instance.
      *
-     * @param  Grid  $grid
+     * @param Grid $grid
      */
     public function __construct(Grid $grid)
     {
         $this->grid = $grid;
-    }
-
-    /**
-     *  Get or set option for exporter.
-     *
-     * @param  string  $key
-     * @param  mixed|null  $value
-     * @return $this|mixed|null
-     */
-    public function option($key, $value = null)
-    {
-        if ($value === null) {
-            return $this->options[$key] ?? null;
-        }
-
-        $this->options[$key] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Disable export all.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function disableExportAll(bool $value = true)
-    {
-        return $this->option('show_export_all', ! $value);
-    }
-
-    /**
-     * Disable export current page.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function disableExportCurrentPage(bool $value = true)
-    {
-        return $this->option('show_export_current_page', ! $value);
-    }
-
-    /**
-     * Disable export selected rows.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function disableExportSelectedRow(bool $value = true)
-    {
-        return $this->option('show_export_selected_rows', ! $value);
-    }
-
-    /**
-     * @param  int  $value
-     * @return $this
-     */
-    public function chunkSize(int $value)
-    {
-        return $this->option('chunk_size', $value);
-    }
-
-    /**
-     * Get export query name.
-     *
-     * @return string
-     */
-    public function getQueryName(): string
-    {
-        return $this->grid->makeName($this->queryName);
     }
 
     /**
@@ -145,72 +75,70 @@ class Exporter
     }
 
     /**
-     * Resolve export driver.
+     * Disable export all.
      *
-     * @param  string  $driver
-     * @return Grid\Exporters\AbstractExporter
+     * @param bool $value
+     * @return $this
      */
-    public function resolve($driver = null)
+    public function disableExportAll(bool $value = true)
     {
-        if ($this->driver) {
-            return $this->driver;
-        }
-
-        if ($driver && $driver instanceof Grid\Exporters\AbstractExporter) {
-            $this->driver = $driver->setGrid($this->grid);
-        } elseif ($driver && $driver instanceof ExporterInterface) {
-            $this->driver = $driver;
-        } else {
-            $this->driver = $this->newDriver($driver);
-        }
-
-        return $this->driver;
+        return $this->option('show_export_all', !$value);
     }
 
     /**
-     * @return Exporters\AbstractExporter
+     *  Get or set option for exporter.
+     *
+     * @param string $key
+     * @param mixed|null $value
+     * @return $this|mixed|null
      */
-    public function driver()
+    public function option($key, $value = null)
     {
-        return $this->driver ?: $this->resolve();
+        if ($value === null) {
+            return $this->options[$key] ?? null;
+        }
+
+        $this->options[$key] = $value;
+
+        return $this;
     }
 
     /**
-     * Get export driver.
+     * Disable export current page.
      *
-     * @param  string  $driver
-     * @return Grid\Exporters\AbstractExporter
+     * @param bool $value
+     * @return $this
      */
-    protected function newDriver($driver): ExporterInterface
+    public function disableExportCurrentPage(bool $value = true)
     {
-        if (! $driver || ! array_key_exists($driver, static::$drivers)) {
-            return $this->makeDefaultDriver();
-        }
-
-        $driver = new static::$drivers[$driver]();
-
-        if (method_exists($driver, 'setGrid')) {
-            $driver->setGrid($this->grid);
-        }
-
-        return $driver;
+        return $this->option('show_export_current_page', !$value);
     }
 
     /**
-     * Get default exporter.
+     * Disable export selected rows.
      *
-     * @return Grid\Exporters\ExcelExporter
+     * @param bool $value
+     * @return $this
      */
-    public function makeDefaultDriver()
+    public function disableExportSelectedRow(bool $value = true)
     {
-        return Grid\Exporters\ExcelExporter::make()->setGrid($this->grid);
+        return $this->option('show_export_selected_rows', !$value);
+    }
+
+    /**
+     * @param int $value
+     * @return $this
+     */
+    public function chunkSize(int $value)
+    {
+        return $this->option('chunk_size', $value);
     }
 
     /**
      * Format query for export url.
      *
-     * @param  int  $scope
-     * @param  null  $args
+     * @param int $scope
+     * @param null $args
      * @return array
      */
     public function formatExportQuery($scope = '', $args = null)
@@ -233,6 +161,16 @@ class Exporter
     }
 
     /**
+     * Get export query name.
+     *
+     * @return string
+     */
+    public function getQueryName(): string
+    {
+        return $this->grid->makeName($this->queryName);
+    }
+
+    /**
      * @param $method
      * @param $arguments
      * @return mixed
@@ -242,5 +180,67 @@ class Exporter
         $this->driver()->$method(...$arguments);
 
         return $this;
+    }
+
+    /**
+     * @return Exporters\AbstractExporter
+     */
+    public function driver()
+    {
+        return $this->driver ?: $this->resolve();
+    }
+
+    /**
+     * Resolve export driver.
+     *
+     * @param string $driver
+     * @return Grid\Exporters\AbstractExporter
+     */
+    public function resolve($driver = null)
+    {
+        if ($this->driver) {
+            return $this->driver;
+        }
+
+        if ($driver && $driver instanceof Grid\Exporters\AbstractExporter) {
+            $this->driver = $driver->setGrid($this->grid);
+        } elseif ($driver && $driver instanceof ExporterInterface) {
+            $this->driver = $driver;
+        } else {
+            $this->driver = $this->newDriver($driver);
+        }
+
+        return $this->driver;
+    }
+
+    /**
+     * Get export driver.
+     *
+     * @param string $driver
+     * @return Grid\Exporters\AbstractExporter
+     */
+    protected function newDriver($driver): ExporterInterface
+    {
+        if (!$driver || !array_key_exists($driver, static::$drivers)) {
+            return $this->makeDefaultDriver();
+        }
+
+        $driver = new static::$drivers[$driver]();
+
+        if (method_exists($driver, 'setGrid')) {
+            $driver->setGrid($this->grid);
+        }
+
+        return $driver;
+    }
+
+    /**
+     * Get default exporter.
+     *
+     * @return Grid\Exporters\ExcelExporter
+     */
+    public function makeDefaultDriver()
+    {
+        return Grid\Exporters\ExcelExporter::make()->setGrid($this->grid);
     }
 }

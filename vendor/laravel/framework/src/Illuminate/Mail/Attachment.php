@@ -35,7 +35,7 @@ class Attachment
     /**
      * Create a mail attachment.
      *
-     * @param  \Closure  $resolver
+     * @param \Closure $resolver
      * @return void
      */
     private function __construct(Closure $resolver)
@@ -46,32 +46,45 @@ class Attachment
     /**
      * Create a mail attachment from a path.
      *
-     * @param  string  $path
+     * @param string $path
      * @return static
      */
     public static function fromPath($path)
     {
-        return new static(fn ($attachment, $pathStrategy) => $pathStrategy($path, $attachment));
+        return new static(fn($attachment, $pathStrategy) => $pathStrategy($path, $attachment));
     }
 
     /**
      * Create a mail attachment from in-memory data.
      *
-     * @param  \Closure  $data
-     * @param  string  $name
+     * @param \Closure $data
+     * @param string $name
      * @return static
      */
     public static function fromData(Closure $data, $name)
     {
         return (new static(
-            fn ($attachment, $pathStrategy, $dataStrategy) => $dataStrategy($data, $attachment)
+            fn($attachment, $pathStrategy, $dataStrategy) => $dataStrategy($data, $attachment)
         ))->as($name);
+    }
+
+    /**
+     * Set the attached file's filename.
+     *
+     * @param string $name
+     * @return $this
+     */
+    public function as($name)
+    {
+        $this->as = $name;
+
+        return $this;
     }
 
     /**
      * Create a mail attachment from a file in the default storage disk.
      *
-     * @param  string  $path
+     * @param string $path
      * @return static
      */
     public static function fromStorage($path)
@@ -82,8 +95,8 @@ class Attachment
     /**
      * Create a mail attachment from a file in the specified storage disk.
      *
-     * @param  string|null  $disk
-     * @param  string  $path
+     * @param string|null $disk
+     * @param string $path
      * @return static
      */
     public static function fromStorageDisk($disk, $path)
@@ -97,27 +110,14 @@ class Attachment
                 ->as($attachment->as ?? basename($path))
                 ->withMime($attachment->mime ?? $storage->mimeType($path));
 
-            $dataStrategy(fn () => $storage->get($path), $attachment);
+            $dataStrategy(fn() => $storage->get($path), $attachment);
         });
-    }
-
-    /**
-     * Set the attached file's filename.
-     *
-     * @param  string  $name
-     * @return $this
-     */
-    public function as($name)
-    {
-        $this->as = $name;
-
-        return $this;
     }
 
     /**
      * Set the attached file's mime type.
      *
-     * @param  string  $mime
+     * @param string $mime
      * @return $this
      */
     public function withMime($mime)
@@ -128,28 +128,28 @@ class Attachment
     }
 
     /**
-     * Attach the attachment with the given strategies.
-     *
-     * @param  \Closure  $pathStrategy
-     * @param  \Closure  $dataStrategy
-     * @return mixed
-     */
-    public function attachWith(Closure $pathStrategy, Closure $dataStrategy)
-    {
-        return ($this->resolver)($this, $pathStrategy, $dataStrategy);
-    }
-
-    /**
      * Attach the attachment to a built-in mail type.
      *
-     * @param  \Illuminate\Mail\Mailable|\Illuminate\Mail\Message|\Illuminate\Notifications\Messages\MailMessage  $mail
+     * @param \Illuminate\Mail\Mailable|\Illuminate\Mail\Message|\Illuminate\Notifications\Messages\MailMessage $mail
      * @return mixed
      */
     public function attachTo($mail)
     {
         return $this->attachWith(
-            fn ($path) => $mail->attach($path, ['as' => $this->as, 'mime' => $this->mime]),
-            fn ($data) => $mail->attachData($data(), $this->as, ['mime' => $this->mime])
+            fn($path) => $mail->attach($path, ['as' => $this->as, 'mime' => $this->mime]),
+            fn($data) => $mail->attachData($data(), $this->as, ['mime' => $this->mime])
         );
+    }
+
+    /**
+     * Attach the attachment with the given strategies.
+     *
+     * @param \Closure $pathStrategy
+     * @param \Closure $dataStrategy
+     * @return mixed
+     */
+    public function attachWith(Closure $pathStrategy, Closure $dataStrategy)
+    {
+        return ($this->resolver)($this, $pathStrategy, $dataStrategy);
     }
 }

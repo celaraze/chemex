@@ -17,7 +17,7 @@ class AddDocumentationLinks implements FlareMiddleware
 
     public function handle(Report $report, Closure $next)
     {
-        if (! $throwable = $report->getThrowable()) {
+        if (!$throwable = $report->getThrowable()) {
             return $next($report);
         }
 

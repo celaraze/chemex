@@ -49,7 +49,7 @@ class SamplingHandler extends AbstractHandler implements ProcessableHandlerInter
      * @psalm-param HandlerInterface|callable(Record|array{level: Level}|null, HandlerInterface): HandlerInterface $handler
      *
      * @param callable|HandlerInterface $handler Handler or factory callable($record|null, $samplingHandler).
-     * @param int                       $factor  Sample factor (e.g. 10 means every ~10th record is sampled)
+     * @param int $factor Sample factor (e.g. 10 means every ~10th record is sampled)
      */
     public function __construct($handler, int $factor)
     {
@@ -58,13 +58,8 @@ class SamplingHandler extends AbstractHandler implements ProcessableHandlerInter
         $this->factor = $factor;
 
         if (!$this->handler instanceof HandlerInterface && !is_callable($this->handler)) {
-            throw new \RuntimeException("The given handler (".json_encode($this->handler).") is not a callable nor a Monolog\Handler\HandlerInterface object");
+            throw new \RuntimeException("The given handler (" . json_encode($this->handler) . ") is not a callable nor a Monolog\Handler\HandlerInterface object");
         }
-    }
-
-    public function isHandling(array $record): bool
-    {
-        return $this->getHandler($record)->isHandling($record);
     }
 
     public function handle(array $record): bool
@@ -79,6 +74,11 @@ class SamplingHandler extends AbstractHandler implements ProcessableHandlerInter
         }
 
         return false === $this->bubble;
+    }
+
+    public function isHandling(array $record): bool
+    {
+        return $this->getHandler($record)->isHandling($record);
     }
 
     /**
@@ -114,7 +114,7 @@ class SamplingHandler extends AbstractHandler implements ProcessableHandlerInter
             return $this;
         }
 
-        throw new \UnexpectedValueException('The nested handler of type '.get_class($handler).' does not support formatters.');
+        throw new \UnexpectedValueException('The nested handler of type ' . get_class($handler) . ' does not support formatters.');
     }
 
     /**
@@ -127,6 +127,6 @@ class SamplingHandler extends AbstractHandler implements ProcessableHandlerInter
             return $handler->getFormatter();
         }
 
-        throw new \UnexpectedValueException('The nested handler of type '.get_class($handler).' does not support formatters.');
+        throw new \UnexpectedValueException('The nested handler of type ' . get_class($handler) . ' does not support formatters.');
     }
 }

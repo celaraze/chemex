@@ -53,9 +53,9 @@ class Address extends \Faker\Provider\fr_FR\Address
     /**
      * Randomly returns a belgian province.
      *
+     * @return string
      * @example 'Hainaut'
      *
-     * @return string
      */
     public static function province()
     {

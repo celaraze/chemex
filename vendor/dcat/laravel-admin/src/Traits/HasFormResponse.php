@@ -12,17 +12,9 @@ trait HasFormResponse
     protected $currentUrl;
 
     /**
-     * @return JsonResponse
-     */
-    public function response()
-    {
-        return Admin::json();
-    }
-
-    /**
      * 返回字段验证错误信息.
      *
-     * @param  array|MessageBag|\Illuminate\Validation\Validator  $validationMessages
+     * @param array|MessageBag|\Illuminate\Validation\Validator $validationMessages
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function validationErrorsResponse($validationMessages)
@@ -34,23 +26,18 @@ trait HasFormResponse
     }
 
     /**
-     * 设置当前URL.
-     *
-     * @param  string  $url
-     * @return $this
+     * @return JsonResponse
      */
-    public function setCurrentUrl($url)
+    public function response()
     {
-        $this->currentUrl = admin_url($url);
-
-        return $this;
+        return Admin::json();
     }
 
     /**
      * 获取当前URL.
      *
-     * @param  string|null  $default
-     * @param  Request|null  $request
+     * @param string|null $default
+     * @param Request|null $request
      * @return string
      */
     protected function getCurrentUrl($default = null, Request $request = null)
@@ -76,7 +63,20 @@ trait HasFormResponse
             $query = $this->sanitize($query);
         }
 
-        return url($request->path().'?'.http_build_query($query));
+        return url($request->path() . '?' . http_build_query($query));
+    }
+
+    /**
+     * 设置当前URL.
+     *
+     * @param string $url
+     * @return $this
+     */
+    public function setCurrentUrl($url)
+    {
+        $this->currentUrl = admin_url($url);
+
+        return $this;
     }
 
     /**

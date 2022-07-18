@@ -24,15 +24,24 @@ class QueryBuilder
         $this->makeTraverser();
     }
 
-    public static function create()
-    {
-        return new static;
-    }
-
     public function makeTraverser()
     {
         $this->traverser = new NodeTraverser();
         $this->traverser->addVisitor(new NameResolver());
+    }
+
+    protected function addVisitor($visitor)
+    {
+        $this->nodeVisitors[] = $visitor;
+
+        $this->traverser->addVisitor($visitor);
+
+        return $this;
+    }
+
+    public static function create()
+    {
+        return new static;
     }
 
     public function hasStaticCall(string $class, string $methodName, array $parameters = [])
@@ -139,14 +148,5 @@ class QueryBuilder
         return collect($this->nodeVisitors)->every(function ($visitor) {
             return $visitor->passed();
         });
-    }
-
-    protected function addVisitor($visitor)
-    {
-        $this->nodeVisitors[] = $visitor;
-
-        $this->traverser->addVisitor($visitor);
-
-        return $this;
     }
 }

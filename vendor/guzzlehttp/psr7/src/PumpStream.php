@@ -59,7 +59,7 @@ final class PumpStream implements StreamInterface
             if (\PHP_VERSION_ID >= 70400) {
                 throw $e;
             }
-            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string) $e), E_USER_ERROR);
+            trigger_error(sprintf('%s::__toString exception: %s', self::class, (string)$e), E_USER_ERROR);
             return '';
         }
     }
@@ -87,11 +87,6 @@ final class PumpStream implements StreamInterface
         return $this->tellPos;
     }
 
-    public function eof(): bool
-    {
-        return $this->source === null;
-    }
-
     public function isSeekable(): bool
     {
         return false;
@@ -112,14 +107,24 @@ final class PumpStream implements StreamInterface
         return false;
     }
 
-    public function write($string): int
-    {
-        throw new \RuntimeException('Cannot write to a PumpStream');
-    }
-
     public function isReadable(): bool
     {
         return true;
+    }
+
+    public function getContents(): string
+    {
+        $result = '';
+        while (!$this->eof()) {
+            $result .= $this->read(1000000);
+        }
+
+        return $result;
+    }
+
+    public function eof(): bool
+    {
+        return $this->source === null;
     }
 
     public function read($length): string
@@ -138,14 +143,24 @@ final class PumpStream implements StreamInterface
         return $data;
     }
 
-    public function getContents(): string
+    private function pump(int $length): void
     {
-        $result = '';
-        while (!$this->eof()) {
-            $result .= $this->read(1000000);
+        if ($this->source) {
+            do {
+                $data = call_user_func($this->source, $length);
+                if ($data === false || $data === null) {
+                    $this->source = null;
+                    return;
+                }
+                $this->buffer->write($data);
+                $length -= strlen($data);
+            } while ($length > 0);
         }
+    }
 
-        return $result;
+    public function write($string): int
+    {
+        throw new \RuntimeException('Cannot write to a PumpStream');
     }
 
     /**
@@ -160,20 +175,5 @@ final class PumpStream implements StreamInterface
         }
 
         return $this->metadata[$key] ?? null;
-    }
-
-    private function pump(int $length): void
-    {
-        if ($this->source) {
-            do {
-                $data = call_user_func($this->source, $length);
-                if ($data === false || $data === null) {
-                    $this->source = null;
-                    return;
-                }
-                $this->buffer->write($data);
-                $length -= strlen($data);
-            } while ($length > 0);
-        }
     }
 }

@@ -65,6 +65,14 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
     /**
      * {@inheritdoc}
      */
+    public function getContext(): RequestContext
+    {
+        return $this->context;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setContext(RequestContext $context)
     {
         $this->context = $context;
@@ -73,9 +81,15 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
     /**
      * {@inheritdoc}
      */
-    public function getContext(): RequestContext
+    public function matchRequest(Request $request): array
     {
-        return $this->context;
+        $this->request = $request;
+
+        $ret = $this->match($request->getPathInfo());
+
+        $this->request = null;
+
+        return $ret;
     }
 
     /**
@@ -94,25 +108,6 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
         }
 
         throw 0 < \count($this->allow) ? new MethodNotAllowedException(array_unique($this->allow)) : new ResourceNotFoundException(sprintf('No routes found for "%s".', $pathinfo));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function matchRequest(Request $request): array
-    {
-        $this->request = $request;
-
-        $ret = $this->match($request->getPathInfo());
-
-        $this->request = null;
-
-        return $ret;
-    }
-
-    public function addExpressionLanguageProvider(ExpressionFunctionProviderInterface $provider)
-    {
-        $this->expressionLanguageProviders[] = $provider;
     }
 
     /**
@@ -218,6 +213,20 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
     }
 
     /**
+     * Get merged default parameters.
+     */
+    protected function mergeDefaults(array $params, array $defaults): array
+    {
+        foreach ($params as $key => $value) {
+            if (!\is_int($key) && null !== $value) {
+                $defaults[$key] = $value;
+            }
+        }
+
+        return $defaults;
+    }
+
+    /**
      * Handles specific route requirements.
      *
      * @return array The first element represents the status, the second contains additional information
@@ -237,28 +246,14 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
 
         // expression condition
         if ($route->getCondition() && !$this->getExpressionLanguage()->evaluate($route->getCondition(), [
-            'context' => $this->context,
-            'request' => $this->request ?: $this->createRequest($pathinfo),
-            'params' => $routeParameters,
-        ])) {
+                'context' => $this->context,
+                'request' => $this->request ?: $this->createRequest($pathinfo),
+                'params' => $routeParameters,
+            ])) {
             return [self::REQUIREMENT_MISMATCH, null];
         }
 
         return [self::REQUIREMENT_MATCH, null];
-    }
-
-    /**
-     * Get merged default parameters.
-     */
-    protected function mergeDefaults(array $params, array $defaults): array
-    {
-        foreach ($params as $key => $value) {
-            if (!\is_int($key) && null !== $value) {
-                $defaults[$key] = $value;
-            }
-        }
-
-        return $defaults;
     }
 
     protected function getExpressionLanguage()
@@ -282,9 +277,14 @@ class UrlMatcher implements UrlMatcherInterface, RequestMatcherInterface
             return null;
         }
 
-        return Request::create($this->context->getScheme().'://'.$this->context->getHost().$this->context->getBaseUrl().$pathinfo, $this->context->getMethod(), $this->context->getParameters(), [], [], [
+        return Request::create($this->context->getScheme() . '://' . $this->context->getHost() . $this->context->getBaseUrl() . $pathinfo, $this->context->getMethod(), $this->context->getParameters(), [], [], [
             'SCRIPT_FILENAME' => $this->context->getBaseUrl(),
             'SCRIPT_NAME' => $this->context->getBaseUrl(),
         ]);
+    }
+
+    public function addExpressionLanguageProvider(ExpressionFunctionProviderInterface $provider)
+    {
+        $this->expressionLanguageProviders[] = $provider;
     }
 }

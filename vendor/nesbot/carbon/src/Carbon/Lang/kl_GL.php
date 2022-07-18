@@ -14,7 +14,7 @@
  * - Danish Standards Association    bug-glibc-locales@gnu.org
  * - John Eyðstein Johannesen (mashema)
  */
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'formats' => [
         'LT' => 'HH:mm',
         'LTS' => 'HH:mm:ss',

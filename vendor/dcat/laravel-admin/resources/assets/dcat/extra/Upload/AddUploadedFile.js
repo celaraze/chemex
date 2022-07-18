@@ -1,4 +1,3 @@
-
 export default class AddUploadedFile {
     constructor(Uploder) {
         this.uploader = Uploder;
@@ -12,14 +11,14 @@ export default class AddUploadedFile {
     // 渲染已上传文件
     render(file) {
         let _this = this,
-            parent =  _this.uploader,
+            parent = _this.uploader,
             options = parent.options,
             showImg = parent.isImage(),
             html = "";
 
         html += "<li title='" + file.serverPath + "'>";
 
-        if (! showImg && options.sortable) {
+        if (!showImg && options.sortable) {
             // 文件排序
             html += `
 <p style="right: 65px" class="file-action" data-file-act='order' data-order="1" data-id='${file.serverId}'><i class='feather icon-arrow-up'></i></p>
@@ -28,7 +27,7 @@ export default class AddUploadedFile {
         }
 
         // 下载
-        if (! showImg && options.downloadable) {
+        if (!showImg && options.downloadable) {
             html += `
 <p style="right: 25px" class="file-action" data-file-act='download' data-id='${file.serverUrl}'><i class='feather icon-download-cloud'></i></p>
 `;
@@ -165,7 +164,7 @@ export default class AddUploadedFile {
         parent.status.switch('decrOriginalFileNum');
         parent.status.switch('incrFileNumLimit');
 
-        if (! Dcat.helpers.len(parent.formFiles) && ! Dcat.helpers.len(parent.percentages)) {
+        if (!Dcat.helpers.len(parent.formFiles) && !Dcat.helpers.len(parent.percentages)) {
             parent.status.switch('pending');
         }
     }

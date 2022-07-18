@@ -39,6 +39,26 @@ class Company extends \Faker\Provider\Company
     protected static $companySuffix = ['e Hijo', 'e Hija', 'e Hijos', 'y Asoc.', 'y Flia.', 'SRL', 'SA', 'S. de H.'];
 
     /**
+     * Generate a REG. UNICO DE CONTRIBUYENTES (RUC) number
+     *
+     * Doesn't include a checksum, as peruvians commonly use only the first
+     * 8 digits.
+     *
+     * @param bool $isNaturalPerson If set to false or empty, RUC starts with 20 and otherwise with 10
+     *
+     * @example '20105895410'
+     *
+     * @example '10164090581'
+     * @see http://www2.sunat.gob.pe/pdt/pdtModulos/independientes/p695/TipoDoc.htm
+     */
+    public static function ruc(bool $isNaturalPerson = false): string
+    {
+        $prefix = $isNaturalPerson ? '10' : '20';
+
+        return $prefix . static::numerify('#########');
+    }
+
+    /**
      * @example 'Robust full-range hub'
      */
     public function catchPhrase()
@@ -64,25 +84,5 @@ class Company extends \Faker\Provider\Company
         }
 
         return implode(' ', $result);
-    }
-
-    /**
-     * Generate a REG. UNICO DE CONTRIBUYENTES (RUC) number
-     *
-     * Doesn't include a checksum, as peruvians commonly use only the first
-     * 8 digits.
-     *
-     * @example '10164090581'
-     * @example '20105895410'
-     *
-     * @param bool $isNaturalPerson If set to false or empty, RUC starts with 20 and otherwise with 10
-     *
-     * @see http://www2.sunat.gob.pe/pdt/pdtModulos/independientes/p695/TipoDoc.htm
-     */
-    public static function ruc(bool $isNaturalPerson = false): string
-    {
-        $prefix = $isNaturalPerson ? '10' : '20';
-
-        return $prefix . static::numerify('#########');
     }
 }

@@ -33,12 +33,12 @@ class Text extends Field
         $this->defaultAttribute('type', 'text')
             ->defaultAttribute('name', $this->getElementName())
             ->defaultAttribute('value', $this->value())
-            ->defaultAttribute('class', 'form-control '.$this->getElementClassString())
+            ->defaultAttribute('class', 'form-control ' . $this->getElementClassString())
             ->defaultAttribute('placeholder', $this->placeholder());
 
         $this->addVariables([
             'prepend' => $this->prepend,
-            'append'  => $this->append,
+            'append' => $this->append,
         ]);
 
         return parent::render();
@@ -47,7 +47,7 @@ class Text extends Field
     /**
      * Set input type.
      *
-     * @param  string  $type
+     * @param string $type
      * @return $this
      */
     public function type(string $type)
@@ -60,8 +60,8 @@ class Text extends Field
      *
      * @see http://1000hz.github.io/bootstrap-validator/
      *
-     * @param  string|Field  $field
-     * @param  string  $error
+     * @param string|Field $field
+     * @param string $error
      * @return $this
      */
     public function same($field, ?string $error = null)
@@ -69,14 +69,14 @@ class Text extends Field
         $field = $field instanceof Field ? $field : $this->form->field($field);
         $name = $field->column();
 
-        if ($name.'_confirmation' === $this->column) {
+        if ($name . '_confirmation' === $this->column) {
             $field->rules('confirmed');
         } else {
-            $this->rules('nullable|same:'.$name);
+            $this->rules('nullable|same:' . $name);
         }
 
         $attributes = [
-            'data-match'       => $field->getElementClassSelector(),
+            'data-match' => $field->getElementClassSelector(),
             'data-match-error' => str_replace(
                 [':attribute', ':other'],
                 [$field->label(), $this->label()],
@@ -88,16 +88,16 @@ class Text extends Field
     }
 
     /**
-     * @param  int  $length
-     * @param  string|null  $error
+     * @param int $length
+     * @param string|null $error
      * @return $this
      */
     public function minLength(int $length, ?string $error = null)
     {
-        $this->rules('nullable|min:'.$length);
+        $this->rules('nullable|min:' . $length);
 
         return $this->attribute([
-            'data-minlength'       => $length,
+            'data-minlength' => $length,
             'data-minlength-error' => str_replace(
                 [':attribute', ':min'],
                 [$this->label, $length],
@@ -107,8 +107,8 @@ class Text extends Field
     }
 
     /**
-     * @param  int  $length
-     * @param  string|null  $error
+     * @param int $length
+     * @param string|null $error
      * @return $this
      */
     public function maxLength(int $length, ?string $error = null)
@@ -121,10 +121,10 @@ Dcat.validator.extend('maxlength', function ($el) {
 JS
         );
 
-        $this->rules('max:'.$length);
+        $this->rules('max:' . $length);
 
         return $this->attribute([
-            'data-maxlength'       => $length,
+            'data-maxlength' => $length,
             'data-maxlength-error' => str_replace(
                 [':attribute', ':max'],
                 [$this->label, $length],
@@ -136,7 +136,7 @@ JS
     /**
      * Add inputmask to an elements.
      *
-     * @param  array  $options
+     * @param array $options
      * @return $this
      */
     public function inputmask($options)
@@ -153,7 +153,32 @@ JS
     }
 
     /**
-     * @param  array  $options
+     * Add datalist element to Text input.
+     *
+     * @param array $entries
+     * @return $this
+     */
+    public function datalist($entries = [])
+    {
+        $id = Str::random(8);
+
+        $this->defaultAttribute('list', "list-{$id}");
+
+        $datalist = "<datalist id=\"list-{$id}\">";
+        foreach ($entries as $k => $v) {
+            $value = is_string($k) ? "value=\"{$k}\"" : '';
+
+            $datalist .= "<option {$value}>{$v}</option>";
+        }
+        $datalist .= '</datalist>';
+
+        Admin::script("$('#list-{$id}').parent().hide()");
+
+        return $this->append($datalist);
+    }
+
+    /**
+     * @param array $options
      * @return array
      */
     protected function formatOptions($options)
@@ -175,30 +200,5 @@ JS
         }
 
         return compact('original', 'toReplace', 'options');
-    }
-
-    /**
-     * Add datalist element to Text input.
-     *
-     * @param  array  $entries
-     * @return $this
-     */
-    public function datalist($entries = [])
-    {
-        $id = Str::random(8);
-
-        $this->defaultAttribute('list', "list-{$id}");
-
-        $datalist = "<datalist id=\"list-{$id}\">";
-        foreach ($entries as $k => $v) {
-            $value = is_string($k) ? "value=\"{$k}\"" : '';
-
-            $datalist .= "<option {$value}>{$v}</option>";
-        }
-        $datalist .= '</datalist>';
-
-        Admin::script("$('#list-{$id}').parent().hide()");
-
-        return $this->append($datalist);
     }
 }

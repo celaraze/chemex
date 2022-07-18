@@ -38,7 +38,7 @@ final class ReplaceResult
     public function __construct($count, $result)
     {
         $this->count = $count;
-        $this->matched = (bool) $count;
+        $this->matched = (bool)$count;
         $this->result = $result;
     }
 }

@@ -46,7 +46,7 @@ class SimpleJWS extends JWS
      * and the token is not expired.
      *
      * @param resource|string $key
-     * @param string          $algo The algorithms this JWS should be signed with. Use it if you want to restrict which algorithms you want to allow to be validated.
+     * @param string $algo The algorithms this JWS should be signed with. Use it if you want to restrict which algorithms you want to allow to be validated.
      *
      * @return bool
      */

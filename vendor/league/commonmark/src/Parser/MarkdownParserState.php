@@ -29,7 +29,7 @@ final class MarkdownParserState implements MarkdownParserStateInterface
 
     public function __construct(BlockContinueParserInterface $activeBlockParser, BlockContinueParserInterface $lastMatchedBlockParser)
     {
-        $this->activeBlockParser      = $activeBlockParser;
+        $this->activeBlockParser = $activeBlockParser;
         $this->lastMatchedBlockParser = $lastMatchedBlockParser;
     }
 
@@ -45,12 +45,12 @@ final class MarkdownParserState implements MarkdownParserStateInterface
 
     public function getParagraphContent(): ?string
     {
-        if (! $this->lastMatchedBlockParser instanceof ParagraphParser) {
+        if (!$this->lastMatchedBlockParser instanceof ParagraphParser) {
             return null;
         }
 
         $paragraphParser = $this->lastMatchedBlockParser;
-        $content         = $paragraphParser->getContentString();
+        $content = $paragraphParser->getContentString();
 
         return $content === '' ? null : $content;
     }

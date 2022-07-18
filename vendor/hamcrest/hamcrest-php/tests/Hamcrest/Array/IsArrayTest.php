@@ -1,15 +1,11 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 use Hamcrest\AbstractMatcherTest;
 
 class IsArrayTest extends AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return IsArray::anArray(array(equalTo('irrelevant')));
-    }
 
     public function testMatchesAnArrayThatMatchesAllTheElementMatchers()
     {
@@ -72,8 +68,8 @@ class IsArrayTest extends AbstractMatcherTest
     public function testSupportsMatchesAssociativeArrays()
     {
         $this->assertMatches(
-            anArray(array('x'=>equalTo('a'), 'y'=>equalTo('b'), 'z'=>equalTo('c'))),
-            array('x'=>'a', 'y'=>'b', 'z'=>'c'),
+            anArray(array('x' => equalTo('a'), 'y' => equalTo('b'), 'z' => equalTo('c'))),
+            array('x' => 'a', 'y' => 'b', 'z' => 'c'),
             'should match associative array with matching elements'
         );
     }
@@ -81,9 +77,14 @@ class IsArrayTest extends AbstractMatcherTest
     public function testDoesNotMatchAnAssociativeArrayWhenKeysDoNotMatch()
     {
         $this->assertDoesNotMatch(
-            anArray(array('x'=>equalTo('a'), 'y'=>equalTo('b'))),
-            array('x'=>'b', 'z'=>'c'),
+            anArray(array('x' => equalTo('a'), 'y' => equalTo('b'))),
+            array('x' => 'b', 'z' => 'c'),
             'should not match array with different keys'
         );
+    }
+
+    protected function createMatcher()
+    {
+        return IsArray::anArray(array(equalTo('irrelevant')));
     }
 }

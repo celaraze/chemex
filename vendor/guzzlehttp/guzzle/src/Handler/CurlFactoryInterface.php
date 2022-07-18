@@ -10,7 +10,7 @@ interface CurlFactoryInterface
      * Creates a cURL handle resource.
      *
      * @param RequestInterface $request Request
-     * @param array            $options Transfer options
+     * @param array $options Transfer options
      *
      * @throws \RuntimeException when an option cannot be applied
      */

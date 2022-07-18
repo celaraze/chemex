@@ -39,7 +39,7 @@ final class FallbackNodeXmlRenderer implements XmlNodeRendererInterface
             return $this->classCache[$className];
         }
 
-        $type      = $node instanceof AbstractBlock ? 'block' : 'inline';
+        $type = $node instanceof AbstractBlock ? 'block' : 'inline';
         $shortName = \strtolower((new \ReflectionClass($node))->getShortName());
 
         return $this->classCache[$className] = \sprintf('custom_%s_%s', $type, $shortName);

@@ -41,15 +41,47 @@ class Trace implements JsonSerializable
     }
 
     /**
+     * @param int $snippetLineCount
+     * @return $this
+     */
+    public function setSnippetLineCount(int $snippetLineCount)
+    {
+        $this->snippetLineCount = $snippetLineCount;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'path' => $this->relativePath(),
+            'lineNumber' => $this->lineNumber,
+            'details' => $this->details,
+            'codeSnippet' => $this->codeSnippet(),
+        ];
+    }
+
+    /**
+     * @return string|null
+     */
+    public function relativePath()
+    {
+        return trim(Str::contains($this->path, base_path()) ? Str::after($this->path, base_path()) : $this->path, '/');
+    }
+
+    /**
      * @return array
      */
     public function codeSnippet()
     {
-        if (! file_exists($path = $this->absolutePath())) {
+        if (!file_exists($path = $this->absolutePath())) {
             return [];
         }
 
-        if (! empty($this->codeSnippet)) {
+        if (!empty($this->codeSnippet)) {
             // Return cached value if already computed.
             return $this->codeSnippet;
         }
@@ -83,45 +115,13 @@ class Trace implements JsonSerializable
     /**
      * @return string|null
      */
-    public function relativePath()
-    {
-        return trim(Str::contains($this->path, base_path()) ? Str::after($this->path, base_path()) : $this->path, '/');
-    }
-
-    /**
-     * @return string|null
-     */
     public function absolutePath()
     {
-        if (! file_exists($this->path)) {
+        if (!file_exists($this->path)) {
             return base_path(trim($this->path, '/'));
         }
 
         return $this->path;
-    }
-
-    /**
-     * @param int $snippetLineCount
-     * @return $this
-     */
-    public function setSnippetLineCount(int $snippetLineCount)
-    {
-        $this->snippetLineCount = $snippetLineCount;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        return [
-            'path' => $this->relativePath(),
-            'lineNumber' => $this->lineNumber,
-            'details' => $this->details,
-            'codeSnippet' => $this->codeSnippet(),
-        ];
     }
 
     /**

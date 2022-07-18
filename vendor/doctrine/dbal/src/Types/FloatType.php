@@ -27,6 +27,6 @@ class FloatType extends Type
      */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return $value === null ? null : (float) $value;
+        return $value === null ? null : (float)$value;
     }
 }

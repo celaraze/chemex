@@ -22,8 +22,9 @@ class JobRecorder
 
     public function __construct(
         protected Application $app,
-        protected int $maxChainedJobReportingDepth = 5,
-    ) {
+        protected int         $maxChainedJobReportingDepth = 5,
+    )
+    {
     }
 
     public function start(): self
@@ -58,11 +59,6 @@ class JobRecorder
         );
     }
 
-    public function reset(): void
-    {
-        $this->job = null;
-    }
-
     protected function getJobProperties(): array
     {
         $payload = collect($this->resolveJobPayload());
@@ -70,7 +66,7 @@ class JobRecorder
         $properties = [];
 
         foreach ($payload as $key => $value) {
-            if (! in_array($key, ['job', 'data', 'displayName'])) {
+            if (!in_array($key, ['job', 'data', 'displayName'])) {
                 $properties[$key] = $value;
             }
         }
@@ -92,7 +88,7 @@ class JobRecorder
 
     protected function resolveJobPayload(): array
     {
-        if (! $this->job instanceof RedisJob) {
+        if (!$this->job instanceof RedisJob) {
             return $this->job->payload();
         }
 
@@ -153,7 +149,6 @@ class JobRecorder
         );
     }
 
-    // Taken from Illuminate\Queue\CallQueuedHandler
     protected function resolveObjectFromCommand(string $command): object
     {
         if (Str::startsWith($command, 'O:')) {
@@ -166,5 +161,12 @@ class JobRecorder
         }
 
         throw new RuntimeException('Unable to extract job payload.');
+    }
+
+    // Taken from Illuminate\Queue\CallQueuedHandler
+
+    public function reset(): void
+    {
+        $this->job = null;
     }
 }

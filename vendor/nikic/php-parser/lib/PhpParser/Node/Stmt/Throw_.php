@@ -12,19 +12,22 @@ class Throw_ extends Node\Stmt
     /**
      * Constructs a legacy throw statement node.
      *
-     * @param Node\Expr $expr       Expression
-     * @param array     $attributes Additional attributes
+     * @param Node\Expr $expr Expression
+     * @param array $attributes Additional attributes
      */
-    public function __construct(Node\Expr $expr, array $attributes = []) {
+    public function __construct(Node\Expr $expr, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->expr = $expr;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['expr'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Throw';
     }
 }

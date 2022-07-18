@@ -20,13 +20,11 @@ use phpDocumentor\Reflection\TypeResolver;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Utils;
 use Webmozart\Assert\Assert;
-
 use function array_shift;
 use function array_unshift;
 use function implode;
 use function strpos;
 use function substr;
-
 use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
@@ -41,18 +39,19 @@ final class Var_ extends TagWithType implements Factory\StaticMethod
     {
         Assert::string($variableName);
 
-        $this->name         = 'var';
+        $this->name = 'var';
         $this->variableName = $variableName;
-        $this->type         = $type;
-        $this->description  = $description;
+        $this->type = $type;
+        $this->description = $description;
     }
 
     public static function create(
-        string $body,
-        ?TypeResolver $typeResolver = null,
+        string              $body,
+        ?TypeResolver       $typeResolver = null,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::stringNotEmpty($body);
         Assert::notNull($typeResolver);
         Assert::notNull($descriptionFactory);
@@ -60,7 +59,7 @@ final class Var_ extends TagWithType implements Factory\StaticMethod
         [$firstPart, $body] = self::extractTypeFromBody($body);
 
         $parts = Utils::pregSplit('/(\s+)/Su', $body, 2, PREG_SPLIT_DELIM_CAPTURE);
-        $type         = null;
+        $type = null;
         $variableName = '';
 
         // if the first item that is encountered is not a variable; it is a type
@@ -113,7 +112,7 @@ final class Var_ extends TagWithType implements Factory\StaticMethod
             $variableName = '';
         }
 
-        $type = (string) $this->type;
+        $type = (string)$this->type;
 
         return $type
             . ($variableName !== '' ? ($type !== '' ? ' ' : '') . $variableName : '')

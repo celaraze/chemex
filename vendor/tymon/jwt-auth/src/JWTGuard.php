@@ -51,9 +51,9 @@ class JWTGuard implements Guard
     /**
      * Instantiate the class.
      *
-     * @param  \Tymon\JWTAuth\JWT  $jwt
-     * @param  \Illuminate\Contracts\Auth\UserProvider  $provider
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Tymon\JWTAuth\JWT $jwt
+     * @param \Illuminate\Contracts\Auth\UserProvider $provider
+     * @param \Illuminate\Http\Request $request
      * @return void
      */
     public function __construct(JWT $jwt, UserProvider $provider, Request $request)
@@ -61,6 +61,22 @@ class JWTGuard implements Guard
         $this->jwt = $jwt;
         $this->provider = $provider;
         $this->request = $request;
+    }
+
+    /**
+     * Get the currently authenticated user or throws an exception.
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\UserNotDefinedException
+     */
+    public function userOrFail()
+    {
+        if (!$user = $this->user()) {
+            throw new UserNotDefinedException;
+        }
+
+        return $user;
     }
 
     /**
@@ -83,68 +99,25 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Get the currently authenticated user or throws an exception.
+     * Ensure the JWTSubject matches what is in the token.
      *
-     * @return \Illuminate\Contracts\Auth\Authenticatable
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\UserNotDefinedException
-     */
-    public function userOrFail()
-    {
-        if (! $user = $this->user()) {
-            throw new UserNotDefinedException;
-        }
-
-        return $user;
-    }
-
-    /**
-     * Validate a user's credentials.
-     *
-     * @param  array  $credentials
      * @return bool
      */
-    public function validate(array $credentials = [])
+    protected function validateSubject()
     {
-        return (bool) $this->attempt($credentials, false);
-    }
-
-    /**
-     * Attempt to authenticate the user using the given credentials and return the token.
-     *
-     * @param  array  $credentials
-     * @param  bool  $login
-     * @return bool|string
-     */
-    public function attempt(array $credentials = [], $login = true)
-    {
-        $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
-
-        if ($this->hasValidCredentials($user, $credentials)) {
-            return $login ? $this->login($user) : true;
+        // If the provider doesn't have the necessary method
+        // to get the underlying model name then allow.
+        if (!method_exists($this->provider, 'getModel')) {
+            return true;
         }
 
-        return false;
-    }
-
-    /**
-     * Create a token for a user.
-     *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $user
-     * @return string
-     */
-    public function login(JWTSubject $user)
-    {
-        $token = $this->jwt->fromUser($user);
-        $this->setToken($token)->setUser($user);
-
-        return $token;
+        return $this->jwt->checkSubjectModel($this->provider->getModel());
     }
 
     /**
      * Logout the user, thus invalidating the token.
      *
-     * @param  bool  $forceForever
+     * @param bool $forceForever
      * @return void
      */
     public function logout($forceForever = false)
@@ -156,21 +129,9 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Refresh the token.
-     *
-     * @param  bool  $forceForever
-     * @param  bool  $resetClaims
-     * @return string
-     */
-    public function refresh($forceForever = false, $resetClaims = false)
-    {
-        return $this->requireToken()->refresh($forceForever, $resetClaims);
-    }
-
-    /**
      * Invalidate the token.
      *
-     * @param  bool  $forceForever
+     * @param bool $forceForever
      * @return \Tymon\JWTAuth\JWT
      */
     public function invalidate($forceForever = false)
@@ -179,9 +140,60 @@ class JWTGuard implements Guard
     }
 
     /**
+     * Ensure that a token is available in the request.
+     *
+     * @return \Tymon\JWTAuth\JWT
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    protected function requireToken()
+    {
+        if (!$this->jwt->setRequest($this->getRequest())->getToken()) {
+            throw new JWTException('Token could not be parsed from the request.');
+        }
+
+        return $this->jwt;
+    }
+
+    /**
+     * Get the current request instance.
+     *
+     * @return \Illuminate\Http\Request
+     */
+    public function getRequest()
+    {
+        return $this->request ?: Request::createFromGlobals();
+    }
+
+    /**
+     * Set the current request instance.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return $this
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+
+        return $this;
+    }
+
+    /**
+     * Refresh the token.
+     *
+     * @param bool $forceForever
+     * @param bool $resetClaims
+     * @return string
+     */
+    public function refresh($forceForever = false, $resetClaims = false)
+    {
+        return $this->requireToken()->refresh($forceForever, $resetClaims);
+    }
+
+    /**
      * Create a new token by User id.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return string|null
      */
     public function tokenById($id)
@@ -194,7 +206,7 @@ class JWTGuard implements Guard
     /**
      * Log a user into the application using their credentials.
      *
-     * @param  array  $credentials
+     * @param array $credentials
      * @return bool
      */
     public function once(array $credentials = [])
@@ -209,9 +221,88 @@ class JWTGuard implements Guard
     }
 
     /**
+     * Validate a user's credentials.
+     *
+     * @param array $credentials
+     * @return bool
+     */
+    public function validate(array $credentials = [])
+    {
+        return (bool)$this->attempt($credentials, false);
+    }
+
+    /**
+     * Attempt to authenticate the user using the given credentials and return the token.
+     *
+     * @param array $credentials
+     * @param bool $login
+     * @return bool|string
+     */
+    public function attempt(array $credentials = [], $login = true)
+    {
+        $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
+
+        if ($this->hasValidCredentials($user, $credentials)) {
+            return $login ? $this->login($user) : true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the user matches the credentials.
+     *
+     * @param mixed $user
+     * @param array $credentials
+     * @return bool
+     */
+    protected function hasValidCredentials($user, $credentials)
+    {
+        return $user !== null && $this->provider->validateCredentials($user, $credentials);
+    }
+
+    /**
+     * Create a token for a user.
+     *
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $user
+     * @return string
+     */
+    public function login(JWTSubject $user)
+    {
+        $token = $this->jwt->fromUser($user);
+        $this->setToken($token)->setUser($user);
+
+        return $token;
+    }
+
+    /**
+     * Set the token.
+     *
+     * @param \Tymon\JWTAuth\Token|string $token
+     * @return $this
+     */
+    public function setToken($token)
+    {
+        $this->jwt->setToken($token);
+
+        return $this;
+    }
+
+    /**
+     * Alias for onceUsingId.
+     *
+     * @param mixed $id
+     * @return bool
+     */
+    public function byId($id)
+    {
+        return $this->onceUsingId($id);
+    }
+
+    /**
      * Log the given User into the application.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return bool
      */
     public function onceUsingId($id)
@@ -226,20 +317,9 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Alias for onceUsingId.
-     *
-     * @param  mixed  $id
-     * @return bool
-     */
-    public function byId($id)
-    {
-        return $this->onceUsingId($id);
-    }
-
-    /**
      * Add any custom claims.
      *
-     * @param  array  $claims
+     * @param array $claims
      * @return $this
      */
     public function claims(array $claims)
@@ -247,16 +327,6 @@ class JWTGuard implements Guard
         $this->jwt->claims($claims);
 
         return $this;
-    }
-
-    /**
-     * Get the raw Payload instance.
-     *
-     * @return \Tymon\JWTAuth\Payload
-     */
-    public function getPayload()
-    {
-        return $this->requireToken()->getPayload();
     }
 
     /**
@@ -270,22 +340,19 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Set the token.
+     * Get the raw Payload instance.
      *
-     * @param  \Tymon\JWTAuth\Token|string  $token
-     * @return $this
+     * @return \Tymon\JWTAuth\Payload
      */
-    public function setToken($token)
+    public function getPayload()
     {
-        $this->jwt->setToken($token);
-
-        return $this;
+        return $this->requireToken()->getPayload();
     }
 
     /**
      * Set the token ttl.
      *
-     * @param  int  $ttl
+     * @param int $ttl
      * @return $this
      */
     public function setTTL($ttl)
@@ -308,7 +375,7 @@ class JWTGuard implements Guard
     /**
      * Set the user provider used by the guard.
      *
-     * @param  \Illuminate\Contracts\Auth\UserProvider  $provider
+     * @param \Illuminate\Contracts\Auth\UserProvider $provider
      * @return $this
      */
     public function setProvider(UserProvider $provider)
@@ -329,29 +396,6 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Get the current request instance.
-     *
-     * @return \Illuminate\Http\Request
-     */
-    public function getRequest()
-    {
-        return $this->request ?: Request::createFromGlobals();
-    }
-
-    /**
-     * Set the current request instance.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return $this
-     */
-    public function setRequest(Request $request)
-    {
-        $this->request = $request;
-
-        return $this;
-    }
-
-    /**
      * Get the last user we attempted to authenticate.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable
@@ -362,54 +406,10 @@ class JWTGuard implements Guard
     }
 
     /**
-     * Determine if the user matches the credentials.
-     *
-     * @param  mixed  $user
-     * @param  array  $credentials
-     * @return bool
-     */
-    protected function hasValidCredentials($user, $credentials)
-    {
-        return $user !== null && $this->provider->validateCredentials($user, $credentials);
-    }
-
-    /**
-     * Ensure the JWTSubject matches what is in the token.
-     *
-     * @return bool
-     */
-    protected function validateSubject()
-    {
-        // If the provider doesn't have the necessary method
-        // to get the underlying model name then allow.
-        if (! method_exists($this->provider, 'getModel')) {
-            return true;
-        }
-
-        return $this->jwt->checkSubjectModel($this->provider->getModel());
-    }
-
-    /**
-     * Ensure that a token is available in the request.
-     *
-     * @return \Tymon\JWTAuth\JWT
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\JWTException
-     */
-    protected function requireToken()
-    {
-        if (! $this->jwt->setRequest($this->getRequest())->getToken()) {
-            throw new JWTException('Token could not be parsed from the request.');
-        }
-
-        return $this->jwt;
-    }
-
-    /**
      * Magically call the JWT instance.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      *
      * @throws \BadMethodCallException

@@ -90,37 +90,13 @@ class Address extends \Faker\Provider\it_IT\Address
     /**
      * Returns a random street prefix
      *
+     * @return string
      * @example Via
      *
-     * @return string
      */
     public static function streetPrefix()
     {
         return static::randomElement(static::$streetPrefix);
-    }
-
-    /**
-     * Returns a random city name.
-     *
-     * @example Luzern
-     *
-     * @return string
-     */
-    public function cityName()
-    {
-        return static::randomElement(static::$cityNames);
-    }
-
-    /**
-     * Returns a canton
-     *
-     * @example array('BE' => 'Bern')
-     *
-     * @return array
-     */
-    public static function canton()
-    {
-        return static::randomElement(static::$canton);
     }
 
     /**
@@ -136,6 +112,18 @@ class Address extends \Faker\Provider\it_IT\Address
     }
 
     /**
+     * Returns a canton
+     *
+     * @return array
+     * @example array('BE' => 'Bern')
+     *
+     */
+    public static function canton()
+    {
+        return static::randomElement(static::$canton);
+    }
+
+    /**
      * Returns the name of canton.
      *
      * @return string
@@ -145,5 +133,17 @@ class Address extends \Faker\Provider\it_IT\Address
         $canton = static::canton();
 
         return current($canton);
+    }
+
+    /**
+     * Returns a random city name.
+     *
+     * @return string
+     * @example Luzern
+     *
+     */
+    public function cityName()
+    {
+        return static::randomElement(static::$cityNames);
     }
 }

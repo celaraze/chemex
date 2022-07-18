@@ -108,9 +108,17 @@ class Address extends \Faker\Provider\Address
         '扎伊尔', '赞比亚', '桑给巴尔', '津巴布韦', '中华人民共和国', '中国',
     ];
 
-    public function city()
+    public static function country()
     {
-        return static::randomElement(static::$cites);
+        return static::randomElement(static::$country);
+    }
+
+    public static function postcode()
+    {
+        $prefix = str_pad(self::numberBetween(1, 85), 2, 0, STR_PAD_LEFT);
+        $suffix = '00';
+
+        return $prefix . self::numberBetween(10, 88) . $suffix;
     }
 
     public function state()
@@ -123,26 +131,18 @@ class Address extends \Faker\Provider\Address
         return static::randomElement(static::$stateAbbr);
     }
 
-    public static function area()
-    {
-        return static::randomElement(static::$areas);
-    }
-
-    public static function country()
-    {
-        return static::randomElement(static::$country);
-    }
-
     public function address()
     {
         return $this->city() . static::area();
     }
 
-    public static function postcode()
+    public function city()
     {
-        $prefix = str_pad(self::numberBetween(1, 85), 2, 0, STR_PAD_LEFT);
-        $suffix = '00';
+        return static::randomElement(static::$cites);
+    }
 
-        return $prefix . self::numberBetween(10, 88) . $suffix;
+    public static function area()
+    {
+        return static::randomElement(static::$areas);
     }
 }

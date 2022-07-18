@@ -25,7 +25,7 @@ interface Mode
      * @var string
      */
     public const MODE_TEMPORAL = 'temporal';
-    
+
     /**
      * @var string
      */

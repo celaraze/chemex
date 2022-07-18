@@ -13,7 +13,7 @@ class DefaultDbNameSolutionProvider implements HasSolutionsForThrowable
 
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof QueryException) {
+        if (!$throwable instanceof QueryException) {
             return false;
         }
 
@@ -21,7 +21,7 @@ class DefaultDbNameSolutionProvider implements HasSolutionsForThrowable
             return false;
         }
 
-        if (! in_array(env('DB_DATABASE'), ['homestead', 'laravel'])) {
+        if (!in_array(env('DB_DATABASE'), ['homestead', 'laravel'])) {
             return false;
         }
 

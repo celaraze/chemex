@@ -15,15 +15,14 @@ namespace Composer\Package\Version;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
-use Composer\Composer;
-use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\BasePackage;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
-use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 
@@ -61,18 +60,18 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string                                           $packageName
-     * @param string                                           $targetPackageVersion
-     * @param string                                           $preferredStability
+     * @param string $packageName
+     * @param string $targetPackageVersion
+     * @param string $preferredStability
      * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
-     * @param int                                              $repoSetFlags*
+     * @param int $repoSetFlags *
      * @return PackageInterface|false
      */
     public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
-            throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
+            throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got ' . $preferredStability);
         }
 
         if (null === $platformRequirementFilter) {
@@ -158,6 +157,18 @@ class VersionSelector
     }
 
     /**
+     * @return VersionParser
+     */
+    private function getParser(): VersionParser
+    {
+        if ($this->parser === null) {
+            $this->parser = new VersionParser();
+        }
+
+        return $this->parser;
+    }
+
+    /**
      * Given a concrete version, this returns a ^ constraint (when possible)
      * that should be used, for example, in composer.json.
      *
@@ -169,7 +180,7 @@ class VersionSelector
      *  * dev-master    -> ^2.1@dev      (dev version with alias)
      *  * dev-master    -> dev-master    (dev versions are untouched)
      *
-     * @param  PackageInterface $package
+     * @param PackageInterface $package
      * @return string
      */
     public function findRecommendedRequireVersion(PackageInterface $package): string
@@ -232,22 +243,10 @@ class VersionSelector
 
         // append stability flag if not default
         if ($stability != 'stable') {
-            $version .= '@'.$stability;
+            $version .= '@' . $stability;
         }
 
         // 2.1 -> ^2.1
         return '^' . $version;
-    }
-
-    /**
-     * @return VersionParser
-     */
-    private function getParser(): VersionParser
-    {
-        if ($this->parser === null) {
-            $this->parser = new VersionParser();
-        }
-
-        return $this->parser;
     }
 }

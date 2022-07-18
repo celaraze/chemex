@@ -15,8 +15,8 @@ trait CanFixColumns
     protected $fixColumns;
 
     /**
-     * @param  int  $head
-     * @param  int  $tail
+     * @param int $head
+     * @param int $tail
      * @return FixColumns
      */
     public function fixColumns(int $head, int $tail = -1)
@@ -25,11 +25,6 @@ trait CanFixColumns
 
         $this->resetActions();
 
-        return $this->fixColumns;
-    }
-
-    public function hasFixColumns()
-    {
         return $this->fixColumns;
     }
 
@@ -42,15 +37,9 @@ trait CanFixColumns
         }
     }
 
-    protected function applyFixColumns()
+    public function hasFixColumns()
     {
-        if ($this->fixColumns) {
-            if (! $this->options['bordered'] && ! $this->options['table_collapse']) {
-                $this->tableCollapse();
-            }
-
-            $this->fixColumns->apply();
-        }
+        return $this->fixColumns;
     }
 
     /**
@@ -83,5 +72,16 @@ trait CanFixColumns
     public function rightVisibleComplexColumns()
     {
         return $this->fixColumns->rightComplexColumns();
+    }
+
+    protected function applyFixColumns()
+    {
+        if ($this->fixColumns) {
+            if (!$this->options['bordered'] && !$this->options['table_collapse']) {
+                $this->tableCollapse();
+            }
+
+            $this->fixColumns->apply();
+        }
     }
 }

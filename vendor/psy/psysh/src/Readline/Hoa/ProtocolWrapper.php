@@ -42,28 +42,17 @@ namespace Psy\Readline\Hoa;
 class ProtocolWrapper
 {
     /**
+     * Stream context (given by the streamWrapper class) as a resource.
+     */
+    public $context = null;
+    /**
      * Opened stream as a resource.
      */
     private $_stream = null;
-
     /**
      * Stream name (filename).
      */
     private $_streamName = null;
-
-    /**
-     * Stream context (given by the streamWrapper class) as a resource.
-     */
-    public $context = null;
-
-    /**
-     * Get the real path of the given URL.
-     * Could return false if the path cannot be reached.
-     */
-    public static function realPath(string $path, bool $exists = true)
-    {
-        return ProtocolNode::getRoot()->resolve($path, $exists);
-    }
 
     /**
      * Retrieve the underlying resource.
@@ -89,6 +78,14 @@ class ProtocolWrapper
             $this->_stream = null;
             $this->_streamName = null;
         }
+    }
+
+    /**
+     * Get stream resource.
+     */
+    public function getStream()
+    {
+        return $this->_stream;
     }
 
     /**
@@ -189,6 +186,15 @@ class ProtocolWrapper
     }
 
     /**
+     * Get the real path of the given URL.
+     * Could return false if the path cannot be reached.
+     */
+    public static function realPath(string $path, bool $exists = true)
+    {
+        return ProtocolNode::getRoot()->resolve($path, $exists);
+    }
+
+    /**
      * Open file or URL.
      * This method is called immediately after the wrapper is initialized (f.e.
      * by fopen() and file_get_contents()).
@@ -207,7 +213,7 @@ class ProtocolWrapper
             $openedPath = \fopen(
                 $path,
                 $mode,
-                (bool) ($options & \STREAM_USE_PATH),
+                (bool)($options & \STREAM_USE_PATH),
                 $this->context
             );
         }
@@ -363,7 +369,7 @@ class ProtocolWrapper
         return \mkdir(
             static::realPath($path, false),
             $mode,
-            (bool) ($options | \STREAM_MKDIR_RECURSIVE),
+            (bool)($options | \STREAM_MKDIR_RECURSIVE),
             $this->context
         );
     }
@@ -437,7 +443,7 @@ class ProtocolWrapper
                 return 0;
             } else {
                 return \trigger_error(
-                    'Path '.$path.' cannot be resolved.',
+                    'Path ' . $path . ' cannot be resolved.',
                     \E_WARNING
                 );
             }
@@ -448,14 +454,6 @@ class ProtocolWrapper
         }
 
         return @\stat($path);
-    }
-
-    /**
-     * Get stream resource.
-     */
-    public function getStream()
-    {
-        return $this->_stream;
     }
 
     /**

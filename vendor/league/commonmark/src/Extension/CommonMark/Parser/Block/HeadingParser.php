@@ -30,7 +30,7 @@ final class HeadingParser extends AbstractBlockContinueParser implements BlockCo
 
     public function __construct(int $level, string $content)
     {
-        $this->block   = new Heading($level);
+        $this->block = new Heading($level);
         $this->content = $content;
     }
 

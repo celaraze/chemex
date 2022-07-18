@@ -20,6 +20,20 @@ trait CreatesApplication
         return $app;
     }
 
+    protected function getAppPath()
+    {
+        $path = __DIR__ . '/../bootstrap/app.php';
+
+        if (!is_file($path)) {
+            $path = __DIR__ . '/../../bootstrap/app.php';
+        }
+        if (!is_file($path)) {
+            $path = __DIR__ . '/../../../bootstrap/app.php';
+        }
+
+        return $path;
+    }
+
     protected function boot()
     {
         $this->artisan('admin:publish');
@@ -30,25 +44,20 @@ trait CreatesApplication
 
         $this->migrateTestTables();
 
-        require __DIR__.'/helpers.php';
+        require __DIR__ . '/helpers.php';
 
-        require __DIR__.'/resources/seeds/factory.php';
+        require __DIR__ . '/resources/seeds/factory.php';
 
-        view()->addNamespace('admin-tests', __DIR__.'/resources/views');
+        view()->addNamespace('admin-tests', __DIR__ . '/resources/views');
     }
 
-    protected function getAppPath()
+    public function migrateTestTables()
     {
-        $path = __DIR__.'/../bootstrap/app.php';
+        $fileSystem = new Filesystem();
 
-        if (! is_file($path)) {
-            $path = __DIR__.'/../../bootstrap/app.php';
-        }
-        if (! is_file($path)) {
-            $path = __DIR__.'/../../../bootstrap/app.php';
-        }
+        $fileSystem->requireOnce(__DIR__ . '/resources/migrations/2016_11_22_093148_create_test_tables.php');
 
-        return $path;
+        (new \CreateTestTables())->up();
     }
 
     protected function destory()
@@ -67,15 +76,6 @@ trait CreatesApplication
         DB::select("delete from `migrations` where `migration` = '2016_11_22_093148_create_test_tables'");
 
         Artisan::call('migrate:rollback');
-    }
-
-    public function migrateTestTables()
-    {
-        $fileSystem = new Filesystem();
-
-        $fileSystem->requireOnce(__DIR__.'/resources/migrations/2016_11_22_093148_create_test_tables.php');
-
-        (new \CreateTestTables())->up();
     }
 
     /**

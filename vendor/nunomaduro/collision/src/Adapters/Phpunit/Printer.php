@@ -69,7 +69,7 @@ final class Printer implements \PHPUnit\TextUI\ResultPrinter
         ConfigureIO::of(new ArgvInput(), $output);
 
         $this->style = new Style($output);
-        $dummyTest   = new class() extends TestCase {
+        $dummyTest = new class() extends TestCase {
         };
 
         $this->state = State::from($dummyTest);
@@ -85,6 +85,22 @@ final class Printer implements \PHPUnit\TextUI\ResultPrinter
         $testCase = $this->testCaseFromTest($testCase);
 
         $this->state->add(TestResult::fromTestCase($testCase, TestResult::FAIL, $throwable));
+    }
+
+    /**
+     * Returns a test case from the given test.
+     *
+     * Note: This printer is do not work with normal Test classes - only
+     * with Test Case classes. Please report an issue if you think
+     * this should work any other way.
+     */
+    private function testCaseFromTest(Test $test): TestCase
+    {
+        if (!$test instanceof TestCase) {
+            throw new ShouldNotHappen();
+        }
+
+        return $test;
     }
 
     /**
@@ -109,7 +125,7 @@ final class Printer implements \PHPUnit\TextUI\ResultPrinter
         $reflector = new ReflectionObject($error);
 
         if ($reflector->hasProperty('message')) {
-            $message  = trim((string) preg_replace("/\r|\n/", "\n  ", $error->getMessage()));
+            $message = trim((string)preg_replace("/\r|\n/", "\n  ", $error->getMessage()));
             $property = $reflector->getProperty('message');
             $property->setAccessible(true);
             $property->setValue($error, $message);
@@ -206,22 +222,6 @@ final class Printer implements \PHPUnit\TextUI\ResultPrinter
     public function write(string $content): void
     {
         // ..
-    }
-
-    /**
-     * Returns a test case from the given test.
-     *
-     * Note: This printer is do not work with normal Test classes - only
-     * with Test Case classes. Please report an issue if you think
-     * this should work any other way.
-     */
-    private function testCaseFromTest(Test $test): TestCase
-    {
-        if (!$test instanceof TestCase) {
-            throw new ShouldNotHappen();
-        }
-
-        return $test;
     }
 
     /**

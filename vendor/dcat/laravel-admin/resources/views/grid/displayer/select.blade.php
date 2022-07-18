@@ -1,5 +1,6 @@
 <div class="input-group input-group-sm">
-    <select style="width: 100%;" class="grid-column-select" data-reload="{{ $refresh }}" data-url="{{ $url }}" data-name="{{ $column }}">
+    <select style="width: 100%;" class="grid-column-select" data-reload="{{ $refresh }}" data-url="{{ $url }}"
+            data-name="{{ $column }}">
         @foreach($options as $k => $v)
             @php($selected = Dcat\Admin\Support\Helper::equal($k, $value)  ? 'selected' : '')
 
@@ -10,7 +11,7 @@
 </div>
 
 <script require="@select2?lang={{ config('app.locale') === 'en' ? '' : str_replace('_', '-', config('app.locale')) }}">
-    $('.grid-column-select').off('change').select2().on('change', function(){
+    $('.grid-column-select').off('change').select2().on('change', function () {
         var value = $(this).val(),
             name = $(this).data('name'),
             url = $(this).data('url'),

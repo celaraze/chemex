@@ -30,11 +30,11 @@ final class GatherFootnotesListener implements ConfigurationAwareInterface
 
     public function onDocumentParsed(DocumentParsedEvent $event): void
     {
-        $document  = $event->getDocument();
+        $document = $event->getDocument();
         $footnotes = [];
 
         foreach ($document->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $node) {
-            if (! $node instanceof Footnote) {
+            if (!$node instanceof Footnote) {
                 continue;
             }
 
@@ -42,7 +42,7 @@ final class GatherFootnotesListener implements ConfigurationAwareInterface
             $ref = $document->getReferenceMap()->get($node->getReference()->getLabel());
             if ($ref !== null) {
                 // Use numeric title to get footnotes order
-                $footnotes[(int) $ref->getTitle()] = $node;
+                $footnotes[(int)$ref->getTitle()] = $node;
             } else {
                 // Footnote call is missing, append footnote at the end
                 $footnotes[\PHP_INT_MAX] = $node;
@@ -67,18 +67,10 @@ final class GatherFootnotesListener implements ConfigurationAwareInterface
         }
     }
 
-    private function getFootnotesContainer(Document $document): FootnoteContainer
-    {
-        $footnoteContainer = new FootnoteContainer();
-        $document->appendChild($footnoteContainer);
-
-        return $footnoteContainer;
-    }
-
     /**
      * Look for all footnote refs pointing to this footnote and create each footnote backrefs.
      *
-     * @param Footnote    $node     The target footnote
+     * @param Footnote $node The target footnote
      * @param Reference[] $backrefs References to create backrefs for
      */
     private function createBackrefs(Footnote $node, array $backrefs): void
@@ -97,6 +89,14 @@ final class GatherFootnotesListener implements ConfigurationAwareInterface
                 $backref->getTitle()
             )));
         }
+    }
+
+    private function getFootnotesContainer(Document $document): FootnoteContainer
+    {
+        $footnoteContainer = new FootnoteContainer();
+        $document->appendChild($footnoteContainer);
+
+        return $footnoteContainer;
     }
 
     public function setConfiguration(ConfigurationInterface $configuration): void

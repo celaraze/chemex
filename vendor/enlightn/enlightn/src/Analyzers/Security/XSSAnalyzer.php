@@ -15,19 +15,23 @@ class XSSAnalyzer extends SecurityAnalyzer
     use AnalyzesHeaders;
 
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your application sets appropriate HTTP headers to protect against XSS attacks.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
@@ -36,17 +40,10 @@ class XSSAnalyzer extends SecurityAnalyzer
     public $timeToFix = 5;
 
     /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
-    /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -64,8 +61,8 @@ class XSSAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return 'Your application is not adequately protected from XSS attacks. The Content-Security-Policy '
-            .'is either not set or not set adequately for XSS. It is recommended to set a "script-src" or '
-            .'"default-src" policy directive without "unsafe-eval" or "unsafe-inline".';
+            . 'is either not set or not set adequately for XSS. It is recommended to set a "script-src" or '
+            . '"default-src" policy directive without "unsafe-eval" or "unsafe-inline".';
     }
 
     /**
@@ -77,15 +74,15 @@ class XSSAnalyzer extends SecurityAnalyzer
     {
         $headers = $this->getHeadersOnUrl($url = $this->findLoginRoute(), 'Content-Security-Policy');
 
-        if (! isset($headers)) {
+        if (!isset($headers)) {
             $policy = get_meta_tags($url)['Content-Security-Policy'] ?? '';
             if (empty($policy)) {
                 $this->markFailed();
-            } elseif (! Str::contains($policy, ['default-src', 'script-src']) || Str::contains($policy, 'unsafe')) {
+            } elseif (!Str::contains($policy, ['default-src', 'script-src']) || Str::contains($policy, 'unsafe')) {
                 $this->markFailed();
             }
-        } elseif (! collect($headers)->contains(function ($header) {
-            return Str::contains($header, ['default-src', 'script-src']) && ! Str::contains($header, 'unsafe');
+        } elseif (!collect($headers)->contains(function ($header) {
+            return Str::contains($header, ['default-src', 'script-src']) && !Str::contains($header, 'unsafe');
         })) {
             $this->markFailed();
         }

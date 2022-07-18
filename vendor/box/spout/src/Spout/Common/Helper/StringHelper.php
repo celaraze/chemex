@@ -32,11 +32,11 @@ class StringHelper
     /**
      * Returns the length of the given string.
      * It uses the multi-bytes function is available.
+     * @param string $string
+     * @return int
      * @see strlen
      * @see mb_strlen
      *
-     * @param string $string
-     * @return int
      */
     public function getStringLength($string)
     {
@@ -46,12 +46,12 @@ class StringHelper
     /**
      * Returns the position of the first occurrence of the given character/substring within the given string.
      * It uses the multi-bytes function is available.
-     * @see strpos
-     * @see mb_strpos
-     *
      * @param string $char Needle
      * @param string $string Haystack
      * @return int Char/substring's first occurrence position within the string if found (starts at 0) or -1 if not found
+     * @see mb_strpos
+     *
+     * @see strpos
      */
     public function getCharFirstOccurrencePosition($char, $string)
     {
@@ -63,12 +63,12 @@ class StringHelper
     /**
      * Returns the position of the last occurrence of the given character/substring within the given string.
      * It uses the multi-bytes function is available.
-     * @see strrpos
-     * @see mb_strrpos
-     *
      * @param string $char Needle
      * @param string $string Haystack
      * @return int Char/substring's last occurrence position within the string if found (starts at 0) or -1 if not found
+     * @see mb_strrpos
+     *
+     * @see strrpos
      */
     public function getCharLastOccurrencePosition($char, $string)
     {

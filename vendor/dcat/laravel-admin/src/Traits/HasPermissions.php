@@ -11,21 +11,26 @@ trait HasPermissions
     protected $allPermissions;
 
     /**
-     * Get all permissions of user.
+     * Detach models from the relationship.
      *
-     * @return mixed
+     * @return void
      */
-    public function allPermissions(): Collection
+    protected static function bootHasPermissions()
     {
-        if ($this->allPermissions) {
-            return $this->allPermissions;
-        }
+        static::deleting(function ($model) {
+            $model->roles()->detach();
+        });
+    }
 
-        return $this->allPermissions =
-            $this->roles
-            ->pluck('permissions')
-            ->flatten()
-            ->keyBy($this->getKeyName());
+    /**
+     * Check if user has no permission.
+     *
+     * @param $permission
+     * @return bool
+     */
+    public function cannot(string $permission): bool
+    {
+        return !$this->can($permission);
     }
 
     /**
@@ -36,7 +41,7 @@ trait HasPermissions
      */
     public function can($ability): bool
     {
-        if (! $ability) {
+        if (!$ability) {
             return false;
         }
 
@@ -48,19 +53,8 @@ trait HasPermissions
 
         return $permissions->pluck('slug')->contains($ability) ?:
             $permissions
-            ->pluck('id')
-            ->contains($ability);
-    }
-
-    /**
-     * Check if user has no permission.
-     *
-     * @param $permission
-     * @return bool
-     */
-    public function cannot(string $permission): bool
-    {
-        return ! $this->can($permission);
+                ->pluck('id')
+                ->contains($ability);
     }
 
     /**
@@ -78,7 +72,7 @@ trait HasPermissions
     /**
      * Check if user is $role.
      *
-     * @param  string  $role
+     * @param string $role
      * @return mixed
      */
     public function isRole(string $role): bool
@@ -91,20 +85,21 @@ trait HasPermissions
     }
 
     /**
-     * Check if user in $roles.
+     * Get all permissions of user.
      *
-     * @param  string|array|Arrayable  $roles
      * @return mixed
      */
-    public function inRoles($roles = []): bool
+    public function allPermissions(): Collection
     {
-        /* @var Collection $all */
-        $all = $this->roles;
+        if ($this->allPermissions) {
+            return $this->allPermissions;
+        }
 
-        $roles = Helper::array($roles);
-
-        return $all->pluck('slug')->intersect($roles)->isNotEmpty() ?:
-            $all->pluck('id')->intersect($roles)->isNotEmpty();
+        return $this->allPermissions =
+            $this->roles
+                ->pluck('permissions')
+                ->flatten()
+                ->keyBy($this->getKeyName());
     }
 
     /**
@@ -127,14 +122,19 @@ trait HasPermissions
     }
 
     /**
-     * Detach models from the relationship.
+     * Check if user in $roles.
      *
-     * @return void
+     * @param string|array|Arrayable $roles
+     * @return mixed
      */
-    protected static function bootHasPermissions()
+    public function inRoles($roles = []): bool
     {
-        static::deleting(function ($model) {
-            $model->roles()->detach();
-        });
+        /* @var Collection $all */
+        $all = $this->roles;
+
+        $roles = Helper::array($roles);
+
+        return $all->pluck('slug')->intersect($roles)->isNotEmpty() ?:
+            $all->pluck('id')->intersect($roles)->isNotEmpty();
     }
 }

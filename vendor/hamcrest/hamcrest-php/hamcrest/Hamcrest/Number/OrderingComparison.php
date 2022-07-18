@@ -1,4 +1,5 @@
 <?php
+
 namespace Hamcrest\Number;
 
 /*
@@ -22,35 +23,6 @@ class OrderingComparison extends TypeSafeMatcher
         $this->_value = $value;
         $this->_minCompare = $minCompare;
         $this->_maxCompare = $maxCompare;
-    }
-
-    protected function matchesSafely($other)
-    {
-        $compare = $this->_compare($this->_value, $other);
-
-        return ($this->_minCompare <= $compare) && ($compare <= $this->_maxCompare);
-    }
-
-    protected function describeMismatchSafely($item, Description $mismatchDescription)
-    {
-        $mismatchDescription
-            ->appendValue($item)->appendText(' was ')
-            ->appendText($this->_comparison($this->_compare($this->_value, $item)))
-            ->appendText(' ')->appendValue($this->_value)
-            ;
-    }
-
-    public function describeTo(Description $description)
-    {
-        $description->appendText('a value ')
-            ->appendText($this->_comparison($this->_minCompare))
-            ;
-        if ($this->_minCompare != $this->_maxCompare) {
-            $description->appendText(' or ')
-                ->appendText($this->_comparison($this->_maxCompare))
-                ;
-        }
-        $description->appendText(' ')->appendValue($this->_value);
     }
 
     /**
@@ -103,6 +75,35 @@ class OrderingComparison extends TypeSafeMatcher
         return new self($value, 0, 1);
     }
 
+    public function describeTo(Description $description)
+    {
+        $description->appendText('a value ')
+            ->appendText($this->_comparison($this->_minCompare));
+        if ($this->_minCompare != $this->_maxCompare) {
+            $description->appendText(' or ')
+                ->appendText($this->_comparison($this->_maxCompare));
+        }
+        $description->appendText(' ')->appendValue($this->_value);
+    }
+
+    private function _comparison($compare)
+    {
+        if ($compare > 0) {
+            return 'less than';
+        } elseif ($compare == 0) {
+            return 'equal to';
+        } else {
+            return 'greater than';
+        }
+    }
+
+    protected function matchesSafely($other)
+    {
+        $compare = $this->_compare($this->_value, $other);
+
+        return ($this->_minCompare <= $compare) && ($compare <= $this->_maxCompare);
+    }
+
     // -- Private Methods
 
     private function _compare($left, $right)
@@ -119,14 +120,11 @@ class OrderingComparison extends TypeSafeMatcher
         }
     }
 
-    private function _comparison($compare)
+    protected function describeMismatchSafely($item, Description $mismatchDescription)
     {
-        if ($compare > 0) {
-            return 'less than';
-        } elseif ($compare == 0) {
-            return 'equal to';
-        } else {
-            return 'greater than';
-        }
+        $mismatchDescription
+            ->appendValue($item)->appendText(' was ')
+            ->appendText($this->_comparison($this->_compare($this->_value, $item)))
+            ->appendText(' ')->appendValue($this->_value);
     }
 }

@@ -16,7 +16,7 @@ class ClassMorphViolationException extends RuntimeException
     /**
      * Create a new exception instance.
      *
-     * @param  object  $model
+     * @param object $model
      */
     public function __construct($model)
     {

@@ -10,14 +10,10 @@ use PhpParser\ParserFactory;
 
 class Inspector
 {
-    protected $files;
-
     public $nodes = [];
-
     public $errors = [];
-
     public $passed = true;
-
+    protected $files;
     /**
      * @var array
      */
@@ -29,7 +25,7 @@ class Inspector
     }
 
     /**
-     * @param  array  $filePaths
+     * @param array $filePaths
      * @return $this
      */
     public function start(array $filePaths)
@@ -37,7 +33,7 @@ class Inspector
         $parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
 
         collect($filePaths)->each(function ($path) use ($parser) {
-            if (! isset($this->nodes[$path])) {
+            if (!isset($this->nodes[$path])) {
                 $this->nodes[$path] = $parser->parse($this->files->get($path), $handler = new Collecting);
 
                 if ($handler->hasErrors()) {
@@ -64,7 +60,7 @@ class Inspector
         $this->passed = true;
 
         foreach ($this->nodes as $path => $nodes) {
-            if (! empty($errors = $builder->getErrors($nodes))) {
+            if (!empty($errors = $builder->getErrors($nodes))) {
                 collect($errors)->each(function (InspectionLine $line) use ($path) {
                     $this->traces[] = new Trace($path, $line->lineNumber, $line->details);
                 });

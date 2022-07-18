@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
 use DOMElement;
@@ -28,16 +29,21 @@ final class Unit
         $this->setName($name);
     }
 
+    private function setName(string $name): void
+    {
+        $this->contextNode->setAttribute('name', $name);
+    }
+
     public function setLines(int $start, int $executable, int $executed): void
     {
-        $this->contextNode->setAttribute('start', (string) $start);
-        $this->contextNode->setAttribute('executable', (string) $executable);
-        $this->contextNode->setAttribute('executed', (string) $executed);
+        $this->contextNode->setAttribute('start', (string)$start);
+        $this->contextNode->setAttribute('executable', (string)$executable);
+        $this->contextNode->setAttribute('executed', (string)$executed);
     }
 
     public function setCrap(float $crap): void
     {
-        $this->contextNode->setAttribute('crap', (string) $crap);
+        $this->contextNode->setAttribute('crap', (string)$crap);
     }
 
     public function setNamespace(string $namespace): void
@@ -69,10 +75,5 @@ final class Unit
         );
 
         return new Method($node, $name);
-    }
-
-    private function setName(string $name): void
-    {
-        $this->contextNode->setAttribute('name', $name);
     }
 }

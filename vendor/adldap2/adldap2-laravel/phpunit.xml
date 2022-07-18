@@ -8,7 +8,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-        >
+>
     <testsuites>
         <testsuite name="Adldap2 Laravel Test Suite">
             <directory suffix="Test.php">./tests/</directory>

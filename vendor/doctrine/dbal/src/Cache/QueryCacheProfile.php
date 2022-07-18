@@ -9,7 +9,6 @@ use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
 use Psr\Cache\CacheItemPoolInterface;
 use TypeError;
-
 use function get_class;
 use function hash;
 use function serialize;
@@ -33,8 +32,8 @@ class QueryCacheProfile
     private $cacheKey;
 
     /**
-     * @param int                               $lifetime
-     * @param string|null                       $cacheKey
+     * @param int $lifetime
+     * @param string|null $cacheKey
      * @param CacheItemPoolInterface|Cache|null $resultCache
      */
     public function __construct($lifetime = 0, $cacheKey = null, ?object $resultCache = null)
@@ -69,10 +68,15 @@ class QueryCacheProfile
         return $this->resultCache;
     }
 
+    public function setResultCache(CacheItemPoolInterface $cache): QueryCacheProfile
+    {
+        return new QueryCacheProfile($this->lifetime, $this->cacheKey, $cache);
+    }
+
     /**
+     * @return Cache|null
      * @deprecated Use {@see getResultCache()} instead.
      *
-     * @return Cache|null
      */
     public function getResultCacheDriver()
     {
@@ -95,6 +99,16 @@ class QueryCacheProfile
     }
 
     /**
+     * @param int $lifetime
+     *
+     * @return QueryCacheProfile
+     */
+    public function setLifetime($lifetime)
+    {
+        return new QueryCacheProfile($lifetime, $this->cacheKey, $this->resultCache);
+    }
+
+    /**
      * @return string
      *
      * @throws CacheException
@@ -109,12 +123,22 @@ class QueryCacheProfile
     }
 
     /**
+     * @param string|null $cacheKey
+     *
+     * @return QueryCacheProfile
+     */
+    public function setCacheKey($cacheKey)
+    {
+        return new QueryCacheProfile($this->lifetime, $cacheKey, $this->resultCache);
+    }
+
+    /**
      * Generates the real cache key from query, params, types and connection parameters.
      *
-     * @param string                                                               $sql
-     * @param list<mixed>|array<string, mixed>                                     $params
+     * @param string $sql
+     * @param list<mixed>|array<string, mixed> $params
      * @param array<int, Type|int|string|null>|array<string, Type|int|string|null> $types
-     * @param array<string, mixed>                                                 $connectionParams
+     * @param array<string, mixed> $connectionParams
      *
      * @return string[]
      */
@@ -139,15 +163,10 @@ class QueryCacheProfile
         return [$cacheKey, $realCacheKey];
     }
 
-    public function setResultCache(CacheItemPoolInterface $cache): QueryCacheProfile
-    {
-        return new QueryCacheProfile($this->lifetime, $this->cacheKey, $cache);
-    }
-
     /**
+     * @return QueryCacheProfile
      * @deprecated Use {@see setResultCache()} instead.
      *
-     * @return QueryCacheProfile
      */
     public function setResultCacheDriver(Cache $cache)
     {
@@ -159,25 +178,5 @@ class QueryCacheProfile
         );
 
         return new QueryCacheProfile($this->lifetime, $this->cacheKey, CacheAdapter::wrap($cache));
-    }
-
-    /**
-     * @param string|null $cacheKey
-     *
-     * @return QueryCacheProfile
-     */
-    public function setCacheKey($cacheKey)
-    {
-        return new QueryCacheProfile($this->lifetime, $cacheKey, $this->resultCache);
-    }
-
-    /**
-     * @param int $lifetime
-     *
-     * @return QueryCacheProfile
-     */
-    public function setLifetime($lifetime)
-    {
-        return new QueryCacheProfile($lifetime, $this->cacheKey, $this->resultCache);
     }
 }

@@ -18,7 +18,7 @@ class Equal extends Filter
     /**
      * InputFilter constructor.
      *
-     * @param  string  $type
+     * @param string $type
      */
     public function __construct(?string $placeholder = null)
     {
@@ -35,6 +35,38 @@ class Equal extends Filter
     public function date()
     {
         return $this->setDateFormat('YYYY-MM-DD');
+    }
+
+    /**
+     * @param string $format
+     * @return $this
+     */
+    protected function setDateFormat($format)
+    {
+        $this->dateFormat = $format;
+
+        $this->requireAssets();
+        $this->addDateScript();
+
+        return $this;
+    }
+
+    protected function requireAssets()
+    {
+        Admin::requireAssets(['moment', 'bootstrap-datetimepicker']);
+    }
+
+    protected function addDateScript()
+    {
+        $options = [
+            'locale' => config('app.locale'),
+            'allowInputToggle' => true,
+            'format' => $this->dateFormat,
+        ];
+
+        $options = admin_javascript_json($options);
+
+        Admin::script("$('.{$this->class}').datetimepicker($options);");
     }
 
     /**
@@ -58,37 +90,10 @@ class Equal extends Filter
     }
 
     /**
-     * @param  string  $format
-     * @return $this
-     */
-    protected function setDateFormat($format)
-    {
-        $this->dateFormat = $format;
-
-        $this->requireAssets();
-        $this->addDateScript();
-
-        return $this;
-    }
-
-    protected function addDateScript()
-    {
-        $options = [
-            'locale'           => config('app.locale'),
-            'allowInputToggle' => true,
-            'format'           => $this->dateFormat,
-        ];
-
-        $options = admin_javascript_json($options);
-
-        Admin::script("$('.{$this->class}').datetimepicker($options);");
-    }
-
-    /**
      * Add a binding to the query.
      *
-     * @param  string  $value
-     * @param  Model|null  $model
+     * @param string $value
+     * @param Model|null $model
      */
     public function addBinding($value, Model $model)
     {
@@ -108,10 +113,5 @@ class Equal extends Filter
     public function render()
     {
         return $this->renderInput();
-    }
-
-    protected function requireAssets()
-    {
-        Admin::requireAssets(['moment', 'bootstrap-datetimepicker']);
     }
 }

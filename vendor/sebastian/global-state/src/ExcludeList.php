@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\GlobalState;
 
+use ReflectionClass;
 use function in_array;
 use function strpos;
-use ReflectionClass;
 
 final class ExcludeList
 {

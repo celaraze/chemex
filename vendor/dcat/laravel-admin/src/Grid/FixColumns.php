@@ -9,20 +9,17 @@ use Illuminate\Support\Collection;
 class FixColumns
 {
     /**
-     * @var Grid
-     */
-    protected $grid;
-
-    /**
      * @var int
      */
     public $head;
-
     /**
      * @var int
      */
     public $tail;
-
+    /**
+     * @var Grid
+     */
+    protected $grid;
     /**
      * @var Collection
      */
@@ -56,9 +53,9 @@ class FixColumns
     /**
      * FixColumns constructor.
      *
-     * @param  Grid  $grid
-     * @param  int  $head
-     * @param  int  $tail
+     * @param Grid $grid
+     * @param int $head
+     * @param int $tail
      */
     public function __construct(Grid $grid, $head, $tail = -1)
     {
@@ -105,7 +102,7 @@ class FixColumns
     }
 
     /**
-     * @param  int  $height  px
+     * @param int $height px
      * @return $this
      */
     public function height(int $height)
@@ -158,6 +155,78 @@ class FixColumns
             ->map(function ($name) {
                 return $this->grid->allColumns()->get($name);
             });
+    }
+
+    /**
+     * @return $this
+     */
+    protected function addStyle()
+    {
+        $style = <<<'CSS'
+.tables-container {
+    position:relative;
+    margin-top: 12px;
+}
+
+.tables-container table {
+    margin-bottom: 0 !important;
+}
+
+.tables-container table th, .tables-container table td {
+    white-space:nowrap;
+}
+
+.table-wrap table tr .active {
+    background: #f5f5f5;
+}
+
+.table-main {
+    overflow: auto;
+    width: 100%;
+}
+
+.table-fixed {
+    position:absolute;
+	top: 0;
+	z-index:10;
+	overflow: hidden;
+}
+
+.table-fixed th {
+    background: #eff3f8;
+}
+
+.table-fixed-left {
+	left:0;
+}
+
+.table-fixed-right {
+	right:0;
+}
+
+.table-fixed-left {
+    box-shadow: 5px 0 5px -5px rgba(0,0,0,.1);
+}
+
+.table-fixed-right {
+    box-shadow: -5px 0 5px -5px rgba(0,0,0,.1);
+}
+
+.tables-container .table.table-bordered.dataTable.complex-headers {
+    margin-top: 0!important;
+}
+
+body.dark-mode .table-fixed-left .table {
+     padding: 0 0 0 1rem;
+}
+body.dark-mode .table-fixed-right .table {
+     padding: 0 1rem 0 0;
+}
+CSS;
+
+        Admin::style($style);
+
+        return $this;
     }
 
     /**
@@ -229,78 +298,6 @@ class FixColumns
 JS;
 
         Admin::script($script, true);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    protected function addStyle()
-    {
-        $style = <<<'CSS'
-.tables-container {
-    position:relative;
-    margin-top: 12px;
-}
-
-.tables-container table {
-    margin-bottom: 0 !important;
-}
-
-.tables-container table th, .tables-container table td {
-    white-space:nowrap;
-}
-
-.table-wrap table tr .active {
-    background: #f5f5f5;
-}
-
-.table-main {
-    overflow: auto;
-    width: 100%;
-}
-
-.table-fixed {
-    position:absolute;
-	top: 0;
-	z-index:10;
-	overflow: hidden;
-}
-
-.table-fixed th {
-    background: #eff3f8;
-}
-
-.table-fixed-left {
-	left:0;
-}
-
-.table-fixed-right {
-	right:0;
-}
-
-.table-fixed-left {
-    box-shadow: 5px 0 5px -5px rgba(0,0,0,.1);
-}
-
-.table-fixed-right {
-    box-shadow: -5px 0 5px -5px rgba(0,0,0,.1);
-}
-
-.tables-container .table.table-bordered.dataTable.complex-headers {
-    margin-top: 0!important;
-}
-
-body.dark-mode .table-fixed-left .table {
-     padding: 0 0 0 1rem;
-}
-body.dark-mode .table-fixed-right .table {
-     padding: 0 1rem 0 0;
-}
-CSS;
-
-        Admin::style($style);
 
         return $this;
     }

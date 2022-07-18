@@ -6,8 +6,8 @@ use PhpParser\Error;
 use PhpParser\ErrorHandler;
 use PhpParser\Lexer;
 use PhpParser\Lexer\TokenEmulator\AttributeEmulator;
-use PhpParser\Lexer\TokenEmulator\EnumTokenEmulator;
 use PhpParser\Lexer\TokenEmulator\CoaleseEqualTokenEmulator;
+use PhpParser\Lexer\TokenEmulator\EnumTokenEmulator;
 use PhpParser\Lexer\TokenEmulator\ExplicitOctalEmulator;
 use PhpParser\Lexer\TokenEmulator\FlexibleDocStringEmulator;
 use PhpParser\Lexer\TokenEmulator\FnTokenEmulator;
@@ -71,8 +71,21 @@ class Emulative extends Lexer
         }
     }
 
-    public function startLexing(string $code, ErrorHandler $errorHandler = null) {
-        $emulators = array_filter($this->emulators, function($emulator) use($code) {
+    private function isForwardEmulationNeeded(string $emulatorPhpVersion): bool
+    {
+        return version_compare(\PHP_VERSION, $emulatorPhpVersion, '<')
+            && version_compare($this->targetPhpVersion, $emulatorPhpVersion, '>=');
+    }
+
+    private function isReverseEmulationNeeded(string $emulatorPhpVersion): bool
+    {
+        return version_compare(\PHP_VERSION, $emulatorPhpVersion, '>=')
+            && version_compare($this->targetPhpVersion, $emulatorPhpVersion, '<');
+    }
+
+    public function startLexing(string $code, ErrorHandler $errorHandler = null)
+    {
+        $emulators = array_filter($this->emulators, function ($emulator) use ($code) {
             return $emulator->isEmulationNeeded($code);
         });
 
@@ -105,21 +118,11 @@ class Emulative extends Lexer
         }
     }
 
-    private function isForwardEmulationNeeded(string $emulatorPhpVersion): bool {
-        return version_compare(\PHP_VERSION, $emulatorPhpVersion, '<')
-            && version_compare($this->targetPhpVersion, $emulatorPhpVersion, '>=');
-    }
-
-    private function isReverseEmulationNeeded(string $emulatorPhpVersion): bool {
-        return version_compare(\PHP_VERSION, $emulatorPhpVersion, '>=')
-            && version_compare($this->targetPhpVersion, $emulatorPhpVersion, '<');
-    }
-
     private function sortPatches()
     {
         // Patches may be contributed by different emulators.
         // Make sure they are sorted by increasing patch position.
-        usort($this->patches, function($p1, $p2) {
+        usort($this->patches, function ($p1, $p2) {
             return $p1[0] <=> $p2[0];
         });
     }
@@ -216,7 +219,8 @@ class Emulative extends Lexer
      *
      * @param Error[] $errors
      */
-    private function fixupErrors(array $errors) {
+    private function fixupErrors(array $errors)
+    {
         foreach ($errors as $error) {
             $attrs = $error->getAttributes();
 

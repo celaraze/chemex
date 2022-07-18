@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Types;
 
 use Doctrine\DBAL\Exception;
 use Throwable;
-
 use function func_get_arg;
 use function func_num_args;
 use function get_class;
@@ -27,7 +26,7 @@ class ConversionException extends Exception
     /**
      * Thrown when a Database to Doctrine Type Conversion fails.
      *
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $toType
      *
      * @return ConversionException
@@ -43,7 +42,7 @@ class ConversionException extends Exception
      * Thrown when a Database to Doctrine Type Conversion fails and we can make a statement
      * about the expected format.
      *
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $toType
      * @param string $expectedFormat
      *
@@ -64,8 +63,8 @@ class ConversionException extends Exception
     /**
      * Thrown when the PHP value passed to the converter was not of the expected type.
      *
-     * @param mixed    $value
-     * @param string   $toType
+     * @param mixed $value
+     * @param string $toType
      * @param string[] $possibleTypes
      *
      * @return ConversionException
@@ -75,7 +74,8 @@ class ConversionException extends Exception
         $toType,
         array $possibleTypes,
         ?Throwable $previous = null
-    ) {
+    )
+    {
         if (is_scalar($value) || $value === null) {
             return new self(sprintf(
                 'Could not convert PHP value %s to type %s. Expected one of the following types: %s',
@@ -94,7 +94,7 @@ class ConversionException extends Exception
     }
 
     /**
-     * @param mixed  $value
+     * @param mixed $value
      * @param string $format
      * @param string $error
      *

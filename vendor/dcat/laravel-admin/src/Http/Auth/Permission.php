@@ -6,7 +6,6 @@ use Dcat\Admin\Admin;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Support\Helper;
 use Illuminate\Contracts\Support\Arrayable;
-use Symfony\Component\HttpFoundation\Response;
 
 class Permission
 {
@@ -15,7 +14,7 @@ class Permission
     /**
      * Check permission.
      *
-     * @param  string|array|Arrayable  $permission
+     * @param string|array|Arrayable $permission
      * @return true|void
      */
     public static function check($permission)
@@ -38,47 +37,15 @@ class Permission
     }
 
     /**
-     * Roles allowed to access.
+     * If current user is administrator.
      *
-     * @param  string|array|Arrayable  $roles
-     * @return true|void
+     * @return mixed
      */
-    public static function allow($roles)
+    public static function isAdministrator()
     {
-        if (static::isAdministrator()) {
-            return true;
-        }
+        $roleModel = config('admin.database.roles_model');
 
-        if (! Admin::user()->inRoles($roles)) {
-            static::error();
-        }
-    }
-
-    /**
-     * Don't check permission.
-     *
-     * @return bool
-     */
-    public static function free()
-    {
-        return true;
-    }
-
-    /**
-     * Roles denied to access.
-     *
-     * @param  string|array|Arrayable  $roles
-     * @return true|void
-     */
-    public static function deny($roles)
-    {
-        if (static::isAdministrator()) {
-            return true;
-        }
-
-        if (Admin::user()->inRoles($roles)) {
-            static::error();
-        }
+        return !config('admin.permission.enable') || Admin::user()->isRole($roleModel::ADMINISTRATOR);
     }
 
     /**
@@ -102,19 +69,51 @@ class Permission
     }
 
     /**
-     * If current user is administrator.
+     * Roles allowed to access.
      *
-     * @return mixed
+     * @param string|array|Arrayable $roles
+     * @return true|void
      */
-    public static function isAdministrator()
+    public static function allow($roles)
     {
-        $roleModel = config('admin.database.roles_model');
+        if (static::isAdministrator()) {
+            return true;
+        }
 
-        return ! config('admin.permission.enable') || Admin::user()->isRole($roleModel::ADMINISTRATOR);
+        if (!Admin::user()->inRoles($roles)) {
+            static::error();
+        }
     }
 
     /**
-     * @param  \Closure  $callback
+     * Don't check permission.
+     *
+     * @return bool
+     */
+    public static function free()
+    {
+        return true;
+    }
+
+    /**
+     * Roles denied to access.
+     *
+     * @param string|array|Arrayable $roles
+     * @return true|void
+     */
+    public static function deny($roles)
+    {
+        if (static::isAdministrator()) {
+            return true;
+        }
+
+        if (Admin::user()->inRoles($roles)) {
+            static::error();
+        }
+    }
+
+    /**
+     * @param \Closure $callback
      * @return void
      */
     public static function registerErrorHandler(\Closure $callback)

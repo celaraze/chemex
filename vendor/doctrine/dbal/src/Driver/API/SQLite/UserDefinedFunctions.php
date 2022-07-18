@@ -27,7 +27,7 @@ final class UserDefinedFunctions
      *
      * @param string $str
      * @param string $substr
-     * @param int    $offset
+     * @param int $offset
      */
     public static function locate($str, $substr, $offset = 0): int
     {

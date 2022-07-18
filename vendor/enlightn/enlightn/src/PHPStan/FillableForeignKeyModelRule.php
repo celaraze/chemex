@@ -28,18 +28,18 @@ class FillableForeignKeyModelRule implements Rule
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier
+        if (!$node->name instanceof Node\Identifier
             || $node->name->toString() !== 'fillable') {
             // We are only looking for the fillable property declaration.
             return [];
         }
 
-        if (! is_subclass_of($modelClass = $scope->getClassReflection()->getName(), Model::class)) {
+        if (!is_subclass_of($modelClass = $scope->getClassReflection()->getName(), Model::class)) {
             // We are only looking for Model classes.
             return [];
         }
 
-        if (! $node->default instanceof Node\Expr\Array_) {
+        if (!$node->default instanceof Node\Expr\Array_) {
             return [];
         }
 

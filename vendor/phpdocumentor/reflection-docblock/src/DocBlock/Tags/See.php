@@ -23,7 +23,6 @@ use phpDocumentor\Reflection\FqsenResolver;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Utils;
 use Webmozart\Assert\Assert;
-
 use function array_key_exists;
 use function explode;
 use function preg_match;
@@ -44,16 +43,17 @@ final class See extends BaseTag implements Factory\StaticMethod
      */
     public function __construct(Reference $refers, ?Description $description = null)
     {
-        $this->refers      = $refers;
+        $this->refers = $refers;
         $this->description = $description;
     }
 
     public static function create(
-        string $body,
-        ?FqsenResolver $typeResolver = null,
+        string              $body,
+        ?FqsenResolver      $typeResolver = null,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::notNull($descriptionFactory);
 
         $parts = Utils::pregSplit('/\s+/Su', $body, 2);
@@ -99,7 +99,7 @@ final class See extends BaseTag implements Factory\StaticMethod
             $description = '';
         }
 
-        $refers = (string) $this->refers;
+        $refers = (string)$this->refers;
 
         return $refers . ($description !== '' ? ($refers !== '' ? ' ' : '') . $description : '');
     }

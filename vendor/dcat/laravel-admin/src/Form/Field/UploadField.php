@@ -77,44 +77,108 @@ trait UploadField
     protected $saveFullUrl = false;
 
     /**
-     * Initialize the storage instance.
+     * Indicates if the underlying field is retainable.
      *
-     * @return void.
+     * @param bool $retainable
+     * @return $this
      */
-    protected function initStorage()
+    public function retainable(bool $retainable = true)
     {
-        $this->disk(config('admin.upload.disk'));
+        $this->retainable = $retainable;
 
-        if (! $this->storage) {
-            $this->storage = false;
-        }
+        return $this;
+    }
+
+    public function saveFullUrl(bool $value = true)
+    {
+        $this->saveFullUrl = $value;
+
+        return $this;
     }
 
     /**
-     * If name already exists, rename it.
+     * Upload File.
      *
-     * @param $file
-     * @return void
+     * @param UploadedFile $file
+     * @return Response
      */
-    public function renameIfExists(UploadedFile $file)
+    public function upload(UploadedFile $file)
     {
-        if ($this->getStorage()->exists("{$this->getDirectory()}/$this->name")) {
-            $this->name = $this->generateUniqueName($file);
+        $request = request();
+
+        $id = $request->get('_id');
+
+        if (!$id) {
+            return $this->responseErrorMessage('Missing id');
         }
+
+        if ($errors = $this->getValidationErrors($file)) {
+            return $this->responseValidationMessage($errors);
+        }
+
+        $this->name = $this->getStoreName($file);
+
+        if ($this->options['override']) {
+            $this->remove();
+        }
+
+        $this->renameIfExists($file);
+
+        $this->prepareFile($file);
+
+        if (!is_null($this->storagePermission)) {
+            $result = $this->getStorage()->putFileAs($this->getDirectory(), $file, $this->name, $this->storagePermission);
+        } else {
+            $result = $this->getStorage()->putFileAs($this->getDirectory(), $file, $this->name);
+        }
+
+        if ($result) {
+            $path = $this->getUploadPath();
+            $url = $this->objectUrl($path);
+
+            // 上传成功
+            return $this->responseUploaded($this->saveFullUrl ? $url : $path, $url);
+        }
+
+        // 上传失败
+        throw new UploadException(trans('admin.uploader.upload_failed'));
     }
 
     /**
-     * @return string
+     * @param UploadedFile $file
+     * @return bool|\Illuminate\Support\MessageBag
      */
-    protected function getUploadPath()
+    protected function getValidationErrors(UploadedFile $file)
     {
-        return "{$this->getDirectory()}/$this->name";
+        $data = $rules = $attributes = [];
+
+        // 如果文件上传有错误，则直接返回错误信息
+        if ($file->getError() !== UPLOAD_ERR_OK) {
+            return $file->getErrorMessage();
+        }
+
+        if (!$fieldRules = $this->getRules()) {
+            return false;
+        }
+
+        Arr::set($rules, $this->column, $fieldRules);
+        Arr::set($attributes, $this->column, $this->label);
+        Arr::set($data, $this->column, $file);
+
+        /* @var \Illuminate\Validation\Validator $validator */
+        $validator = Validator::make($data, $rules, $this->validationMessages, $attributes);
+
+        if (!$validator->passes()) {
+            $errors = $validator->errors()->getMessages()[$this->column];
+
+            return implode('<br> ', $errors);
+        }
     }
 
     /**
      * Get store name of upload file.
      *
-     * @param  UploadedFile  $file
+     * @param UploadedFile $file
      * @return string
      */
     protected function getStoreName(UploadedFile $file)
@@ -139,6 +203,94 @@ trait UploadField
     }
 
     /**
+     * Generate a unique name for uploaded file.
+     *
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function generateUniqueName(UploadedFile $file)
+    {
+        return md5(uniqid()) . '.' . $file->getClientOriginalExtension();
+    }
+
+    /**
+     * Generate a sequence name for uploaded file.
+     *
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function generateSequenceName(UploadedFile $file)
+    {
+        $index = 1;
+        $extension = $file->getClientOriginalExtension();
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $newName = $originalName . '_' . $index . '.' . $extension;
+
+        while ($this->getStorage()->exists("{$this->getDirectory()}/$newName")) {
+            $index++;
+            $newName = $originalName . '_' . $index . '.' . $extension;
+        }
+
+        return $newName;
+    }
+
+    /**
+     * Get storage instance.
+     *
+     * @return \Illuminate\Filesystem\Filesystem|null
+     */
+    public function getStorage()
+    {
+        if ($this->storage === null) {
+            $this->initStorage();
+        }
+
+        return $this->storage;
+    }
+
+    /**
+     * Initialize the storage instance.
+     *
+     * @return void.
+     */
+    protected function initStorage()
+    {
+        $this->disk(config('admin.upload.disk'));
+
+        if (!$this->storage) {
+            $this->storage = false;
+        }
+    }
+
+    /**
+     * Set disk for storage.
+     *
+     * @param string $disk Disks defined in `config/filesystems.php`.
+     * @return $this
+     *
+     * @throws \Exception
+     */
+    public function disk($disk)
+    {
+        try {
+            $this->storage = Storage::disk($disk);
+        } catch (\Exception $exception) {
+            if (!array_key_exists($disk, config('filesystems.disks'))) {
+                admin_error(
+                    'Config error.',
+                    "Disk [$disk] not configured, please add a disk config in `config/filesystems.php`."
+                );
+
+                return $this;
+            }
+
+            throw $exception;
+        }
+
+        return $this;
+    }
+
+    /**
      * Get directory for store file.
      *
      * @return mixed|string
@@ -152,74 +304,6 @@ trait UploadField
         return $this->directory ?: $this->defaultDirectory();
     }
 
-    /**
-     * Indicates if the underlying field is retainable.
-     *
-     * @param  bool  $retainable
-     * @return $this
-     */
-    public function retainable(bool $retainable = true)
-    {
-        $this->retainable = $retainable;
-
-        return $this;
-    }
-
-    public function saveFullUrl(bool $value = true)
-    {
-        $this->saveFullUrl = $value;
-
-        return $this;
-    }
-
-    /**
-     * Upload File.
-     *
-     * @param  UploadedFile  $file
-     * @return Response
-     */
-    public function upload(UploadedFile $file)
-    {
-        $request = request();
-
-        $id = $request->get('_id');
-
-        if (! $id) {
-            return $this->responseErrorMessage('Missing id');
-        }
-
-        if ($errors = $this->getValidationErrors($file)) {
-            return $this->responseValidationMessage($errors);
-        }
-
-        $this->name = $this->getStoreName($file);
-
-        if ($this->options['override']) {
-            $this->remove();
-        }
-
-        $this->renameIfExists($file);
-
-        $this->prepareFile($file);
-
-        if (! is_null($this->storagePermission)) {
-            $result = $this->getStorage()->putFileAs($this->getDirectory(), $file, $this->name, $this->storagePermission);
-        } else {
-            $result = $this->getStorage()->putFileAs($this->getDirectory(), $file, $this->name);
-        }
-
-        if ($result) {
-            $path = $this->getUploadPath();
-            $url = $this->objectUrl($path);
-
-            // 上传成功
-            return $this->responseUploaded($this->saveFullUrl ? $url : $path, $url);
-        }
-
-        // 上传失败
-        throw new UploadException(trans('admin.uploader.upload_failed'));
-    }
-
     public function remove()
     {
         if ($this->getStorage()->exists("{$this->getDirectory()}/$this->name")) {
@@ -228,17 +312,53 @@ trait UploadField
     }
 
     /**
-     * @param  UploadedFile  $file
+     * If name already exists, rename it.
+     *
+     * @param $file
+     * @return void
+     */
+    public function renameIfExists(UploadedFile $file)
+    {
+        if ($this->getStorage()->exists("{$this->getDirectory()}/$this->name")) {
+            $this->name = $this->generateUniqueName($file);
+        }
+    }
+
+    /**
+     * @param UploadedFile $file
      */
     protected function prepareFile(UploadedFile $file)
     {
     }
 
     /**
+     * @return string
+     */
+    protected function getUploadPath()
+    {
+        return "{$this->getDirectory()}/$this->name";
+    }
+
+    /**
+     * Get file visit url.
+     *
+     * @param string $path
+     * @return string
+     */
+    public function objectUrl($path)
+    {
+        if (URL::isValidUrl($path)) {
+            return $path;
+        }
+
+        return $this->getStorage()->url($path);
+    }
+
+    /**
      * Specify the directory and name for upload file.
      *
-     * @param  string|\Closure  $directory
-     * @param  null|string  $name
+     * @param string|\Closure $directory
+     * @param null|string $name
      * @return $this
      */
     public function move($directory, $name = null)
@@ -253,7 +373,7 @@ trait UploadField
     /**
      * Specify the directory upload file.
      *
-     * @param  string|\Closure  $dir
+     * @param string|\Closure $dir
      * @return $this
      */
     public function dir($dir)
@@ -268,7 +388,7 @@ trait UploadField
     /**
      * Set name of store name.
      *
-     * @param  string|callable  $name
+     * @param string|callable $name
      * @return $this
      */
     public function name($name)
@@ -305,66 +425,20 @@ trait UploadField
     }
 
     /**
-     * Generate a unique name for uploaded file.
+     * Destroy original files.
      *
-     * @param  UploadedFile  $file
-     * @return string
+     * @param $file
      */
-    protected function generateUniqueName(UploadedFile $file)
+    public function destroyIfChanged($file)
     {
-        return md5(uniqid()).'.'.$file->getClientOriginalExtension();
-    }
-
-    /**
-     * Generate a sequence name for uploaded file.
-     *
-     * @param  UploadedFile  $file
-     * @return string
-     */
-    protected function generateSequenceName(UploadedFile $file)
-    {
-        $index = 1;
-        $extension = $file->getClientOriginalExtension();
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $newName = $originalName.'_'.$index.'.'.$extension;
-
-        while ($this->getStorage()->exists("{$this->getDirectory()}/$newName")) {
-            $index++;
-            $newName = $originalName.'_'.$index.'.'.$extension;
+        if (!$file || !$this->original) {
+            return $this->destroy();
         }
 
-        return $newName;
-    }
+        $file = array_filter((array)$file);
+        $original = (array)$this->original;
 
-    /**
-     * @param  UploadedFile  $file
-     * @return bool|\Illuminate\Support\MessageBag
-     */
-    protected function getValidationErrors(UploadedFile $file)
-    {
-        $data = $rules = $attributes = [];
-
-        // 如果文件上传有错误，则直接返回错误信息
-        if ($file->getError() !== UPLOAD_ERR_OK) {
-            return $file->getErrorMessage();
-        }
-
-        if (! $fieldRules = $this->getRules()) {
-            return false;
-        }
-
-        Arr::set($rules, $this->column, $fieldRules);
-        Arr::set($attributes, $this->column, $this->label);
-        Arr::set($data, $this->column, $file);
-
-        /* @var \Illuminate\Validation\Validator $validator */
-        $validator = Validator::make($data, $rules, $this->validationMessages, $attributes);
-
-        if (! $validator->passes()) {
-            $errors = $validator->errors()->getMessages()[$this->column];
-
-            return implode('<br> ', $errors);
-        }
+        $this->deleteFile(Arr::except(array_combine($original, $original), $file));
     }
 
     /**
@@ -378,30 +452,13 @@ trait UploadField
     }
 
     /**
-     * Destroy original files.
-     *
-     * @param $file
-     */
-    public function destroyIfChanged($file)
-    {
-        if (! $file || ! $this->original) {
-            return $this->destroy();
-        }
-
-        $file = array_filter((array) $file);
-        $original = (array) $this->original;
-
-        $this->deleteFile(Arr::except(array_combine($original, $original), $file));
-    }
-
-    /**
      * Destroy files.
      *
-     * @param  string|array  $path
+     * @param string|array $path
      */
     public function deleteFile($paths)
     {
-        if (! $paths || $this->retainable) {
+        if (!$paths || $this->retainable) {
             return;
         }
 
@@ -411,7 +468,7 @@ trait UploadField
 
         $storage = $this->getStorage();
 
-        foreach ((array) $paths as $path) {
+        foreach ((array)$paths as $path) {
             if ($storage->exists($path)) {
                 $storage->delete($path);
             } else {
@@ -423,63 +480,6 @@ trait UploadField
                 }
             }
         }
-    }
-
-    /**
-     * Get storage instance.
-     *
-     * @return \Illuminate\Filesystem\Filesystem|null
-     */
-    public function getStorage()
-    {
-        if ($this->storage === null) {
-            $this->initStorage();
-        }
-
-        return $this->storage;
-    }
-
-    /**
-     * Set disk for storage.
-     *
-     * @param  string  $disk  Disks defined in `config/filesystems.php`.
-     * @return $this
-     *
-     * @throws \Exception
-     */
-    public function disk($disk)
-    {
-        try {
-            $this->storage = Storage::disk($disk);
-        } catch (\Exception $exception) {
-            if (! array_key_exists($disk, config('filesystems.disks'))) {
-                admin_error(
-                    'Config error.',
-                    "Disk [$disk] not configured, please add a disk config in `config/filesystems.php`."
-                );
-
-                return $this;
-            }
-
-            throw $exception;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get file visit url.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function objectUrl($path)
-    {
-        if (URL::isValidUrl($path)) {
-            return $path;
-        }
-
-        return $this->getStorage()->url($path);
     }
 
     /**

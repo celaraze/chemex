@@ -50,6 +50,13 @@ class XliffLintCommand extends Command
         $this->requireStrictFileNames = $requireStrictFileNames;
     }
 
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestOptionValuesFor('format')) {
+            $suggestions->suggestValues(['txt', 'json', 'github']);
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -76,14 +83,13 @@ Or of a whole directory:
   <info>php %command.full_name% dirname --format=json</info>
 
 EOF
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $filenames = (array) $input->getArgument('filename');
+        $filenames = (array)$input->getArgument('filename');
         $this->format = $input->getOption('format') ?? (GithubActionReporter::isGithubActionEnvironment() ? 'github' : 'txt');
         $this->displayCorrectFiles = $output->isVerbose();
 
@@ -107,6 +113,64 @@ EOF
         }
 
         return $this->display($io, $filesInfo);
+    }
+
+    private function display(SymfonyStyle $io, array $files)
+    {
+        return match ($this->format) {
+            'txt' => $this->displayTxt($io, $files),
+            'json' => $this->displayJson($io, $files),
+            'github' => $this->displayTxt($io, $files, true),
+            default => throw new InvalidArgumentException(sprintf('The format "%s" is not supported.', $this->format)),
+        };
+    }
+
+    private function displayTxt(SymfonyStyle $io, array $filesInfo, bool $errorAsGithubAnnotations = false)
+    {
+        $countFiles = \count($filesInfo);
+        $erroredFiles = 0;
+        $githubReporter = $errorAsGithubAnnotations ? new GithubActionReporter($io) : null;
+
+        foreach ($filesInfo as $info) {
+            if ($info['valid'] && $this->displayCorrectFiles) {
+                $io->comment('<info>OK</info>' . ($info['file'] ? sprintf(' in %s', $info['file']) : ''));
+            } elseif (!$info['valid']) {
+                ++$erroredFiles;
+                $io->text('<error> ERROR </error>' . ($info['file'] ? sprintf(' in %s', $info['file']) : ''));
+                $io->listing(array_map(function ($error) use ($info, $githubReporter) {
+                    // general document errors have a '-1' line number
+                    $line = -1 === $error['line'] ? null : $error['line'];
+
+                    $githubReporter?->error($error['message'], $info['file'], $line, null !== $line ? $error['column'] : null);
+
+                    return null === $line ? $error['message'] : sprintf('Line %d, Column %d: %s', $line, $error['column'], $error['message']);
+                }, $info['messages']));
+            }
+        }
+
+        if (0 === $erroredFiles) {
+            $io->success(sprintf('All %d XLIFF files contain valid syntax.', $countFiles));
+        } else {
+            $io->warning(sprintf('%d XLIFF files have valid syntax and %d contain errors.', $countFiles - $erroredFiles, $erroredFiles));
+        }
+
+        return min($erroredFiles, 1);
+    }
+
+    private function displayJson(SymfonyStyle $io, array $filesInfo)
+    {
+        $errors = 0;
+
+        array_walk($filesInfo, function (&$v) use (&$errors) {
+            $v['file'] = (string)$v['file'];
+            if (!$v['valid']) {
+                ++$errors;
+            }
+        });
+
+        $io->writeln(json_encode($filesInfo, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES));
+
+        return min($errors, 1);
     }
 
     private function validate(string $content, string $file = null): array
@@ -154,62 +218,28 @@ EOF
         return ['file' => $file, 'valid' => 0 === \count($errors), 'messages' => $errors];
     }
 
-    private function display(SymfonyStyle $io, array $files)
+    private function getTargetLanguageFromFile(\DOMDocument $xliffContents): ?string
     {
-        return match ($this->format) {
-            'txt' => $this->displayTxt($io, $files),
-            'json' => $this->displayJson($io, $files),
-            'github' => $this->displayTxt($io, $files, true),
-            default => throw new InvalidArgumentException(sprintf('The format "%s" is not supported.', $this->format)),
+        foreach ($xliffContents->getElementsByTagName('file')[0]->attributes ?? [] as $attribute) {
+            if ('target-language' === $attribute->nodeName) {
+                return $attribute->nodeValue;
+            }
+        }
+
+        return null;
+    }
+
+    private function isReadable(string $fileOrDirectory)
+    {
+        $default = function ($fileOrDirectory) {
+            return is_readable($fileOrDirectory);
         };
-    }
 
-    private function displayTxt(SymfonyStyle $io, array $filesInfo, bool $errorAsGithubAnnotations = false)
-    {
-        $countFiles = \count($filesInfo);
-        $erroredFiles = 0;
-        $githubReporter = $errorAsGithubAnnotations ? new GithubActionReporter($io) : null;
-
-        foreach ($filesInfo as $info) {
-            if ($info['valid'] && $this->displayCorrectFiles) {
-                $io->comment('<info>OK</info>'.($info['file'] ? sprintf(' in %s', $info['file']) : ''));
-            } elseif (!$info['valid']) {
-                ++$erroredFiles;
-                $io->text('<error> ERROR </error>'.($info['file'] ? sprintf(' in %s', $info['file']) : ''));
-                $io->listing(array_map(function ($error) use ($info, $githubReporter) {
-                    // general document errors have a '-1' line number
-                    $line = -1 === $error['line'] ? null : $error['line'];
-
-                    $githubReporter?->error($error['message'], $info['file'], $line, null !== $line ? $error['column'] : null);
-
-                    return null === $line ? $error['message'] : sprintf('Line %d, Column %d: %s', $line, $error['column'], $error['message']);
-                }, $info['messages']));
-            }
+        if (null !== $this->isReadableProvider) {
+            return ($this->isReadableProvider)($fileOrDirectory, $default);
         }
 
-        if (0 === $erroredFiles) {
-            $io->success(sprintf('All %d XLIFF files contain valid syntax.', $countFiles));
-        } else {
-            $io->warning(sprintf('%d XLIFF files have valid syntax and %d contain errors.', $countFiles - $erroredFiles, $erroredFiles));
-        }
-
-        return min($erroredFiles, 1);
-    }
-
-    private function displayJson(SymfonyStyle $io, array $filesInfo)
-    {
-        $errors = 0;
-
-        array_walk($filesInfo, function (&$v) use (&$errors) {
-            $v['file'] = (string) $v['file'];
-            if (!$v['valid']) {
-                ++$errors;
-            }
-        });
-
-        $io->writeln(json_encode($filesInfo, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES));
-
-        return min($errors, 1);
+        return $default($fileOrDirectory);
     }
 
     private function getFiles(string $fileOrDirectory)
@@ -243,36 +273,5 @@ EOF
         }
 
         return $default($directory);
-    }
-
-    private function isReadable(string $fileOrDirectory)
-    {
-        $default = function ($fileOrDirectory) {
-            return is_readable($fileOrDirectory);
-        };
-
-        if (null !== $this->isReadableProvider) {
-            return ($this->isReadableProvider)($fileOrDirectory, $default);
-        }
-
-        return $default($fileOrDirectory);
-    }
-
-    private function getTargetLanguageFromFile(\DOMDocument $xliffContents): ?string
-    {
-        foreach ($xliffContents->getElementsByTagName('file')[0]->attributes ?? [] as $attribute) {
-            if ('target-language' === $attribute->nodeName) {
-                return $attribute->nodeValue;
-            }
-        }
-
-        return null;
-    }
-
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        if ($input->mustSuggestOptionValuesFor('format')) {
-            $suggestions->suggestValues(['txt', 'json', 'github']);
-        }
     }
 }

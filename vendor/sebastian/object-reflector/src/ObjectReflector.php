@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\ObjectReflector;
 
 use function count;
@@ -28,10 +29,10 @@ class ObjectReflector
         }
 
         $attributes = [];
-        $className  = get_class($object);
+        $className = get_class($object);
 
-        foreach ((array) $object as $name => $value) {
-            $name = explode("\0", (string) $name);
+        foreach ((array)$object as $name => $value) {
+            $name = explode("\0", (string)$name);
 
             if (count($name) === 1) {
                 $name = $name[0];

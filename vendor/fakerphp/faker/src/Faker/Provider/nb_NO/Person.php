@@ -289,7 +289,7 @@ class Person extends \Faker\Provider\Person
      * @see https://no.wikipedia.org/wiki/Personnummer
      *
      * @param \DateTime $birthdate
-     * @param string    $gender    Person::GENDER_MALE || Person::GENDER_FEMALE
+     * @param string $gender Person::GENDER_MALE || Person::GENDER_FEMALE
      *
      * @return string on format DDMMYY#####
      */
@@ -305,7 +305,7 @@ class Person extends \Faker\Provider\Person
          *
          * @see http://no.wikipedia.org/wiki/F%C3%B8dselsnummer
          */
-        $randomDigits = (string) static::numerify('##');
+        $randomDigits = (string)static::numerify('##');
 
         switch ($gender) {
             case static::GENDER_MALE:
@@ -319,7 +319,7 @@ class Person extends \Faker\Provider\Person
                 break;
 
             default:
-                $genderDigit = (string) static::numerify('#');
+                $genderDigit = (string)static::numerify('#');
         }
 
         $digits = $datePart . $randomDigits . $genderDigit;
@@ -329,7 +329,7 @@ class Person extends \Faker\Provider\Person
          *
          * @see http://no.wikipedia.org/wiki/F%C3%B8dselsnummer
          */
-        $checksum = (string) static::numerify('##');
+        $checksum = (string)static::numerify('##');
 
         return $digits . $checksum;
     }

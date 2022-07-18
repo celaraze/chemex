@@ -18,8 +18,25 @@ abstract class FunctionLike extends Declaration
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function makeReturnByRef() {
+    public function makeReturnByRef()
+    {
         $this->returnByRef = true;
+
+        return $this;
+    }
+
+    /**
+     * Adds multiple parameters.
+     *
+     * @param array $params The parameters to add
+     *
+     * @return $this The builder instance (for fluid interface)
+     */
+    public function addParams(array $params)
+    {
+        foreach ($params as $param) {
+            $this->addParam($param);
+        }
 
         return $this;
     }
@@ -31,7 +48,8 @@ abstract class FunctionLike extends Declaration
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function addParam($param) {
+    public function addParam($param)
+    {
         $param = BuilderHelpers::normalizeNode($param);
 
         if (!$param instanceof Node\Param) {
@@ -44,28 +62,14 @@ abstract class FunctionLike extends Declaration
     }
 
     /**
-     * Adds multiple parameters.
-     *
-     * @param array $params The parameters to add
-     *
-     * @return $this The builder instance (for fluid interface)
-     */
-    public function addParams(array $params) {
-        foreach ($params as $param) {
-            $this->addParam($param);
-        }
-
-        return $this;
-    }
-
-    /**
      * Sets the return type for PHP 7.
      *
      * @param string|Node\Name|Node\Identifier|Node\ComplexType $type
      *
      * @return $this The builder instance (for fluid interface)
      */
-    public function setReturnType($type) {
+    public function setReturnType($type)
+    {
         $this->returnType = BuilderHelpers::normalizeType($type);
 
         return $this;

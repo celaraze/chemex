@@ -11,13 +11,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class NotificationTableCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'notifications:table';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -27,7 +20,12 @@ class NotificationTableCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'notifications:table';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'notifications:table';
     /**
      * The console command description.
      *
@@ -50,8 +48,8 @@ class NotificationTableCommand extends Command
     /**
      * Create a new notifications table command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  \Illuminate\Support\Composer  $composer
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param \Illuminate\Support\Composer $composer
      * @return void
      */
     public function __construct(Filesystem $files, Composer $composer)
@@ -71,7 +69,7 @@ class NotificationTableCommand extends Command
     {
         $fullPath = $this->createBaseMigration();
 
-        $this->files->put($fullPath, $this->files->get(__DIR__.'/stubs/notifications.stub'));
+        $this->files->put($fullPath, $this->files->get(__DIR__ . '/stubs/notifications.stub'));
 
         $this->info('Migration created successfully.');
 
@@ -87,7 +85,7 @@ class NotificationTableCommand extends Command
     {
         $name = 'create_notifications_table';
 
-        $path = $this->laravel->databasePath().'/migrations';
+        $path = $this->laravel->databasePath() . '/migrations';
 
         return $this->laravel['migration.creator']->create($name, $path);
     }

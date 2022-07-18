@@ -7,15 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Driver;
 
-use function sprintf;
 use SebastianBergmann\CodeCoverage\BranchAndPathCoverageNotSupportedException;
 use SebastianBergmann\CodeCoverage\DeadCodeDetectionNotSupportedException;
 use SebastianBergmann\CodeCoverage\Filter;
 use SebastianBergmann\CodeCoverage\NoCodeCoverageDriverAvailableException;
 use SebastianBergmann\CodeCoverage\NoCodeCoverageDriverWithPathCoverageSupportAvailableException;
 use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -95,11 +96,6 @@ abstract class Driver
         return (new Selector)->forLineAndPathCoverage($filter);
     }
 
-    public function canCollectBranchAndPathCoverage(): bool
-    {
-        return false;
-    }
-
     public function collectsBranchAndPathCoverage(): bool
     {
         return $this->collectBranchAndPathCoverage;
@@ -122,14 +118,16 @@ abstract class Driver
         $this->collectBranchAndPathCoverage = true;
     }
 
+    public function canCollectBranchAndPathCoverage(): bool
+    {
+        return false;
+    }
+
+    abstract public function nameAndVersion(): string;
+
     public function disableBranchAndPathCoverage(): void
     {
         $this->collectBranchAndPathCoverage = false;
-    }
-
-    public function canDetectDeadCode(): bool
-    {
-        return false;
     }
 
     public function detectsDeadCode(): bool
@@ -154,12 +152,15 @@ abstract class Driver
         $this->detectDeadCode = true;
     }
 
+    public function canDetectDeadCode(): bool
+    {
+        return false;
+    }
+
     public function disableDeadCodeDetection(): void
     {
         $this->detectDeadCode = false;
     }
-
-    abstract public function nameAndVersion(): string;
 
     abstract public function start(): void;
 

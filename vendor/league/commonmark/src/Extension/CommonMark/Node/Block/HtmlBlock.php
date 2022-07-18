@@ -20,12 +20,12 @@ final class HtmlBlock extends AbstractBlock implements RawMarkupContainerInterfa
 {
     // Any changes to these constants should be reflected in .phpstorm.meta.php
     public const TYPE_1_CODE_CONTAINER = 1;
-    public const TYPE_2_COMMENT        = 2;
-    public const TYPE_3                = 3;
-    public const TYPE_4                = 4;
-    public const TYPE_5_CDATA          = 5;
-    public const TYPE_6_BLOCK_ELEMENT  = 6;
-    public const TYPE_7_MISC_ELEMENT   = 7;
+    public const TYPE_2_COMMENT = 2;
+    public const TYPE_3 = 3;
+    public const TYPE_4 = 4;
+    public const TYPE_5_CDATA = 5;
+    public const TYPE_6_BLOCK_ELEMENT = 6;
+    public const TYPE_7_MISC_ELEMENT = 7;
 
     /**
      * @psalm-var self::TYPE_* $type

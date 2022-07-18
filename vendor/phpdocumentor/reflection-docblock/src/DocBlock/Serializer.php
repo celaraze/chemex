@@ -16,7 +16,6 @@ namespace phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlock;
 use phpDocumentor\Reflection\DocBlock\Tags\Formatter;
 use phpDocumentor\Reflection\DocBlock\Tags\Formatter\PassthroughFormatter;
-
 use function sprintf;
 use function str_repeat;
 use function str_replace;
@@ -48,26 +47,27 @@ class Serializer
     /**
      * Create a Serializer instance.
      *
-     * @param int       $indent          The number of times the indent string is repeated.
-     * @param string    $indentString    The string to indent the comment with.
-     * @param bool      $indentFirstLine Whether to indent the first line.
-     * @param int|null  $lineLength      The max length of a line or NULL to disable line wrapping.
-     * @param Formatter $tagFormatter    A custom tag formatter, defaults to PassthroughFormatter.
-     * @param string    $lineEnding      Line ending used in the output, by default \n is used.
+     * @param int $indent The number of times the indent string is repeated.
+     * @param string $indentString The string to indent the comment with.
+     * @param bool $indentFirstLine Whether to indent the first line.
+     * @param int|null $lineLength The max length of a line or NULL to disable line wrapping.
+     * @param Formatter $tagFormatter A custom tag formatter, defaults to PassthroughFormatter.
+     * @param string $lineEnding Line ending used in the output, by default \n is used.
      */
     public function __construct(
-        int $indent = 0,
-        string $indentString = ' ',
-        bool $indentFirstLine = true,
-        ?int $lineLength = null,
+        int        $indent = 0,
+        string     $indentString = ' ',
+        bool       $indentFirstLine = true,
+        ?int       $lineLength = null,
         ?Formatter $tagFormatter = null,
-        string $lineEnding = "\n"
-    ) {
-        $this->indent              = $indent;
-        $this->indentString        = $indentString;
+        string     $lineEnding = "\n"
+    )
+    {
+        $this->indent = $indent;
+        $this->indentString = $indentString;
         $this->isFirstLineIndented = $indentFirstLine;
-        $this->lineLength          = $lineLength;
-        $this->tagFormatter        = $tagFormatter ?: new PassthroughFormatter();
+        $this->lineLength = $lineLength;
+        $this->tagFormatter = $tagFormatter ?: new PassthroughFormatter();
         $this->lineEnding = $lineEnding;
     }
 
@@ -80,7 +80,7 @@ class Serializer
      */
     public function getDocComment(DocBlock $docblock): string
     {
-        $indent      = str_repeat($this->indentString, $this->indent);
+        $indent = str_repeat($this->indentString, $this->indent);
         $firstIndent = $this->isFirstLineIndented ? $indent : '';
         // 3 === strlen(' * ')
         $wrapLength = $this->lineLength ? $this->lineLength - strlen($indent) - 3 : null;
@@ -124,7 +124,7 @@ class Serializer
 
     private function getSummaryAndDescriptionTextBlock(DocBlock $docblock, ?int $wrapLength): string
     {
-        $text = $docblock->getSummary() . ((string) $docblock->getDescription() ? "\n\n" . $docblock->getDescription()
+        $text = $docblock->getSummary() . ((string)$docblock->getDescription() ? "\n\n" . $docblock->getDescription()
                 : '');
         if ($wrapLength !== null) {
             $text = wordwrap($text, $wrapLength);

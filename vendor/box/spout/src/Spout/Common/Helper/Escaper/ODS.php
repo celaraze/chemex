@@ -25,15 +25,15 @@ class ODS implements EscaperInterface
             $replacedString = \htmlspecialchars($string, ENT_QUOTES | ENT_DISALLOWED, 'UTF-8');
         } else {
             // We are on hhvm or any other engine that does not support ENT_DISALLOWED.
-            $escapedString =  \htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+            $escapedString = \htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
 
             // control characters values are from 0 to 1F (hex values) in the ASCII table
             // some characters should not be escaped though: "\t", "\r" and "\n".
             $regexPattern = '[\x00-\x08' .
-                            // skipping "\t" (0x9) and "\n" (0xA)
-                            '\x0B-\x0C' .
-                            // skipping "\r" (0xD)
-                            '\x0E-\x1F]';
+                // skipping "\t" (0x9) and "\n" (0xA)
+                '\x0B-\x0C' .
+                // skipping "\r" (0xD)
+                '\x0E-\x1F]';
             $replacedString = \preg_replace("/$regexPattern/", '�', $escapedString);
         }
 

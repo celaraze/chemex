@@ -12,13 +12,13 @@ class Filesystem
      *
      * The directory itself may be optionally preserved.
      *
-     * @param  string  $directory
-     * @param  bool  $preserve
+     * @param string $directory
+     * @param bool $preserve
      * @return bool
      */
     public function deleteDirectory($directory, $preserve = false)
     {
-        if (! is_dir($directory)) {
+        if (!is_dir($directory)) {
             return false;
         }
 
@@ -28,7 +28,7 @@ class Filesystem
             // If the item is a directory, we can just recurse into the function and
             // delete that sub-directory otherwise we'll just delete the file and
             // keep iterating through each file until the directory is cleaned.
-            if ($item->isDir() && ! $item->isLink()) {
+            if ($item->isDir() && !$item->isLink()) {
                 $this->deleteDirectory($item->getPathname());
             }
 
@@ -40,7 +40,7 @@ class Filesystem
             }
         }
 
-        if (! $preserve) {
+        if (!$preserve) {
             @rmdir($directory);
         }
 
@@ -50,7 +50,7 @@ class Filesystem
     /**
      * Delete the file at a given path.
      *
-     * @param  string|array  $paths
+     * @param string|array $paths
      * @return bool
      */
     public function delete($paths)
@@ -61,7 +61,7 @@ class Filesystem
 
         foreach ($paths as $path) {
             try {
-                if (! @unlink($path)) {
+                if (!@unlink($path)) {
                     $success = false;
                 }
             } catch (ErrorException $e) {

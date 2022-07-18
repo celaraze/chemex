@@ -7,32 +7,29 @@ use Illuminate\Database\Query\Builder;
 class AutoloaderOptimizationAnalyzer extends PerformanceAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your application has the Composer autoloader optimization configured in production.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
 
     /**
      * Get the error message describing the analyzer insights.
@@ -42,7 +39,7 @@ class AutoloaderOptimizationAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your Composer autoloader is not optimized while your application is in a non-local environment. "
-            ."You should optimize the autoloader for improved performance.";
+            . "You should optimize the autoloader for improved performance.";
     }
 
     /**
@@ -55,7 +52,7 @@ class AutoloaderOptimizationAnalyzer extends PerformanceAnalyzer
         /** @var \Composer\Autoload\ClassLoader $loader */
         $loader = require base_path('vendor/autoload.php');
 
-        if (! $loader->isClassMapAuthoritative() && ! isset($loader->getClassMap()[Builder::class])) {
+        if (!$loader->isClassMapAuthoritative() && !isset($loader->getClassMap()[Builder::class])) {
             // We assume here that if composer autoloader isn't optimized using the --classmap-authoritative flag
             // and does not have the classmap loaded for the Builder class, then it is not optimized because
             // PSR-4 rules should be converted into classmap rules with the -o flag.

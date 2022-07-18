@@ -29,9 +29,19 @@ class Company extends \Faker\Provider\Company
     protected static $companySuffix = ['وأولاده', 'للمساهمة المحدودة', ' ذ.م.م', 'مساهمة عامة', 'وشركائه'];
 
     /**
+     * example 7001010101
+     */
+    public static function companyIdNumber()
+    {
+        $partialValue = static::numerify(700 . str_repeat('#', 6));
+
+        return Luhn::generateLuhnNumber($partialValue);
+    }
+
+    /**
+     * @return string
      * @example 'مؤسسة'
      *
-     * @return string
      */
     public function companyPrefix()
     {
@@ -64,15 +74,5 @@ class Company extends \Faker\Provider\Company
         }
 
         return implode(' ', $result);
-    }
-
-    /**
-     * example 7001010101
-     */
-    public static function companyIdNumber()
-    {
-        $partialValue = static::numerify(700 . str_repeat('#', 6));
-
-        return Luhn::generateLuhnNumber($partialValue);
     }
 }

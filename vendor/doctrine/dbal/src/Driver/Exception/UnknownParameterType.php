@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\DBAL\Driver\Exception;
 
 use Doctrine\DBAL\Driver\AbstractException;
-
 use function sprintf;
 
 /**

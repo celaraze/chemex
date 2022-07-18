@@ -39,8 +39,7 @@ class FundCommand extends BaseCommand
             ->setDescription('Discover how to help fund the maintenance of your dependencies.')
             ->setDefinition(array(
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
-            ))
-        ;
+            ));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -144,7 +143,7 @@ class FundCommand extends BaseCommand
             }
             $url = $fundingOption['url'];
             if (!empty($fundingOption['type']) && $fundingOption['type'] === 'github' && Preg::isMatch('{^https://github.com/([^/]+)$}', $url, $match)) {
-                $url = 'https://github.com/sponsors/'.$match[1];
+                $url = 'https://github.com/sponsors/' . $match[1];
             }
             $fundings[$vendor][$url][] = $packageName;
         }

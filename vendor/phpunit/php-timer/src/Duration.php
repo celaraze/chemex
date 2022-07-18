@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Timer;
 
 use function floor;
@@ -42,6 +43,23 @@ final class Duration
      */
     private $milliseconds;
 
+    private function __construct(float $nanoseconds)
+    {
+        $this->nanoseconds = $nanoseconds;
+        $timeInMilliseconds = $nanoseconds / 1000000;
+        $hours = floor($timeInMilliseconds / 60 / 60 / 1000);
+        $hoursInMilliseconds = $hours * 60 * 60 * 1000;
+        $minutes = floor($timeInMilliseconds / 60 / 1000) % 60;
+        $minutesInMilliseconds = $minutes * 60 * 1000;
+        $seconds = floor(($timeInMilliseconds - $hoursInMilliseconds - $minutesInMilliseconds) / 1000);
+        $secondsInMilliseconds = $seconds * 1000;
+        $milliseconds = $timeInMilliseconds - $hoursInMilliseconds - $minutesInMilliseconds - $secondsInMilliseconds;
+        $this->hours = (int)$hours;
+        $this->minutes = $minutes;
+        $this->seconds = (int)$seconds;
+        $this->milliseconds = (int)$milliseconds;
+    }
+
     public static function fromMicroseconds(float $microseconds): self
     {
         return new self($microseconds * 1000);
@@ -50,23 +68,6 @@ final class Duration
     public static function fromNanoseconds(float $nanoseconds): self
     {
         return new self($nanoseconds);
-    }
-
-    private function __construct(float $nanoseconds)
-    {
-        $this->nanoseconds     = $nanoseconds;
-        $timeInMilliseconds    = $nanoseconds / 1000000;
-        $hours                 = floor($timeInMilliseconds / 60 / 60 / 1000);
-        $hoursInMilliseconds   = $hours * 60 * 60 * 1000;
-        $minutes               = floor($timeInMilliseconds / 60 / 1000) % 60;
-        $minutesInMilliseconds = $minutes * 60 * 1000;
-        $seconds               = floor(($timeInMilliseconds - $hoursInMilliseconds - $minutesInMilliseconds) / 1000);
-        $secondsInMilliseconds = $seconds * 1000;
-        $milliseconds          = $timeInMilliseconds - $hoursInMilliseconds - $minutesInMilliseconds - $secondsInMilliseconds;
-        $this->hours           = (int) $hours;
-        $this->minutes         = $minutes;
-        $this->seconds         = (int) $seconds;
-        $this->milliseconds    = (int) $milliseconds;
     }
 
     public function asNanoseconds(): float

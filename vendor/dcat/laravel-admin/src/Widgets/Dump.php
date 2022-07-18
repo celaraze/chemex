@@ -21,8 +21,8 @@ class Dump extends Widget
     /**
      * Dump constructor.
      *
-     * @param  array|object|string  $content
-     * @param  string|null  $padding
+     * @param array|object|string $content
+     * @param string|null $padding
      */
     public function __construct($content, string $padding = null)
     {
@@ -46,31 +46,7 @@ class Dump extends Widget
     }
 
     /**
-     * @param  string|null  $padding
-     * @return $this
-     */
-    public function padding(?string $padding)
-    {
-        if ($padding) {
-            $this->padding = $padding;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param  string  $width
-     * @return $this
-     */
-    public function maxWidth($width)
-    {
-        $this->maxWidth = $width;
-
-        return $this;
-    }
-
-    /**
-     * @param  mixed  $content
+     * @param mixed $content
      * @return array|null
      */
     protected function convertJsonToArray($content)
@@ -90,11 +66,35 @@ class Dump extends Widget
     {
         $this->defaultHtmlAttribute(
             'style',
-            'white-space:pre-wrap;'.($this->maxWidth ? "max-width:{$this->maxWidth};" : '')
+            'white-space:pre-wrap;' . ($this->maxWidth ? "max-width:{$this->maxWidth};" : '')
         );
 
         return <<<EOF
 <div style="padding:{$this->padding}"><pre class="dump" {$this->formatHtmlAttributes()}>{$this->content}</pre></div>
 EOF;
+    }
+
+    /**
+     * @param string|null $padding
+     * @return $this
+     */
+    public function padding(?string $padding)
+    {
+        if ($padding) {
+            $this->padding = $padding;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $width
+     * @return $this
+     */
+    public function maxWidth($width)
+    {
+        $this->maxWidth = $width;
+
+        return $this;
     }
 }

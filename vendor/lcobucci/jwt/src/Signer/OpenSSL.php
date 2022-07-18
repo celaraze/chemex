@@ -5,7 +5,6 @@ namespace Lcobucci\JWT\Signer;
 
 use Lcobucci\JWT\Signer;
 use OpenSSLAsymmetricKey;
-
 use function array_key_exists;
 use function assert;
 use function is_array;
@@ -29,13 +28,14 @@ abstract class OpenSSL implements Signer
         string $pem,
         string $passphrase,
         string $payload
-    ): string {
+    ): string
+    {
         $key = $this->getPrivateKey($pem, $passphrase);
 
         try {
             $signature = '';
 
-            if (! openssl_sign($payload, $signature, $key, $this->algorithm())) {
+            if (!openssl_sign($payload, $signature, $key, $this->algorithm())) {
                 $error = openssl_error_string();
                 assert(is_string($error));
 
@@ -61,32 +61,6 @@ abstract class OpenSSL implements Signer
         return $privateKey;
     }
 
-    /** @throws InvalidKeyProvided */
-    final protected function verifySignature(
-        string $expected,
-        string $payload,
-        string $pem
-    ): bool {
-        $key    = $this->getPublicKey($pem);
-        $result = openssl_verify($payload, $expected, $key, $this->algorithm());
-        $this->freeKey($key);
-
-        return $result === 1;
-    }
-
-    /**
-     * @return resource|OpenSSLAsymmetricKey
-     *
-     * @throws InvalidKeyProvided
-     */
-    private function getPublicKey(string $pem)
-    {
-        $publicKey = openssl_pkey_get_public($pem);
-        $this->validateKey($publicKey);
-
-        return $publicKey;
-    }
-
     /**
      * Raises an exception when the key type is not the expected type
      *
@@ -106,19 +80,9 @@ abstract class OpenSSL implements Signer
         $details = openssl_pkey_get_details($key);
         assert(is_array($details));
 
-        if (! array_key_exists('key', $details) || $details['type'] !== $this->keyType()) {
+        if (!array_key_exists('key', $details) || $details['type'] !== $this->keyType()) {
             throw InvalidKeyProvided::incompatibleKey();
         }
-    }
-
-    /** @param resource|OpenSSLAsymmetricKey $key */
-    private function freeKey($key): void
-    {
-        if ($key instanceof OpenSSLAsymmetricKey) {
-            return;
-        }
-
-        openssl_free_key($key); // Deprecated and no longer necessary as of PHP >= 8.0
     }
 
     /**
@@ -134,4 +98,41 @@ abstract class OpenSSL implements Signer
      * @internal
      */
     abstract public function algorithm(): int;
+
+    /** @param resource|OpenSSLAsymmetricKey $key */
+    private function freeKey($key): void
+    {
+        if ($key instanceof OpenSSLAsymmetricKey) {
+            return;
+        }
+
+        openssl_free_key($key); // Deprecated and no longer necessary as of PHP >= 8.0
+    }
+
+    /** @throws InvalidKeyProvided */
+    final protected function verifySignature(
+        string $expected,
+        string $payload,
+        string $pem
+    ): bool
+    {
+        $key = $this->getPublicKey($pem);
+        $result = openssl_verify($payload, $expected, $key, $this->algorithm());
+        $this->freeKey($key);
+
+        return $result === 1;
+    }
+
+    /**
+     * @return resource|OpenSSLAsymmetricKey
+     *
+     * @throws InvalidKeyProvided
+     */
+    private function getPublicKey(string $pem)
+    {
+        $publicKey = openssl_pkey_get_public($pem);
+        $this->validateKey($publicKey);
+
+        return $publicKey;
+    }
 }

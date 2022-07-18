@@ -25,13 +25,13 @@ class JsonValidationException extends Exception
     protected $errors;
 
     /**
-     * @param string   $message
+     * @param string $message
      * @param string[] $errors
      */
     public function __construct(string $message, array $errors = array(), Exception $previous = null)
     {
         $this->errors = $errors;
-        parent::__construct((string) $message, 0, $previous);
+        parent::__construct((string)$message, 0, $previous);
     }
 
     /**

@@ -61,11 +61,83 @@ class BuilderHelper
         $this->checkProperties = $checkProperties;
     }
 
+    /**
+     * This method mimics the `EloquentBuilder::__call` method.
+     * Does not handle the case where $methodName exists in `EloquentBuilder`,
+     * that should be checked by caller before calling this method.
+     *
+     * @param ClassReflection $eloquentBuilder Can be `EloquentBuilder` or a custom builder extending it.
+     * @param string $methodName
+     * @param ClassReflection $model
+     * @return MethodReflection|null
+     *
+     * @throws MissingMethodFromReflectionException
+     * @throws ShouldNotHappenException
+     */
+    public function searchOnEloquentBuilder(ClassReflection $eloquentBuilder, string $methodName, ClassReflection $model): ?MethodReflection
+    {
+        // Check for local query scopes
+        if (array_key_exists('scope' . ucfirst($methodName), $model->getMethodTags())) {
+            $methodTag = $model->getMethodTags()['scope' . ucfirst($methodName)];
+
+            $parameters = [];
+            foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
+                $parameters[] = new AnnotationScopeMethodParameterReflection($parameterName, $parameterTag->getType(), $parameterTag->passedByReference(), $parameterTag->isOptional(), $parameterTag->isVariadic(), $parameterTag->getDefaultValue());
+            }
+
+            // We shift the parameters,
+            // because first parameter is the Builder
+            array_shift($parameters);
+
+            return new EloquentBuilderMethodReflection(
+                'scope' . ucfirst($methodName),
+                $model,
+                new AnnotationScopeMethodReflection('scope' . ucfirst($methodName), $model, $methodTag->getReturnType(), $parameters, $methodTag->isStatic(), false),
+                $parameters,
+                $methodTag->getReturnType()
+            );
+        }
+
+        if ($model->hasNativeMethod('scope' . ucfirst($methodName))) {
+            $methodReflection = $model->getNativeMethod('scope' . ucfirst($methodName));
+            $parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
+
+            $parameters = $parametersAcceptor->getParameters();
+            // We shift the parameters,
+            // because first parameter is the Builder
+            array_shift($parameters);
+
+            $returnType = $parametersAcceptor->getReturnType();
+
+            return new EloquentBuilderMethodReflection(
+                'scope' . ucfirst($methodName),
+                $methodReflection->getDeclaringClass(),
+                $methodReflection,
+                $parameters,
+                $returnType,
+                $parametersAcceptor->isVariadic()
+            );
+        }
+
+        $queryBuilderReflection = $this->reflectionProvider->getClass(QueryBuilder::class);
+
+        if (in_array($methodName, $this->passthru, true)) {
+            return $queryBuilderReflection->getNativeMethod($methodName);
+        }
+
+        if ($queryBuilderReflection->hasNativeMethod($methodName)) {
+            return $queryBuilderReflection->getNativeMethod($methodName);
+        }
+
+        return $this->dynamicWhere($methodName, new GenericObjectType($eloquentBuilder->getName(), [new ObjectType($model->getName())]));
+    }
+
     public function dynamicWhere(
         string $methodName,
-        Type $returnObject
-    ): ?EloquentBuilderMethodReflection {
-        if (! Str::startsWith($methodName, 'where')) {
+        Type   $returnObject
+    ): ?EloquentBuilderMethodReflection
+    {
+        if (!Str::startsWith($methodName, 'where')) {
             return null;
         }
 
@@ -95,7 +167,7 @@ class BuilderHelper
                             }
                         }
 
-                        if (! $trinaryLogic->yes()) {
+                        if (!$trinaryLogic->yes()) {
                             return null;
                         }
                     }
@@ -118,78 +190,7 @@ class BuilderHelper
     }
 
     /**
-     * This method mimics the `EloquentBuilder::__call` method.
-     * Does not handle the case where $methodName exists in `EloquentBuilder`,
-     * that should be checked by caller before calling this method.
-     *
-     * @param  ClassReflection  $eloquentBuilder  Can be `EloquentBuilder` or a custom builder extending it.
-     * @param  string  $methodName
-     * @param  ClassReflection  $model
-     * @return MethodReflection|null
-     *
-     * @throws MissingMethodFromReflectionException
-     * @throws ShouldNotHappenException
-     */
-    public function searchOnEloquentBuilder(ClassReflection $eloquentBuilder, string $methodName, ClassReflection $model): ?MethodReflection
-    {
-        // Check for local query scopes
-        if (array_key_exists('scope'.ucfirst($methodName), $model->getMethodTags())) {
-            $methodTag = $model->getMethodTags()['scope'.ucfirst($methodName)];
-
-            $parameters = [];
-            foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
-                $parameters[] = new AnnotationScopeMethodParameterReflection($parameterName, $parameterTag->getType(), $parameterTag->passedByReference(), $parameterTag->isOptional(), $parameterTag->isVariadic(), $parameterTag->getDefaultValue());
-            }
-
-            // We shift the parameters,
-            // because first parameter is the Builder
-            array_shift($parameters);
-
-            return new EloquentBuilderMethodReflection(
-                'scope'.ucfirst($methodName),
-                $model,
-                new AnnotationScopeMethodReflection('scope'.ucfirst($methodName), $model, $methodTag->getReturnType(), $parameters, $methodTag->isStatic(), false),
-                $parameters,
-                $methodTag->getReturnType()
-            );
-        }
-
-        if ($model->hasNativeMethod('scope'.ucfirst($methodName))) {
-            $methodReflection = $model->getNativeMethod('scope'.ucfirst($methodName));
-            $parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
-
-            $parameters = $parametersAcceptor->getParameters();
-            // We shift the parameters,
-            // because first parameter is the Builder
-            array_shift($parameters);
-
-            $returnType = $parametersAcceptor->getReturnType();
-
-            return new EloquentBuilderMethodReflection(
-                'scope'.ucfirst($methodName),
-                $methodReflection->getDeclaringClass(),
-                $methodReflection,
-                $parameters,
-                $returnType,
-                $parametersAcceptor->isVariadic()
-            );
-        }
-
-        $queryBuilderReflection = $this->reflectionProvider->getClass(QueryBuilder::class);
-
-        if (in_array($methodName, $this->passthru, true)) {
-            return $queryBuilderReflection->getNativeMethod($methodName);
-        }
-
-        if ($queryBuilderReflection->hasNativeMethod($methodName)) {
-            return $queryBuilderReflection->getNativeMethod($methodName);
-        }
-
-        return $this->dynamicWhere($methodName, new GenericObjectType($eloquentBuilder->getName(), [new ObjectType($model->getName())]));
-    }
-
-    /**
-     * @param  string  $modelClassName
+     * @param string $modelClassName
      * @return string
      *
      * @throws MissingMethodFromReflectionException

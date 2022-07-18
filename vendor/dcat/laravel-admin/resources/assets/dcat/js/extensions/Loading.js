@@ -1,4 +1,3 @@
-
 let tpl = '<div class="dcat-loading d-flex items-center align-items-center justify-content-center pin" style="{style}">{svg}</div>',
     loading = '.dcat-loading',
     LOADING_SVG = [
@@ -62,9 +61,9 @@ function extend(Dcat) {
 
         var win = $(window),
             // 容器
-            $container = $('<div class="dcat-loading" style="z-index:'+options.zIndex+';width:300px;position:fixed"></div>'),
+            $container = $('<div class="dcat-loading" style="z-index:' + options.zIndex + ';width:300px;position:fixed"></div>'),
             // 遮罩层直接沿用layer
-            shadow = $('<div class="layui-layer-shade dcat-loading" style="z-index:'+(options.zIndex-2)+'; background-color:'+options.shade+'"></div>');
+            shadow = $('<div class="layui-layer-shade dcat-loading" style="z-index:' + (options.zIndex - 2) + '; background-color:' + options.shade + '"></div>');
 
         $container.appendTo('body');
 
@@ -74,10 +73,11 @@ function extend(Dcat) {
 
         function resize() {
             $container.css({
-                left: (win.width() - 300)/2,
-                top: (win.height() - options.top)/2
+                left: (win.width() - 300) / 2,
+                top: (win.height() - options.top) / 2
             });
         }
+
         // 自适应窗口大小
         win.on('resize', resize);
         resize();
@@ -104,7 +104,7 @@ function extend(Dcat) {
             content;
 
         if (start === false) {
-            if (! loadingId) {
+            if (!loadingId) {
                 return $this;
             }
 
@@ -125,7 +125,7 @@ function extend(Dcat) {
 
         content = $this.html();
 
-        loadingId = 'ld-'+Dcat.helpers.random();
+        loadingId = 'ld-' + Dcat.helpers.random();
 
         let loading = `<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>`;
         let btnClass = ['btn', 'layui-layer-btn0', 'layui-layer-btn1'];

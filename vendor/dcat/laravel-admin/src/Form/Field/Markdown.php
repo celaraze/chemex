@@ -18,24 +18,24 @@ class Markdown extends Field
      * @var array
      */
     protected $options = [
-        'height'             => 500,
-        'codeFold'           => true,
+        'height' => 500,
+        'codeFold' => true,
         'saveHTMLToTextarea' => true, // 保存 HTML 到 Textarea
-        'searchReplace'      => true,
-        'emoji'              => true,
-        'taskList'           => true,
-        'tocm'               => true,         // Using [TOCM]
-        'tex'                => true,         // 开启科学公式TeX语言支持，默认关闭
-        'flowChart'          => false,        // 流程图支持，默认关闭
-        'sequenceDiagram'    => false,        // 时序/序列图支持，默认关闭,
-        'imageUpload'        => true,
-        'autoFocus'          => true,
+        'searchReplace' => true,
+        'emoji' => true,
+        'taskList' => true,
+        'tocm' => true,         // Using [TOCM]
+        'tex' => true,         // 开启科学公式TeX语言支持，默认关闭
+        'flowChart' => false,        // 流程图支持，默认关闭
+        'sequenceDiagram' => false,        // 时序/序列图支持，默认关闭,
+        'imageUpload' => true,
+        'autoFocus' => true,
     ];
 
     protected $language;
 
     protected $defaultLangs = [
-        'en'    => '@admin/dcat/plugins/editor-md/languages/en.js',
+        'en' => '@admin/dcat/plugins/editor-md/languages/en.js',
         'zh_TW' => '@admin/dcat/plugins/editor-md/languages/zh-tw.js',
     ];
 
@@ -47,7 +47,7 @@ class Markdown extends Field
      * 开启 HTML 标签解析.
      * style,script,iframe|on*.
      *
-     * @param  string  $decode
+     * @param string $decode
      * @return $this
      */
     public function htmlDecode($decode)
@@ -60,7 +60,7 @@ class Markdown extends Field
     /**
      * 设置编辑器容器高度.
      *
-     * @param  int  $height
+     * @param int $height
      * @return $this
      */
     public function height($height)
@@ -73,7 +73,7 @@ class Markdown extends Field
     /**
      * 设置文件上传存储配置.
      *
-     * @param  string  $disk
+     * @param string $disk
      * @return $this
      */
     public function disk(string $disk)
@@ -86,7 +86,7 @@ class Markdown extends Field
     /**
      * 设置图片上传文件夹.
      *
-     * @param  string  $dir
+     * @param string $dir
      * @return $this
      */
     public function imageDirectory(string $dir)
@@ -99,7 +99,7 @@ class Markdown extends Field
     /**
      * 自定义图片上传接口.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function imageUrl(string $url)
@@ -108,9 +108,25 @@ class Markdown extends Field
     }
 
     /**
+     * @param string $url
+     * @return string
+     */
+    protected function formatUrl(string $url)
+    {
+        return Helper::urlWithQuery(
+            $url,
+            [
+                '_token' => csrf_token(),
+                'disk' => $this->disk,
+                'dir' => $this->imageUploadDirectory,
+            ]
+        );
+    }
+
+    /**
      * 设置语言包路径.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function languageUrl(string $url)
@@ -123,36 +139,12 @@ class Markdown extends Field
     /**
      * @return string
      */
-    protected function defaultImageUploadUrl()
-    {
-        return $this->formatUrl(route(admin_api_route_name('editor-md.upload')));
-    }
-
-    /**
-     * @param  string  $url
-     * @return string
-     */
-    protected function formatUrl(string $url)
-    {
-        return Helper::urlWithQuery(
-            $url,
-            [
-                '_token' => csrf_token(),
-                'disk'   => $this->disk,
-                'dir'    => $this->imageUploadDirectory,
-            ]
-        );
-    }
-
-    /**
-     * @return string
-     */
     public function render()
     {
-        $this->options['path'] = admin_asset('@admin/dcat/plugins/editor-md/lib').'/';
+        $this->options['path'] = admin_asset('@admin/dcat/plugins/editor-md/lib') . '/';
         $this->options['name'] = $this->column;
         $this->options['placeholder'] = $this->placeholder();
-        $this->options['readonly'] = ! empty($this->attributes['readonly']) || ! empty($this->attributes['disabled']);
+        $this->options['readonly'] = !empty($this->attributes['readonly']) || !empty($this->attributes['disabled']);
 
         if (empty($this->options['imageUploadURL'])) {
             $this->options['imageUploadURL'] = $this->defaultImageUploadUrl();
@@ -163,6 +155,14 @@ class Markdown extends Field
         $this->addVariables(['options' => JavaScript::format($this->options)]);
 
         return parent::render();
+    }
+
+    /**
+     * @return string
+     */
+    protected function defaultImageUploadUrl()
+    {
+        return $this->formatUrl(route(admin_api_route_name('editor-md.upload')));
     }
 
     protected function requireLang()

@@ -7,8 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
+use PHPUnit\Framework\Error\Deprecated;
+use PHPUnit\Framework\Error\Error;
+use PHPUnit\Framework\Error\Notice;
+use PHPUnit\Framework\Error\Warning;
+use function error_reporting;
+use function restore_error_handler;
+use function set_error_handler;
 use const E_DEPRECATED;
 use const E_NOTICE;
 use const E_STRICT;
@@ -16,13 +24,6 @@ use const E_USER_DEPRECATED;
 use const E_USER_NOTICE;
 use const E_USER_WARNING;
 use const E_WARNING;
-use function error_reporting;
-use function restore_error_handler;
-use function set_error_handler;
-use PHPUnit\Framework\Error\Deprecated;
-use PHPUnit\Framework\Error\Error;
-use PHPUnit\Framework\Error\Notice;
-use PHPUnit\Framework\Error\Warning;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -54,11 +55,18 @@ final class ErrorHandler
      */
     private $registered = false;
 
+    public function __construct(bool $convertDeprecationsToExceptions, bool $convertErrorsToExceptions, bool $convertNoticesToExceptions, bool $convertWarningsToExceptions)
+    {
+        $this->convertDeprecationsToExceptions = $convertDeprecationsToExceptions;
+        $this->convertErrorsToExceptions = $convertErrorsToExceptions;
+        $this->convertNoticesToExceptions = $convertNoticesToExceptions;
+        $this->convertWarningsToExceptions = $convertWarningsToExceptions;
+    }
+
     public static function invokeIgnoringWarnings(callable $callable)
     {
         set_error_handler(
-            static function ($errorNumber, $errorString)
-            {
+            static function ($errorNumber, $errorString) {
                 if ($errorNumber === E_WARNING) {
                     return;
                 }
@@ -72,14 +80,6 @@ final class ErrorHandler
         restore_error_handler();
 
         return $result;
-    }
-
-    public function __construct(bool $convertDeprecationsToExceptions, bool $convertErrorsToExceptions, bool $convertNoticesToExceptions, bool $convertWarningsToExceptions)
-    {
-        $this->convertDeprecationsToExceptions = $convertDeprecationsToExceptions;
-        $this->convertErrorsToExceptions       = $convertErrorsToExceptions;
-        $this->convertNoticesToExceptions      = $convertNoticesToExceptions;
-        $this->convertWarningsToExceptions     = $convertWarningsToExceptions;
     }
 
     public function __invoke(int $errorNumber, string $errorString, string $errorFile, int $errorLine): bool

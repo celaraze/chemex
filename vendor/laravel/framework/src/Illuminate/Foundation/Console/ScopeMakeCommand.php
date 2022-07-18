@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ScopeMakeCommand extends GeneratorCommand
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:scope';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class ScopeMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:scope';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:scope';
     /**
      * The console command description.
      *
@@ -53,24 +51,24 @@ class ScopeMakeCommand extends GeneratorCommand
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
-            : __DIR__.$stub;
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return is_dir(app_path('Models')) ? $rootNamespace.'\\Models\\Scopes' : $rootNamespace.'\Scopes';
+        return is_dir(app_path('Models')) ? $rootNamespace . '\\Models\\Scopes' : $rootNamespace . '\Scopes';
     }
 }

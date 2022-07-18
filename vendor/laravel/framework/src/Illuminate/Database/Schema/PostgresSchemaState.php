@@ -9,44 +9,23 @@ class PostgresSchemaState extends SchemaState
     /**
      * Dump the database's schema into a file.
      *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @param  string  $path
+     * @param \Illuminate\Database\Connection $connection
+     * @param string $path
      * @return void
      */
     public function dump(Connection $connection, $path)
     {
         $excludedTables = collect($connection->getSchemaBuilder()->getAllTables())
-                        ->map->tablename
-                        ->reject(function ($table) {
-                            return $table === $this->migrationTable;
-                        })->map(function ($table) {
-                            return '--exclude-table-data="*.'.$table.'"';
-                        })->implode(' ');
+            ->map->tablename
+            ->reject(function ($table) {
+                return $table === $this->migrationTable;
+            })->map(function ($table) {
+                return '--exclude-table-data="*.' . $table . '"';
+            })->implode(' ');
 
         $this->makeProcess(
-            $this->baseDumpCommand().' --file="${:LARAVEL_LOAD_PATH}" '.$excludedTables
+            $this->baseDumpCommand() . ' --file="${:LARAVEL_LOAD_PATH}" ' . $excludedTables
         )->mustRun($this->output, array_merge($this->baseVariables($this->connection->getConfig()), [
-            'LARAVEL_LOAD_PATH' => $path,
-        ]));
-    }
-
-    /**
-     * Load the given schema file into the database.
-     *
-     * @param  string  $path
-     * @return void
-     */
-    public function load($path)
-    {
-        $command = 'pg_restore --no-owner --no-acl --clean --if-exists --host="${:LARAVEL_LOAD_HOST}" --port="${:LARAVEL_LOAD_PORT}" --username="${:LARAVEL_LOAD_USER}" --dbname="${:LARAVEL_LOAD_DATABASE}" "${:LARAVEL_LOAD_PATH}"';
-
-        if (str_ends_with($path, '.sql')) {
-            $command = 'psql --file="${:LARAVEL_LOAD_PATH}" --host="${:LARAVEL_LOAD_HOST}" --port="${:LARAVEL_LOAD_PORT}" --username="${:LARAVEL_LOAD_USER}" --dbname="${:LARAVEL_LOAD_DATABASE}"';
-        }
-
-        $process = $this->makeProcess($command);
-
-        $process->mustRun(null, array_merge($this->baseVariables($this->connection->getConfig()), [
             'LARAVEL_LOAD_PATH' => $path,
         ]));
     }
@@ -64,7 +43,7 @@ class PostgresSchemaState extends SchemaState
     /**
      * Get the base variables for a dump / load command.
      *
-     * @param  array  $config
+     * @param array $config
      * @return array
      */
     protected function baseVariables(array $config)
@@ -78,5 +57,26 @@ class PostgresSchemaState extends SchemaState
             'PGPASSWORD' => $config['password'],
             'LARAVEL_LOAD_DATABASE' => $config['database'],
         ];
+    }
+
+    /**
+     * Load the given schema file into the database.
+     *
+     * @param string $path
+     * @return void
+     */
+    public function load($path)
+    {
+        $command = 'pg_restore --no-owner --no-acl --clean --if-exists --host="${:LARAVEL_LOAD_HOST}" --port="${:LARAVEL_LOAD_PORT}" --username="${:LARAVEL_LOAD_USER}" --dbname="${:LARAVEL_LOAD_DATABASE}" "${:LARAVEL_LOAD_PATH}"';
+
+        if (str_ends_with($path, '.sql')) {
+            $command = 'psql --file="${:LARAVEL_LOAD_PATH}" --host="${:LARAVEL_LOAD_HOST}" --port="${:LARAVEL_LOAD_PORT}" --username="${:LARAVEL_LOAD_USER}" --dbname="${:LARAVEL_LOAD_DATABASE}"';
+        }
+
+        $process = $this->makeProcess($command);
+
+        $process->mustRun(null, array_merge($this->baseVariables($this->connection->getConfig()), [
+            'LARAVEL_LOAD_PATH' => $path,
+        ]));
     }
 }

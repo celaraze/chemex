@@ -7,15 +7,15 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false">
-  <testsuites>
-    <testsuite name="hamcrest-php">
-      <directory suffix="Test.php">.</directory>
-    </testsuite>
-  </testsuites>
+    <testsuites>
+        <testsuite name="hamcrest-php">
+            <directory suffix="Test.php">.</directory>
+        </testsuite>
+    </testsuites>
 
-  <filter>
-    <whitelist addUncoveredFilesFromWhitelist="true">
-      <directory suffix=".php">../hamcrest</directory>
-    </whitelist>
-  </filter>
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../hamcrest</directory>
+        </whitelist>
+    </filter>
 </phpunit>

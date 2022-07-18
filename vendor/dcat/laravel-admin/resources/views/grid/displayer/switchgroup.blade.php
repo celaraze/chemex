@@ -1,9 +1,8 @@
-
 <style>
     table.grid-switch-group tr td {
-        padding: 3px 0!important;
-        height:25px!important;
-        border: 0!important;
+        padding: 3px 0 !important;
+        height: 25px !important;
+        border: 0 !important;
     }
 </style>
 
@@ -14,7 +13,7 @@
         <tr style="box-shadow: none;background: transparent">
             <td>{{ $label }}:&nbsp;&nbsp;&nbsp;</td>
             <td><input name="{{ $column }}" data-path="{{ $resource }}" data-key="{{ $key }}" {{ $checked }}
-                                                           type="checkbox" class="grid-column-switch-group" data-size="small" data-color="{{ $color }}"/></td>
+                type="checkbox" class="grid-column-switch-group" data-size="small" data-color="{{ $color }}"/></td>
         </tr>
     @endforeach
 </table>
@@ -23,16 +22,18 @@
     var swt = $('.grid-column-switch-group'),
         reload = '{{ $refresh }}',
         that;
+
     function initSwitchery() {
-        swt.each(function() {
+        swt.each(function () {
             that = $(this);
             that.parent().find('.switchery').remove();
 
             new Switchery(that[0], that.data())
         })
     }
+
     initSwitchery();
-    swt.off('change').change(function(e) {
+    swt.off('change').change(function (e) {
         var that = $(this),
             id = that.data('key'),
             url = that.data('path') + '/' + id,

@@ -23,9 +23,9 @@ interface ConfigSourceInterface
     /**
      * Add a repository
      *
-     * @param string        $name   Name
+     * @param string $name Name
      * @param mixed[]|false $config Configuration
-     * @param bool          $append Whether the repo should be appended (true) or prepended (false)
+     * @param bool $append Whether the repo should be appended (true) or prepended (false)
      *
      * @return void
      */
@@ -43,8 +43,8 @@ interface ConfigSourceInterface
     /**
      * Add a config setting
      *
-     * @param string $name  Name
-     * @param mixed  $value Value
+     * @param string $name Name
+     * @param mixed $value Value
      *
      * @return void
      */
@@ -62,7 +62,7 @@ interface ConfigSourceInterface
     /**
      * Add a property
      *
-     * @param string $name  Name
+     * @param string $name Name
      * @param string|string[] $value Value
      *
      * @return void
@@ -81,8 +81,8 @@ interface ConfigSourceInterface
     /**
      * Add a package link
      *
-     * @param string $type  Type (require, require-dev, provide, suggest, replace, conflict)
-     * @param string $name  Name
+     * @param string $type Type (require, require-dev, provide, suggest, replace, conflict)
+     * @param string $name Name
      * @param string $value Value
      *
      * @return void

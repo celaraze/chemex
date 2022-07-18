@@ -11,11 +11,11 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy;
+use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\FingersCrossed\ActivationStrategyInterface;
+use Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy;
 use Monolog\Logger;
 use Monolog\ResettableInterface;
-use Monolog\Formatter\FormatterInterface;
 use Psr\Log\LogLevel;
 
 /**
@@ -68,12 +68,12 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
     /**
      * @psalm-param HandlerInterface|callable(?Record, HandlerInterface): HandlerInterface $handler
      *
-     * @param callable|HandlerInterface              $handler            Handler or factory callable($record|null, $fingersCrossedHandler).
+     * @param callable|HandlerInterface $handler Handler or factory callable($record|null, $fingersCrossedHandler).
      * @param int|string|ActivationStrategyInterface $activationStrategy Strategy which determines when this handler takes action, or a level name/value at which the handler is activated
-     * @param int                                    $bufferSize         How many entries should be buffered at most, beyond that the oldest items are removed from the buffer.
-     * @param bool                                   $bubble             Whether the messages that are handled can bubble up the stack or not
-     * @param bool                                   $stopBuffering      Whether the handler should stop buffering after being triggered (default true)
-     * @param int|string                             $passthruLevel      Minimum level to always flush to handler on close, even if strategy not triggered
+     * @param int $bufferSize How many entries should be buffered at most, beyond that the oldest items are removed from the buffer.
+     * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
+     * @param bool $stopBuffering Whether the handler should stop buffering after being triggered (default true)
+     * @param int|string $passthruLevel Minimum level to always flush to handler on close, even if strategy not triggered
      *
      * @phpstan-param Level|LevelName|LogLevel::* $passthruLevel
      * @phpstan-param Level|LevelName|LogLevel::*|ActivationStrategyInterface $activationStrategy
@@ -100,7 +100,7 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
         }
 
         if (!$this->handler instanceof HandlerInterface && !is_callable($this->handler)) {
-            throw new \RuntimeException("The given handler (".json_encode($this->handler).") is not a callable nor a Monolog\Handler\HandlerInterface object");
+            throw new \RuntimeException("The given handler (" . json_encode($this->handler) . ") is not a callable nor a Monolog\Handler\HandlerInterface object");
         }
     }
 
@@ -110,19 +110,6 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
     public function isHandling(array $record): bool
     {
         return true;
-    }
-
-    /**
-     * Manually activate this logger regardless of the activation strategy
-     */
-    public function activate(): void
-    {
-        if ($this->stopBuffering) {
-            $this->buffering = false;
-        }
-
-        $this->getHandler(end($this->buffer) ?: null)->handleBatch($this->buffer);
-        $this->buffer = [];
     }
 
     /**
@@ -151,54 +138,16 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * Manually activate this logger regardless of the activation strategy
      */
-    public function close(): void
+    public function activate(): void
     {
-        $this->flushBuffer();
-
-        $this->getHandler()->close();
-    }
-
-    public function reset()
-    {
-        $this->flushBuffer();
-
-        $this->resetProcessors();
-
-        if ($this->getHandler() instanceof ResettableInterface) {
-            $this->getHandler()->reset();
-        }
-    }
-
-    /**
-     * Clears the buffer without flushing any messages down to the wrapped handler.
-     *
-     * It also resets the handler to its initial buffering state.
-     */
-    public function clear(): void
-    {
-        $this->buffer = [];
-        $this->reset();
-    }
-
-    /**
-     * Resets the state of the handler. Stops forwarding records to the wrapped handler.
-     */
-    private function flushBuffer(): void
-    {
-        if (null !== $this->passthruLevel) {
-            $level = $this->passthruLevel;
-            $this->buffer = array_filter($this->buffer, function ($record) use ($level) {
-                return $record['level'] >= $level;
-            });
-            if (count($this->buffer) > 0) {
-                $this->getHandler(end($this->buffer))->handleBatch($this->buffer);
-            }
+        if ($this->stopBuffering) {
+            $this->buffering = false;
         }
 
+        $this->getHandler(end($this->buffer) ?: null)->handleBatch($this->buffer);
         $this->buffer = [];
-        $this->buffering = true;
     }
 
     /**
@@ -225,6 +174,57 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
     /**
      * {@inheritDoc}
      */
+    public function close(): void
+    {
+        $this->flushBuffer();
+
+        $this->getHandler()->close();
+    }
+
+    /**
+     * Resets the state of the handler. Stops forwarding records to the wrapped handler.
+     */
+    private function flushBuffer(): void
+    {
+        if (null !== $this->passthruLevel) {
+            $level = $this->passthruLevel;
+            $this->buffer = array_filter($this->buffer, function ($record) use ($level) {
+                return $record['level'] >= $level;
+            });
+            if (count($this->buffer) > 0) {
+                $this->getHandler(end($this->buffer))->handleBatch($this->buffer);
+            }
+        }
+
+        $this->buffer = [];
+        $this->buffering = true;
+    }
+
+    /**
+     * Clears the buffer without flushing any messages down to the wrapped handler.
+     *
+     * It also resets the handler to its initial buffering state.
+     */
+    public function clear(): void
+    {
+        $this->buffer = [];
+        $this->reset();
+    }
+
+    public function reset()
+    {
+        $this->flushBuffer();
+
+        $this->resetProcessors();
+
+        if ($this->getHandler() instanceof ResettableInterface) {
+            $this->getHandler()->reset();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setFormatter(FormatterInterface $formatter): HandlerInterface
     {
         $handler = $this->getHandler();
@@ -234,7 +234,7 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
             return $this;
         }
 
-        throw new \UnexpectedValueException('The nested handler of type '.get_class($handler).' does not support formatters.');
+        throw new \UnexpectedValueException('The nested handler of type ' . get_class($handler) . ' does not support formatters.');
     }
 
     /**
@@ -247,6 +247,6 @@ class FingersCrossedHandler extends Handler implements ProcessableHandlerInterfa
             return $handler->getFormatter();
         }
 
-        throw new \UnexpectedValueException('The nested handler of type '.get_class($handler).' does not support formatters.');
+        throw new \UnexpectedValueException('The nested handler of type ' . get_class($handler) . ' does not support formatters.');
     }
 }

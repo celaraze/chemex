@@ -24,33 +24,10 @@ class Translator
     }
 
     /**
-     * 设置翻译文件路径.
-     *
-     * @param  null|string  $path
-     * @return void
-     */
-    public function setPath(?string $path)
-    {
-        $this->path = $path;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPath()
-    {
-        if (! $this->path) {
-            $this->path = Admin::context()->translation ?: admin_controller_slug();
-        }
-
-        return $this->path;
-    }
-
-    /**
      * 翻译字段名称.
      *
-     * @param  string  $field
-     * @param  null  $locale
+     * @param string $field
+     * @param null $locale
      * @return false|mixed|string|string[]
      */
     public function transField(?string $field, $locale = null)
@@ -59,26 +36,11 @@ class Translator
     }
 
     /**
-     * 翻译Label.
-     *
-     * @param  null|string  $label
-     * @param  array  $replace
-     * @param  string  $locale
-     * @return array|\Illuminate\Contracts\Translation\Translator|string|null
-     */
-    public function transLabel(?string $label = null, $replace = [], $locale = null)
-    {
-        $label = $label ?: admin_controller_name();
-
-        return $this->trans("{$this->getPath()}.labels.{$label}", $replace, $locale);
-    }
-
-    /**
      * 翻译.
      *
-     * @param  string  $key
-     * @param  array  $replace
-     * @param  string  $locale
+     * @param string $key
+     * @param array $replace
+     * @param string $locale
      * @return false|mixed|string|string[]
      */
     public function trans($key, array $replace = [], $locale = null)
@@ -97,7 +59,7 @@ class Translator
             array_unshift($arr, 'global');
             $key = implode('.', $arr);
 
-            if (! $this->translator->has($key)) {
+            if (!$this->translator->has($key)) {
                 return end($arr);
             }
 
@@ -114,5 +76,43 @@ class Translator
         }
 
         return static::$method;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPath()
+    {
+        if (!$this->path) {
+            $this->path = Admin::context()->translation ?: admin_controller_slug();
+        }
+
+        return $this->path;
+    }
+
+    /**
+     * 设置翻译文件路径.
+     *
+     * @param null|string $path
+     * @return void
+     */
+    public function setPath(?string $path)
+    {
+        $this->path = $path;
+    }
+
+    /**
+     * 翻译Label.
+     *
+     * @param null|string $label
+     * @param array $replace
+     * @param string $locale
+     * @return array|\Illuminate\Contracts\Translation\Translator|string|null
+     */
+    public function transLabel(?string $label = null, $replace = [], $locale = null)
+    {
+        $label = $label ?: admin_controller_name();
+
+        return $this->trans("{$this->getPath()}.labels.{$label}", $replace, $locale);
     }
 }

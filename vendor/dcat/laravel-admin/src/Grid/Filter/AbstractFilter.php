@@ -38,73 +38,61 @@ abstract class AbstractFilter
     use HasVariables;
 
     /**
+     * @var Collection
+     */
+    public $group;
+    /**
      * Element id.
      *
      * @var array|string
      */
     protected $id;
-
     /**
      * Label of presenter.
      *
      * @var string
      */
     protected $label;
-
     /**
      * @var array|string
      */
     protected $value;
-
     /**
      * @var array|string
      */
     protected $defaultValue;
-
     /**
      * @var string
      */
     protected $column;
-
     /**
      * Presenter object.
      *
      * @var Presenter
      */
     protected $presenter;
-
     /**
      * Query for filter.
      *
      * @var string
      */
     protected $query = 'where';
-
     /**
      * @var Filter
      */
     protected $parent;
-
     /**
      * @var int
      */
     protected $width = 10;
-
     /**
      * @var string
      */
     protected $style;
-
     /**
      * @var string
      */
     protected $view = 'admin::filter.where';
-
-    /**
-     * @var Collection
-     */
-    public $group;
-
     /**
      * @var bool
      */
@@ -114,7 +102,7 @@ abstract class AbstractFilter
      * AbstractFilter constructor.
      *
      * @param $column
-     * @param  string  $label
+     * @param string $label
      */
     public function __construct($column, $label = '')
     {
@@ -123,19 +111,9 @@ abstract class AbstractFilter
     }
 
     /**
-     * Setup default presenter.
-     *
-     * @return void
-     */
-    protected function setupDefaultPresenter()
-    {
-        $this->setPresenter(new Text($this->label));
-    }
-
-    /**
      * Format label.
      *
-     * @param  string  $label
+     * @param string $label
      * @return string
      */
     protected function formatLabel($label)
@@ -152,7 +130,7 @@ abstract class AbstractFilter
     /**
      * Set the column width.
      *
-     * @param  int|string  $width
+     * @param int|string $width
      * @return $this
      */
     public function width($width)
@@ -175,55 +153,9 @@ abstract class AbstractFilter
         return $this->parent->grid()->makeName($this->originalColumn());
     }
 
-    /**
-     * Format name.
-     *
-     * @param  string  $column
-     * @return string
-     */
-    protected function formatName($column)
+    public function originalColumn()
     {
-        $columns = explode('.', $column);
-
-        if (count($columns) == 1) {
-            $name = $columns[0];
-        } else {
-            $name = array_shift($columns);
-            foreach ($columns as $column) {
-                $name .= "[$column]";
-            }
-        }
-
-        return $this->parent->grid()->makeName($name);
-    }
-
-    /**
-     * Format id.
-     *
-     * @param  string|array  $columns
-     * @return array|string
-     */
-    protected function formatId($columns)
-    {
-        if (is_array($columns)) {
-            foreach ($columns as &$column) {
-                $column = $this->formatId($column);
-            }
-
-            return $columns;
-        }
-
-        return $this->parent->grid()->makeName('filter-column-'.str_replace('.', '-', $columns));
-    }
-
-    /**
-     * @param  Filter  $filter
-     */
-    public function setParent(Filter $filter)
-    {
-        $this->parent = $filter;
-
-        $this->id = $this->formatId($this->column);
+        return $this->column;
     }
 
     /**
@@ -235,24 +167,9 @@ abstract class AbstractFilter
     }
 
     /**
-     * Get siblings of current filter.
-     *
-     * @param  null  $index
-     * @return AbstractFilter[]|mixed
-     */
-    public function siblings($index = null)
-    {
-        if (! is_null($index)) {
-            return Arr::get($this->parent->filters(), $index);
-        }
-
-        return $this->parent->filters();
-    }
-
-    /**
      * Get previous filter.
      *
-     * @param  int  $step
+     * @param int $step
      * @return AbstractFilter[]|mixed
      */
     public function previous($step = 1)
@@ -263,9 +180,24 @@ abstract class AbstractFilter
     }
 
     /**
+     * Get siblings of current filter.
+     *
+     * @param null $index
+     * @return AbstractFilter[]|mixed
+     */
+    public function siblings($index = null)
+    {
+        if (!is_null($index)) {
+            return Arr::get($this->parent->filters(), $index);
+        }
+
+        return $this->parent->filters();
+    }
+
+    /**
      * Get next filter.
      *
-     * @param  int  $step
+     * @param int $step
      * @return AbstractFilter[]|mixed
      */
     public function next($step = 1)
@@ -278,7 +210,7 @@ abstract class AbstractFilter
     /**
      * Get query condition from filter.
      *
-     * @param  array  $inputs
+     * @param array $inputs
      * @return array|mixed|null
      */
     public function condition($inputs)
@@ -292,6 +224,50 @@ abstract class AbstractFilter
         $this->value = $value;
 
         return $this->buildCondition($this->column, $this->value);
+    }
+
+    /**
+     * Build conditions of filter.
+     *
+     * @return mixed
+     */
+    protected function buildCondition(...$params)
+    {
+        if ($this->ignore) {
+            return;
+        }
+
+        $column = explode('.', $this->column);
+
+        if (count($column) == 1) {
+            return [$this->query => &$params];
+        }
+
+        return $this->buildRelationQuery(...$params);
+    }
+
+    /**
+     * @param string|callable $relColumn
+     * @param mixed ...$params
+     * @return array
+     */
+    protected function buildRelationQuery($relColumn, ...$params)
+    {
+        $column = explode('.', $this->column);
+
+        $col = array_pop($column);
+
+        $relColumn = is_callable($relColumn) ? $relColumn : $col;
+
+        // 增加对whereHasIn的支持
+        $method = class_exists(WhereHasInServiceProvider::class) ? 'whereHasIn' : 'whereHas';
+
+        return [$method => [implode('.', $column), function ($q) use ($relColumn, $params) {
+            $relColumn = is_string($relColumn) ? $q->getModel()->getTable() . '.' . $relColumn : $relColumn;
+            array_unshift($params, $relColumn);
+
+            call_user_func_array([$q, $this->query], $params);
+        }]];
     }
 
     /**
@@ -309,7 +285,7 @@ abstract class AbstractFilter
     /**
      * Select filter.
      *
-     * @param  array  $options
+     * @param array $options
      * @return Select
      */
     public function select($options = [])
@@ -318,7 +294,51 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  array|\Illuminate\Contracts\Support\Arrayable|\Closure  $options
+     * Set presenter object of filter.
+     *
+     * @param Presenter $presenter
+     * @return mixed
+     */
+    public function setPresenter(Presenter $presenter)
+    {
+        $presenter->setParent($this);
+
+        $presenter::requireAssets();
+
+        return $this->presenter = $presenter;
+    }
+
+    /**
+     * @param Filter $filter
+     */
+    public function setParent(Filter $filter)
+    {
+        $this->parent = $filter;
+
+        $this->id = $this->formatId($this->column);
+    }
+
+    /**
+     * Format id.
+     *
+     * @param string|array $columns
+     * @return array|string
+     */
+    protected function formatId($columns)
+    {
+        if (is_array($columns)) {
+            foreach ($columns as &$column) {
+                $column = $this->formatId($column);
+            }
+
+            return $columns;
+        }
+
+        return $this->parent->grid()->makeName('filter-column-' . str_replace('.', '-', $columns));
+    }
+
+    /**
+     * @param array|\Illuminate\Contracts\Support\Arrayable|\Closure $options
      * @return MultipleSelect
      */
     public function multipleSelect($options = [])
@@ -327,7 +347,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  LazyRenderable  $table
+     * @param LazyRenderable $table
      * @return Filter\Presenter\SelectTable
      */
     public function selectTable(LazyRenderable $table)
@@ -336,7 +356,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  LazyRenderable  $table
+     * @param LazyRenderable $table
      * @return Filter\Presenter\MultipleSelectTable
      */
     public function multipleSelectTable(LazyRenderable $table)
@@ -345,7 +365,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  array  $options
+     * @param array $options
      * @return Radio
      */
     public function radio($options = [])
@@ -354,23 +374,12 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  array  $options
+     * @param array $options
      * @return Checkbox
      */
     public function checkbox($options = [])
     {
         return $this->setPresenter(new Checkbox($options));
-    }
-
-    /**
-     * Datetime filter.
-     *
-     * @param  array  $options
-     * @return DateTime
-     */
-    public function datetime($options = [])
-    {
-        return $this->setPresenter(new DateTime($options));
     }
 
     /**
@@ -381,6 +390,17 @@ abstract class AbstractFilter
     public function date()
     {
         return $this->datetime(['format' => 'YYYY-MM-DD']);
+    }
+
+    /**
+     * Datetime filter.
+     *
+     * @param array $options
+     * @return DateTime
+     */
+    public function datetime($options = [])
+    {
+        return $this->setPresenter(new DateTime($options));
     }
 
     /**
@@ -424,38 +444,9 @@ abstract class AbstractFilter
     }
 
     /**
-     * Set presenter object of filter.
-     *
-     * @param  Presenter  $presenter
-     * @return mixed
-     */
-    public function setPresenter(Presenter $presenter)
-    {
-        $presenter->setParent($this);
-
-        $presenter::requireAssets();
-
-        return $this->presenter = $presenter;
-    }
-
-    /**
-     * Get presenter object of filter.
-     *
-     * @return Presenter
-     */
-    protected function presenter()
-    {
-        if (! $this->presenter) {
-            $this->setupDefaultPresenter();
-        }
-
-        return $this->presenter;
-    }
-
-    /**
      * Set default value for filter.
      *
-     * @param  null  $default
+     * @param null $default
      * @return $this
      */
     public function default($default = null)
@@ -485,7 +476,7 @@ abstract class AbstractFilter
     /**
      * Set element id.
      *
-     * @param  string  $id
+     * @param string $id
      * @return $this
      */
     public function setId($id)
@@ -505,13 +496,8 @@ abstract class AbstractFilter
         return $this->formatColumnClass($this->column);
     }
 
-    public function originalColumn()
-    {
-        return $this->column;
-    }
-
     /**
-     * @param  string  $column
+     * @param string $column
      * @return string
      */
     public function formatColumnClass($column)
@@ -538,7 +524,7 @@ abstract class AbstractFilter
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return $this
      */
     public function setValue($value)
@@ -549,73 +535,13 @@ abstract class AbstractFilter
     }
 
     /**
-     * Build conditions of filter.
+     * Render this filter.
      *
-     * @return mixed
+     * @return \Illuminate\View\View|string
      */
-    protected function buildCondition(...$params)
+    public function __toString()
     {
-        if ($this->ignore) {
-            return;
-        }
-
-        $column = explode('.', $this->column);
-
-        if (count($column) == 1) {
-            return [$this->query => &$params];
-        }
-
-        return $this->buildRelationQuery(...$params);
-    }
-
-    /**
-     * @param  string|callable  $relColumn
-     * @param  mixed  ...$params
-     * @return array
-     */
-    protected function buildRelationQuery($relColumn, ...$params)
-    {
-        $column = explode('.', $this->column);
-
-        $col = array_pop($column);
-
-        $relColumn = is_callable($relColumn) ? $relColumn : $col;
-
-        // 增加对whereHasIn的支持
-        $method = class_exists(WhereHasInServiceProvider::class) ? 'whereHasIn' : 'whereHas';
-
-        return [$method => [implode('.', $column), function ($q) use ($relColumn, $params) {
-            $relColumn = is_string($relColumn) ? $q->getModel()->getTable().'.'.$relColumn : $relColumn;
-            array_unshift($params, $relColumn);
-
-            call_user_func_array([$q, $this->query], $params);
-        }]];
-    }
-
-    /**
-     * Variables for filter view.
-     *
-     * @return array
-     */
-    protected function defaultVariables()
-    {
-        return array_merge([
-            'id'    => $this->id,
-            'name'  => $this->formatName($this->column),
-            'label' => $this->label,
-            'value' => $this->normalizeValue(),
-            'width' => $this->width,
-            'style' => $this->style,
-        ], $this->presenter()->variables());
-    }
-
-    protected function normalizeValue()
-    {
-        if ($this->value === '' || $this->value === null) {
-            $this->value = Arr::get($this->parent->inputs(), $this->column);
-        }
-
-        return $this->value === '' || $this->value === null ? $this->defaultValue : $this->value;
+        return $this->render();
     }
 
     /**
@@ -645,16 +571,6 @@ abstract class AbstractFilter
     }
 
     /**
-     * Render this filter.
-     *
-     * @return \Illuminate\View\View|string
-     */
-    public function __toString()
-    {
-        return $this->render();
-    }
-
-    /**
      * @param $method
      * @param $params
      * @return mixed
@@ -670,5 +586,77 @@ abstract class AbstractFilter
         throw new RuntimeException(sprintf(
             'Call to undefined method %s::%s()', static::class, $method
         ));
+    }
+
+    /**
+     * Get presenter object of filter.
+     *
+     * @return Presenter
+     */
+    protected function presenter()
+    {
+        if (!$this->presenter) {
+            $this->setupDefaultPresenter();
+        }
+
+        return $this->presenter;
+    }
+
+    /**
+     * Setup default presenter.
+     *
+     * @return void
+     */
+    protected function setupDefaultPresenter()
+    {
+        $this->setPresenter(new Text($this->label));
+    }
+
+    /**
+     * Variables for filter view.
+     *
+     * @return array
+     */
+    protected function defaultVariables()
+    {
+        return array_merge([
+            'id' => $this->id,
+            'name' => $this->formatName($this->column),
+            'label' => $this->label,
+            'value' => $this->normalizeValue(),
+            'width' => $this->width,
+            'style' => $this->style,
+        ], $this->presenter()->variables());
+    }
+
+    /**
+     * Format name.
+     *
+     * @param string $column
+     * @return string
+     */
+    protected function formatName($column)
+    {
+        $columns = explode('.', $column);
+
+        if (count($columns) == 1) {
+            $name = $columns[0];
+        } else {
+            $name = array_shift($columns);
+            foreach ($columns as $column) {
+                $name .= "[$column]";
+            }
+        }
+
+        return $this->parent->grid()->makeName($name);
+    }
+
+    protected function normalizeValue()
+    {
+        if ($this->value === '' || $this->value === null) {
+            $this->value = Arr::get($this->parent->inputs(), $this->column);
+        }
+
+        return $this->value === '' || $this->value === null ? $this->defaultValue : $this->value;
     }
 }

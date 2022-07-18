@@ -35,11 +35,11 @@ class FunctionReturnInWriteContextPass extends CodeCleanerPass
     /**
      * Validate that the functions are used correctly.
      *
-     * @throws FatalErrorException if a function is passed as an argument reference
+     * @param Node $node
      * @throws FatalErrorException if a function is used as an argument in the isset
      * @throws FatalErrorException if a value is assigned to a function
      *
-     * @param Node $node
+     * @throws FatalErrorException if a function is passed as an argument reference
      */
     public function enterNode(Node $node)
     {

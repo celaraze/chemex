@@ -29,7 +29,7 @@ php artisan vendor:publish --provider="Adldap\Laravel\AdldapServiceProvider"
 
 Configure your LDAP connection in the published `ldap.php` file.
 
-Then, use the `Adldap\Laravel\Facades\Adldap` facade: 
+Then, use the `Adldap\Laravel\Facades\Adldap` facade:
 
 ```php
 use Adldap\Laravel\Facades\Adldap;

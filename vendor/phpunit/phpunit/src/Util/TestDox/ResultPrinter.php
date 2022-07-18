@@ -7,10 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\TestDox;
 
-use function get_class;
-use function in_array;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\ErrorTestCase;
 use PHPUnit\Framework\Test;
@@ -22,6 +21,8 @@ use PHPUnit\Runner\BaseTestRunner;
 use PHPUnit\TextUI\ResultPrinter as ResultPrinterInterface;
 use PHPUnit\Util\Printer;
 use Throwable;
+use function get_class;
+use function in_array;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -107,11 +108,18 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
     {
         parent::__construct($out);
 
-        $this->groups        = $groups;
+        $this->groups = $groups;
         $this->excludeGroups = $excludeGroups;
 
         $this->prettifier = new NamePrettifier;
         $this->startRun();
+    }
+
+    /**
+     * Handler for 'start run' event.
+     */
+    protected function startRun(): void
+    {
     }
 
     /**
@@ -125,6 +133,36 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
         parent::flush();
     }
 
+    protected function doEndClass(): void
+    {
+        foreach ($this->tests as $test) {
+            $this->onTest($test[0], $test[1] === BaseTestRunner::STATUS_PASSED);
+        }
+
+        $this->endClass($this->testClass);
+    }
+
+    /**
+     * Handler for 'on test' event.
+     */
+    protected function onTest(string $name, bool $success = true): void
+    {
+    }
+
+    /**
+     * Handler for 'end class' event.
+     */
+    protected function endClass(string $name): void
+    {
+    }
+
+    /**
+     * Handler for 'end run' event.
+     */
+    protected function endRun(): void
+    {
+    }
+
     /**
      * An error occurred.
      */
@@ -136,6 +174,39 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
 
         $this->testStatus = BaseTestRunner::STATUS_ERROR;
         $this->failed++;
+    }
+
+    private function isOfInterest(Test $test): bool
+    {
+        if (!$test instanceof TestCase) {
+            return false;
+        }
+
+        if ($test instanceof ErrorTestCase || $test instanceof WarningTestCase) {
+            return false;
+        }
+
+        if (!empty($this->groups)) {
+            foreach ($test->getGroups() as $group) {
+                if (in_array($group, $this->groups, true)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (!empty($this->excludeGroups)) {
+            foreach ($test->getGroups() as $group) {
+                if (in_array($group, $this->excludeGroups, true)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return true;
     }
 
     /**
@@ -236,8 +307,8 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
             }
 
             $this->currentTestClassPrettified = $this->prettifier->prettifyTestClass($class);
-            $this->testClass                  = $class;
-            $this->tests                      = [];
+            $this->testClass = $class;
+            $this->tests = [];
 
             $this->startClass($class);
         }
@@ -247,6 +318,13 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
         }
 
         $this->testStatus = BaseTestRunner::STATUS_PASSED;
+    }
+
+    /**
+     * Handler for 'start class' event.
+     */
+    protected function startClass(string $name): void
+    {
     }
 
     /**
@@ -260,84 +338,7 @@ abstract class ResultPrinter extends Printer implements ResultPrinterInterface
 
         $this->tests[] = [$this->currentTestMethodPrettified, $this->testStatus];
 
-        $this->currentTestClassPrettified  = null;
+        $this->currentTestClassPrettified = null;
         $this->currentTestMethodPrettified = null;
-    }
-
-    protected function doEndClass(): void
-    {
-        foreach ($this->tests as $test) {
-            $this->onTest($test[0], $test[1] === BaseTestRunner::STATUS_PASSED);
-        }
-
-        $this->endClass($this->testClass);
-    }
-
-    /**
-     * Handler for 'start run' event.
-     */
-    protected function startRun(): void
-    {
-    }
-
-    /**
-     * Handler for 'start class' event.
-     */
-    protected function startClass(string $name): void
-    {
-    }
-
-    /**
-     * Handler for 'on test' event.
-     */
-    protected function onTest(string $name, bool $success = true): void
-    {
-    }
-
-    /**
-     * Handler for 'end class' event.
-     */
-    protected function endClass(string $name): void
-    {
-    }
-
-    /**
-     * Handler for 'end run' event.
-     */
-    protected function endRun(): void
-    {
-    }
-
-    private function isOfInterest(Test $test): bool
-    {
-        if (!$test instanceof TestCase) {
-            return false;
-        }
-
-        if ($test instanceof ErrorTestCase || $test instanceof WarningTestCase) {
-            return false;
-        }
-
-        if (!empty($this->groups)) {
-            foreach ($test->getGroups() as $group) {
-                if (in_array($group, $this->groups, true)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        if (!empty($this->excludeGroups)) {
-            foreach ($test->getGroups() as $group) {
-                if (in_array($group, $this->excludeGroups, true)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return true;
     }
 }

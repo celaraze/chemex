@@ -37,36 +37,36 @@ class CodeFormatter implements ReflectorFormatter
 
     private static $tokenMap = [
         // Not highlighted
-        \T_OPEN_TAG           => self::HIGHLIGHT_DEFAULT,
+        \T_OPEN_TAG => self::HIGHLIGHT_DEFAULT,
         \T_OPEN_TAG_WITH_ECHO => self::HIGHLIGHT_DEFAULT,
-        \T_CLOSE_TAG          => self::HIGHLIGHT_DEFAULT,
-        \T_STRING             => self::HIGHLIGHT_DEFAULT,
-        \T_VARIABLE           => self::HIGHLIGHT_DEFAULT,
-        \T_NS_SEPARATOR       => self::HIGHLIGHT_DEFAULT,
+        \T_CLOSE_TAG => self::HIGHLIGHT_DEFAULT,
+        \T_STRING => self::HIGHLIGHT_DEFAULT,
+        \T_VARIABLE => self::HIGHLIGHT_DEFAULT,
+        \T_NS_SEPARATOR => self::HIGHLIGHT_DEFAULT,
 
         // Visibility
-        \T_PUBLIC    => self::HIGHLIGHT_PUBLIC,
+        \T_PUBLIC => self::HIGHLIGHT_PUBLIC,
         \T_PROTECTED => self::HIGHLIGHT_PROTECTED,
-        \T_PRIVATE   => self::HIGHLIGHT_PRIVATE,
+        \T_PRIVATE => self::HIGHLIGHT_PRIVATE,
 
         // Constants
-        \T_DIR      => self::HIGHLIGHT_CONST,
-        \T_FILE     => self::HIGHLIGHT_CONST,
+        \T_DIR => self::HIGHLIGHT_CONST,
+        \T_FILE => self::HIGHLIGHT_CONST,
         \T_METHOD_C => self::HIGHLIGHT_CONST,
-        \T_NS_C     => self::HIGHLIGHT_CONST,
-        \T_LINE     => self::HIGHLIGHT_CONST,
-        \T_CLASS_C  => self::HIGHLIGHT_CONST,
-        \T_FUNC_C   => self::HIGHLIGHT_CONST,
-        \T_TRAIT_C  => self::HIGHLIGHT_CONST,
+        \T_NS_C => self::HIGHLIGHT_CONST,
+        \T_LINE => self::HIGHLIGHT_CONST,
+        \T_CLASS_C => self::HIGHLIGHT_CONST,
+        \T_FUNC_C => self::HIGHLIGHT_CONST,
+        \T_TRAIT_C => self::HIGHLIGHT_CONST,
 
         // Types
-        \T_DNUMBER                  => self::HIGHLIGHT_NUMBER,
-        \T_LNUMBER                  => self::HIGHLIGHT_NUMBER,
-        \T_ENCAPSED_AND_WHITESPACE  => self::HIGHLIGHT_STRING,
+        \T_DNUMBER => self::HIGHLIGHT_NUMBER,
+        \T_LNUMBER => self::HIGHLIGHT_NUMBER,
+        \T_ENCAPSED_AND_WHITESPACE => self::HIGHLIGHT_STRING,
         \T_CONSTANT_ENCAPSED_STRING => self::HIGHLIGHT_STRING,
 
         // Comments
-        \T_COMMENT     => self::HIGHLIGHT_COMMENT,
+        \T_COMMENT => self::HIGHLIGHT_COMMENT,
         \T_DOC_COMMENT => self::HIGHLIGHT_COMMENT,
 
         // @todo something better here?
@@ -76,7 +76,7 @@ class CodeFormatter implements ReflectorFormatter
     /**
      * Format the code represented by $reflector for shell output.
      *
-     * @param \Reflector  $reflector
+     * @param \Reflector $reflector
      * @param string|null $colorMode (deprecated and ignored)
      *
      * @return string formatted code
@@ -93,12 +93,24 @@ class CodeFormatter implements ReflectorFormatter
     }
 
     /**
+     * Check whether a Reflector instance is reflectable by this formatter.
+     *
+     * @param \Reflector $reflector
+     *
+     * @return bool
+     */
+    private static function isReflectable(\Reflector $reflector): bool
+    {
+        return ($reflector instanceof \ReflectionClass || $reflector instanceof \ReflectionFunctionAbstract) && \is_file($reflector->getFileName());
+    }
+
+    /**
      * Format code for shell output.
      *
      * Optionally, restrict by $startLine and $endLine line numbers, or pass $markLine to add a line marker.
      *
-     * @param string   $code
-     * @param int      $startLine
+     * @param string $code
+     * @param int $startLine
      * @param int|null $endLine
      * @param int|null $markLine
      *
@@ -115,38 +127,16 @@ class CodeFormatter implements ReflectorFormatter
     }
 
     /**
-     * Get the start line for a given Reflector.
-     *
-     * Tries to incorporate doc comments if possible.
-     *
-     * This is typehinted as \Reflector but we've narrowed the input via self::isReflectable already.
-     *
-     * @param \ReflectionClass|\ReflectionFunctionAbstract $reflector
-     *
-     * @return int
-     */
-    private static function getStartLine(\Reflector $reflector): int
-    {
-        $startLine = $reflector->getStartLine();
-
-        if ($docComment = $reflector->getDocComment()) {
-            $startLine -= \preg_match_all('/(\r\n?|\n)/', $docComment) + 1;
-        }
-
-        return \max($startLine, 1);
-    }
-
-    /**
      * Split code into highlight spans.
      *
      * Tokenize via \token_get_all, then map these tokens to internal highlight types, combining
      * adjacent spans of the same highlight type.
      *
-     * @todo consider switching \token_get_all() out for PHP-Parser-based formatting at some point.
-     *
      * @param string $code
      *
      * @return \Generator [$spanType, $spanText] highlight spans
+     * @todo consider switching \token_get_all() out for PHP-Parser-based formatting at some point.
+     *
      */
     private static function tokenizeSpans(string $code): \Generator
     {
@@ -174,8 +164,8 @@ class CodeFormatter implements ReflectorFormatter
     /**
      * Given a token and the current highlight span type, compute the next type.
      *
-     * @param array|string $token       \token_get_all token
-     * @param string|null  $currentType
+     * @param array|string $token \token_get_all token
+     * @param string|null $currentType
      *
      * @return string|null
      */
@@ -203,9 +193,9 @@ class CodeFormatter implements ReflectorFormatter
      *
      * Optionally, restrict by start and end line numbers.
      *
-     * @param \Generator $spans     as [$spanType, $spanText] pairs
-     * @param int        $startLine
-     * @param int|null   $endLine
+     * @param \Generator $spans as [$spanType, $spanText] pairs
+     * @param int $startLine
+     * @param int|null $endLine
      *
      * @return \Generator lines, each an array of [$spanType, $spanText] pairs
      */
@@ -260,7 +250,7 @@ class CodeFormatter implements ReflectorFormatter
                 }
             }
 
-            yield $lineNum => $line.\PHP_EOL;
+            yield $lineNum => $line . \PHP_EOL;
         }
     }
 
@@ -271,8 +261,8 @@ class CodeFormatter implements ReflectorFormatter
      *
      * Optionally, pass $markLine to add a line marker.
      *
-     * @param \Generator $lines    Formatted lines
-     * @param int|null   $markLine
+     * @param \Generator $lines Formatted lines
+     * @param int|null $markLine
      *
      * @return \Generator Numbered, formatted lines
      */
@@ -307,14 +297,24 @@ class CodeFormatter implements ReflectorFormatter
     }
 
     /**
-     * Check whether a Reflector instance is reflectable by this formatter.
+     * Get the start line for a given Reflector.
      *
-     * @param \Reflector $reflector
+     * Tries to incorporate doc comments if possible.
      *
-     * @return bool
+     * This is typehinted as \Reflector but we've narrowed the input via self::isReflectable already.
+     *
+     * @param \ReflectionClass|\ReflectionFunctionAbstract $reflector
+     *
+     * @return int
      */
-    private static function isReflectable(\Reflector $reflector): bool
+    private static function getStartLine(\Reflector $reflector): int
     {
-        return ($reflector instanceof \ReflectionClass || $reflector instanceof \ReflectionFunctionAbstract) && \is_file($reflector->getFileName());
+        $startLine = $reflector->getStartLine();
+
+        if ($docComment = $reflector->getDocComment()) {
+            $startLine -= \preg_match_all('/(\r\n?|\n)/', $docComment) + 1;
+        }
+
+        return \max($startLine, 1);
     }
 }

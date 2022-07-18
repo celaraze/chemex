@@ -1,4 +1,5 @@
 <?php
+
 namespace Egulias\EmailValidator\Validation;
 
 class DNSGetRecordWrapper
@@ -7,7 +8,7 @@ class DNSGetRecordWrapper
      * @param string $host
      * @param int $type
      */
-    public function getRecords(string $host, int $type) : DNSRecords
+    public function getRecords(string $host, int $type): DNSRecords
     {
         // A workaround to fix https://bugs.php.net/bug.php?id=73149
         /** @psalm-suppress InvalidArgument */

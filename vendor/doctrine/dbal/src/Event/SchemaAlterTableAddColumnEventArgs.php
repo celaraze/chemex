@@ -6,7 +6,6 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\Deprecations\Deprecation;
-
 use function array_merge;
 use function func_get_args;
 use function is_array;
@@ -30,9 +29,9 @@ class SchemaAlterTableAddColumnEventArgs extends SchemaEventArgs
 
     public function __construct(Column $column, TableDiff $tableDiff, AbstractPlatform $platform)
     {
-        $this->column    = $column;
+        $this->column = $column;
         $this->tableDiff = $tableDiff;
-        $this->platform  = $platform;
+        $this->platform = $platform;
     }
 
     /**

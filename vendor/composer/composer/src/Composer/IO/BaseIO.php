@@ -41,34 +41,6 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function hasAuthentication($repositoryName)
-    {
-        return isset($this->authentications[$repositoryName]);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAuthentication($repositoryName)
-    {
-        if (isset($this->authentications[$repositoryName])) {
-            return $this->authentications[$repositoryName];
-        }
-
-        return array('username' => null, 'password' => null);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAuthentication($repositoryName, $username, $password = null)
-    {
-        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->write($messages, $newline, $verbosity);
@@ -80,33 +52,6 @@ abstract class BaseIO implements IOInterface
     public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->writeError($messages, $newline, $verbosity);
-    }
-
-    /**
-     * Check for overwrite and set the authentication information for the repository.
-     *
-     * @param string $repositoryName The unique name of repository
-     * @param string $username       The username
-     * @param string $password       The password
-     *
-     * @return void
-     */
-    protected function checkAndSetAuthentication(string $repositoryName, string $username, string $password = null)
-    {
-        if ($this->hasAuthentication($repositoryName)) {
-            $auth = $this->getAuthentication($repositoryName);
-            if ($auth['username'] === $username && $auth['password'] === $password) {
-                return;
-            }
-
-            $this->writeError(
-                sprintf(
-                    "<warning>Warning: You should avoid overwriting already defined auth settings for %s.</warning>",
-                    $repositoryName
-                )
-            );
-        }
-        $this->setAuthentication($repositoryName, $username, $password);
     }
 
     /**
@@ -131,7 +76,7 @@ abstract class BaseIO implements IOInterface
             // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
             // plus dots which were at some point used for GH app integration tokens
             if (!Preg::isMatch('{^[.A-Za-z0-9_]+$}', $token)) {
-                throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
+                throw new \UnexpectedValueException('Your github oauth token for ' . $domain . ' contains invalid characters: "' . $token . '"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
         }
@@ -159,9 +104,81 @@ abstract class BaseIO implements IOInterface
         ProcessExecutor::setTimeout($config->get('process-timeout'));
     }
 
+    /**
+     * Check for overwrite and set the authentication information for the repository.
+     *
+     * @param string $repositoryName The unique name of repository
+     * @param string $username The username
+     * @param string $password The password
+     *
+     * @return void
+     */
+    protected function checkAndSetAuthentication(string $repositoryName, string $username, string $password = null)
+    {
+        if ($this->hasAuthentication($repositoryName)) {
+            $auth = $this->getAuthentication($repositoryName);
+            if ($auth['username'] === $username && $auth['password'] === $password) {
+                return;
+            }
+
+            $this->writeError(
+                sprintf(
+                    "<warning>Warning: You should avoid overwriting already defined auth settings for %s.</warning>",
+                    $repositoryName
+                )
+            );
+        }
+        $this->setAuthentication($repositoryName, $username, $password);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasAuthentication($repositoryName)
+    {
+        return isset($this->authentications[$repositoryName]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAuthentication($repositoryName)
+    {
+        if (isset($this->authentications[$repositoryName])) {
+            return $this->authentications[$repositoryName];
+        }
+
+        return array('username' => null, 'password' => null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAuthentication($repositoryName, $username, $password = null)
+    {
+        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
+    }
+
     public function emergency($message, array $context = array()): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
+    }
+
+    public function log($level, $message, array $context = array()): void
+    {
+        $message = (string)$message;
+
+        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+            $this->writeError('<error>' . $message . '</error>');
+        } elseif ($level === LogLevel::WARNING) {
+            $this->writeError('<warning>' . $message . '</warning>');
+        } elseif ($level === LogLevel::NOTICE) {
+            $this->writeError('<info>' . $message . '</info>', true, self::VERBOSE);
+        } elseif ($level === LogLevel::INFO) {
+            $this->writeError('<info>' . $message . '</info>', true, self::VERY_VERBOSE);
+        } else {
+            $this->writeError($message, true, self::DEBUG);
+        }
     }
 
     public function alert($message, array $context = array()): void
@@ -197,22 +214,5 @@ abstract class BaseIO implements IOInterface
     public function debug($message, array $context = array()): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
-    }
-
-    public function log($level, $message, array $context = array()): void
-    {
-        $message = (string) $message;
-
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
-            $this->writeError('<error>'.$message.'</error>');
-        } elseif ($level === LogLevel::WARNING) {
-            $this->writeError('<warning>'.$message.'</warning>');
-        } elseif ($level === LogLevel::NOTICE) {
-            $this->writeError('<info>'.$message.'</info>', true, self::VERBOSE);
-        } elseif ($level === LogLevel::INFO) {
-            $this->writeError('<info>'.$message.'</info>', true, self::VERY_VERBOSE);
-        } else {
-            $this->writeError($message, true, self::DEBUG);
-        }
     }
 }

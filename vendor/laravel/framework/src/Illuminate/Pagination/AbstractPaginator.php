@@ -18,61 +18,89 @@ abstract class AbstractPaginator implements Htmlable
     use ForwardsCalls, Tappable;
 
     /**
-     * All of the items being paginated.
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    protected $items;
-
-    /**
-     * The number of items to be shown per page.
-     *
-     * @var int
-     */
-    protected $perPage;
-
-    /**
-     * The current page being "viewed".
-     *
-     * @var int
-     */
-    protected $currentPage;
-
-    /**
-     * The base path to assign to all URLs.
+     * The default pagination view.
      *
      * @var string
      */
-    protected $path = '/';
-
+    public static $defaultView = 'pagination::tailwind';
     /**
-     * The query parameters to add to all URLs.
-     *
-     * @var array
-     */
-    protected $query = [];
-
-    /**
-     * The URL fragment to add to all URLs.
-     *
-     * @var string|null
-     */
-    protected $fragment;
-
-    /**
-     * The query string variable used to store the page.
+     * The default "simple" pagination view.
      *
      * @var string
      */
-    protected $pageName = 'page';
-
+    public static $defaultSimpleView = 'pagination::simple-tailwind';
+    /**
+     * The current path resolver callback.
+     *
+     * @var \Closure
+     */
+    protected static $currentPathResolver;
+    /**
+     * The current page resolver callback.
+     *
+     * @var \Closure
+     */
+    protected static $currentPageResolver;
+    /**
+     * The query string resolver callback.
+     *
+     * @var \Closure
+     */
+    protected static $queryStringResolver;
+    /**
+     * The view factory resolver callback.
+     *
+     * @var \Closure
+     */
+    protected static $viewFactoryResolver;
     /**
      * The number of links to display on each side of current page link.
      *
      * @var int
      */
     public $onEachSide = 3;
-
+    /**
+     * All of the items being paginated.
+     *
+     * @var \Illuminate\Support\Collection
+     */
+    protected $items;
+    /**
+     * The number of items to be shown per page.
+     *
+     * @var int
+     */
+    protected $perPage;
+    /**
+     * The current page being "viewed".
+     *
+     * @var int
+     */
+    protected $currentPage;
+    /**
+     * The base path to assign to all URLs.
+     *
+     * @var string
+     */
+    protected $path = '/';
+    /**
+     * The query parameters to add to all URLs.
+     *
+     * @var array
+     */
+    protected $query = [];
+    /**
+     * The URL fragment to add to all URLs.
+     *
+     * @var string|null
+     */
+    protected $fragment;
+    /**
+     * The query string variable used to store the page.
+     *
+     * @var string
+     */
+    protected $pageName = 'page';
     /**
      * The paginator options.
      *
@@ -81,56 +109,179 @@ abstract class AbstractPaginator implements Htmlable
     protected $options;
 
     /**
-     * The current path resolver callback.
+     * Resolve the current request path or return the default value.
      *
-     * @var \Closure
+     * @param string $default
+     * @return string
      */
-    protected static $currentPathResolver;
-
-    /**
-     * The current page resolver callback.
-     *
-     * @var \Closure
-     */
-    protected static $currentPageResolver;
-
-    /**
-     * The query string resolver callback.
-     *
-     * @var \Closure
-     */
-    protected static $queryStringResolver;
-
-    /**
-     * The view factory resolver callback.
-     *
-     * @var \Closure
-     */
-    protected static $viewFactoryResolver;
-
-    /**
-     * The default pagination view.
-     *
-     * @var string
-     */
-    public static $defaultView = 'pagination::tailwind';
-
-    /**
-     * The default "simple" pagination view.
-     *
-     * @var string
-     */
-    public static $defaultSimpleView = 'pagination::simple-tailwind';
-
-    /**
-     * Determine if the given value is a valid page number.
-     *
-     * @param  int  $page
-     * @return bool
-     */
-    protected function isValidPageNumber($page)
+    public static function resolveCurrentPath($default = '/')
     {
-        return $page >= 1 && filter_var($page, FILTER_VALIDATE_INT) !== false;
+        if (isset(static::$currentPathResolver)) {
+            return call_user_func(static::$currentPathResolver);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Set the current request path resolver callback.
+     *
+     * @param \Closure $resolver
+     * @return void
+     */
+    public static function currentPathResolver(Closure $resolver)
+    {
+        static::$currentPathResolver = $resolver;
+    }
+
+    /**
+     * Resolve the current page or return the default value.
+     *
+     * @param string $pageName
+     * @param int $default
+     * @return int
+     */
+    public static function resolveCurrentPage($pageName = 'page', $default = 1)
+    {
+        if (isset(static::$currentPageResolver)) {
+            return (int)call_user_func(static::$currentPageResolver, $pageName);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Set the current page resolver callback.
+     *
+     * @param \Closure $resolver
+     * @return void
+     */
+    public static function currentPageResolver(Closure $resolver)
+    {
+        static::$currentPageResolver = $resolver;
+    }
+
+    /**
+     * Resolve the query string or return the default value.
+     *
+     * @param string|array|null $default
+     * @return string
+     */
+    public static function resolveQueryString($default = null)
+    {
+        if (isset(static::$queryStringResolver)) {
+            return (static::$queryStringResolver)();
+        }
+
+        return $default;
+    }
+
+    /**
+     * Set with query string resolver callback.
+     *
+     * @param \Closure $resolver
+     * @return void
+     */
+    public static function queryStringResolver(Closure $resolver)
+    {
+        static::$queryStringResolver = $resolver;
+    }
+
+    /**
+     * Get an instance of the view factory from the resolver.
+     *
+     * @return \Illuminate\Contracts\View\Factory
+     */
+    public static function viewFactory()
+    {
+        return call_user_func(static::$viewFactoryResolver);
+    }
+
+    /**
+     * Set the view factory resolver callback.
+     *
+     * @param \Closure $resolver
+     * @return void
+     */
+    public static function viewFactoryResolver(Closure $resolver)
+    {
+        static::$viewFactoryResolver = $resolver;
+    }
+
+    /**
+     * Indicate that Tailwind styling should be used for generated links.
+     *
+     * @return void
+     */
+    public static function useTailwind()
+    {
+        static::defaultView('pagination::tailwind');
+        static::defaultSimpleView('pagination::simple-tailwind');
+    }
+
+    /**
+     * Set the default pagination view.
+     *
+     * @param string $view
+     * @return void
+     */
+    public static function defaultView($view)
+    {
+        static::$defaultView = $view;
+    }
+
+    /**
+     * Set the default "simple" pagination view.
+     *
+     * @param string $view
+     * @return void
+     */
+    public static function defaultSimpleView($view)
+    {
+        static::$defaultSimpleView = $view;
+    }
+
+    /**
+     * Indicate that Bootstrap 4 styling should be used for generated links.
+     *
+     * @return void
+     */
+    public static function useBootstrap()
+    {
+        static::useBootstrapFour();
+    }
+
+    /**
+     * Indicate that Bootstrap 4 styling should be used for generated links.
+     *
+     * @return void
+     */
+    public static function useBootstrapFour()
+    {
+        static::defaultView('pagination::bootstrap-4');
+        static::defaultSimpleView('pagination::simple-bootstrap-4');
+    }
+
+    /**
+     * Indicate that Bootstrap 3 styling should be used for generated links.
+     *
+     * @return void
+     */
+    public static function useBootstrapThree()
+    {
+        static::defaultView('pagination::default');
+        static::defaultSimpleView('pagination::simple-default');
+    }
+
+    /**
+     * Indicate that Bootstrap 5 styling should be used for generated links.
+     *
+     * @return void
+     */
+    public static function useBootstrapFive()
+    {
+        static::defaultView('pagination::bootstrap-5');
+        static::defaultSimpleView('pagination::simple-bootstrap-5');
     }
 
     /**
@@ -146,23 +297,19 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
-     * Create a range of pagination URLs.
+     * Get the current page.
      *
-     * @param  int  $start
-     * @param  int  $end
-     * @return array
+     * @return int
      */
-    public function getUrlRange($start, $end)
+    public function currentPage()
     {
-        return collect(range($start, $end))->mapWithKeys(function ($page) {
-            return [$page => $this->url($page)];
-        })->all();
+        return $this->currentPage;
     }
 
     /**
      * Get the URL for a given page number.
      *
-     * @param  int  $page
+     * @param int $page
      * @return string
      */
     public function url($page)
@@ -181,15 +328,49 @@ abstract class AbstractPaginator implements Htmlable
         }
 
         return $this->path()
-                        .(str_contains($this->path(), '?') ? '&' : '?')
-                        .Arr::query($parameters)
-                        .$this->buildFragment();
+            . (str_contains($this->path(), '?') ? '&' : '?')
+            . Arr::query($parameters)
+            . $this->buildFragment();
+    }
+
+    /**
+     * Get the base path for paginator generated URLs.
+     *
+     * @return string|null
+     */
+    public function path()
+    {
+        return $this->path;
+    }
+
+    /**
+     * Build the full fragment portion of a URL.
+     *
+     * @return string
+     */
+    protected function buildFragment()
+    {
+        return $this->fragment ? '#' . $this->fragment : '';
+    }
+
+    /**
+     * Create a range of pagination URLs.
+     *
+     * @param int $start
+     * @param int $end
+     * @return array
+     */
+    public function getUrlRange($start, $end)
+    {
+        return collect(range($start, $end))->mapWithKeys(function ($page) {
+            return [$page => $this->url($page)];
+        })->all();
     }
 
     /**
      * Get / set the URL fragment to be appended to URLs.
      *
-     * @param  string|null  $fragment
+     * @param string|null $fragment
      * @return $this|string|null
      */
     public function fragment($fragment = null)
@@ -199,41 +380,6 @@ abstract class AbstractPaginator implements Htmlable
         }
 
         $this->fragment = $fragment;
-
-        return $this;
-    }
-
-    /**
-     * Add a set of query string values to the paginator.
-     *
-     * @param  array|string|null  $key
-     * @param  string|null  $value
-     * @return $this
-     */
-    public function appends($key, $value = null)
-    {
-        if (is_null($key)) {
-            return $this;
-        }
-
-        if (is_array($key)) {
-            return $this->appendArray($key);
-        }
-
-        return $this->addQuery($key, $value);
-    }
-
-    /**
-     * Add an array of query string values.
-     *
-     * @param  array  $keys
-     * @return $this
-     */
-    protected function appendArray(array $keys)
-    {
-        foreach ($keys as $key => $value) {
-            $this->addQuery($key, $value);
-        }
 
         return $this;
     }
@@ -253,10 +399,45 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
+     * Add a set of query string values to the paginator.
+     *
+     * @param array|string|null $key
+     * @param string|null $value
+     * @return $this
+     */
+    public function appends($key, $value = null)
+    {
+        if (is_null($key)) {
+            return $this;
+        }
+
+        if (is_array($key)) {
+            return $this->appendArray($key);
+        }
+
+        return $this->addQuery($key, $value);
+    }
+
+    /**
+     * Add an array of query string values.
+     *
+     * @param array $keys
+     * @return $this
+     */
+    protected function appendArray(array $keys)
+    {
+        foreach ($keys as $key => $value) {
+            $this->addQuery($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * Add a query string value to the paginator.
      *
-     * @param  string  $key
-     * @param  string  $value
+     * @param string $key
+     * @param string $value
      * @return $this
      */
     protected function addQuery($key, $value)
@@ -269,20 +450,10 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
-     * Build the full fragment portion of a URL.
-     *
-     * @return string
-     */
-    protected function buildFragment()
-    {
-        return $this->fragment ? '#'.$this->fragment : '';
-    }
-
-    /**
      * Load a set of relationships onto the mixed relationship collection.
      *
-     * @param  string  $relation
-     * @param  array  $relations
+     * @param string $relation
+     * @param array $relations
      * @return $this
      */
     public function loadMorph($relation, $relations)
@@ -293,10 +464,20 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
+     * Get the paginator's underlying collection.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCollection()
+    {
+        return $this->items;
+    }
+
+    /**
      * Load a set of relationship counts onto the mixed relationship collection.
      *
-     * @param  string  $relation
-     * @param  array  $relations
+     * @param string $relation
+     * @param array $relations
      * @return $this
      */
     public function loadMorphCount($relation, $relations)
@@ -317,16 +498,6 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
-     * Get the number of the first item in the slice.
-     *
-     * @return int
-     */
-    public function firstItem()
-    {
-        return count($this->items) > 0 ? ($this->currentPage - 1) * $this->perPage + 1 : null;
-    }
-
-    /**
      * Get the number of the last item in the slice.
      *
      * @return int
@@ -337,9 +508,29 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
+     * Get the number of the first item in the slice.
+     *
+     * @return int
+     */
+    public function firstItem()
+    {
+        return count($this->items) > 0 ? ($this->currentPage - 1) * $this->perPage + 1 : null;
+    }
+
+    /**
+     * Get the number of items for the current page.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return $this->items->count();
+    }
+
+    /**
      * Transform each item in the slice of items using a callback.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      */
     public function through(callable $callback)
@@ -386,17 +577,7 @@ abstract class AbstractPaginator implements Htmlable
      */
     public function onLastPage()
     {
-        return ! $this->hasMorePages();
-    }
-
-    /**
-     * Get the current page.
-     *
-     * @return int
-     */
-    public function currentPage()
-    {
-        return $this->currentPage;
+        return !$this->hasMorePages();
     }
 
     /**
@@ -412,7 +593,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Set the query string variable used to store the page.
      *
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function setPageName($name)
@@ -425,7 +606,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Set the base path to assign to all URLs.
      *
-     * @param  string  $path
+     * @param string $path
      * @return $this
      */
     public function withPath($path)
@@ -436,7 +617,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Set the base path to assign to all URLs.
      *
-     * @param  string  $path
+     * @param string $path
      * @return $this
      */
     public function setPath($path)
@@ -449,7 +630,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Set the number of links to display on each side of current page link.
      *
-     * @param  int  $count
+     * @param int $count
      * @return $this
      */
     public function onEachSide($count)
@@ -457,192 +638,6 @@ abstract class AbstractPaginator implements Htmlable
         $this->onEachSide = $count;
 
         return $this;
-    }
-
-    /**
-     * Get the base path for paginator generated URLs.
-     *
-     * @return string|null
-     */
-    public function path()
-    {
-        return $this->path;
-    }
-
-    /**
-     * Resolve the current request path or return the default value.
-     *
-     * @param  string  $default
-     * @return string
-     */
-    public static function resolveCurrentPath($default = '/')
-    {
-        if (isset(static::$currentPathResolver)) {
-            return call_user_func(static::$currentPathResolver);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Set the current request path resolver callback.
-     *
-     * @param  \Closure  $resolver
-     * @return void
-     */
-    public static function currentPathResolver(Closure $resolver)
-    {
-        static::$currentPathResolver = $resolver;
-    }
-
-    /**
-     * Resolve the current page or return the default value.
-     *
-     * @param  string  $pageName
-     * @param  int  $default
-     * @return int
-     */
-    public static function resolveCurrentPage($pageName = 'page', $default = 1)
-    {
-        if (isset(static::$currentPageResolver)) {
-            return (int) call_user_func(static::$currentPageResolver, $pageName);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Set the current page resolver callback.
-     *
-     * @param  \Closure  $resolver
-     * @return void
-     */
-    public static function currentPageResolver(Closure $resolver)
-    {
-        static::$currentPageResolver = $resolver;
-    }
-
-    /**
-     * Resolve the query string or return the default value.
-     *
-     * @param  string|array|null  $default
-     * @return string
-     */
-    public static function resolveQueryString($default = null)
-    {
-        if (isset(static::$queryStringResolver)) {
-            return (static::$queryStringResolver)();
-        }
-
-        return $default;
-    }
-
-    /**
-     * Set with query string resolver callback.
-     *
-     * @param  \Closure  $resolver
-     * @return void
-     */
-    public static function queryStringResolver(Closure $resolver)
-    {
-        static::$queryStringResolver = $resolver;
-    }
-
-    /**
-     * Get an instance of the view factory from the resolver.
-     *
-     * @return \Illuminate\Contracts\View\Factory
-     */
-    public static function viewFactory()
-    {
-        return call_user_func(static::$viewFactoryResolver);
-    }
-
-    /**
-     * Set the view factory resolver callback.
-     *
-     * @param  \Closure  $resolver
-     * @return void
-     */
-    public static function viewFactoryResolver(Closure $resolver)
-    {
-        static::$viewFactoryResolver = $resolver;
-    }
-
-    /**
-     * Set the default pagination view.
-     *
-     * @param  string  $view
-     * @return void
-     */
-    public static function defaultView($view)
-    {
-        static::$defaultView = $view;
-    }
-
-    /**
-     * Set the default "simple" pagination view.
-     *
-     * @param  string  $view
-     * @return void
-     */
-    public static function defaultSimpleView($view)
-    {
-        static::$defaultSimpleView = $view;
-    }
-
-    /**
-     * Indicate that Tailwind styling should be used for generated links.
-     *
-     * @return void
-     */
-    public static function useTailwind()
-    {
-        static::defaultView('pagination::tailwind');
-        static::defaultSimpleView('pagination::simple-tailwind');
-    }
-
-    /**
-     * Indicate that Bootstrap 4 styling should be used for generated links.
-     *
-     * @return void
-     */
-    public static function useBootstrap()
-    {
-        static::useBootstrapFour();
-    }
-
-    /**
-     * Indicate that Bootstrap 3 styling should be used for generated links.
-     *
-     * @return void
-     */
-    public static function useBootstrapThree()
-    {
-        static::defaultView('pagination::default');
-        static::defaultSimpleView('pagination::simple-default');
-    }
-
-    /**
-     * Indicate that Bootstrap 4 styling should be used for generated links.
-     *
-     * @return void
-     */
-    public static function useBootstrapFour()
-    {
-        static::defaultView('pagination::bootstrap-4');
-        static::defaultSimpleView('pagination::simple-bootstrap-4');
-    }
-
-    /**
-     * Indicate that Bootstrap 5 styling should be used for generated links.
-     *
-     * @return void
-     */
-    public static function useBootstrapFive()
-    {
-        static::defaultView('pagination::bootstrap-5');
-        static::defaultSimpleView('pagination::simple-bootstrap-5');
     }
 
     /**
@@ -676,29 +671,9 @@ abstract class AbstractPaginator implements Htmlable
     }
 
     /**
-     * Get the number of items for the current page.
-     *
-     * @return int
-     */
-    public function count(): int
-    {
-        return $this->items->count();
-    }
-
-    /**
-     * Get the paginator's underlying collection.
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getCollection()
-    {
-        return $this->items;
-    }
-
-    /**
      * Set the paginator's underlying collection.
      *
-     * @param  \Illuminate\Support\Collection  $collection
+     * @param \Illuminate\Support\Collection $collection
      * @return $this
      */
     public function setCollection(Collection $collection)
@@ -721,7 +696,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Determine if the given item exists.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return bool
      */
     public function offsetExists($key): bool
@@ -732,7 +707,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Get the item at the given offset.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return mixed
      */
     public function offsetGet($key): mixed
@@ -743,8 +718,8 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Set the item at the given offset.
      *
-     * @param  mixed  $key
-     * @param  mixed  $value
+     * @param mixed $key
+     * @param mixed $value
      * @return void
      */
     public function offsetSet($key, $value): void
@@ -755,7 +730,7 @@ abstract class AbstractPaginator implements Htmlable
     /**
      * Unset the item at the given key.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return void
      */
     public function offsetUnset($key): void
@@ -770,14 +745,14 @@ abstract class AbstractPaginator implements Htmlable
      */
     public function toHtml()
     {
-        return (string) $this->render();
+        return (string)$this->render();
     }
 
     /**
      * Make dynamic calls into the collection.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -792,6 +767,17 @@ abstract class AbstractPaginator implements Htmlable
      */
     public function __toString()
     {
-        return (string) $this->render();
+        return (string)$this->render();
+    }
+
+    /**
+     * Determine if the given value is a valid page number.
+     *
+     * @param int $page
+     * @return bool
+     */
+    protected function isValidPageNumber($page)
+    {
+        return $page >= 1 && filter_var($page, FILTER_VALIDATE_INT) !== false;
     }
 }

@@ -11,6 +11,11 @@ class BaseSolution implements Solution
     /** @var array<string, string> */
     protected array $links = [];
 
+    public function __construct(string $title = '')
+    {
+        $this->title = $title;
+    }
+
     public static function create(string $title = ''): static
     {
         // It's important to keep the return type as static because
@@ -18,11 +23,6 @@ class BaseSolution implements Solution
 
         /** @phpstan-ignore-next-line */
         return new static($title);
-    }
-
-    public function __construct(string $title = '')
-    {
-        $this->title = $title;
     }
 
     public function getSolutionTitle(): string

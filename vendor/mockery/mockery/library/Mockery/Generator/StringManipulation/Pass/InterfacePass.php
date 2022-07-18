@@ -33,7 +33,7 @@ class InterfacePass implements Pass
             }
         }
 
-        $interfaces = array_reduce((array) $config->getTargetInterfaces(), function ($code, $i) {
+        $interfaces = array_reduce((array)$config->getTargetInterfaces(), function ($code, $i) {
             return $code . ", \\" . ltrim($i->getName(), "\\");
         }, "");
 

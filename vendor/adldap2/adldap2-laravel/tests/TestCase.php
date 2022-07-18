@@ -43,9 +43,9 @@ class TestCase extends BaseTestCase
         // Laravel database setup.
         $config->set('database.default', 'testbench');
         $config->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         // Adldap connection set$configup.
@@ -54,14 +54,14 @@ class TestCase extends BaseTestCase
         $config->set('ldap.connections.default.settings', [
             'username' => 'admin@email.com',
             'password' => 'password',
-            'schema'   => ActiveDirectory::class,
+            'schema' => ActiveDirectory::class,
         ]);
 
         // Adldap auth setup.
         $config->set('ldap_auth.provider', DatabaseUserProvider::class);
         $config->set('ldap_auth.sync_attributes', [
             'email' => 'userprincipalname',
-            'name'  => 'cn',
+            'name' => 'cn',
         ]);
 
         // Laravel auth setup.
@@ -69,11 +69,11 @@ class TestCase extends BaseTestCase
         $config->set('auth.providers', [
             'ldap' => [
                 'driver' => 'ldap',
-                'model'  => TestUser::class,
+                'model' => TestUser::class,
             ],
-            'users'  => [
+            'users' => [
                 'driver' => 'eloquent',
-                'model'  => TestUser::class,
+                'model' => TestUser::class,
             ],
         ]);
     }
@@ -88,11 +88,11 @@ class TestCase extends BaseTestCase
     protected function makeLdapUser(array $attributes = [])
     {
         return Adldap::getDefaultProvider()->make()->user($attributes ?: [
-            'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
-            'samaccountname'    => ['jdoe'],
+            'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
+            'samaccountname' => ['jdoe'],
             'userprincipalname' => ['jdoe@email.com'],
-            'mail'              => ['jdoe@email.com'],
-            'cn'                => ['John Doe'],
+            'mail' => ['jdoe@email.com'],
+            'cn' => ['John Doe'],
         ]);
     }
 

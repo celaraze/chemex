@@ -24,22 +24,22 @@ abstract class Editable extends AbstractDisplayer
         return admin_view($this->view, array_merge($this->variables(), $this->defaultOptions() + $this->options));
     }
 
-    protected function defaultOptions()
-    {
-        return [];
-    }
-
     public function variables()
     {
         return [
-            'key'     => $this->getKey(),
-            'class'   => $this->getSelector(),
-            'name'    => $this->getName(),
-            'type'    => $this->type,
+            'key' => $this->getKey(),
+            'class' => $this->getSelector(),
+            'name' => $this->getName(),
+            'type' => $this->type,
             'display' => $this->getValue(),
-            'value'   => $this->getOriginal(),
-            'url'     => $this->getUrl(),
+            'value' => $this->getOriginal(),
+            'url' => $this->getUrl(),
         ];
+    }
+
+    protected function getSelector()
+    {
+        return 'grid-editable-' . $this->type;
     }
 
     protected function getName()
@@ -57,13 +57,13 @@ abstract class Editable extends AbstractDisplayer
         return $this->column->getOriginal();
     }
 
-    protected function getSelector()
-    {
-        return 'grid-editable-'.$this->type;
-    }
-
     protected function getUrl()
     {
-        return $this->resource().'/'.$this->getKey();
+        return $this->resource() . '/' . $this->getKey();
+    }
+
+    protected function defaultOptions()
+    {
+        return [];
     }
 }

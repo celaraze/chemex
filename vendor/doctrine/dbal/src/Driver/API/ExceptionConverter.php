@@ -16,8 +16,8 @@ interface ExceptionConverter
      * Implementors should use the vendor-specific error code and SQLSTATE of the exception
      * and instantiate the most appropriate specialized {@see DriverException} subclass.
      *
-     * @param Exception  $exception The driver exception to convert.
-     * @param Query|null $query     The SQL query that triggered the exception, if any.
+     * @param Exception $exception The driver exception to convert.
+     * @param Query|null $query The SQL query that triggered the exception, if any.
      *
      * @return DriverException An instance of {@see DriverException} or one of its subclasses.
      */

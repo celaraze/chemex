@@ -43,6 +43,19 @@ class LogRecorder
         }
     }
 
+    protected function shouldIgnore(mixed $event): bool
+    {
+        if (!isset($event->context['exception'])) {
+            return false;
+        }
+
+        if (!$event->context['exception'] instanceof Throwable) {
+            return false;
+        }
+
+        return true;
+    }
+
     /** @return array<array<int,string>> */
     public function getLogMessages(): array
     {
@@ -59,19 +72,6 @@ class LogRecorder
         }
 
         return $logMessages;
-    }
-
-    protected function shouldIgnore(mixed $event): bool
-    {
-        if (! isset($event->context['exception'])) {
-            return false;
-        }
-
-        if (! $event->context['exception'] instanceof Throwable) {
-            return false;
-        }
-
-        return true;
     }
 
     public function reset(): void

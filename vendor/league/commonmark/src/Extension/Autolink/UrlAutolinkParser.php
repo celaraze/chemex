@@ -78,12 +78,12 @@ final class UrlAutolinkParser implements InlineParserInterface
 
         // Autolinks can only come at the beginning of a line, after whitespace, or certain delimiting characters
         $previousChar = $cursor->peek(-1);
-        if (! \in_array($previousChar, self::ALLOWED_AFTER, true)) {
+        if (!\in_array($previousChar, self::ALLOWED_AFTER, true)) {
             return false;
         }
 
         // Check if we have a valid URL
-        if (! \preg_match($this->finalRegex, $cursor->getRemainder(), $matches)) {
+        if (!\preg_match($this->finalRegex, $cursor->getRemainder(), $matches)) {
             return false;
         }
 

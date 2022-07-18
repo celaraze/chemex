@@ -27,6 +27,14 @@ class TransportException extends \RuntimeException
     protected $responseInfo = array();
 
     /**
+     * @return ?array<string>
+     */
+    public function getHeaders(): ?array
+    {
+        return $this->headers;
+    }
+
+    /**
      * @param array<string> $headers
      *
      * @return void
@@ -37,11 +45,11 @@ class TransportException extends \RuntimeException
     }
 
     /**
-     * @return ?array<string>
+     * @return ?string
      */
-    public function getHeaders(): ?array
+    public function getResponse(): ?string
     {
-        return $this->headers;
+        return $this->response;
     }
 
     /**
@@ -55,11 +63,11 @@ class TransportException extends \RuntimeException
     }
 
     /**
-     * @return ?string
+     * @return ?int
      */
-    public function getResponse(): ?string
+    public function getStatusCode(): ?int
     {
-        return $this->response;
+        return $this->statusCode;
     }
 
     /**
@@ -70,14 +78,6 @@ class TransportException extends \RuntimeException
     public function setStatusCode($statusCode): void
     {
         $this->statusCode = $statusCode;
-    }
-
-    /**
-     * @return ?int
-     */
-    public function getStatusCode(): ?int
-    {
-        return $this->statusCode;
     }
 
     /**

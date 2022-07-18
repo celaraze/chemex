@@ -16,13 +16,6 @@ class SeedCommand extends Command
     use ConfirmableTrait;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'db:seed';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -32,7 +25,12 @@ class SeedCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'db:seed';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'db:seed';
     /**
      * The console command description.
      *
@@ -50,7 +48,7 @@ class SeedCommand extends Command
     /**
      * Create a new database seed command instance.
      *
-     * @param  \Illuminate\Database\ConnectionResolverInterface  $resolver
+     * @param \Illuminate\Database\ConnectionResolverInterface $resolver
      * @return void
      */
     public function __construct(Resolver $resolver)
@@ -67,7 +65,7 @@ class SeedCommand extends Command
      */
     public function handle()
     {
-        if (! $this->confirmToProceed()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 
@@ -89,29 +87,6 @@ class SeedCommand extends Command
     }
 
     /**
-     * Get a seeder instance from the container.
-     *
-     * @return \Illuminate\Database\Seeder
-     */
-    protected function getSeeder()
-    {
-        $class = $this->input->getArgument('class') ?? $this->input->getOption('class');
-
-        if (! str_contains($class, '\\')) {
-            $class = 'Database\\Seeders\\'.$class;
-        }
-
-        if ($class === 'Database\\Seeders\\DatabaseSeeder' &&
-            ! class_exists($class)) {
-            $class = 'DatabaseSeeder';
-        }
-
-        return $this->laravel->make($class)
-                        ->setContainer($this->laravel)
-                        ->setCommand($this);
-    }
-
-    /**
      * Get the name of the database connection to use.
      *
      * @return string
@@ -121,6 +96,29 @@ class SeedCommand extends Command
         $database = $this->input->getOption('database');
 
         return $database ?: $this->laravel['config']['database.default'];
+    }
+
+    /**
+     * Get a seeder instance from the container.
+     *
+     * @return \Illuminate\Database\Seeder
+     */
+    protected function getSeeder()
+    {
+        $class = $this->input->getArgument('class') ?? $this->input->getOption('class');
+
+        if (!str_contains($class, '\\')) {
+            $class = 'Database\\Seeders\\' . $class;
+        }
+
+        if ($class === 'Database\\Seeders\\DatabaseSeeder' &&
+            !class_exists($class)) {
+            $class = 'DatabaseSeeder';
+        }
+
+        return $this->laravel->make($class)
+            ->setContainer($this->laravel)
+            ->setCommand($this);
     }
 
     /**

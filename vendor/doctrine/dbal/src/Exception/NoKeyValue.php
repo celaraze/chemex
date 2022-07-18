@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Exception;
 
 use Doctrine\DBAL\Exception;
-
 use function sprintf;
 
 /**

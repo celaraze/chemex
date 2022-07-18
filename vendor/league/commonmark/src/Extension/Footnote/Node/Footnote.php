@@ -15,8 +15,8 @@ declare(strict_types=1);
 namespace League\CommonMark\Extension\Footnote\Node;
 
 use League\CommonMark\Node\Block\AbstractBlock;
-use League\CommonMark\Reference\ReferenceInterface;
 use League\CommonMark\Reference\ReferenceableInterface;
+use League\CommonMark\Reference\ReferenceInterface;
 
 final class Footnote extends AbstractBlock implements ReferenceableInterface
 {

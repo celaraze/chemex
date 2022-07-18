@@ -12,17 +12,17 @@ class Currency extends Text
      * @var array
      */
     protected $options = [
-        'alias'              => 'currency',
-        'radixPoint'         => '.',
-        'prefix'             => '',
+        'alias' => 'currency',
+        'radixPoint' => '.',
+        'prefix' => '',
         'removeMaskOnSubmit' => true,
-        'rightAlign'         => false,
+        'rightAlign' => false,
     ];
 
     /**
      * Set symbol for currency field.
      *
-     * @param  string  $symbol
+     * @param string $symbol
      * @return $this
      */
     public function symbol($symbol)
@@ -35,21 +35,12 @@ class Currency extends Text
     /**
      * Set digits for input number.
      *
-     * @param  int  $digits
+     * @param int $digits
      * @return $this
      */
     public function digits($digits)
     {
         return $this->mergeOptions(compact('digits'));
-    }
-
-    /**
-     * @param  mixed  $value
-     * @return mixed
-     */
-    protected function prepareInputValue($value)
-    {
-        return is_string($value) ? str_replace(',', '', $value) : $value;
     }
 
     /**
@@ -63,5 +54,14 @@ class Currency extends Text
             ->defaultAttribute('style', 'width: 200px');
 
         return parent::render();
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function prepareInputValue($value)
+    {
+        return is_string($value) ? str_replace(',', '', $value) : $value;
     }
 }

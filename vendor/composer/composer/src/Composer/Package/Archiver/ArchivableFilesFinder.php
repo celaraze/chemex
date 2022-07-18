@@ -63,7 +63,7 @@ class ArchivableFilesFinder extends \FilterIterator
             }
 
             $relativePath = Preg::replace(
-                '#^'.preg_quote($sources, '#').'#',
+                '#^' . preg_quote($sources, '#') . '#',
                 '',
                 $fs->normalizePath($file->getRealPath())
             );
@@ -99,7 +99,7 @@ class ArchivableFilesFinder extends \FilterIterator
             return true;
         }
 
-        $iterator = new FilesystemIterator((string) $current, FilesystemIterator::SKIP_DOTS);
+        $iterator = new FilesystemIterator((string)$current, FilesystemIterator::SKIP_DOTS);
 
         return !$iterator->valid();
     }

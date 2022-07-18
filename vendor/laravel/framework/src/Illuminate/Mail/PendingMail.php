@@ -49,7 +49,7 @@ class PendingMail
     /**
      * Create a new mailable mailer instance.
      *
-     * @param  \Illuminate\Contracts\Mail\Mailer  $mailer
+     * @param \Illuminate\Contracts\Mail\Mailer $mailer
      * @return void
      */
     public function __construct(MailerContract $mailer)
@@ -58,14 +58,42 @@ class PendingMail
     }
 
     /**
-     * Set the locale of the message.
+     * Send a new mailable message instance.
      *
-     * @param  string  $locale
+     * @param \Illuminate\Contracts\Mail\Mailable $mailable
+     * @return \Illuminate\Mail\SentMessage|null
+     */
+    public function send(MailableContract $mailable)
+    {
+        return $this->mailer->send($this->fill($mailable));
+    }
+
+    /**
+     * Populate the mailable with the addresses.
+     *
+     * @param \Illuminate\Contracts\Mail\Mailable $mailable
+     * @return \Illuminate\Mail\Mailable
+     */
+    protected function fill(MailableContract $mailable)
+    {
+        return tap($mailable->to($this->to)
+            ->cc($this->cc)
+            ->bcc($this->bcc), function (MailableContract $mailable) {
+            if ($this->locale) {
+                $mailable->locale($this->locale);
+            }
+        });
+    }
+
+    /**
+     * Set the recipients of the message.
+     *
+     * @param mixed $users
      * @return $this
      */
-    public function locale($locale)
+    public function bcc($users)
     {
-        $this->locale = $locale;
+        $this->bcc = $users;
 
         return $this;
     }
@@ -73,24 +101,7 @@ class PendingMail
     /**
      * Set the recipients of the message.
      *
-     * @param  mixed  $users
-     * @return $this
-     */
-    public function to($users)
-    {
-        $this->to = $users;
-
-        if (! $this->locale && $users instanceof HasLocalePreference) {
-            $this->locale($users->preferredLocale());
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the recipients of the message.
-     *
-     * @param  mixed  $users
+     * @param mixed $users
      * @return $this
      */
     public function cc($users)
@@ -103,31 +114,37 @@ class PendingMail
     /**
      * Set the recipients of the message.
      *
-     * @param  mixed  $users
+     * @param mixed $users
      * @return $this
      */
-    public function bcc($users)
+    public function to($users)
     {
-        $this->bcc = $users;
+        $this->to = $users;
+
+        if (!$this->locale && $users instanceof HasLocalePreference) {
+            $this->locale($users->preferredLocale());
+        }
 
         return $this;
     }
 
     /**
-     * Send a new mailable message instance.
+     * Set the locale of the message.
      *
-     * @param  \Illuminate\Contracts\Mail\Mailable  $mailable
-     * @return \Illuminate\Mail\SentMessage|null
+     * @param string $locale
+     * @return $this
      */
-    public function send(MailableContract $mailable)
+    public function locale($locale)
     {
-        return $this->mailer->send($this->fill($mailable));
+        $this->locale = $locale;
+
+        return $this;
     }
 
     /**
      * Push the given mailable onto the queue.
      *
-     * @param  \Illuminate\Contracts\Mail\Mailable  $mailable
+     * @param \Illuminate\Contracts\Mail\Mailable $mailable
      * @return mixed
      */
     public function queue(MailableContract $mailable)
@@ -138,29 +155,12 @@ class PendingMail
     /**
      * Deliver the queued message after (n) seconds.
      *
-     * @param  \DateTimeInterface|\DateInterval|int  $delay
-     * @param  \Illuminate\Contracts\Mail\Mailable  $mailable
+     * @param \DateTimeInterface|\DateInterval|int $delay
+     * @param \Illuminate\Contracts\Mail\Mailable $mailable
      * @return mixed
      */
     public function later($delay, MailableContract $mailable)
     {
         return $this->mailer->later($delay, $this->fill($mailable));
-    }
-
-    /**
-     * Populate the mailable with the addresses.
-     *
-     * @param  \Illuminate\Contracts\Mail\Mailable  $mailable
-     * @return \Illuminate\Mail\Mailable
-     */
-    protected function fill(MailableContract $mailable)
-    {
-        return tap($mailable->to($this->to)
-            ->cc($this->cc)
-            ->bcc($this->bcc), function (MailableContract $mailable) {
-                if ($this->locale) {
-                    $mailable->locale($this->locale);
-                }
-            });
     }
 }

@@ -1,6 +1,7 @@
 # Change Log
 
-All notable changes to `sebastianbergmann/object-reflector` are documented in this file using the [Keep a CHANGELOG](http://keepachangelog.com/) principles.
+All notable changes to `sebastianbergmann/object-reflector` are documented in this file using
+the [Keep a CHANGELOG](http://keepachangelog.com/) principles.
 
 ## [2.0.4] - 2020-10-26
 
@@ -34,7 +35,8 @@ All notable changes to `sebastianbergmann/object-reflector` are documented in th
 
 ## [1.1.1] - 2017-03-29
 
-* Fixed [#1](https://github.com/sebastianbergmann/object-reflector/issues/1): Attributes with non-string names are not handled correctly
+* Fixed [#1](https://github.com/sebastianbergmann/object-reflector/issues/1): Attributes with non-string names are not
+  handled correctly
 
 ## [1.1.0] - 2017-03-16
 
@@ -47,9 +49,15 @@ All notable changes to `sebastianbergmann/object-reflector` are documented in th
 * Initial release
 
 [2.0.4]: https://github.com/sebastianbergmann/object-reflector/compare/2.0.3...2.0.4
+
 [2.0.3]: https://github.com/sebastianbergmann/object-reflector/compare/2.0.2...2.0.3
+
 [2.0.2]: https://github.com/sebastianbergmann/object-reflector/compare/2.0.1...2.0.2
+
 [2.0.1]: https://github.com/sebastianbergmann/object-reflector/compare/2.0.0...2.0.1
+
 [2.0.0]: https://github.com/sebastianbergmann/object-reflector/compare/1.1.1...2.0.0
+
 [1.1.1]: https://github.com/sebastianbergmann/object-reflector/compare/1.1.0...1.1.1
+
 [1.1.0]: https://github.com/sebastianbergmann/object-reflector/compare/1.0.0...1.1.0

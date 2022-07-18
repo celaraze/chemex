@@ -80,47 +80,6 @@ class HttpWorker implements HttpWorkerInterface
     }
 
     /**
-     * {@inheritDoc}
-     * @throws \JsonException
-     */
-    public function respond(int $status, string $body, array $headers = []): void
-    {
-        $head = (string)\json_encode([
-            'status'  => $status,
-            'headers' => $headers ?: (object)[],
-        ], \JSON_THROW_ON_ERROR);
-
-        $this->worker->respond(new Payload($body, $head));
-    }
-
-    /**
-     * Respond data using Streamed Output
-     *
-     * @param Generator<mixed, scalar|Stringable, mixed, Stringable|scalar|null> $body Body generator.
-     *        Each yielded value will be sent as a separated stream chunk.
-     *        Returned value will be sent as a last stream package.
-     */
-    public function respondStream(int $status, Generator $body, array $headers = []): void
-    {
-        $head = (string)\json_encode([
-            'status'  => $status,
-            'headers' => $headers ?: (object)[],
-        ], \JSON_THROW_ON_ERROR);
-
-        do {
-            if (!$body->valid()) {
-                $content = (string)$body->getReturn();
-                $this->worker->respond(new Payload($content, $head, true));
-                break;
-            }
-            $content = (string)$body->current();
-            $this->worker->respond(new Payload($content, $head, false));
-            $body->next();
-            $head = null;
-        } while (true);
-    }
-
-    /**
      * @param string $body
      * @param RequestContext $context
      * @return Request
@@ -175,5 +134,46 @@ class HttpWorker implements HttpWorkerInterface
         }
         /** @var array<string, mixed> $headers */
         return $headers;
+    }
+
+    /**
+     * Respond data using Streamed Output
+     *
+     * @param Generator<mixed, scalar|Stringable, mixed, Stringable|scalar|null> $body Body generator.
+     *        Each yielded value will be sent as a separated stream chunk.
+     *        Returned value will be sent as a last stream package.
+     */
+    public function respondStream(int $status, Generator $body, array $headers = []): void
+    {
+        $head = (string)\json_encode([
+            'status' => $status,
+            'headers' => $headers ?: (object)[],
+        ], \JSON_THROW_ON_ERROR);
+
+        do {
+            if (!$body->valid()) {
+                $content = (string)$body->getReturn();
+                $this->worker->respond(new Payload($content, $head, true));
+                break;
+            }
+            $content = (string)$body->current();
+            $this->worker->respond(new Payload($content, $head, false));
+            $body->next();
+            $head = null;
+        } while (true);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws \JsonException
+     */
+    public function respond(int $status, string $body, array $headers = []): void
+    {
+        $head = (string)\json_encode([
+            'status' => $status,
+            'headers' => $headers ?: (object)[],
+        ], \JSON_THROW_ON_ERROR);
+
+        $this->worker->respond(new Payload($body, $head));
     }
 }

@@ -7,7 +7,6 @@ namespace Doctrine\DBAL\Driver\IBMDB2;
 use Doctrine\DBAL\Driver\FetchUtils;
 use Doctrine\DBAL\Driver\IBMDB2\Exception\StatementError;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
-
 use function db2_fetch_array;
 use function db2_fetch_assoc;
 use function db2_free_result;
@@ -21,9 +20,9 @@ final class Result implements ResultInterface
     private $statement;
 
     /**
+     * @param resource $statement
      * @internal The result can be only instantiated by its driver connection or statement.
      *
-     * @param resource $statement
      */
     public function __construct($statement)
     {

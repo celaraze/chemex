@@ -10,7 +10,7 @@ class DeviceRecordBatchDiscardAction extends BatchAction
     public function __construct()
     {
         parent::__construct();
-        $this->title = $this->title = '<i class="fa fa-fw feather icon-alert-triangle"></i> '.admin_trans_label('Batch Discard');
+        $this->title = $this->title = '<i class="fa fa-fw feather icon-alert-triangle"></i> ' . admin_trans_label('Batch Discard');
     }
 
     /**

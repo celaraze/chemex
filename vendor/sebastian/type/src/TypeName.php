@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
+use ReflectionClass;
 use function array_pop;
 use function explode;
 use function implode;
 use function substr;
-use ReflectionClass;
 
 final class TypeName
 {
@@ -27,6 +28,16 @@ final class TypeName
      */
     private $simpleName;
 
+    public function __construct(?string $namespaceName, string $simpleName)
+    {
+        if ($namespaceName === '') {
+            $namespaceName = null;
+        }
+
+        $this->namespaceName = $namespaceName;
+        $this->simpleName = $simpleName;
+    }
+
     public static function fromQualifiedName(string $fullClassName): self
     {
         if ($fullClassName[0] === '\\') {
@@ -35,7 +46,7 @@ final class TypeName
 
         $classNameParts = explode('\\', $fullClassName);
 
-        $simpleName    = array_pop($classNameParts);
+        $simpleName = array_pop($classNameParts);
         $namespaceName = implode('\\', $classNameParts);
 
         return new self($namespaceName, $simpleName);
@@ -47,16 +58,6 @@ final class TypeName
             $type->getNamespaceName(),
             $type->getShortName()
         );
-    }
-
-    public function __construct(?string $namespaceName, string $simpleName)
-    {
-        if ($namespaceName === '') {
-            $namespaceName = null;
-        }
-
-        $this->namespaceName = $namespaceName;
-        $this->simpleName    = $simpleName;
     }
 
     public function namespaceName(): ?string
@@ -72,8 +73,8 @@ final class TypeName
     public function qualifiedName(): string
     {
         return $this->namespaceName === null
-             ? $this->simpleName
-             : $this->namespaceName . '\\' . $this->simpleName;
+            ? $this->simpleName
+            : $this->namespaceName . '\\' . $this->simpleName;
     }
 
     public function isNamespaced(): bool

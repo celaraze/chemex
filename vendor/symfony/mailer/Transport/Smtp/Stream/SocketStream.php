@@ -31,19 +31,9 @@ final class SocketStream extends AbstractStream
     private ?string $sourceIp = null;
     private array $streamContextOptions = [];
 
-    /**
-     * @return $this
-     */
-    public function setTimeout(float $timeout): static
+    public function getHost(): string
     {
-        $this->timeout = $timeout;
-
-        return $this;
-    }
-
-    public function getTimeout(): float
-    {
-        return $this->timeout ?? (float) ini_get('default_socket_timeout');
+        return $this->host;
     }
 
     /**
@@ -58,9 +48,9 @@ final class SocketStream extends AbstractStream
         return $this;
     }
 
-    public function getHost(): string
+    public function getPort(): int
     {
-        return $this->host;
+        return $this->port;
     }
 
     /**
@@ -71,11 +61,6 @@ final class SocketStream extends AbstractStream
         $this->port = $port;
 
         return $this;
-    }
-
-    public function getPort(): int
-    {
-        return $this->port;
     }
 
     /**
@@ -111,6 +96,14 @@ final class SocketStream extends AbstractStream
     }
 
     /**
+     * Returns the IP used to connect to the destination.
+     */
+    public function getSourceIp(): ?string
+    {
+        return $this->sourceIp;
+    }
+
+    /**
      * Sets the source IP.
      *
      * IPv6 addresses should be wrapped in square brackets.
@@ -124,23 +117,15 @@ final class SocketStream extends AbstractStream
         return $this;
     }
 
-    /**
-     * Returns the IP used to connect to the destination.
-     */
-    public function getSourceIp(): ?string
-    {
-        return $this->sourceIp;
-    }
-
     public function initialize(): void
     {
-        $this->url = $this->host.':'.$this->port;
+        $this->url = $this->host . ':' . $this->port;
         if ($this->tls) {
-            $this->url = 'ssl://'.$this->url;
+            $this->url = 'ssl://' . $this->url;
         }
         $options = [];
         if ($this->sourceIp) {
-            $options['socket']['bindto'] = $this->sourceIp.':0';
+            $options['socket']['bindto'] = $this->sourceIp . ':0';
         }
         if ($this->streamContextOptions) {
             $options = array_merge($options, $this->streamContextOptions);
@@ -151,7 +136,7 @@ final class SocketStream extends AbstractStream
 
         $timeout = $this->getTimeout();
         set_error_handler(function ($type, $msg) {
-            throw new TransportException(sprintf('Connection could not be established with host "%s": ', $this->url).$msg);
+            throw new TransportException(sprintf('Connection could not be established with host "%s": ', $this->url) . $msg);
         });
         try {
             $this->stream = stream_socket_client($this->url, $errno, $errstr, $timeout, \STREAM_CLIENT_CONNECT, $streamContext);
@@ -165,10 +150,25 @@ final class SocketStream extends AbstractStream
         $this->out = &$this->stream;
     }
 
+    public function getTimeout(): float
+    {
+        return $this->timeout ?? (float)ini_get('default_socket_timeout');
+    }
+
+    /**
+     * @return $this
+     */
+    public function setTimeout(float $timeout): static
+    {
+        $this->timeout = $timeout;
+
+        return $this;
+    }
+
     public function startTLS(): bool
     {
         set_error_handler(function ($type, $msg) {
-            throw new TransportException('Unable to connect with STARTTLS: '.$msg);
+            throw new TransportException('Unable to connect with STARTTLS: ' . $msg);
         });
         try {
             return stream_socket_enable_crypto($this->stream, true);

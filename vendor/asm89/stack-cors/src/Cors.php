@@ -11,9 +11,9 @@
 
 namespace Asm89\Stack;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 class Cors implements HttpKernelInterface
 {
@@ -28,18 +28,18 @@ class Cors implements HttpKernelInterface
     private $cors;
 
     private $defaultOptions = [
-        'allowedHeaders'         => [],
-        'allowedMethods'         => [],
-        'allowedOrigins'         => [],
+        'allowedHeaders' => [],
+        'allowedMethods' => [],
+        'allowedOrigins' => [],
         'allowedOriginsPatterns' => [],
-        'exposedHeaders'         => [],
-        'maxAge'                 => 0,
-        'supportsCredentials'    => false,
+        'exposedHeaders' => [],
+        'maxAge' => 0,
+        'supportsCredentials' => false,
     ];
 
     public function __construct(HttpKernelInterface $app, array $options = [])
     {
-        $this->app  = $app;
+        $this->app = $app;
         $this->cors = new CorsService(array_merge($this->defaultOptions, $options));
     }
 

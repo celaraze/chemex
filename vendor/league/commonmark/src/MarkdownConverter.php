@@ -36,12 +36,30 @@ class MarkdownConverter implements ConverterInterface, MarkdownConverterInterfac
         $this->environment = $environment;
 
         $this->markdownParser = new MarkdownParser($environment);
-        $this->htmlRenderer   = new HtmlRenderer($environment);
+        $this->htmlRenderer = new HtmlRenderer($environment);
     }
 
     public function getEnvironment(): EnvironmentInterface
     {
         return $this->environment;
+    }
+
+    /**
+     * Converts Markdown to HTML.
+     *
+     * @param string $markdown The Markdown to convert
+     *
+     * @return RenderedContentInterface Rendered HTML
+     *
+     * @throws \RuntimeException
+     * @deprecated since 2.2; use {@link convert()} instead
+     *
+     */
+    public function convertToHtml(string $markdown): RenderedContentInterface
+    {
+        \trigger_deprecation('league/commonmark', '2.2.0', 'Calling "convertToHtml()" on a %s class is deprecated, use "convert()" instead.', self::class);
+
+        return $this->convert($markdown);
     }
 
     /**
@@ -61,29 +79,11 @@ class MarkdownConverter implements ConverterInterface, MarkdownConverterInterfac
     }
 
     /**
-     * Converts Markdown to HTML.
-     *
-     * @deprecated since 2.2; use {@link convert()} instead
-     *
-     * @param string $markdown The Markdown to convert
-     *
-     * @return RenderedContentInterface Rendered HTML
-     *
-     * @throws \RuntimeException
-     */
-    public function convertToHtml(string $markdown): RenderedContentInterface
-    {
-        \trigger_deprecation('league/commonmark', '2.2.0', 'Calling "convertToHtml()" on a %s class is deprecated, use "convert()" instead.', self::class);
-
-        return $this->convert($markdown);
-    }
-
-    /**
      * Converts CommonMark to HTML.
      *
+     * @throws \RuntimeException
      * @see MarkdownConverter::convert()
      *
-     * @throws \RuntimeException
      */
     public function __invoke(string $markdown): RenderedContentInterface
     {

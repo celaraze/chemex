@@ -82,7 +82,7 @@
             self.$dialog.find(options.table).on('table:loaded', function () {
                 let checkbox = self.getCheckbox();
 
-                if (! options.multiple) {
+                if (!options.multiple) {
                     // 移除全选按钮
                     $(this).find('.checkbox-grid-header').remove();
                 }
@@ -93,7 +93,7 @@
                         label = $this.data('label');
 
                     if (this.checked) {
-                        if (! options.multiple) {
+                        if (!options.multiple) {
                             self.selected = {};
                         }
                         self.selected[id] = {id: id, label: label};
@@ -109,7 +109,7 @@
                         delete self.selected[id];
                     }
 
-                    if (! options.multiple) {
+                    if (!options.multiple) {
                         if (this.checked) {
                             // 单选效果
                             checkbox.each(function () {
@@ -167,7 +167,7 @@
                 ids = [];
 
             for (let i in self.selected) {
-                if (! self.selected[i]) {
+                if (!self.selected[i]) {
                     continue;
                 }
 
@@ -185,7 +185,7 @@
                 placeholder = box.find('.default-text'),
                 option = box.find('.option');
 
-            if (! selected || ! selected.length) {
+            if (!selected || !selected.length) {
                 placeholder.removeClass('d-none');
                 option.addClass('d-none');
 
@@ -199,7 +199,7 @@
             placeholder.addClass('d-none');
             option.removeClass('d-none');
 
-            if (! options.multiple) {
+            if (!options.multiple) {
                 return renderDefault(selected, self, options);
             }
 
@@ -227,7 +227,7 @@
         getKeys() {
             let val = this.$input.val();
 
-            if (! val) return [];
+            if (!val) return [];
 
             return String(val).split(',');
         },
@@ -240,7 +240,7 @@
             placeholder = box.find('.default-text'),
             option = box.find('.option');
 
-        if (! box.hasClass('select2')) {
+        if (!box.hasClass('select2')) {
             box.addClass('select2 select2-container select2-container--default select2-container--below');
         }
         box.removeClass('form-control');
@@ -268,7 +268,7 @@
 
             $this.parent().remove();
 
-            if (! self.getKeys().length) {
+            if (!self.getKeys().length) {
                 removeAll();
             }
         });

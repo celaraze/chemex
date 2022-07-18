@@ -2,7 +2,11 @@
     "name": "psr/event-dispatcher",
     "description": "Standard interfaces for event handling.",
     "type": "library",
-    "keywords": ["psr", "psr-14", "events"],
+    "keywords": [
+        "psr",
+        "psr-14",
+        "events"
+    ],
     "license": "MIT",
     "authors": [
         {

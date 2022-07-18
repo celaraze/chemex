@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function sprintf;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -48,22 +49,6 @@ abstract class LogToReportMigration implements Migration
         $logNode->parentNode->removeChild($logNode);
     }
 
-    protected function migrateAttributes(DOMElement $src, DOMElement $dest, array $attributes): void
-    {
-        foreach ($attributes as $attr) {
-            if (!$src->hasAttribute($attr)) {
-                continue;
-            }
-
-            $dest->setAttribute($attr, $src->getAttribute($attr));
-            $src->removeAttribute($attr);
-        }
-    }
-
-    abstract protected function forType(): string;
-
-    abstract protected function toReportFormat(DOMElement $logNode): DOMElement;
-
     private function findLogNode(DOMDocument $document): ?DOMElement
     {
         $logNode = (new DOMXPath($document))->query(
@@ -75,5 +60,21 @@ abstract class LogToReportMigration implements Migration
         }
 
         return $logNode;
+    }
+
+    abstract protected function forType(): string;
+
+    abstract protected function toReportFormat(DOMElement $logNode): DOMElement;
+
+    protected function migrateAttributes(DOMElement $src, DOMElement $dest, array $attributes): void
+    {
+        foreach ($attributes as $attr) {
+            if (!$src->hasAttribute($attr)) {
+                continue;
+            }
+
+            $dest->setAttribute($attr, $src->getAttribute($attr));
+            $src->removeAttribute($attr);
+        }
     }
 }

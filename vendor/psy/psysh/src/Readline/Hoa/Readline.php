@@ -160,7 +160,7 @@ class Readline
             if (true === $direct) {
                 $output->writeAll($prefix);
             } else {
-                $output->writeAll($prefix.$out."\n");
+                $output->writeAll($prefix . $out . "\n");
             }
 
             return $out;
@@ -197,6 +197,24 @@ class Readline
     }
 
     /**
+     * Reset current line.
+     */
+    protected function resetLine()
+    {
+        $this->_line = null;
+        $this->_lineCurrent = 0;
+        $this->_lineLength = 0;
+    }
+
+    /**
+     * Read on input. Not for user.
+     */
+    public function _read(int $length = 512): string
+    {
+        return Console::getInput()->read($length);
+    }
+
+    /**
      * Readline core.
      */
     public function _readLine(string $char)
@@ -227,12 +245,92 @@ class Readline
             $this->getLine(),
             $this->getLineCurrent() - 1
         );
-        $this->_buffer = "\033[K".$tail.\str_repeat(
-            "\033[D",
-            \mb_strlen($tail) - 1
-        );
+        $this->_buffer = "\033[K" . $tail . \str_repeat(
+                "\033[D",
+                \mb_strlen($tail) - 1
+            );
 
         return static::STATE_CONTINUE;
+    }
+
+    /**
+     * Get current line length.
+     *
+     * @return int
+     */
+    public function getLineLength(): int
+    {
+        return $this->_lineLength;
+    }
+
+    /**
+     * Set line length. Not for user.
+     */
+    public function setLineLength(int $length)
+    {
+        $this->_lineLength = $length;
+    }
+
+    /**
+     * Get current line seek.
+     */
+    public function getLineCurrent(): int
+    {
+        return $this->_lineCurrent;
+    }
+
+    /**
+     * Set current line seek. Not for user.
+     */
+    public function setLineCurrent(int $current)
+    {
+        $this->_lineCurrent = $current;
+    }
+
+    /**
+     * Append to current line.
+     */
+    public function appendLine(string $append)
+    {
+        $this->_line .= $append;
+        $this->_lineLength = \mb_strlen($this->_line);
+        $this->_lineCurrent = $this->_lineLength;
+    }
+
+    /**
+     * Insert into current line at the current seek.
+     */
+    public function insertLine(string $insert)
+    {
+        if ($this->_lineLength === $this->_lineCurrent) {
+            return $this->appendLine($insert);
+        }
+
+        $this->_line = \mb_substr($this->_line, 0, $this->_lineCurrent) .
+            $insert .
+            \mb_substr($this->_line, $this->_lineCurrent);
+        $this->_lineLength = \mb_strlen($this->_line);
+        $this->_lineCurrent += \mb_strlen($insert);
+
+        return;
+    }
+
+    /**
+     * Get current line.
+     */
+    public function getLine()
+    {
+        return $this->_line;
+    }
+
+    /**
+     * Set current line. Not for user.
+     */
+    public function setLine(string $line)
+    {
+        $this->_line = $line;
+        $this->_lineLength = \mb_strlen($this->_line ?: '');
+        $this->_lineCurrent = $this->_lineLength;
     }
 
     /**
@@ -257,26 +355,13 @@ class Readline
     public function addMapping(string $key, $mapping)
     {
         if ('\e[' === \substr($key, 0, 3)) {
-            $this->_mapping["\033[".\substr($key, 3)] = $mapping;
+            $this->_mapping["\033[" . \substr($key, 3)] = $mapping;
         } elseif ('\C-' === \substr($key, 0, 3)) {
             $_key = \ord(\strtolower(\substr($key, 3))) - 96;
             $this->_mapping[\chr($_key)] = $mapping;
         } else {
             $this->_mapping[$key] = $mapping;
         }
-    }
-
-    /**
-     * Add an entry in the history.
-     */
-    public function addHistory(string $line = null)
-    {
-        if (empty($line)) {
-            return;
-        }
-
-        $this->_history[] = $line;
-        $this->_historyCurrent = $this->_historySize++;
     }
 
     /**
@@ -291,184 +376,11 @@ class Readline
     }
 
     /**
-     * Get an entry in the history.
-     */
-    public function getHistory(int $i = null)
-    {
-        if (null === $i) {
-            $i = $this->_historyCurrent;
-        }
-
-        if (!isset($this->_history[$i])) {
-            return null;
-        }
-
-        return $this->_history[$i];
-    }
-
-    /**
-     * Go backward in the history.
-     */
-    public function previousHistory()
-    {
-        if (0 >= $this->_historyCurrent) {
-            return $this->getHistory(0);
-        }
-
-        return $this->getHistory($this->_historyCurrent--);
-    }
-
-    /**
-     * Go forward in the history.
-     */
-    public function nextHistory()
-    {
-        if ($this->_historyCurrent + 1 >= $this->_historySize) {
-            return $this->getLine();
-        }
-
-        return $this->getHistory(++$this->_historyCurrent);
-    }
-
-    /**
-     * Get current line.
-     */
-    public function getLine()
-    {
-        return $this->_line;
-    }
-
-    /**
-     * Append to current line.
-     */
-    public function appendLine(string $append)
-    {
-        $this->_line .= $append;
-        $this->_lineLength = \mb_strlen($this->_line);
-        $this->_lineCurrent = $this->_lineLength;
-    }
-
-    /**
-     * Insert into current line at the current seek.
-     */
-    public function insertLine(string $insert)
-    {
-        if ($this->_lineLength === $this->_lineCurrent) {
-            return $this->appendLine($insert);
-        }
-
-        $this->_line = \mb_substr($this->_line, 0, $this->_lineCurrent).
-                               $insert.
-                               \mb_substr($this->_line, $this->_lineCurrent);
-        $this->_lineLength = \mb_strlen($this->_line);
-        $this->_lineCurrent += \mb_strlen($insert);
-
-        return;
-    }
-
-    /**
-     * Reset current line.
-     */
-    protected function resetLine()
-    {
-        $this->_line = null;
-        $this->_lineCurrent = 0;
-        $this->_lineLength = 0;
-    }
-
-    /**
-     * Get current line seek.
-     */
-    public function getLineCurrent(): int
-    {
-        return $this->_lineCurrent;
-    }
-
-    /**
-     * Get current line length.
-     *
-     * @return int
-     */
-    public function getLineLength(): int
-    {
-        return $this->_lineLength;
-    }
-
-    /**
-     * Set prefix.
-     */
-    public function setPrefix(string $prefix)
-    {
-        $this->_prefix = $prefix;
-    }
-
-    /**
-     * Get prefix.
-     */
-    public function getPrefix()
-    {
-        return $this->_prefix;
-    }
-
-    /**
      * Get buffer. Not for user.
      */
     public function getBuffer()
     {
         return $this->_buffer;
-    }
-
-    /**
-     * Set an autocompleter.
-     */
-    public function setAutocompleter(Autocompleter $autocompleter)
-    {
-        $old = $this->_autocompleter;
-        $this->_autocompleter = $autocompleter;
-
-        return $old;
-    }
-
-    /**
-     * Get the autocompleter.
-     */
-    public function getAutocompleter(): Autocompleter
-    {
-        return $this->_autocompleter;
-    }
-
-    /**
-     * Read on input. Not for user.
-     */
-    public function _read(int $length = 512): string
-    {
-        return Console::getInput()->read($length);
-    }
-
-    /**
-     * Set current line. Not for user.
-     */
-    public function setLine(string $line)
-    {
-        $this->_line = $line;
-        $this->_lineLength = \mb_strlen($this->_line ?: '');
-        $this->_lineCurrent = $this->_lineLength;
-    }
-
-    /**
-     * Set current line seek. Not for user.
-     */
-    public function setLineCurrent(int $current)
-    {
-        $this->_lineCurrent = $current;
-    }
-
-    /**
-     * Set line length. Not for user.
-     */
-    public function setLineLength(int $length)
-    {
-        $this->_lineLength = $length;
     }
 
     /**
@@ -497,6 +409,50 @@ class Readline
     }
 
     /**
+     * Get prefix.
+     */
+    public function getPrefix()
+    {
+        return $this->_prefix;
+    }
+
+    /**
+     * Set prefix.
+     */
+    public function setPrefix(string $prefix)
+    {
+        $this->_prefix = $prefix;
+    }
+
+    /**
+     * Go backward in the history.
+     */
+    public function previousHistory()
+    {
+        if (0 >= $this->_historyCurrent) {
+            return $this->getHistory(0);
+        }
+
+        return $this->getHistory($this->_historyCurrent--);
+    }
+
+    /**
+     * Get an entry in the history.
+     */
+    public function getHistory(int $i = null)
+    {
+        if (null === $i) {
+            $i = $this->_historyCurrent;
+        }
+
+        if (!isset($this->_history[$i])) {
+            return null;
+        }
+
+        return $this->_history[$i];
+    }
+
+    /**
      * Down arrow binding.
      * Go forward in the history.
      */
@@ -514,20 +470,26 @@ class Readline
     }
 
     /**
-     * Right arrow binding.
-     * Move cursor to the right.
+     * Go forward in the history.
      */
-    public function _bindArrowRight(self $self): int
+    public function nextHistory()
     {
-        if ($self->getLineLength() > $self->getLineCurrent()) {
-            if (0 === (static::STATE_CONTINUE & static::STATE_NO_ECHO)) {
-                ConsoleCursor::move('→');
-            }
-
-            $self->setLineCurrent($self->getLineCurrent() + 1);
+        if ($this->_historyCurrent + 1 >= $this->_historySize) {
+            return $this->getLine();
         }
 
-        $self->setBuffer('');
+        return $this->getHistory(++$this->_historyCurrent);
+    }
+
+    /**
+     * Control-A binding.
+     * Move cursor to beginning of line.
+     */
+    public function _bindControlA(self $self): int
+    {
+        for ($i = $self->getLineCurrent() - 1; 0 <= $i; --$i) {
+            $self->_bindArrowLeft($self);
+        }
 
         return static::STATE_CONTINUE;
     }
@@ -547,50 +509,6 @@ class Readline
         }
 
         $self->setBuffer('');
-
-        return static::STATE_CONTINUE;
-    }
-
-    /**
-     * Backspace and Control-H binding.
-     * Delete the first character at the right of the cursor.
-     */
-    public function _bindBackspace(self $self): int
-    {
-        $buffer = '';
-
-        if (0 < $self->getLineCurrent()) {
-            if (0 === (static::STATE_CONTINUE & static::STATE_NO_ECHO)) {
-                ConsoleCursor::move('←');
-                ConsoleCursor::clear('→');
-            }
-
-            if ($self->getLineLength() === $current = $self->getLineCurrent()) {
-                $self->setLine(\mb_substr($self->getLine(), 0, -1));
-            } else {
-                $line = $self->getLine();
-                $current = $self->getLineCurrent();
-                $tail = \mb_substr($line, $current);
-                $buffer = $tail.\str_repeat("\033[D", \mb_strlen($tail));
-                $self->setLine(\mb_substr($line, 0, $current - 1).$tail);
-                $self->setLineCurrent($current - 1);
-            }
-        }
-
-        $self->setBuffer($buffer);
-
-        return static::STATE_CONTINUE;
-    }
-
-    /**
-     * Control-A binding.
-     * Move cursor to beginning of line.
-     */
-    public function _bindControlA(self $self): int
-    {
-        for ($i = $self->getLineCurrent() - 1; 0 <= $i; --$i) {
-            $self->_bindArrowLeft($self);
-        }
 
         return static::STATE_CONTINUE;
     }
@@ -641,6 +559,25 @@ class Readline
         ) {
             $self->_bindArrowRight($self);
         }
+
+        return static::STATE_CONTINUE;
+    }
+
+    /**
+     * Right arrow binding.
+     * Move cursor to the right.
+     */
+    public function _bindArrowRight(self $self): int
+    {
+        if ($self->getLineLength() > $self->getLineCurrent()) {
+            if (0 === (static::STATE_CONTINUE & static::STATE_NO_ECHO)) {
+                ConsoleCursor::move('→');
+            }
+
+            $self->setLineCurrent($self->getLineCurrent() + 1);
+        }
+
+        $self->setBuffer('');
 
         return static::STATE_CONTINUE;
     }
@@ -716,6 +653,37 @@ class Readline
     }
 
     /**
+     * Backspace and Control-H binding.
+     * Delete the first character at the right of the cursor.
+     */
+    public function _bindBackspace(self $self): int
+    {
+        $buffer = '';
+
+        if (0 < $self->getLineCurrent()) {
+            if (0 === (static::STATE_CONTINUE & static::STATE_NO_ECHO)) {
+                ConsoleCursor::move('←');
+                ConsoleCursor::clear('→');
+            }
+
+            if ($self->getLineLength() === $current = $self->getLineCurrent()) {
+                $self->setLine(\mb_substr($self->getLine(), 0, -1));
+            } else {
+                $line = $self->getLine();
+                $current = $self->getLineCurrent();
+                $tail = \mb_substr($line, $current);
+                $buffer = $tail . \str_repeat("\033[D", \mb_strlen($tail));
+                $self->setLine(\mb_substr($line, 0, $current - 1) . $tail);
+                $self->setLineCurrent($current - 1);
+            }
+        }
+
+        $self->setBuffer($buffer);
+
+        return static::STATE_CONTINUE;
+    }
+
+    /**
      * Newline binding.
      */
     public function _bindNewline(self $self): int
@@ -723,6 +691,19 @@ class Readline
         $self->addHistory($self->getLine());
 
         return static::STATE_BREAK;
+    }
+
+    /**
+     * Add an entry in the history.
+     */
+    public function addHistory(string $line = null)
+    {
+        if (empty($line)) {
+            return;
+        }
+
+        $this->_history[] = $line;
+        $this->_historyCurrent = $this->_historySize++;
     }
 
     /**
@@ -746,7 +727,7 @@ class Readline
         }
 
         $matches = \preg_match_all(
-            '#'.$autocompleter->getWordDefinition().'$#u',
+            '#' . $autocompleter->getWordDefinition() . '$#u',
             \mb_substr($line, 0, $current),
             $words
         );
@@ -797,8 +778,8 @@ class Readline
                 return;
             });
 
-            $mColumns = (int) \floor($wWidth / ($cWidth + 2));
-            $mLines = (int) \ceil(($count + 1) / $mColumns);
+            $mColumns = (int)\floor($wWidth / ($cWidth + 2));
+            $mLines = (int)\ceil(($count + 1) / $mColumns);
             --$mColumns;
             $i = 0;
 
@@ -813,7 +794,7 @@ class Readline
             ConsoleCursor::clear('↓');
 
             foreach ($_solution as $j => $s) {
-                $output->writeAll("\033[0m".$s."\033[0m");
+                $output->writeAll("\033[0m" . $s . "\033[0m");
 
                 if ($i++ < $mColumns) {
                     $output->writeAll('  ');
@@ -848,7 +829,7 @@ class Readline
                 ConsoleCursor::move('↓ LEFT');
                 ConsoleCursor::move('→', $mColumn * ($cWidth + 2));
                 ConsoleCursor::move('↓', $mLine);
-                $output->writeAll("\033[0m".$_solution[$coord]."\033[0m");
+                $output->writeAll("\033[0m" . $_solution[$coord] . "\033[0m");
                 ConsoleCursor::restore();
                 ConsoleCursor::show();
 
@@ -867,7 +848,7 @@ class Readline
                 ConsoleCursor::move('↓ LEFT');
                 ConsoleCursor::move('→', $mColumn * ($cWidth + 2));
                 ConsoleCursor::move('↓', $mLine);
-                $output->writeAll("\033[7m".$_solution[$coord]."\033[0m");
+                $output->writeAll("\033[7m" . $_solution[$coord] . "\033[0m");
                 ConsoleCursor::restore();
                 ConsoleCursor::show();
 
@@ -906,7 +887,7 @@ class Readline
 
                         $unselect();
                         $coord = \max(0, $coord - $mColumns);
-                        $mLine = (int) \floor($coord / $mColumns);
+                        $mLine = (int)\floor($coord / $mColumns);
                         $mColumn = $coord % $mColumns;
                         $select();
 
@@ -921,7 +902,7 @@ class Readline
 
                         $unselect();
                         $coord = \min($count, $coord + $mColumns);
-                        $mLine = (int) \floor($coord / $mColumns);
+                        $mLine = (int)\floor($coord / $mColumns);
                         $mColumn = $coord % $mColumns;
                         $select();
 
@@ -937,7 +918,7 @@ class Readline
 
                         $unselect();
                         $coord = \min($count, $coord + 1);
-                        $mLine = (int) \floor($coord / $mColumns);
+                        $mLine = (int)\floor($coord / $mColumns);
                         $mColumn = $coord % $mColumns;
                         $select();
 
@@ -952,7 +933,7 @@ class Readline
 
                         $unselect();
                         $coord = \max(0, $coord - 1);
-                        $mLine = (int) \floor($coord / $mColumns);
+                        $mLine = (int)\floor($coord / $mColumns);
                         $mColumn = $coord % $mColumns;
                         $select();
 
@@ -963,8 +944,8 @@ class Readline
                             $tail = \mb_substr($line, $current);
                             $current -= $length;
                             $self->setLine(
-                                \mb_substr($line, 0, $current).
-                                $solution[$coord].
+                                \mb_substr($line, 0, $current) .
+                                $solution[$coord] .
                                 $tail
                             );
                             $self->setLineCurrent(
@@ -978,7 +959,7 @@ class Readline
                             ConsoleCursor::move('←', \mb_strlen($tail));
                         }
 
-                        // no break
+                    // no break
                     default:
                         $mColumn = -1;
                         $mLine = -1;
@@ -1004,8 +985,8 @@ class Readline
         $tail = \mb_substr($line, $current);
         $current -= $length;
         $self->setLine(
-            \mb_substr($line, 0, $current).
-            $solution.
+            \mb_substr($line, 0, $current) .
+            $solution .
             $tail
         );
         $self->setLineCurrent(
@@ -1019,6 +1000,25 @@ class Readline
         ConsoleCursor::move('←', \mb_strlen($tail));
 
         return $state;
+    }
+
+    /**
+     * Get the autocompleter.
+     */
+    public function getAutocompleter(): Autocompleter
+    {
+        return $this->_autocompleter;
+    }
+
+    /**
+     * Set an autocompleter.
+     */
+    public function setAutocompleter(Autocompleter $autocompleter)
+    {
+        $old = $this->_autocompleter;
+        $this->_autocompleter = $autocompleter;
+
+        return $old;
     }
 }
 

@@ -14,24 +14,9 @@ class Modal extends AbstractDisplayer
 
     protected $icon = 'fa-clone';
 
-    public function title(string $title)
-    {
-        $this->title = $title;
-    }
-
-    public function xl()
-    {
-        $this->xl = true;
-    }
-
     public function icon($icon)
     {
         $this->icon = $icon;
-    }
-
-    protected function setUpLazyRenderable(LazyRenderable $renderable)
-    {
-        return clone $renderable->payload(['key' => $this->getKey()]);
     }
 
     public function display($callback = null)
@@ -46,7 +31,7 @@ class Modal extends AbstractDisplayer
         if ($callback instanceof \Closure) {
             $callback = $callback->call($this->row, $this);
 
-            if (! $callback instanceof LazyRenderable) {
+            if (!$callback instanceof LazyRenderable) {
                 $html = Helper::render($callback);
 
                 $callback = null;
@@ -69,6 +54,21 @@ class Modal extends AbstractDisplayer
             ->body($html)
             ->delay(300)
             ->button($this->renderButton());
+    }
+
+    protected function setUpLazyRenderable(LazyRenderable $renderable)
+    {
+        return clone $renderable->payload(['key' => $this->getKey()]);
+    }
+
+    public function title(string $title)
+    {
+        $this->title = $title;
+    }
+
+    public function xl()
+    {
+        $this->xl = true;
     }
 
     protected function renderButton()

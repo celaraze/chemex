@@ -7,17 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const DIRECTORY_SEPARATOR;
-use function class_exists;
-use function defined;
-use function dirname;
-use function is_dir;
-use function realpath;
-use function sprintf;
-use function strpos;
-use function sys_get_temp_dir;
 use Composer\Autoload\ClassLoader;
 use DeepCopy\DeepCopy;
 use Doctrine\Instantiator\Instantiator;
@@ -53,6 +45,15 @@ use SebastianBergmann\Type\TypeName;
 use SebastianBergmann\Version;
 use TheSeer\Tokenizer\Tokenizer;
 use Webmozart\Assert\Assert;
+use function class_exists;
+use function defined;
+use function dirname;
+use function is_dir;
+use function realpath;
+use function sprintf;
+use function strpos;
+use function sys_get_temp_dir;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -183,35 +184,15 @@ final class ExcludeList
     }
 
     /**
+     * @return string[]
      * @throws Exception
      *
-     * @return string[]
      */
     public function getExcludedDirectories(): array
     {
         $this->initialize();
 
         return self::$directories;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function isExcluded(string $file): bool
-    {
-        if (defined('PHPUNIT_TESTSUITE')) {
-            return false;
-        }
-
-        $this->initialize();
-
-        foreach (self::$directories as $directory) {
-            if (strpos($file, $directory) === 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -233,7 +214,7 @@ final class ExcludeList
                 } catch (ReflectionException $e) {
                     throw new Exception(
                         $e->getMessage(),
-                        (int) $e->getCode(),
+                        (int)$e->getCode(),
                         $e
                     );
                 }
@@ -253,5 +234,25 @@ final class ExcludeList
                 self::$directories[] = sys_get_temp_dir() . '\\PHP';
             }
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function isExcluded(string $file): bool
+    {
+        if (defined('PHPUNIT_TESTSUITE')) {
+            return false;
+        }
+
+        $this->initialize();
+
+        foreach (self::$directories as $directory) {
+            if (strpos($file, $directory) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

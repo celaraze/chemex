@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Generator;
 
 use Ramsey\Uuid\Exception\NameException;
 use Ramsey\Uuid\UuidInterface;
-
 use function sprintf;
 use function uuid_generate_md5;
 use function uuid_generate_sha1;

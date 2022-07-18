@@ -12,4 +12,4 @@
 /*
  * Unknown default region, use the first alphabetically.
  */
-return require __DIR__.'/ig_NG.php';
+return require __DIR__ . '/ig_NG.php';

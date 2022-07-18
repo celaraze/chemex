@@ -45,6 +45,13 @@ class FragmentListener implements EventSubscriberInterface
         $this->fragmentPath = $fragmentPath;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::REQUEST => [['onKernelRequest', 48]],
+        ];
+    }
+
     /**
      * Fixes request attributes when the path is '/_fragment'.
      *
@@ -88,12 +95,5 @@ class FragmentListener implements EventSubscriberInterface
         }
 
         throw new AccessDeniedHttpException();
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => [['onKernelRequest', 48]],
-        ];
     }
 }

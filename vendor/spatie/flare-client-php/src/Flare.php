@@ -58,10 +58,55 @@ class Flare
 
     protected ?Container $container = null;
 
+    /**
+     * @param \Spatie\FlareClient\Http\Client $client
+     * @param \Spatie\FlareClient\Context\ContextProviderDetector|null $contextDetector
+     * @param array<int, FlareMiddleware> $middleware
+     */
+    public function __construct(
+        Client                  $client,
+        ContextProviderDetector $contextDetector = null,
+        array                   $middleware = []
+    )
+    {
+        $this->client = $client;
+        $this->recorder = new GlowRecorder();
+        $this->contextDetector = $contextDetector ?? new BaseContextProviderDetector();
+        $this->middleware = $middleware;
+        $this->api = new Api($this->client);
+
+        $this->registerDefaultMiddleware();
+    }
+
+    protected function registerDefaultMiddleware(): self
+    {
+        return $this->registerMiddleware([
+            new AddGlows($this->recorder),
+            new AddEnvironmentInformation(),
+        ]);
+    }
+
+    /**
+     * @param FlareMiddleware|array<FlareMiddleware>|class-string<FlareMiddleware> $middleware
+     *
+     * @return $this
+     */
+    public function registerMiddleware($middleware): self
+    {
+        if (!is_array($middleware)) {
+            $middleware = [$middleware];
+        }
+
+        $this->middleware = array_merge($this->middleware, $middleware);
+
+        return $this;
+    }
+
     public static function make(
-        string $apiKey = null,
+        string                  $apiKey = null,
         ContextProviderDetector $contextDetector = null
-    ): self {
+    ): self
+    {
         $client = new Client($apiKey);
 
         return new self($client, $contextDetector);
@@ -121,34 +166,6 @@ class Flare
         return $this;
     }
 
-    public function version(): ?string
-    {
-        if (! $this->determineVersionCallable) {
-            return null;
-        }
-
-        return ($this->determineVersionCallable)();
-    }
-
-    /**
-     * @param \Spatie\FlareClient\Http\Client $client
-     * @param \Spatie\FlareClient\Context\ContextProviderDetector|null $contextDetector
-     * @param array<int, FlareMiddleware> $middleware
-     */
-    public function __construct(
-        Client $client,
-        ContextProviderDetector $contextDetector = null,
-        array $middleware = []
-    ) {
-        $this->client = $client;
-        $this->recorder = new GlowRecorder();
-        $this->contextDetector = $contextDetector ?? new BaseContextProviderDetector();
-        $this->middleware = $middleware;
-        $this->api = new Api($this->client);
-
-        $this->registerDefaultMiddleware();
-    }
-
     /** @return array<int, FlareMiddleware|class-string<FlareMiddleware>> */
     public function getMiddleware(): array
     {
@@ -193,30 +210,6 @@ class Flare
         return $this;
     }
 
-    protected function registerDefaultMiddleware(): self
-    {
-        return $this->registerMiddleware([
-            new AddGlows($this->recorder),
-            new AddEnvironmentInformation(),
-        ]);
-    }
-
-    /**
-     * @param FlareMiddleware|array<FlareMiddleware>|class-string<FlareMiddleware> $middleware
-     *
-     * @return $this
-     */
-    public function registerMiddleware($middleware): self
-    {
-        if (! is_array($middleware)) {
-            $middleware = [$middleware];
-        }
-
-        $this->middleware = array_merge($this->middleware, $middleware);
-
-        return $this;
-    }
-
     /**
      * @return array<int,FlareMiddleware|class-string<FlareMiddleware>>
      */
@@ -235,8 +228,9 @@ class Flare
     public function glow(
         string $name,
         string $messageLevel = MessageLevels::INFO,
-        array $metaData = []
-    ): self {
+        array  $metaData = []
+    ): self
+    {
         $this->recorder->record(new Glow($name, $messageLevel, $metaData));
 
         return $this;
@@ -248,6 +242,95 @@ class Flare
 
         if ($this->previousExceptionHandler) {
             call_user_func($this->previousExceptionHandler, $throwable);
+        }
+    }
+
+    public function report(Throwable $throwable, callable $callback = null, Report $report = null): ?Report
+    {
+        if (!$this->shouldSendReport($throwable)) {
+            return null;
+        }
+
+        $report ??= $this->createReport($throwable);
+
+        if (!is_null($callback)) {
+            call_user_func($callback, $report);
+        }
+
+        $this->sendReportToApi($report);
+
+        return $report;
+    }
+
+    protected function shouldSendReport(Throwable $throwable): bool
+    {
+        if ($this->reportErrorLevels && $throwable instanceof Error) {
+            return (bool)($this->reportErrorLevels & $throwable->getCode());
+        }
+
+        if ($this->reportErrorLevels && $throwable instanceof ErrorException) {
+            return (bool)($this->reportErrorLevels & $throwable->getSeverity());
+        }
+
+        if ($this->filterExceptionsCallable && $throwable instanceof Exception) {
+            return (bool)(call_user_func($this->filterExceptionsCallable, $throwable));
+        }
+
+        return true;
+    }
+
+    public function createReport(Throwable $throwable): Report
+    {
+        $report = Report::createForThrowable(
+            $throwable,
+            $this->contextDetector->detectCurrentContext(),
+            $this->applicationPath,
+            $this->version()
+        );
+
+        return $this->applyMiddlewareToReport($report);
+    }
+
+    public function version(): ?string
+    {
+        if (!$this->determineVersionCallable) {
+            return null;
+        }
+
+        return ($this->determineVersionCallable)();
+    }
+
+    protected function applyMiddlewareToReport(Report $report): Report
+    {
+        $this->applyAdditionalParameters($report);
+        $middleware = array_map(function ($singleMiddleware) {
+            return is_string($singleMiddleware)
+                ? new $singleMiddleware
+                : $singleMiddleware;
+        }, $this->middleware);
+
+        $report = (new Pipeline())
+            ->send($report)
+            ->through($middleware)
+            ->then(fn($report) => $report);
+
+        return $report;
+    }
+
+    protected function applyAdditionalParameters(Report $report): void
+    {
+        $report
+            ->stage($this->stage)
+            ->messageLevel($this->messageLevel)
+            ->setApplicationPath($this->applicationPath)
+            ->userProvidedContext($this->userProvidedContext);
+    }
+
+    protected function sendReportToApi(Report $report): void
+    {
+        try {
+            $this->api->report($report);
+        } catch (Exception $exception) {
         }
     }
 
@@ -278,62 +361,32 @@ class Flare
         return $this;
     }
 
-    public function report(Throwable $throwable, callable $callback = null, Report $report = null): ?Report
-    {
-        if (! $this->shouldSendReport($throwable)) {
-            return null;
-        }
-
-        $report ??= $this->createReport($throwable);
-
-        if (! is_null($callback)) {
-            call_user_func($callback, $report);
-        }
-
-        $this->sendReportToApi($report);
-
-        return $report;
-    }
-
-    protected function shouldSendReport(Throwable $throwable): bool
-    {
-        if ($this->reportErrorLevels && $throwable instanceof Error) {
-            return (bool)($this->reportErrorLevels & $throwable->getCode());
-        }
-
-        if ($this->reportErrorLevels && $throwable instanceof ErrorException) {
-            return (bool)($this->reportErrorLevels & $throwable->getSeverity());
-        }
-
-        if ($this->filterExceptionsCallable && $throwable instanceof Exception) {
-            return (bool)(call_user_func($this->filterExceptionsCallable, $throwable));
-        }
-
-        return true;
-    }
-
     public function reportMessage(string $message, string $logLevel, callable $callback = null): void
     {
         $report = $this->createReportFromMessage($message, $logLevel);
 
-        if (! is_null($callback)) {
+        if (!is_null($callback)) {
             call_user_func($callback, $report);
         }
 
         $this->sendReportToApi($report);
+    }
+
+    public function createReportFromMessage(string $message, string $logLevel): Report
+    {
+        $report = Report::createForMessage(
+            $message,
+            $logLevel,
+            $this->contextDetector->detectCurrentContext(),
+            $this->applicationPath
+        );
+
+        return $this->applyMiddlewareToReport($report);
     }
 
     public function sendTestReport(Throwable $throwable): void
     {
         $this->api->sendTestReport($this->createReport($throwable));
-    }
-
-    protected function sendReportToApi(Report $report): void
-    {
-        try {
-            $this->api->report($report);
-        } catch (Exception $exception) {
-        }
     }
 
     public function reset(): void
@@ -343,15 +396,6 @@ class Flare
         $this->userProvidedContext = [];
 
         $this->recorder->reset();
-    }
-
-    protected function applyAdditionalParameters(Report $report): void
-    {
-        $report
-            ->stage($this->stage)
-            ->messageLevel($this->messageLevel)
-            ->setApplicationPath($this->applicationPath)
-            ->userProvidedContext($this->userProvidedContext);
     }
 
     public function anonymizeIp(): self
@@ -371,46 +415,5 @@ class Flare
         $this->registerMiddleware(new CensorRequestBodyFields($fieldNames));
 
         return $this;
-    }
-
-    public function createReport(Throwable $throwable): Report
-    {
-        $report = Report::createForThrowable(
-            $throwable,
-            $this->contextDetector->detectCurrentContext(),
-            $this->applicationPath,
-            $this->version()
-        );
-
-        return $this->applyMiddlewareToReport($report);
-    }
-
-    public function createReportFromMessage(string $message, string $logLevel): Report
-    {
-        $report = Report::createForMessage(
-            $message,
-            $logLevel,
-            $this->contextDetector->detectCurrentContext(),
-            $this->applicationPath
-        );
-
-        return $this->applyMiddlewareToReport($report);
-    }
-
-    protected function applyMiddlewareToReport(Report $report): Report
-    {
-        $this->applyAdditionalParameters($report);
-        $middleware = array_map(function ($singleMiddleware) {
-            return is_string($singleMiddleware)
-                ? new $singleMiddleware
-                : $singleMiddleware;
-        }, $this->middleware);
-
-        $report = (new Pipeline())
-            ->send($report)
-            ->through($middleware)
-            ->then(fn ($report) => $report);
-
-        return $report;
     }
 }

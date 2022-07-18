@@ -14,13 +14,13 @@ use Spatie\LaravelIgnition\Support\SentReports;
  */
 class Flare extends Facade
 {
-    protected static function getFacadeAccessor()
-    {
-        return \Spatie\FlareClient\Flare::class;
-    }
-
     public static function sentReports(): SentReports
     {
         return app(SentReports::class);
+    }
+
+    protected static function getFacadeAccessor()
+    {
+        return \Spatie\FlareClient\Flare::class;
     }
 }

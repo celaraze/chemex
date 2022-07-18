@@ -12,6 +12,14 @@ class Organization extends Entry
     use Concerns\HasDescription;
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getCreatableDn()
+    {
+        return $this->getDnBuilder()->addO($this->getOrganization());
+    }
+
+    /**
      * Retrieves the organization units OU attribute.
      *
      * @return string
@@ -19,13 +27,5 @@ class Organization extends Entry
     public function getOrganization()
     {
         return $this->getFirstAttribute($this->schema->organizationName());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getCreatableDn()
-    {
-        return $this->getDnBuilder()->addO($this->getOrganization());
     }
 }

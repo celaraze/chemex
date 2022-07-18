@@ -6,7 +6,8 @@
 
 ### Minimum Requirements
 
-Adldap2-Laravel now requires a minimum of Laravel 5.5, as all previous versions are now out of their respective support windows.
+Adldap2-Laravel now requires a minimum of Laravel 5.5, as all previous versions are now out of their respective support
+windows.
 
 If you require using an earlier version of Laravel, please use Adldap2-Laravel v5.0.
 
@@ -96,7 +97,8 @@ This column is configurable via the `guid_column` located in the `database` conf
         //
 ```
 
-If you're starting from scratch, simply add the `objectguid` column (or whichever column you've configured) to your `users` migration file:
+If you're starting from scratch, simply add the `objectguid` column (or whichever column you've configured) to
+your `users` migration file:
 
 ```php
 Schema::create('users', function (Blueprint $table) {
@@ -131,29 +133,35 @@ Set this option to your users database username column so users are correctly lo
 
 ##### LDAP Discover and Authenticate
 
-The `ldap.discover` and `ldap.authenticate` options have been renamed to `ldap.locate_users_by` and `ldap.bind_user_by` respectively.
+The `ldap.discover` and `ldap.authenticate` options have been renamed to `ldap.locate_users_by` and `ldap.bind_user_by`
+respectively.
 
 They were renamed to more directly indicate what they are used for.
 
 ##### Windows Discover and Key
 
-The `windows.discover` and `windows.key` options were renamed to `windows.locate_users_by` and `windows.server_key` to follow suit with the above change and to directly indicate what it is used for.
+The `windows.discover` and `windows.key` options were renamed to `windows.locate_users_by` and `windows.server_key` to
+follow suit with the above change and to directly indicate what it is used for.
 
 #### LDAP
 
 ##### Logging
 
-The `logging` option has been added to automatically enable LDAP operation logging that was added in [Adldap2 v10.0](https://adldap2.github.io/Adldap2/#/logging).
+The `logging` option has been added to automatically enable LDAP operation logging that was added
+in [Adldap2 v10.0](https://adldap2.github.io/Adldap2/#/logging).
 
-Simply set this to `false` if you would not like operation logging enabled. Any connections you specify in your `connections` configuration will be logged.
+Simply set this to `false` if you would not like operation logging enabled. Any connections you specify in
+your `connections` configuration will be logged.
 
 ## Upgrading from 4.* to 5.*
 
 **Estimated Upgrade Time: 30 minutes**
 
-Functionally, you should not need to change the way you use Adldap2-Laravel. There have been no major API changes that will impact your current usage.
+Functionally, you should not need to change the way you use Adldap2-Laravel. There have been no major API changes that
+will impact your current usage.
 
-However, there have been API changes to the core [Adldap2](https://github.com/Adldap2/Adldap2/releases/tag/v9.0.0) package.
+However, there have been API changes to the core [Adldap2](https://github.com/Adldap2/Adldap2/releases/tag/v9.0.0)
+package.
 It is heavily recommended to read the release notes to see if you may be impacted.
 
 ### Requirements
@@ -190,7 +198,8 @@ This means you will need to add your suffix or prefix onto your configured admin
 
 #### Connection Settings
 
-The configuration option named `connection_settings` inside each of your configured connections in the `adldap.php` (now `ldap.php`) configuration file has been renamed to `settings` for simplicity.
+The configuration option named `connection_settings` inside each of your configured connections in the `adldap.php` (
+now `ldap.php`) configuration file has been renamed to `settings` for simplicity.
 
 ### Authentication Driver
 
@@ -222,7 +231,8 @@ However for this package you should only have to change your `adldap_auth.php` c
 
 LDAP connection exceptions are now caught when authentication attempts occur.
 
-These exceptions are logged to your configured logging driver so you can view the stack trace and discover issues easier.
+These exceptions are logged to your configured logging driver so you can view the stack trace and discover issues
+easier.
 
 ### Configuration
 

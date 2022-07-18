@@ -14,7 +14,9 @@ http-{foundation,kernel} using application. It attempts to implement the
 
 [W3C Recommendation]: http://www.w3.org/TR/cors/
 
-> Note: This is a standalone fork of https://github.com/asm89/stack-cors and is compatible with the options for CorsService.
+> Note: This is a standalone fork of https://github.com/asm89/stack-cors and is compatible with the options for
+> CorsService.
+
 ## Installation
 
 Require `fruitcake/php-cors` using composer.
@@ -23,9 +25,8 @@ Require `fruitcake/php-cors` using composer.
 
 This package can be used as a library. You can use it in your framework using:
 
- - [Stack middleware](http://stackphp.com/): https://github.com/asm89/stack-cors
- - [Laravel](https://laravel.com): https://github.com/fruitcake/laravel-cors
- 
+- [Stack middleware](http://stackphp.com/): https://github.com/asm89/stack-cors
+- [Laravel](https://laravel.com): https://github.com/fruitcake/laravel-cors
 
 ### Options
 
@@ -41,9 +42,11 @@ This package can be used as a library. You can use it in your framework using:
 
 The _allowedMethods_ and _allowedHeaders_ options are case-insensitive.
 
-You don't need to provide both _allowedOrigins_ and _allowedOriginsPatterns_. If one of the strings passed matches, it is considered a valid origin. A wildcard in allowedOrigins will be converted to a pattern.
+You don't need to provide both _allowedOrigins_ and _allowedOriginsPatterns_. If one of the strings passed matches, it
+is considered a valid origin. A wildcard in allowedOrigins will be converted to a pattern.
 
-If `['*']` is provided to _allowedMethods_, _allowedOrigins_ or _allowedHeaders_ all methods / origins / headers are allowed.
+If `['*']` is provided to _allowedMethods_, _allowedOrigins_ or _allowedHeaders_ all methods / origins / headers are
+allowed.
 
 > Note: Allowing a single static origin will improve cacheability.
 

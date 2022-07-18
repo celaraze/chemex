@@ -31,101 +31,82 @@ class Tree implements Renderable
     use Macroable;
 
     const SAVE_ORDER_NAME = '_order';
-
-    /**
-     * @var array
-     */
-    protected $items = [];
-
-    /**
-     * @var string
-     */
-    protected $elementId = 'tree-';
-
-    /**
-     * @var TreeRepository
-     */
-    protected $repository;
-
-    /**
-     * @var \Closure
-     */
-    protected $queryCallback;
-
-    /**
-     * View of tree to render.
-     *
-     * @var string
-     */
-    protected $view = 'admin::tree.container';
-
-    /**
-     * @var string
-     */
-    protected $branchView = 'admin::tree.branch';
-
-    /**
-     * @var \Closure
-     */
-    protected $callback;
-
-    /**
-     * @var null
-     */
-    protected $branchCallback = null;
-
     /**
      * @var string
      */
     public $path;
-
     /**
      * @var string
      */
     public $url;
-
     /**
      * @var bool
      */
     public $useCreate = true;
-
     /**
      * @var bool
      */
     public $expand = true;
-
     /**
      * @var bool
      */
     public $useQuickCreate = true;
-
     /**
      * @var array
      */
     public $dialogFormDimensions = ['700px', '670px'];
-
     /**
      * @var bool
      */
     public $useSave = true;
-
     /**
      * @var bool
      */
     public $useRefresh = true;
-
-    /**
-     * @var array
-     */
-    protected $nestableOptions = [];
-
     /**
      * Header tools.
      *
      * @var Tools
      */
     public $tools;
-
+    /**
+     * @var array
+     */
+    protected $items = [];
+    /**
+     * @var string
+     */
+    protected $elementId = 'tree-';
+    /**
+     * @var TreeRepository
+     */
+    protected $repository;
+    /**
+     * @var \Closure
+     */
+    protected $queryCallback;
+    /**
+     * View of tree to render.
+     *
+     * @var string
+     */
+    protected $view = 'admin::tree.container';
+    /**
+     * @var string
+     */
+    protected $branchView = 'admin::tree.branch';
+    /**
+     * @var \Closure
+     */
+    protected $callback;
+    /**
+     * @var null
+     */
+    protected $branchCallback = null;
+    /**
+     * @var array
+     */
+    protected $nestableOptions = [];
     /**
      * @var string
      */
@@ -144,7 +125,7 @@ class Tree implements Renderable
     /**
      * Menu constructor.
      *
-     * @param  Model|TreeRepository|string|null  $model
+     * @param Model|TreeRepository|string|null $model
      */
     public function __construct($repository = null, ?\Closure $callback = null)
     {
@@ -164,14 +145,6 @@ class Tree implements Renderable
     }
 
     /**
-     * Setup tree tools.
-     */
-    public function setUpTools()
-    {
-        $this->tools = new Tools($this);
-    }
-
-    /**
      * @param $repository
      * @return TreeRepository
      */
@@ -185,36 +158,38 @@ class Tree implements Renderable
             $repository = EloquentRepository::make($repository);
         }
 
-        if (! $repository instanceof TreeRepository) {
+        if (!$repository instanceof TreeRepository) {
             $class = get_class($repository);
 
-            throw new InvalidArgumentException("The class [{$class}] must be a type of [".TreeRepository::class.'].');
+            throw new InvalidArgumentException("The class [{$class}] must be a type of [" . TreeRepository::class . '].');
         }
 
         return $repository;
     }
 
     /**
-     * Initialize branch callback.
+     * Create a tree instance.
      *
-     * @return void
+     * @param mixed ...$param
+     * @return $this
      */
-    protected function setDefaultBranchCallback()
+    public static function make(...$param)
     {
-        if (is_null($this->branchCallback)) {
-            $this->branchCallback = function ($branch) {
-                $key = $branch[$this->repository->getPrimaryKeyColumn()];
-                $title = $branch[$this->repository->getTitleColumn()];
+        return new static(...$param);
+    }
 
-                return "$key - $title";
-            };
-        }
+    /**
+     * Setup tree tools.
+     */
+    public function setUpTools()
+    {
+        $this->tools = new Tools($this);
     }
 
     /**
      * Set branch callback.
      *
-     * @param  \Closure  $branchCallback
+     * @param \Closure $branchCallback
      * @return $this
      */
     public function branch(\Closure $branchCallback)
@@ -241,7 +216,7 @@ class Tree implements Renderable
      *
      * @see https://github.com/dbushell/Nestable
      *
-     * @param  int  $max
+     * @param int $max
      * @return $this
      */
     public function maxDepth(int $max)
@@ -252,7 +227,7 @@ class Tree implements Renderable
     /**
      * Set nestable options.
      *
-     * @param  array  $options
+     * @param array $options
      * @return $this
      */
     public function nestable($options = [])
@@ -263,7 +238,7 @@ class Tree implements Renderable
     }
 
     /**
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public function expand(bool $value = true)
@@ -271,35 +246,35 @@ class Tree implements Renderable
         $this->expand = $value;
     }
 
+    public function showCreateButton(bool $value = true)
+    {
+        return $this->disableCreateButton(!$value);
+    }
+
     /**
      * Disable create.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public function disableCreateButton(bool $value = true)
     {
-        $this->useCreate = ! $value;
-    }
-
-    public function showCreateButton(bool $value = true)
-    {
-        return $this->disableCreateButton(! $value);
-    }
-
-    public function disableQuickCreateButton(bool $value = true)
-    {
-        $this->useQuickCreate = ! $value;
+        $this->useCreate = !$value;
     }
 
     public function showQuickCreateButton(bool $value = true)
     {
-        return $this->disableQuickCreateButton(! $value);
+        return $this->disableQuickCreateButton(!$value);
+    }
+
+    public function disableQuickCreateButton(bool $value = true)
+    {
+        $this->useQuickCreate = !$value;
     }
 
     /**
-     * @param  string  $width
-     * @param  string  $height
+     * @param string $width
+     * @param string $height
      * @return $this
      */
     public function setDialogFormDimensions(string $width, string $height)
@@ -309,36 +284,41 @@ class Tree implements Renderable
         return $this;
     }
 
+    public function showSaveButton(bool $value = true)
+    {
+        return $this->disableSaveButton(!$value);
+    }
+
     /**
      * Disable save.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public function disableSaveButton(bool $value = true)
     {
-        $this->useSave = ! $value;
+        $this->useSave = !$value;
     }
 
-    public function showSaveButton(bool $value = true)
+    public function showRefreshButton(bool $value = true)
     {
-        return $this->disableSaveButton(! $value);
+        return $this->disableRefreshButton(!$value);
     }
 
     /**
      * Disable refresh.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public function disableRefreshButton(bool $value = true)
     {
-        $this->useRefresh = ! $value;
+        $this->useRefresh = !$value;
     }
 
-    public function showRefreshButton(bool $value = true)
+    public function showQuickEditButton(bool $value = true)
     {
-        return $this->disableRefreshButton(! $value);
+        return $this->disableQuickEditButton(!$value);
     }
 
     public function disableQuickEditButton(bool $value = true)
@@ -348,9 +328,34 @@ class Tree implements Renderable
         });
     }
 
-    public function showQuickEditButton(bool $value = true)
+    /**
+     * 设置行操作回调.
+     *
+     * @param \Closure|array $callback
+     * @return $this
+     */
+    public function actions($callback)
     {
-        return $this->disableQuickEditButton(! $value);
+        if ($callback instanceof \Closure) {
+            $this->actionCallbacks[] = $callback;
+        } else {
+            $this->actionCallbacks[] = function (Actions $actions) use ($callback) {
+                if (!is_array($callback)) {
+                    $callback = [$callback];
+                }
+
+                foreach ($callback as $value) {
+                    $actions->append(clone $value);
+                }
+            };
+        }
+
+        return $this;
+    }
+
+    public function showEditButton(bool $value = true)
+    {
+        return $this->disableEditButton(!$value);
     }
 
     public function disableEditButton(bool $value = true)
@@ -360,9 +365,9 @@ class Tree implements Renderable
         });
     }
 
-    public function showEditButton(bool $value = true)
+    public function showDeleteButton(bool $value = true)
     {
-        return $this->disableEditButton(! $value);
+        return $this->disableDeleteButton(!$value);
     }
 
     public function disableDeleteButton(bool $value = true)
@@ -372,13 +377,8 @@ class Tree implements Renderable
         });
     }
 
-    public function showDeleteButton(bool $value = true)
-    {
-        return $this->disableDeleteButton(! $value);
-    }
-
     /**
-     * @param  Closure  $closure
+     * @param Closure $closure
      * @return $this;
      */
     public function wrap(\Closure $closure)
@@ -399,7 +399,7 @@ class Tree implements Renderable
     /**
      * Save tree order from a input.
      *
-     * @param  string  $serialize
+     * @param string $serialize
      * @return bool
      */
     public function saveOrder($serialize)
@@ -418,7 +418,7 @@ class Tree implements Renderable
     /**
      * Set view of tree.
      *
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function view($view)
@@ -429,7 +429,7 @@ class Tree implements Renderable
     }
 
     /**
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function branchView($view)
@@ -437,6 +437,156 @@ class Tree implements Renderable
         $this->branchView = $view;
 
         return $this;
+    }
+
+    /**
+     * 自定义行操作类.
+     *
+     * @param string $actionClass
+     * @return $this
+     */
+    public function setActionClass(string $actionClass)
+    {
+        $this->actionsClass = $actionClass;
+
+        return $this;
+    }
+
+    /**
+     * Variables in tree template.
+     *
+     * @return array
+     */
+    public function defaultVariables()
+    {
+        return [
+            'id' => $this->elementId,
+            'tools' => $this->tools->render(),
+            'items' => $this->getItems(),
+            'useCreate' => $this->useCreate,
+            'useQuickCreate' => $this->useQuickCreate,
+            'useSave' => $this->useSave,
+            'useRefresh' => $this->useRefresh,
+            'createButton' => $this->renderCreateButton(),
+            'nestableOptions' => $this->nestableOptions,
+            'url' => $this->url,
+            'resolveAction' => $this->resolveAction(),
+            'expand' => $this->expand,
+        ];
+    }
+
+    /**
+     * Render a tree.
+     *
+     * @return \Illuminate\Http\JsonResponse|string
+     */
+    public function render()
+    {
+        $this->callResolving();
+
+        $this->setDefaultBranchCallback();
+
+        $this->renderQuickCreateButton();
+
+        view()->share([
+            'currentUrl' => $this->url,
+            'keyName' => $this->getKeyName(),
+            'branchView' => $this->branchView,
+            'branchCallback' => $this->branchCallback,
+        ]);
+
+        return $this->doWrap();
+    }
+
+    /**
+     * Initialize branch callback.
+     *
+     * @return void
+     */
+    protected function setDefaultBranchCallback()
+    {
+        if (is_null($this->branchCallback)) {
+            $this->branchCallback = function ($branch) {
+                $key = $branch[$this->repository->getPrimaryKeyColumn()];
+                $title = $branch[$this->repository->getTitleColumn()];
+
+                return "$key - $title";
+            };
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function renderQuickCreateButton()
+    {
+        if ($this->useQuickCreate) {
+            [$width, $height] = $this->dialogFormDimensions;
+
+            Form::dialog(trans('admin.new'))
+                ->click('.tree-quick-create')
+                ->success('Dcat.reload()')
+                ->dimensions($width, $height);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getKeyName()
+    {
+        return $this->repository->getKeyName();
+    }
+
+    /**
+     * @return string
+     */
+    protected function doWrap()
+    {
+        $view = view($this->view, $this->variables());
+
+        if (!$wrapper = $this->wrapper) {
+            $html = Admin::resolveHtml($view->render())['html'];
+
+            return "<div class='card'>{$html}</div>";
+        }
+
+        return Admin::resolveHtml(Helper::render($wrapper($view)))['html'];
+    }
+
+    /**
+     * Return all items of the tree.
+     *
+     * @param array $items
+     */
+    public function getItems()
+    {
+        return $this->repository->withQuery($this->queryCallback)->toTree();
+    }
+
+    /**
+     * @return string
+     */
+    protected function renderCreateButton()
+    {
+        if (!$this->useQuickCreate && !$this->useCreate) {
+            return '';
+        }
+
+        $url = $this->url . '/create';
+        $new = trans('admin.new');
+
+        $quickBtn = $btn = '';
+        if ($this->useCreate) {
+            $btn = "<a href='{$url}' class='btn btn-sm btn-primary'><i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp;{$new}</span></a>";
+        }
+
+        if ($this->useQuickCreate) {
+            $text = $this->useCreate ? '<i class=\' fa fa-clone\'></i>' : "<i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp; $new</span>";
+            $quickBtn = "<button data-url='$url' class='btn btn-sm btn-primary tree-quick-create'>$text</button>";
+        }
+
+        return "&nbsp;<div class='btn-group pull-right' style='margin-right:3px'>{$btn}{$quickBtn}</div>";
     }
 
     /**
@@ -466,85 +616,6 @@ class Tree implements Renderable
     }
 
     /**
-     * 自定义行操作类.
-     *
-     * @param  string  $actionClass
-     * @return $this
-     */
-    public function setActionClass(string $actionClass)
-    {
-        $this->actionsClass = $actionClass;
-
-        return $this;
-    }
-
-    /**
-     * 设置行操作回调.
-     *
-     * @param  \Closure|array  $callback
-     * @return $this
-     */
-    public function actions($callback)
-    {
-        if ($callback instanceof \Closure) {
-            $this->actionCallbacks[] = $callback;
-        } else {
-            $this->actionCallbacks[] = function (Actions $actions) use ($callback) {
-                if (! is_array($callback)) {
-                    $callback = [$callback];
-                }
-
-                foreach ($callback as $value) {
-                    $actions->append(clone $value);
-                }
-            };
-        }
-
-        return $this;
-    }
-
-    /**
-     * Return all items of the tree.
-     *
-     * @param  array  $items
-     */
-    public function getItems()
-    {
-        return $this->repository->withQuery($this->queryCallback)->toTree();
-    }
-
-    /**
-     * Variables in tree template.
-     *
-     * @return array
-     */
-    public function defaultVariables()
-    {
-        return [
-            'id'              => $this->elementId,
-            'tools'           => $this->tools->render(),
-            'items'           => $this->getItems(),
-            'useCreate'       => $this->useCreate,
-            'useQuickCreate'  => $this->useQuickCreate,
-            'useSave'         => $this->useSave,
-            'useRefresh'      => $this->useRefresh,
-            'createButton'    => $this->renderCreateButton(),
-            'nestableOptions' => $this->nestableOptions,
-            'url'             => $this->url,
-            'resolveAction'   => $this->resolveAction(),
-            'expand'          => $this->expand,
-        ];
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getKeyName()
-    {
-        return $this->repository->getKeyName();
-    }
-
-    /**
      * @return string
      */
     public function resource()
@@ -555,7 +626,7 @@ class Tree implements Renderable
     /**
      * Set resource path.
      *
-     * @param  string  $path
+     * @param string $path
      * @return $this
      */
     public function setResource($path)
@@ -568,7 +639,7 @@ class Tree implements Renderable
     /**
      * Setup tools.
      *
-     * @param  Closure|array|AbstractTool|Renderable|Htmlable|string  $callback
+     * @param Closure|array|AbstractTool|Renderable|Htmlable|string $callback
      * @return $this|Tools
      */
     public function tools($callback = null)
@@ -583,7 +654,7 @@ class Tree implements Renderable
             return $this;
         }
 
-        if (! is_array($callback)) {
+        if (!is_array($callback)) {
             $callback = [$callback];
         }
 
@@ -595,85 +666,6 @@ class Tree implements Renderable
     }
 
     /**
-     * @return string
-     */
-    protected function renderCreateButton()
-    {
-        if (! $this->useQuickCreate && ! $this->useCreate) {
-            return '';
-        }
-
-        $url = $this->url.'/create';
-        $new = trans('admin.new');
-
-        $quickBtn = $btn = '';
-        if ($this->useCreate) {
-            $btn = "<a href='{$url}' class='btn btn-sm btn-primary'><i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp;{$new}</span></a>";
-        }
-
-        if ($this->useQuickCreate) {
-            $text = $this->useCreate ? '<i class=\' fa fa-clone\'></i>' : "<i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp; $new</span>";
-            $quickBtn = "<button data-url='$url' class='btn btn-sm btn-primary tree-quick-create'>$text</button>";
-        }
-
-        return "&nbsp;<div class='btn-group pull-right' style='margin-right:3px'>{$btn}{$quickBtn}</div>";
-    }
-
-    /**
-     * @return void
-     */
-    protected function renderQuickCreateButton()
-    {
-        if ($this->useQuickCreate) {
-            [$width, $height] = $this->dialogFormDimensions;
-
-            Form::dialog(trans('admin.new'))
-                ->click('.tree-quick-create')
-                ->success('Dcat.reload()')
-                ->dimensions($width, $height);
-        }
-    }
-
-    /**
-     * Render a tree.
-     *
-     * @return \Illuminate\Http\JsonResponse|string
-     */
-    public function render()
-    {
-        $this->callResolving();
-
-        $this->setDefaultBranchCallback();
-
-        $this->renderQuickCreateButton();
-
-        view()->share([
-            'currentUrl'     => $this->url,
-            'keyName'        => $this->getKeyName(),
-            'branchView'     => $this->branchView,
-            'branchCallback' => $this->branchCallback,
-        ]);
-
-        return $this->doWrap();
-    }
-
-    /**
-     * @return string
-     */
-    protected function doWrap()
-    {
-        $view = view($this->view, $this->variables());
-
-        if (! $wrapper = $this->wrapper) {
-            $html = Admin::resolveHtml($view->render())['html'];
-
-            return "<div class='card'>{$html}</div>";
-        }
-
-        return Admin::resolveHtml(Helper::render($wrapper($view)))['html'];
-    }
-
-    /**
      * Get the string contents of the grid view.
      *
      * @return string
@@ -681,16 +673,5 @@ class Tree implements Renderable
     public function __toString()
     {
         return $this->render();
-    }
-
-    /**
-     * Create a tree instance.
-     *
-     * @param  mixed  ...$param
-     * @return $this
-     */
-    public static function make(...$param)
-    {
-        return new static(...$param);
     }
 }

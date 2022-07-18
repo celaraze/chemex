@@ -9,33 +9,29 @@ use Throwable;
 class EnvAccessAnalyzer extends SecurityAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your .env is not publicly accessible.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_CRITICAL;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
     /**
      * The Guzzle client instance.
      *
@@ -73,7 +69,7 @@ class EnvAccessAnalyzer extends SecurityAnalyzer
         try {
             $response = $this->client->get(url('.env'));
 
-            if (Str::contains((string) $response->getBody(), ['APP_NAME=', 'APP_ENV=', 'APP_KEY='])) {
+            if (Str::contains((string)$response->getBody(), ['APP_NAME=', 'APP_ENV=', 'APP_KEY='])) {
                 $this->markFailed();
             }
         } catch (Throwable $e) {

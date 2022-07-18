@@ -16,9 +16,9 @@ class MultipleRecordsFoundException extends RuntimeException
     /**
      * Create a new exception instance.
      *
-     * @param  int  $count
-     * @param  int  $code
-     * @param  \Throwable|null  $previous
+     * @param int $count
+     * @param int $code
+     * @param \Throwable|null $previous
      * @return void
      */
     public function __construct($count, $code = 0, $previous = null)

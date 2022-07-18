@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class EventCacheCommand extends Command
 {
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'event:cache';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class EventCacheCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'event:cache';
-
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'event:cache';
     /**
      * The console command description.
      *
@@ -45,7 +43,7 @@ class EventCacheCommand extends Command
 
         file_put_contents(
             $this->laravel->getCachedEventsPath(),
-            '<?php return '.var_export($this->getEvents(), true).';'
+            '<?php return ' . var_export($this->getEvents(), true) . ';'
         );
 
         $this->info('Events cached successfully.');

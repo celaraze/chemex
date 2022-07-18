@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage;
 
+use SebastianBergmann\FileIterator\Facade as FileIteratorFacade;
 use function array_keys;
 use function is_file;
 use function realpath;
 use function strpos;
-use SebastianBergmann\FileIterator\Facade as FileIteratorFacade;
 
 final class Filter
 {
@@ -34,16 +35,6 @@ final class Filter
         }
     }
 
-    /**
-     * @psalm-param list<string> $files
-     */
-    public function includeFiles(array $filenames): void
-    {
-        foreach ($filenames as $filename) {
-            $this->includeFile($filename);
-        }
-    }
-
     public function includeFile(string $filename): void
     {
         $filename = realpath($filename);
@@ -53,6 +44,16 @@ final class Filter
         }
 
         $this->files[$filename] = true;
+    }
+
+    /**
+     * @psalm-param list<string> $files
+     */
+    public function includeFiles(array $filenames): void
+    {
+        foreach ($filenames as $filename) {
+            $this->includeFile($filename);
+        }
     }
 
     public function excludeDirectory(string $directory, string $suffix = '.php', string $prefix = ''): void
@@ -71,6 +72,15 @@ final class Filter
         }
 
         unset($this->files[$filename]);
+    }
+
+    public function isExcluded(string $filename): bool
+    {
+        if (!$this->isFile($filename)) {
+            return true;
+        }
+
+        return !isset($this->files[$filename]);
     }
 
     public function isFile(string $filename): bool
@@ -96,15 +106,6 @@ final class Filter
         $this->isFileCache[$filename] = $isFile;
 
         return $isFile;
-    }
-
-    public function isExcluded(string $filename): bool
-    {
-        if (!$this->isFile($filename)) {
-            return true;
-        }
-
-        return !isset($this->files[$filename]);
     }
 
     /**

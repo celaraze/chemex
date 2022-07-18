@@ -26,15 +26,29 @@ class ChromePHPFormatter implements FormatterInterface
      * @var array<int, 'log'|'info'|'warn'|'error'>
      */
     private $logLevels = [
-        Logger::DEBUG     => 'log',
-        Logger::INFO      => 'info',
-        Logger::NOTICE    => 'info',
-        Logger::WARNING   => 'warn',
-        Logger::ERROR     => 'error',
-        Logger::CRITICAL  => 'error',
-        Logger::ALERT     => 'error',
+        Logger::DEBUG => 'log',
+        Logger::INFO => 'info',
+        Logger::NOTICE => 'info',
+        Logger::WARNING => 'warn',
+        Logger::ERROR => 'error',
+        Logger::CRITICAL => 'error',
+        Logger::ALERT => 'error',
         Logger::EMERGENCY => 'error',
     ];
+
+    /**
+     * {@inheritDoc}
+     */
+    public function formatBatch(array $records)
+    {
+        $formatted = [];
+
+        foreach ($records as $record) {
+            $formatted[] = $this->format($record);
+        }
+
+        return $formatted;
+    }
 
     /**
      * {@inheritDoc}
@@ -44,7 +58,7 @@ class ChromePHPFormatter implements FormatterInterface
         // Retrieve the line and file if set and remove them from the formatted extra
         $backtrace = 'unknown';
         if (isset($record['extra']['file'], $record['extra']['line'])) {
-            $backtrace = $record['extra']['file'].' : '.$record['extra']['line'];
+            $backtrace = $record['extra']['file'] . ' : ' . $record['extra']['line'];
             unset($record['extra']['file'], $record['extra']['line']);
         }
 
@@ -65,19 +79,5 @@ class ChromePHPFormatter implements FormatterInterface
             $backtrace,
             $this->logLevels[$record['level']],
         ];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function formatBatch(array $records)
-    {
-        $formatted = [];
-
-        foreach ($records as $record) {
-            $formatted[] = $this->format($record);
-        }
-
-        return $formatted;
     }
 }

@@ -231,9 +231,9 @@ class PhoneNumber extends Base
     ];
 
     /**
+     * @return string
      * @example '555-123-546'
      *
-     * @return string
      */
     public function phoneNumber()
     {
@@ -241,9 +241,9 @@ class PhoneNumber extends Base
     }
 
     /**
+     * @return string
      * @example +11134567890
      *
-     * @return string
      */
     public function e164PhoneNumber()
     {
@@ -262,7 +262,7 @@ class PhoneNumber extends Base
      */
     public function imei()
     {
-        $imei = (string) static::numerify('##############');
+        $imei = (string)static::numerify('##############');
         $imei .= Luhn::computeCheckDigit($imei);
 
         return $imei;

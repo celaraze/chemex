@@ -16,8 +16,8 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Add a message to the bag.
      *
-     * @param  string  $key
-     * @param  string  $message
+     * @param string $key
+     * @param string $message
      * @return $this
      */
     public function add($key, $message);
@@ -25,7 +25,7 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Merge a new array of messages into the bag.
      *
-     * @param  \Illuminate\Contracts\Support\MessageProvider|array  $messages
+     * @param \Illuminate\Contracts\Support\MessageProvider|array $messages
      * @return $this
      */
     public function merge($messages);
@@ -33,7 +33,7 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Determine if messages exist for a given key.
      *
-     * @param  string|array  $key
+     * @param string|array $key
      * @return bool
      */
     public function has($key);
@@ -41,8 +41,8 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Get the first message from the bag for a given key.
      *
-     * @param  string|null  $key
-     * @param  string|null  $format
+     * @param string|null $key
+     * @param string|null $format
      * @return string
      */
     public function first($key = null, $format = null);
@@ -50,8 +50,8 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Get all of the messages from the bag for a given key.
      *
-     * @param  string  $key
-     * @param  string|null  $format
+     * @param string $key
+     * @param string|null $format
      * @return array
      */
     public function get($key, $format = null);
@@ -59,7 +59,7 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Get all of the messages for every key in the bag.
      *
-     * @param  string|null  $format
+     * @param string|null $format
      * @return array
      */
     public function all($format = null);
@@ -81,7 +81,7 @@ interface MessageBag extends Arrayable, Countable
     /**
      * Set the default message format.
      *
-     * @param  string  $format
+     * @param string $format
      * @return $this
      */
     public function setFormat($format = ':message');

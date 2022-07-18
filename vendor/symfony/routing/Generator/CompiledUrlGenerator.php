@@ -35,12 +35,12 @@ class CompiledUrlGenerator extends UrlGenerator
     {
         $locale = $parameters['_locale']
             ?? $this->context->getParameter('_locale')
-            ?: $this->defaultLocale;
+                ?: $this->defaultLocale;
 
         if (null !== $locale) {
             do {
-                if (($this->compiledRoutes[$name.'.'.$locale][1]['_canonical_route'] ?? null) === $name) {
-                    $name .= '.'.$locale;
+                if (($this->compiledRoutes[$name . '.' . $locale][1]['_canonical_route'] ?? null) === $name) {
+                    $name .= '.' . $locale;
                     break;
                 }
             } while (false !== $locale = strstr($locale, '_', true));

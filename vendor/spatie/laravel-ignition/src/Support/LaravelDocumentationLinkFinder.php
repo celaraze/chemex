@@ -23,7 +23,7 @@ class LaravelDocumentationLinkFinder
 
         $type = $this->getType($throwable);
 
-        if (! $type) {
+        if (!$type) {
             return null;
         }
 
@@ -44,7 +44,7 @@ class LaravelDocumentationLinkFinder
 
     protected function getType(?Throwable $throwable): ?string
     {
-        if (! $throwable) {
+        if (!$throwable) {
             return null;
         }
 

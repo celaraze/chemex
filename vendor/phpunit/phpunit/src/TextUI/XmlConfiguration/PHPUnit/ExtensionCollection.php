@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 use IteratorAggregate;
@@ -22,17 +23,17 @@ final class ExtensionCollection implements IteratorAggregate
      */
     private $extensions;
 
+    private function __construct(Extension ...$extensions)
+    {
+        $this->extensions = $extensions;
+    }
+
     /**
      * @param Extension[] $extensions
      */
     public static function fromArray(array $extensions): self
     {
         return new self(...$extensions);
-    }
-
-    private function __construct(Extension ...$extensions)
-    {
-        $this->extensions = $extensions;
     }
 
     /**

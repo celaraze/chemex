@@ -35,6 +35,27 @@ class JsonDescriptor extends Descriptor
     }
 
     /**
+     * Writes data as json.
+     */
+    private function writeData(array $data, array $options)
+    {
+        $flags = $options['json_encoding'] ?? 0;
+
+        $this->write(json_encode($data, $flags));
+    }
+
+    private function getInputArgumentData(InputArgument $argument): array
+    {
+        return [
+            'name' => $argument->getName(),
+            'is_required' => $argument->isRequired(),
+            'is_array' => $argument->isArray(),
+            'description' => preg_replace('/\s*[\r\n]\s*/', ' ', $argument->getDescription()),
+            'default' => \INF === $argument->getDefault() ? 'INF' : $argument->getDefault(),
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function describeInputOption(InputOption $option, array $options = [])
@@ -45,6 +66,27 @@ class JsonDescriptor extends Descriptor
         }
     }
 
+    private function getInputOptionData(InputOption $option, bool $negated = false): array
+    {
+        return $negated ? [
+            'name' => '--no-' . $option->getName(),
+            'shortcut' => '',
+            'accept_value' => false,
+            'is_value_required' => false,
+            'is_multiple' => false,
+            'description' => 'Negate the "--' . $option->getName() . '" option',
+            'default' => false,
+        ] : [
+            'name' => '--' . $option->getName(),
+            'shortcut' => $option->getShortcut() ? '-' . str_replace('|', '|-', $option->getShortcut()) : '',
+            'accept_value' => $option->acceptValue(),
+            'is_value_required' => $option->isValueRequired(),
+            'is_multiple' => $option->isArray(),
+            'description' => preg_replace('/\s*[\r\n]\s*/', ' ', $option->getDescription()),
+            'default' => \INF === $option->getDefault() ? 'INF' : $option->getDefault(),
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -53,12 +95,56 @@ class JsonDescriptor extends Descriptor
         $this->writeData($this->getInputDefinitionData($definition), $options);
     }
 
+    private function getInputDefinitionData(InputDefinition $definition): array
+    {
+        $inputArguments = [];
+        foreach ($definition->getArguments() as $name => $argument) {
+            $inputArguments[$name] = $this->getInputArgumentData($argument);
+        }
+
+        $inputOptions = [];
+        foreach ($definition->getOptions() as $name => $option) {
+            $inputOptions[$name] = $this->getInputOptionData($option);
+            if ($option->isNegatable()) {
+                $inputOptions['no-' . $name] = $this->getInputOptionData($option, true);
+            }
+        }
+
+        return ['arguments' => $inputArguments, 'options' => $inputOptions];
+    }
+
     /**
      * {@inheritdoc}
      */
     protected function describeCommand(Command $command, array $options = [])
     {
         $this->writeData($this->getCommandData($command, $options['short'] ?? false), $options);
+    }
+
+    private function getCommandData(Command $command, bool $short = false): array
+    {
+        $data = [
+            'name' => $command->getName(),
+            'description' => $command->getDescription(),
+        ];
+
+        if ($short) {
+            $data += [
+                'usage' => $command->getAliases(),
+            ];
+        } else {
+            $command->mergeApplicationDefinition(false);
+
+            $data += [
+                'usage' => array_merge([$command->getSynopsis()], $command->getUsages(), $command->getAliases()),
+                'help' => $command->getProcessedHelp(),
+                'definition' => $this->getInputDefinitionData($command->getDefinition()),
+            ];
+        }
+
+        $data['hidden'] = $command->isHidden();
+
+        return $data;
     }
 
     /**
@@ -91,91 +177,5 @@ class JsonDescriptor extends Descriptor
         }
 
         $this->writeData($data, $options);
-    }
-
-    /**
-     * Writes data as json.
-     */
-    private function writeData(array $data, array $options)
-    {
-        $flags = $options['json_encoding'] ?? 0;
-
-        $this->write(json_encode($data, $flags));
-    }
-
-    private function getInputArgumentData(InputArgument $argument): array
-    {
-        return [
-            'name' => $argument->getName(),
-            'is_required' => $argument->isRequired(),
-            'is_array' => $argument->isArray(),
-            'description' => preg_replace('/\s*[\r\n]\s*/', ' ', $argument->getDescription()),
-            'default' => \INF === $argument->getDefault() ? 'INF' : $argument->getDefault(),
-        ];
-    }
-
-    private function getInputOptionData(InputOption $option, bool $negated = false): array
-    {
-        return $negated ? [
-            'name' => '--no-'.$option->getName(),
-            'shortcut' => '',
-            'accept_value' => false,
-            'is_value_required' => false,
-            'is_multiple' => false,
-            'description' => 'Negate the "--'.$option->getName().'" option',
-            'default' => false,
-        ] : [
-            'name' => '--'.$option->getName(),
-            'shortcut' => $option->getShortcut() ? '-'.str_replace('|', '|-', $option->getShortcut()) : '',
-            'accept_value' => $option->acceptValue(),
-            'is_value_required' => $option->isValueRequired(),
-            'is_multiple' => $option->isArray(),
-            'description' => preg_replace('/\s*[\r\n]\s*/', ' ', $option->getDescription()),
-            'default' => \INF === $option->getDefault() ? 'INF' : $option->getDefault(),
-        ];
-    }
-
-    private function getInputDefinitionData(InputDefinition $definition): array
-    {
-        $inputArguments = [];
-        foreach ($definition->getArguments() as $name => $argument) {
-            $inputArguments[$name] = $this->getInputArgumentData($argument);
-        }
-
-        $inputOptions = [];
-        foreach ($definition->getOptions() as $name => $option) {
-            $inputOptions[$name] = $this->getInputOptionData($option);
-            if ($option->isNegatable()) {
-                $inputOptions['no-'.$name] = $this->getInputOptionData($option, true);
-            }
-        }
-
-        return ['arguments' => $inputArguments, 'options' => $inputOptions];
-    }
-
-    private function getCommandData(Command $command, bool $short = false): array
-    {
-        $data = [
-            'name' => $command->getName(),
-            'description' => $command->getDescription(),
-        ];
-
-        if ($short) {
-            $data += [
-                'usage' => $command->getAliases(),
-            ];
-        } else {
-            $command->mergeApplicationDefinition(false);
-
-            $data += [
-                'usage' => array_merge([$command->getSynopsis()], $command->getUsages(), $command->getAliases()),
-                'help' => $command->getProcessedHelp(),
-                'definition' => $this->getInputDefinitionData($command->getDefinition()),
-            ];
-        }
-
-        $data['hidden'] = $command->isHidden();
-
-        return $data;
     }
 }

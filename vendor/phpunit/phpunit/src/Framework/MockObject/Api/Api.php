@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject;
 
 use PHPUnit\Framework\MockObject\Builder\InvocationMocker as InvocationMockerBuilder;
@@ -62,6 +63,14 @@ trait Api
     }
 
     /** @noinspection MagicMethodsValidityInspection */
+
+    public function __phpunit_hasMatchers(): bool
+    {
+        return $this->__phpunit_getInvocationHandler()->hasMatchers();
+    }
+
+    /** @noinspection MagicMethodsValidityInspection */
+
     public function __phpunit_getInvocationHandler(): InvocationHandler
     {
         if ($this->__phpunit_invocationMocker === null) {
@@ -75,12 +84,7 @@ trait Api
     }
 
     /** @noinspection MagicMethodsValidityInspection */
-    public function __phpunit_hasMatchers(): bool
-    {
-        return $this->__phpunit_getInvocationHandler()->hasMatchers();
-    }
 
-    /** @noinspection MagicMethodsValidityInspection */
     public function __phpunit_verify(bool $unsetInvocationMocker = true): void
     {
         $this->__phpunit_getInvocationHandler()->verify();

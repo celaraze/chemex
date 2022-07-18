@@ -31,8 +31,8 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     /**
      * Create a new contextual binding builder.
      *
-     * @param  \Illuminate\Contracts\Container\Container  $container
-     * @param  string|array  $concrete
+     * @param \Illuminate\Contracts\Container\Container $container
+     * @param string|array $concrete
      * @return void
      */
     public function __construct(Container $container, $concrete)
@@ -44,7 +44,7 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     /**
      * Define the abstract target that depends on the context.
      *
-     * @param  string  $abstract
+     * @param string $abstract
      * @return $this
      */
     public function needs($abstract)
@@ -55,22 +55,9 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     }
 
     /**
-     * Define the implementation for the contextual binding.
-     *
-     * @param  \Closure|string|array  $implementation
-     * @return void
-     */
-    public function give($implementation)
-    {
-        foreach (Util::arrayWrap($this->concrete) as $concrete) {
-            $this->container->addContextualBinding($concrete, $this->needs, $implementation);
-        }
-    }
-
-    /**
      * Define tagged services to be used as the implementation for the contextual binding.
      *
-     * @param  string  $tag
+     * @param string $tag
      * @return void
      */
     public function giveTagged($tag)
@@ -83,14 +70,27 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
     }
 
     /**
+     * Define the implementation for the contextual binding.
+     *
+     * @param \Closure|string|array $implementation
+     * @return void
+     */
+    public function give($implementation)
+    {
+        foreach (Util::arrayWrap($this->concrete) as $concrete) {
+            $this->container->addContextualBinding($concrete, $this->needs, $implementation);
+        }
+    }
+
+    /**
      * Specify the configuration item to bind as a primitive.
      *
-     * @param  string  $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed $default
      * @return void
      */
     public function giveConfig($key, $default = null)
     {
-        $this->give(fn ($container) => $container->get('config')->get($key, $default));
+        $this->give(fn($container) => $container->get('config')->get($key, $default));
     }
 }

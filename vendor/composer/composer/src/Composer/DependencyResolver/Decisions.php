@@ -54,6 +54,31 @@ class Decisions implements \Iterator, \Countable
 
     /**
      * @param int $literal
+     * @param int $level
+     * @return void
+     */
+    protected function addDecision(int $literal, int $level): void
+    {
+        $packageId = abs($literal);
+
+        $previousDecision = $this->decisionMap[$packageId] ?? null;
+        if ($previousDecision != 0) {
+            $literalString = $this->pool->literalToPrettyString($literal, array());
+            $package = $this->pool->literalToPackage($literal);
+            throw new SolverBugException(
+                "Trying to decide $literalString on level $level, even though $package was previously decided as " . (int)$previousDecision . "."
+            );
+        }
+
+        if ($literal > 0) {
+            $this->decisionMap[$packageId] = $level;
+        } else {
+            $this->decisionMap[$packageId] = -$level;
+        }
+    }
+
+    /**
+     * @param int $literal
      * @return bool
      */
     public function satisfy(int $literal): bool
@@ -167,14 +192,6 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
-     * @return int
-     */
-    public function lastLiteral(): int
-    {
-        return $this->decisionQueue[\count($this->decisionQueue) - 1][self::DECISION_LITERAL];
-    }
-
-    /**
      * @return void
      */
     public function reset(): void
@@ -203,6 +220,14 @@ class Decisions implements \Iterator, \Countable
     {
         $this->decisionMap[abs($this->lastLiteral())] = 0;
         array_pop($this->decisionQueue);
+    }
+
+    /**
+     * @return int
+     */
+    public function lastLiteral(): int
+    {
+        return $this->decisionQueue[\count($this->decisionQueue) - 1][self::DECISION_LITERAL];
     }
 
     public function count(): int
@@ -247,29 +272,9 @@ class Decisions implements \Iterator, \Countable
         return \count($this->decisionQueue) === 0;
     }
 
-    /**
-     * @param int $literal
-     * @param int $level
-     * @return void
-     */
-    protected function addDecision(int $literal, int $level): void
+    public function __toString(): string
     {
-        $packageId = abs($literal);
-
-        $previousDecision = $this->decisionMap[$packageId] ?? null;
-        if ($previousDecision != 0) {
-            $literalString = $this->pool->literalToPrettyString($literal, array());
-            $package = $this->pool->literalToPackage($literal);
-            throw new SolverBugException(
-                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
-            );
-        }
-
-        if ($literal > 0) {
-            $this->decisionMap[$packageId] = $level;
-        } else {
-            $this->decisionMap[$packageId] = -$level;
-        }
+        return $this->toString();
     }
 
     /**
@@ -281,15 +286,10 @@ class Decisions implements \Iterator, \Countable
         ksort($decisionMap);
         $str = '[';
         foreach ($decisionMap as $packageId => $level) {
-            $str .= (($pool) ? $pool->literalToPackage($packageId) : $packageId).':'.$level.',';
+            $str .= (($pool) ? $pool->literalToPackage($packageId) : $packageId) . ':' . $level . ',';
         }
         $str .= ']';
 
         return $str;
-    }
-
-    public function __toString(): string
-    {
-        return $this->toString();
     }
 }

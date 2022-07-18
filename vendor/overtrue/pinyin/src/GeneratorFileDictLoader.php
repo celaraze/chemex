@@ -12,38 +12,35 @@
 namespace Overtrue\Pinyin;
 
 use Closure;
-use SplFileObject;
 use Generator;
+use SplFileObject;
 
 class GeneratorFileDictLoader implements DictLoaderInterface
 {
-    /**
-     * Data directory.
-     *
-     * @var string
-     */
-    protected $path;
-
-    /**
-     * Words segment name.
-     *
-     * @var string
-     */
-    protected $segmentName = 'words_%s';
-
     /**
      * SplFileObjects.
      *
      * @var array
      */
     protected static $handles = [];
-
     /**
      * surnames.
      *
      * @var SplFileObject
      */
     protected static $surnamesHandle;
+    /**
+     * Data directory.
+     *
+     * @var string
+     */
+    protected $path;
+    /**
+     * Words segment name.
+     *
+     * @var string
+     */
+    protected $segmentName = 'words_%s';
 
     /**
      * Constructor.
@@ -67,13 +64,38 @@ class GeneratorFileDictLoader implements DictLoaderInterface
      * Construct a new file object.
      *
      * @param string $filename file path
-     * @param string $mode     file open mode
+     * @param string $mode file open mode
      *
      * @return SplFileObject
      */
     protected function openFile($filename, $mode = 'r')
     {
         return new SplFileObject($filename, $mode);
+    }
+
+    /**
+     * Load dict.
+     *
+     * @param Closure $callback
+     */
+    public function map(Closure $callback)
+    {
+        $this->traversing($this->getGenerator(static::$handles), $callback);
+    }
+
+    /**
+     * Traverse the stream.
+     *
+     * @param Generator $generator
+     * @param Closure $callback
+     *
+     * @author Seven Du <shiweidu@outlook.com>
+     */
+    protected function traversing(Generator $generator, Closure $callback)
+    {
+        foreach ($generator as $string => $pinyin) {
+            $callback([$string => $pinyin]);
+        }
     }
 
     /**
@@ -99,31 +121,6 @@ class GeneratorFileDictLoader implements DictLoaderInterface
                 yield $string => $pinyin;
             }
         }
-    }
-
-    /**
-     * Traverse the stream.
-     *
-     * @param Generator $generator
-     * @param Closure   $callback
-     *
-     * @author Seven Du <shiweidu@outlook.com>
-     */
-    protected function traversing(Generator $generator, Closure $callback)
-    {
-        foreach ($generator as $string => $pinyin) {
-            $callback([$string => $pinyin]);
-        }
-    }
-
-    /**
-     * Load dict.
-     *
-     * @param Closure $callback
-     */
-    public function map(Closure $callback)
-    {
-        $this->traversing($this->getGenerator(static::$handles), $callback);
     }
 
     /**

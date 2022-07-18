@@ -18,7 +18,6 @@ use Ramsey\Uuid\Exception\InvalidArgumentException;
 use Ramsey\Uuid\Fields\SerializableFieldsTrait;
 use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Uuid;
-
 use function bin2hex;
 use function dechex;
 use function hexdec;
@@ -27,7 +26,6 @@ use function str_pad;
 use function strlen;
 use function substr;
 use function unpack;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -81,6 +79,15 @@ final class Fields implements FieldsInterface
         }
     }
 
+    private function isCorrectVariant(): bool
+    {
+        if ($this->isNil()) {
+            return true;
+        }
+
+        return $this->getVariant() === Uuid::RFC_4122;
+    }
+
     public function getBytes(): string
     {
         return $this->bytes;
@@ -106,21 +113,6 @@ final class Fields implements FieldsInterface
     public function getNode(): Hexadecimal
     {
         return new Hexadecimal(bin2hex(substr($this->bytes, 10)));
-    }
-
-    public function getTimeHiAndVersion(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 6, 2)));
-    }
-
-    public function getTimeLow(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 0, 4)));
-    }
-
-    public function getTimeMid(): Hexadecimal
-    {
-        return new Hexadecimal(bin2hex(substr($this->bytes, 4, 2)));
     }
 
     /**
@@ -180,15 +172,21 @@ final class Fields implements FieldsInterface
         /** @var array $parts */
         $parts = unpack('n*', $this->bytes);
 
-        return (int) $parts[4] >> 12;
+        return (int)$parts[4] >> 12;
     }
 
-    private function isCorrectVariant(): bool
+    public function getTimeHiAndVersion(): Hexadecimal
     {
-        if ($this->isNil()) {
-            return true;
-        }
+        return new Hexadecimal(bin2hex(substr($this->bytes, 6, 2)));
+    }
 
-        return $this->getVariant() === Uuid::RFC_4122;
+    public function getTimeMid(): Hexadecimal
+    {
+        return new Hexadecimal(bin2hex(substr($this->bytes, 4, 2)));
+    }
+
+    public function getTimeLow(): Hexadecimal
+    {
+        return new Hexadecimal(bin2hex(substr($this->bytes, 0, 4)));
     }
 }

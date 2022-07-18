@@ -3,13 +3,13 @@
 namespace Egulias\EmailValidator\Parser;
 
 use Egulias\EmailValidator\EmailLexer;
-use Egulias\EmailValidator\Result\Result;
-use Egulias\EmailValidator\Warning\QuotedPart;
-use Egulias\EmailValidator\Result\InvalidEmail;
 use Egulias\EmailValidator\Parser\CommentStrategy\CommentStrategy;
+use Egulias\EmailValidator\Result\InvalidEmail;
 use Egulias\EmailValidator\Result\Reason\UnclosedComment;
 use Egulias\EmailValidator\Result\Reason\UnOpenedComment;
+use Egulias\EmailValidator\Result\Result;
 use Egulias\EmailValidator\Warning\Comment as WarningComment;
+use Egulias\EmailValidator\Warning\QuotedPart;
 
 class Comment extends PartParser
 {
@@ -29,11 +29,11 @@ class Comment extends PartParser
         $this->commentStrategy = $commentStrategy;
     }
 
-    public function parse() : Result
+    public function parse(): Result
     {
         if ($this->lexer->token['type'] === EmailLexer::S_OPENPARENTHESIS) {
             $this->openedParenthesis++;
-            if($this->noClosingParenthesis()) {
+            if ($this->noClosingParenthesis()) {
                 return new InvalidEmail(new UnclosedComment(), $this->lexer->token['value']);
             }
         }
@@ -45,19 +45,19 @@ class Comment extends PartParser
         $this->warnings[WarningComment::CODE] = new WarningComment();
 
         $moreTokens = true;
-        while ($this->commentStrategy->exitCondition($this->lexer, $this->openedParenthesis) && $moreTokens){
+        while ($this->commentStrategy->exitCondition($this->lexer, $this->openedParenthesis) && $moreTokens) {
 
             if ($this->lexer->isNextToken(EmailLexer::S_OPENPARENTHESIS)) {
                 $this->openedParenthesis++;
             }
             $this->warnEscaping();
-            if($this->lexer->isNextToken(EmailLexer::S_CLOSEPARENTHESIS)) {
+            if ($this->lexer->isNextToken(EmailLexer::S_CLOSEPARENTHESIS)) {
                 $this->openedParenthesis--;
             }
             $moreTokens = $this->lexer->moveNext();
         }
 
-        if($this->openedParenthesis >= 1) {
+        if ($this->openedParenthesis >= 1) {
             return new InvalidEmail(new UnclosedComment(), $this->lexer->token['value']);
         } else if ($this->openedParenthesis < 0) {
             return new InvalidEmail(new UnOpenedComment(), $this->lexer->token['value']);
@@ -70,11 +70,20 @@ class Comment extends PartParser
         return $finalValidations;
     }
 
+    private function noClosingParenthesis(): bool
+    {
+        try {
+            $this->lexer->find(EmailLexer::S_CLOSEPARENTHESIS);
+            return false;
+        } catch (\RuntimeException $e) {
+            return true;
+        }
+    }
 
     /**
      * @return bool
      */
-    private function warnEscaping() : bool
+    private function warnEscaping(): bool
     {
         //Backslash found
         if ($this->lexer->token['type'] !== EmailLexer::S_BACKSLASH) {
@@ -89,15 +98,5 @@ class Comment extends PartParser
             new QuotedPart($this->lexer->getPrevious()['type'], $this->lexer->token['type']);
         return true;
 
-    }
-
-    private function noClosingParenthesis() : bool 
-    {
-        try {
-            $this->lexer->find(EmailLexer::S_CLOSEPARENTHESIS);
-            return false;
-        } catch (\RuntimeException $e) {
-            return true;
-        }
     }
 }

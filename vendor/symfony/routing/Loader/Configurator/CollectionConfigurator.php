@@ -40,12 +40,12 @@ class CollectionConfigurator
 
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
@@ -65,7 +65,7 @@ class CollectionConfigurator
      */
     final public function collection(string $name = ''): self
     {
-        return new self($this->collection, $this->name.$name, $this, $this->prefixes);
+        return new self($this->collection, $this->name . $name, $this, $this->prefixes);
     }
 
     /**
@@ -88,7 +88,7 @@ class CollectionConfigurator
                         throw new \LogicException(sprintf('Collection "%s" with locale "%s" is missing a corresponding prefix in its parent collection.', $this->name, $locale));
                     }
 
-                    $prefix[$locale] = $this->parentPrefixes[$locale].$localePrefix;
+                    $prefix[$locale] = $this->parentPrefixes[$locale] . $localePrefix;
                 }
             }
             $this->prefixes = $prefix;

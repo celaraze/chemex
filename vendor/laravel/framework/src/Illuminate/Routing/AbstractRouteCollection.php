@@ -18,114 +18,6 @@ use Traversable;
 abstract class AbstractRouteCollection implements Countable, IteratorAggregate, RouteCollectionInterface
 {
     /**
-     * Handle the matched route.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Routing\Route|null  $route
-     * @return \Illuminate\Routing\Route
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
-    protected function handleMatchedRoute(Request $request, $route)
-    {
-        if (! is_null($route)) {
-            return $route->bind($request);
-        }
-
-        // If no route was found we will now check if a matching route is specified by
-        // another HTTP verb. If it is we will need to throw a MethodNotAllowed and
-        // inform the user agent of which HTTP verb it should use for this route.
-        $others = $this->checkForAlternateVerbs($request);
-
-        if (count($others) > 0) {
-            return $this->getRouteForMethods($request, $others);
-        }
-
-        throw new NotFoundHttpException;
-    }
-
-    /**
-     * Determine if any routes match on another HTTP verb.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    protected function checkForAlternateVerbs($request)
-    {
-        $methods = array_diff(Router::$verbs, [$request->getMethod()]);
-
-        // Here we will spin through all verbs except for the current request verb and
-        // check to see if any routes respond to them. If they do, we will return a
-        // proper error response with the correct headers on the response string.
-        return array_values(array_filter(
-            $methods,
-            function ($method) use ($request) {
-                return ! is_null($this->matchAgainstRoutes($this->get($method), $request, false));
-            }
-        ));
-    }
-
-    /**
-     * Determine if a route in the array matches the request.
-     *
-     * @param  \Illuminate\Routing\Route[]  $routes
-     * @param  \Illuminate\Http\Request  $request
-     * @param  bool  $includingMethod
-     * @return \Illuminate\Routing\Route|null
-     */
-    protected function matchAgainstRoutes(array $routes, $request, $includingMethod = true)
-    {
-        [$fallbacks, $routes] = collect($routes)->partition(function ($route) {
-            return $route->isFallback;
-        });
-
-        return $routes->merge($fallbacks)->first(
-            fn (Route $route) => $route->matches($request, $includingMethod)
-        );
-    }
-
-    /**
-     * Get a route (if necessary) that responds when other available methods are present.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string[]  $methods
-     * @return \Illuminate\Routing\Route
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
-     */
-    protected function getRouteForMethods($request, array $methods)
-    {
-        if ($request->isMethod('OPTIONS')) {
-            return (new Route('OPTIONS', $request->path(), function () use ($methods) {
-                return new Response('', 200, ['Allow' => implode(',', $methods)]);
-            }))->bind($request);
-        }
-
-        $this->methodNotAllowed($methods, $request->method());
-    }
-
-    /**
-     * Throw a method not allowed HTTP exception.
-     *
-     * @param  array  $others
-     * @param  string  $method
-     * @return void
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
-     */
-    protected function methodNotAllowed(array $others, $method)
-    {
-        throw new MethodNotAllowedHttpException(
-            $others,
-            sprintf(
-                'The %s method is not supported for this route. Supported methods: %s.',
-                $method,
-                implode(', ', $others)
-            )
-        );
-    }
-
-    /**
      * Compile the routes for caching.
      *
      * @return array
@@ -176,7 +68,7 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
         $routes = $this->getRoutes();
 
         foreach ($routes as $route) {
-            if (! $route->isFallback) {
+            if (!$route->isFallback) {
                 $symfonyRoutes = $this->addToSymfonyRoutesCollection($symfonyRoutes, $route);
             }
         }
@@ -193,8 +85,8 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
     /**
      * Add a route to the SymfonyRouteCollection instance.
      *
-     * @param  \Symfony\Component\Routing\RouteCollection  $symfonyRoutes
-     * @param  \Illuminate\Routing\Route  $route
+     * @param \Symfony\Component\Routing\RouteCollection $symfonyRoutes
+     * @param \Illuminate\Routing\Route $route
      * @return \Symfony\Component\Routing\RouteCollection
      *
      * @throws \LogicException
@@ -204,18 +96,18 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
         $name = $route->getName();
 
         if (
-            ! is_null($name)
+            !is_null($name)
             && str_ends_with($name, '.')
-            && ! is_null($symfonyRoutes->get($name))
+            && !is_null($symfonyRoutes->get($name))
         ) {
             $name = null;
         }
 
-        if (! $name) {
+        if (!$name) {
             $route->name($this->generateRouteName());
 
             $this->add($route);
-        } elseif (! is_null($symfonyRoutes->get($name))) {
+        } elseif (!is_null($symfonyRoutes->get($name))) {
             throw new LogicException("Unable to prepare route [{$route->uri}] for serialization. Another route has already been assigned name [{$name}].");
         }
 
@@ -231,7 +123,7 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
      */
     protected function generateRouteName()
     {
-        return 'generated::'.Str::random();
+        return 'generated::' . Str::random();
     }
 
     /**
@@ -252,5 +144,113 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
     public function count(): int
     {
         return count($this->getRoutes());
+    }
+
+    /**
+     * Handle the matched route.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Routing\Route|null $route
+     * @return \Illuminate\Routing\Route
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    protected function handleMatchedRoute(Request $request, $route)
+    {
+        if (!is_null($route)) {
+            return $route->bind($request);
+        }
+
+        // If no route was found we will now check if a matching route is specified by
+        // another HTTP verb. If it is we will need to throw a MethodNotAllowed and
+        // inform the user agent of which HTTP verb it should use for this route.
+        $others = $this->checkForAlternateVerbs($request);
+
+        if (count($others) > 0) {
+            return $this->getRouteForMethods($request, $others);
+        }
+
+        throw new NotFoundHttpException;
+    }
+
+    /**
+     * Determine if any routes match on another HTTP verb.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    protected function checkForAlternateVerbs($request)
+    {
+        $methods = array_diff(Router::$verbs, [$request->getMethod()]);
+
+        // Here we will spin through all verbs except for the current request verb and
+        // check to see if any routes respond to them. If they do, we will return a
+        // proper error response with the correct headers on the response string.
+        return array_values(array_filter(
+            $methods,
+            function ($method) use ($request) {
+                return !is_null($this->matchAgainstRoutes($this->get($method), $request, false));
+            }
+        ));
+    }
+
+    /**
+     * Determine if a route in the array matches the request.
+     *
+     * @param \Illuminate\Routing\Route[] $routes
+     * @param \Illuminate\Http\Request $request
+     * @param bool $includingMethod
+     * @return \Illuminate\Routing\Route|null
+     */
+    protected function matchAgainstRoutes(array $routes, $request, $includingMethod = true)
+    {
+        [$fallbacks, $routes] = collect($routes)->partition(function ($route) {
+            return $route->isFallback;
+        });
+
+        return $routes->merge($fallbacks)->first(
+            fn(Route $route) => $route->matches($request, $includingMethod)
+        );
+    }
+
+    /**
+     * Get a route (if necessary) that responds when other available methods are present.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string[] $methods
+     * @return \Illuminate\Routing\Route
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
+     */
+    protected function getRouteForMethods($request, array $methods)
+    {
+        if ($request->isMethod('OPTIONS')) {
+            return (new Route('OPTIONS', $request->path(), function () use ($methods) {
+                return new Response('', 200, ['Allow' => implode(',', $methods)]);
+            }))->bind($request);
+        }
+
+        $this->methodNotAllowed($methods, $request->method());
+    }
+
+    /**
+     * Throw a method not allowed HTTP exception.
+     *
+     * @param array $others
+     * @param string $method
+     * @return void
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
+     */
+    protected function methodNotAllowed(array $others, $method)
+    {
+        throw new MethodNotAllowedHttpException(
+            $others,
+            sprintf(
+                'The %s method is not supported for this route. Supported methods: %s.',
+                $method,
+                implode(', ', $others)
+            )
+        );
     }
 }

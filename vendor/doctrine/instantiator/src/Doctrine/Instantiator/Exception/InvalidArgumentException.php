@@ -4,7 +4,6 @@ namespace Doctrine\Instantiator\Exception;
 
 use InvalidArgumentException as BaseInvalidArgumentException;
 use ReflectionClass;
-
 use function interface_exists;
 use function sprintf;
 use function trait_exists;

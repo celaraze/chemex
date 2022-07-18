@@ -6,7 +6,8 @@
     <select class="form-control {{ $class }}" name="{{$name}}" data-value="{{ $value }}" style="width: 100%;">
         <option value=""></option>
         @foreach($options as $select => $option)
-            <option value="{{$select}}" {{ Dcat\Admin\Support\Helper::equal($select, $value) ?'selected':'' }}>{{$option}}</option>
+            <option
+                value="{{$select}}" {{ Dcat\Admin\Support\Helper::equal($select, $value) ?'selected':'' }}>{{$option}}</option>
         @endforeach
     </select>
 </div>
@@ -19,7 +20,7 @@
     @yield('admin.select-ajax')
 
     @if(isset($remote))
-    $.ajax({!! admin_javascript_json($remote['ajaxOptions']) !!}).done(function(data) {
+    $.ajax({!! admin_javascript_json($remote['ajaxOptions']) !!}).done(function (data) {
         $("{{ $selector }}").select2($.extend({!! admin_javascript_json($configs) !!}, {
             data: data,
         })).val({!! json_encode($remote['values']) !!}).trigger("change");

@@ -38,7 +38,7 @@ class InvalidFunctionCallAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application seems to contain invalid calls to functions that either do not exist or "
-            ."do not match the function signature.";
+            . "do not match the function signature.";
     }
 
     /**

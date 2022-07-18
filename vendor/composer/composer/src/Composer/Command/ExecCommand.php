@@ -12,10 +12,10 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 
 /**
  * @author Davey Shafik <me@daveyshafik.com>
@@ -45,8 +45,7 @@ Executes a vendored binary/script.
 
 Read more at https://getcomposer.org/doc/03-cli.md#exec
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -71,7 +70,7 @@ EOT
 
             foreach ($bins as $bin) {
                 // skip .bat copies
-                if (isset($previousBin) && $bin === $previousBin.'.bat') {
+                if (isset($previousBin) && $bin === $previousBin . '.bat') {
                     continue;
                 }
 
@@ -99,7 +98,7 @@ EOT
             try {
                 chdir($this->getApplication()->getInitialWorkingDirectory());
             } catch (\Exception $e) {
-                throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getInitialWorkingDirectory().'"', 0, $e);
+                throw new \RuntimeException('Could not switch back to working directory "' . $this->getApplication()->getInitialWorkingDirectory() . '"', 0, $e);
             }
         }
 

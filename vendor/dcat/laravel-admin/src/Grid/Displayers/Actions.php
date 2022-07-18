@@ -33,10 +33,10 @@ class Actions extends AbstractDisplayer
      * @var array
      */
     protected $actions = [
-        'view'      => true,
-        'edit'      => true,
+        'view' => true,
+        'edit' => true,
         'quickEdit' => false,
-        'delete'    => true,
+        'delete' => true,
     ];
 
     /**
@@ -47,7 +47,7 @@ class Actions extends AbstractDisplayer
     /**
      * Append a action.
      *
-     * @param  string|Renderable|Action|Htmlable  $action
+     * @param string|Renderable|Action|Htmlable $action
      * @return $this
      */
     public function append($action)
@@ -60,22 +60,7 @@ class Actions extends AbstractDisplayer
     }
 
     /**
-     * Prepend a action.
-     *
-     * @param  string|Renderable|Action|Htmlable  $action
-     * @return $this
-     */
-    public function prepend($action)
-    {
-        $this->prepareAction($action);
-
-        array_unshift($this->prepends, $action);
-
-        return $this;
-    }
-
-    /**
-     * @param  mixed  $action
+     * @param mixed $action
      * @return mixed
      */
     protected function prepareAction(&$action)
@@ -89,73 +74,35 @@ class Actions extends AbstractDisplayer
         return $action;
     }
 
-    public function view(bool $value = true)
+    /**
+     * Prepend a action.
+     *
+     * @param string|Renderable|Action|Htmlable $action
+     * @return $this
+     */
+    public function prepend($action)
     {
-        return $this->setAction('view', $value);
+        $this->prepareAction($action);
+
+        array_unshift($this->prepends, $action);
+
+        return $this;
     }
 
     /**
      * Disable view action.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableView(bool $disable = true)
     {
-        return $this->setAction('view', ! $disable);
-    }
-
-    public function delete(bool $value = true)
-    {
-        return $this->setAction('delete', $value);
+        return $this->setAction('view', !$disable);
     }
 
     /**
-     * Disable delete.
-     *
-     * @param  bool  $disable
-     * @return $this.
-     */
-    public function disableDelete(bool $disable = true)
-    {
-        return $this->setAction('delete', ! $disable);
-    }
-
-    public function edit(bool $value = true)
-    {
-        return $this->setAction('edit', $value);
-    }
-
-    /**
-     * Disable edit.
-     *
-     * @param  bool  $disable
-     * @return $this.
-     */
-    public function disableEdit(bool $disable = true)
-    {
-        return $this->setAction('edit', ! $disable);
-    }
-
-    public function quickEdit(bool $value = true)
-    {
-        return $this->setAction('quickEdit', $value);
-    }
-
-    /**
-     * Disable quick edit.
-     *
-     * @param  bool  $disable
-     * @return $this.
-     */
-    public function disableQuickEdit(bool $disable = true)
-    {
-        return $this->setAction('quickEdit', ! $disable);
-    }
-
-    /**
-     * @param  string  $key
-     * @param  bool  $disable
+     * @param string $key
+     * @param bool $disable
      * @return $this
      */
     protected function setAction(string $key, bool $value)
@@ -163,6 +110,39 @@ class Actions extends AbstractDisplayer
         $this->actions[$key] = $value;
 
         return $this;
+    }
+
+    /**
+     * Disable delete.
+     *
+     * @param bool $disable
+     * @return $this.
+     */
+    public function disableDelete(bool $disable = true)
+    {
+        return $this->setAction('delete', !$disable);
+    }
+
+    /**
+     * Disable edit.
+     *
+     * @param bool $disable
+     * @return $this.
+     */
+    public function disableEdit(bool $disable = true)
+    {
+        return $this->setAction('edit', !$disable);
+    }
+
+    /**
+     * Disable quick edit.
+     *
+     * @param bool $disable
+     * @return $this.
+     */
+    public function disableQuickEdit(bool $disable = true)
+    {
+        return $this->setAction('quickEdit', !$disable);
     }
 
     /**
@@ -189,30 +169,6 @@ class Actions extends AbstractDisplayer
     }
 
     /**
-     * @return void
-     */
-    protected function resetDefaultActions()
-    {
-        $this->view($this->grid->option('view_button'));
-        $this->edit($this->grid->option('edit_button'));
-        $this->quickEdit($this->grid->option('quick_edit_button'));
-        $this->delete($this->grid->option('delete_button'));
-    }
-
-    /**
-     * @param  array  $callbacks
-     * @return void
-     */
-    protected function call(array $callbacks = [])
-    {
-        foreach ($callbacks as $callback) {
-            if ($callback instanceof \Closure) {
-                $callback->call($this->row, $this);
-            }
-        }
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function display(array $callbacks = [])
@@ -228,12 +184,56 @@ class Actions extends AbstractDisplayer
 
         foreach ($this->actions as $action => $enable) {
             if ($enable) {
-                $method = 'render'.ucfirst($action);
+                $method = 'render' . ucfirst($action);
                 array_push($prepends, $this->{$method}());
             }
         }
 
         return implode('', array_merge($prepends, $appends));
+    }
+
+    /**
+     * @return void
+     */
+    protected function resetDefaultActions()
+    {
+        $this->view($this->grid->option('view_button'));
+        $this->edit($this->grid->option('edit_button'));
+        $this->quickEdit($this->grid->option('quick_edit_button'));
+        $this->delete($this->grid->option('delete_button'));
+    }
+
+    public function view(bool $value = true)
+    {
+        return $this->setAction('view', $value);
+    }
+
+    public function edit(bool $value = true)
+    {
+        return $this->setAction('edit', $value);
+    }
+
+    public function quickEdit(bool $value = true)
+    {
+        return $this->setAction('quickEdit', $value);
+    }
+
+    public function delete(bool $value = true)
+    {
+        return $this->setAction('delete', $value);
+    }
+
+    /**
+     * @param array $callbacks
+     * @return void
+     */
+    protected function call(array $callbacks = [])
+    {
+        foreach ($callbacks as $callback) {
+            if ($callback instanceof \Closure) {
+                $callback->call($this->row, $this);
+            }
+        }
     }
 
     /**

@@ -34,36 +34,15 @@ class Sorter implements Renderable
     /**
      * Sorter constructor.
      *
-     * @param  Grid  $grid
-     * @param  string  $columnName
-     * @param  string  $cast
+     * @param Grid $grid
+     * @param string $columnName
+     * @param string $cast
      */
     public function __construct(Grid $grid, $columnName, $cast)
     {
         $this->grid = $grid;
         $this->columnName = $columnName;
         $this->cast = $cast;
-    }
-
-    /**
-     * Determine if this column is currently sorted.
-     *
-     * @return bool
-     */
-    protected function isSorted()
-    {
-        $this->sort = app('request')->get($this->getSortName());
-
-        if (empty($this->sort)) {
-            return false;
-        }
-
-        return isset($this->sort['column']) && $this->sort['column'] == $this->columnName;
-    }
-
-    protected function getSortName()
-    {
-        return $this->grid->model()->getSortName();
     }
 
     /**
@@ -90,7 +69,7 @@ class Sorter implements Renderable
             $sort['cast'] = $this->cast;
         }
 
-        if (! $this->isSorted() || $this->sort['type'] != 'asc') {
+        if (!$this->isSorted() || $this->sort['type'] != 'asc') {
             $url = request()->fullUrlWithQuery([
                 $this->getSortName() => $sort,
             ]);
@@ -101,5 +80,26 @@ class Sorter implements Renderable
         }
 
         return "&nbsp;<a href='{$url}' class='grid-sort feather icon-arrow-{$icon} {$active}'></a>";
+    }
+
+    /**
+     * Determine if this column is currently sorted.
+     *
+     * @return bool
+     */
+    protected function isSorted()
+    {
+        $this->sort = app('request')->get($this->getSortName());
+
+        if (empty($this->sort)) {
+            return false;
+        }
+
+        return isset($this->sort['column']) && $this->sort['column'] == $this->columnName;
+    }
+
+    protected function getSortName()
+    {
+        return $this->grid->model()->getSortName();
     }
 }

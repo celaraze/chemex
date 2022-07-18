@@ -25,19 +25,17 @@ class Importer implements Contracts\Importer
     use Macroable, Excel, TempFile;
 
     /**
+     * @var int|\Closure
+     */
+    public $headingRow = 1;
+    /**
      * @var ReaderInterface
      */
     protected $reader;
-
     /**
      * @var string|UploadedFile
      */
     protected $filePath;
-
-    /**
-     * @var int|\Closure
-     */
-    public $headingRow = 1;
 
     public function __construct($filePath)
     {
@@ -45,7 +43,7 @@ class Importer implements Contracts\Importer
     }
 
     /**
-     * @param  string|UploadedFile  $filePath
+     * @param string|UploadedFile $filePath
      * @return $this
      */
     public function file($filePath)
@@ -56,7 +54,7 @@ class Importer implements Contracts\Importer
     }
 
     /**
-     * @param  int|\Closure  $lineNumberOrCallback
+     * @param int|\Closure $lineNumberOrCallback
      * @return mixed
      */
     public function headingRow($lineNumberOrCallback)
@@ -64,6 +62,21 @@ class Importer implements Contracts\Importer
         $this->headingRow = $lineNumberOrCallback;
 
         return $this;
+    }
+
+    /**
+     * 根据名称或序号获取sheet.
+     *
+     * @param int|string $indexOrName
+     * @return Contracts\Sheet
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     */
+    public function sheet($indexOrName): Contracts\Sheet
+    {
+        return $this->sheets()->index($indexOrName) ?: $this->makeNullSheet();
     }
 
     /**
@@ -93,123 +106,7 @@ class Importer implements Contracts\Importer
     }
 
     /**
-     * 根据名称或序号获取sheet.
-     *
-     * @param  int|string  $indexOrName
-     * @return Contracts\Sheet
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     */
-    public function sheet($indexOrName): Contracts\Sheet
-    {
-        return $this->sheets()->index($indexOrName) ?: $this->makeNullSheet();
-    }
-
-    /**
-     * @return array
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     */
-    public function toArray(): array
-    {
-        return $this->sheets()->toArray();
-    }
-
-    /**
-     * @return SheetCollection
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     */
-    public function collect(): SheetCollection
-    {
-        return $this->sheets()->collect();
-    }
-
-    /**
-     * @param  callable  $callback
-     * @return $this
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     */
-    public function each(callable $callback)
-    {
-        $this->sheets()->each($callback);
-
-        return $this;
-    }
-
-    /**
-     * 获取第一个sheet.
-     *
-     * @return Contracts\Sheet
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     */
-    public function first(): Contracts\Sheet
-    {
-        $sheet = null;
-
-        $this->sheets()->each(function (SheetInterface $value) use (&$sheet) {
-            $sheet = $value;
-
-            return false;
-        });
-
-        return $sheet ?: $this->makeNullSheet();
-    }
-
-    /**
-     * 获取当前打开的sheet.
-     *
-     * @return Contracts\Sheet
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws UnsupportedTypeException
-     * @throws UnsupportedTypeException
-     */
-    public function active(): Contracts\Sheet
-    {
-        $sheet = null;
-
-        $this->sheets()->each(function (SheetInterface $value) use (&$sheet) {
-            if ($value->isActive()) {
-                $sheet = $value;
-
-                return false;
-            }
-        });
-
-        return $sheet ?: $this->makeNullSheet();
-    }
-
-    /**
-     * @param  \Box\Spout\Reader\ReaderInterface  $reader
-     * @return \Generator
-     *
-     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
-     */
-    protected function readSheets(ReaderInterface $reader)
-    {
-        foreach ($reader->getSheetIterator() as $key => $sheet) {
-            yield new Sheet($this, $sheet);
-        }
-
-        $this->releaseResources();
-    }
-
-    /**
-     * @param  string|UploadedFile  $path
+     * @param string|UploadedFile $path
      * @return \Box\Spout\Reader\ReaderInterface
      *
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
@@ -238,11 +135,18 @@ class Importer implements Contracts\Importer
     }
 
     /**
-     * @return NullSheet
+     * @param \Box\Spout\Reader\ReaderInterface $reader
+     * @return \Generator
+     *
+     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
      */
-    protected function makeNullSheet()
+    protected function readSheets(ReaderInterface $reader)
     {
-        return new NullSheet();
+        foreach ($reader->getSheetIterator() as $key => $sheet) {
+            yield new Sheet($this, $sheet);
+        }
+
+        $this->releaseResources();
     }
 
     /**
@@ -255,5 +159,99 @@ class Importer implements Contracts\Importer
         }
 
         $this->removeTempFile();
+    }
+
+    /**
+     * @return NullSheet
+     */
+    protected function makeNullSheet()
+    {
+        return new NullSheet();
+    }
+
+    /**
+     * @return array
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     */
+    public function toArray(): array
+    {
+        return $this->sheets()->toArray();
+    }
+
+    /**
+     * @return SheetCollection
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     */
+    public function collect(): SheetCollection
+    {
+        return $this->sheets()->collect();
+    }
+
+    /**
+     * 获取第一个sheet.
+     *
+     * @return Contracts\Sheet
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     */
+    public function first(): Contracts\Sheet
+    {
+        $sheet = null;
+
+        $this->sheets()->each(function (SheetInterface $value) use (&$sheet) {
+            $sheet = $value;
+
+            return false;
+        });
+
+        return $sheet ?: $this->makeNullSheet();
+    }
+
+    /**
+     * @param callable $callback
+     * @return $this
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     */
+    public function each(callable $callback)
+    {
+        $this->sheets()->each($callback);
+
+        return $this;
+    }
+
+    /**
+     * 获取当前打开的sheet.
+     *
+     * @return Contracts\Sheet
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     * @throws UnsupportedTypeException
+     */
+    public function active(): Contracts\Sheet
+    {
+        $sheet = null;
+
+        $this->sheets()->each(function (SheetInterface $value) use (&$sheet) {
+            if ($value->isActive()) {
+                $sheet = $value;
+
+                return false;
+            }
+        });
+
+        return $sheet ?: $this->makeNullSheet();
     }
 }

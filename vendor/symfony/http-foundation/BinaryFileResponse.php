@@ -36,13 +36,13 @@ class BinaryFileResponse extends Response
     protected $deleteFileAfterSend = false;
 
     /**
-     * @param \SplFileInfo|string $file               The file to stream
-     * @param int                 $status             The response status code
-     * @param array               $headers            An array of response headers
-     * @param bool                $public             Files are public by default
-     * @param string|null         $contentDisposition The type of Content-Disposition to set automatically with the filename
-     * @param bool                $autoEtag           Whether the ETag header should be automatically set
-     * @param bool                $autoLastModified   Whether the Last-Modified header should be automatically set
+     * @param \SplFileInfo|string $file The file to stream
+     * @param int $status The response status code
+     * @param array $headers An array of response headers
+     * @param bool $public Files are public by default
+     * @param string|null $contentDisposition The type of Content-Disposition to set automatically with the filename
+     * @param bool $autoEtag Whether the ETag header should be automatically set
+     * @param bool $autoLastModified Whether the Last-Modified header should be automatically set
      */
     public function __construct(\SplFileInfo|string $file, int $status = 200, array $headers = [], bool $public = true, string $contentDisposition = null, bool $autoEtag = false, bool $autoLastModified = true)
     {
@@ -53,6 +53,22 @@ class BinaryFileResponse extends Response
         if ($public) {
             $this->setPublic();
         }
+    }
+
+    /**
+     * Trust X-Sendfile-Type header.
+     */
+    public static function trustXSendfileTypeHeader()
+    {
+        self::$trustXSendfileTypeHeader = true;
+    }
+
+    /**
+     * Gets the file.
+     */
+    public function getFile(): File
+    {
+        return $this->file;
     }
 
     /**
@@ -68,7 +84,7 @@ class BinaryFileResponse extends Response
             if ($file instanceof \SplFileInfo) {
                 $file = new File($file->getPathname());
             } else {
-                $file = new File((string) $file);
+                $file = new File((string)$file);
             }
         }
 
@@ -91,14 +107,6 @@ class BinaryFileResponse extends Response
         }
 
         return $this;
-    }
-
-    /**
-     * Gets the file.
-     */
-    public function getFile(): File
-    {
-        return $this->file;
     }
 
     /**
@@ -128,8 +136,8 @@ class BinaryFileResponse extends Response
     /**
      * Sets the Content-Disposition header with the given filename.
      *
-     * @param string $disposition      ResponseHeaderBag::DISPOSITION_INLINE or ResponseHeaderBag::DISPOSITION_ATTACHMENT
-     * @param string $filename         Optionally use this UTF-8 encoded filename instead of the real name of the file
+     * @param string $disposition ResponseHeaderBag::DISPOSITION_INLINE or ResponseHeaderBag::DISPOSITION_ATTACHMENT
+     * @param string $filename Optionally use this UTF-8 encoded filename instead of the real name of the file
      * @param string $filenameFallback A fallback filename, containing only ASCII characters. Defaults to an automatically encoded filename
      *
      * @return $this
@@ -203,7 +211,7 @@ class BinaryFileResponse extends Response
                 foreach ($parts as $part) {
                     [$pathPrefix, $location] = $part;
                     if (str_starts_with($path, $pathPrefix)) {
-                        $path = $location.substr($path, \strlen($pathPrefix));
+                        $path = $location . substr($path, \strlen($pathPrefix));
                         // Only set X-Accel-Redirect header if a valid URI can be produced
                         // as nginx does not serve arbitrary file paths.
                         $this->headers->set($type, $path);
@@ -223,13 +231,13 @@ class BinaryFileResponse extends Response
                 if (str_starts_with($range, 'bytes=')) {
                     [$start, $end] = explode('-', substr($range, 6), 2) + [0];
 
-                    $end = ('' === $end) ? $fileSize - 1 : (int) $end;
+                    $end = ('' === $end) ? $fileSize - 1 : (int)$end;
 
                     if ('' === $start) {
                         $start = $fileSize - $end;
                         $end = $fileSize - 1;
                     } else {
-                        $start = (int) $start;
+                        $start = (int)$start;
                     }
 
                     if ($start <= $end) {
@@ -263,7 +271,7 @@ class BinaryFileResponse extends Response
             return false;
         }
 
-        return $lastModified->format('D, d M Y H:i:s').' GMT' === $header;
+        return $lastModified->format('D, d M Y H:i:s') . ' GMT' === $header;
     }
 
     /**
@@ -314,14 +322,6 @@ class BinaryFileResponse extends Response
     public function getContent(): string|false
     {
         return false;
-    }
-
-    /**
-     * Trust X-Sendfile-Type header.
-     */
-    public static function trustXSendfileTypeHeader()
-    {
-        self::$trustXSendfileTypeHeader = true;
     }
 
     /**

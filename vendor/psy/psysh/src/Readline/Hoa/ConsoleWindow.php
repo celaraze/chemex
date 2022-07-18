@@ -86,7 +86,7 @@ class ConsoleWindow implements EventSource
             return;
         }
 
-        Console::getOutput()->writeAll("\033[8;".$y.';'.$x.'t');
+        Console::getOutput()->writeAll("\033[8;" . $y . ';' . $x . 't');
 
         return;
     }
@@ -101,11 +101,11 @@ class ConsoleWindow implements EventSource
 
             $_y = \trim($modecon[2]);
             \preg_match('#[^:]+:\s*([0-9]+)#', $_y, $matches);
-            $y = (int) $matches[1];
+            $y = (int)$matches[1];
 
             $_x = \trim($modecon[3]);
             \preg_match('#[^:]+:\s*([0-9]+)#', $_x, $matches);
-            $x = (int) $matches[1];
+            $x = (int)$matches[1];
 
             return [
                 'x' => $x,
@@ -116,18 +116,18 @@ class ConsoleWindow implements EventSource
         $term = '';
 
         if (isset($_SERVER['TERM'])) {
-            $term = 'TERM="'.$_SERVER['TERM'].'" ';
+            $term = 'TERM="' . $_SERVER['TERM'] . '" ';
         }
 
-        $command = $term.'tput cols && '.$term.'tput lines';
+        $command = $term . 'tput cols && ' . $term . 'tput lines';
         $tput = Processus::execute($command, false);
 
         if (!empty($tput)) {
             list($x, $y) = \explode("\n", $tput);
 
             return [
-                'x' => (int) $x,
-                'y' => (int) $y,
+                'x' => (int)$x,
+                'y' => (int)$y,
             ];
         }
 
@@ -172,8 +172,8 @@ class ConsoleWindow implements EventSource
         }
 
         return [
-            'x' => (int) $x,
-            'y' => (int) $y,
+            'x' => (int)$x,
+            'y' => (int)$y,
         ];
     }
 
@@ -187,7 +187,7 @@ class ConsoleWindow implements EventSource
         }
 
         // DECSLPP.
-        Console::getOutput()->writeAll("\033[3;".$x.';'.$y.'t');
+        Console::getOutput()->writeAll("\033[3;" . $x . ';' . $y . 't');
 
         return;
     }
@@ -231,8 +231,8 @@ class ConsoleWindow implements EventSource
         }
 
         return [
-            'x' => (int) $x,
-            'y' => (int) $y,
+            'x' => (int)$x,
+            'y' => (int)$y,
         ];
     }
 
@@ -370,7 +370,7 @@ class ConsoleWindow implements EventSource
         }
 
         // DECSLPP.
-        Console::getOutput()->writeAll("\033]0;".$title."\033\\");
+        Console::getOutput()->writeAll("\033]0;" . $title . "\033\\");
 
         return;
     }
@@ -487,7 +487,7 @@ class ConsoleWindow implements EventSource
             return;
         }
 
-        $out = "\033]52;;".\base64_encode($data)."\033\\";
+        $out = "\033]52;;" . \base64_encode($data) . "\033\\";
         $output = Console::getOutput();
         $considerMultiplexer = $output->considerMultiplexer(true);
 

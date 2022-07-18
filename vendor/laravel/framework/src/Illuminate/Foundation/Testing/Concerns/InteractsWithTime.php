@@ -10,7 +10,7 @@ trait InteractsWithTime
     /**
      * Freeze time.
      *
-     * @param  callable|null  $callback
+     * @param callable|null $callback
      * @return mixed
      */
     public function freezeTime($callback = null)
@@ -19,32 +19,10 @@ trait InteractsWithTime
     }
 
     /**
-     * Freeze time at the beginning of the current second.
-     *
-     * @param  callable|null  $callback
-     * @return mixed
-     */
-    public function freezeSecond($callback = null)
-    {
-        return $this->travelTo(Carbon::now()->startOfSecond(), $callback);
-    }
-
-    /**
-     * Begin travelling to another time.
-     *
-     * @param  int  $value
-     * @return \Illuminate\Foundation\Testing\Wormhole
-     */
-    public function travel($value)
-    {
-        return new Wormhole($value);
-    }
-
-    /**
      * Travel to another time.
      *
-     * @param  \DateTimeInterface|\Closure|\Illuminate\Support\Carbon|string|bool|null  $date
-     * @param  callable|null  $callback
+     * @param \DateTimeInterface|\Closure|\Illuminate\Support\Carbon|string|bool|null $date
+     * @param callable|null $callback
      * @return mixed
      */
     public function travelTo($date, $callback = null)
@@ -56,6 +34,28 @@ trait InteractsWithTime
                 Carbon::setTestNow();
             });
         }
+    }
+
+    /**
+     * Freeze time at the beginning of the current second.
+     *
+     * @param callable|null $callback
+     * @return mixed
+     */
+    public function freezeSecond($callback = null)
+    {
+        return $this->travelTo(Carbon::now()->startOfSecond(), $callback);
+    }
+
+    /**
+     * Begin travelling to another time.
+     *
+     * @param int $value
+     * @return \Illuminate\Foundation\Testing\Wormhole
+     */
+    public function travel($value)
+    {
+        return new Wormhole($value);
     }
 
     /**

@@ -70,10 +70,10 @@ class SectionTest extends TestCase
         admin_inject_section('key3', 'test1,');
         admin_inject_section('key3', 'test2,', false);
         admin_inject_section('key3', function ($options) {
-            return $options->previous.'test3,';
+            return $options->previous . 'test3,';
         }, false);
         admin_inject_section('key3', function ($options) {
-            return $options->previous.'test4,';
+            return $options->previous . 'test4,';
         }, false);
 
         $this->assertSame(admin_section('key3'), 'test2,test3,test4,');
@@ -99,7 +99,7 @@ class SectionTest extends TestCase
 
         // step2
         admin_inject_default_section('key', function ($options) {
-            return 'Hello '.$options->var1;
+            return 'Hello ' . $options->var1;
         });
 
         $this->assertSame(admin_section('key', null, ['var1' => 'world']), 'Hello world');

@@ -7,11 +7,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Diff;
 
-use const PHP_INT_SIZE;
-use const PREG_SPLIT_DELIM_CAPTURE;
-use const PREG_SPLIT_NO_EMPTY;
+use SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_shift;
 use function array_unshift;
 use function array_values;
@@ -30,18 +30,19 @@ use function prev;
 use function reset;
 use function sprintf;
 use function substr;
-use SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use const PHP_INT_SIZE;
+use const PREG_SPLIT_DELIM_CAPTURE;
+use const PREG_SPLIT_NO_EMPTY;
 
 final class Differ
 {
-    public const OLD                     = 0;
+    public const OLD = 0;
 
-    public const ADDED                   = 1;
+    public const ADDED = 1;
 
-    public const REMOVED                 = 2;
+    public const REMOVED = 2;
 
-    public const DIFF_LINE_END_WARNING   = 3;
+    public const DIFF_LINE_END_WARNING = 3;
 
     public const NO_LINE_END_EOF_WARNING = 4;
 
@@ -104,8 +105,8 @@ final class Differ
      * - 1: ADDED: $token was added to $from
      * - 0: OLD: $token is not changed in $to
      *
-     * @param array|string                       $from
-     * @param array|string                       $to
+     * @param array|string $from
+     * @param array|string $to
      * @param LongestCommonSubsequenceCalculator $lcs
      */
     public function diffToArray($from, $to, LongestCommonSubsequenceCalculator $lcs = null): array
@@ -129,7 +130,7 @@ final class Differ
         }
 
         $common = $lcs->calculate(array_values($from), array_values($to));
-        $diff   = [];
+        $diff = [];
 
         foreach ($start as $token) {
             $diff[] = [$token, self::OLD];
@@ -173,25 +174,51 @@ final class Differ
     }
 
     /**
-     * Casts variable to string if it is not a string or array.
-     *
-     * @return array|string
-     */
-    private function normalizeDiffInput($input)
-    {
-        if (!is_array($input) && !is_string($input)) {
-            return (string) $input;
-        }
-
-        return $input;
-    }
-
-    /**
      * Checks if input is string, if so it will split it line-by-line.
      */
     private function splitStringByLines(string $input): array
     {
         return preg_split('/(.*\R)/', $input, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+    }
+
+    private static function getArrayDiffParted(array &$from, array &$to): array
+    {
+        $start = [];
+        $end = [];
+
+        reset($to);
+
+        foreach ($from as $k => $v) {
+            $toK = key($to);
+
+            if ($toK === $k && $v === $to[$k]) {
+                $start[$k] = $v;
+
+                unset($from[$k], $to[$k]);
+            } else {
+                break;
+            }
+        }
+
+        end($from);
+        end($to);
+
+        do {
+            $fromK = key($from);
+            $toK = key($to);
+
+            if (null === $fromK || null === $toK || current($from) !== current($to)) {
+                break;
+            }
+
+            prev($from);
+            prev($to);
+
+            $end = [$fromK => $from[$fromK]] + $end;
+            unset($from[$fromK], $to[$toK]);
+        } while (true);
+
+        return [$from, $to, $start, $end];
     }
 
     private function selectLcsImplementation(array $from, array $to): LongestCommonSubsequenceCalculator
@@ -231,7 +258,7 @@ final class Differ
 
         foreach ($diff as $entry) {
             if (self::OLD === $entry[1]) {
-                $ln                 = $this->getLinebreak($entry[0]);
+                $ln = $this->getLinebreak($entry[0]);
                 $oldLineBreaks[$ln] = true;
                 $newLineBreaks[$ln] = true;
             } elseif (self::ADDED === $entry[1]) {
@@ -285,43 +312,17 @@ final class Differ
         return "\n";
     }
 
-    private static function getArrayDiffParted(array &$from, array &$to): array
+    /**
+     * Casts variable to string if it is not a string or array.
+     *
+     * @return array|string
+     */
+    private function normalizeDiffInput($input)
     {
-        $start = [];
-        $end   = [];
-
-        reset($to);
-
-        foreach ($from as $k => $v) {
-            $toK = key($to);
-
-            if ($toK === $k && $v === $to[$k]) {
-                $start[$k] = $v;
-
-                unset($from[$k], $to[$k]);
-            } else {
-                break;
-            }
+        if (!is_array($input) && !is_string($input)) {
+            return (string)$input;
         }
 
-        end($from);
-        end($to);
-
-        do {
-            $fromK = key($from);
-            $toK   = key($to);
-
-            if (null === $fromK || null === $toK || current($from) !== current($to)) {
-                break;
-            }
-
-            prev($from);
-            prev($to);
-
-            $end = [$fromK => $from[$fromK]] + $end;
-            unset($from[$fromK], $to[$toK]);
-        } while (true);
-
-        return [$from, $to, $start, $end];
+        return $input;
     }
 }

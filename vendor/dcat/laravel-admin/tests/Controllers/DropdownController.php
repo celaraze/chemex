@@ -38,7 +38,7 @@ class DropdownController extends Controller
 
         return Box::make(
             'Example1',
-            $menu1->render().' &nbsp; '.$menu2->render().' &nbsp; '.$menu3->render()
+            $menu1->render() . ' &nbsp; ' . $menu2->render() . ' &nbsp; ' . $menu3->render()
         );
     }
 

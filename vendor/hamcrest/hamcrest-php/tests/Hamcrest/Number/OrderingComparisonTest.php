@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Number;
 
 class OrderingComparisonTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Number\OrderingComparison::greaterThan(1);
-    }
 
     public function testComparesValuesForGreaterThan()
     {
@@ -37,5 +33,10 @@ class OrderingComparisonTest extends \Hamcrest\AbstractMatcherTest
     {
         assertThat(1.1, greaterThan(1.0));
         assertThat("cc", greaterThan("bb"));
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Number\OrderingComparison::greaterThan(1);
     }
 }

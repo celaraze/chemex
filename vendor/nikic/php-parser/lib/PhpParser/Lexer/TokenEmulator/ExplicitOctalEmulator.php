@@ -4,16 +4,20 @@ namespace PhpParser\Lexer\TokenEmulator;
 
 use PhpParser\Lexer\Emulative;
 
-class ExplicitOctalEmulator extends TokenEmulator {
-    public function getPhpVersion(): string {
+class ExplicitOctalEmulator extends TokenEmulator
+{
+    public function getPhpVersion(): string
+    {
         return Emulative::PHP_8_1;
     }
 
-    public function isEmulationNeeded(string $code): bool {
+    public function isEmulationNeeded(string $code): bool
+    {
         return strpos($code, '0o') !== false || strpos($code, '0O') !== false;
     }
 
-    public function emulate(string $code, array $tokens): array {
+    public function emulate(string $code, array $tokens): array
+    {
         for ($i = 0, $c = count($tokens); $i < $c; ++$i) {
             if ($tokens[$i][0] == \T_LNUMBER && $tokens[$i][1] === '0' &&
                 isset($tokens[$i + 1]) && $tokens[$i + 1][0] == \T_STRING &&
@@ -37,7 +41,8 @@ class ExplicitOctalEmulator extends TokenEmulator {
         return is_float($num) ? \T_DNUMBER : \T_LNUMBER;
     }
 
-    public function reverseEmulate(string $code, array $tokens): array {
+    public function reverseEmulate(string $code, array $tokens): array
+    {
         // Explicit octals were not legal code previously, don't bother.
         return $tokens;
     }

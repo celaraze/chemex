@@ -31,13 +31,13 @@ final class ConsoleTerminateEvent extends ConsoleEvent
         $this->setExitCode($exitCode);
     }
 
-    public function setExitCode(int $exitCode): void
-    {
-        $this->exitCode = $exitCode;
-    }
-
     public function getExitCode(): int
     {
         return $this->exitCode;
+    }
+
+    public function setExitCode(int $exitCode): void
+    {
+        $this->exitCode = $exitCode;
     }
 }

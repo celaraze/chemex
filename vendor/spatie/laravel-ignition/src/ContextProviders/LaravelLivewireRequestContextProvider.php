@@ -10,9 +10,10 @@ use Livewire\LivewireManager;
 class LaravelLivewireRequestContextProvider extends LaravelRequestContextProvider
 {
     public function __construct(
-        Request $request,
+        Request                   $request,
         protected LivewireManager $livewireManager
-    ) {
+    )
+    {
         parent::__construct($request);
     }
 

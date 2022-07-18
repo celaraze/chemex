@@ -1,6 +1,7 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
+All notable changes to this project will be documented in this file. This project adheres
+to [Semantic Versioning](http://semver.org/).
 
 ## [3.0.6] - 2021-12-02
 
@@ -18,7 +19,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
-* [#67](https://github.com/sebastianbergmann/php-file-iterator/issues/67): `TypeError` in `SebastianBergmann\FileIterator\Iterator::accept()`
+* [#67](https://github.com/sebastianbergmann/php-file-iterator/issues/67): `TypeError`
+  in `SebastianBergmann\FileIterator\Iterator::accept()`
 
 ## [3.0.3] - 2020-06-26
 
@@ -52,13 +54,16 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
-* [#74](https://github.com/sebastianbergmann/php-file-iterator/pull/74): Document return type of `SebastianBergmann\FileIterator\Iterator::accept()` so that Symfony's `DebugClassLoader` does not trigger a deprecation warning
+* [#74](https://github.com/sebastianbergmann/php-file-iterator/pull/74): Document return type
+  of `SebastianBergmann\FileIterator\Iterator::accept()` so that Symfony's `DebugClassLoader` does not trigger a
+  deprecation warning
 
 ## [2.0.4] - 2021-07-19
 
 ### Changed
 
-* Added `ReturnTypeWillChange` attribute to `SebastianBergmann\FileIterator\Iterator::accept()` because the return type of `\FilterIterator::accept()` will change in PHP 8.1
+* Added `ReturnTypeWillChange` attribute to `SebastianBergmann\FileIterator\Iterator::accept()` because the return type
+  of `\FilterIterator::accept()` will change in PHP 8.1
 
 ## [2.0.3] - 2020-11-30
 
@@ -70,7 +75,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
-* [#48](https://github.com/sebastianbergmann/php-file-iterator/issues/48): Excluding an array that contains false ends up excluding the current working directory
+* [#48](https://github.com/sebastianbergmann/php-file-iterator/issues/48): Excluding an array that contains false ends
+  up excluding the current working directory
 
 ## [2.0.1] - 2018-06-11
 
@@ -82,7 +88,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
-* [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30): Exclude is not considered if it is a parent of the base path
+* [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30): Exclude is not considered if it is a parent
+  of the base path
 
 ### Changed
 
@@ -96,13 +103,15 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
-* [#37](https://github.com/sebastianbergmann/php-file-iterator/issues/37): Regression caused by fix for [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30)
+* [#37](https://github.com/sebastianbergmann/php-file-iterator/issues/37): Regression caused by fix
+  for [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30)
 
 ## [1.4.4] - 2017-11-27
 
 ### Fixed
 
-* [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30): Exclude is not considered if it is a parent of the base path
+* [#30](https://github.com/sebastianbergmann/php-file-iterator/issues/30): Exclude is not considered if it is a parent
+  of the base path
 
 ## [1.4.3] - 2017-11-25
 
@@ -125,20 +134,37 @@ No changes
 * [#23](https://github.com/sebastianbergmann/php-file-iterator/pull/23): Added support for wildcards (glob) in exclude
 
 [3.0.6]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.5...3.0.6
+
 [3.0.5]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.4...3.0.5
+
 [3.0.4]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.3...3.0.4
+
 [3.0.3]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.2...3.0.3
+
 [3.0.2]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.1...3.0.2
+
 [3.0.1]: https://github.com/sebastianbergmann/php-file-iterator/compare/3.0.0...3.0.1
+
 [3.0.0]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.5...3.0.0
+
 [2.0.5]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.4...2.0.5
+
 [2.0.4]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.3...2.0.4
+
 [2.0.3]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.2...2.0.3
+
 [2.0.2]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.1...2.0.2
+
 [2.0.1]: https://github.com/sebastianbergmann/php-file-iterator/compare/2.0.0...2.0.1
+
 [2.0.0]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.5...2.0.0
+
 [1.4.5]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.4...1.4.5
+
 [1.4.4]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.3...1.4.4
+
 [1.4.3]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.2...1.4.3
+
 [1.4.2]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.1...1.4.2
+
 [1.4.1]: https://github.com/sebastianbergmann/php-file-iterator/compare/1.4.0...1.4.1

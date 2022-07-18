@@ -17,18 +17,19 @@ class Client
 
     public function __construct(
         ?string $apiToken = null,
-        string $baseUrl = 'https://reporting.flareapp.io/api',
-        int $timeout = 10
-    ) {
+        string  $baseUrl = 'https://reporting.flareapp.io/api',
+        int     $timeout = 10
+    )
+    {
         $this->apiToken = $apiToken;
 
-        if (! $baseUrl) {
+        if (!$baseUrl) {
             throw MissingParameter::create('baseUrl');
         }
 
         $this->baseUrl = $baseUrl;
 
-        if (! $timeout) {
+        if (!$timeout) {
             throw MissingParameter::create('timeout');
         }
 
@@ -44,7 +45,7 @@ class Client
 
     public function apiTokenSet(): bool
     {
-        return ! empty($this->apiToken);
+        return !empty($this->apiToken);
     }
 
     public function setBaseUrl(string $baseUrl): self
@@ -56,57 +57,13 @@ class Client
 
     /**
      * @param string $url
-     * @param array  $arguments
+     * @param array $arguments
      *
      * @return array|false
      */
     public function get(string $url, array $arguments = [])
     {
         return $this->makeRequest('get', $url, $arguments);
-    }
-
-    /**
-     * @param string $url
-     * @param array  $arguments
-     *
-     * @return array|false
-     */
-    public function post(string $url, array $arguments = [])
-    {
-        return $this->makeRequest('post', $url, $arguments);
-    }
-
-    /**
-     * @param string $url
-     * @param array  $arguments
-     *
-     * @return array|false
-     */
-    public function patch(string $url, array $arguments = [])
-    {
-        return $this->makeRequest('patch', $url, $arguments);
-    }
-
-    /**
-     * @param string $url
-     * @param array  $arguments
-     *
-     * @return array|false
-     */
-    public function put(string $url, array $arguments = [])
-    {
-        return $this->makeRequest('put', $url, $arguments);
-    }
-
-    /**
-     * @param string $method
-     * @param array  $arguments
-     *
-     * @return array|false
-     */
-    public function delete(string $method, array $arguments = [])
-    {
-        return $this->makeRequest('delete', $method, $arguments);
     }
 
     /**
@@ -125,7 +82,7 @@ class Client
         $fullUrl = "{$this->baseUrl}/{$url}?{$queryString}";
 
         $headers = [
-            'x-api-token: '.$this->apiToken,
+            'x-api-token: ' . $this->apiToken,
         ];
 
         $response = $this->makeCurlRequest($httpVerb, $fullUrl, $headers, $arguments);
@@ -157,7 +114,7 @@ class Client
                 break;
 
             case 'get':
-                curl_setopt($curlHandle, CURLOPT_URL, $fullUrl.'&'.http_build_query($arguments));
+                curl_setopt($curlHandle, CURLOPT_URL, $fullUrl . '&' . http_build_query($arguments));
 
                 break;
 
@@ -184,14 +141,6 @@ class Client
         $error = curl_error($curlHandle);
 
         return new Response($headers, $body, $error);
-    }
-
-    protected function attachRequestPayload(&$curlHandle, array $data)
-    {
-        $encoded = json_encode($data);
-
-        $this->lastRequest['body'] = $encoded;
-        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $encoded);
     }
 
     /**
@@ -222,5 +171,57 @@ class Client
         curl_setopt($curlHandle, CURLOPT_MAXREDIRS, 1);
 
         return $curlHandle;
+    }
+
+    protected function attachRequestPayload(&$curlHandle, array $data)
+    {
+        $encoded = json_encode($data);
+
+        $this->lastRequest['body'] = $encoded;
+        curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $encoded);
+    }
+
+    /**
+     * @param string $url
+     * @param array $arguments
+     *
+     * @return array|false
+     */
+    public function post(string $url, array $arguments = [])
+    {
+        return $this->makeRequest('post', $url, $arguments);
+    }
+
+    /**
+     * @param string $url
+     * @param array $arguments
+     *
+     * @return array|false
+     */
+    public function patch(string $url, array $arguments = [])
+    {
+        return $this->makeRequest('patch', $url, $arguments);
+    }
+
+    /**
+     * @param string $url
+     * @param array $arguments
+     *
+     * @return array|false
+     */
+    public function put(string $url, array $arguments = [])
+    {
+        return $this->makeRequest('put', $url, $arguments);
+    }
+
+    /**
+     * @param string $method
+     * @param array $arguments
+     *
+     * @return array|false
+     */
+    public function delete(string $method, array $arguments = [])
+    {
+        return $this->makeRequest('delete', $method, $arguments);
     }
 }

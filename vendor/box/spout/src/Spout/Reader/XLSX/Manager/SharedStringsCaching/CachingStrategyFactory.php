@@ -111,15 +111,20 @@ class CachingStrategyFactory
         }
 
         if (\preg_match('/(\d+)([bkmgt])b?/', $memoryLimitFormatted, $matches)) {
-            $amount = (int) ($matches[1]);
+            $amount = (int)($matches[1]);
             $unit = $matches[2];
 
             switch ($unit) {
-                case 'b': return ($amount / 1024);
-                case 'k': return $amount;
-                case 'm': return ($amount * 1024);
-                case 'g': return ($amount * 1024 * 1024);
-                case 't': return ($amount * 1024 * 1024 * 1024);
+                case 'b':
+                    return ($amount / 1024);
+                case 'k':
+                    return $amount;
+                case 'm':
+                    return ($amount * 1024);
+                case 'g':
+                    return ($amount * 1024 * 1024);
+                case 't':
+                    return ($amount * 1024 * 1024 * 1024);
             }
         }
 

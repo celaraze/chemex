@@ -55,7 +55,7 @@ use Illuminate\Validation\Validator;
  * @method Field\TimeRange timeRange($start, $end, $label = '')
  * @method Field\Number number($column, $label = '')
  * @method Field\Currency currency($column, $label = '')
- * @method Field\SwitchField switch($column, $label = '')
+ * @method Field\SwitchField switch ($column, $label = '')
  * @method Field\Display display($column, $label = '')
  * @method Field\Rate rate($column, $label = '')
  * @method Field\Divide divider(string $title = null)
@@ -173,8 +173,8 @@ class Form implements Renderable
     /**
      * Form constructor.
      *
-     * @param  array  $data
-     * @param  mixed  $key
+     * @param array $data
+     * @param mixed $key
      */
     public function __construct($data = [], $key = null)
     {
@@ -184,6 +184,38 @@ class Form implements Renderable
         $this->setKey($key);
 
         $this->setUp();
+    }
+
+    /**
+     * @param array|Arrayable|Closure $data
+     * @return $this
+     */
+    public function fill($data)
+    {
+        if ($data instanceof \Closure) {
+            $data = $data($this);
+        }
+
+        if (is_array($data)) {
+            $this->data = new Fluent($data);
+        } elseif ($data instanceof Arrayable) {
+            $this->data = $data;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set primary key.
+     *
+     * @param mixed $value
+     * @return $this
+     */
+    public function setKey($value)
+    {
+        $this->primaryKey = $value;
+
+        return $this;
     }
 
     protected function setUp()
@@ -199,7 +231,7 @@ class Form implements Renderable
         $formData = [static::REQUEST_NAME => static::class];
 
         $this->resolvingField(function ($field) use ($formData) {
-            if (! method_exists($this, 'form')) {
+            if (!method_exists($this, 'form')) {
                 return;
             }
 
@@ -231,8 +263,8 @@ class Form implements Renderable
     protected function initFormAttributes()
     {
         $this->setHtmlAttribute([
-            'method'         => 'POST',
-            'class'          => 'form-horizontal',
+            'method' => 'POST',
+            'class' => 'form-horizontal',
             'accept-charset' => 'UTF-8',
             'pjax-container' => true,
         ]);
@@ -245,6 +277,18 @@ class Form implements Renderable
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function setCurrentUrl($url)
+    {
+        if ($this instanceof LazyRenderable) {
+            $this->payload([static::CURRENT_URL_NAME => $url]);
+        }
+
+        return $this->defaultSetCurrentUrl($url);
+    }
+
     protected function initPayload()
     {
         if ($payload = \request(static::LAZY_PAYLOAD_NAME)) {
@@ -252,10 +296,31 @@ class Form implements Renderable
         }
     }
 
+    protected function setFileUploadUrl(Field $field, $formData)
+    {
+        if (
+            $field instanceof Field\File
+            && method_exists($this, 'form')
+        ) {
+            $field->url(route(admin_api_route_name('form.upload')));
+            $field->deleteUrl(route(admin_api_route_name('form.destroy-file'), $formData));
+            $field->withFormData($formData);
+        }
+    }
+
+    /**
+     * @param mixed ...$params
+     * @return $this
+     */
+    public static function make(...$params)
+    {
+        return new static(...$params);
+    }
+
     /**
      * Action uri of the form.
      *
-     * @param  string  $action
+     * @param string $action
      * @return $this|string
      */
     public function action($action = null)
@@ -268,19 +333,8 @@ class Form implements Renderable
     }
 
     /**
-     * Method of the form.
-     *
-     * @param  string  $method
-     * @return $this
-     */
-    public function method(string $method = 'POST')
-    {
-        return $this->setHtmlAttribute('method', strtoupper($method));
-    }
-
-    /**
-     * @param  string  $title
-     * @param  string  $content
+     * @param string $title
+     * @param string $content
      * @return $this
      */
     public function confirm(?string $title = null, ?string $content = null)
@@ -294,25 +348,12 @@ class Form implements Renderable
     /**
      * 设置使用 Toastr 展示字段验证信息.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function validationErrorToastr(bool $value = true)
     {
         $this->validationErrorToastr = $value;
-
-        return $this;
-    }
-
-    /**
-     * Set primary key.
-     *
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function setKey($value)
-    {
-        $this->primaryKey = $value;
 
         return $this;
     }
@@ -328,49 +369,10 @@ class Form implements Renderable
     }
 
     /**
-     * @return Fluent|\Illuminate\Database\Eloquent\Model
-     */
-    public function data()
-    {
-        if (! $this->data) {
-            $this->fill([]);
-        }
-
-        return $this->data;
-    }
-
-    /**
-     * @param  array|Arrayable|Closure  $data
-     * @return $this
-     */
-    public function fill($data)
-    {
-        if ($data instanceof \Closure) {
-            $data = $data($this);
-        }
-
-        if (is_array($data)) {
-            $this->data = new Fluent($data);
-        } elseif ($data instanceof Arrayable) {
-            $this->data = $data;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Fluent|\Illuminate\Database\Eloquent\Model
-     */
-    public function model()
-    {
-        return $this->data();
-    }
-
-    /**
      * Add a fieldset to form.
      *
-     * @param  string  $title
-     * @param  Closure  $setCallback
+     * @param string $title
+     * @param Closure $setCallback
      * @return Field\Fieldset
      */
     public function fieldset(string $title, Closure $setCallback)
@@ -387,26 +389,29 @@ class Form implements Renderable
     }
 
     /**
-     * Get specify field.
+     * Validate this form fields.
      *
-     * @param  string|Field  $name
-     * @return Field|null
+     * @param Request $request
+     * @return bool|MessageBag
      */
-    public function field($name)
+    public function validate(Request $request)
     {
-        foreach ($this->fields as $field) {
-            if (is_array($field->column())) {
-                $result = in_array($name, $field->column(), true) || $field->column() === $name ? $field : null;
+        $failedValidators = [];
 
-                if ($result) {
-                    return $result;
-                }
+        /** @var \Dcat\Admin\Form\Field $field */
+        foreach ($this->fields() as $field) {
+            if (!$validator = $field->getValidator($request->all())) {
+                continue;
             }
 
-            if ($field === $name || $field->column() === $name) {
-                return $field;
+            if (($validator instanceof Validator) && !$validator->passes()) {
+                $failedValidators[] = $validator;
             }
         }
+
+        $message = $this->mergeValidationMessages($failedValidators);
+
+        return $message->any() ? $message : false;
     }
 
     /**
@@ -418,35 +423,9 @@ class Form implements Renderable
     }
 
     /**
-     * Validate this form fields.
-     *
-     * @param  Request  $request
-     * @return bool|MessageBag
-     */
-    public function validate(Request $request)
-    {
-        $failedValidators = [];
-
-        /** @var \Dcat\Admin\Form\Field $field */
-        foreach ($this->fields() as $field) {
-            if (! $validator = $field->getValidator($request->all())) {
-                continue;
-            }
-
-            if (($validator instanceof Validator) && ! $validator->passes()) {
-                $failedValidators[] = $validator;
-            }
-        }
-
-        $message = $this->mergeValidationMessages($failedValidators);
-
-        return $message->any() ? $message : false;
-    }
-
-    /**
      * Merge validation messages from input validators.
      *
-     * @param  \Illuminate\Validation\Validator[]  $validators
+     * @param \Illuminate\Validation\Validator[] $validators
      * @return MessageBag
      */
     protected function mergeValidationMessages($validators)
@@ -468,18 +447,18 @@ class Form implements Renderable
     }
 
     /**
-     * @param  bool  $value
+     * Disable reset button.
+     *
+     * @param bool $value
      * @return $this
      */
-    public function submitButton(bool $value = true)
+    public function disableResetButton(bool $value = true)
     {
-        $this->buttons['submit'] = $value;
-
-        return $this;
+        return $this->resetButton(!$value);
     }
 
     /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function resetButton(bool $value = true)
@@ -490,216 +469,25 @@ class Form implements Renderable
     }
 
     /**
-     * Disable reset button.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function disableResetButton(bool $value = true)
-    {
-        return $this->resetButton(! $value);
-    }
-
-    /**
      * Disable submit button.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function disableSubmitButton(bool $value = true)
     {
-        return $this->submitButton(! $value);
+        return $this->submitButton(!$value);
     }
 
     /**
-     * Set field and label width in current form.
-     *
-     * @param  int  $fieldWidth
-     * @param  int  $labelWidth
+     * @param bool $value
      * @return $this
      */
-    public function width($fieldWidth = 8, $labelWidth = 2)
+    public function submitButton(bool $value = true)
     {
-        $this->width = [
-            'label' => $labelWidth,
-            'field' => $fieldWidth,
-        ];
-
-        $this->fields->each(function ($field) use ($fieldWidth, $labelWidth) {
-            /* @var Field $field  */
-            $field->width($fieldWidth, $labelWidth);
-        });
+        $this->buttons['submit'] = $value;
 
         return $this;
-    }
-
-    /**
-     * Find field class with given name.
-     *
-     * @param  string  $method
-     * @return bool|string
-     */
-    public static function findFieldClass($method)
-    {
-        $class = Arr::get(\Dcat\Admin\Form::extensions(), $method);
-
-        if (class_exists($class)) {
-            return $class;
-        }
-
-        return false;
-    }
-
-    /**
-     * Add a form field to form.
-     *
-     * @param  Field  $field
-     * @return $this
-     */
-    public function pushField(Field $field)
-    {
-        $this->fields->push($field);
-        if ($this->layout()->hasColumns()) {
-            $this->layout()->addField($field);
-        }
-
-        $field->setForm($this);
-        $field->width($this->width['field'], $this->width['label']);
-
-        $this->callResolvingFieldCallbacks($field);
-
-        $field::requireAssets();
-
-        return $this;
-    }
-
-    protected function setFileUploadUrl(Field $field, $formData)
-    {
-        if (
-            $field instanceof Field\File
-            && method_exists($this, 'form')
-        ) {
-            $field->url(route(admin_api_route_name('form.upload')));
-            $field->deleteUrl(route(admin_api_route_name('form.destroy-file'), $formData));
-            $field->withFormData($formData);
-        }
-    }
-
-    /**
-     * Get variables for render form.
-     *
-     * @return array
-     */
-    protected function variables()
-    {
-        $this->setHtmlAttribute('id', $this->getElementId());
-
-        $this->fillFields($this->model()->toArray());
-
-        return array_merge([
-            'start'     => $this->open(),
-            'end'       => $this->close(),
-            'fields'    => $this->fields,
-            'method'    => $this->getHtmlAttribute('method'),
-            'rows'      => $this->rows(),
-            'layout'    => $this->layout(),
-            'elementId' => $this->getElementId(),
-            'ajax'      => $this->ajax,
-            'footer'    => $this->renderFooter(),
-        ], $this->variables);
-    }
-
-    /**
-     * 表单底部内容.
-     *
-     * @return string
-     */
-    protected function renderFooter()
-    {
-        if (empty($this->buttons['reset']) && empty($this->buttons['submit'])) {
-            return;
-        }
-
-        return <<<HTML
-<div class="box-footer row d-flex">
-    <div class="col-md-2"> &nbsp;</div>
-    <div class="col-md-8">{$this->renderResetButton()}{$this->renderSubmitButton()}</div>
-</div>
-HTML;
-    }
-
-    protected function renderResetButton()
-    {
-        if (! empty($this->buttons['reset'])) {
-            $reset = trans('admin.reset');
-
-            return "<button type=\"reset\" class=\"btn btn-white pull-left\"><i class=\"feather icon-rotate-ccw\"></i> {$reset}</button>";
-        }
-    }
-
-    protected function renderSubmitButton()
-    {
-        if (! empty($this->buttons['submit'])) {
-            return "<button type=\"submit\" class=\"btn btn-primary pull-right\"><i class=\"feather icon-save\"></i> {$this->getSubmitButtonLabel()}</button>";
-        }
-    }
-
-    /**
-     * 提交按钮文本.
-     *
-     * @return string
-     */
-    protected function getSubmitButtonLabel()
-    {
-        return trans('admin.submit');
-    }
-
-    /**
-     * 设置视图变量.
-     *
-     * @param  array  $variables
-     * @return $this
-     */
-    public function addVariables(array $variables)
-    {
-        $this->variables = array_merge($this->variables, $variables);
-
-        return $this;
-    }
-
-    public function fillFields(array $data)
-    {
-        foreach ($this->fields as $field) {
-            if (! $field->hasAttribute(Field::BUILD_IGNORE)) {
-                $field->fill($data);
-            }
-        }
-    }
-
-    /**
-     * @return string
-     */
-    protected function open()
-    {
-        if (! $this->useFormTag) {
-            return;
-        }
-
-        return <<<HTML
-<form {$this->formatHtmlAttributes()}>
-HTML;
-    }
-
-    /**
-     * @return string
-     */
-    protected function close()
-    {
-        if (! $this->useFormTag) {
-            return;
-        }
-
-        return '</form>';
     }
 
     /**
@@ -730,27 +518,7 @@ HTML;
     }
 
     /**
-     * @return string
-     */
-    public function getElementId()
-    {
-        return $this->elementId ?: ($this->elementId = 'form-'.Str::random(8));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setCurrentUrl($url)
-    {
-        if ($this instanceof LazyRenderable) {
-            $this->payload([static::CURRENT_URL_NAME => $url]);
-        }
-
-        return $this->defaultSetCurrentUrl($url);
-    }
-
-    /**
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function ajax(bool $value = true)
@@ -761,29 +529,7 @@ HTML;
     }
 
     /**
-     * @return bool
-     */
-    public function allowAjaxSubmit()
-    {
-        return $this->ajax === true;
-    }
-
-    /**
-     * @return string|void
-     */
-    protected function savedScript()
-    {
-    }
-
-    /**
-     * @return string|void
-     */
-    protected function errorScript()
-    {
-    }
-
-    /**
-     * @param  array  $input
+     * @param array $input
      * @return array
      */
     public function sanitize(array $input)
@@ -800,7 +546,7 @@ HTML;
         foreach ($input as $column => $value) {
             $field = $this->field($column);
 
-            if (! $field instanceof Field) {
+            if (!$field instanceof Field) {
                 unset($input[$column]);
 
                 continue;
@@ -818,9 +564,158 @@ HTML;
         return $prepared;
     }
 
+    /**
+     * Get specify field.
+     *
+     * @param string|Field $name
+     * @return Field|null
+     */
+    public function field($name)
+    {
+        foreach ($this->fields as $field) {
+            if (is_array($field->column())) {
+                $result = in_array($name, $field->column(), true) || $field->column() === $name ? $field : null;
+
+                if ($result) {
+                    return $result;
+                }
+            }
+
+            if ($field === $name || $field->column() === $name) {
+                return $field;
+            }
+        }
+    }
+
+    /**
+     * Generate a Field object and add to form builder if Field exists.
+     *
+     * @param string $method
+     * @param array $arguments
+     * @return Field|null
+     */
+    public function __call($method, $arguments)
+    {
+        if ($className = static::findFieldClass($method)) {
+            $name = Arr::get($arguments, 0, '');
+
+            $element = new $className($name, array_slice($arguments, 1));
+
+            $this->pushField($element);
+
+            return $element;
+        }
+
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $arguments);
+        }
+
+        throw new RuntimeException("Field [{$method}] does not exist.");
+    }
+
+    /**
+     * Find field class with given name.
+     *
+     * @param string $method
+     * @return bool|string
+     */
+    public static function findFieldClass($method)
+    {
+        $class = Arr::get(\Dcat\Admin\Form::extensions(), $method);
+
+        if (class_exists($class)) {
+            return $class;
+        }
+
+        return false;
+    }
+
+    /**
+     * Add a form field to form.
+     *
+     * @param Field $field
+     * @return $this
+     */
+    public function pushField(Field $field)
+    {
+        $this->fields->push($field);
+        if ($this->layout()->hasColumns()) {
+            $this->layout()->addField($field);
+        }
+
+        $field->setForm($this);
+        $field->width($this->width['field'], $this->width['label']);
+
+        $this->callResolvingFieldCallbacks($field);
+
+        $field::requireAssets();
+
+        return $this;
+    }
+
+    /**
+     * Set field and label width in current form.
+     *
+     * @param int $fieldWidth
+     * @param int $labelWidth
+     * @return $this
+     */
+    public function width($fieldWidth = 8, $labelWidth = 2)
+    {
+        $this->width = [
+            'label' => $labelWidth,
+            'field' => $fieldWidth,
+        ];
+
+        $this->fields->each(function ($field) use ($fieldWidth, $labelWidth) {
+            /* @var Field $field */
+            $field->width($fieldWidth, $labelWidth);
+        });
+
+        return $this;
+    }
+
+    /**
+     * Output as string.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->render();
+    }
+
+    /**
+     * Render the form.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $this->prepareForm();
+
+        $this->prepareHandler();
+
+        if ($this->allowAjaxSubmit()) {
+            $this->addAjaxScript();
+        }
+
+        $tabObj = $this->getTab();
+
+        if (!$tabObj->isEmpty()) {
+            $tabObj->addScript();
+        }
+
+        $this->addVariables([
+            'tabObj' => $tabObj,
+        ]);
+
+        return view($this->view, $this->variables())->render();
+    }
+
     protected function prepareForm()
     {
-        if (! $this->data && method_exists($this, 'default')) {
+        if (!$this->data && method_exists($this, 'default')) {
             $data = $this->default();
 
             if (is_array($data)) {
@@ -842,7 +737,7 @@ HTML;
                 $this->hidden(static::REQUEST_NAME)->default(get_called_class());
                 $this->hidden(static::CURRENT_URL_NAME)->default($this->getCurrentUrl());
 
-                if (! empty($this->payload) && is_array($this->payload)) {
+                if (!empty($this->payload) && is_array($this->payload)) {
                     $this->hidden(static::LAZY_PAYLOAD_NAME)->default(json_encode($this->payload));
                 }
             };
@@ -852,31 +747,22 @@ HTML;
     }
 
     /**
-     * Render the form.
-     *
-     * @return string
+     * @return bool
      */
-    public function render()
+    public function allowAjaxSubmit()
     {
-        $this->prepareForm();
+        return $this->ajax === true;
+    }
 
-        $this->prepareHandler();
-
-        if ($this->allowAjaxSubmit()) {
-            $this->addAjaxScript();
-        }
-
-        $tabObj = $this->getTab();
-
-        if (! $tabObj->isEmpty()) {
-            $tabObj->addScript();
-        }
-
-        $this->addVariables([
-            'tabObj' => $tabObj,
-        ]);
-
-        return view($this->view, $this->variables())->render();
+    /**
+     * Method of the form.
+     *
+     * @param string $method
+     * @return $this
+     */
+    public function method(string $method = 'POST')
+    {
+        return $this->setHtmlAttribute('method', strtoupper($method));
     }
 
     protected function addAjaxScript()
@@ -902,47 +788,161 @@ JS
     }
 
     /**
-     * Generate a Field object and add to form builder if Field exists.
-     *
-     * @param  string  $method
-     * @param  array  $arguments
-     * @return Field|null
+     * @return string
      */
-    public function __call($method, $arguments)
+    public function getElementId()
     {
-        if ($className = static::findFieldClass($method)) {
-            $name = Arr::get($arguments, 0, '');
-
-            $element = new $className($name, array_slice($arguments, 1));
-
-            $this->pushField($element);
-
-            return $element;
-        }
-
-        if (static::hasMacro($method)) {
-            return $this->macroCall($method, $arguments);
-        }
-
-        throw new RuntimeException("Field [{$method}] does not exist.");
+        return $this->elementId ?: ($this->elementId = 'form-' . Str::random(8));
     }
 
     /**
-     * Output as string.
+     * @return string|void
+     */
+    protected function savedScript()
+    {
+    }
+
+    /**
+     * @return string|void
+     */
+    protected function errorScript()
+    {
+    }
+
+    /**
+     * 设置视图变量.
+     *
+     * @param array $variables
+     * @return $this
+     */
+    public function addVariables(array $variables)
+    {
+        $this->variables = array_merge($this->variables, $variables);
+
+        return $this;
+    }
+
+    /**
+     * Get variables for render form.
+     *
+     * @return array
+     */
+    protected function variables()
+    {
+        $this->setHtmlAttribute('id', $this->getElementId());
+
+        $this->fillFields($this->model()->toArray());
+
+        return array_merge([
+            'start' => $this->open(),
+            'end' => $this->close(),
+            'fields' => $this->fields,
+            'method' => $this->getHtmlAttribute('method'),
+            'rows' => $this->rows(),
+            'layout' => $this->layout(),
+            'elementId' => $this->getElementId(),
+            'ajax' => $this->ajax,
+            'footer' => $this->renderFooter(),
+        ], $this->variables);
+    }
+
+    public function fillFields(array $data)
+    {
+        foreach ($this->fields as $field) {
+            if (!$field->hasAttribute(Field::BUILD_IGNORE)) {
+                $field->fill($data);
+            }
+        }
+    }
+
+    /**
+     * @return Fluent|\Illuminate\Database\Eloquent\Model
+     */
+    public function model()
+    {
+        return $this->data();
+    }
+
+    /**
+     * @return Fluent|\Illuminate\Database\Eloquent\Model
+     */
+    public function data()
+    {
+        if (!$this->data) {
+            $this->fill([]);
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * @return string
+     */
+    protected function open()
+    {
+        if (!$this->useFormTag) {
+            return;
+        }
+
+        return <<<HTML
+<form {$this->formatHtmlAttributes()}>
+HTML;
+    }
+
+    /**
+     * @return string
+     */
+    protected function close()
+    {
+        if (!$this->useFormTag) {
+            return;
+        }
+
+        return '</form>';
+    }
+
+    /**
+     * 表单底部内容.
      *
      * @return string
      */
-    public function __toString()
+    protected function renderFooter()
     {
-        return $this->render();
+        if (empty($this->buttons['reset']) && empty($this->buttons['submit'])) {
+            return;
+        }
+
+        return <<<HTML
+<div class="box-footer row d-flex">
+    <div class="col-md-2"> &nbsp;</div>
+    <div class="col-md-8">{$this->renderResetButton()}{$this->renderSubmitButton()}</div>
+</div>
+HTML;
+    }
+
+    protected function renderResetButton()
+    {
+        if (!empty($this->buttons['reset'])) {
+            $reset = trans('admin.reset');
+
+            return "<button type=\"reset\" class=\"btn btn-white pull-left\"><i class=\"feather icon-rotate-ccw\"></i> {$reset}</button>";
+        }
+    }
+
+    protected function renderSubmitButton()
+    {
+        if (!empty($this->buttons['submit'])) {
+            return "<button type=\"submit\" class=\"btn btn-primary pull-right\"><i class=\"feather icon-save\"></i> {$this->getSubmitButtonLabel()}</button>";
+        }
     }
 
     /**
-     * @param  mixed  ...$params
-     * @return $this
+     * 提交按钮文本.
+     *
+     * @return string
      */
-    public static function make(...$params)
+    protected function getSubmitButtonLabel()
     {
-        return new static(...$params);
+        return trans('admin.submit');
     }
 }

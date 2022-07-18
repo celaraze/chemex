@@ -24,7 +24,7 @@ class WriterFactory
     /**
      * This creates an instance of the appropriate writer, given the extension of the file to be written.
      *
-     * @param  string  $path  The path to the spreadsheet file. Supported extensions are .csv,.ods and .xlsx
+     * @param string $path The path to the spreadsheet file. Supported extensions are .csv,.ods and .xlsx
      * @return WriterInterface
      *
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
@@ -39,7 +39,7 @@ class WriterFactory
     /**
      * This creates an instance of the appropriate writer, given the type of the file to be written.
      *
-     * @param  string  $writerType  Type of the writer to instantiate
+     * @param string $writerType Type of the writer to instantiate
      * @return WriterInterface
      *
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
@@ -47,11 +47,14 @@ class WriterFactory
     public static function createFromType($writerType)
     {
         switch ($writerType) {
-            case Type::CSV: return static::createCSVWriter();
-            case Type::XLSX: return static::createXLSXWriter();
-            case Type::ODS: return static::createODSWriter();
+            case Type::CSV:
+                return static::createCSVWriter();
+            case Type::XLSX:
+                return static::createXLSXWriter();
+            case Type::ODS:
+                return static::createODSWriter();
             default:
-                throw new UnsupportedTypeException('No writers supporting the given type: '.$writerType);
+                throw new UnsupportedTypeException('No writers supporting the given type: ' . $writerType);
         }
     }
 

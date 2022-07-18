@@ -12,22 +12,9 @@ class Checkbox extends Radio
     protected $checked = [];
 
     /**
-     * 设置选中的的选项.
-     *
-     * @param  string|array  $options
-     * @return $this
-     */
-    public function check($options)
-    {
-        $this->checked = Helper::array($options);
-
-        return $this;
-    }
-
-    /**
      * 选中所有选项.
      *
-     * @param  string|array  $excepts
+     * @param string|array $excepts
      * @return $this
      */
     public function checkAll($excepts = [])
@@ -35,5 +22,18 @@ class Checkbox extends Radio
         return $this->check(
             array_keys(Arr::except($this->options, $excepts))
         );
+    }
+
+    /**
+     * 设置选中的的选项.
+     *
+     * @param string|array $options
+     * @return $this
+     */
+    public function check($options)
+    {
+        $this->checked = Helper::array($options);
+
+        return $this;
     }
 }

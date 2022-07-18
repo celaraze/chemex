@@ -183,9 +183,9 @@ function some($promisesOrValues, $howMany)
                 }
 
                 $toResolve = $howMany;
-                $toReject  = ($len - $toResolve) + 1;
-                $values    = [];
-                $reasons   = [];
+                $toReject = ($len - $toResolve) + 1;
+                $values = [];
+                $reasons = [];
 
                 foreach ($array as $i => $promiseOrValue) {
                     $fulfiller = function ($val) use ($i, &$values, &$toResolve, $toReject, $resolve) {
@@ -246,7 +246,7 @@ function map($promisesOrValues, callable $mapFunc)
                 }
 
                 $toResolve = \count($array);
-                $values    = [];
+                $values = [];
 
                 foreach ($array as $i => $promiseOrValue) {
                     $cancellationQueue->enqueue($promiseOrValue);
@@ -354,7 +354,7 @@ function _checkTypehint(callable $callback, $object)
 
     // Extract the type of the argument and handle different possibilities
     $type = $expectedException->getType();
-    
+
     $isTypeUnion = true;
     $types = [];
 

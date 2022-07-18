@@ -114,7 +114,7 @@ class DateFactory
     /**
      * Use the given handler when generating dates (class name, callable, or factory).
      *
-     * @param  mixed  $handler
+     * @param mixed $handler
      * @return mixed
      *
      * @throws \InvalidArgumentException
@@ -133,21 +133,9 @@ class DateFactory
     }
 
     /**
-     * Use the default date class when generating dates.
-     *
-     * @return void
-     */
-    public static function useDefault()
-    {
-        static::$dateClass = null;
-        static::$callable = null;
-        static::$factory = null;
-    }
-
-    /**
      * Execute the given callable on each date creation.
      *
-     * @param  callable  $callable
+     * @param callable $callable
      * @return void
      */
     public static function useCallable(callable $callable)
@@ -161,7 +149,7 @@ class DateFactory
     /**
      * Use the given date type (class) when generating dates.
      *
-     * @param  string  $dateClass
+     * @param string $dateClass
      * @return void
      */
     public static function useClass($dateClass)
@@ -175,7 +163,7 @@ class DateFactory
     /**
      * Use the given Carbon factory when generating dates.
      *
-     * @param  object  $factory
+     * @param object $factory
      * @return void
      */
     public static function useFactory($factory)
@@ -187,10 +175,22 @@ class DateFactory
     }
 
     /**
+     * Use the default date class when generating dates.
+     *
+     * @return void
+     */
+    public static function useDefault()
+    {
+        static::$dateClass = null;
+        static::$callable = null;
+        static::$factory = null;
+    }
+
+    /**
      * Handle dynamic calls to generate dates.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      *
      * @throws \RuntimeException

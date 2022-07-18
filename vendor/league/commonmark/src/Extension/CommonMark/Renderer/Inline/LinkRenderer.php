@@ -44,8 +44,8 @@ final class LinkRenderer implements NodeRendererInterface, XmlNodeRendererInterf
 
         $attrs = $node->data->get('attributes');
 
-        $forbidUnsafeLinks = ! $this->config->get('allow_unsafe_links');
-        if (! ($forbidUnsafeLinks && RegexHelper::isLinkPotentiallyUnsafe($node->getUrl()))) {
+        $forbidUnsafeLinks = !$this->config->get('allow_unsafe_links');
+        if (!($forbidUnsafeLinks && RegexHelper::isLinkPotentiallyUnsafe($node->getUrl()))) {
             $attrs['href'] = $node->getUrl();
         }
 
@@ -53,7 +53,7 @@ final class LinkRenderer implements NodeRendererInterface, XmlNodeRendererInterf
             $attrs['title'] = $title;
         }
 
-        if (isset($attrs['target']) && $attrs['target'] === '_blank' && ! isset($attrs['rel'])) {
+        if (isset($attrs['target']) && $attrs['target'] === '_blank' && !isset($attrs['rel'])) {
             $attrs['rel'] = 'noopener noreferrer';
         }
 

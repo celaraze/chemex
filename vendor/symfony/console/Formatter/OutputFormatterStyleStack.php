@@ -86,6 +86,11 @@ class OutputFormatterStyleStack implements ResetInterface
         return $this->styles[\count($this->styles) - 1];
     }
 
+    public function getEmptyStyle(): OutputFormatterStyleInterface
+    {
+        return $this->emptyStyle;
+    }
+
     /**
      * @return $this
      */
@@ -94,10 +99,5 @@ class OutputFormatterStyleStack implements ResetInterface
         $this->emptyStyle = $emptyStyle;
 
         return $this;
-    }
-
-    public function getEmptyStyle(): OutputFormatterStyleInterface
-    {
-        return $this->emptyStyle;
     }
 }

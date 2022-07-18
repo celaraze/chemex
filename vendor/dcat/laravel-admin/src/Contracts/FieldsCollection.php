@@ -17,7 +17,7 @@ interface FieldsCollection
     /**
      * Get specify field.
      *
-     * @param  string|Field  $name
+     * @param string|Field $name
      * @return Field|null
      */
     public function field($name);

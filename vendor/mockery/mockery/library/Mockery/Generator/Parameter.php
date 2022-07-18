@@ -75,7 +75,7 @@ class Parameter
      */
     public function getTypeHintAsString()
     {
-        return (string) Reflector::getTypeHint($this->rfp, true);
+        return (string)Reflector::getTypeHint($this->rfp, true);
     }
 
     /**

@@ -24,7 +24,7 @@ class AuthenticatedWithCredentials
     /**
      * Constructor.
      *
-     * @param User                 $user
+     * @param User $user
      * @param Authenticatable|null $model
      */
     public function __construct(User $user, Authenticatable $model = null)

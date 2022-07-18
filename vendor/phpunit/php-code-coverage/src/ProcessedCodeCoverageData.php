@@ -7,8 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage;
 
+use SebastianBergmann\CodeCoverage\Driver\Driver;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -16,7 +18,6 @@ use function array_unique;
 use function count;
 use function is_array;
 use function ksort;
-use SebastianBergmann\CodeCoverage\Driver\Driver;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -63,6 +64,58 @@ final class ProcessedCodeCoverageData
         }
     }
 
+    public function lineCoverage(): array
+    {
+        ksort($this->lineCoverage);
+
+        return $this->lineCoverage;
+    }
+
+    public function functionCoverage(): array
+    {
+        ksort($this->functionCoverage);
+
+        return $this->functionCoverage;
+    }
+
+    /**
+     * For a function we have seen before, only copy over and init the 'hit' array for any unseen branches and paths.
+     * Techniques such as mocking and where the contents of a file are different vary during tests (e.g. compiling
+     * containers) mean that the functions inside a file cannot be relied upon to be static.
+     */
+    private function initPreviouslySeenFunction(string $file, string $functionName, array $functionData): void
+    {
+        foreach ($functionData['branches'] as $branchId => $branchData) {
+            if (!isset($this->functionCoverage[$file][$functionName]['branches'][$branchId])) {
+                $this->functionCoverage[$file][$functionName]['branches'][$branchId] = $branchData;
+                $this->functionCoverage[$file][$functionName]['branches'][$branchId]['hit'] = [];
+            }
+        }
+
+        foreach ($functionData['paths'] as $pathId => $pathData) {
+            if (!isset($this->functionCoverage[$file][$functionName]['paths'][$pathId])) {
+                $this->functionCoverage[$file][$functionName]['paths'][$pathId] = $pathData;
+                $this->functionCoverage[$file][$functionName]['paths'][$pathId]['hit'] = [];
+            }
+        }
+    }
+
+    /**
+     * For a function we have never seen before, copy all data over and simply init the 'hit' array.
+     */
+    private function initPreviouslyUnseenFunction(string $file, string $functionName, array $functionData): void
+    {
+        $this->functionCoverage[$file][$functionName] = $functionData;
+
+        foreach (array_keys($functionData['branches']) as $branchId) {
+            $this->functionCoverage[$file][$functionName]['branches'][$branchId]['hit'] = [];
+        }
+
+        foreach (array_keys($functionData['paths']) as $pathId) {
+            $this->functionCoverage[$file][$functionName]['paths'][$pathId]['hit'] = [];
+        }
+    }
+
     public function markCodeAsExecutedByTestCase(string $testCaseId, RawCodeCoverageData $executedCode): void
     {
         foreach ($executedCode->lineCoverage() as $file => $lines) {
@@ -95,23 +148,9 @@ final class ProcessedCodeCoverageData
         $this->lineCoverage = $lineCoverage;
     }
 
-    public function lineCoverage(): array
-    {
-        ksort($this->lineCoverage);
-
-        return $this->lineCoverage;
-    }
-
     public function setFunctionCoverage(array $functionCoverage): void
     {
         $this->functionCoverage = $functionCoverage;
-    }
-
-    public function functionCoverage(): array
-    {
-        ksort($this->functionCoverage);
-
-        return $this->functionCoverage;
     }
 
     public function coveredFiles(): array
@@ -213,43 +252,5 @@ final class ProcessedCodeCoverageData
         }
 
         return 4;
-    }
-
-    /**
-     * For a function we have never seen before, copy all data over and simply init the 'hit' array.
-     */
-    private function initPreviouslyUnseenFunction(string $file, string $functionName, array $functionData): void
-    {
-        $this->functionCoverage[$file][$functionName] = $functionData;
-
-        foreach (array_keys($functionData['branches']) as $branchId) {
-            $this->functionCoverage[$file][$functionName]['branches'][$branchId]['hit'] = [];
-        }
-
-        foreach (array_keys($functionData['paths']) as $pathId) {
-            $this->functionCoverage[$file][$functionName]['paths'][$pathId]['hit'] = [];
-        }
-    }
-
-    /**
-     * For a function we have seen before, only copy over and init the 'hit' array for any unseen branches and paths.
-     * Techniques such as mocking and where the contents of a file are different vary during tests (e.g. compiling
-     * containers) mean that the functions inside a file cannot be relied upon to be static.
-     */
-    private function initPreviouslySeenFunction(string $file, string $functionName, array $functionData): void
-    {
-        foreach ($functionData['branches'] as $branchId => $branchData) {
-            if (!isset($this->functionCoverage[$file][$functionName]['branches'][$branchId])) {
-                $this->functionCoverage[$file][$functionName]['branches'][$branchId]        = $branchData;
-                $this->functionCoverage[$file][$functionName]['branches'][$branchId]['hit'] = [];
-            }
-        }
-
-        foreach ($functionData['paths'] as $pathId => $pathData) {
-            if (!isset($this->functionCoverage[$file][$functionName]['paths'][$pathId])) {
-                $this->functionCoverage[$file][$functionName]['paths'][$pathId]        = $pathData;
-                $this->functionCoverage[$file][$functionName]['paths'][$pathId]['hit'] = [];
-            }
-        }
     }
 }

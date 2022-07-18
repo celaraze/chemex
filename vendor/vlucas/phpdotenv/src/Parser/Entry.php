@@ -25,7 +25,7 @@ final class Entry
     /**
      * Create a new entry instance.
      *
-     * @param string                    $name
+     * @param string $name
      * @param \Dotenv\Parser\Value|null $value
      *
      * @return void

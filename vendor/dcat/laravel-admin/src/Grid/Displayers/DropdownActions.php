@@ -19,47 +19,7 @@ class DropdownActions extends Actions
     }
 
     /**
-     * @param  mixed  $action
-     * @return mixed
-     */
-    protected function prepareAction(&$action)
-    {
-        parent::prepareAction($action);
-
-        return $action = $this->wrapCustomAction($action);
-    }
-
-    /**
-     * @param  mixed  $action
-     * @return string
-     */
-    protected function wrapCustomAction($action)
-    {
-        $action = Helper::render($action);
-
-        if (mb_strpos($action, '</a>') === false) {
-            return "<a>$action</a>";
-        }
-
-        return $action;
-    }
-
-    /**
-     * Prepend default `edit` `view` `delete` actions.
-     */
-    protected function prependDefaultActions()
-    {
-        foreach ($this->actions as $action => $enable) {
-            if (! $enable) {
-                continue;
-            }
-
-            array_push($this->default, $this->{'render'.ucfirst($action)}());
-        }
-    }
-
-    /**
-     * @param  \Closure[]  $callback
+     * @param \Closure[] $callback
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function display(array $callbacks = [])
@@ -71,12 +31,52 @@ class DropdownActions extends Actions
         $this->prependDefaultActions();
 
         $actions = [
-            'default'  => $this->default,
-            'custom'   => $this->appends,
+            'default' => $this->default,
+            'custom' => $this->appends,
             'selector' => ".{$this->grid->getRowName()}-checkbox",
         ];
 
         return view($this->view, $actions);
+    }
+
+    /**
+     * Prepend default `edit` `view` `delete` actions.
+     */
+    protected function prependDefaultActions()
+    {
+        foreach ($this->actions as $action => $enable) {
+            if (!$enable) {
+                continue;
+            }
+
+            array_push($this->default, $this->{'render' . ucfirst($action)}());
+        }
+    }
+
+    /**
+     * @param mixed $action
+     * @return mixed
+     */
+    protected function prepareAction(&$action)
+    {
+        parent::prepareAction($action);
+
+        return $action = $this->wrapCustomAction($action);
+    }
+
+    /**
+     * @param mixed $action
+     * @return string
+     */
+    protected function wrapCustomAction($action)
+    {
+        $action = Helper::render($action);
+
+        if (mb_strpos($action, '</a>') === false) {
+            return "<a>$action</a>";
+        }
+
+        return $action;
     }
 
     protected function getViewLabel()

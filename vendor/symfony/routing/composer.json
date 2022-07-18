@@ -2,7 +2,12 @@
     "name": "symfony/routing",
     "type": "library",
     "description": "Maps an HTTP request to a set of configuration variables",
-    "keywords": ["routing", "router", "URL", "URI"],
+    "keywords": [
+        "routing",
+        "router",
+        "URL",
+        "URI"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -40,7 +45,9 @@
         "symfony/expression-language": "For using expression matching"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Component\\Routing\\": "" },
+        "psr-4": {
+            "Symfony\\Component\\Routing\\": ""
+        },
         "exclude-from-classmap": [
             "/Tests/"
         ]

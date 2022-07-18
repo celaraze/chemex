@@ -50,7 +50,7 @@ class Address extends \Faker\Provider\Address
         'Urugvajus', 'Uzbekistanas', 'Vakarų Sachara', 'Vanuatu', 'Vatikanas', 'Venesuela', 'Vengrija', 'Vietnamas',
         'Vokietija', 'Wallisas ir Futuna', 'Zambija', 'Zimbabvė', 'Čadas', 'Čekija', 'Čilė', 'Šiaurės Korėja', 'Šri Lanka',
         'Švedija', 'Šveicarija', 'Šventasis Vincentas ir Grenadinai', 'Švento Baltramiejaus sala', 'Šventoji Elena',
-        'Šventoji Liucija', 'Žaliasis Kyšulys', ];
+        'Šventoji Liucija', 'Žaliasis Kyšulys',];
 
     /**
      * @see https://lt.wikipedia.org/wiki/Lietuvos_etnokult%C5%ABriniai_regionai
@@ -148,13 +148,6 @@ class Address extends \Faker\Provider\Address
         return static::numerify(static::randomElement(static::$buildingNumber));
     }
 
-    public function address()
-    {
-        $format = static::randomElement(static::$addressFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function country()
     {
         return static::randomElement(static::$country);
@@ -180,11 +173,6 @@ class Address extends \Faker\Provider\Address
         return static::randomElement(static::$citySuffix);
     }
 
-    public function city()
-    {
-        return static::randomElement(static::$city);
-    }
-
     public static function streetSuffix()
     {
         return static::randomElement(static::$streetSuffix);
@@ -193,6 +181,18 @@ class Address extends \Faker\Provider\Address
     public static function street()
     {
         return static::randomElement(static::$street);
+    }
+
+    public function address()
+    {
+        $format = static::randomElement(static::$addressFormats);
+
+        return $this->generator->parse($format);
+    }
+
+    public function city()
+    {
+        return static::randomElement(static::$city);
     }
 
     /**

@@ -26,7 +26,7 @@ class SizeRangeFilterIterator extends \FilterIterator
 
     /**
      * @param \Iterator<string, \SplFileInfo> $iterator
-     * @param NumberComparator[]              $comparators
+     * @param NumberComparator[] $comparators
      */
     public function __construct(\Iterator $iterator, array $comparators)
     {

@@ -72,7 +72,7 @@ class Request
             $constraint = new MatchAllConstraint();
         }
         if (isset($this->requires[$packageName])) {
-            throw new \LogicException('Overwriting requires seems like a bug ('.$packageName.' '.$this->requires[$packageName]->getPrettyString().' => '.$constraint->getPrettyString().', check why it is happening, might be a root alias');
+            throw new \LogicException('Overwriting requires seems like a bug (' . $packageName . ' ' . $this->requires[$packageName]->getPrettyString() . ' => ' . $constraint->getPrettyString() . ', check why it is happening, might be a root alias');
         }
         $this->requires[$packageName] = $constraint;
     }
@@ -131,6 +131,14 @@ class Request
     }
 
     /**
+     * @return string[]
+     */
+    public function getUpdateAllowList(): array
+    {
+        return $this->updateAllowList;
+    }
+
+    /**
      * @param string[] $updateAllowList
      * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
      * @return void
@@ -139,14 +147,6 @@ class Request
     {
         $this->updateAllowList = $updateAllowList;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getUpdateAllowList(): array
-    {
-        return $this->updateAllowList;
     }
 
     /**

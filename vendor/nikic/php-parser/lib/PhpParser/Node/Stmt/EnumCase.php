@@ -15,23 +15,26 @@ class EnumCase extends Node\Stmt
     public $attrGroups;
 
     /**
-     * @param string|Node\Identifier    $name       Enum case name
-     * @param Node\Expr|null            $expr       Enum case expression
-     * @param AttributeGroup[]          $attrGroups PHP attribute groups
-     * @param array                     $attributes Additional attributes
+     * @param string|Node\Identifier $name Enum case name
+     * @param Node\Expr|null $expr Enum case expression
+     * @param AttributeGroup[] $attrGroups PHP attribute groups
+     * @param array $attributes Additional attributes
      */
-    public function __construct($name, Node\Expr $expr = null, array $attrGroups = [], array $attributes = []) {
+    public function __construct($name, Node\Expr $expr = null, array $attrGroups = [], array $attributes = [])
+    {
         parent::__construct($attributes);
         $this->name = \is_string($name) ? new Node\Identifier($name) : $name;
         $this->expr = $expr;
         $this->attrGroups = $attrGroups;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['attrGroups', 'name', 'expr'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Stmt_EnumCase';
     }
 }

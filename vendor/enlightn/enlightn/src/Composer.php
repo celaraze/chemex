@@ -7,16 +7,16 @@ use Illuminate\Support\Composer as BaseComposer;
 class Composer extends BaseComposer
 {
     /**
-      * Get the package dependencies.
-      *
-      * @param  bool  $includeDev
-      * @return array
-      */
+     * Get the package dependencies.
+     *
+     * @param bool $includeDev
+     * @return array
+     */
     public function getDependencies($includeDev = true)
     {
         $arguments = ['show', '-N'];
 
-        if (! $includeDev) {
+        if (!$includeDev) {
             $arguments[] = '--no-dev';
         }
 
@@ -27,9 +27,32 @@ class Composer extends BaseComposer
     }
 
     /**
+     * Run any Composer command and get the output.
+     *
+     * @param array $options
+     * @param bool $includeErrorOutput
+     * @return string
+     */
+    public function runCommand(array $options = [], $includeErrorOutput = true)
+    {
+        $composer = $this->findComposer();
+
+        $command = array_merge(
+            (array)$composer,
+            $options
+        );
+
+        $process = $this->getProcess($command);
+
+        $process->run();
+
+        return $process->getOutput() . ($includeErrorOutput ? $process->getErrorOutput() : '');
+    }
+
+    /**
      * Get the licenses of all packages used by the application.
      *
-     * @param  bool  $excludeDev
+     * @param bool $excludeDev
      * @return \Illuminate\Support\Collection
      */
     public function getLicenses($excludeDev = true)
@@ -49,7 +72,7 @@ class Composer extends BaseComposer
     /**
      * Run a dry run Composer install.
      *
-     * @param  array  $options
+     * @param array $options
      * @return string
      */
     public function installDryRun(array $options = [])
@@ -60,35 +83,12 @@ class Composer extends BaseComposer
     /**
      * Run a dry run Composer update.
      *
-     * @param  array  $options
+     * @param array $options
      * @return string
      */
     public function updateDryRun(array $options = [])
     {
         return $this->runCommand(array_merge(['update', '--dry-run'], $options));
-    }
-
-    /**
-     * Run any Composer command and get the output.
-     *
-     * @param  array  $options
-     * @param  bool  $includeErrorOutput
-     * @return string
-     */
-    public function runCommand(array $options = [], $includeErrorOutput = true)
-    {
-        $composer = $this->findComposer();
-
-        $command = array_merge(
-            (array) $composer,
-            $options
-        );
-
-        $process = $this->getProcess($command);
-
-        $process->run();
-
-        return $process->getOutput().($includeErrorOutput ? $process->getErrorOutput() : '');
     }
 
     /**
@@ -98,8 +98,8 @@ class Composer extends BaseComposer
      */
     public function getLockFile()
     {
-        if ($this->files->exists($this->workingPath.'/composer.lock')) {
-            return $this->workingPath.'/composer.lock';
+        if ($this->files->exists($this->workingPath . '/composer.lock')) {
+            return $this->workingPath . '/composer.lock';
         }
 
         return null;
@@ -123,8 +123,8 @@ class Composer extends BaseComposer
      */
     public function getJsonFile()
     {
-        if ($this->files->exists($this->workingPath.'/composer.json')) {
-            return $this->workingPath.'/composer.json';
+        if ($this->files->exists($this->workingPath . '/composer.json')) {
+            return $this->workingPath . '/composer.json';
         }
 
         return null;

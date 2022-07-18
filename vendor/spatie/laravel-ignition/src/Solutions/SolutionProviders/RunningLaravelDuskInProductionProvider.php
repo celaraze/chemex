@@ -11,7 +11,7 @@ class RunningLaravelDuskInProductionProvider implements HasSolutionsForThrowable
 {
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof Exception) {
+        if (!$throwable instanceof Exception) {
             return false;
         }
 

@@ -120,7 +120,7 @@ final class ArrayCollection implements \IteratorAggregate, \Countable, \ArrayAcc
      * {@inheritDoc}
      *
      * @phpstan-param int|null $offset
-     * @phpstan-param T        $value
+     * @phpstan-param T $value
      */
     #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value): void
@@ -142,7 +142,7 @@ final class ArrayCollection implements \IteratorAggregate, \Countable, \ArrayAcc
     #[\ReturnTypeWillChange]
     public function offsetUnset($offset): void
     {
-        if (! \array_key_exists($offset, $this->elements)) {
+        if (!\array_key_exists($offset, $this->elements)) {
             return;
         }
 

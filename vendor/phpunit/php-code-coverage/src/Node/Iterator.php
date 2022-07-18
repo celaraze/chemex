@@ -7,10 +7,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Node;
 
-use function count;
 use RecursiveIterator;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -41,14 +42,6 @@ final class Iterator implements RecursiveIterator
     }
 
     /**
-     * Checks if there is a current element after calls to rewind() or next().
-     */
-    public function valid(): bool
-    {
-        return $this->position < count($this->nodes);
-    }
-
-    /**
      * Returns the key of the current element.
      */
     public function key(): int
@@ -62,6 +55,14 @@ final class Iterator implements RecursiveIterator
     public function current(): ?AbstractNode
     {
         return $this->valid() ? $this->nodes[$this->position] : null;
+    }
+
+    /**
+     * Checks if there is a current element after calls to rewind() or next().
+     */
+    public function valid(): bool
+    {
+        return $this->position < count($this->nodes);
     }
 
     /**

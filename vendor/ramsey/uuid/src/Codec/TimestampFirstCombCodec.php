@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Codec;
 
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Ramsey\Uuid\UuidInterface;
-
 use function bin2hex;
 use function sprintf;
 use function substr;
@@ -70,6 +69,20 @@ class TimestampFirstCombCodec extends StringCodec
     }
 
     /**
+     * Swaps bytes according to the timestamp-first COMB rules
+     */
+    private function swapBytes(string $bytes): string
+    {
+        $first48Bits = substr($bytes, 0, 6);
+        $last48Bits = substr($bytes, -6);
+
+        $bytes = substr_replace($bytes, $last48Bits, 0, 6);
+        $bytes = substr_replace($bytes, $first48Bits, -6);
+
+        return $bytes;
+    }
+
+    /**
      * @psalm-return non-empty-string
      * @psalm-suppress MoreSpecificReturnType we know that the retrieved `string` is never empty
      * @psalm-suppress LessSpecificReturnStatement we know that the retrieved `string` is never empty
@@ -95,19 +108,5 @@ class TimestampFirstCombCodec extends StringCodec
     public function decodeBytes(string $bytes): UuidInterface
     {
         return $this->getBuilder()->build($this, $this->swapBytes($bytes));
-    }
-
-    /**
-     * Swaps bytes according to the timestamp-first COMB rules
-     */
-    private function swapBytes(string $bytes): string
-    {
-        $first48Bits = substr($bytes, 0, 6);
-        $last48Bits = substr($bytes, -6);
-
-        $bytes = substr_replace($bytes, $last48Bits, 0, 6);
-        $bytes = substr_replace($bytes, $first48Bits, -6);
-
-        return $bytes;
     }
 }

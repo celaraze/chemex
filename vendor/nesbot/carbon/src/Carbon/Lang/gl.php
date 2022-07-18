@@ -69,19 +69,19 @@ return [
     ],
     'calendar' => [
         'sameDay' => function (CarbonInterface $current) {
-            return '[hoxe '.($current->hour !== 1 ? 'ás' : 'á').'] LT';
+            return '[hoxe ' . ($current->hour !== 1 ? 'ás' : 'á') . '] LT';
         },
         'nextDay' => function (CarbonInterface $current) {
-            return '[mañá '.($current->hour !== 1 ? 'ás' : 'á').'] LT';
+            return '[mañá ' . ($current->hour !== 1 ? 'ás' : 'á') . '] LT';
         },
         'nextWeek' => function (CarbonInterface $current) {
-            return 'dddd ['.($current->hour !== 1 ? 'ás' : 'á').'] LT';
+            return 'dddd [' . ($current->hour !== 1 ? 'ás' : 'á') . '] LT';
         },
         'lastDay' => function (CarbonInterface $current) {
-            return '[onte '.($current->hour !== 1 ? 'á' : 'a').'] LT';
+            return '[onte ' . ($current->hour !== 1 ? 'á' : 'a') . '] LT';
         },
         'lastWeek' => function (CarbonInterface $current) {
-            return '[o] dddd [pasado '.($current->hour !== 1 ? 'ás' : 'á').'] LT';
+            return '[o] dddd [pasado ' . ($current->hour !== 1 ? 'ás' : 'á') . '] LT';
         },
         'sameElse' => 'L',
     ],

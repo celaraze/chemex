@@ -1,10 +1,13 @@
 ## Illuminate Database
 
-The Illuminate Database component is a full database toolkit for PHP, providing an expressive query builder, ActiveRecord style ORM, and schema builder. It currently supports MySQL, Postgres, SQL Server, and SQLite. It also serves as the database layer of the Laravel PHP framework.
+The Illuminate Database component is a full database toolkit for PHP, providing an expressive query builder,
+ActiveRecord style ORM, and schema builder. It currently supports MySQL, Postgres, SQL Server, and SQLite. It also
+serves as the database layer of the Laravel PHP framework.
 
 ### Usage Instructions
 
-First, create a new "Capsule" manager instance. Capsule aims to make configuring the library for usage outside of the Laravel framework as easy as possible.
+First, create a new "Capsule" manager instance. Capsule aims to make configuring the library for usage outside of the
+Laravel framework as easy as possible.
 
 ```PHP
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -43,7 +46,9 @@ Once the Capsule instance has been registered. You may use it like so:
 ```PHP
 $users = Capsule::table('users')->where('votes', '>', 100)->get();
 ```
+
 Other core methods may be accessed directly from the Capsule in the same manner as from the DB facade:
+
 ```PHP
 $results = Capsule::select('select * from users where id = ?', [1]);
 ```
@@ -66,4 +71,5 @@ class User extends Illuminate\Database\Eloquent\Model {}
 $users = User::where('votes', '>', 1)->get();
 ```
 
-For further documentation on using the various database facilities this library provides, consult the [Laravel framework documentation](https://laravel.com/docs).
+For further documentation on using the various database facilities this library provides, consult
+the [Laravel framework documentation](https://laravel.com/docs).

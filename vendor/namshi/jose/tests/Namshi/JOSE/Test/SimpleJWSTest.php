@@ -29,11 +29,11 @@ class SimpleJWSTest extends TestCase
 
     public function testValidationOfAValidSimpleJWS()
     {
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = SimpleJWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertTrue($jws->isValid($public_key, 'RS256'));
     }
 
@@ -43,11 +43,11 @@ class SimpleJWSTest extends TestCase
         $this->jws->setPayload(array(
             'exp' => $date->format('U'),
         ));
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = SimpleJWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertFalse($jws->isValid($public_key, 'RS256'));
     }
 
@@ -61,11 +61,11 @@ class SimpleJWSTest extends TestCase
         );
         $this->jws->setPayload($data);
 
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = SimpleJWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertTrue($jws->isValid($public_key, 'RS256'));
     }
 
@@ -79,11 +79,11 @@ class SimpleJWSTest extends TestCase
         );
         $this->jws->setPayload($data);
 
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = SimpleJWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertTrue($jws->isValid($public_key, 'RS256'));
     }
 
@@ -97,11 +97,11 @@ class SimpleJWSTest extends TestCase
         );
         $this->jws->setPayload($data);
 
-        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE);
+        $privateKey = openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE);
         $this->jws->sign($privateKey);
 
         $jws = SimpleJWS::load($this->jws->getTokenString());
-        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH.'public.key');
+        $public_key = openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key');
         $this->assertFalse($jws->isValid($public_key, 'RS256'));
     }
 }

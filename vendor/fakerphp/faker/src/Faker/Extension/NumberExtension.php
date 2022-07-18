@@ -45,7 +45,7 @@ interface NumberExtension extends Extension
      * The maximum value returned is mt_getrandmax()
      *
      * @param int|null $nbDigits Defaults to a random number between 1 and 9
-     * @param bool     $strict   Whether the returned number should have exactly $nbDigits
+     * @param bool $strict Whether the returned number should have exactly $nbDigits
      *
      * @example 79907610
      */

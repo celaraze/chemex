@@ -4,12 +4,10 @@ namespace Doctrine\DBAL\Types;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use JsonException;
-
 use function is_resource;
 use function json_decode;
 use function json_encode;
 use function stream_get_contents;
-
 use const JSON_PRESERVE_ZERO_FRACTION;
 use const JSON_THROW_ON_ERROR;
 
@@ -75,6 +73,6 @@ class JsonType extends Type
      */
     public function requiresSQLCommentHint(AbstractPlatform $platform)
     {
-        return ! $platform->hasNativeJsonType();
+        return !$platform->hasNativeJsonType();
     }
 }

@@ -41,7 +41,7 @@ class Tools implements Renderable
     /**
      * Create a new Tools instance.
      *
-     * @param  Grid  $grid
+     * @param Grid $grid
      */
     public function __construct(Grid $grid)
     {
@@ -62,17 +62,10 @@ class Tools implements Renderable
             ->append(new FilterButton());
     }
 
-    protected function makeBatchActions()
-    {
-        $class = $this->grid->option('batch_actions_class') ?: (config('admin.grid.batch_action_class') ?: BatchActions::class);
-
-        return new $class();
-    }
-
     /**
      * Append tools.
      *
-     * @param  AbstractTool|string|\Closure|Renderable|Htmlable  $tool
+     * @param AbstractTool|string|\Closure|Renderable|Htmlable $tool
      * @return $this
      */
     public function append($tool)
@@ -85,9 +78,27 @@ class Tools implements Renderable
     }
 
     /**
+     * @param mixed $tool
+     * @return void
+     */
+    protected function prepareAction($tool)
+    {
+        if ($tool instanceof GridAction) {
+            $tool->setGrid($this->grid);
+        }
+    }
+
+    protected function makeBatchActions()
+    {
+        $class = $this->grid->option('batch_actions_class') ?: (config('admin.grid.batch_action_class') ?: BatchActions::class);
+
+        return new $class();
+    }
+
+    /**
      * Prepend a tool.
      *
-     * @param  AbstractTool|string|\Closure|Renderable|Htmlable  $tool
+     * @param AbstractTool|string|\Closure|Renderable|Htmlable $tool
      * @return $this
      */
     public function prepend($tool)
@@ -100,22 +111,11 @@ class Tools implements Renderable
     }
 
     /**
-     * @param  mixed  $tool
-     * @return void
-     */
-    protected function prepareAction($tool)
-    {
-        if ($tool instanceof GridAction) {
-            $tool->setGrid($this->grid);
-        }
-    }
-
-    /**
      * @return bool
      */
     public function has()
     {
-        return ! $this->tools->isEmpty();
+        return !$this->tools->isEmpty();
     }
 
     /**
@@ -135,7 +135,7 @@ class Tools implements Renderable
     }
 
     /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function withOutline(bool $value)
@@ -154,7 +154,7 @@ class Tools implements Renderable
     {
         $this->tools = $this->tools->map(function ($tool) use ($disable) {
             if ($tool instanceof RefreshButton) {
-                return $tool->display(! $disable);
+                return $tool->display(!$disable);
             }
 
             return $tool;
@@ -178,7 +178,7 @@ class Tools implements Renderable
     }
 
     /**
-     * @param  \Closure|BatchAction|BatchAction[]  $value
+     * @param \Closure|BatchAction|BatchAction[] $value
      */
     public function batch($value)
     {
@@ -193,7 +193,7 @@ class Tools implements Renderable
             return;
         }
 
-        if (! is_array($value)) {
+        if (!is_array($value)) {
             $value = [$value];
         }
 
@@ -210,7 +210,7 @@ class Tools implements Renderable
     public function render()
     {
         $value = $this->tools->map(function ($tool) {
-            if ($tool instanceof Action && ! $tool->allowed()) {
+            if ($tool instanceof Action && !$tool->allowed()) {
                 return;
             }
 
@@ -221,21 +221,12 @@ class Tools implements Renderable
     }
 
     /**
-     * @param  string  $value
-     * @return string
-     */
-    public function format(string $value)
-    {
-        return $this->addButtonOutline($value);
-    }
-
-    /**
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     protected function addButtonOutline($value)
     {
-        if (! $this->outline) {
+        if (!$this->outline) {
             return $value;
         }
 
@@ -244,7 +235,7 @@ class Tools implements Renderable
 
             if (
                 in_array('btn', $class, true)
-                && ! in_array('disable-outline', $class, true)
+                && !in_array('disable-outline', $class, true)
                 && Str::contains($text[1], 'btn-')
             ) {
                 $class[] = 'btn-outline';
@@ -252,5 +243,14 @@ class Tools implements Renderable
 
             return sprintf('class="%s"', implode(' ', $class));
         }, $value);
+    }
+
+    /**
+     * @param string $value
+     * @return string
+     */
+    public function format(string $value)
+    {
+        return $this->addButtonOutline($value);
     }
 }

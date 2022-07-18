@@ -7,17 +7,18 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Rule;
 
-use function count;
-use function gettype;
-use function is_iterable;
-use function sprintf;
 use PHPUnit\Framework\Constraint\Constraint;
 use PHPUnit\Framework\Constraint\IsEqual;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\InvalidParameterGroupException;
 use PHPUnit\Framework\MockObject\Invocation as BaseInvocation;
+use function count;
+use function gettype;
+use function is_iterable;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -60,11 +61,6 @@ final class ConsecutiveParameters implements ParametersRule
         }
     }
 
-    public function toString(): string
-    {
-        return 'with consecutive parameters';
-    }
-
     /**
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @throws ExpectationFailedException
@@ -72,20 +68,9 @@ final class ConsecutiveParameters implements ParametersRule
     public function apply(BaseInvocation $invocation): void
     {
         $this->invocations[] = $invocation;
-        $callIndex           = count($this->invocations) - 1;
+        $callIndex = count($this->invocations) - 1;
 
         $this->verifyInvocation($invocation, $callIndex);
-    }
-
-    /**
-     * @throws \PHPUnit\Framework\ExpectationFailedException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    public function verify(): void
-    {
-        foreach ($this->invocations as $callIndex => $invocation) {
-            $this->verifyInvocation($invocation, $callIndex);
-        }
     }
 
     /**
@@ -125,6 +110,22 @@ final class ConsecutiveParameters implements ParametersRule
                     $invocation->toString()
                 )
             );
+        }
+    }
+
+    public function toString(): string
+    {
+        return 'with consecutive parameters';
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function verify(): void
+    {
+        foreach ($this->invocations as $callIndex => $invocation) {
+            $this->verifyInvocation($invocation, $callIndex);
         }
     }
 }

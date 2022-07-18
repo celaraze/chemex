@@ -76,45 +76,18 @@ class ExceptionIdle extends \Exception
      * chaining, we can add a previous exception.
      */
     public function __construct(
-        string $message,
-        int $code = 0,
-        $arguments = [],
+        string     $message,
+        int        $code = 0,
+                   $arguments = [],
         \Exception $previous = null
-    ) {
+    )
+    {
         $this->_tmpArguments = $arguments;
         parent::__construct($message, $code, $previous);
         $this->_rawMessage = $message;
         $this->message = @\vsprintf($message, $this->getArguments());
 
         return;
-    }
-
-    /**
-     * Returns the backtrace.
-     *
-     * Do not use `Exception::getTrace` any more.
-     */
-    public function getBacktrace()
-    {
-        if (null === $this->_trace) {
-            $this->_trace = $this->getTrace();
-        }
-
-        return $this->_trace;
-    }
-
-    /**
-     * Returns the previous exception if any.
-     *
-     * Do not use `Exception::getPrevious` any more.
-     */
-    public function getPreviousThrow()
-    {
-        if (null === $this->_previous) {
-            $this->_previous = $this->getPrevious();
-        }
-
-        return $this->_previous;
     }
 
     /**
@@ -143,43 +116,36 @@ class ExceptionIdle extends \Exception
     }
 
     /**
-     * Returns the raw message.
+     * Enables uncaught exception handler.
+     *
+     * This is restricted to Hoa's exceptions only.
      */
-    public function getRawMessage(): string
+    public static function enableUncaughtHandler(bool $enable = true)
     {
-        return $this->_rawMessage;
-    }
-
-    /**
-     * Returns the message already formatted.
-     */
-    public function getFormattedMessage(): string
-    {
-        return $this->getMessage();
-    }
-
-    /**
-     * Returns the source of the exception (class, method, function, main etc.).
-     */
-    public function getFrom(): string
-    {
-        $trace = $this->getBacktrace();
-        $from = '{main}';
-
-        if (!empty($trace)) {
-            $t = $trace[0];
-            $from = '';
-
-            if (isset($t['class'])) {
-                $from .= $t['class'].'::';
-            }
-
-            if (isset($t['function'])) {
-                $from .= $t['function'].'()';
-            }
+        if (false === $enable) {
+            return \restore_exception_handler();
         }
 
-        return $from;
+        return \set_exception_handler(function ($exception) {
+            return self::uncaught($exception);
+        });
+    }
+
+    /**
+     * Catches uncaught exception (only `Hoa\Exception\Idle` and children).
+     */
+    public static function uncaught(\Throwable $exception)
+    {
+        if (!($exception instanceof self)) {
+            throw $exception;
+        }
+
+        while (0 < \ob_get_level()) {
+            \ob_end_flush();
+        }
+
+        echo 'Uncaught exception (' . \get_class($exception) . '):' . "\n" .
+            $exception->raise(true);
     }
 
     /**
@@ -202,20 +168,20 @@ class ExceptionIdle extends \Exception
 
         try {
             $out =
-                $pre.'('.$this->getCode().') '.$message."\n".
-                'in '.$this->getFile().' at line '.
-                $this->getLine().'.';
+                $pre . '(' . $this->getCode() . ') ' . $message . "\n" .
+                'in ' . $this->getFile() . ' at line ' .
+                $this->getLine() . '.';
         } catch (\Exception $e) {
             $out =
-                $pre.'('.$this->getCode().') '.$message."\n".
-                'in '.$file.' around line '.$line.'.';
+                $pre . '(' . $this->getCode() . ') ' . $message . "\n" .
+                'in ' . $file . ' around line ' . $line . '.';
         }
 
         if (true === $includePrevious &&
             null !== $previous = $this->getPreviousThrow()) {
             $out .=
-                "\n\n".'    ⬇'."\n\n".
-                'Nested exception ('.\get_class($previous).'):'."\n".
+                "\n\n" . '    ⬇' . "\n\n" .
+                'Nested exception (' . \get_class($previous) . '):' . "\n" .
                 ($previous instanceof self
                     ? $previous->raise(true)
                     : $previous->getMessage());
@@ -225,20 +191,71 @@ class ExceptionIdle extends \Exception
     }
 
     /**
-     * Catches uncaught exception (only `Hoa\Exception\Idle` and children).
+     * Returns the message already formatted.
      */
-    public static function uncaught(\Throwable $exception)
+    public function getFormattedMessage(): string
     {
-        if (!($exception instanceof self)) {
-            throw $exception;
+        return $this->getMessage();
+    }
+
+    /**
+     * Returns the backtrace.
+     *
+     * Do not use `Exception::getTrace` any more.
+     */
+    public function getBacktrace()
+    {
+        if (null === $this->_trace) {
+            $this->_trace = $this->getTrace();
         }
 
-        while (0 < \ob_get_level()) {
-            \ob_end_flush();
+        return $this->_trace;
+    }
+
+    /**
+     * Returns the source of the exception (class, method, function, main etc.).
+     */
+    public function getFrom(): string
+    {
+        $trace = $this->getBacktrace();
+        $from = '{main}';
+
+        if (!empty($trace)) {
+            $t = $trace[0];
+            $from = '';
+
+            if (isset($t['class'])) {
+                $from .= $t['class'] . '::';
+            }
+
+            if (isset($t['function'])) {
+                $from .= $t['function'] . '()';
+            }
         }
 
-        echo 'Uncaught exception ('.\get_class($exception).'):'."\n".
-            $exception->raise(true);
+        return $from;
+    }
+
+    /**
+     * Returns the previous exception if any.
+     *
+     * Do not use `Exception::getPrevious` any more.
+     */
+    public function getPreviousThrow()
+    {
+        if (null === $this->_previous) {
+            $this->_previous = $this->getPrevious();
+        }
+
+        return $this->_previous;
+    }
+
+    /**
+     * Returns the raw message.
+     */
+    public function getRawMessage(): string
+    {
+        return $this->_rawMessage;
     }
 
     /**
@@ -247,21 +264,5 @@ class ExceptionIdle extends \Exception
     public function __toString(): string
     {
         return $this->raise();
-    }
-
-    /**
-     * Enables uncaught exception handler.
-     *
-     * This is restricted to Hoa's exceptions only.
-     */
-    public static function enableUncaughtHandler(bool $enable = true)
-    {
-        if (false === $enable) {
-            return \restore_exception_handler();
-        }
-
-        return \set_exception_handler(function ($exception) {
-            return self::uncaught($exception);
-        });
     }
 }

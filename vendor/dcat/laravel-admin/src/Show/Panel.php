@@ -54,17 +54,17 @@ class Panel implements Renderable
     {
         $this->variables = [
             'fields' => new Collection(),
-            'tools'  => new Tools($this),
-            'rows'   => $this->parent->rows(),
-            'style'  => 'default',
-            'title'  => trans('admin.detail'),
+            'tools' => new Tools($this),
+            'rows' => $this->parent->rows(),
+            'style' => 'default',
+            'title' => trans('admin.detail'),
         ];
     }
 
     /**
      * Set parent container.
      *
-     * @param  Show  $show
+     * @param Show $show
      * @return $this
      */
     public function setParent(Show $show)
@@ -87,7 +87,7 @@ class Panel implements Renderable
     /**
      * Set style for this panel.
      *
-     * @param  string  $style
+     * @param string $style
      * @return $this
      *
      * @deprecated
@@ -102,7 +102,7 @@ class Panel implements Renderable
     /**
      * Set title for this panel.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title($title)
@@ -115,7 +115,7 @@ class Panel implements Renderable
     /**
      * Set view for this panel to render.
      *
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function view($view)
@@ -128,7 +128,7 @@ class Panel implements Renderable
     /**
      * Add variables to show view.
      *
-     * @param  array  $variables
+     * @param array $variables
      * @return $this
      */
     public function with(array $variables = [])
@@ -201,7 +201,7 @@ class Panel implements Renderable
     {
         $view = view($this->view, $this->variables());
 
-        if (! $wrapper = $this->wrapper) {
+        if (!$wrapper = $this->wrapper) {
             return "<div class='card dcat-box'>{$view->render()}</div>";
         }
 

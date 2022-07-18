@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Complexity;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @psalm-immutable
@@ -23,17 +24,17 @@ final class ComplexityCollection implements Countable, IteratorAggregate
      */
     private $items = [];
 
-    public static function fromList(Complexity ...$items): self
-    {
-        return new self($items);
-    }
-
     /**
      * @psalm-param list<Complexity> $items
      */
     private function __construct(array $items)
     {
         $this->items = $items;
+    }
+
+    public static function fromList(Complexity ...$items): self
+    {
+        return new self($items);
     }
 
     /**

@@ -40,7 +40,7 @@ final class AnonymousFootnoteRefParser implements InlineParserInterface, Environ
     {
         $inlineContext->getCursor()->advanceBy($inlineContext->getFullMatchLength());
 
-        [$label]   = $inlineContext->getSubMatches();
+        [$label] = $inlineContext->getSubMatches();
         $reference = $this->createReference($label);
         $inlineContext->getContainer()->appendChild(new FootnoteRef($reference, $label));
 
@@ -60,7 +60,7 @@ final class AnonymousFootnoteRefParser implements InlineParserInterface, Environ
 
     public function setEnvironment(EnvironmentInterface $environment): void
     {
-        $this->config         = $environment->getConfiguration();
+        $this->config = $environment->getConfiguration();
         $this->slugNormalizer = $environment->getSlugNormalizer();
     }
 }

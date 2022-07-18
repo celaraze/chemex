@@ -7,15 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\TestDox;
 
-use const PHP_EOL;
-use function array_map;
-use function get_class;
-use function implode;
-use function method_exists;
-use function preg_split;
-use function trim;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Reorderable;
 use PHPUnit\Framework\Test;
@@ -27,6 +21,13 @@ use PHPUnit\Runner\BaseTestRunner;
 use PHPUnit\Runner\PhptTestCase;
 use PHPUnit\TextUI\DefaultResultPrinter;
 use Throwable;
+use function array_map;
+use function get_class;
+use function implode;
+use function method_exists;
+use function preg_split;
+use function trim;
+use const PHP_EOL;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -80,7 +81,7 @@ class TestDoxPrinter extends DefaultResultPrinter
 
     /**
      * @param null|resource|string $out
-     * @param int|string           $numberOfColumns
+     * @param int|string $numberOfColumns
      *
      * @throws \PHPUnit\Framework\Exception
      */
@@ -94,7 +95,7 @@ class TestDoxPrinter extends DefaultResultPrinter
     public function setOriginalExecutionOrder(array $order): void
     {
         $this->originalExecutionOrder = $order;
-        $this->enableOutputBuffer     = !empty($order);
+        $this->enableOutputBuffer = !empty($order);
     }
 
     public function setShowProgressAnimation(bool $showProgress): void
@@ -124,6 +125,102 @@ class TestDoxPrinter extends DefaultResultPrinter
         }
 
         parent::endTest($test, $time);
+    }
+
+    protected function testHasPassed(): bool
+    {
+        if (!isset($this->testResults[$this->testIndex]['status'])) {
+            return true;
+        }
+
+        if ($this->testResults[$this->testIndex]['status'] === BaseTestRunner::STATUS_PASSED) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    protected function registerTestResult(Test $test, ?Throwable $t, int $status, float $time, bool $verbose): void
+    {
+        $testName = $test instanceof Reorderable ? $test->sortId() : $test->getName();
+
+        $result = [
+            'className' => $this->formatClassName($test),
+            'testName' => $testName,
+            'testMethod' => $this->formatTestName($test),
+            'message' => '',
+            'status' => $status,
+            'time' => $time,
+            'verbose' => $verbose,
+        ];
+
+        if ($t !== null) {
+            $result['message'] = $this->formatTestResultMessage($t, $result);
+        }
+
+        $this->testResults[$this->testIndex] = $result;
+        $this->testNameResultIndex[$testName] = $this->testIndex;
+    }
+
+    protected function formatClassName(Test $test): string
+    {
+        return get_class($test);
+    }
+
+    protected function formatTestName(Test $test): string
+    {
+        return method_exists($test, 'getName') ? $test->getName() : '';
+    }
+
+    protected function formatTestResultMessage(Throwable $t, array $result, string $prefix = '│'): string
+    {
+        $message = $this->formatThrowable($t, $result['status']);
+
+        if ($message === '') {
+            return '';
+        }
+
+        if (!($this->verbose || $result['verbose'])) {
+            return '';
+        }
+
+        return $this->prefixLines($prefix, $message);
+    }
+
+    protected function formatThrowable(Throwable $t, ?int $status = null): string
+    {
+        $message = trim(\PHPUnit\Framework\TestFailure::exceptionToString($t));
+
+        if ($message) {
+            $message .= PHP_EOL . PHP_EOL . $this->formatStacktrace($t);
+        } else {
+            $message = $this->formatStacktrace($t);
+        }
+
+        return $message;
+    }
+
+    protected function formatStacktrace(Throwable $t): string
+    {
+        return \PHPUnit\Util\Filter::getFilteredStacktrace($t);
+    }
+
+    protected function prefixLines(string $prefix, string $message): string
+    {
+        $message = trim($message);
+
+        return implode(
+            PHP_EOL,
+            array_map(
+                static function (string $text) use ($prefix) {
+                    return '   ' . $prefix . ($text ? ' ' . $text : '');
+                },
+                preg_split('/\r\n|\r|\n/', $message)
+            )
+        );
     }
 
     /**
@@ -179,59 +276,6 @@ class TestDoxPrinter extends DefaultResultPrinter
         $this->flushOutputBuffer();
     }
 
-    public function flush(): void
-    {
-        $this->flushOutputBuffer(true);
-    }
-
-    /**
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    protected function registerTestResult(Test $test, ?Throwable $t, int $status, float $time, bool $verbose): void
-    {
-        $testName = $test instanceof Reorderable ? $test->sortId() : $test->getName();
-
-        $result = [
-            'className'  => $this->formatClassName($test),
-            'testName'   => $testName,
-            'testMethod' => $this->formatTestName($test),
-            'message'    => '',
-            'status'     => $status,
-            'time'       => $time,
-            'verbose'    => $verbose,
-        ];
-
-        if ($t !== null) {
-            $result['message'] = $this->formatTestResultMessage($t, $result);
-        }
-
-        $this->testResults[$this->testIndex]  = $result;
-        $this->testNameResultIndex[$testName] = $this->testIndex;
-    }
-
-    protected function formatTestName(Test $test): string
-    {
-        return method_exists($test, 'getName') ? $test->getName() : '';
-    }
-
-    protected function formatClassName(Test $test): string
-    {
-        return get_class($test);
-    }
-
-    protected function testHasPassed(): bool
-    {
-        if (!isset($this->testResults[$this->testIndex]['status'])) {
-            return true;
-        }
-
-        if ($this->testResults[$this->testIndex]['status'] === BaseTestRunner::STATUS_PASSED) {
-            return true;
-        }
-
-        return false;
-    }
-
     protected function flushOutputBuffer(bool $forceFlush = false): void
     {
         if ($this->testFlushIndex === $this->testIndex) {
@@ -268,12 +312,54 @@ class TestDoxPrinter extends DefaultResultPrinter
                     $this->writeTestResult($prevResult, $result);
                     $this->testFlushIndex++;
                     $prevResult = $result;
-                    $flushed    = true;
+                    $flushed = true;
                 } else {
                     $this->showSpinner();
                 }
             } while ($flushed && $this->testFlushIndex < $this->testIndex);
         }
+    }
+
+    protected function getTestResultByName(?string $testName): array
+    {
+        if (isset($this->testNameResultIndex[$testName])) {
+            return $this->testResults[$this->testNameResultIndex[$testName]];
+        }
+
+        return [];
+    }
+
+    protected function getEmptyTestResult(): array
+    {
+        return [
+            'className' => '',
+            'testName' => '',
+            'message' => '',
+            'failed' => '',
+            'verbose' => '',
+        ];
+    }
+
+    protected function writeTestResult(array $prevResult, array $result): void
+    {
+    }
+
+    protected function hideSpinner(): void
+    {
+        if (!$this->showProgress) {
+            return;
+        }
+
+        if ($this->spinState) {
+            $this->undrawSpinner();
+        }
+
+        $this->spinState = 0;
+    }
+
+    protected function undrawSpinner(): void
+    {
+        // remove the spinner from the current line
     }
 
     protected function showSpinner(): void
@@ -290,99 +376,13 @@ class TestDoxPrinter extends DefaultResultPrinter
         $this->drawSpinner();
     }
 
-    protected function hideSpinner(): void
-    {
-        if (!$this->showProgress) {
-            return;
-        }
-
-        if ($this->spinState) {
-            $this->undrawSpinner();
-        }
-
-        $this->spinState = 0;
-    }
-
     protected function drawSpinner(): void
     {
         // optional for CLI printers: show the user a 'buffering output' spinner
     }
 
-    protected function undrawSpinner(): void
+    public function flush(): void
     {
-        // remove the spinner from the current line
-    }
-
-    protected function writeTestResult(array $prevResult, array $result): void
-    {
-    }
-
-    protected function getEmptyTestResult(): array
-    {
-        return [
-            'className' => '',
-            'testName'  => '',
-            'message'   => '',
-            'failed'    => '',
-            'verbose'   => '',
-        ];
-    }
-
-    protected function getTestResultByName(?string $testName): array
-    {
-        if (isset($this->testNameResultIndex[$testName])) {
-            return $this->testResults[$this->testNameResultIndex[$testName]];
-        }
-
-        return [];
-    }
-
-    protected function formatThrowable(Throwable $t, ?int $status = null): string
-    {
-        $message = trim(\PHPUnit\Framework\TestFailure::exceptionToString($t));
-
-        if ($message) {
-            $message .= PHP_EOL . PHP_EOL . $this->formatStacktrace($t);
-        } else {
-            $message = $this->formatStacktrace($t);
-        }
-
-        return $message;
-    }
-
-    protected function formatStacktrace(Throwable $t): string
-    {
-        return \PHPUnit\Util\Filter::getFilteredStacktrace($t);
-    }
-
-    protected function formatTestResultMessage(Throwable $t, array $result, string $prefix = '│'): string
-    {
-        $message = $this->formatThrowable($t, $result['status']);
-
-        if ($message === '') {
-            return '';
-        }
-
-        if (!($this->verbose || $result['verbose'])) {
-            return '';
-        }
-
-        return $this->prefixLines($prefix, $message);
-    }
-
-    protected function prefixLines(string $prefix, string $message): string
-    {
-        $message = trim($message);
-
-        return implode(
-            PHP_EOL,
-            array_map(
-                static function (string $text) use ($prefix)
-                {
-                    return '   ' . $prefix . ($text ? ' ' . $text : '');
-                },
-                preg_split('/\r\n|\r|\n/', $message)
-            )
-        );
+        $this->flushOutputBuffer(true);
     }
 }

@@ -23,10 +23,10 @@ class NativeFileSessionHandler extends \SessionHandler
      *                         Default null will leave setting as defined by PHP.
      *                         '/path', 'N;/path', or 'N;octal-mode;/path
      *
-     * @see https://php.net/session.configuration#ini.session.save-path for further details.
-     *
      * @throws \InvalidArgumentException On invalid $savePath
      * @throws \RuntimeException         When failing to create the save directory
+     * @see https://php.net/session.configuration#ini.session.save-path for further details.
+     *
      */
     public function __construct(string $savePath = null)
     {

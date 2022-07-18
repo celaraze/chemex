@@ -13,25 +13,25 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
-use Composer\Util\Filesystem;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\InstallerEvents;
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>
@@ -106,8 +106,7 @@ If you do not want to install the new dependencies immediately you can call it w
 
 Read more at https://getcomposer.org/doc/03-cli.md#require
 EOT
-            )
-        ;
+            );
     }
 
     /**
@@ -117,9 +116,15 @@ EOT
     {
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
-            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGINT, function () {
+                $this->revertComposerFile();
+            });
+            pcntl_signal(SIGTERM, function () {
+                $this->revertComposerFile();
+            });
+            pcntl_signal(SIGHUP, function () {
+                $this->revertComposerFile();
+            });
         }
 
         $this->file = Factory::getComposerFile();
@@ -131,12 +136,12 @@ EOT
 
         $this->newlyCreated = !file_exists($this->file);
         if ($this->newlyCreated && !file_put_contents($this->file, "{\n}\n")) {
-            $io->writeError('<error>'.$this->file.' could not be created.</error>');
+            $io->writeError('<error>' . $this->file . ' could not be created.</error>');
 
             return 1;
         }
         if (!Filesystem::isReadable($this->file)) {
-            $io->writeError('<error>'.$this->file.' is not readable.</error>');
+            $io->writeError('<error>' . $this->file . ' is not readable.</error>');
 
             return 1;
         }
@@ -153,7 +158,7 @@ EOT
         // check for writability by writing to the file as is_writable can not be trusted on network-mounts
         // see https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
         if (!is_writable($this->file) && !Silencer::call('file_put_contents', $this->file, $this->composerBackup)) {
-            $io->writeError('<error>'.$this->file.' is not writable.</error>');
+            $io->writeError('<error>' . $this->file . ' is not writable.</error>');
 
             return 1;
         }
@@ -207,7 +212,7 @@ EOT
             if ($this->newlyCreated) {
                 $this->revertComposerFile(false);
 
-                throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
+                throw new \RuntimeException('No composer.json present in the current directory (' . $this->file . '), this may be the cause of the following exception.', 0, $e);
             }
 
             throw $e;
@@ -276,7 +281,7 @@ EOT
             $this->json->write($composerDefinition);
         }
 
-        $io->writeError('<info>'.$this->file.' has been '.($this->newlyCreated ? 'created' : 'updated').'</info>');
+        $io->writeError('<info>' . $this->file . ' has been ' . ($this->newlyCreated ? 'created' : 'updated') . '</info>');
 
         if ($input->getOption('no-update')) {
             return 0;
@@ -291,6 +296,37 @@ EOT
                 $this->revertComposerFile(false);
             }
             throw $e;
+        }
+    }
+
+    /**
+     * @param bool $hardExit
+     * @return void
+     */
+    public function revertComposerFile(bool $hardExit = true): void
+    {
+        $io = $this->getIO();
+
+        if ($this->newlyCreated) {
+            $io->writeError("\n" . '<error>Installation failed, deleting ' . $this->file . '.</error>');
+            unlink($this->json->getPath());
+            if (file_exists($this->lock)) {
+                unlink($this->lock);
+            }
+        } else {
+            $msg = ' to its ';
+            if ($this->lockBackup) {
+                $msg = ' and ' . $this->lock . ' to their ';
+            }
+            $io->writeError("\n" . '<error>Installation failed, reverting ' . $this->file . $msg . 'original content.</error>');
+            file_put_contents($this->json->getPath(), $this->composerBackup);
+            if ($this->lockBackup) {
+                file_put_contents($this->lock, $this->lockBackup);
+            }
+        }
+
+        if ($hardExit) {
+            exit(1);
         }
     }
 
@@ -336,6 +372,35 @@ EOT
             array_fill_keys(array_keys($require), 'require'),
             array_fill_keys(array_keys($requireDev), 'require-dev')
         );
+    }
+
+    /**
+     * @param array<string, string> $new
+     * @param string $requireKey
+     * @param string $removeKey
+     * @param bool $sortPackages
+     * @return bool
+     */
+    private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
+    {
+        $contents = file_get_contents($json->getPath());
+
+        $manipulator = new JsonManipulator($contents);
+
+        foreach ($new as $package => $constraint) {
+            if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
+                return false;
+            }
+            if (!$manipulator->removeSubNode($removeKey, $package)) {
+                return false;
+            }
+        }
+
+        $manipulator->removeMainKeyIfEmpty($removeKey);
+
+        file_put_contents($json->getPath(), $manipulator->getContents());
+
+        return true;
     }
 
     /**
@@ -388,7 +453,7 @@ EOT
             $flags .= ' --with-dependencies';
         }
 
-        $io->writeError('<info>Running composer update '.implode(' ', array_keys($requirements)).$flags.'</info>');
+        $io->writeError('<info>Running composer update ' . implode(' ', array_keys($requirements)) . $flags . '</info>');
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -413,8 +478,7 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
-            ->setPreferLowest($input->getOption('prefer-lowest'))
-        ;
+            ->setPreferLowest($input->getOption('prefer-lowest'));
 
         // if no lock is present, or the file is brand new, we do not do a
         // partial update as this is not supported by the Installer
@@ -427,7 +491,7 @@ EOT
             if ($status === Installer::ERROR_DEPENDENCY_RESOLUTION_FAILED) {
                 foreach ($this->normalizeRequirements($input->getArgument('packages')) as $req) {
                     if (!isset($req['version'])) {
-                        $io->writeError('You can also try re-running composer require with an explicit version constraint, e.g. "composer require '.$req['name'].':*" to figure out if any version is installable, or "composer require '.$req['name'].':^2.1" if you know which you need.');
+                        $io->writeError('You can also try re-running composer require with an explicit version constraint, e.g. "composer require ' . $req['name'] . ':*" to figure out if any version is installable, or "composer require ' . $req['name'] . ':^2.1" if you know which you need.');
                         break;
                     }
                 }
@@ -438,68 +502,8 @@ EOT
         return $status;
     }
 
-    /**
-     * @param array<string, string> $new
-     * @param string $requireKey
-     * @param string $removeKey
-     * @param bool $sortPackages
-     * @return bool
-     */
-    private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
-    {
-        $contents = file_get_contents($json->getPath());
-
-        $manipulator = new JsonManipulator($contents);
-
-        foreach ($new as $package => $constraint) {
-            if (!$manipulator->addLink($requireKey, $package, $constraint, $sortPackages)) {
-                return false;
-            }
-            if (!$manipulator->removeSubNode($removeKey, $package)) {
-                return false;
-            }
-        }
-
-        $manipulator->removeMainKeyIfEmpty($removeKey);
-
-        file_put_contents($json->getPath(), $manipulator->getContents());
-
-        return true;
-    }
-
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         return;
-    }
-
-    /**
-     * @param bool $hardExit
-     * @return void
-     */
-    public function revertComposerFile(bool $hardExit = true): void
-    {
-        $io = $this->getIO();
-
-        if ($this->newlyCreated) {
-            $io->writeError("\n".'<error>Installation failed, deleting '.$this->file.'.</error>');
-            unlink($this->json->getPath());
-            if (file_exists($this->lock)) {
-                unlink($this->lock);
-            }
-        } else {
-            $msg = ' to its ';
-            if ($this->lockBackup) {
-                $msg = ' and '.$this->lock.' to their ';
-            }
-            $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.$msg.'original content.</error>');
-            file_put_contents($this->json->getPath(), $this->composerBackup);
-            if ($this->lockBackup) {
-                file_put_contents($this->lock, $this->lockBackup);
-            }
-        }
-
-        if ($hardExit) {
-            exit(1);
-        }
     }
 }

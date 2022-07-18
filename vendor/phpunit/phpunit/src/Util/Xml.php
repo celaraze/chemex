@@ -7,9 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const ENT_QUOTES;
+use DOMCharacterData;
+use DOMDocument;
+use DOMElement;
+use DOMNode;
+use DOMText;
+use ReflectionClass;
+use ReflectionException;
 use function assert;
 use function class_exists;
 use function htmlspecialchars;
@@ -18,13 +25,7 @@ use function ord;
 use function preg_replace;
 use function settype;
 use function strlen;
-use DOMCharacterData;
-use DOMDocument;
-use DOMElement;
-use DOMNode;
-use DOMText;
-use ReflectionClass;
-use ReflectionException;
+use const ENT_QUOTES;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -73,88 +74,6 @@ final class Xml
         );
     }
 
-    /**
-     * "Convert" a DOMElement object into a PHP variable.
-     */
-    public static function xmlToVariable(DOMElement $element)
-    {
-        $variable = null;
-
-        switch ($element->tagName) {
-            case 'array':
-                $variable = [];
-
-                foreach ($element->childNodes as $entry) {
-                    if (!$entry instanceof DOMElement || $entry->tagName !== 'element') {
-                        continue;
-                    }
-                    $item = $entry->childNodes->item(0);
-
-                    if ($item instanceof DOMText) {
-                        $item = $entry->childNodes->item(1);
-                    }
-
-                    $value = self::xmlToVariable($item);
-
-                    if ($entry->hasAttribute('key')) {
-                        $variable[(string) $entry->getAttribute('key')] = $value;
-                    } else {
-                        $variable[] = $value;
-                    }
-                }
-
-                break;
-
-            case 'object':
-                $className = $element->getAttribute('class');
-
-                if ($element->hasChildNodes()) {
-                    $arguments       = $element->childNodes->item(0)->childNodes;
-                    $constructorArgs = [];
-
-                    foreach ($arguments as $argument) {
-                        if ($argument instanceof DOMElement) {
-                            $constructorArgs[] = self::xmlToVariable($argument);
-                        }
-                    }
-
-                    try {
-                        assert(class_exists($className));
-
-                        $variable = (new ReflectionClass($className))->newInstanceArgs($constructorArgs);
-                        // @codeCoverageIgnoreStart
-                    } catch (ReflectionException $e) {
-                        throw new Exception(
-                            $e->getMessage(),
-                            (int) $e->getCode(),
-                            $e
-                        );
-                    }
-                    // @codeCoverageIgnoreEnd
-                } else {
-                    $variable = new $className;
-                }
-
-                break;
-
-            case 'boolean':
-                $variable = $element->textContent === 'true';
-
-                break;
-
-            case 'integer':
-            case 'double':
-            case 'string':
-                $variable = $element->textContent;
-
-                settype($variable, $element->tagName);
-
-                break;
-        }
-
-        return $variable;
-    }
-
     private static function convertToUtf8(string $string): string
     {
         if (!self::isUtf8($string)) {
@@ -189,5 +108,87 @@ final class Xml
         }
 
         return true;
+    }
+
+    /**
+     * "Convert" a DOMElement object into a PHP variable.
+     */
+    public static function xmlToVariable(DOMElement $element)
+    {
+        $variable = null;
+
+        switch ($element->tagName) {
+            case 'array':
+                $variable = [];
+
+                foreach ($element->childNodes as $entry) {
+                    if (!$entry instanceof DOMElement || $entry->tagName !== 'element') {
+                        continue;
+                    }
+                    $item = $entry->childNodes->item(0);
+
+                    if ($item instanceof DOMText) {
+                        $item = $entry->childNodes->item(1);
+                    }
+
+                    $value = self::xmlToVariable($item);
+
+                    if ($entry->hasAttribute('key')) {
+                        $variable[(string)$entry->getAttribute('key')] = $value;
+                    } else {
+                        $variable[] = $value;
+                    }
+                }
+
+                break;
+
+            case 'object':
+                $className = $element->getAttribute('class');
+
+                if ($element->hasChildNodes()) {
+                    $arguments = $element->childNodes->item(0)->childNodes;
+                    $constructorArgs = [];
+
+                    foreach ($arguments as $argument) {
+                        if ($argument instanceof DOMElement) {
+                            $constructorArgs[] = self::xmlToVariable($argument);
+                        }
+                    }
+
+                    try {
+                        assert(class_exists($className));
+
+                        $variable = (new ReflectionClass($className))->newInstanceArgs($constructorArgs);
+                        // @codeCoverageIgnoreStart
+                    } catch (ReflectionException $e) {
+                        throw new Exception(
+                            $e->getMessage(),
+                            (int)$e->getCode(),
+                            $e
+                        );
+                    }
+                    // @codeCoverageIgnoreEnd
+                } else {
+                    $variable = new $className;
+                }
+
+                break;
+
+            case 'boolean':
+                $variable = $element->textContent === 'true';
+
+                break;
+
+            case 'integer':
+            case 'double':
+            case 'string':
+                $variable = $element->textContent;
+
+                settype($variable, $element->tagName);
+
+                break;
+        }
+
+        return $variable;
     }
 }

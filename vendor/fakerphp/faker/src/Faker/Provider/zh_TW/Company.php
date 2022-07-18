@@ -221,13 +221,6 @@ class Company extends \Faker\Provider\Company
         return static::randomElement(static::$companyEnSuffix);
     }
 
-    public function companyEn()
-    {
-        $format = static::randomElement(static::$companyEnFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function companyModifier()
     {
         return static::randomElement(static::$companyModifier);
@@ -236,6 +229,13 @@ class Company extends \Faker\Provider\Company
     public static function companyPrefix()
     {
         return static::randomElement(static::$companyPrefix);
+    }
+
+    public function companyEn()
+    {
+        $format = static::randomElement(static::$companyEnFormats);
+
+        return $this->generator->parse($format);
     }
 
     public function catchPhrase()
@@ -257,9 +257,9 @@ class Company extends \Faker\Provider\Company
     /**
      * return standard VAT / Tax ID / Uniform Serial Number
      *
+     * @return int
      * @example 28263822
      *
-     * @return int
      */
     public function VAT()
     {

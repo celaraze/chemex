@@ -21,7 +21,7 @@ use Composer\Semver\Constraint\Constraint;
 interface PolicyInterface
 {
     /**
-     * @param  string $operator
+     * @param string $operator
      * @return bool
      *
      * @phpstan-param Constraint::STR_OP_* $operator
@@ -29,8 +29,8 @@ interface PolicyInterface
     public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool;
 
     /**
-     * @param  int[]   $literals
-     * @param  null|string $requiredPackage
+     * @param int[] $literals
+     * @param null|string $requiredPackage
      * @return int[]
      */
     public function selectPreferredPackages(Pool $pool, array $literals, ?string $requiredPackage = null): array;

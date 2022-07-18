@@ -32,86 +32,86 @@ use Nette\Schema\Elements\Type;
  */
 final class Expect
 {
-	use Nette\SmartObject;
+    use Nette\SmartObject;
 
-	public static function __callStatic(string $name, array $args): Type
-	{
-		$type = new Type($name);
-		if ($args) {
-			$type->default($args[0]);
-		}
-		return $type;
-	}
-
-
-	public static function type(string $type): Type
-	{
-		return new Type($type);
-	}
+    public static function __callStatic(string $name, array $args): Type
+    {
+        $type = new Type($name);
+        if ($args) {
+            $type->default($args[0]);
+        }
+        return $type;
+    }
 
 
-	/**
-	 * @param  mixed|Schema  ...$set
-	 */
-	public static function anyOf(...$set): AnyOf
-	{
-		return new AnyOf(...$set);
-	}
+    public static function type(string $type): Type
+    {
+        return new Type($type);
+    }
 
 
-	/**
-	 * @param  Schema[]  $items
-	 */
-	public static function structure(array $items): Structure
-	{
-		return new Structure($items);
-	}
+    /**
+     * @param mixed|Schema ...$set
+     */
+    public static function anyOf(...$set): AnyOf
+    {
+        return new AnyOf(...$set);
+    }
 
 
-	/**
-	 * @param  object  $object
-	 */
-	public static function from($object, array $items = []): Structure
-	{
-		$ro = new \ReflectionObject($object);
-		foreach ($ro->getProperties() as $prop) {
-			$type = Helpers::getPropertyType($prop) ?? 'mixed';
-			$item = &$items[$prop->getName()];
-			if (!$item) {
-				$item = new Type($type);
-				if (PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)) {
-					$item->required();
-				} else {
-					$def = $prop->getValue($object);
-					if (is_object($def)) {
-						$item = static::from($def);
-					} elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
-						$item->required();
-					} else {
-						$item->default($def);
-					}
-				}
-			}
-		}
-		return (new Structure($items))->castTo($ro->getName());
-	}
+    /**
+     * @param Schema[] $items
+     */
+    public static function structure(array $items): Structure
+    {
+        return new Structure($items);
+    }
 
 
-	/**
-	 * @param  string|Schema  $valueType
-	 * @param  string|Schema|null  $keyType
-	 */
-	public static function arrayOf($valueType, $keyType = null): Type
-	{
-		return (new Type('array'))->items($valueType, $keyType);
-	}
+    /**
+     * @param object $object
+     */
+    public static function from($object, array $items = []): Structure
+    {
+        $ro = new \ReflectionObject($object);
+        foreach ($ro->getProperties() as $prop) {
+            $type = Helpers::getPropertyType($prop) ?? 'mixed';
+            $item = &$items[$prop->getName()];
+            if (!$item) {
+                $item = new Type($type);
+                if (PHP_VERSION_ID >= 70400 && !$prop->isInitialized($object)) {
+                    $item->required();
+                } else {
+                    $def = $prop->getValue($object);
+                    if (is_object($def)) {
+                        $item = static::from($def);
+                    } elseif ($def === null && !Nette\Utils\Validators::is(null, $type)) {
+                        $item->required();
+                    } else {
+                        $item->default($def);
+                    }
+                }
+            }
+        }
+        return (new Structure($items))->castTo($ro->getName());
+    }
 
 
-	/**
-	 * @param  string|Schema  $type
-	 */
-	public static function listOf($type): Type
-	{
-		return (new Type('list'))->items($type);
-	}
+    /**
+     * @param string|Schema $valueType
+     * @param string|Schema|null $keyType
+     */
+    public static function arrayOf($valueType, $keyType = null): Type
+    {
+        return (new Type('array'))->items($valueType, $keyType);
+    }
+
+
+    /**
+     * @param string|Schema $type
+     */
+    public static function listOf($type): Type
+    {
+        return (new Type('list'))->items($type);
+    }
 }

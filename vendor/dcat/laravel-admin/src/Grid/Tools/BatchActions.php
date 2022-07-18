@@ -50,6 +50,26 @@ class BatchActions extends AbstractTool
         $this->add($this->makeBatchDelete(), '_delete_');
     }
 
+    /**
+     * Add a batch action.
+     *
+     * @param BatchAction $action
+     * @param  ?string $key
+     * @return $this
+     */
+    public function add(BatchAction $action, ?string $key = null)
+    {
+        $action->selectorPrefix = '.grid-batch-action-' . $this->actions->count();
+
+        if ($key) {
+            $this->actions->put($key, $action);
+        } else {
+            $this->actions->push($action);
+        }
+
+        return $this;
+    }
+
     protected function makeBatchDelete()
     {
         $class = config('admin.grid.actions.batch_delete') ?: BatchDelete::class;
@@ -64,7 +84,7 @@ class BatchActions extends AbstractTool
      */
     public function disableDelete(bool $disable = true)
     {
-        $this->enableDelete = ! $disable;
+        $this->enableDelete = !$disable;
 
         return $this;
     }
@@ -89,23 +109,23 @@ class BatchActions extends AbstractTool
     }
 
     /**
-     * Add a batch action.
+     * Render BatchActions button groups.
      *
-     * @param  BatchAction  $action
-     * @param  ?string  $key
-     * @return $this
+     * @return string
      */
-    public function add(BatchAction $action, ?string $key = null)
+    public function render()
     {
-        $action->selectorPrefix = '.grid-batch-action-'.$this->actions->count();
-
-        if ($key) {
-            $this->actions->put($key, $action);
-        } else {
-            $this->actions->push($action);
+        if (!$this->enableDelete) {
+            $this->actions->forget('_delete_');
         }
 
-        return $this;
+        if ($this->actions->isEmpty()) {
+            return '';
+        }
+
+        $this->prepareActions();
+
+        return Admin::view($this->view, $this->variables());
     }
 
     /**
@@ -123,30 +143,10 @@ class BatchActions extends AbstractTool
     protected function defaultVariables()
     {
         return [
-            'actions'                 => $this->actions,
-            'selectAllName'           => $this->parent->getSelectAllName(),
+            'actions' => $this->actions,
+            'selectAllName' => $this->parent->getSelectAllName(),
             'isHoldSelectAllCheckbox' => $this->isHoldSelectAllCheckbox,
-            'parent'                  => $this->parent,
+            'parent' => $this->parent,
         ];
-    }
-
-    /**
-     * Render BatchActions button groups.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        if (! $this->enableDelete) {
-            $this->actions->forget('_delete_');
-        }
-
-        if ($this->actions->isEmpty()) {
-            return '';
-        }
-
-        $this->prepareActions();
-
-        return Admin::view($this->view, $this->variables());
     }
 }

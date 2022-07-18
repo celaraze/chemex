@@ -40,12 +40,12 @@ class UnguardedModelsAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application un-guards models, which guards against mass assignment vulnerabilities. "
-            ."The Laravel Framework includes this protection by default and it is advisable not to override "
-            ."this check. While properly validating requests can mitigate the risk, guarding models by "
-            ."default makes your code more readable towards mass assignment vulnerabilities. For instance, "
-            ."an alternative to un-guarding models, is using the forceFill method on the model. While typing "
-            ."or reviewing this code, it will be much more obvious to developers to validate the request "
-            ."before force-filling the model.";
+            . "The Laravel Framework includes this protection by default and it is advisable not to override "
+            . "this check. While properly validating requests can mitigate the risk, guarding models by "
+            . "default makes your code more readable towards mass assignment vulnerabilities. For instance, "
+            . "an alternative to un-guarding models, is using the forceFill method on the model. While typing "
+            . "or reviewing this code, it will be much more obvious to developers to validate the request "
+            . "before force-filling the model.";
     }
 
     /**

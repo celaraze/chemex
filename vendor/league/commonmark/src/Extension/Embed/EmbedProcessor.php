@@ -21,14 +21,14 @@ use League\CommonMark\Node\NodeIterator;
 final class EmbedProcessor
 {
     public const FALLBACK_REMOVE = 'remove';
-    public const FALLBACK_LINK   = 'link';
+    public const FALLBACK_LINK = 'link';
 
     private EmbedAdapterInterface $adapter;
     private string $fallback;
 
     public function __construct(EmbedAdapterInterface $adapter, string $fallback = self::FALLBACK_REMOVE)
     {
-        $this->adapter  = $adapter;
+        $this->adapter = $adapter;
         $this->fallback = $fallback;
     }
 

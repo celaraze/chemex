@@ -27,7 +27,7 @@ class LogAuthenticationTest extends TestCase
         $prefix = 'prefix.';
         $suffix = '.suffix';
 
-        $authUsername = $prefix.$username.$suffix;
+        $authUsername = $prefix . $username . $suffix;
 
         $e = new Authenticating($user, $username);
 

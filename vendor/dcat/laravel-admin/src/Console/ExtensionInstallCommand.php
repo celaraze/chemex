@@ -8,8 +8,8 @@ use Illuminate\Support\Arr;
 
 class ExtensionInstallCommand extends Command
 {
-    protected $signature = 'admin:ext-install 
-    {name : The name of the extension. Eg: author-name/extension-name} 
+    protected $signature = 'admin:ext-install
+    {name : The name of the extension. Eg: author-name/extension-name}
     {--path= : The path of the extension.}';
 
     protected $description = 'Install an extension';
@@ -22,8 +22,8 @@ class ExtensionInstallCommand extends Command
         $manager = Admin::extension()->setOutput($this->output);
 
         if ($path) {
-            if (! is_file($path)) {
-                $path = rtrim($path, '/').sprintf('/%s.zip', str_replace('/', '.', $name));
+            if (!is_file($path)) {
+                $path = rtrim($path, '/') . sprintf('/%s.zip', str_replace('/', '.', $name));
             }
         } else {
             $extensionDetails = $manager->requestDetails($name);

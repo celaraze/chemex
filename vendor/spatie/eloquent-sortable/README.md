@@ -7,11 +7,13 @@
 
 This package provides a trait that adds sortable behaviour to an Eloquent model.
 
-The value of the order column of a new record of a model is determined by the maximum value of the order column of all records of that model + 1.
+The value of the order column of a new record of a model is determined by the maximum value of the order column of all
+records of that model + 1.
 
 The package also provides a query scope to fetch all the records in the right order.
 
-Spatie is a webdesign agency in Antwerp, Belgium. You'll find an overview of all our open source projects [on our website](https://spatie.be/opensource).
+Spatie is a webdesign agency in Antwerp, Belgium. You'll find an overview of all our open source
+projects [on our website](https://spatie.be/opensource).
 
 ## Support us
 
@@ -19,9 +21,12 @@ Learn how to create a package like this one, by watching our premium video cours
 
 [![Laravel Package training](https://spatie.be/github/package-training.jpg)](https://laravelpackage.training)
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
+We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can
+support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
 
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using.
+You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards
+on [our virtual postcard wall](https://spatie.be/open-source/postcards).
 
 ## Installation
 
@@ -33,7 +38,8 @@ This package can be installed through Composer.
 composer require spatie/eloquent-sortable
 ```
 
-In Laravel 5.5 and above the service provider will automatically get registered. In older versions of the framework just add the service provider in `config/app.php` file:
+In Laravel 5.5 and above the service provider will automatically get registered. In older versions of the framework just
+add the service provider in `config/app.php` file:
 
 ```php
 'providers' => [
@@ -68,6 +74,7 @@ return [
 ## Usage
 
 To add sortable behaviour to your model you must:
+
 1. Implement the `Spatie\EloquentSortable\Sortable` interface.
 2. Use the trait `Spatie\EloquentSortable\SortableTrait`.
 3. Optionally specify which column will be used as the order column. The default is `order_column`.
@@ -91,9 +98,11 @@ class MyModel extends Model implements Sortable
 }
 ```
 
-If you don't set a value `$sortable['order_column_name']` the package will assume that your order column name will be named `order_column`.
+If you don't set a value `$sortable['order_column_name']` the package will assume that your order column name will be
+named `order_column`.
 
-If you don't set a value `$sortable['sort_when_creating']` the package will automatically assign the highest order number to a new model;
+If you don't set a value `$sortable['sort_when_creating']` the package will automatically assign the highest order
+number to a new model;
 
 Assuming that the db-table for `MyModel` is empty:
 
@@ -195,6 +204,7 @@ MyModel::swapOrder($myModel, $anotherModel);
 
 If your model/table has a grouping field (usually a foreign key): `id, `**`user_id`**`, title, order_column`
 and you'd like the above methods to take it into considerations, you can create a `buildSortQuery` method at your model:
+
 ```php
 // MyModel.php
 
@@ -203,6 +213,7 @@ public function buildSortQuery()
     return static::query()->where('user_id', $this->user_id);
 }
 ```
+
 This will restrict the calculations to fields value of the model instance.
 
 ## Tests
@@ -231,6 +242,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 - [All Contributors](../../contributors)
 
 ## Alternatives
+
 - [Listify](https://github.com/lookitsatravis/listify)
 - [Rutorike-sortable](https://github.com/boxfrommars/rutorika-sortable)
 

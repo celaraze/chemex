@@ -11,7 +11,7 @@ trait HasHtmlAttributes
 
     public function defaultHtmlAttribute($attribute, $value)
     {
-        if (! array_key_exists($attribute, $this->htmlAttributes)) {
+        if (!array_key_exists($attribute, $this->htmlAttributes)) {
             $this->setHtmlAttribute($attribute, $value);
         }
 
@@ -43,6 +43,11 @@ trait HasHtmlAttributes
         return $this->setHtmlAttribute($key, $result);
     }
 
+    public function getHtmlAttribute($key, $default = null)
+    {
+        return $this->htmlAttributes[$key] ?? $default;
+    }
+
     public function forgetHtmlAttribute($keys)
     {
         Arr::forget($this->htmlAttributes, $keys);
@@ -53,11 +58,6 @@ trait HasHtmlAttributes
     public function getHtmlAttributes()
     {
         return $this->htmlAttributes;
-    }
-
-    public function getHtmlAttribute($key, $default = null)
-    {
-        return $this->htmlAttributes[$key] ?? $default;
     }
 
     public function hasHtmlAttribute($key)

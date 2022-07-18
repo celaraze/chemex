@@ -31,7 +31,7 @@ final class FencedCodeParser extends AbstractBlockContinueParser
 
     public function __construct(int $fenceLength, string $fenceChar, int $fenceOffset)
     {
-        $this->block   = new FencedCode($fenceLength, $fenceChar, $fenceOffset);
+        $this->block = new FencedCode($fenceLength, $fenceChar, $fenceOffset);
         $this->strings = new ArrayCollection();
     }
 
@@ -43,7 +43,7 @@ final class FencedCodeParser extends AbstractBlockContinueParser
     public function tryContinue(Cursor $cursor, BlockContinueParserInterface $activeBlockParser): ?BlockContinue
     {
         // Check for closing code fence
-        if (! $cursor->isIndented() && $cursor->getNextNonSpaceCharacter() === $this->block->getChar()) {
+        if (!$cursor->isIndented() && $cursor->getNextNonSpaceCharacter() === $this->block->getChar()) {
             $match = RegexHelper::matchFirst('/^(?:`{3,}|~{3,})(?= *$)/', $cursor->getLine(), $cursor->getNextNonSpacePosition());
             if ($match !== null && \strlen($match[0]) >= $this->block->getLength()) {
                 // closing fence - we're at end of line, so we can finalize now

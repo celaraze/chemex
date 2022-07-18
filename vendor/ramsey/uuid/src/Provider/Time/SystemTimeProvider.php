@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Provider\Time;
 
 use Ramsey\Uuid\Provider\TimeProviderInterface;
 use Ramsey\Uuid\Type\Time;
-
 use function gettimeofday;
 
 /**

@@ -12,9 +12,9 @@
 namespace Monolog\Handler;
 
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Handler\Slack\SlackRecord;
 use Monolog\Logger;
 use Monolog\Utils;
-use Monolog\Handler\Slack\SlackRecord;
 
 /**
  * Sends notifications through Slack API
@@ -39,33 +39,34 @@ class SlackHandler extends SocketHandler
     private $slackRecord;
 
     /**
-     * @param  string                    $token                  Slack API token
-     * @param  string                    $channel                Slack channel (encoded ID or name)
-     * @param  string|null               $username               Name of a bot
-     * @param  bool                      $useAttachment          Whether the message should be added to Slack as attachment (plain text otherwise)
-     * @param  string|null               $iconEmoji              The emoji name to use (or null)
-     * @param  bool                      $useShortAttachment     Whether the context/extra messages added to Slack as attachments are in a short style
-     * @param  bool                      $includeContextAndExtra Whether the attachment should include context and extra data
-     * @param  string[]                  $excludeFields          Dot separated list of fields to exclude from slack message. E.g. ['context.field1', 'extra.field2']
+     * @param string $token Slack API token
+     * @param string $channel Slack channel (encoded ID or name)
+     * @param string|null $username Name of a bot
+     * @param bool $useAttachment Whether the message should be added to Slack as attachment (plain text otherwise)
+     * @param string|null $iconEmoji The emoji name to use (or null)
+     * @param bool $useShortAttachment Whether the context/extra messages added to Slack as attachments are in a short style
+     * @param bool $includeContextAndExtra Whether the attachment should include context and extra data
+     * @param string[] $excludeFields Dot separated list of fields to exclude from slack message. E.g. ['context.field1', 'extra.field2']
      * @throws MissingExtensionException If no OpenSSL PHP extension configured
      */
     public function __construct(
-        string $token,
-        string $channel,
+        string  $token,
+        string  $channel,
         ?string $username = null,
-        bool $useAttachment = true,
+        bool    $useAttachment = true,
         ?string $iconEmoji = null,
-        $level = Logger::CRITICAL,
-        bool $bubble = true,
-        bool $useShortAttachment = false,
-        bool $includeContextAndExtra = false,
-        array $excludeFields = array(),
-        bool $persistent = false,
-        float $timeout = 0.0,
-        float $writingTimeout = 10.0,
-        ?float $connectionTimeout = null,
-        ?int $chunkSize = null
-    ) {
+                $level = Logger::CRITICAL,
+        bool    $bubble = true,
+        bool    $useShortAttachment = false,
+        bool    $includeContextAndExtra = false,
+        array   $excludeFields = array(),
+        bool    $persistent = false,
+        float   $timeout = 0.0,
+        float   $writingTimeout = 10.0,
+        ?float  $connectionTimeout = null,
+        ?int    $chunkSize = null
+    )
+    {
         if (!extension_loaded('openssl')) {
             throw new MissingExtensionException('The OpenSSL PHP extension is required to use the SlackHandler');
         }
@@ -102,6 +103,80 @@ class SlackHandler extends SocketHandler
     public function getToken(): string
     {
         return $this->token;
+    }
+
+    public function getFormatter(): FormatterInterface
+    {
+        $formatter = parent::getFormatter();
+        $this->slackRecord->setFormatter($formatter);
+
+        return $formatter;
+    }
+
+    public function setFormatter(FormatterInterface $formatter): HandlerInterface
+    {
+        parent::setFormatter($formatter);
+        $this->slackRecord->setFormatter($formatter);
+
+        return $this;
+    }
+
+    /**
+     * Channel used by the bot when posting
+     */
+    public function setChannel(string $channel): self
+    {
+        $this->slackRecord->setChannel($channel);
+
+        return $this;
+    }
+
+    /**
+     * Username used by the bot when posting
+     */
+    public function setUsername(string $username): self
+    {
+        $this->slackRecord->setUsername($username);
+
+        return $this;
+    }
+
+    public function useAttachment(bool $useAttachment): self
+    {
+        $this->slackRecord->useAttachment($useAttachment);
+
+        return $this;
+    }
+
+    public function setIconEmoji(string $iconEmoji): self
+    {
+        $this->slackRecord->setUserIcon($iconEmoji);
+
+        return $this;
+    }
+
+    public function useShortAttachment(bool $useShortAttachment): self
+    {
+        $this->slackRecord->useShortAttachment($useShortAttachment);
+
+        return $this;
+    }
+
+    public function includeContextAndExtra(bool $includeContextAndExtra): self
+    {
+        $this->slackRecord->includeContextAndExtra($includeContextAndExtra);
+
+        return $this;
+    }
+
+    /**
+     * @param string[] $excludeFields
+     */
+    public function excludeFields(array $excludeFields): self
+    {
+        $this->slackRecord->excludeFields($excludeFields);
+
+        return $this;
     }
 
     /**
@@ -178,79 +253,5 @@ class SlackHandler extends SocketHandler
             @fread($res, 2048);
         }
         $this->closeSocket();
-    }
-
-    public function setFormatter(FormatterInterface $formatter): HandlerInterface
-    {
-        parent::setFormatter($formatter);
-        $this->slackRecord->setFormatter($formatter);
-
-        return $this;
-    }
-
-    public function getFormatter(): FormatterInterface
-    {
-        $formatter = parent::getFormatter();
-        $this->slackRecord->setFormatter($formatter);
-
-        return $formatter;
-    }
-
-    /**
-     * Channel used by the bot when posting
-     */
-    public function setChannel(string $channel): self
-    {
-        $this->slackRecord->setChannel($channel);
-
-        return $this;
-    }
-
-    /**
-     * Username used by the bot when posting
-     */
-    public function setUsername(string $username): self
-    {
-        $this->slackRecord->setUsername($username);
-
-        return $this;
-    }
-
-    public function useAttachment(bool $useAttachment): self
-    {
-        $this->slackRecord->useAttachment($useAttachment);
-
-        return $this;
-    }
-
-    public function setIconEmoji(string $iconEmoji): self
-    {
-        $this->slackRecord->setUserIcon($iconEmoji);
-
-        return $this;
-    }
-
-    public function useShortAttachment(bool $useShortAttachment): self
-    {
-        $this->slackRecord->useShortAttachment($useShortAttachment);
-
-        return $this;
-    }
-
-    public function includeContextAndExtra(bool $includeContextAndExtra): self
-    {
-        $this->slackRecord->includeContextAndExtra($includeContextAndExtra);
-
-        return $this;
-    }
-
-    /**
-     * @param string[] $excludeFields
-     */
-    public function excludeFields(array $excludeFields): self
-    {
-        $this->slackRecord->excludeFields($excludeFields);
-
-        return $this;
     }
 }

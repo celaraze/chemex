@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
+use PHPUnit\Util\Filter;
+use Throwable;
 use function array_keys;
 use function get_class;
 use function spl_object_hash;
-use PHPUnit\Util\Filter;
-use Throwable;
 
 /**
  * Wraps Exceptions thrown by code under test.
@@ -42,9 +43,47 @@ final class ExceptionWrapper extends Exception
     {
         // PDOException::getCode() is a string.
         // @see https://php.net/manual/en/class.pdoexception.php#95812
-        parent::__construct($t->getMessage(), (int) $t->getCode());
+        parent::__construct($t->getMessage(), (int)$t->getCode());
 
         $this->setOriginalException($t);
+    }
+
+    public function setOriginalException(Throwable $t): void
+    {
+        $this->originalException($t);
+
+        $this->className = get_class($t);
+        $this->file = $t->getFile();
+        $this->line = $t->getLine();
+
+        $this->serializableTrace = $t->getTrace();
+
+        foreach (array_keys($this->serializableTrace) as $key) {
+            unset($this->serializableTrace[$key]['args']);
+        }
+
+        if ($t->getPrevious()) {
+            $this->previous = new self($t->getPrevious());
+        }
+    }
+
+    /**
+     * Method to contain static originalException to exclude it from stacktrace to prevent the stacktrace contents,
+     * which can be quite big, from being garbage-collected, thus blocking memory until shutdown.
+     *
+     * Approach works both for var_dump() and var_export() and print_r().
+     */
+    private function originalException(Throwable $exceptionToStore = null): ?Throwable
+    {
+        static $originalExceptions;
+
+        $instanceId = spl_object_hash($this);
+
+        if ($exceptionToStore) {
+            $originalExceptions[$instanceId] = $exceptionToStore;
+        }
+
+        return $originalExceptions[$instanceId] ?? null;
     }
 
     public function __toString(): string
@@ -67,56 +106,18 @@ final class ExceptionWrapper extends Exception
         return $this->className;
     }
 
-    public function getPreviousWrapped(): ?self
-    {
-        return $this->previous;
-    }
-
     public function setClassName(string $className): void
     {
         $this->className = $className;
     }
 
-    public function setOriginalException(Throwable $t): void
+    public function getPreviousWrapped(): ?self
     {
-        $this->originalException($t);
-
-        $this->className = get_class($t);
-        $this->file      = $t->getFile();
-        $this->line      = $t->getLine();
-
-        $this->serializableTrace = $t->getTrace();
-
-        foreach (array_keys($this->serializableTrace) as $key) {
-            unset($this->serializableTrace[$key]['args']);
-        }
-
-        if ($t->getPrevious()) {
-            $this->previous = new self($t->getPrevious());
-        }
+        return $this->previous;
     }
 
     public function getOriginalException(): ?Throwable
     {
         return $this->originalException();
-    }
-
-    /**
-     * Method to contain static originalException to exclude it from stacktrace to prevent the stacktrace contents,
-     * which can be quite big, from being garbage-collected, thus blocking memory until shutdown.
-     *
-     * Approach works both for var_dump() and var_export() and print_r().
-     */
-    private function originalException(Throwable $exceptionToStore = null): ?Throwable
-    {
-        static $originalExceptions;
-
-        $instanceId = spl_object_hash($this);
-
-        if ($exceptionToStore) {
-            $originalExceptions[$instanceId] = $exceptionToStore;
-        }
-
-        return $originalExceptions[$instanceId] ?? null;
     }
 }

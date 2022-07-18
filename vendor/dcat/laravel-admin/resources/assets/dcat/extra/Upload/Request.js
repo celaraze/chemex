@@ -1,4 +1,3 @@
-
 export default class Request {
     constructor(Uploader) {
         this.uploader = Uploader;
@@ -15,7 +14,7 @@ export default class Request {
 
             post.key = file.serverId;
 
-            if (! post.key) {
+            if (!post.key) {
                 parent.input.delete(file.serverId);
 
                 return uploader.removeFile(file);

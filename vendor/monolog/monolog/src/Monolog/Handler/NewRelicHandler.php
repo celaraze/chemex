@@ -11,10 +11,10 @@
 
 namespace Monolog\Handler;
 
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Logger;
 use Monolog\Utils;
-use Monolog\Formatter\NormalizerFormatter;
-use Monolog\Formatter\FormatterInterface;
 
 /**
  * Class to record a log on a NewRelic application.
@@ -53,7 +53,7 @@ class NewRelicHandler extends AbstractProcessingHandler
      * {@inheritDoc}
      *
      * @param string|null $appName
-     * @param bool        $explodeArrays
+     * @param bool $explodeArrays
      * @param string|null $transactionName
      */
     public function __construct(
@@ -62,10 +62,11 @@ class NewRelicHandler extends AbstractProcessingHandler
         ?string $appName = null,
         bool $explodeArrays = false,
         ?string $transactionName = null
-    ) {
+    )
+    {
         parent::__construct($level, $bubble);
 
-        $this->appName       = $appName;
+        $this->appName = $appName;
         $this->explodeArrays = $explodeArrays;
         $this->transactionName = $transactionName;
     }
@@ -146,6 +147,14 @@ class NewRelicHandler extends AbstractProcessingHandler
     }
 
     /**
+     * Sets the NewRelic application that should receive this log.
+     */
+    protected function setNewRelicAppName(string $appName): void
+    {
+        newrelic_set_appname($appName);
+    }
+
+    /**
      * Returns the name of the current transaction. Each log can override the default transaction name, set in this
      * handler's constructor, by providing the transaction_name in it's context
      *
@@ -161,14 +170,6 @@ class NewRelicHandler extends AbstractProcessingHandler
     }
 
     /**
-     * Sets the NewRelic application that should receive this log.
-     */
-    protected function setNewRelicAppName(string $appName): void
-    {
-        newrelic_set_appname($appName);
-    }
-
-    /**
      * Overwrites the name of the current transaction
      */
     protected function setNewRelicTransactionName(string $transactionName): void
@@ -178,7 +179,7 @@ class NewRelicHandler extends AbstractProcessingHandler
 
     /**
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      */
     protected function setNewRelicParameter(string $key, $value): void
     {

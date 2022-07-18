@@ -71,12 +71,12 @@ return [
             case 'd':
             case 'D':
             case 'DDD':
-                return $number.'일';
+                return $number . '일';
             case 'M':
-                return $number.'월';
+                return $number . '월';
             case 'w':
             case 'W':
-                return $number.'주';
+                return $number . '주';
             default:
                 return $number;
         }

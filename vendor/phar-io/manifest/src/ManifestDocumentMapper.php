@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 /*
  * This file is part of PharIo\Manifest.
  *
@@ -7,19 +7,22 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PharIo\Manifest;
 
 use PharIo\Version\Exception as VersionException;
 use PharIo\Version\Version;
 use PharIo\Version\VersionConstraintParser;
 
-class ManifestDocumentMapper {
-    public function map(ManifestDocument $document): Manifest {
+class ManifestDocumentMapper
+{
+    public function map(ManifestDocument $document): Manifest
+    {
         try {
-            $contains          = $document->getContainsElement();
-            $type              = $this->mapType($contains);
-            $copyright         = $this->mapCopyright($document->getCopyrightElement());
-            $requirements      = $this->mapRequirements($document->getRequiresElement());
+            $contains = $document->getContainsElement();
+            $type = $this->mapType($contains);
+            $copyright = $this->mapCopyright($document->getCopyrightElement());
+            $requirements = $this->mapRequirements($document->getRequiresElement());
             $bundledComponents = $this->mapBundledComponents($document);
 
             return new Manifest(
@@ -37,7 +40,8 @@ class ManifestDocumentMapper {
         }
     }
 
-    private function mapType(ContainsElement $contains): Type {
+    private function mapType(ContainsElement $contains): Type
+    {
         switch ($contains->getType()) {
             case 'application':
                 return Type::application();
@@ -52,7 +56,26 @@ class ManifestDocumentMapper {
         );
     }
 
-    private function mapCopyright(CopyrightElement $copyright): CopyrightInformation {
+    private function mapExtension(ExtensionElement $extension): Extension
+    {
+        try {
+            $versionConstraint = (new VersionConstraintParser)->parse($extension->getCompatible());
+
+            return Type::extension(
+                new ApplicationName($extension->getFor()),
+                $versionConstraint
+            );
+        } catch (VersionException $e) {
+            throw new ManifestDocumentMapperException(
+                \sprintf('Unsupported version constraint - %s', $e->getMessage()),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+    }
+
+    private function mapCopyright(CopyrightElement $copyright): CopyrightInformation
+    {
         $authors = new AuthorCollection();
 
         foreach ($copyright->getAuthorElements() as $authorElement) {
@@ -65,7 +88,7 @@ class ManifestDocumentMapper {
         }
 
         $licenseElement = $copyright->getLicenseElement();
-        $license        = new License(
+        $license = new License(
             $licenseElement->getType(),
             new Url($licenseElement->getUrl())
         );
@@ -76,10 +99,11 @@ class ManifestDocumentMapper {
         );
     }
 
-    private function mapRequirements(RequiresElement $requires): RequirementCollection {
+    private function mapRequirements(RequiresElement $requires): RequirementCollection
+    {
         $collection = new RequirementCollection();
         $phpElement = $requires->getPHPElement();
-        $parser     = new VersionConstraintParser;
+        $parser = new VersionConstraintParser;
 
         try {
             $versionConstraint = $parser->parse($phpElement->getVersion());
@@ -110,7 +134,8 @@ class ManifestDocumentMapper {
         return $collection;
     }
 
-    private function mapBundledComponents(ManifestDocument $document): BundledComponentCollection {
+    private function mapBundledComponents(ManifestDocument $document): BundledComponentCollection
+    {
         $collection = new BundledComponentCollection();
 
         if (!$document->hasBundlesElement()) {
@@ -129,22 +154,5 @@ class ManifestDocumentMapper {
         }
 
         return $collection;
-    }
-
-    private function mapExtension(ExtensionElement $extension): Extension {
-        try {
-            $versionConstraint = (new VersionConstraintParser)->parse($extension->getCompatible());
-
-            return Type::extension(
-                new ApplicationName($extension->getFor()),
-                $versionConstraint
-            );
-        } catch (VersionException $e) {
-            throw new ManifestDocumentMapperException(
-                \sprintf('Unsupported version constraint - %s', $e->getMessage()),
-                (int)$e->getCode(),
-                $e
-            );
-        }
     }
 }

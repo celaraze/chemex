@@ -1,4 +1,3 @@
-
 @import "../../dcat/sass/theme/colors";
 
 
@@ -7,15 +6,15 @@ $spacer: 1rem;
 $spacers: ();
 // stylelint-disable-next-line scss/dollar-variable-default
 $spacers: map-merge((0: 0,
-25: ($spacer * .25),
-50: ($spacer * .5),
-75: ($spacer * .75),
-1: ($spacer),
-2: ($spacer * 1.5),
-3: ($spacer * 3),
-4: ($spacer * 3.5),
-5: ($spacer * 4)),
-$spacers);
+    25: ($spacer * .25),
+    50: ($spacer * .5),
+    75: ($spacer * .75),
+    1: ($spacer),
+    2: ($spacer * 1.5),
+    3: ($spacer * 3),
+    4: ($spacer * 3.5),
+    5: ($spacer * 4)),
+    $spacers);
 
 // Body
 // $body-bg: $body-bg;
@@ -117,7 +116,7 @@ $input-padding-x-lg: 2.5rem !default;
 $input-disabled-bg: #f5f5f1;
 
 $input-color: $gray-700;
-$input-border-color: rgba(0,0,0,.2);
+$input-border-color: rgba(0, 0, 0, .2);
 $input-border-width: $border-width;
 
 $input-border-radius: 5px;
@@ -125,19 +124,19 @@ $input-border-radius-lg: 6px;
 $input-border-radius-sm: 4px;
 
 $input-focus-border-color: $primary;
-$input-focus-box-shadow :0 3px 10px 0 rgba(0,0,0,.15);
+$input-focus-box-shadow: 0 3px 10px 0 rgba(0, 0, 0, .15);
 
-$input-placeholder-color: rgba(0,0,0,.5);
+$input-placeholder-color: rgba(0, 0, 0, .5);
 $input-plaintext-color: $gray-500;
 
 $input-height: calc(#{$input-line-height * 1em} + #{$input-padding-y * 2} + 1px) !default;
 
 $custom-checkbox-indicator-border-radius: $border-radius-sm;
 
-$custom-select-border-radius:$input-border-radius;
+$custom-select-border-radius: $input-border-radius;
 $custom-select-focus-box-shadow: $input-focus-box-shadow;
 
-$custom-file-line-height:1.5rem;
+$custom-file-line-height: 1.5rem;
 
 // Dropdowns
 //
@@ -161,7 +160,7 @@ $pagination-padding-x-sm: .75rem;
 
 // Nav tabs
 
-$nav-link-padding-y:0.357rem;
+$nav-link-padding-y: 0.357rem;
 $nav-link-padding-x: 0.5rem;
 
 // Code
@@ -175,7 +174,7 @@ $content-padding: 2.2rem;
 //  ------------------------------
 //    Colors
 //  ------------------------------
-$pure-black : #565656;
+$pure-black: #565656;
 $nav-component-border-color: #ddd;
 $custom-border-color: #E4E7ED;
 $hover-color: #eee;
@@ -200,13 +199,12 @@ $dropdown-btn-padding-y: .85rem;
 $dropdown-btn-split-padding-x: 1rem;
 
 
-
 //  ------------------------------
 //    Pagination
 //  ------------------------------
 $pagination-bg-color: #f0f0f0;
-$pagination-action-padding-y:0.572rem;
-$pagination-action-padding-x:0.651rem;
+$pagination-action-padding-y: 0.572rem;
+$pagination-action-padding-x: 0.651rem;
 $pagination-font-size-lg: 1.5rem;
 
 

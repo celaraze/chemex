@@ -16,11 +16,11 @@ class Row implements Renderable
     /**
      * Row constructor.
      *
-     * @param  string  $content
+     * @param string $content
      */
     public function __construct($content = '')
     {
-        if (! empty($content)) {
+        if (!empty($content)) {
             if ($content instanceof Column) {
                 $this->addColumn($content);
             } else {
@@ -30,9 +30,17 @@ class Row implements Renderable
     }
 
     /**
+     * @param Column $column
+     */
+    protected function addColumn(Column $column)
+    {
+        $this->columns[] = $column;
+    }
+
+    /**
      * Add a column.
      *
-     * @param  int  $width
+     * @param int $width
      * @param $content
      */
     public function column($width, $content)
@@ -43,15 +51,7 @@ class Row implements Renderable
     }
 
     /**
-     * @param  Column  $column
-     */
-    protected function addColumn(Column $column)
-    {
-        $this->columns[] = $column;
-    }
-
-    /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function noGutters(bool $value = true)
@@ -74,7 +74,7 @@ class Row implements Renderable
             $html .= $column->render();
         }
 
-        return $html.$this->endRow();
+        return $html . $this->endRow();
     }
 
     /**

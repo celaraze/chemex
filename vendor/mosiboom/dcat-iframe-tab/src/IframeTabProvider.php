@@ -21,12 +21,12 @@ class IframeTabProvider extends ServiceProvider
             $this->app->resolving(Content::class, function ($content, $app) {
                 //设置view 为 iframe.full-content
                 $content->view('iframe-tab::full-content');
-                if(strpos(request()->getUri(),'auth/login') !== false){
+                if (strpos(request()->getUri(), 'auth/login') !== false) {
                     #退出登录不记录当前页面
                     session()->forget('url.intended');
                     Admin::script(<<<JS
                     if (window != top)
-                        top.location.href = location.href; 
+                        top.location.href = location.href;
 JS
                     );
                 }
@@ -34,10 +34,10 @@ JS
             Content::resolving(function (Content $content) {
                 //设置view 为 iframe.full-content
                 $content->view('iframe-tab::full-content');
-                if(strpos(request()->getUri(),'auth/login') !== false){
+                if (strpos(request()->getUri(), 'auth/login') !== false) {
                     Admin::script(<<<JS
                     if (window != top)
-                        top.location.href = location.href; 
+                        top.location.href = location.href;
 JS
                     );
                 }

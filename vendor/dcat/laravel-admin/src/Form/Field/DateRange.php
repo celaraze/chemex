@@ -21,15 +21,6 @@ class DateRange extends Field
         $this->options(['format' => $this->format]);
     }
 
-    protected function prepareInputValue($value)
-    {
-        if ($value === '') {
-            $value = null;
-        }
-
-        return $value;
-    }
-
     public function render()
     {
         $this->options['locale'] = config('app.locale');
@@ -54,12 +45,21 @@ class DateRange extends Field
             $column = implode('.', $column);
 
             if ($this->column['start'] == $column) {
-                $result[$column.'start.'.$rule] = $message;
+                $result[$column . 'start.' . $rule] = $message;
             } else {
                 $result[$key] = $message;
             }
         }
 
         return $result;
+    }
+
+    protected function prepareInputValue($value)
+    {
+        if ($value === '') {
+            $value = null;
+        }
+
+        return $value;
     }
 }

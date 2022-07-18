@@ -27,12 +27,12 @@ trait CreatesMatchingTest
     /**
      * Create the matching test case if requested.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     protected function handleTestCreation($path)
     {
-        if (! $this->option('test') && ! $this->option('pest')) {
+        if (!$this->option('test') && !$this->option('pest')) {
             return;
         }
 

@@ -24,21 +24,18 @@ class RuleSet implements \IteratorAggregate, \Countable
     public const TYPE_PACKAGE = 0;
     public const TYPE_REQUEST = 1;
     public const TYPE_LEARNED = 4;
-
-    /**
-     * READ-ONLY: Lookup table for rule id to rule object
-     *
-     * @var array<int, Rule>
-     */
-    public $ruleById = array();
-
     /** @var array<0|1|4, string> */
     protected static $types = array(
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
     );
-
+    /**
+     * READ-ONLY: Lookup table for rule id to rule object
+     *
+     * @var array<int, Rule>
+     */
+    public $ruleById = array();
     /** @var array<self::TYPE_*, Rule[]> */
     protected $rules;
 
@@ -53,6 +50,14 @@ class RuleSet implements \IteratorAggregate, \Countable
         foreach ($this->getTypes() as $type) {
             $this->rules[$type] = array();
         }
+    }
+
+    /** @return array{0: 0, 1: 1, 2: 4} */
+    public function getTypes(): array
+    {
+        $types = self::$types;
+
+        return array_keys($types);
     }
 
     /**
@@ -117,19 +122,19 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $this->ruleById[$id];
     }
 
+    public function getIterator(): RuleSetIterator
+    {
+        return new RuleSetIterator($this->getRules());
+    }
+
     /** @return array<self::TYPE_*, Rule[]> */
     public function getRules(): array
     {
         return $this->rules;
     }
 
-    public function getIterator(): RuleSetIterator
-    {
-        return new RuleSetIterator($this->getRules());
-    }
-
     /**
-     * @param  self::TYPE_*|array<self::TYPE_*> $types
+     * @param self::TYPE_*|array<self::TYPE_*> $types
      * @return RuleSetIterator
      */
     public function getIteratorFor($types): RuleSetIterator
@@ -169,12 +174,9 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
-    /** @return array{0: 0, 1: 1, 2: 4} */
-    public function getTypes(): array
+    public function __toString(): string
     {
-        $types = self::$types;
-
-        return array_keys($types);
+        return $this->getPrettyString();
     }
 
     /**
@@ -187,16 +189,11 @@ class RuleSet implements \IteratorAggregate, \Countable
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
+                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule) . "\n";
             }
             $string .= "\n\n";
         }
 
         return $string;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getPrettyString();
     }
 }

@@ -11,11 +11,10 @@
 
 namespace Prophecy\Doubler\ClassPatch;
 
+use Prophecy\Doubler\Generator\Node\ArgumentNode;
 use Prophecy\Doubler\Generator\Node\ArgumentTypeNode;
 use Prophecy\Doubler\Generator\Node\ClassNode;
 use Prophecy\Doubler\Generator\Node\MethodNode;
-use Prophecy\Doubler\Generator\Node\ArgumentNode;
-use Prophecy\Doubler\Generator\Node\ReturnTypeNode;
 
 /**
  * Add Prophecy functionality to the double.
@@ -74,7 +73,7 @@ if (null === \$this->objectProphecyClosure) {
     };
 }
 PHP
-    );
+        );
 
         $prophecyGetter = new MethodNode('getProphecy');
         $prophecyGetter->setCode('return \call_user_func($this->objectProphecyClosure);');

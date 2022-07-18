@@ -17,7 +17,7 @@ class SwitchGroup extends SwitchDisplay
             $this->color($color);
         }
 
-        if (! Arr::isAssoc($columns)) {
+        if (!Arr::isAssoc($columns)) {
             $labels = array_map('admin_trans_field', $columns);
             $columns = array_combine($columns, $labels);
         }
@@ -25,12 +25,12 @@ class SwitchGroup extends SwitchDisplay
         $color = $this->color ?: Admin::color()->primary();
 
         return Admin::view('admin::grid.displayer.switchgroup', [
-            'row'      => $this->row->toArray(),
-            'key'      => $this->getKey(),
-            'columns'  => $columns,
+            'row' => $this->row->toArray(),
+            'key' => $this->getKey(),
+            'columns' => $columns,
             'resource' => $this->resource(),
-            'color'    => $color,
-            'refresh'  => $refresh,
+            'color' => $color,
+            'refresh' => $refresh,
         ]);
     }
 }

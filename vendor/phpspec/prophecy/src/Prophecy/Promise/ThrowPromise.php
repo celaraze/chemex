@@ -12,9 +12,9 @@
 namespace Prophecy\Promise;
 
 use Doctrine\Instantiator\Instantiator;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Exception\InvalidArgumentException;
+use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
 use ReflectionClass;
 
 /**
@@ -58,9 +58,20 @@ class ThrowPromise implements PromiseInterface
     }
 
     /**
+     * @param string $exception
+     *
+     * @return bool
+     */
+    private function isAValidThrowable($exception)
+    {
+        return is_a($exception, 'Exception', true)
+            || is_a($exception, 'Throwable', true);
+    }
+
+    /**
      * Throws predefined exception.
      *
-     * @param array          $args
+     * @param array $args
      * @param ObjectProphecy $object
      * @param MethodProphecy $method
      *
@@ -69,8 +80,8 @@ class ThrowPromise implements PromiseInterface
     public function execute(array $args, ObjectProphecy $object, MethodProphecy $method)
     {
         if (is_string($this->exception)) {
-            $classname   = $this->exception;
-            $reflection  = new ReflectionClass($classname);
+            $classname = $this->exception;
+            $reflection = new ReflectionClass($classname);
             $constructor = $reflection->getConstructor();
 
             if ($constructor->isPublic() && 0 == $constructor->getNumberOfRequiredParameters()) {
@@ -85,16 +96,5 @@ class ThrowPromise implements PromiseInterface
         }
 
         throw $this->exception;
-    }
-
-    /**
-     * @param string $exception
-     *
-     * @return bool
-     */
-    private function isAValidThrowable($exception)
-    {
-        return is_a($exception, 'Exception', true)
-            || is_a($exception, 'Throwable', true);
     }
 }

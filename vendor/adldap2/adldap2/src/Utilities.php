@@ -11,7 +11,7 @@ class Utilities
      * UTF-8 representation embedded inside the DN as well.
      *
      * @param string $dn
-     * @param bool   $removeAttributePrefixes
+     * @param bool $removeAttributePrefixes
      *
      * @return array|false
      */
@@ -46,14 +46,14 @@ class Utilities
     /**
      * Convert a binary SID to a string SID.
      *
-     * @author Chad Sikorra
-     *
-     * @link https://github.com/ChadSikorra
-     * @link https://stackoverflow.com/questions/39533560/php-ldap-get-user-sid
-     *
      * @param string $value The Binary SID
      *
      * @return string|null
+     * @link https://stackoverflow.com/questions/39533560/php-ldap-get-user-sid
+     *
+     * @author Chad Sikorra
+     *
+     * @link https://github.com/ChadSikorra
      */
     public static function binarySidToString($value)
     {
@@ -91,9 +91,9 @@ class Utilities
         }
 
         // Tack on the 'S-' and glue it all together...
-        return 'S-'.$revisionLevel.'-'.$identifierAuthority.implode(
-            preg_filter('/^/', '-', $subAuthorities)
-        );
+        return 'S-' . $revisionLevel . '-' . $identifierAuthority . implode(
+                preg_filter('/^/', '-', $subAuthorities)
+            );
     }
 
     /**
@@ -111,9 +111,9 @@ class Utilities
 
         $hex = unpack('H*hex', $binGuid)['hex'];
 
-        $hex1 = substr($hex, -26, 2).substr($hex, -28, 2).substr($hex, -30, 2).substr($hex, -32, 2);
-        $hex2 = substr($hex, -22, 2).substr($hex, -24, 2);
-        $hex3 = substr($hex, -18, 2).substr($hex, -20, 2);
+        $hex1 = substr($hex, -26, 2) . substr($hex, -28, 2) . substr($hex, -30, 2) . substr($hex, -32, 2);
+        $hex2 = substr($hex, -22, 2) . substr($hex, -24, 2);
+        $hex3 = substr($hex, -18, 2) . substr($hex, -20, 2);
         $hex4 = substr($hex, -16, 4);
         $hex5 = substr($hex, -12, 12);
 
@@ -131,11 +131,11 @@ class Utilities
      */
     public static function stringGuidToHex($string)
     {
-        $hex = '\\'.substr($string, 6, 2).'\\'.substr($string, 4, 2).'\\'.substr($string, 2, 2).'\\'.substr($string, 0, 2);
-        $hex = $hex.'\\'.substr($string, 11, 2).'\\'.substr($string, 9, 2);
-        $hex = $hex.'\\'.substr($string, 16, 2).'\\'.substr($string, 14, 2);
-        $hex = $hex.'\\'.substr($string, 19, 2).'\\'.substr($string, 21, 2);
-        $hex = $hex.'\\'.substr($string, 24, 2).'\\'.substr($string, 26, 2).'\\'.substr($string, 28, 2).'\\'.substr($string, 30, 2).'\\'.substr($string, 32, 2).'\\'.substr($string, 34, 2);
+        $hex = '\\' . substr($string, 6, 2) . '\\' . substr($string, 4, 2) . '\\' . substr($string, 2, 2) . '\\' . substr($string, 0, 2);
+        $hex = $hex . '\\' . substr($string, 11, 2) . '\\' . substr($string, 9, 2);
+        $hex = $hex . '\\' . substr($string, 16, 2) . '\\' . substr($string, 14, 2);
+        $hex = $hex . '\\' . substr($string, 19, 2) . '\\' . substr($string, 21, 2);
+        $hex = $hex . '\\' . substr($string, 24, 2) . '\\' . substr($string, 26, 2) . '\\' . substr($string, 28, 2) . '\\' . substr($string, 30, 2) . '\\' . substr($string, 32, 2) . '\\' . substr($string, 34, 2);
 
         return $hex;
     }
@@ -149,7 +149,7 @@ class Utilities
      */
     public static function encodePassword($password)
     {
-        return iconv('UTF-8', 'UTF-16LE', '"'.$password.'"');
+        return iconv('UTF-8', 'UTF-16LE', '"' . $password . '"');
     }
 
     /**
@@ -161,10 +161,10 @@ class Utilities
      */
     public static function makeSSHAPassword($password)
     {
-        mt_srand((float) microtime() * 1000000);
+        mt_srand((float)microtime() * 1000000);
         $salt = pack('CCCC', mt_rand(), mt_rand(), mt_rand(), mt_rand());
 
-        return '{SSHA}'.base64_encode(pack('H*', sha1($password.$salt)).$salt);
+        return '{SSHA}' . base64_encode(pack('H*', sha1($password . $salt)) . $salt);
     }
 
     /**
@@ -201,7 +201,7 @@ class Utilities
      */
     public static function isValidSid($sid)
     {
-        return (bool) preg_match("/^S-\d(-\d{1,10}){1,16}$/i", $sid);
+        return (bool)preg_match("/^S-\d(-\d{1,10}){1,16}$/i", $sid);
     }
 
     /**
@@ -213,7 +213,7 @@ class Utilities
      */
     public static function isValidGuid($guid)
     {
-        return (bool) preg_match('/^([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}$|^([0-9a-fA-F]{8}-){3}[0-9a-fA-F]{8}$/', $guid);
+        return (bool)preg_match('/^([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}$|^([0-9a-fA-F]{8}-){3}[0-9a-fA-F]{8}$/', $guid);
     }
 
     /**

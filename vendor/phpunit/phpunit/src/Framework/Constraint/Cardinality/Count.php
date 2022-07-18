@@ -7,12 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
-use function count;
-use function is_array;
-use function iterator_count;
-use function sprintf;
 use Countable;
 use EmptyIterator;
 use Generator;
@@ -20,6 +17,10 @@ use Iterator;
 use IteratorAggregate;
 use PHPUnit\Framework\Exception;
 use Traversable;
+use function count;
+use function is_array;
+use function iterator_count;
+use function sprintf;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -91,7 +92,7 @@ class Count extends Constraint
                 return iterator_count($iterator);
             }
 
-            $key   = $iterator->key();
+            $key = $iterator->key();
             $count = iterator_count($iterator);
 
             // Manually rewind $iterator to previous key, since iterator_count
@@ -135,7 +136,7 @@ class Count extends Constraint
     {
         return sprintf(
             'actual size %d matches expected size %d',
-            (int) $this->getCountOf($other),
+            (int)$this->getCountOf($other),
             $this->expectedCount
         );
     }

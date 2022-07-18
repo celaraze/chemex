@@ -15,35 +15,35 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 
 final class AbortIfFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
-    /** @var TypeSpecifier */
-    private $typeSpecifier;
-
     /** @var bool */
     protected $negate;
-
     /** @var string */
     protected $methodName;
+    /** @var TypeSpecifier */
+    private $typeSpecifier;
 
     public function __construct(bool $negate, string $methodName)
     {
         $this->negate = $negate;
-        $this->methodName = $methodName.'_'.($negate === false ? 'if' : 'unless');
+        $this->methodName = $methodName . '_' . ($negate === false ? 'if' : 'unless');
     }
 
     public function isFunctionSupported(
-        FunctionReflection $functionReflection,
-        FuncCall $node,
+        FunctionReflection   $functionReflection,
+        FuncCall             $node,
         TypeSpecifierContext $context
-    ): bool {
+    ): bool
+    {
         return $functionReflection->getName() === $this->methodName && $context->null();
     }
 
     public function specifyTypes(
-        FunctionReflection $functionReflection,
-        FuncCall $node,
-        Scope $scope,
+        FunctionReflection   $functionReflection,
+        FuncCall             $node,
+        Scope                $scope,
         TypeSpecifierContext $context
-    ): SpecifiedTypes {
+    ): SpecifiedTypes
+    {
         if (count($node->args) < 2) {
             return new SpecifiedTypes();
         }

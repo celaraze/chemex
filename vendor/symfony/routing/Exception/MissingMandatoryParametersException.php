@@ -24,7 +24,7 @@ class MissingMandatoryParametersException extends \InvalidArgumentException impl
 
     /**
      * @param string[] $missingParameters
-     * @param int      $code
+     * @param int $code
      */
     public function __construct(string $routeName = '', $missingParameters = null, $code = 0, \Throwable $previous = null)
     {
@@ -36,7 +36,7 @@ class MissingMandatoryParametersException extends \InvalidArgumentException impl
             trigger_deprecation('symfony/routing', '6.1', 'Construction of "%s" with an exception message is deprecated, provide the route name and an array of missing parameters instead.', __CLASS__);
             $message = $routeName;
             $previous = $code instanceof \Throwable ? $code : null;
-            $code = (int) $missingParameters;
+            $code = (int)$missingParameters;
         }
 
         parent::__construct($message, $code, $previous);

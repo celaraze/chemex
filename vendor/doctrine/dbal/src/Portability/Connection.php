@@ -12,11 +12,11 @@ use Doctrine\DBAL\Driver\Statement as DriverStatement;
  */
 final class Connection extends AbstractConnectionMiddleware
 {
-    public const PORTABILITY_ALL           = 255;
-    public const PORTABILITY_NONE          = 0;
-    public const PORTABILITY_RTRIM         = 1;
+    public const PORTABILITY_ALL = 255;
+    public const PORTABILITY_NONE = 0;
+    public const PORTABILITY_RTRIM = 1;
     public const PORTABILITY_EMPTY_TO_NULL = 4;
-    public const PORTABILITY_FIX_CASE      = 8;
+    public const PORTABILITY_FIX_CASE = 8;
 
     /** @var Converter */
     private $converter;

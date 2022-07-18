@@ -16,11 +16,11 @@ class InvalidRouteActionSolutionProvider implements HasSolutionsForThrowable
 
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof UnexpectedValueException) {
+        if (!$throwable instanceof UnexpectedValueException) {
             return false;
         }
 
-        if (! preg_match(self::REGEX, $throwable->getMessage(), $matches)) {
+        if (!preg_match(self::REGEX, $throwable->getMessage(), $matches)) {
             return false;
         }
 

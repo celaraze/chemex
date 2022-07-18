@@ -38,17 +38,17 @@ abstract class OutputStyle implements OutputInterface, StyleInterface
         $this->output->write(str_repeat(\PHP_EOL, $count));
     }
 
-    public function createProgressBar(int $max = 0): ProgressBar
-    {
-        return new ProgressBar($this->output, $max);
-    }
-
     /**
      * {@inheritdoc}
      */
     public function write(string|iterable $messages, bool $newline = false, int $type = self::OUTPUT_NORMAL)
     {
         $this->output->write($messages, $newline, $type);
+    }
+
+    public function createProgressBar(int $max = 0): ProgressBar
+    {
+        return new ProgressBar($this->output, $max);
     }
 
     /**

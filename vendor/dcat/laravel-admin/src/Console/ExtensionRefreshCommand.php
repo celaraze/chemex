@@ -7,8 +7,8 @@ use Illuminate\Console\Command;
 
 class ExtensionRefreshCommand extends Command
 {
-    protected $signature = 'admin:ext-refresh 
-    {name : The name of the extension. Eg: author-name/extension-name} 
+    protected $signature = 'admin:ext-refresh
+    {name : The name of the extension. Eg: author-name/extension-name}
     {--path= : The path of the extension.}';
 
     protected $description = 'Removes and re-adds an existing extension';
@@ -17,13 +17,13 @@ class ExtensionRefreshCommand extends Command
     {
         $name = $this->argument('name');
 
-        if (! Admin::extension()->has($name)) {
+        if (!Admin::extension()->has($name)) {
             throw new \InvalidArgumentException(sprintf('Plugin "%s" not found.', $name));
         }
 
         $confirmQuestion = 'Please confirm that you wish to reinstall this extension?';
 
-        if (! $this->confirm($confirmQuestion)) {
+        if (!$this->confirm($confirmQuestion)) {
             return;
         }
 

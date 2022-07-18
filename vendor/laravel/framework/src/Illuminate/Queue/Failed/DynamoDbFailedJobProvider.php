@@ -34,9 +34,9 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
     /**
      * Create a new DynamoDb failed job provider.
      *
-     * @param  \Aws\DynamoDb\DynamoDbClient  $dynamo
-     * @param  string  $applicationName
-     * @param  string  $table
+     * @param \Aws\DynamoDb\DynamoDbClient $dynamo
+     * @param string $applicationName
+     * @param string $table
      * @return void
      */
     public function __construct(DynamoDbClient $dynamo, $applicationName, $table)
@@ -49,10 +49,10 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
     /**
      * Log a failed job into storage.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  string  $payload
-     * @param  \Throwable  $exception
+     * @param string $connection
+     * @param string $queue
+     * @param string $payload
+     * @param \Throwable $exception
      * @return string|int|null
      */
     public function log($connection, $queue, $payload, $exception)
@@ -69,9 +69,9 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
                 'connection' => ['S' => $connection],
                 'queue' => ['S' => $queue],
                 'payload' => ['S' => $payload],
-                'exception' => ['S' => (string) $exception],
-                'failed_at' => ['N' => (string) $failedAt->getTimestamp()],
-                'expires_at' => ['N' => (string) $failedAt->addDays(3)->getTimestamp()],
+                'exception' => ['S' => (string)$exception],
+                'failed_at' => ['N' => (string)$failedAt->getTimestamp()],
+                'expires_at' => ['N' => (string)$failedAt->addDays(3)->getTimestamp()],
             ],
         ]);
 
@@ -96,16 +96,16 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
         ]);
 
         return collect($results['Items'])->sortByDesc(function ($result) {
-            return (int) $result['failed_at']['N'];
+            return (int)$result['failed_at']['N'];
         })->map(function ($result) {
-            return (object) [
+            return (object)[
                 'id' => $result['uuid']['S'],
                 'connection' => $result['connection']['S'],
                 'queue' => $result['queue']['S'],
                 'payload' => $result['payload']['S'],
                 'exception' => $result['exception']['S'],
                 'failed_at' => Carbon::createFromTimestamp(
-                    (int) $result['failed_at']['N']
+                    (int)$result['failed_at']['N']
                 )->format(DateTimeInterface::ISO8601),
             ];
         })->all();
@@ -114,7 +114,7 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
     /**
      * Get a single failed job.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return object|null
      */
     public function find($id)
@@ -127,18 +127,18 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
             ],
         ]);
 
-        if (! isset($result['Item'])) {
+        if (!isset($result['Item'])) {
             return;
         }
 
-        return (object) [
+        return (object)[
             'id' => $result['Item']['uuid']['S'],
             'connection' => $result['Item']['connection']['S'],
             'queue' => $result['Item']['queue']['S'],
             'payload' => $result['Item']['payload']['S'],
             'exception' => $result['Item']['exception']['S'],
             'failed_at' => Carbon::createFromTimestamp(
-                (int) $result['Item']['failed_at']['N']
+                (int)$result['Item']['failed_at']['N']
             )->format(DateTimeInterface::ISO8601),
         ];
     }
@@ -146,7 +146,7 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
     /**
      * Delete a single failed job from storage.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return bool
      */
     public function forget($id)
@@ -165,7 +165,7 @@ class DynamoDbFailedJobProvider implements FailedJobProviderInterface
     /**
      * Flush all of the failed jobs from storage.
      *
-     * @param  int|null  $hours
+     * @param int|null $hours
      * @return void
      *
      * @throws \Exception

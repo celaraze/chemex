@@ -24,7 +24,8 @@ class NodeDumper
      *
      * @param array $options Options (see description)
      */
-    public function __construct(array $options = []) {
+    public function __construct(array $options = [])
+    {
         $this->dumpComments = !empty($options['dumpComments']);
         $this->dumpPositions = !empty($options['dumpPositions']);
     }
@@ -32,19 +33,21 @@ class NodeDumper
     /**
      * Dumps a node or array.
      *
-     * @param array|Node  $node Node or array to dump
+     * @param array|Node $node Node or array to dump
      * @param string|null $code Code corresponding to dumped AST. This only needs to be passed if
      *                          the dumpPositions option is enabled and the dumping of node offsets
      *                          is desired.
      *
      * @return string Dumped value
      */
-    public function dump($node, string $code = null) : string {
+    public function dump($node, string $code = null): string
+    {
         $this->code = $code;
         return $this->dumpRecursive($node);
     }
 
-    protected function dumpRecursive($node) {
+    protected function dumpRecursive($node)
+    {
         if ($node instanceof Node) {
             $r = $node->getType();
             if ($this->dumpPositions && null !== $p = $this->dumpPosition($node)) {
@@ -68,7 +71,7 @@ class NodeDumper
                     } elseif ('type' === $key && $node instanceof Include_) {
                         $r .= $this->dumpIncludeType($value);
                     } elseif ('type' === $key
-                            && ($node instanceof Use_ || $node instanceof UseUse || $node instanceof GroupUse)) {
+                        && ($node instanceof Use_ || $node instanceof UseUse || $node instanceof GroupUse)) {
                         $r .= $this->dumpUseType($value);
                     } else {
                         $r .= $value;
@@ -108,7 +111,46 @@ class NodeDumper
         return $r . "\n)";
     }
 
-    protected function dumpFlags($flags) {
+    /**
+     * Dump node position, if possible.
+     *
+     * @param Node $node Node for which to dump position
+     *
+     * @return string|null Dump of position, or null if position information not available
+     */
+    protected function dumpPosition(Node $node)
+    {
+        if (!$node->hasAttribute('startLine') || !$node->hasAttribute('endLine')) {
+            return null;
+        }
+
+        $start = $node->getStartLine();
+        $end = $node->getEndLine();
+        if ($node->hasAttribute('startFilePos') && $node->hasAttribute('endFilePos')
+            && null !== $this->code
+        ) {
+            $start .= ':' . $this->toColumn($this->code, $node->getStartFilePos());
+            $end .= ':' . $this->toColumn($this->code, $node->getEndFilePos());
+        }
+        return "[$start - $end]";
+    }
+
+    private function toColumn($code, $pos)
+    {
+        if ($pos > strlen($code)) {
+            throw new \RuntimeException('Invalid position information');
+        }
+
+        $lineStartPos = strrpos($code, "\n", $pos - strlen($code));
+        if (false === $lineStartPos) {
+            $lineStartPos = -1;
+        }
+
+        return $pos - $lineStartPos;
+    }
+
+    protected function dumpFlags($flags)
+    {
         $strs = [];
         if ($flags & Class_::MODIFIER_PUBLIC) {
             $strs[] = 'MODIFIER_PUBLIC';
@@ -139,11 +181,12 @@ class NodeDumper
         }
     }
 
-    protected function dumpIncludeType($type) {
+    protected function dumpIncludeType($type)
+    {
         $map = [
-            Include_::TYPE_INCLUDE      => 'TYPE_INCLUDE',
+            Include_::TYPE_INCLUDE => 'TYPE_INCLUDE',
             Include_::TYPE_INCLUDE_ONCE => 'TYPE_INCLUDE_ONCE',
-            Include_::TYPE_REQUIRE      => 'TYPE_REQUIRE',
+            Include_::TYPE_REQUIRE => 'TYPE_REQUIRE',
             Include_::TYPE_REQUIRE_ONCE => 'TYPE_REQUIRE_ONCE',
         ];
 
@@ -153,10 +196,13 @@ class NodeDumper
         return $map[$type] . ' (' . $type . ')';
     }
 
-    protected function dumpUseType($type) {
+    // Copied from Error class
+
+    protected function dumpUseType($type)
+    {
         $map = [
-            Use_::TYPE_UNKNOWN  => 'TYPE_UNKNOWN',
-            Use_::TYPE_NORMAL   => 'TYPE_NORMAL',
+            Use_::TYPE_UNKNOWN => 'TYPE_UNKNOWN',
+            Use_::TYPE_NORMAL => 'TYPE_NORMAL',
             Use_::TYPE_FUNCTION => 'TYPE_FUNCTION',
             Use_::TYPE_CONSTANT => 'TYPE_CONSTANT',
         ];
@@ -165,42 +211,5 @@ class NodeDumper
             return $type;
         }
         return $map[$type] . ' (' . $type . ')';
-    }
-
-    /**
-     * Dump node position, if possible.
-     *
-     * @param Node $node Node for which to dump position
-     *
-     * @return string|null Dump of position, or null if position information not available
-     */
-    protected function dumpPosition(Node $node) {
-        if (!$node->hasAttribute('startLine') || !$node->hasAttribute('endLine')) {
-            return null;
-        }
-
-        $start = $node->getStartLine();
-        $end = $node->getEndLine();
-        if ($node->hasAttribute('startFilePos') && $node->hasAttribute('endFilePos')
-            && null !== $this->code
-        ) {
-            $start .= ':' . $this->toColumn($this->code, $node->getStartFilePos());
-            $end .= ':' . $this->toColumn($this->code, $node->getEndFilePos());
-        }
-        return "[$start - $end]";
-    }
-
-    // Copied from Error class
-    private function toColumn($code, $pos) {
-        if ($pos > strlen($code)) {
-            throw new \RuntimeException('Invalid position information');
-        }
-
-        $lineStartPos = strrpos($code, "\n", $pos - strlen($code));
-        if (false === $lineStartPos) {
-            $lineStartPos = -1;
-        }
-
-        return $pos - $lineStartPos;
     }
 }

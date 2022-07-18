@@ -1,6 +1,6 @@
 <style>
     .amap-icon img,
-    .amap-marker-content img{
+    .amap-marker-content img {
         width: 25px;
         height: 34px;
     }
@@ -17,10 +17,12 @@
             <div class="row mb-1">
                 <div class="col-md-5 col-md-offset-3">
                     <div class="input-group">
-                        <input type="text" placeholder="{{ trans('admin.search') }}" class="form-control" id="{{ $searchId }}">
+                        <input type="text" placeholder="{{ trans('admin.search') }}" class="form-control"
+                               id="{{ $searchId }}">
                         @if($type === 'baidu')
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-primary btn-flat"><i class="fa fa-search"></i></button>
+                                <button type="button" class="btn btn-primary btn-flat"><i
+                                        class="fa fa-search"></i></button>
                             </span>
                         @endif
                     </div>
@@ -30,8 +32,10 @@
 
         <div class="{{ $class }}">
             <div class="form-map" style="width: 100%;height: {{ $height }}"></div>
-            <input type="hidden" class="form-lat" name="{{ $name['lat'] }}" value="{{ $value['lat'] ?? null }}" {!! $attributes !!} />
-            <input type="hidden" class="form-lng" name="{{$name['lng']}}" value="{{ $value['lng'] ?? null }}" {!! $attributes !!} />
+            <input type="hidden" class="form-lat" name="{{ $name['lat'] }}"
+                   value="{{ $value['lat'] ?? null }}" {!! $attributes !!} />
+            <input type="hidden" class="form-lng" name="{{$name['lng']}}"
+                   value="{{ $value['lng'] ?? null }}" {!! $attributes !!} />
         </div>
 
         @include('admin::form.help-block')
@@ -92,9 +96,9 @@
             map: map
         });
 
-        if( ! lat.val() || ! lng.val()) {
+        if (!lat.val() || !lng.val()) {
             var citylocation = new qq.maps.CityService({
-                complete : function(result){
+                complete: function (result) {
                     map.setCenter(result.detail.latLng);
                     marker.setPosition(result.detail.latLng);
                 }
@@ -103,11 +107,11 @@
             citylocation.searchLocalCity();
         }
 
-        qq.maps.event.addListener(map, 'click', function(event) {
+        qq.maps.event.addListener(map, 'click', function (event) {
             marker.setPosition(event.latLng);
         });
 
-        qq.maps.event.addListener(marker, 'position_changed', function(event) {
+        qq.maps.event.addListener(marker, 'position_changed', function (event) {
             var position = marker.getPosition();
             lat.val(position.getLat());
             lng.val(position.getLng());
@@ -120,14 +124,13 @@
 
     @if($type === 'yandex')
     function initYandexMap() {
-        ymaps.ready(function(){
+        ymaps.ready(function () {
             var myMap = new ymaps.Map(mapId, {
                 center: [lat.val(), lng.val()],
                 zoom: 18
             });
 
-            var myPlacemark = new ymaps.Placemark([lat.val(), lng.val()], {
-            }, {
+            var myPlacemark = new ymaps.Placemark([lat.val(), lng.val()], {}, {
                 preset: 'islands#redDotIcon',
                 draggable: true
             });
@@ -155,9 +158,9 @@
         map.addOverlay(marker);
         marker.enableDragging();
 
-        if (! lat.val() || ! lng.val()) {
+        if (!lat.val() || !lng.val()) {
             var geolocation = new BMap.Geolocation();
-            geolocation.getCurrentPosition(function(e){
+            geolocation.getCurrentPosition(function (e) {
                 if (this.getStatus() == BMAP_STATUS_SUCCESS) {
                     map.panTo(e.point);
                     marker.setPosition(e.point);
@@ -166,31 +169,33 @@
                     lng.val(e.point.lng);
 
                 } else {
-                    console.log('failed'+this.getStatus());
+                    console.log('failed' + this.getStatus());
                 }
-            },{enableHighAccuracy: true})
+            }, {enableHighAccuracy: true})
         }
 
-        map.addEventListener("click", function(e) {
+        map.addEventListener("click", function (e) {
             marker.setPosition(e.point);
             lat.val(e.point.lat);
             lng.val(e.point.lng);
         });
 
-        marker.addEventListener("dragend", function(e) {
+        marker.addEventListener("dragend", function (e) {
             lat.val(e.point.lat);
             lng.val(e.point.lng);
         });
         var ac = new BMap.Autocomplete(
-            {"input" : "{{ $searchId }}"
-                ,"location" : map
+            {
+                "input": "{{ $searchId }}"
+                , "location": map
             });
         var address;
-        ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+        ac.addEventListener("onconfirm", function (e) {    //鼠标点击下拉列表后的事件
             var _value = e.item.value;
-            address = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+            address = _value.province + _value.city + _value.district + _value.street + _value.business;
             setPlace();
         });
+
         function setPlace() {
             function myFun() {
                 var pp = local.getResults().getPoi(0).point;
@@ -199,6 +204,7 @@
                 lat.val(pp.lat);
                 lng.val(pp.lng);
             }
+
             var local = new BMap.LocalSearch(map, {
                 onSearchComplete: myFun
             });
@@ -209,7 +215,7 @@
     initBaiduMap();
     @endif
     @if($type === 'amap')
-    function initAmap(){
+    function initAmap() {
         var map = new AMap.Map(container[0], {
             resizeEnable: true,
             center: lng.val() && lat.val() ? [lng.val(), lat.val()] : null,
@@ -218,18 +224,18 @@
         var marker = new AMap.Marker({
             position: new AMap.LngLat(lng.val(), lat.val()),
             draggable: true,
-            map:map,
-            icon:'//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png',
-            zoom:15
+            map: map,
+            icon: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png',
+            zoom: 15
         });
-        if (!lng.val() || !lat.val()){
+        if (!lng.val() || !lat.val()) {
             var geolocation = new AMap.Geolocation({
                 enableHighAccuracy: true,
                 zoomToAccuracy: true,
                 buttonPosition: 'RB'
             })
-            geolocation.getCurrentPosition(function (status,result){
-                if (status === 'complete'){
+            geolocation.getCurrentPosition(function (status, result) {
+                if (status === 'complete') {
                     var point = new AMap.LngLat(result.position.lng, result.position.lat);
                     map.setCenter(point);
                     map.setZoom(15);
@@ -246,22 +252,22 @@
         var placeSearch = new AMap.PlaceSearch({
             map: map
         });
-        AMap.event.addListener(auto, "select", function (e){
+        AMap.event.addListener(auto, "select", function (e) {
             placeSearch.setCity(e.poi.adcode);
             placeSearch.search(e.poi.name);
         });
-        AMap.event.addListener(placeSearch, "markerClick", function (e){
+        AMap.event.addListener(placeSearch, "markerClick", function (e) {
             let point = new AMap.LngLat(e.data.location.lng, e.data.location.lat);
             marker.setPosition(point)
             lat.val(e.data.location.lat);
             lng.val(e.data.location.lng);
         });
-        marker.on('dragend',function (e){
+        marker.on('dragend', function (e) {
             lat.val(e.lnglat.lat);
             lng.val(e.lnglat.lng);
         });
-        map.on('click',function (e){
-            if (e.type === 'click'){
+        map.on('click', function (e) {
+            if (e.type === 'click') {
                 let point = new AMap.LngLat(e.lnglat.lng, e.lnglat.lat);
                 marker.setPosition(point)
                 lat.val(e.lnglat.lat);
@@ -269,6 +275,7 @@
             }
         })
     }
+
     initAmap();
     @endif
 </script>

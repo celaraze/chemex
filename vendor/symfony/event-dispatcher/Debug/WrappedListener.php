@@ -21,6 +21,7 @@ use Symfony\Component\VarDumper\Caster\ClassStub;
  */
 final class WrappedListener
 {
+    private static bool $hasClassStub;
     private string|array|object $listener;
     private ?\Closure $optimizedListener;
     private string $name;
@@ -32,7 +33,6 @@ final class WrappedListener
     private string $callableRef;
     private ClassStub|string $stub;
     private ?int $priority = null;
-    private static bool $hasClassStub;
 
     public function __construct(callable|array $listener, ?string $name, Stopwatch $stopwatch, EventDispatcherInterface $dispatcher = null, int $priority = null)
     {
@@ -44,15 +44,15 @@ final class WrappedListener
 
         if (\is_array($listener)) {
             [$this->name, $this->callableRef] = $this->parseListener($listener);
-            $this->pretty = $this->name.'::'.$listener[1];
-            $this->callableRef .= '::'.$listener[1];
+            $this->pretty = $this->name . '::' . $listener[1];
+            $this->callableRef .= '::' . $listener[1];
         } elseif ($listener instanceof \Closure) {
             $r = new \ReflectionFunction($listener);
             if (str_contains($r->name, '{closure}')) {
                 $this->pretty = $this->name = 'closure';
             } elseif ($class = $r->getClosureScopeClass()) {
                 $this->name = $class->name;
-                $this->pretty = $this->name.'::'.$r->name;
+                $this->pretty = $this->name . '::' . $r->name;
             } else {
                 $this->pretty = $this->name = $r->name;
             }
@@ -60,8 +60,8 @@ final class WrappedListener
             $this->pretty = $this->name = $listener;
         } else {
             $this->name = get_debug_type($listener);
-            $this->pretty = $this->name.'::__invoke';
-            $this->callableRef = \get_class($listener).'::__invoke';
+            $this->pretty = $this->name . '::__invoke';
+            $this->callableRef = \get_class($listener) . '::__invoke';
         }
 
         if (null !== $name) {
@@ -69,6 +69,23 @@ final class WrappedListener
         }
 
         self::$hasClassStub ??= class_exists(ClassStub::class);
+    }
+
+    private function parseListener(array $listener): array
+    {
+        if ($listener[0] instanceof \Closure) {
+            foreach ((new \ReflectionFunction($listener[0]))->getAttributes(\Closure::class) as $attribute) {
+                if ($name = $attribute->getArguments()['name'] ?? false) {
+                    return [$name, $attribute->getArguments()['class'] ?? $name];
+                }
+            }
+        }
+
+        if (\is_object($listener[0])) {
+            return [get_debug_type($listener[0]), \get_class($listener[0])];
+        }
+
+        return [$listener[0], $listener[0]];
     }
 
     public function getWrappedListener(): callable|array
@@ -93,7 +110,7 @@ final class WrappedListener
 
     public function getInfo(string $eventName): array
     {
-        $this->stub ??= self::$hasClassStub ? new ClassStub($this->pretty.'()', $this->callableRef ?? $this->listener) : $this->pretty.'()';
+        $this->stub ??= self::$hasClassStub ? new ClassStub($this->pretty . '()', $this->callableRef ?? $this->listener) : $this->pretty . '()';
 
         return [
             'event' => $eventName,
@@ -121,22 +138,5 @@ final class WrappedListener
         if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
             $this->stoppedPropagation = true;
         }
-    }
-
-    private function parseListener(array $listener): array
-    {
-        if ($listener[0] instanceof \Closure) {
-            foreach ((new \ReflectionFunction($listener[0]))->getAttributes(\Closure::class) as $attribute) {
-                if ($name = $attribute->getArguments()['name'] ?? false) {
-                    return [$name, $attribute->getArguments()['class'] ?? $name];
-                }
-            }
-        }
-
-        if (\is_object($listener[0])) {
-            return [get_debug_type($listener[0]), \get_class($listener[0])];
-        }
-
-        return [$listener[0], $listener[0]];
     }
 }

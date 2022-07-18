@@ -80,10 +80,12 @@ class RegisterListenersPass implements CompilerPassInterface
                 $event['event'] = $aliases[$event['event']] ?? $event['event'];
 
                 if (!isset($event['method'])) {
-                    $event['method'] = 'on'.preg_replace_callback([
-                        '/(?<=\b|_)[a-z]/i',
-                        '/[^a-z0-9]/i',
-                    ], function ($matches) { return strtoupper($matches[0]); }, $event['event']);
+                    $event['method'] = 'on' . preg_replace_callback([
+                            '/(?<=\b|_)[a-z]/i',
+                            '/[^a-z0-9]/i',
+                        ], function ($matches) {
+                            return strtoupper($matches[0]);
+                        }, $event['event']);
                     $event['method'] = preg_replace('/[^a-z0-9]/i', '', $event['method']);
 
                     if (null !== ($class = $container->getDefinition($id)->getClass()) && ($r = $container->getReflectionClass($class, false)) && !$r->hasMethod($event['method']) && $r->hasMethod('__invoke')) {
@@ -186,15 +188,9 @@ class RegisterListenersPass implements CompilerPassInterface
  */
 class ExtractingEventDispatcher extends EventDispatcher implements EventSubscriberInterface
 {
-    public array $listeners = [];
-
     public static array $aliases = [];
     public static string $subscriber;
-
-    public function addListener(string $eventName, callable|array $listener, int $priority = 0)
-    {
-        $this->listeners[] = [$eventName, $listener[1], $priority];
-    }
+    public array $listeners = [];
 
     public static function getSubscribedEvents(): array
     {
@@ -205,5 +201,10 @@ class ExtractingEventDispatcher extends EventDispatcher implements EventSubscrib
         }
 
         return $events;
+    }
+
+    public function addListener(string $eventName, callable|array $listener, int $priority = 0)
+    {
+        $this->listeners[] = [$eventName, $listener[1], $priority];
     }
 }

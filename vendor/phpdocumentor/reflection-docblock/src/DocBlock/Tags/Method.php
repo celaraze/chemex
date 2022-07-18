@@ -22,7 +22,6 @@ use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Types\Mixed_;
 use phpDocumentor\Reflection\Types\Void_;
 use Webmozart\Assert\Assert;
-
 use function array_keys;
 use function explode;
 use function implode;
@@ -62,31 +61,66 @@ final class Method extends BaseTag implements Factory\StaticMethod
      * @phpstan-param array<int, array{name: string, type: Type}|string> $arguments
      */
     public function __construct(
-        string $methodName,
-        array $arguments = [],
-        ?Type $returnType = null,
-        bool $static = false,
+        string       $methodName,
+        array        $arguments = [],
+        ?Type        $returnType = null,
+        bool         $static = false,
         ?Description $description = null
-    ) {
+    )
+    {
         Assert::stringNotEmpty($methodName);
 
         if ($returnType === null) {
             $returnType = new Void_();
         }
 
-        $this->methodName  = $methodName;
-        $this->arguments   = $this->filterArguments($arguments);
-        $this->returnType  = $returnType;
-        $this->isStatic    = $static;
+        $this->methodName = $methodName;
+        $this->arguments = $this->filterArguments($arguments);
+        $this->returnType = $returnType;
+        $this->isStatic = $static;
         $this->description = $description;
     }
 
+    /**
+     * @param mixed[][]|string[] $arguments
+     * @phpstan-param array<int, array{name: string, type: Type}|string> $arguments
+     *
+     * @return mixed[][]
+     * @phpstan-return array<int, array{name: string, type: Type}>
+     */
+    private function filterArguments(array $arguments = []): array
+    {
+        $result = [];
+        foreach ($arguments as $argument) {
+            if (is_string($argument)) {
+                $argument = ['name' => $argument];
+            }
+
+            if (!isset($argument['type'])) {
+                $argument['type'] = new Mixed_();
+            }
+
+            $keys = array_keys($argument);
+            sort($keys);
+            if ($keys !== ['name', 'type']) {
+                throw new InvalidArgumentException(
+                    'Arguments can only have the "name" and "type" fields, found: ' . var_export($keys, true)
+                );
+            }
+
+            $result[] = $argument;
+        }
+
+        return $result;
+    }
+
     public static function create(
-        string $body,
-        ?TypeResolver $typeResolver = null,
+        string              $body,
+        ?TypeResolver       $typeResolver = null,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): ?self {
+        ?TypeContext        $context = null
+    ): ?self
+    {
         Assert::stringNotEmpty($body);
         Assert::notNull($typeResolver);
         Assert::notNull($descriptionFactory);
@@ -147,7 +181,7 @@ final class Method extends BaseTag implements Factory\StaticMethod
             $returnType = 'void';
         }
 
-        $returnType  = $typeResolver->resolve($returnType, $context);
+        $returnType = $typeResolver->resolve($returnType, $context);
         $description = $descriptionFactory->create($description, $context);
 
         /** @phpstan-var array<int, array{name: string, type: Type}> $arguments */
@@ -163,7 +197,7 @@ final class Method extends BaseTag implements Factory\StaticMethod
                     $argumentType = $typeResolver->resolve($argument[0], $context);
                     $argumentName = '';
                     if (isset($argument[1])) {
-                        $argument[1]  = self::stripRestArg($argument[1]);
+                        $argument[1] = self::stripRestArg($argument[1]);
                         $argumentName = substr($argument[1], 1);
                     }
                 }
@@ -173,6 +207,15 @@ final class Method extends BaseTag implements Factory\StaticMethod
         }
 
         return new static($methodName, $arguments, $returnType, $static, $description);
+    }
+
+    private static function stripRestArg(string $argument): string
+    {
+        if (strpos($argument, '...') === 0) {
+            $argument = trim(substr($argument, 3));
+        }
+
+        return $argument;
     }
 
     /**
@@ -224,7 +267,7 @@ final class Method extends BaseTag implements Factory\StaticMethod
 
         $static = $this->isStatic ? 'static' : '';
 
-        $returnType = (string) $this->returnType;
+        $returnType = (string)$this->returnType;
 
         $methodName = $this->methodName;
 
@@ -233,47 +276,5 @@ final class Method extends BaseTag implements Factory\StaticMethod
             . ($methodName !== '' ? ($static !== '' || $returnType !== '' ? ' ' : '') . $methodName : '')
             . $argumentStr
             . ($description !== '' ? ' ' . $description : '');
-    }
-
-    /**
-     * @param mixed[][]|string[] $arguments
-     * @phpstan-param array<int, array{name: string, type: Type}|string> $arguments
-     *
-     * @return mixed[][]
-     * @phpstan-return array<int, array{name: string, type: Type}>
-     */
-    private function filterArguments(array $arguments = []): array
-    {
-        $result = [];
-        foreach ($arguments as $argument) {
-            if (is_string($argument)) {
-                $argument = ['name' => $argument];
-            }
-
-            if (!isset($argument['type'])) {
-                $argument['type'] = new Mixed_();
-            }
-
-            $keys = array_keys($argument);
-            sort($keys);
-            if ($keys !== ['name', 'type']) {
-                throw new InvalidArgumentException(
-                    'Arguments can only have the "name" and "type" fields, found: ' . var_export($keys, true)
-                );
-            }
-
-            $result[] = $argument;
-        }
-
-        return $result;
-    }
-
-    private static function stripRestArg(string $argument): string
-    {
-        if (strpos($argument, '...') === 0) {
-            $argument = trim(substr($argument, 3));
-        }
-
-        return $argument;
     }
 }

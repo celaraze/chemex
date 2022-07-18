@@ -17,7 +17,6 @@ namespace Ramsey\Uuid\Generator;
 use Ramsey\Uuid\Exception\NameException;
 use Ramsey\Uuid\UuidInterface;
 use ValueError;
-
 use function hash;
 
 /**
@@ -43,6 +42,6 @@ class DefaultNameGenerator implements NameGeneratorInterface
             ));
         }
 
-        return (string) $bytes;
+        return (string)$bytes;
     }
 }

@@ -14,8 +14,8 @@ namespace Composer\Pcre;
 class PcreException extends \RuntimeException
 {
     /**
-     * @param  string $function
-     * @param  string|string[] $pattern
+     * @param string $function
+     * @param string|string[] $pattern
      * @return self
      */
     public static function fromFunction($function, $pattern)
@@ -26,11 +26,11 @@ class PcreException extends \RuntimeException
             $pattern = implode(', ', $pattern);
         }
 
-        return new PcreException($function.'(): failed executing "'.$pattern.'": '.self::pcreLastErrorMessage($code), $code);
+        return new PcreException($function . '(): failed executing "' . $pattern . '": ' . self::pcreLastErrorMessage($code), $code);
     }
 
     /**
-     * @param  int $code
+     * @param int $code
      * @return string
      */
     private static function pcreLastErrorMessage($code)

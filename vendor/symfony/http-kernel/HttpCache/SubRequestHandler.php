@@ -42,7 +42,7 @@ class SubRequestHandler
             ];
             foreach (array_filter($trustedHeaders) as $name => $key) {
                 $request->headers->remove($name);
-                $request->server->remove('HTTP_'.$name);
+                $request->server->remove('HTTP_' . $name);
             }
         }
 

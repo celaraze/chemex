@@ -9,5 +9,5 @@ interface Builder
      *
      * @return Node The built node
      */
-    public function getNode() : Node;
+    public function getNode(): Node;
 }

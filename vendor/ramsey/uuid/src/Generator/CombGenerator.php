@@ -16,14 +16,12 @@ namespace Ramsey\Uuid\Generator;
 
 use Ramsey\Uuid\Converter\NumberConverterInterface;
 use Ramsey\Uuid\Exception\InvalidArgumentException;
-
 use function bin2hex;
 use function explode;
 use function hex2bin;
 use function microtime;
 use function str_pad;
 use function substr;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -74,7 +72,8 @@ class CombGenerator implements RandomGeneratorInterface
     public function __construct(
         RandomGeneratorInterface $generator,
         NumberConverterInterface $numberConverter
-    ) {
+    )
+    {
         $this->converter = $numberConverter;
         $this->randomGenerator = $generator;
     }
@@ -105,7 +104,7 @@ class CombGenerator implements RandomGeneratorInterface
             STR_PAD_LEFT
         );
 
-        return (string) hex2bin(
+        return (string)hex2bin(
             str_pad(
                 bin2hex($hash),
                 $length - self::TIMESTAMP_BYTES,

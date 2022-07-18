@@ -14,7 +14,6 @@ use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Statement;
 use InvalidArgumentException;
-
 use function array_rand;
 use function count;
 
@@ -93,22 +92,23 @@ class PrimaryReadReplicaConnection extends Connection
     /**
      * Creates Primary Replica Connection.
      *
-     * @internal The connection can be only instantiated by the driver manager.
-     *
      * @param array<string,mixed> $params
      * @psalm-param Params $params
      * @phpstan-param array<string,mixed> $params
      *
      * @throws Exception
      * @throws InvalidArgumentException
+     * @internal The connection can be only instantiated by the driver manager.
+     *
      */
     public function __construct(
-        array $params,
-        Driver $driver,
+        array          $params,
+        Driver         $driver,
         ?Configuration $config = null,
-        ?EventManager $eventManager = null
-    ) {
-        if (! isset($params['replica'], $params['primary'])) {
+        ?EventManager  $eventManager = null
+    )
+    {
+        if (!isset($params['replica'], $params['primary'])) {
             throw new InvalidArgumentException('primary or replica configuration missing');
         }
 
@@ -124,7 +124,7 @@ class PrimaryReadReplicaConnection extends Connection
             }
         }
 
-        $this->keepReplica = (bool) ($params['keepReplica'] ?? false);
+        $this->keepReplica = (bool)($params['keepReplica'] ?? false);
 
         parent::__construct($params, $driver, $config, $eventManager);
     }
@@ -147,7 +147,7 @@ class PrimaryReadReplicaConnection extends Connection
         if ($connectionName !== null) {
             throw new InvalidArgumentException(
                 'Passing a connection name as first argument is not supported anymore.'
-                    . ' Use ensureConnectedToPrimary()/ensureConnectedToReplica() instead.'
+                . ' Use ensureConnectedToPrimary()/ensureConnectedToReplica() instead.'
             );
         }
 
@@ -157,7 +157,7 @@ class PrimaryReadReplicaConnection extends Connection
     protected function performConnect(?string $connectionName = null): bool
     {
         $requestedConnectionChange = ($connectionName !== null);
-        $connectionName            = $connectionName ?? 'replica';
+        $connectionName = $connectionName ?? 'replica';
 
         if ($connectionName !== 'replica' && $connectionName !== 'primary') {
             throw new InvalidArgumentException('Invalid option to connect(), only primary or replica allowed.');
@@ -166,21 +166,21 @@ class PrimaryReadReplicaConnection extends Connection
         // If we have a connection open, and this is not an explicit connection
         // change request, then abort right here, because we are already done.
         // This prevents writes to the replica in case of "keepReplica" option enabled.
-        if ($this->_conn !== null && ! $requestedConnectionChange) {
+        if ($this->_conn !== null && !$requestedConnectionChange) {
             return false;
         }
 
         $forcePrimaryAsReplica = false;
 
         if ($this->getTransactionNestingLevel() > 0) {
-            $connectionName        = 'primary';
+            $connectionName = 'primary';
             $forcePrimaryAsReplica = true;
         }
 
         if (isset($this->connections[$connectionName])) {
             $this->_conn = $this->connections[$connectionName];
 
-            if ($forcePrimaryAsReplica && ! $this->keepReplica) {
+            if ($forcePrimaryAsReplica && !$this->keepReplica) {
                 $this->connections['replica'] = $this->_conn;
             }
 
@@ -191,7 +191,7 @@ class PrimaryReadReplicaConnection extends Connection
             $this->connections['primary'] = $this->_conn = $this->connectTo($connectionName);
 
             // Set replica connection to primary to avoid invalid reads
-            if (! $this->keepReplica) {
+            if (!$this->keepReplica) {
                 $this->connections['replica'] = $this->connections['primary'];
             }
         } else {
@@ -204,28 +204,6 @@ class PrimaryReadReplicaConnection extends Connection
         }
 
         return true;
-    }
-
-    /**
-     * Connects to the primary node of the database cluster.
-     *
-     * All following statements after this will be executed against the primary node.
-     */
-    public function ensureConnectedToPrimary(): bool
-    {
-        return $this->performConnect('primary');
-    }
-
-    /**
-     * Connects to a replica node of the database cluster.
-     *
-     * All following statements after this will be executed against the replica node,
-     * unless the keepReplica option is set to false and a primary connection
-     * was already opened.
-     */
-    public function ensureConnectedToReplica(): bool
-    {
-        return $this->performConnect('replica');
     }
 
     /**
@@ -251,7 +229,7 @@ class PrimaryReadReplicaConnection extends Connection
     }
 
     /**
-     * @param string  $connectionName
+     * @param string $connectionName
      * @param mixed[] $params
      *
      * @return mixed
@@ -264,11 +242,23 @@ class PrimaryReadReplicaConnection extends Connection
 
         $config = $params['replica'][array_rand($params['replica'])];
 
-        if (! isset($config['charset']) && isset($params['primary']['charset'])) {
+        if (!isset($config['charset']) && isset($params['primary']['charset'])) {
             $config['charset'] = $params['primary']['charset'];
         }
 
         return $config;
+    }
+
+    /**
+     * Connects to a replica node of the database cluster.
+     *
+     * All following statements after this will be executed against the replica node,
+     * unless the keepReplica option is set to false and a primary connection
+     * was already opened.
+     */
+    public function ensureConnectedToReplica(): bool
+    {
+        return $this->performConnect('replica');
     }
 
     /**
@@ -279,6 +269,16 @@ class PrimaryReadReplicaConnection extends Connection
         $this->ensureConnectedToPrimary();
 
         return parent::executeStatement($sql, $params, $types);
+    }
+
+    /**
+     * Connects to the primary node of the database cluster.
+     *
+     * All following statements after this will be executed against the primary node.
+     */
+    public function ensureConnectedToPrimary(): bool
+    {
+        return $this->performConnect('primary');
     }
 
     /**
@@ -320,7 +320,7 @@ class PrimaryReadReplicaConnection extends Connection
 
         parent::close();
 
-        $this->_conn       = null;
+        $this->_conn = null;
         $this->connections = ['primary' => null, 'replica' => null];
     }
 

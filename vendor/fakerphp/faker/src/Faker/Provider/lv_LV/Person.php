@@ -146,7 +146,7 @@ class Person extends \Faker\Provider\Person
         }
 
         $datePart = $birthdate->format('dmy');
-        $randomDigits = (string) static::numerify('####');
+        $randomDigits = (string)static::numerify('####');
 
         $checksum = Luhn::computeCheckDigit($datePart . $randomDigits);
 

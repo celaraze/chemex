@@ -7,23 +7,12 @@ use Dcat\Admin\Support\Helper;
 
 class Limit extends AbstractDisplayer
 {
-    protected function addScript()
-    {
-        $script = <<<'JS'
-$('.limit-more').click(function () {
-    $(this).parent('.limit-text').toggleClass('d-none').siblings().toggleClass('d-none');
-});
-JS;
-
-        Admin::script($script);
-    }
-
     public function display($limit = 100, $end = '...')
     {
         $this->value = Helper::htmlEntityEncode($this->value);
 
         // 数组
-        if ($this->value !== null && ! is_scalar($this->value)) {
+        if ($this->value !== null && !is_scalar($this->value)) {
             $value = Helper::array($this->value);
 
             if (count($value) <= $limit) {
@@ -56,5 +45,16 @@ JS;
     &nbsp;<a href="javascript:void(0);" class="limit-more">&nbsp;<i class="fa fa-angle-double-up"></i></a>
 </div>
 HTML;
+    }
+
+    protected function addScript()
+    {
+        $script = <<<'JS'
+$('.limit-more').click(function () {
+    $(this).parent('.limit-text').toggleClass('d-none').siblings().toggleClass('d-none');
+});
+JS;
+
+        Admin::script($script);
     }
 }

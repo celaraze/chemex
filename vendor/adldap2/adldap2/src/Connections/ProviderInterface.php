@@ -3,8 +3,8 @@
 namespace Adldap\Connections;
 
 use Adldap\Auth\GuardInterface;
-use Adldap\Schemas\SchemaInterface;
 use Adldap\Configuration\DomainConfiguration;
+use Adldap\Schemas\SchemaInterface;
 
 interface ProviderInterface
 {
@@ -12,7 +12,7 @@ interface ProviderInterface
      * Constructor.
      *
      * @param array|DomainConfiguration $configuration
-     * @param ConnectionInterface       $connection
+     * @param ConnectionInterface $connection
      */
     public function __construct($configuration, ConnectionInterface $connection);
 
@@ -120,10 +120,10 @@ interface ProviderInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws \Adldap\Auth\BindException If binding to the LDAP server fails.
+     * @return ProviderInterface
      * @throws ConnectionException        If upgrading the connection to TLS fails
      *
-     * @return ProviderInterface
+     * @throws \Adldap\Auth\BindException If binding to the LDAP server fails.
      */
     public function connect($username = null, $password = null);
 }

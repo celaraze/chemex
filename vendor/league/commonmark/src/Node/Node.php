@@ -48,6 +48,13 @@ abstract class Node
         ]);
     }
 
+    public static function assertInstanceOf(Node $node): void
+    {
+        if (!$node instanceof static) {
+            throw new \InvalidArgumentException(\sprintf('Incompatible node type: expected %s, got %s', static::class, \get_class($node)));
+        }
+    }
+
     public function previous(): ?Node
     {
         return $this->previous;
@@ -61,54 +68,6 @@ abstract class Node
     public function parent(): ?Node
     {
         return $this->parent;
-    }
-
-    protected function setParent(?Node $node = null): void
-    {
-        $this->parent = $node;
-        $this->depth  = $node === null ? 0 : $node->depth + 1;
-    }
-
-    /**
-     * Inserts the $sibling node after $this
-     */
-    public function insertAfter(Node $sibling): void
-    {
-        $sibling->detach();
-        $sibling->next = $this->next;
-
-        if ($sibling->next) {
-            $sibling->next->previous = $sibling;
-        }
-
-        $sibling->previous = $this;
-        $this->next        = $sibling;
-        $sibling->setParent($this->parent);
-
-        if (! $sibling->next && $sibling->parent) {
-            $sibling->parent->lastChild = $sibling;
-        }
-    }
-
-    /**
-     * Inserts the $sibling node before $this
-     */
-    public function insertBefore(Node $sibling): void
-    {
-        $sibling->detach();
-        $sibling->previous = $this->previous;
-
-        if ($sibling->previous) {
-            $sibling->previous->next = $sibling;
-        }
-
-        $sibling->next  = $this;
-        $this->previous = $sibling;
-        $sibling->setParent($this->parent);
-
-        if (! $sibling->previous && $sibling->parent) {
-            $sibling->parent->firstChild = $sibling;
-        }
     }
 
     public function replaceWith(Node $replacement): void
@@ -132,10 +91,37 @@ abstract class Node
             $this->parent->lastChild = $this->previous;
         }
 
-        $this->parent   = null;
-        $this->next     = null;
+        $this->parent = null;
+        $this->next = null;
         $this->previous = null;
-        $this->depth    = 0;
+        $this->depth = 0;
+    }
+
+    /**
+     * Inserts the $sibling node after $this
+     */
+    public function insertAfter(Node $sibling): void
+    {
+        $sibling->detach();
+        $sibling->next = $this->next;
+
+        if ($sibling->next) {
+            $sibling->next->previous = $sibling;
+        }
+
+        $sibling->previous = $this;
+        $this->next = $sibling;
+        $sibling->setParent($this->parent);
+
+        if (!$sibling->next && $sibling->parent) {
+            $sibling->parent->lastChild = $sibling;
+        }
+    }
+
+    protected function setParent(?Node $node = null): void
+    {
+        $this->parent = $node;
+        $this->depth = $node === null ? 0 : $node->depth + 1;
     }
 
     public function hasChildren(): bool
@@ -151,6 +137,66 @@ abstract class Node
     public function lastChild(): ?Node
     {
         return $this->lastChild;
+    }
+
+    /**
+     * Adds $child as the very first child of $this
+     */
+    public function prependChild(Node $child): void
+    {
+        if ($this->firstChild) {
+            $this->firstChild->insertBefore($child);
+        } else {
+            $child->detach();
+            $child->setParent($this);
+            $this->lastChild = $this->firstChild = $child;
+        }
+    }
+
+    /**
+     * Inserts the $sibling node before $this
+     */
+    public function insertBefore(Node $sibling): void
+    {
+        $sibling->detach();
+        $sibling->previous = $this->previous;
+
+        if ($sibling->previous) {
+            $sibling->previous->next = $sibling;
+        }
+
+        $sibling->next = $this;
+        $this->previous = $sibling;
+        $sibling->setParent($this->parent);
+
+        if (!$sibling->previous && $sibling->parent) {
+            $sibling->parent->firstChild = $sibling;
+        }
+    }
+
+    /**
+     * Replace all children of given node with collection of another
+     *
+     * @param iterable<Node> $children
+     */
+    public function replaceChildren(iterable $children): void
+    {
+        $this->detachChildren();
+        foreach ($children as $item) {
+            $this->appendChild($item);
+        }
+    }
+
+    /**
+     * Detaches all child nodes of given node
+     */
+    public function detachChildren(): void
+    {
+        foreach ($this->children() as $children) {
+            $children->setParent(null);
+        }
+
+        $this->firstChild = $this->lastChild = null;
     }
 
     /**
@@ -177,45 +223,6 @@ abstract class Node
         }
     }
 
-    /**
-     * Adds $child as the very first child of $this
-     */
-    public function prependChild(Node $child): void
-    {
-        if ($this->firstChild) {
-            $this->firstChild->insertBefore($child);
-        } else {
-            $child->detach();
-            $child->setParent($this);
-            $this->lastChild = $this->firstChild = $child;
-        }
-    }
-
-    /**
-     * Detaches all child nodes of given node
-     */
-    public function detachChildren(): void
-    {
-        foreach ($this->children() as $children) {
-            $children->setParent(null);
-        }
-
-        $this->firstChild = $this->lastChild = null;
-    }
-
-    /**
-     * Replace all children of given node with collection of another
-     *
-     * @param iterable<Node> $children
-     */
-    public function replaceChildren(iterable $children): void
-    {
-        $this->detachChildren();
-        foreach ($children as $item) {
-            $this->appendChild($item);
-        }
-    }
-
     public function getDepth(): int
     {
         return $this->depth;
@@ -239,9 +246,9 @@ abstract class Node
     public function __clone()
     {
         // Cloned nodes are detached from their parents, siblings, and children
-        $this->parent   = null;
+        $this->parent = null;
         $this->previous = null;
-        $this->next     = null;
+        $this->next = null;
         // But save a copy of the children since we'll need that in a moment
         $children = $this->children();
         $this->detachChildren();
@@ -249,13 +256,6 @@ abstract class Node
         // The original children get cloned and re-added
         foreach ($children as $child) {
             $this->appendChild(clone $child);
-        }
-    }
-
-    public static function assertInstanceOf(Node $node): void
-    {
-        if (! $node instanceof static) {
-            throw new \InvalidArgumentException(\sprintf('Incompatible node type: expected %s, got %s', static::class, \get_class($node)));
         }
     }
 }

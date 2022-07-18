@@ -9,10 +9,10 @@ class PhpRedisLock extends RedisLock
     /**
      * Create a new phpredis lock instance.
      *
-     * @param  \Illuminate\Redis\Connections\PhpRedisConnection  $redis
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
+     * @param \Illuminate\Redis\Connections\PhpRedisConnection $redis
+     * @param string $name
+     * @param int $seconds
+     * @param string|null $owner
      * @return void
      */
     public function __construct(PhpRedisConnection $redis, string $name, int $seconds, ?string $owner = null)
@@ -25,7 +25,7 @@ class PhpRedisLock extends RedisLock
      */
     public function release()
     {
-        return (bool) $this->redis->eval(
+        return (bool)$this->redis->eval(
             LuaScripts::releaseLock(),
             1,
             $this->name,

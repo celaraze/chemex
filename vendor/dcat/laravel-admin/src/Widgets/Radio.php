@@ -17,9 +17,10 @@ class Radio extends Widget
 
     public function __construct(
         ?string $name = null,
-        array $options = [],
-        string $style = 'primary'
-    ) {
+        array   $options = [],
+        string  $style = 'primary'
+    )
+    {
         $this->name($name);
         $this->options($options);
         $this->style($style);
@@ -28,83 +29,12 @@ class Radio extends Widget
     /**
      * 设置表单 "name" 属性.
      *
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function name(?string $name)
     {
         return $this->setHtmlAttribute('name', $name);
-    }
-
-    /**
-     * 尺寸设置.
-     *
-     * "sm", "lg"
-     *
-     * @param  string  $size
-     * @return $this
-     */
-    public function size(string $size)
-    {
-        $this->size = $size;
-
-        return $this;
-    }
-
-    /**
-     * 是否排成一行.
-     *
-     * @param  bool  $inine
-     * @return $this
-     */
-    public function inline(bool $inine = true)
-    {
-        $this->inline = $inine;
-
-        return $this;
-    }
-
-    /**
-     * 设置禁选的选项.
-     *
-     * @param  string|array  $values
-     * @return $this
-     */
-    public function disable($values = null)
-    {
-        if ($values) {
-            $this->disabledValues = (array) $values;
-
-            return $this;
-        }
-
-        return $this->setHtmlAttribute('disabled', 'disabled');
-    }
-
-    /**
-     * 设置 "margin-right" 样式.
-     *
-     * @param  string  $value
-     * @return $this
-     */
-    public function right(string $value)
-    {
-        $this->right = $value;
-
-        return $this;
-    }
-
-    /**
-     * 设置选中的选项.
-     *
-     * @param  string  $id
-     * @return $this
-     */
-    public function check($option)
-    {
-        $this->checked = $option;
-
-        return $this;
     }
 
     /**
@@ -116,7 +46,7 @@ class Radio extends Widget
      *         ...
      *     ]
      *
-     * @param  array  $opts
+     * @param array $opts
      * @return $this
      */
     public function options($opts = [])
@@ -134,7 +64,7 @@ class Radio extends Widget
      *
      * 支持 "info", "primary", "danger", "success".
      *
-     * @param  string  $style
+     * @param string $style
      * @return $this
      */
     public function style(string $style)
@@ -145,19 +75,90 @@ class Radio extends Widget
     }
 
     /**
+     * 尺寸设置.
+     *
+     * "sm", "lg"
+     *
+     * @param string $size
+     * @return $this
+     */
+    public function size(string $size)
+    {
+        $this->size = $size;
+
+        return $this;
+    }
+
+    /**
+     * 是否排成一行.
+     *
+     * @param bool $inine
+     * @return $this
+     */
+    public function inline(bool $inine = true)
+    {
+        $this->inline = $inine;
+
+        return $this;
+    }
+
+    /**
+     * 设置禁选的选项.
+     *
+     * @param string|array $values
+     * @return $this
+     */
+    public function disable($values = null)
+    {
+        if ($values) {
+            $this->disabledValues = (array)$values;
+
+            return $this;
+        }
+
+        return $this->setHtmlAttribute('disabled', 'disabled');
+    }
+
+    /**
+     * 设置 "margin-right" 样式.
+     *
+     * @param string $value
+     * @return $this
+     */
+    public function right(string $value)
+    {
+        $this->right = $value;
+
+        return $this;
+    }
+
+    /**
+     * 设置选中的选项.
+     *
+     * @param string $id
+     * @return $this
+     */
+    public function check($option)
+    {
+        $this->checked = $option;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function defaultVariables()
     {
         return [
-            'style'      => $this->style,
-            'options'    => $this->options,
+            'style' => $this->style,
+            'options' => $this->options,
             'attributes' => $this->formatHtmlAttributes(),
-            'checked'    => $this->checked,
-            'disabled'   => $this->disabledValues,
-            'right'      => $this->right,
-            'size'       => $this->size,
-            'inline'     => $this->inline,
+            'checked' => $this->checked,
+            'disabled' => $this->disabledValues,
+            'right' => $this->right,
+            'size' => $this->size,
+            'inline' => $this->inline,
         ];
     }
 

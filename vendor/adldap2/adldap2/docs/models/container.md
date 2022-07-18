@@ -2,7 +2,7 @@
 
 > **Note**: This model contains the trait `HasDescription` & `HasCriticalSystemObject`.
 > For more information, visit the documentation:
-> 
+>
 > [HasDescription](/models/traits/has-description.md),
 > [HasCriticalSystemObject](/models/traits/has-critical-system-object.md),
 

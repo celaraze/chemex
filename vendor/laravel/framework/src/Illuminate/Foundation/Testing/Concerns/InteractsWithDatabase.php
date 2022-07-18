@@ -16,37 +16,35 @@ use PHPUnit\Framework\Constraint\LogicalNot as ReverseConstraint;
 trait InteractsWithDatabase
 {
     /**
-     * Assert that a given where condition exists in the database.
+     * Cast a JSON string to a database compatible type.
      *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @param  array  $data
-     * @param  string|null  $connection
-     * @return $this
+     * @param array|string $value
+     * @return \Illuminate\Database\Query\Expression
      */
-    protected function assertDatabaseHas($table, array $data, $connection = null)
+    public function castAsJson($value)
     {
-        $this->assertThat(
-            $this->getTable($table), new HasInDatabase($this->getConnection($connection, $table), $data)
-        );
+        if ($value instanceof Jsonable) {
+            $value = $value->toJson();
+        } elseif (is_array($value) || is_object($value)) {
+            $value = json_encode($value);
+        }
 
-        return $this;
+        $value = DB::connection()->getPdo()->quote($value);
+
+        return DB::raw("CAST($value AS JSON)");
     }
 
     /**
-     * Assert that a given where condition does not exist in the database.
+     * Seed a given database connection.
      *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @param  array  $data
-     * @param  string|null  $connection
+     * @param array|string $class
      * @return $this
      */
-    protected function assertDatabaseMissing($table, array $data, $connection = null)
+    public function seed($class = 'Database\\Seeders\\DatabaseSeeder')
     {
-        $constraint = new ReverseConstraint(
-            new HasInDatabase($this->getConnection($connection, $table), $data)
-        );
-
-        $this->assertThat($this->getTable($table), $constraint);
+        foreach (Arr::wrap($class) as $class) {
+            $this->artisan('db:seed', ['--class' => $class, '--no-interaction' => true]);
+        }
 
         return $this;
     }
@@ -54,9 +52,9 @@ trait InteractsWithDatabase
     /**
      * Assert the count of table entries.
      *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @param  int  $count
-     * @param  string|null  $connection
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @param int $count
+     * @param string|null $connection
      * @return $this
      */
     protected function assertDatabaseCount($table, int $count, $connection = null)
@@ -69,12 +67,61 @@ trait InteractsWithDatabase
     }
 
     /**
+     * Get the table name from the given model or string.
+     *
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @return string
+     */
+    protected function getTable($table)
+    {
+        return $this->newModelFor($table)?->getTable() ?: $table;
+    }
+
+    /**
+     * Get the model entity from the given model or string.
+     *
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    protected function newModelFor($table)
+    {
+        return is_subclass_of($table, Model::class) ? (new $table) : null;
+    }
+
+    /**
+     * Get the database connection.
+     *
+     * @param string|null $connection
+     * @param string|null $table
+     * @return \Illuminate\Database\Connection
+     */
+    protected function getConnection($connection = null, $table = null)
+    {
+        $database = $this->app->make('db');
+
+        $connection = $connection ?: $this->getTableConnection($table) ?: $database->getDefaultConnection();
+
+        return $database->connection($connection);
+    }
+
+    /**
+     * Get the table connection specified in the given model.
+     *
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @return string|null
+     */
+    protected function getTableConnection($table)
+    {
+        return $this->newModelFor($table)?->getConnectionName();
+    }
+
+    /**
      * Assert the given record has been "soft deleted".
      *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @param  array  $data
-     * @param  string|null  $connection
-     * @param  string|null  $deletedAtColumn
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @param array $data
+     * @param string|null $connection
+     * @param string|null $deletedAtColumn
      * @return $this
      */
     protected function assertSoftDeleted($table, array $data = [], $connection = null, $deletedAtColumn = 'deleted_at')
@@ -96,12 +143,24 @@ trait InteractsWithDatabase
     }
 
     /**
+     * Determine if the argument is a soft deletable model.
+     *
+     * @param mixed $model
+     * @return bool
+     */
+    protected function isSoftDeletableModel($model)
+    {
+        return $model instanceof Model
+            && in_array(SoftDeletes::class, class_uses_recursive($model));
+    }
+
+    /**
      * Assert the given record has not been "soft deleted".
      *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @param  array  $data
-     * @param  string|null  $connection
-     * @param  string|null  $deletedAtColumn
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @param array $data
+     * @param string|null $connection
+     * @param string|null $deletedAtColumn
      * @return $this
      */
     protected function assertNotSoftDeleted($table, array $data = [], $connection = null, $deletedAtColumn = 'deleted_at')
@@ -125,7 +184,7 @@ trait InteractsWithDatabase
     /**
      * Assert the given model exists in the database.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      * @return $this
      */
     protected function assertModelExists($model)
@@ -138,9 +197,26 @@ trait InteractsWithDatabase
     }
 
     /**
+     * Assert that a given where condition exists in the database.
+     *
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @param array $data
+     * @param string|null $connection
+     * @return $this
+     */
+    protected function assertDatabaseHas($table, array $data, $connection = null)
+    {
+        $this->assertThat(
+            $this->getTable($table), new HasInDatabase($this->getConnection($connection, $table), $data)
+        );
+
+        return $this;
+    }
+
+    /**
      * Assert the given model does not exist in the database.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      * @return $this
      */
     protected function assertModelMissing($model)
@@ -153,96 +229,20 @@ trait InteractsWithDatabase
     }
 
     /**
-     * Determine if the argument is a soft deletable model.
+     * Assert that a given where condition does not exist in the database.
      *
-     * @param  mixed  $model
-     * @return bool
-     */
-    protected function isSoftDeletableModel($model)
-    {
-        return $model instanceof Model
-            && in_array(SoftDeletes::class, class_uses_recursive($model));
-    }
-
-    /**
-     * Cast a JSON string to a database compatible type.
-     *
-     * @param  array|string  $value
-     * @return \Illuminate\Database\Query\Expression
-     */
-    public function castAsJson($value)
-    {
-        if ($value instanceof Jsonable) {
-            $value = $value->toJson();
-        } elseif (is_array($value) || is_object($value)) {
-            $value = json_encode($value);
-        }
-
-        $value = DB::connection()->getPdo()->quote($value);
-
-        return DB::raw("CAST($value AS JSON)");
-    }
-
-    /**
-     * Get the database connection.
-     *
-     * @param  string|null  $connection
-     * @param  string|null  $table
-     * @return \Illuminate\Database\Connection
-     */
-    protected function getConnection($connection = null, $table = null)
-    {
-        $database = $this->app->make('db');
-
-        $connection = $connection ?: $this->getTableConnection($table) ?: $database->getDefaultConnection();
-
-        return $database->connection($connection);
-    }
-
-    /**
-     * Get the table name from the given model or string.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @return string
-     */
-    protected function getTable($table)
-    {
-        return $this->newModelFor($table)?->getTable() ?: $table;
-    }
-
-    /**
-     * Get the table connection specified in the given model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @return string|null
-     */
-    protected function getTableConnection($table)
-    {
-        return $this->newModelFor($table)?->getConnectionName();
-    }
-
-    /**
-     * Get the model entity from the given model or string.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model|string  $table
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    protected function newModelFor($table)
-    {
-        return is_subclass_of($table, Model::class) ? (new $table) : null;
-    }
-
-    /**
-     * Seed a given database connection.
-     *
-     * @param  array|string  $class
+     * @param \Illuminate\Database\Eloquent\Model|string $table
+     * @param array $data
+     * @param string|null $connection
      * @return $this
      */
-    public function seed($class = 'Database\\Seeders\\DatabaseSeeder')
+    protected function assertDatabaseMissing($table, array $data, $connection = null)
     {
-        foreach (Arr::wrap($class) as $class) {
-            $this->artisan('db:seed', ['--class' => $class, '--no-interaction' => true]);
-        }
+        $constraint = new ReverseConstraint(
+            new HasInDatabase($this->getConnection($connection, $table), $data)
+        );
+
+        $this->assertThat($this->getTable($table), $constraint);
 
         return $this;
     }

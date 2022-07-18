@@ -63,14 +63,6 @@ class AnnotationFileLoader extends FileLoader
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function supports(mixed $resource, string $type = null): bool
-    {
-        return \is_string($resource) && 'php' === pathinfo($resource, \PATHINFO_EXTENSION) && (!$type || \in_array($type, ['annotation', 'attribute'], true));
-    }
-
-    /**
      * Returns the full class name for the first class in the file.
      */
     protected function findClass(string $file): string|false
@@ -94,7 +86,7 @@ class AnnotationFileLoader extends FileLoader
             }
 
             if (true === $class && \T_STRING === $token[0]) {
-                return $namespace.'\\'.$token[1];
+                return $namespace . '\\' . $token[1];
             }
 
             if (true === $namespace && isset($nsTokens[$token[0]])) {
@@ -135,5 +127,13 @@ class AnnotationFileLoader extends FileLoader
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supports(mixed $resource, string $type = null): bool
+    {
+        return \is_string($resource) && 'php' === pathinfo($resource, \PATHINFO_EXTENSION) && (!$type || \in_array($type, ['annotation', 'attribute'], true));
     }
 }

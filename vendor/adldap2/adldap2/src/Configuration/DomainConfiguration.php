@@ -2,8 +2,8 @@
 
 namespace Adldap\Configuration;
 
-use Adldap\Schemas\ActiveDirectory;
 use Adldap\Connections\ConnectionInterface;
+use Adldap\Schemas\ActiveDirectory;
 
 /**
  * Class DomainConfiguration.
@@ -84,7 +84,7 @@ class DomainConfiguration
      * not exist, or if it's an invalid type.
      *
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @throws ConfigurationException When an option value given is an invalid type.
      */
@@ -96,15 +96,47 @@ class DomainConfiguration
     }
 
     /**
+     * Validates the new configuration option against its
+     * default value to ensure it's the correct type.
+     *
+     * If an invalid type is given, an exception is thrown.
+     *
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return bool
+     * @throws ConfigurationException When an option value given is an invalid type.
+     *
+     */
+    protected function validate($key, $value)
+    {
+        $default = $this->get($key);
+
+        if (is_array($default)) {
+            $validator = new Validators\ArrayValidator($key, $value);
+        } elseif (is_int($default)) {
+            $validator = new Validators\IntegerValidator($key, $value);
+        } elseif (is_bool($default)) {
+            $validator = new Validators\BooleanValidator($key, $value);
+        } elseif (is_string($default) && class_exists($default)) {
+            $validator = new Validators\ClassValidator($key, $value);
+        } else {
+            $validator = new Validators\StringOrNullValidator($key, $value);
+        }
+
+        return $validator->validate();
+    }
+
+    /**
      * Returns the value for the specified configuration options.
      *
      * Throws an exception if the specified option does not exist.
      *
      * @param string $key
      *
+     * @return mixed
      * @throws ConfigurationException When the option specified does not exist.
      *
-     * @return mixed
      */
     public function get($key)
     {
@@ -125,37 +157,5 @@ class DomainConfiguration
     public function has($key)
     {
         return array_key_exists($key, $this->options);
-    }
-
-    /**
-     * Validates the new configuration option against its
-     * default value to ensure it's the correct type.
-     *
-     * If an invalid type is given, an exception is thrown.
-     *
-     * @param string $key
-     * @param mixed  $value
-     *
-     * @throws ConfigurationException When an option value given is an invalid type.
-     *
-     * @return bool
-     */
-    protected function validate($key, $value)
-    {
-        $default = $this->get($key);
-
-        if (is_array($default)) {
-            $validator = new Validators\ArrayValidator($key, $value);
-        } elseif (is_int($default)) {
-            $validator = new Validators\IntegerValidator($key, $value);
-        } elseif (is_bool($default)) {
-            $validator = new Validators\BooleanValidator($key, $value);
-        } elseif (is_string($default) && class_exists($default)) {
-            $validator = new Validators\ClassValidator($key, $value);
-        } else {
-            $validator = new Validators\StringOrNullValidator($key, $value);
-        }
-
-        return $validator->validate();
     }
 }

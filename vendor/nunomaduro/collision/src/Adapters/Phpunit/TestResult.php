@@ -13,13 +13,13 @@ use Throwable;
  */
 final class TestResult
 {
-    public const FAIL       = 'failed';
-    public const SKIPPED    = 'skipped';
+    public const FAIL = 'failed';
+    public const SKIPPED = 'skipped';
     public const INCOMPLETE = 'incompleted';
-    public const RISKY      = 'risky';
-    public const WARN       = 'warnings';
-    public const RUNS       = 'pending';
-    public const PASS       = 'passed';
+    public const RISKY = 'risky';
+    public const WARN = 'warnings';
+    public const RUNS = 'pending';
+    public const PASS = 'passed';
 
     /**
      * @readonly
@@ -76,19 +76,19 @@ final class TestResult
     private function __construct(string $testCaseName, string $description, string $type, string $icon, string $color, Throwable $throwable = null)
     {
         $this->testCaseName = $testCaseName;
-        $this->description  = $description;
-        $this->type         = $type;
-        $this->icon         = $icon;
-        $this->color        = $color;
-        $this->throwable    = $throwable;
+        $this->description = $description;
+        $this->type = $type;
+        $this->icon = $icon;
+        $this->color = $color;
+        $this->throwable = $throwable;
 
         $asWarning = $this->type === TestResult::WARN
-             || $this->type === TestResult::RISKY
-             || $this->type === TestResult::SKIPPED
-             || $this->type === TestResult::INCOMPLETE;
+            || $this->type === TestResult::RISKY
+            || $this->type === TestResult::SKIPPED
+            || $this->type === TestResult::INCOMPLETE;
 
         if ($throwable instanceof Throwable && $asWarning) {
-            $this->warning     = trim((string) preg_replace("/\r|\n/", ' ', $throwable->getMessage()));
+            $this->warning = trim((string)preg_replace("/\r|\n/", ' ', $throwable->getMessage()));
         }
     }
 
@@ -123,10 +123,10 @@ final class TestResult
         $name = str_replace('_', ' ', $name);
 
         // Then, replace upper cases by spaces.
-        $name = (string) preg_replace('/([A-Z])/', ' $1', $name);
+        $name = (string)preg_replace('/([A-Z])/', ' $1', $name);
 
         // Finally, if it starts with `test`, we remove it.
-        $name = (string) preg_replace('/^test/', '', $name);
+        $name = (string)preg_replace('/^test/', '', $name);
 
         // Removes spaces
         $name = trim($name);

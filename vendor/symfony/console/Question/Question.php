@@ -33,8 +33,8 @@ class Question
     private bool $multiline = false;
 
     /**
-     * @param string                     $question The question to ask to the user
-     * @param string|bool|int|float|null $default  The default answer to return if the user enters nothing
+     * @param string $question The question to ask to the user
+     * @param string|bool|int|float|null $default The default answer to return if the user enters nothing
      */
     public function __construct(string $question, string|bool|int|float $default = null)
     {
@@ -135,33 +135,6 @@ class Question
     }
 
     /**
-     * Sets values for the autocompleter.
-     *
-     * @return $this
-     *
-     * @throws LogicException
-     */
-    public function setAutocompleterValues(?iterable $values): static
-    {
-        if (\is_array($values)) {
-            $values = $this->isAssoc($values) ? array_merge(array_keys($values), array_values($values)) : array_values($values);
-
-            $callback = static function () use ($values) {
-                return $values;
-            };
-        } elseif ($values instanceof \Traversable) {
-            $valueCache = null;
-            $callback = static function () use ($values, &$valueCache) {
-                return $valueCache ??= iterator_to_array($values, false);
-            };
-        } else {
-            $callback = null;
-        }
-
-        return $this->setAutocompleterCallback($callback);
-    }
-
-    /**
      * Gets the callback function used for the autocompleter.
      */
     public function getAutocompleterCallback(): ?callable
@@ -188,6 +161,46 @@ class Question
     }
 
     /**
+     * Sets values for the autocompleter.
+     *
+     * @return $this
+     *
+     * @throws LogicException
+     */
+    public function setAutocompleterValues(?iterable $values): static
+    {
+        if (\is_array($values)) {
+            $values = $this->isAssoc($values) ? array_merge(array_keys($values), array_values($values)) : array_values($values);
+
+            $callback = static function () use ($values) {
+                return $values;
+            };
+        } elseif ($values instanceof \Traversable) {
+            $valueCache = null;
+            $callback = static function () use ($values, &$valueCache) {
+                return $valueCache ??= iterator_to_array($values, false);
+            };
+        } else {
+            $callback = null;
+        }
+
+        return $this->setAutocompleterCallback($callback);
+    }
+
+    protected function isAssoc(array $array)
+    {
+        return (bool)\count(array_filter(array_keys($array), 'is_string'));
+    }
+
+    /**
+     * Gets the validator for the question.
+     */
+    public function getValidator(): ?callable
+    {
+        return $this->validator;
+    }
+
+    /**
      * Sets a validator for the question.
      *
      * @return $this
@@ -197,14 +210,6 @@ class Question
         $this->validator = null === $validator ? null : $validator(...);
 
         return $this;
-    }
-
-    /**
-     * Gets the validator for the question.
-     */
-    public function getValidator(): ?callable
-    {
-        return $this->validator;
     }
 
     /**
@@ -238,6 +243,16 @@ class Question
     }
 
     /**
+     * Gets the normalizer for the response.
+     *
+     * The normalizer can ba a callable (a string), a closure or a class implementing __invoke.
+     */
+    public function getNormalizer(): ?callable
+    {
+        return $this->normalizer;
+    }
+
+    /**
      * Sets a normalizer for the response.
      *
      * The normalizer can be a callable (a string), a closure or a class implementing __invoke.
@@ -249,21 +264,6 @@ class Question
         $this->normalizer = $normalizer(...);
 
         return $this;
-    }
-
-    /**
-     * Gets the normalizer for the response.
-     *
-     * The normalizer can ba a callable (a string), a closure or a class implementing __invoke.
-     */
-    public function getNormalizer(): ?callable
-    {
-        return $this->normalizer;
-    }
-
-    protected function isAssoc(array $array)
-    {
-        return (bool) \count(array_filter(array_keys($array), 'is_string'));
     }
 
     public function isTrimmable(): bool

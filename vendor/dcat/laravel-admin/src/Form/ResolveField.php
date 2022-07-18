@@ -7,12 +7,12 @@ trait ResolveField
     protected $resolvingFieldCallbacks = [];
 
     /**
+     * @param \Closure $callback
+     * @return $this
      * @example $form->resolvingField(function ($field, $form) {
      *     ...
      * });
      *
-     * @param  \Closure  $callback
-     * @return $this
      */
     public function resolvingField(\Closure $callback)
     {
@@ -27,7 +27,7 @@ trait ResolveField
     }
 
     /**
-     * @param  Field  $field
+     * @param Field $field
      * @return void
      */
     protected function callResolvingFieldCallbacks(Field $field)

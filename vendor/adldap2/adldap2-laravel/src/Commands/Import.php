@@ -36,6 +36,18 @@ class Import
     protected $model;
 
     /**
+     * Constructor.
+     *
+     * @param User $user The LDAP user being imported.
+     * @param Model $model The users eloquent model.
+     */
+    public function __construct(User $user, Model $model)
+    {
+        $this->user = $user;
+        $this->model = $model;
+    }
+
+    /**
      * Sets the scope to use for locating LDAP users.
      *
      * @param $scope
@@ -43,18 +55,6 @@ class Import
     public static function useScope($scope)
     {
         static::$scope = $scope;
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param User  $user  The LDAP user being imported.
-     * @param Model $model The users eloquent model.
-     */
-    public function __construct(User $user, Model $model)
-    {
-        $this->user = $user;
-        $this->model = $model;
     }
 
     /**
@@ -69,7 +69,7 @@ class Import
         // we'll create a new one for them.
         $model = $this->findUser() ?: $this->model->newInstance();
 
-        if (! $model->exists) {
+        if (!$model->exists) {
             Event::dispatch(new Importing($this->user, $model));
         }
 
@@ -85,9 +85,9 @@ class Import
     /**
      * Retrieves an eloquent user by their GUID or their username.
      *
+     * @return Model|null
      * @throws UnexpectedValueException
      *
-     * @return Model|null
      */
     protected function findUser()
     {
@@ -109,6 +109,50 @@ class Import
         $scope->apply($query, $this->model);
 
         return $query->first();
+    }
+
+    /**
+     * Returns the LDAP users object GUID.
+     *
+     * @return string
+     * @throws UnexpectedValueException
+     *
+     */
+    protected function getUserObjectGuid()
+    {
+        $guid = $this->user->getConvertedGuid();
+
+        if (trim($guid) == false) {
+            $attribute = $this->user->getSchema()->objectGuid();
+
+            throw new UnexpectedValueException(
+                "Unable to locate a user without a {$attribute}"
+            );
+        }
+
+        return $guid;
+    }
+
+    /**
+     * Returns the LDAP users configured username.
+     *
+     * @return string
+     * @throws UnexpectedValueException
+     *
+     */
+    protected function getUserUsername()
+    {
+        $attribute = Resolver::getLdapDiscoveryAttribute();
+
+        $username = $this->user->getFirstAttribute($attribute);
+
+        if (trim($username) == false) {
+            throw new UnexpectedValueException(
+                "Unable to locate a user without a {$attribute}"
+            );
+        }
+
+        return $username;
     }
 
     /**
@@ -146,47 +190,16 @@ class Import
     }
 
     /**
-     * Returns the LDAP users configured username.
+     * Returns the configured LDAP sync attributes.
      *
-     * @throws UnexpectedValueException
-     *
-     * @return string
+     * @return array
      */
-    protected function getUserUsername()
+    protected function getLdapSyncAttributes()
     {
-        $attribute = Resolver::getLdapDiscoveryAttribute();
-
-        $username = $this->user->getFirstAttribute($attribute);
-
-        if (trim($username) == false) {
-            throw new UnexpectedValueException(
-                "Unable to locate a user without a {$attribute}"
-            );
-        }
-
-        return $username;
-    }
-
-    /**
-     * Returns the LDAP users object GUID.
-     *
-     * @throws UnexpectedValueException
-     *
-     * @return string
-     */
-    protected function getUserObjectGuid()
-    {
-        $guid = $this->user->getConvertedGuid();
-
-        if (trim($guid) == false) {
-            $attribute = $this->user->getSchema()->objectGuid();
-
-            throw new UnexpectedValueException(
-                "Unable to locate a user without a {$attribute}"
-            );
-        }
-
-        return $guid;
+        return Config::get('ldap_auth.sync_attributes', [
+            'email' => 'userprincipalname',
+            'name' => 'cn',
+        ]);
     }
 
     /**
@@ -199,18 +212,5 @@ class Import
     protected function isHandler($handler)
     {
         return is_string($handler) && class_exists($handler) && method_exists($handler, 'handle');
-    }
-
-    /**
-     * Returns the configured LDAP sync attributes.
-     *
-     * @return array
-     */
-    protected function getLdapSyncAttributes()
-    {
-        return Config::get('ldap_auth.sync_attributes', [
-            'email' => 'userprincipalname',
-            'name'  => 'cn',
-        ]);
     }
 }

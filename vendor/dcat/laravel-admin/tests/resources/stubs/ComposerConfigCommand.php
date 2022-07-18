@@ -20,7 +20,7 @@ class ComposerConfigCommand extends Command
         $contents['repositories'] = [
             [
                 'type' => 'path',
-                'url'  => './dcat-admin',
+                'url' => './dcat-admin',
             ],
         ];
 

@@ -32,7 +32,7 @@ class ProcOutputPager extends StreamOutput implements OutputPager
      * Constructor.
      *
      * @param StreamOutput $output
-     * @param string       $cmd    Pager process command (default: 'less -R -F -X')
+     * @param string $cmd Pager process command (default: 'less -R -F -X')
      */
     public function __construct(StreamOutput $output, string $cmd = 'less -R -F -X')
     {
@@ -44,14 +44,14 @@ class ProcOutputPager extends StreamOutput implements OutputPager
      * Writes a message to the output.
      *
      * @param string $message A message to write to the output
-     * @param bool   $newline Whether to add a newline or not
+     * @param bool $newline Whether to add a newline or not
      *
      * @throws \RuntimeException When unable to write output (should never happen)
      */
     public function doWrite($message, $newline)
     {
         $pipe = $this->getPipe();
-        if (false === @\fwrite($pipe, $message.($newline ? \PHP_EOL : ''))) {
+        if (false === @\fwrite($pipe, $message . ($newline ? \PHP_EOL : ''))) {
             // @codeCoverageIgnoreStart
             // should never happen
             throw new \RuntimeException('Unable to write output');
@@ -59,26 +59,6 @@ class ProcOutputPager extends StreamOutput implements OutputPager
         }
 
         \fflush($pipe);
-    }
-
-    /**
-     * Close the current pager process.
-     */
-    public function close()
-    {
-        if (isset($this->pipe)) {
-            \fclose($this->pipe);
-        }
-
-        if (isset($this->proc)) {
-            $exit = \proc_close($this->proc);
-            if ($exit !== 0) {
-                throw new \RuntimeException('Error closing output stream');
-            }
-        }
-
-        $this->pipe = null;
-        $this->proc = null;
     }
 
     /**
@@ -100,5 +80,25 @@ class ProcOutputPager extends StreamOutput implements OutputPager
         }
 
         return $this->pipe;
+    }
+
+    /**
+     * Close the current pager process.
+     */
+    public function close()
+    {
+        if (isset($this->pipe)) {
+            \fclose($this->pipe);
+        }
+
+        if (isset($this->proc)) {
+            $exit = \proc_close($this->proc);
+            if ($exit !== 0) {
+                throw new \RuntimeException('Error closing output stream');
+            }
+        }
+
+        $this->pipe = null;
+        $this->proc = null;
     }
 }

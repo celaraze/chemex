@@ -76,8 +76,10 @@ protected function schedule(Schedule $schedule)
 The above scheduled import command will:
 
 - Run without interaction and import new users as well as synchronize already imported users
-- Restore user models who have been re-activated in your LDAP directory (if you're using [SoftDeletes](https://laravel.com/docs/5.7/eloquent#soft-deleting))
-- Soft-Delete user models who have been deactived in your LDAP directory (if you're using [SoftDeletes](https://laravel.com/docs/5.7/eloquent#soft-deleting))
+- Restore user models who have been re-activated in your LDAP directory (if you're
+  using [SoftDeletes](https://laravel.com/docs/5.7/eloquent#soft-deleting))
+- Soft-Delete user models who have been deactived in your LDAP directory (if you're
+  using [SoftDeletes](https://laravel.com/docs/5.7/eloquent#soft-deleting))
 - Only import users that have an `objectclass` equal to `user`
 
 ### Importing a Single User
@@ -141,7 +143,8 @@ class LdapUserImportScope extends BaseScope
 
 ### Filter
 
-The `--filter` (or `-f`) option allows you to enter in a raw filter in combination with your scopes inside your `config/ldap_auth.php` file:
+The `--filter` (or `-f`) option allows you to enter in a raw filter in combination with your scopes inside
+your `config/ldap_auth.php` file:
 
 ```bash
 php artisan adldap:import --filter "(cn=John Doe)"
@@ -223,12 +226,14 @@ $schedule->command('adldap:import', ['--no-interaction', '--filter' => $filter])
 
 ## Tips
 
- - Users who already exist inside your database will be updated with your configured `sync_attributes`
- - Users are never deleted from the import command, you will need to delete users regularly through your model
- - Successfully imported (new) users are reported in your log files with:
-  - `[2016-06-29 14:51:51] local.INFO: Imported user johndoe`
- - Unsuccessful imported users are also reported in your log files, with the message of the exception:
-  - `[2016-06-29 14:51:51] local.ERROR: Unable to import user janedoe. SQLSTATE[23000]: Integrity constraint violation: 1048`
- - Specifying a username uses ambiguous naming resolution, so you're able to specify attributes other than their username, such as their email (`php artisan adldap:import jdoe@mail.com`).
- - If you have a password mutator (setter) on your User model, it will not override it. This way, you can hash the random 16 characters any way you please.
+- Users who already exist inside your database will be updated with your configured `sync_attributes`
+- Users are never deleted from the import command, you will need to delete users regularly through your model
+- Successfully imported (new) users are reported in your log files with:
+- `[2016-06-29 14:51:51] local.INFO: Imported user johndoe`
+- Unsuccessful imported users are also reported in your log files, with the message of the exception:
+- `[2016-06-29 14:51:51] local.ERROR: Unable to import user janedoe. SQLSTATE[23000]: Integrity constraint violation: 1048`
+- Specifying a username uses ambiguous naming resolution, so you're able to specify attributes other than their
+  username, such as their email (`php artisan adldap:import jdoe@mail.com`).
+- If you have a password mutator (setter) on your User model, it will not override it. This way, you can hash the random
+  16 characters any way you please.
 

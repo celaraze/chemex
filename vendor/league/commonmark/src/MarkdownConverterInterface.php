@@ -25,9 +25,9 @@ interface MarkdownConverterInterface
     /**
      * Converts Markdown to HTML.
      *
+     * @throws \RuntimeException
      * @deprecated since 2.2; use {@link ConverterInterface::convert()} instead
      *
-     * @throws \RuntimeException
      */
     public function convertToHtml(string $markdown): RenderedContentInterface;
 }

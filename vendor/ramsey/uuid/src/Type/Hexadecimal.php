@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Type;
 
 use Ramsey\Uuid\Exception\InvalidArgumentException;
 use ValueError;
-
 use function ctype_xdigit;
 use function sprintf;
 use function strpos;
@@ -39,34 +38,14 @@ final class Hexadecimal implements TypeInterface
      */
     private $value;
 
-    /**
-     * @param string $value The hexadecimal value to store
-     */
-    public function __construct(string $value)
+    public function __toString(): string
     {
-        $value = strtolower($value);
-
-        if (strpos($value, '0x') === 0) {
-            $value = substr($value, 2);
-        }
-
-        if (!ctype_xdigit($value)) {
-            throw new InvalidArgumentException(
-                'Value must be a hexadecimal number'
-            );
-        }
-
-        $this->value = $value;
+        return $this->toString();
     }
 
     public function toString(): string
     {
         return $this->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->toString();
     }
 
     public function jsonSerialize(): string
@@ -88,6 +67,20 @@ final class Hexadecimal implements TypeInterface
     }
 
     /**
+     * @param array{string: string} $data
+     */
+    public function __unserialize(array $data): void
+    {
+        // @codeCoverageIgnoreStart
+        if (!isset($data['string'])) {
+            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
+        }
+        // @codeCoverageIgnoreEnd
+
+        $this->unserialize($data['string']);
+    }
+
+    /**
      * Constructs the object from a serialized string representation
      *
      * @param string $serialized The serialized string representation of the object
@@ -101,16 +94,22 @@ final class Hexadecimal implements TypeInterface
     }
 
     /**
-     * @param array{string: string} $data
+     * @param string $value The hexadecimal value to store
      */
-    public function __unserialize(array $data): void
+    public function __construct(string $value)
     {
-        // @codeCoverageIgnoreStart
-        if (!isset($data['string'])) {
-            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
-        }
-        // @codeCoverageIgnoreEnd
+        $value = strtolower($value);
 
-        $this->unserialize($data['string']);
+        if (strpos($value, '0x') === 0) {
+            $value = substr($value, 2);
+        }
+
+        if (!ctype_xdigit($value)) {
+            throw new InvalidArgumentException(
+                'Value must be a hexadecimal number'
+            );
+        }
+
+        $this->value = $value;
     }
 }

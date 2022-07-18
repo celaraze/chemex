@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
 use function debug_backtrace;
@@ -19,9 +20,14 @@ use function sprintf;
  */
 final class InvalidArgumentException extends Exception
 {
+    private function __construct(string $message = '', int $code = 0, \Exception $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
+
     public static function create(int $argument, string $type): self
     {
-        $stack    = debug_backtrace();
+        $stack = debug_backtrace();
         $function = $stack[1]['function'];
 
         if (isset($stack[1]['class'])) {
@@ -37,10 +43,5 @@ final class InvalidArgumentException extends Exception
                 $type
             )
         );
-    }
-
-    private function __construct(string $message = '', int $code = 0, \Exception $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
     }
 }

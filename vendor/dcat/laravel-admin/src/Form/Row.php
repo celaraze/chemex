@@ -106,8 +106,8 @@ class Row implements Renderable
     /**
      * Row constructor.
      *
-     * @param  \Closure  $callback
-     * @param  Form|WidgetForm  $form
+     * @param \Closure $callback
+     * @param Form|WidgetForm $form
      */
     public function __construct(\Closure $callback, $form)
     {
@@ -127,21 +127,6 @@ class Row implements Renderable
     public function fields()
     {
         return $this->fields;
-    }
-
-    /**
-     * If the form horizontal layout.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function horizontal(bool $value = true)
-    {
-        $this->horizontal = $value;
-
-        $this->fields->each->horizontal($value);
-
-        return $this;
     }
 
     public function setFields(Collection $collection)
@@ -170,7 +155,7 @@ class Row implements Renderable
     /**
      * Set default width for field.
      *
-     * @param  int  $width
+     * @param int $width
      * @return $this
      */
     public function defaultWidth(int $width = 12)
@@ -183,7 +168,7 @@ class Row implements Renderable
     /**
      * Set width for a incomming field.
      *
-     * @param  int  $width
+     * @param int $width
      * @return $this
      */
     public function width($width = 12)
@@ -206,8 +191,8 @@ class Row implements Renderable
     /**
      * Add field.
      *
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string $method
+     * @param array $arguments
      * @return Field|void
      */
     public function __call($method, $arguments)
@@ -217,12 +202,27 @@ class Row implements Renderable
         $field->horizontal($this->horizontal);
 
         $this->fields->push([
-            'width'   => $this->fieldWidth,
+            'width' => $this->fieldWidth,
             'element' => $field,
         ]);
 
         $this->fieldWidth = $this->defaultFieldWidth; // reset field width for next field
 
         return $field;
+    }
+
+    /**
+     * If the form horizontal layout.
+     *
+     * @param bool $value
+     * @return $this
+     */
+    public function horizontal(bool $value = true)
+    {
+        $this->horizontal = $value;
+
+        $this->fields->each->horizontal($value);
+
+        return $this;
     }
 }

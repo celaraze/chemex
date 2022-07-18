@@ -57,11 +57,6 @@ final class ModelScopeMethodReflection implements MethodReflection
         return true;
     }
 
-    public function getName(): string
-    {
-        return $this->methodName;
-    }
-
     public function getPrototype(): ClassMemberReflection
     {
         return $this;
@@ -81,6 +76,11 @@ final class ModelScopeMethodReflection implements MethodReflection
                 new ObjectType($this->relation->getName())
             ),
         ];
+    }
+
+    public function getName(): string
+    {
+        return $this->methodName;
     }
 
     public function getDocComment(): ?string

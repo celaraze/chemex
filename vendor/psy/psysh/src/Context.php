@@ -36,13 +36,25 @@ class Context
     private $boundClass;
 
     /**
-     * Get a context variable.
+     * Check whether a variable name is a magic variable.
      *
-     * @throws \InvalidArgumentException If the variable is not found in the current context
+     * @param string $name
+     *
+     * @return bool
+     */
+    public static function isSpecialVariableName(string $name): bool
+    {
+        return \in_array($name, self::$specialNames) || \in_array($name, self::$commandScopeNames);
+    }
+
+    /**
+     * Get a context variable.
      *
      * @param string $name
      *
      * @return mixed
+     * @throws \InvalidArgumentException If the variable is not found in the current context
+     *
      */
     public function get(string $name)
     {
@@ -87,7 +99,7 @@ class Context
                 break;
         }
 
-        throw new \InvalidArgumentException('Unknown variable: $'.$name);
+        throw new \InvalidArgumentException('Unknown variable: $' . $name);
     }
 
     /**
@@ -148,6 +160,16 @@ class Context
     }
 
     /**
+     * Get the most recent return value.
+     *
+     * @return mixed
+     */
+    public function getReturnValue()
+    {
+        return $this->returnValue;
+    }
+
+    /**
      * Set the most recent return value.
      *
      * @param mixed $value
@@ -158,13 +180,19 @@ class Context
     }
 
     /**
-     * Get the most recent return value.
+     * Get the most recent Exception.
      *
-     * @return mixed
+     * @return \Exception|null
+     * @throws \InvalidArgumentException If no Exception has been caught
+     *
      */
-    public function getReturnValue()
+    public function getLastException()
     {
-        return $this->returnValue;
+        if (!isset($this->lastException)) {
+            throw new \InvalidArgumentException('No most-recent exception');
+        }
+
+        return $this->lastException;
     }
 
     /**
@@ -178,19 +206,19 @@ class Context
     }
 
     /**
-     * Get the most recent Exception.
+     * Get the most recent output from evaluated code.
      *
-     * @throws \InvalidArgumentException If no Exception has been caught
+     * @return string|null
+     * @throws \InvalidArgumentException If no output has happened yet
      *
-     * @return \Exception|null
      */
-    public function getLastException()
+    public function getLastStdout()
     {
-        if (!isset($this->lastException)) {
-            throw new \InvalidArgumentException('No most-recent exception');
+        if (!isset($this->lastStdout)) {
+            throw new \InvalidArgumentException('No most-recent output');
         }
 
-        return $this->lastException;
+        return $this->lastStdout;
     }
 
     /**
@@ -204,19 +232,13 @@ class Context
     }
 
     /**
-     * Get the most recent output from evaluated code.
+     * Get the bound object ($this variable) for the interactive shell.
      *
-     * @throws \InvalidArgumentException If no output has happened yet
-     *
-     * @return string|null
+     * @return object|null
      */
-    public function getLastStdout()
+    public function getBoundObject()
     {
-        if (!isset($this->lastStdout)) {
-            throw new \InvalidArgumentException('No most-recent output');
-        }
-
-        return $this->lastStdout;
+        return $this->boundObject;
     }
 
     /**
@@ -233,13 +255,13 @@ class Context
     }
 
     /**
-     * Get the bound object ($this variable) for the interactive shell.
+     * Get the bound class (self) for the interactive shell.
      *
-     * @return object|null
+     * @return string|null
      */
-    public function getBoundObject()
+    public function getBoundClass()
     {
-        return $this->boundObject;
+        return $this->boundClass;
     }
 
     /**
@@ -256,13 +278,13 @@ class Context
     }
 
     /**
-     * Get the bound class (self) for the interactive shell.
+     * Get command-scope magic variables: $__class, $__file, etc.
      *
-     * @return string|null
+     * @return array
      */
-    public function getBoundClass()
+    public function getCommandScopeVariables(): array
     {
-        return $this->boundClass;
+        return $this->commandScopeVariables;
     }
 
     /**
@@ -284,16 +306,6 @@ class Context
     }
 
     /**
-     * Get command-scope magic variables: $__class, $__file, etc.
-     *
-     * @return array
-     */
-    public function getCommandScopeVariables(): array
-    {
-        return $this->commandScopeVariables;
-    }
-
-    /**
      * Get unused command-scope magic variables names: __class, __file, etc.
      *
      * This is used by the shell to unset old command-scope variables after a
@@ -304,17 +316,5 @@ class Context
     public function getUnusedCommandScopeVariableNames(): array
     {
         return \array_diff(self::$commandScopeNames, \array_keys($this->commandScopeVariables));
-    }
-
-    /**
-     * Check whether a variable name is a magic variable.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    public static function isSpecialVariableName(string $name): bool
-    {
-        return \in_array($name, self::$specialNames) || \in_array($name, self::$commandScopeNames);
     }
 }

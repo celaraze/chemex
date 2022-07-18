@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class OptimizeCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'optimize';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class OptimizeCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'optimize';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'optimize';
     /**
      * The console command description.
      *

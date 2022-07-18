@@ -32,11 +32,11 @@ final class NewlineParser implements InlineParserInterface
         $inlineContext->getCursor()->advanceBy(1);
 
         // Check previous inline for trailing spaces
-        $spaces     = 0;
+        $spaces = 0;
         $lastInline = $inlineContext->getContainer()->lastChild();
         if ($lastInline instanceof Text) {
             $trimmed = \rtrim($lastInline->getLiteral(), ' ');
-            $spaces  = \strlen($lastInline->getLiteral()) - \strlen($trimmed);
+            $spaces = \strlen($lastInline->getLiteral()) - \strlen($trimmed);
             if ($spaces) {
                 $lastInline->setLiteral($trimmed);
             }

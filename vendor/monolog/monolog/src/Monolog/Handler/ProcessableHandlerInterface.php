@@ -27,7 +27,7 @@ interface ProcessableHandlerInterface
      *
      * @psalm-param ProcessorInterface|callable(Record): Record $callback
      *
-     * @param  ProcessorInterface|callable $callback
+     * @param ProcessorInterface|callable $callback
      * @return HandlerInterface            self
      */
     public function pushProcessor(callable $callback): HandlerInterface;
@@ -37,8 +37,8 @@ interface ProcessableHandlerInterface
      *
      * @psalm-return ProcessorInterface|callable(Record): Record $callback
      *
-     * @throws \LogicException             In case the processor stack is empty
      * @return callable|ProcessorInterface
+     * @throws \LogicException             In case the processor stack is empty
      */
     public function popProcessor(): callable;
 }

@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 
 /**
@@ -21,11 +23,6 @@ class IsIdentical extends IsSame
         $this->_value = $value;
     }
 
-    public function describeTo(Description $description)
-    {
-        $description->appendValue($this->_value);
-    }
-
     /**
      * Tests of the value is identical to $value as tested by the "===" operator.
      *
@@ -34,5 +31,10 @@ class IsIdentical extends IsSame
     public static function identicalTo($value)
     {
         return new self($value);
+    }
+
+    public function describeTo(Description $description)
+    {
+        $description->appendValue($this->_value);
     }
 }

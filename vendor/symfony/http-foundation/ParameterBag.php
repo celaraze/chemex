@@ -74,11 +74,6 @@ class ParameterBag implements \IteratorAggregate, \Countable
         $this->parameters = array_replace($this->parameters, $parameters);
     }
 
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return \array_key_exists($key, $this->parameters) ? $this->parameters[$key] : $default;
-    }
-
     public function set(string $key, mixed $value)
     {
         $this->parameters[$key] = $value;
@@ -108,6 +103,11 @@ class ParameterBag implements \IteratorAggregate, \Countable
         return preg_replace('/[^[:alpha:]]/', '', $this->get($key, $default));
     }
 
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return \array_key_exists($key, $this->parameters) ? $this->parameters[$key] : $default;
+    }
+
     /**
      * Returns the alphabetic characters and digits of the parameter value.
      */
@@ -123,22 +123,6 @@ class ParameterBag implements \IteratorAggregate, \Countable
     {
         // we need to remove - and + because they're allowed in the filter
         return str_replace(['-', '+'], '', $this->filter($key, $default, \FILTER_SANITIZE_NUMBER_INT));
-    }
-
-    /**
-     * Returns the parameter value converted to integer.
-     */
-    public function getInt(string $key, int $default = 0): int
-    {
-        return (int) $this->get($key, $default);
-    }
-
-    /**
-     * Returns the parameter value converted to boolean.
-     */
-    public function getBoolean(string $key, bool $default = false): bool
-    {
-        return $this->filter($key, $default, \FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -167,6 +151,22 @@ class ParameterBag implements \IteratorAggregate, \Countable
         }
 
         return filter_var($value, $filter, $options);
+    }
+
+    /**
+     * Returns the parameter value converted to integer.
+     */
+    public function getInt(string $key, int $default = 0): int
+    {
+        return (int)$this->get($key, $default);
+    }
+
+    /**
+     * Returns the parameter value converted to boolean.
+     */
+    public function getBoolean(string $key, bool $default = false): bool
+    {
+        return $this->filter($key, $default, \FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

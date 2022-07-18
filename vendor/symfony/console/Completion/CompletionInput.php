@@ -52,7 +52,7 @@ final class CompletionInput extends ArgvInput
     /**
      * Create an input based on an COMP_WORDS token list.
      *
-     * @param string[] $tokens       the set of split tokens (e.g. COMP_WORDS or argv)
+     * @param string[] $tokens the set of split tokens (e.g. COMP_WORDS or argv)
      * @param          $currentIndex the index of the cursor (e.g. COMP_CWORD)
      */
     public static function fromTokens(array $tokens, int $currentIndex): self
@@ -137,6 +137,56 @@ final class CompletionInput extends ArgvInput
     }
 
     /**
+     * The token of the cursor, or the last token if the cursor is at the end of the input.
+     */
+    private function getRelevantToken(): string
+    {
+        return $this->tokens[$this->isCursorFree() ? $this->currentIndex - 1 : $this->currentIndex];
+    }
+
+    /**
+     * Whether the cursor is "free" (i.e. at the end of the input preceded by a space).
+     */
+    private function isCursorFree(): bool
+    {
+        $nrOfTokens = \count($this->tokens);
+        if ($this->currentIndex > $nrOfTokens) {
+            throw new \LogicException('Current index is invalid, it must be the number of input tokens or one more.');
+        }
+
+        return $this->currentIndex >= $nrOfTokens;
+    }
+
+    private function getOptionFromToken(string $optionToken): ?InputOption
+    {
+        $optionName = ltrim($optionToken, '-');
+        if (!$optionName) {
+            return null;
+        }
+
+        if ('-' === ($optionToken[1] ?? ' ')) {
+            // long option name
+            return $this->definition->hasOption($optionName) ? $this->definition->getOption($optionName) : null;
+        }
+
+        // short option name
+        return $this->definition->hasShortcut($optionName[0]) ? $this->definition->getOptionForShortcut($optionName[0]) : null;
+    }
+
+    /**
+     * The value already typed by the user (or empty string).
+     */
+    public function getCompletionValue(): string
+    {
+        return $this->completionValue;
+    }
+
+    public function mustSuggestOptionValuesFor(string $optionName): bool
+    {
+        return self::TYPE_OPTION_VALUE === $this->getCompletionType() && $optionName === $this->getCompletionName();
+    }
+
+    /**
      * Returns the type of completion required.
      *
      * TYPE_ARGUMENT_VALUE when completing the value of an input argument
@@ -161,70 +211,9 @@ final class CompletionInput extends ArgvInput
         return $this->completionName;
     }
 
-    /**
-     * The value already typed by the user (or empty string).
-     */
-    public function getCompletionValue(): string
-    {
-        return $this->completionValue;
-    }
-
-    public function mustSuggestOptionValuesFor(string $optionName): bool
-    {
-        return self::TYPE_OPTION_VALUE === $this->getCompletionType() && $optionName === $this->getCompletionName();
-    }
-
     public function mustSuggestArgumentValuesFor(string $argumentName): bool
     {
         return self::TYPE_ARGUMENT_VALUE === $this->getCompletionType() && $argumentName === $this->getCompletionName();
-    }
-
-    protected function parseToken(string $token, bool $parseOptions): bool
-    {
-        try {
-            return parent::parseToken($token, $parseOptions);
-        } catch (RuntimeException) {
-            // suppress errors, completed input is almost never valid
-        }
-
-        return $parseOptions;
-    }
-
-    private function getOptionFromToken(string $optionToken): ?InputOption
-    {
-        $optionName = ltrim($optionToken, '-');
-        if (!$optionName) {
-            return null;
-        }
-
-        if ('-' === ($optionToken[1] ?? ' ')) {
-            // long option name
-            return $this->definition->hasOption($optionName) ? $this->definition->getOption($optionName) : null;
-        }
-
-        // short option name
-        return $this->definition->hasShortcut($optionName[0]) ? $this->definition->getOptionForShortcut($optionName[0]) : null;
-    }
-
-    /**
-     * The token of the cursor, or the last token if the cursor is at the end of the input.
-     */
-    private function getRelevantToken(): string
-    {
-        return $this->tokens[$this->isCursorFree() ? $this->currentIndex - 1 : $this->currentIndex];
-    }
-
-    /**
-     * Whether the cursor is "free" (i.e. at the end of the input preceded by a space).
-     */
-    private function isCursorFree(): bool
-    {
-        $nrOfTokens = \count($this->tokens);
-        if ($this->currentIndex > $nrOfTokens) {
-            throw new \LogicException('Current index is invalid, it must be the number of input tokens or one more.');
-        }
-
-        return $this->currentIndex >= $nrOfTokens;
     }
 
     public function __toString()
@@ -245,5 +234,16 @@ final class CompletionInput extends ArgvInput
         }
 
         return rtrim($str);
+    }
+
+    protected function parseToken(string $token, bool $parseOptions): bool
+    {
+        try {
+            return parent::parseToken($token, $parseOptions);
+        } catch (RuntimeException) {
+            // suppress errors, completed input is almost never valid
+        }
+
+        return $parseOptions;
     }
 }

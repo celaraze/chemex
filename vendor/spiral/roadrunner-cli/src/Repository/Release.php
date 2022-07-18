@@ -62,15 +62,6 @@ abstract class Release implements ReleaseInterface
     }
 
     /**
-     * @param string $version
-     * @return string
-     */
-    private function parseStability(string $version): string
-    {
-        return VersionParser::parseStability($version);
-    }
-
-    /**
      * @param string $name
      * @return string
      */
@@ -83,16 +74,16 @@ abstract class Release implements ReleaseInterface
 
         return isset($parts[1])
             ? $number . '-' . $parts[1]
-            : $number
-        ;
+            : $number;
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $version
+     * @return string
      */
-    public function getName(): string
+    private function parseStability(string $version): string
     {
-        return $this->name;
+        return VersionParser::parseStability($version);
     }
 
     /**
@@ -134,5 +125,13 @@ abstract class Release implements ReleaseInterface
     public function satisfies(string $constraint): bool
     {
         return Semver::satisfies($this->getName(), $constraint);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

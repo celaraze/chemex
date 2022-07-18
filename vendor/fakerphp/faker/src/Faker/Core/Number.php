@@ -11,19 +11,6 @@ use Faker\Extension;
  */
 final class Number implements Extension\NumberExtension
 {
-    public function numberBetween(int $min = 0, int $max = 2147483647): int
-    {
-        $int1 = $min < $max ? $min : $max;
-        $int2 = $min < $max ? $max : $min;
-
-        return mt_rand($int1, $int2);
-    }
-
-    public function randomDigit(): int
-    {
-        return mt_rand(0, 9);
-    }
-
     public function randomDigitNot(int $except): int
     {
         $result = self::numberBetween(0, 8);
@@ -35,9 +22,12 @@ final class Number implements Extension\NumberExtension
         return $result;
     }
 
-    public function randomDigitNotZero(): int
+    public function numberBetween(int $min = 0, int $max = 2147483647): int
     {
-        return mt_rand(1, 9);
+        $int1 = $min < $max ? $min : $max;
+        $int2 = $min < $max ? $max : $min;
+
+        return mt_rand($int1, $int2);
     }
 
     public function randomFloat(?int $nbMaxDecimals = null, float $min = 0, ?float $max = null): float
@@ -63,6 +53,11 @@ final class Number implements Extension\NumberExtension
         return round($min + mt_rand() / mt_getrandmax() * ($max - $min), $nbMaxDecimals);
     }
 
+    public function randomDigit(): int
+    {
+        return mt_rand(0, 9);
+    }
+
     public function randomNumber(int $nbDigits = null, bool $strict = false): int
     {
         if (null === $nbDigits) {
@@ -79,5 +74,10 @@ final class Number implements Extension\NumberExtension
         }
 
         return mt_rand(0, $max);
+    }
+
+    public function randomDigitNotZero(): int
+    {
+        return mt_rand(1, 9);
     }
 }

@@ -47,16 +47,6 @@ class KeywordPatch implements ClassPatchInterface
     }
 
     /**
-     * Returns patch priority, which determines when patch will be applied.
-     *
-     * @return int Priority number (higher - earlier)
-     */
-    public function getPriority()
-    {
-        return 49;
-    }
-
-    /**
      * Returns array of php keywords.
      *
      * @return array
@@ -64,5 +54,15 @@ class KeywordPatch implements ClassPatchInterface
     private function getKeywords()
     {
         return ['__halt_compiler'];
+    }
+
+    /**
+     * Returns patch priority, which determines when patch will be applied.
+     *
+     * @return int Priority number (higher - earlier)
+     */
+    public function getPriority()
+    {
+        return 49;
     }
 }

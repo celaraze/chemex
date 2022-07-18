@@ -68,7 +68,7 @@ class HttpKernel implements HttpKernelInterface, TerminableInterface
      */
     public function handle(Request $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response
     {
-        $request->headers->set('X-Php-Ob-Level', (string) ob_get_level());
+        $request->headers->set('X-Php-Ob-Level', (string)ob_get_level());
 
         try {
             return $this->handleRaw($request, $type);
@@ -84,31 +84,6 @@ class HttpKernel implements HttpKernelInterface, TerminableInterface
 
             return $this->handleThrowable($e, $request, $type);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function terminate(Request $request, Response $response)
-    {
-        $this->dispatcher->dispatch(new TerminateEvent($this, $request, $response), KernelEvents::TERMINATE);
-    }
-
-    /**
-     * @internal
-     */
-    public function terminateWithException(\Throwable $exception, Request $request = null)
-    {
-        if (!$request = $request ?: $this->requestStack->getMainRequest()) {
-            throw $exception;
-        }
-
-        $response = $this->handleThrowable($exception, $request, self::MAIN_REQUEST);
-
-        $response->sendHeaders();
-        $response->sendContent();
-
-        $this->terminate($request, $response);
     }
 
     /**
@@ -203,6 +178,51 @@ class HttpKernel implements HttpKernelInterface, TerminableInterface
     }
 
     /**
+     * Returns a human-readable string for the specified variable.
+     */
+    private function varToString(mixed $var): string
+    {
+        if (\is_object($var)) {
+            return sprintf('an object of type %s', \get_class($var));
+        }
+
+        if (\is_array($var)) {
+            $a = [];
+            foreach ($var as $k => $v) {
+                $a[] = sprintf('%s => ...', $k);
+            }
+
+            return sprintf('an array ([%s])', mb_substr(implode(', ', $a), 0, 255));
+        }
+
+        if (\is_resource($var)) {
+            return sprintf('a resource (%s)', get_resource_type($var));
+        }
+
+        if (null === $var) {
+            return 'null';
+        }
+
+        if (false === $var) {
+            return 'a boolean value (false)';
+        }
+
+        if (true === $var) {
+            return 'a boolean value (true)';
+        }
+
+        if (\is_string($var)) {
+            return sprintf('a string ("%s%s")', mb_substr($var, 0, 255), mb_strlen($var) > 255 ? '...' : '');
+        }
+
+        if (is_numeric($var)) {
+            return sprintf('a number (%s)', (string)$var);
+        }
+
+        return (string)$var;
+    }
+
+    /**
      * Handles a throwable by trying to convert it to a Response.
      *
      * @throws \Exception
@@ -243,47 +263,27 @@ class HttpKernel implements HttpKernelInterface, TerminableInterface
     }
 
     /**
-     * Returns a human-readable string for the specified variable.
+     * @internal
      */
-    private function varToString(mixed $var): string
+    public function terminateWithException(\Throwable $exception, Request $request = null)
     {
-        if (\is_object($var)) {
-            return sprintf('an object of type %s', \get_class($var));
+        if (!$request = $request ?: $this->requestStack->getMainRequest()) {
+            throw $exception;
         }
 
-        if (\is_array($var)) {
-            $a = [];
-            foreach ($var as $k => $v) {
-                $a[] = sprintf('%s => ...', $k);
-            }
+        $response = $this->handleThrowable($exception, $request, self::MAIN_REQUEST);
 
-            return sprintf('an array ([%s])', mb_substr(implode(', ', $a), 0, 255));
-        }
+        $response->sendHeaders();
+        $response->sendContent();
 
-        if (\is_resource($var)) {
-            return sprintf('a resource (%s)', get_resource_type($var));
-        }
+        $this->terminate($request, $response);
+    }
 
-        if (null === $var) {
-            return 'null';
-        }
-
-        if (false === $var) {
-            return 'a boolean value (false)';
-        }
-
-        if (true === $var) {
-            return 'a boolean value (true)';
-        }
-
-        if (\is_string($var)) {
-            return sprintf('a string ("%s%s")', mb_substr($var, 0, 255), mb_strlen($var) > 255 ? '...' : '');
-        }
-
-        if (is_numeric($var)) {
-            return sprintf('a number (%s)', (string) $var);
-        }
-
-        return (string) $var;
+    /**
+     * {@inheritdoc}
+     */
+    public function terminate(Request $request, Response $response)
+    {
+        $this->dispatcher->dispatch(new TerminateEvent($this, $request, $response), KernelEvents::TERMINATE);
     }
 }

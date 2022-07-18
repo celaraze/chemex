@@ -25,7 +25,7 @@ class ReturnByReferenceException extends DoubleException
     {
         parent::__construct($message);
 
-        $this->classname  = $classname;
+        $this->classname = $classname;
         $this->methodName = $methodName;
     }
 

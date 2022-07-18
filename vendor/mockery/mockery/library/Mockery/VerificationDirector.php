@@ -31,14 +31,23 @@ class VerificationDirector
         $this->expectation = $expectation;
     }
 
-    public function verify()
-    {
-        return $this->receivedMethodCalls->verify($this->expectation);
-    }
-
     public function with(...$args)
     {
         return $this->cloneApplyAndVerify("with", $args);
+    }
+
+    protected function cloneApplyAndVerify($method, $args)
+    {
+        $expectation = clone $this->expectation;
+        call_user_func_array(array($expectation, $method), $args);
+        $director = new VerificationDirector($this->receivedMethodCalls, $expectation);
+        $director->verify();
+        return $director;
+    }
+
+    public function verify()
+    {
+        return $this->receivedMethodCalls->verify($this->expectation);
     }
 
     public function withArgs($args)
@@ -59,6 +68,16 @@ class VerificationDirector
     public function times($limit = null)
     {
         return $this->cloneWithoutCountValidatorsApplyAndVerify("times", array($limit));
+    }
+
+    protected function cloneWithoutCountValidatorsApplyAndVerify($method, $args)
+    {
+        $expectation = clone $this->expectation;
+        $expectation->clearCountValidators();
+        call_user_func_array(array($expectation, $method), $args);
+        $director = new VerificationDirector($this->receivedMethodCalls, $expectation);
+        $director->verify();
+        return $director;
     }
 
     public function once()
@@ -84,24 +103,5 @@ class VerificationDirector
     public function between($minimum, $maximum)
     {
         return $this->cloneWithoutCountValidatorsApplyAndVerify("between", array($minimum, $maximum));
-    }
-
-    protected function cloneWithoutCountValidatorsApplyAndVerify($method, $args)
-    {
-        $expectation = clone $this->expectation;
-        $expectation->clearCountValidators();
-        call_user_func_array(array($expectation, $method), $args);
-        $director = new VerificationDirector($this->receivedMethodCalls, $expectation);
-        $director->verify();
-        return $director;
-    }
-
-    protected function cloneApplyAndVerify($method, $args)
-    {
-        $expectation = clone $this->expectation;
-        call_user_func_array(array($expectation, $method), $args);
-        $director = new VerificationDirector($this->receivedMethodCalls, $expectation);
-        $director->verify();
-        return $director;
     }
 }

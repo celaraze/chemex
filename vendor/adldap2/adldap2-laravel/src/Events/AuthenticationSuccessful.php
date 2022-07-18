@@ -24,7 +24,7 @@ class AuthenticationSuccessful
     /**
      * Constructor.
      *
-     * @param User       $user
+     * @param User $user
      * @param Model|null $model
      */
     public function __construct(User $user, Model $model = null)

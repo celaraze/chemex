@@ -7,20 +7,6 @@ use Doctrine\Inflector\InflectorFactory;
 class Pluralizer
 {
     /**
-     * The cached inflector instance.
-     *
-     * @var static
-     */
-    protected static $inflector;
-
-    /**
-     * The language that should be used by the inflector.
-     *
-     * @var string
-     */
-    protected static $language = 'english';
-
-    /**
      * Uncountable non-nouns word forms.
      *
      * Contains words supported by Doctrine/Inflector/Rules/English/Uninflected.php
@@ -33,12 +19,24 @@ class Pluralizer
         'recommended',
         'related',
     ];
+    /**
+     * The cached inflector instance.
+     *
+     * @var static
+     */
+    protected static $inflector;
+    /**
+     * The language that should be used by the inflector.
+     *
+     * @var string
+     */
+    protected static $language = 'english';
 
     /**
      * Get the plural form of an English word.
      *
-     * @param  string  $value
-     * @param  int|array|\Countable  $count
+     * @param string $value
+     * @param int|array|\Countable $count
      * @return string
      */
     public static function plural($value, $count = 2)
@@ -47,7 +45,7 @@ class Pluralizer
             $count = count($count);
         }
 
-        if ((int) abs($count) === 1 || static::uncountable($value) || preg_match('/^(.*)[A-Za-z0-9\x{0080}-\x{FFFF}]$/u', $value) == 0) {
+        if ((int)abs($count) === 1 || static::uncountable($value) || preg_match('/^(.*)[A-Za-z0-9\x{0080}-\x{FFFF}]$/u', $value) == 0) {
             return $value;
         }
 
@@ -57,47 +55,14 @@ class Pluralizer
     }
 
     /**
-     * Get the singular form of an English word.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    public static function singular($value)
-    {
-        $singular = static::inflector()->singularize($value);
-
-        return static::matchCase($singular, $value);
-    }
-
-    /**
      * Determine if the given value is uncountable.
      *
-     * @param  string  $value
+     * @param string $value
      * @return bool
      */
     protected static function uncountable($value)
     {
         return in_array(strtolower($value), static::$uncountable);
-    }
-
-    /**
-     * Attempt to match the case on two strings.
-     *
-     * @param  string  $value
-     * @param  string  $comparison
-     * @return string
-     */
-    protected static function matchCase($value, $comparison)
-    {
-        $functions = ['mb_strtolower', 'mb_strtoupper', 'ucfirst', 'ucwords'];
-
-        foreach ($functions as $function) {
-            if ($function($comparison) === $comparison) {
-                return $function($value);
-            }
-        }
-
-        return $value;
     }
 
     /**
@@ -115,9 +80,42 @@ class Pluralizer
     }
 
     /**
+     * Attempt to match the case on two strings.
+     *
+     * @param string $value
+     * @param string $comparison
+     * @return string
+     */
+    protected static function matchCase($value, $comparison)
+    {
+        $functions = ['mb_strtolower', 'mb_strtoupper', 'ucfirst', 'ucwords'];
+
+        foreach ($functions as $function) {
+            if ($function($comparison) === $comparison) {
+                return $function($value);
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get the singular form of an English word.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function singular($value)
+    {
+        $singular = static::inflector()->singularize($value);
+
+        return static::matchCase($singular, $value);
+    }
+
+    /**
      * Specify the language that should be used by the inflector.
      *
-     * @param  string  $language
+     * @param string $language
      * @return void
      */
     public static function useLanguage(string $language)

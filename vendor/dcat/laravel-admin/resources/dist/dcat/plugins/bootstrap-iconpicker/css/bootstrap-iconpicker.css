@@ -51,7 +51,7 @@ div.iconpicker.right .table-icons {
 }
 
 .iconpicker-popover {
-  z-index: 1050 !important;
+    z-index: 1050 !important;
 }
 
 .iconpicker-popover .search-control {

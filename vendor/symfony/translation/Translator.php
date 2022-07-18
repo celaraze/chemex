@@ -100,46 +100,13 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
     }
 
     /**
-     * Adds a Resource.
+     * Gets the fallback locales.
      *
-     * @param string $format   The name of the loader (@see addLoader())
-     * @param mixed  $resource The resource name
-     *
-     * @throws InvalidArgumentException If the locale contains invalid characters
+     * @internal
      */
-    public function addResource(string $format, mixed $resource, string $locale, string $domain = null)
+    public function getFallbackLocales(): array
     {
-        if (null === $domain) {
-            $domain = 'messages';
-        }
-
-        $this->assertValidLocale($locale);
-        $locale ?: $locale = class_exists(\Locale::class) ? \Locale::getDefault() : 'en';
-
-        $this->resources[$locale][] = [$format, $resource, $domain];
-
-        if (\in_array($locale, $this->fallbackLocales)) {
-            $this->catalogues = [];
-        } else {
-            unset($this->catalogues[$locale]);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setLocale(string $locale)
-    {
-        $this->assertValidLocale($locale);
-        $this->locale = $locale;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLocale(): string
-    {
-        return $this->locale ?: (class_exists(\Locale::class) ? \Locale::getDefault() : 'en');
+        return $this->fallbackLocales;
     }
 
     /**
@@ -162,13 +129,15 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
     }
 
     /**
-     * Gets the fallback locales.
+     * Asserts that the locale is valid, throws an Exception if not.
      *
-     * @internal
+     * @throws InvalidArgumentException If the locale contains invalid characters
      */
-    public function getFallbackLocales(): array
+    protected function assertValidLocale(string $locale)
     {
-        return $this->fallbackLocales;
+        if (!preg_match('/^[a-z0-9@_\\.\\-]*$/i', $locale)) {
+            throw new InvalidArgumentException(sprintf('Invalid "%s" locale.', $locale));
+        }
     }
 
     /**
@@ -201,8 +170,8 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
 
         $len = \strlen(MessageCatalogue::INTL_DOMAIN_SUFFIX);
         if ($this->hasIntlFormatter
-            && ($catalogue->defines($id, $domain.MessageCatalogue::INTL_DOMAIN_SUFFIX)
-            || (\strlen($domain) > $len && 0 === substr_compare($domain, MessageCatalogue::INTL_DOMAIN_SUFFIX, -$len, $len)))
+            && ($catalogue->defines($id, $domain . MessageCatalogue::INTL_DOMAIN_SUFFIX)
+                || (\strlen($domain) > $len && 0 === substr_compare($domain, MessageCatalogue::INTL_DOMAIN_SUFFIX, -$len, $len)))
         ) {
             return $this->formatter->formatIntl($catalogue->get($id, $domain), $locale, $parameters);
         }
@@ -231,19 +200,18 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
     /**
      * {@inheritdoc}
      */
-    public function getCatalogues(): array
+    public function getLocale(): string
     {
-        return array_values($this->catalogues);
+        return $this->locale ?: (class_exists(\Locale::class) ? \Locale::getDefault() : 'en');
     }
 
     /**
-     * Gets the loaders.
-     *
-     * @return LoaderInterface[]
+     * {@inheritdoc}
      */
-    protected function getLoaders(): array
+    public function setLocale(string $locale)
     {
-        return $this->loaders;
+        $this->assertValidLocale($locale);
+        $this->locale = $locale;
     }
 
     protected function loadCatalogue(string $locale)
@@ -269,6 +237,129 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
         $this->loadFallbackCatalogues($locale);
     }
 
+    /**
+     * @internal
+     */
+    protected function doLoadCatalogue(string $locale): void
+    {
+        $this->catalogues[$locale] = new MessageCatalogue($locale);
+
+        if (isset($this->resources[$locale])) {
+            foreach ($this->resources[$locale] as $resource) {
+                if (!isset($this->loaders[$resource[0]])) {
+                    if (\is_string($resource[1])) {
+                        throw new RuntimeException(sprintf('No loader is registered for the "%s" format when loading the "%s" resource.', $resource[0], $resource[1]));
+                    }
+
+                    throw new RuntimeException(sprintf('No loader is registered for the "%s" format.', $resource[0]));
+                }
+                $this->catalogues[$locale]->addCatalogue($this->loaders[$resource[0]]->load($resource[1], $locale, $resource[2]));
+            }
+        }
+    }
+
+    protected function computeFallbackLocales(string $locale)
+    {
+        $this->parentLocales ??= json_decode(file_get_contents(__DIR__ . '/Resources/data/parents.json'), true);
+
+        $originLocale = $locale;
+        $locales = [];
+
+        while ($locale) {
+            $parent = $this->parentLocales[$locale] ?? null;
+
+            if ($parent) {
+                $locale = 'root' !== $parent ? $parent : null;
+            } elseif (\function_exists('locale_parse')) {
+                $localeSubTags = locale_parse($locale);
+                $locale = null;
+                if (1 < \count($localeSubTags)) {
+                    array_pop($localeSubTags);
+                    $locale = locale_compose($localeSubTags) ?: null;
+                }
+            } elseif ($i = strrpos($locale, '_') ?: strrpos($locale, '-')) {
+                $locale = substr($locale, 0, $i);
+            } else {
+                $locale = null;
+            }
+
+            if (null !== $locale) {
+                $locales[] = $locale;
+            }
+        }
+
+        foreach ($this->fallbackLocales as $fallback) {
+            if ($fallback === $originLocale) {
+                continue;
+            }
+
+            $locales[] = $fallback;
+        }
+
+        return array_unique($locales);
+    }
+
+    private function loadFallbackCatalogues(string $locale): void
+    {
+        $current = $this->catalogues[$locale];
+
+        foreach ($this->computeFallbackLocales($locale) as $fallback) {
+            if (!isset($this->catalogues[$fallback])) {
+                $this->initializeCatalogue($fallback);
+            }
+
+            $fallbackCatalogue = new MessageCatalogue($fallback, $this->getAllMessages($this->catalogues[$fallback]));
+            foreach ($this->catalogues[$fallback]->getResources() as $resource) {
+                $fallbackCatalogue->addResource($resource);
+            }
+            $current->addFallbackCatalogue($fallbackCatalogue);
+            $current = $fallbackCatalogue;
+        }
+    }
+
+    private function getAllMessages(MessageCatalogueInterface $catalogue): array
+    {
+        $allMessages = [];
+
+        foreach ($catalogue->all() as $domain => $messages) {
+            if ($intlMessages = $catalogue->all($domain . MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
+                $allMessages[$domain . MessageCatalogue::INTL_DOMAIN_SUFFIX] = $intlMessages;
+                $messages = array_diff_key($messages, $intlMessages);
+            }
+            if ($messages) {
+                $allMessages[$domain] = $messages;
+            }
+        }
+
+        return $allMessages;
+    }
+
+    /**
+     * Adds a Resource.
+     *
+     * @param string $format The name of the loader (@see addLoader())
+     * @param mixed $resource The resource name
+     *
+     * @throws InvalidArgumentException If the locale contains invalid characters
+     */
+    public function addResource(string $format, mixed $resource, string $locale, string $domain = null)
+    {
+        if (null === $domain) {
+            $domain = 'messages';
+        }
+
+        $this->assertValidLocale($locale);
+        $locale ?: $locale = class_exists(\Locale::class) ? \Locale::getDefault() : 'en';
+
+        $this->resources[$locale][] = [$format, $resource, $domain];
+
+        if (\in_array($locale, $this->fallbackLocales)) {
+            $this->catalogues = [];
+        } else {
+            unset($this->catalogues[$locale]);
+        }
+    }
+
     private function initializeCacheCatalogue(string $locale): void
     {
         if (isset($this->catalogues[$locale])) {
@@ -290,6 +381,22 @@ class Translator implements TranslatorInterface, TranslatorBagInterface, LocaleA
 
         /* Read catalogue from cache. */
         $this->catalogues[$locale] = include $cache->getPath();
+    }
+
+    /**
+     * Provides the ConfigCache factory implementation, falling back to a
+     * default implementation if necessary.
+     */
+    private function getConfigCacheFactory(): ConfigCacheFactoryInterface
+    {
+        $this->configCacheFactory ??= new ConfigCacheFactory($this->debug);
+
+        return $this->configCacheFactory;
+    }
+
+    private function getCatalogueCachePath(string $locale): string
+    {
+        return $this->cacheDir . '/catalogue.' . $locale . '.' . strtr(substr(base64_encode(hash('sha256', serialize($this->cacheVary), true)), 0, 7), '/', '_') . '.php';
     }
 
     private function dumpCatalogue(string $locale, ConfigCacheInterface $cache): void
@@ -347,128 +454,21 @@ EOF
         return $fallbackContent;
     }
 
-    private function getCatalogueCachePath(string $locale): string
-    {
-        return $this->cacheDir.'/catalogue.'.$locale.'.'.strtr(substr(base64_encode(hash('sha256', serialize($this->cacheVary), true)), 0, 7), '/', '_').'.php';
-    }
-
     /**
-     * @internal
+     * {@inheritdoc}
      */
-    protected function doLoadCatalogue(string $locale): void
+    public function getCatalogues(): array
     {
-        $this->catalogues[$locale] = new MessageCatalogue($locale);
-
-        if (isset($this->resources[$locale])) {
-            foreach ($this->resources[$locale] as $resource) {
-                if (!isset($this->loaders[$resource[0]])) {
-                    if (\is_string($resource[1])) {
-                        throw new RuntimeException(sprintf('No loader is registered for the "%s" format when loading the "%s" resource.', $resource[0], $resource[1]));
-                    }
-
-                    throw new RuntimeException(sprintf('No loader is registered for the "%s" format.', $resource[0]));
-                }
-                $this->catalogues[$locale]->addCatalogue($this->loaders[$resource[0]]->load($resource[1], $locale, $resource[2]));
-            }
-        }
-    }
-
-    private function loadFallbackCatalogues(string $locale): void
-    {
-        $current = $this->catalogues[$locale];
-
-        foreach ($this->computeFallbackLocales($locale) as $fallback) {
-            if (!isset($this->catalogues[$fallback])) {
-                $this->initializeCatalogue($fallback);
-            }
-
-            $fallbackCatalogue = new MessageCatalogue($fallback, $this->getAllMessages($this->catalogues[$fallback]));
-            foreach ($this->catalogues[$fallback]->getResources() as $resource) {
-                $fallbackCatalogue->addResource($resource);
-            }
-            $current->addFallbackCatalogue($fallbackCatalogue);
-            $current = $fallbackCatalogue;
-        }
-    }
-
-    protected function computeFallbackLocales(string $locale)
-    {
-        $this->parentLocales ??= json_decode(file_get_contents(__DIR__.'/Resources/data/parents.json'), true);
-
-        $originLocale = $locale;
-        $locales = [];
-
-        while ($locale) {
-            $parent = $this->parentLocales[$locale] ?? null;
-
-            if ($parent) {
-                $locale = 'root' !== $parent ? $parent : null;
-            } elseif (\function_exists('locale_parse')) {
-                $localeSubTags = locale_parse($locale);
-                $locale = null;
-                if (1 < \count($localeSubTags)) {
-                    array_pop($localeSubTags);
-                    $locale = locale_compose($localeSubTags) ?: null;
-                }
-            } elseif ($i = strrpos($locale, '_') ?: strrpos($locale, '-')) {
-                $locale = substr($locale, 0, $i);
-            } else {
-                $locale = null;
-            }
-
-            if (null !== $locale) {
-                $locales[] = $locale;
-            }
-        }
-
-        foreach ($this->fallbackLocales as $fallback) {
-            if ($fallback === $originLocale) {
-                continue;
-            }
-
-            $locales[] = $fallback;
-        }
-
-        return array_unique($locales);
+        return array_values($this->catalogues);
     }
 
     /**
-     * Asserts that the locale is valid, throws an Exception if not.
+     * Gets the loaders.
      *
-     * @throws InvalidArgumentException If the locale contains invalid characters
+     * @return LoaderInterface[]
      */
-    protected function assertValidLocale(string $locale)
+    protected function getLoaders(): array
     {
-        if (!preg_match('/^[a-z0-9@_\\.\\-]*$/i', $locale)) {
-            throw new InvalidArgumentException(sprintf('Invalid "%s" locale.', $locale));
-        }
-    }
-
-    /**
-     * Provides the ConfigCache factory implementation, falling back to a
-     * default implementation if necessary.
-     */
-    private function getConfigCacheFactory(): ConfigCacheFactoryInterface
-    {
-        $this->configCacheFactory ??= new ConfigCacheFactory($this->debug);
-
-        return $this->configCacheFactory;
-    }
-
-    private function getAllMessages(MessageCatalogueInterface $catalogue): array
-    {
-        $allMessages = [];
-
-        foreach ($catalogue->all() as $domain => $messages) {
-            if ($intlMessages = $catalogue->all($domain.MessageCatalogue::INTL_DOMAIN_SUFFIX)) {
-                $allMessages[$domain.MessageCatalogue::INTL_DOMAIN_SUFFIX] = $intlMessages;
-                $messages = array_diff_key($messages, $intlMessages);
-            }
-            if ($messages) {
-                $allMessages[$domain] = $messages;
-            }
-        }
-
-        return $allMessages;
+        return $this->loaders;
     }
 }

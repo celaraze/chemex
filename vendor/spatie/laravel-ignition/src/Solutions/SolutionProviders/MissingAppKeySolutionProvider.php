@@ -11,7 +11,7 @@ class MissingAppKeySolutionProvider implements HasSolutionsForThrowable
 {
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof RuntimeException) {
+        if (!$throwable instanceof RuntimeException) {
             return false;
         }
 

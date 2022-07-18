@@ -25,10 +25,20 @@ class ModelNotFoundException extends RecordsNotFoundException
     protected $ids;
 
     /**
+     * Get the affected Eloquent model.
+     *
+     * @return class-string<TModel>
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
+
+    /**
      * Set the affected Eloquent model and instance ids.
      *
-     * @param  class-string<TModel>  $model
-     * @param  array<int, int|string>|int|string  $ids
+     * @param class-string<TModel> $model
+     * @param array<int, int|string>|int|string $ids
      * @return $this
      */
     public function setModel($model, $ids = [])
@@ -39,22 +49,12 @@ class ModelNotFoundException extends RecordsNotFoundException
         $this->message = "No query results for model [{$model}]";
 
         if (count($this->ids) > 0) {
-            $this->message .= ' '.implode(', ', $this->ids);
+            $this->message .= ' ' . implode(', ', $this->ids);
         } else {
             $this->message .= '.';
         }
 
         return $this;
-    }
-
-    /**
-     * Get the affected Eloquent model.
-     *
-     * @return class-string<TModel>
-     */
-    public function getModel()
-    {
-        return $this->model;
     }
 
     /**

@@ -12,19 +12,22 @@ class InlineHTML extends Stmt
     /**
      * Constructs an inline HTML node.
      *
-     * @param string $value      String
-     * @param array  $attributes Additional attributes
+     * @param string $value String
+     * @param array $attributes Additional attributes
      */
-    public function __construct(string $value, array $attributes = []) {
+    public function __construct(string $value, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->value = $value;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['value'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_InlineHTML';
     }
 }

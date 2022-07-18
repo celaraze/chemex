@@ -34,7 +34,7 @@ final class TableSectionRenderer implements NodeRendererInterface, XmlNodeRender
     {
         TableSection::assertInstanceOf($node);
 
-        if (! $node->hasChildren()) {
+        if (!$node->hasChildren()) {
             return '';
         }
 

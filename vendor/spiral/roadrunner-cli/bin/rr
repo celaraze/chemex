@@ -49,14 +49,15 @@ foreach ($composerAutoloadPaths as $file) {
     }
 }
 
-if (! defined('RR_COMPOSER_INSTALL')) {
+if (!defined('RR_COMPOSER_INSTALL')) {
     fwrite(STDERR, <<<'RR_CLI_ERROR'
     You need to set up the project dependencies using Composer:
 
         composer install
 
     You can learn all about Composer on https://getcomposer.org/.
-    RR_CLI_ERROR);
+    RR_CLI_ERROR
+    );
 
     exit(1);
 }

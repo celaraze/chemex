@@ -81,74 +81,75 @@ class Enlightn
     }
 
     /**
-     * Run all the registered Enlightn analyzers.
+     * Register the configured Enlightn analyzer classes.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param array $analyzerClasses
      * @return void
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException|\Throwable
+     * @throws \ReflectionException
      */
-    public static function run($app)
+    protected static function registerAnalyzers($analyzerClasses = [])
     {
-        static::$analyzers = [];
+        $analyzerClasses = empty($analyzerClasses) ? static::getAnalyzerClasses() : $analyzerClasses;
 
-        foreach (static::$analyzerClasses as $analyzerClass) {
-            $analyzer = $app->make($analyzerClass);
+        foreach ($analyzerClasses as $analyzerClass) {
+            static::registerAnalyzer($analyzerClass);
+        }
+    }
 
-            static::$analyzers[] = $analyzer;
+    /**
+     * Get the configured Enlightn analyzer classes.
+     *
+     * @return array
+     */
+    public static function getAnalyzerClasses()
+    {
+        if (!in_array('*', Arr::wrap(config('enlightn.analyzers', '*')))) {
+            return Arr::wrap(config('enlightn.analyzers'));
         }
 
-        static::$analyzers = Arr::sort(static::$analyzers, function ($analyzer) {
-            return $analyzer->category.get_class($analyzer);
+        $analyzerClasses = [];
+
+        if (empty($paths = static::getAnalyzerPaths())) {
+            return [];
+        }
+
+        collect($paths)->each(function ($path, $baseNamespace) use (&$analyzerClasses) {
+            $files = is_dir($path) ? (new Finder)->in($path)->files() : Arr::wrap($path);
+
+            foreach ($files as $fileInfo) {
+                $analyzerClass = $baseNamespace . str_replace(
+                        ['/', '.php'],
+                        ['\\', ''],
+                        Str::after(
+                            is_string($fileInfo) ? $fileInfo : $fileInfo->getRealPath(),
+                            realpath($path)
+                        )
+                    );
+
+                $analyzerClasses[] = $analyzerClass;
+            }
         });
 
-        static::callBeforeRunningCallback();
-
-        foreach (static::$analyzers as $analyzer) {
-            try {
-                $analyzer->run($app);
-            } catch (Throwable $e) {
-                $analyzer->recordException($e);
-                if (static::$rethrowExceptions) {
-                    throw $e;
-                }
-            }
-
-            static::callAfterCallback($analyzer);
+        if (empty($exclusions = config('enlightn.exclude_analyzers', []))) {
+            return $analyzerClasses;
         }
+
+        return collect($analyzerClasses)->filter(function ($analyzerClass) use ($exclusions) {
+            return !in_array($analyzerClass, $exclusions);
+        })->toArray();
     }
 
     /**
-     * Determine if Enlightn Pro is installed.
+     * Get the paths of the analyzers.
      *
-     * @return bool
+     * @return array
      */
-    public static function isPro()
+    public static function getAnalyzerPaths()
     {
-        return class_exists(\Enlightn\EnlightnPro\EnlightnProServiceProvider::class);
-    }
-
-    /**
-     * Call the after callback on the analyzer.
-     *
-     * @param \Enlightn\Enlightn\Analyzers\Analyzer $analyzer
-     * @return void
-     */
-    public static function callAfterCallback(Analyzer $analyzer)
-    {
-        if (! is_null(static::$afterCallback)) {
-            call_user_func(static::$afterCallback, $analyzer->getInfo());
-        }
-    }
-
-    /**
-     * Register an after callback on the analyzer.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    public static function using($callback)
-    {
-        static::$afterCallback = $callback;
+        return collect(config('enlightn.analyzer_paths', ['Enlightn\\Enlightn\\Analyzers' => __DIR__ . '/Analyzers']))
+            ->filter(function ($dir) {
+                return file_exists($dir);
+            })->toArray();
     }
 
     /**
@@ -163,73 +164,22 @@ class Enlightn
     }
 
     /**
-     * Register a filter callback on the analyzer.
+     * Register an Enlightn analyzer class.
      *
-     * @param  callable  $callback
+     * @param string $class
      * @return void
+     * @throws \ReflectionException
      */
-    public static function filterUsing($callback)
+    protected static function registerAnalyzer($class)
     {
-        static::$filterCallback = $callback;
-    }
+        if (is_subclass_of($class, Analyzer::class) &&
+            !(new ReflectionClass($class))->isAbstract() &&
+            !static::hasAnalyzer($class) &&
+            static::filter($class)) {
+            static::$analyzerClasses[] = $class;
 
-    /**
-     * Set the filter callback to filter analyzers that should be run in CI mode.
-     *
-     * @return void
-     */
-    public static function filterAnalyzersForCI()
-    {
-        static::filterUsing(function ($class) {
-            if (! empty($ciAnalyzers = config('enlightn.ci_mode_analyzers'))) {
-                return in_array($class, $ciAnalyzers);
-            }
-
-            return $class::$runInCI && ! in_array($class, config('enlightn.ci_mode_exclude_analyzers'));
-        });
-    }
-
-    /**
-     * Call the before running callback.
-     *
-     * @return void
-     */
-    public static function callBeforeRunningCallback()
-    {
-        if (! is_null(static::$beforeRunningCallback)) {
-            call_user_func(static::$beforeRunningCallback);
+            static::registerCategory($class);
         }
-    }
-
-    /**
-     * Register a before running callback.
-     *
-     * @param  callable  $callback
-     * @return void
-     */
-    public static function beforeRunning($callback)
-    {
-        static::$beforeRunningCallback = $callback;
-    }
-
-    /**
-     * Flush all the registered Enlightn analyzers and analyzer classes.
-     *
-     * @return void
-     */
-    public static function flush()
-    {
-        static::$analyzers = [];
-
-        static::$categories = [];
-
-        static::$analyzerClasses = [];
-
-        static::$afterCallback = null;
-
-        static::$filterCallback = null;
-
-        static::$beforeRunningCallback = null;
     }
 
     /**
@@ -241,6 +191,22 @@ class Enlightn
     public static function hasAnalyzer(string $class)
     {
         return in_array($class, static::$analyzerClasses);
+    }
+
+    /**
+     * Register an Enlightn analyzer category.
+     *
+     * @param string $class
+     * @return void
+     */
+    protected static function registerCategory($class)
+    {
+        $category = get_class_vars($class)['category'];
+
+        if (!is_null($category) && !self::hasCategory($category)) {
+            static::$categories[] = $category;
+            static::$categories = Arr::sort(static::$categories);
+        }
     }
 
     /**
@@ -282,59 +248,144 @@ class Enlightn
     }
 
     /**
-     * Get the paths of the analyzers.
+     * Run all the registered Enlightn analyzers.
      *
-     * @return array
+     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException|\Throwable
      */
-    public static function getAnalyzerPaths()
+    public static function run($app)
     {
-        return collect(config('enlightn.analyzer_paths', ['Enlightn\\Enlightn\\Analyzers' => __DIR__.'/Analyzers']))
-                ->filter(function ($dir) {
-                    return file_exists($dir);
-                })->toArray();
+        static::$analyzers = [];
+
+        foreach (static::$analyzerClasses as $analyzerClass) {
+            $analyzer = $app->make($analyzerClass);
+
+            static::$analyzers[] = $analyzer;
+        }
+
+        static::$analyzers = Arr::sort(static::$analyzers, function ($analyzer) {
+            return $analyzer->category . get_class($analyzer);
+        });
+
+        static::callBeforeRunningCallback();
+
+        foreach (static::$analyzers as $analyzer) {
+            try {
+                $analyzer->run($app);
+            } catch (Throwable $e) {
+                $analyzer->recordException($e);
+                if (static::$rethrowExceptions) {
+                    throw $e;
+                }
+            }
+
+            static::callAfterCallback($analyzer);
+        }
     }
 
     /**
-     * Get the configured Enlightn analyzer classes.
+     * Call the before running callback.
      *
-     * @return array
+     * @return void
      */
-    public static function getAnalyzerClasses()
+    public static function callBeforeRunningCallback()
     {
-        if (! in_array('*', Arr::wrap(config('enlightn.analyzers', '*')))) {
-            return Arr::wrap(config('enlightn.analyzers'));
+        if (!is_null(static::$beforeRunningCallback)) {
+            call_user_func(static::$beforeRunningCallback);
         }
+    }
 
-        $analyzerClasses = [];
-
-        if (empty($paths = static::getAnalyzerPaths())) {
-            return [];
+    /**
+     * Call the after callback on the analyzer.
+     *
+     * @param \Enlightn\Enlightn\Analyzers\Analyzer $analyzer
+     * @return void
+     */
+    public static function callAfterCallback(Analyzer $analyzer)
+    {
+        if (!is_null(static::$afterCallback)) {
+            call_user_func(static::$afterCallback, $analyzer->getInfo());
         }
+    }
 
-        collect($paths)->each(function ($path, $baseNamespace) use (&$analyzerClasses) {
-            $files = is_dir($path) ? (new Finder)->in($path)->files() : Arr::wrap($path);
+    /**
+     * Determine if Enlightn Pro is installed.
+     *
+     * @return bool
+     */
+    public static function isPro()
+    {
+        return class_exists(\Enlightn\EnlightnPro\EnlightnProServiceProvider::class);
+    }
 
-            foreach ($files as $fileInfo) {
-                $analyzerClass = $baseNamespace.str_replace(
-                    ['/', '.php'],
-                    ['\\', ''],
-                    Str::after(
-                        is_string($fileInfo) ? $fileInfo : $fileInfo->getRealPath(),
-                        realpath($path)
-                    )
-                );
+    /**
+     * Register an after callback on the analyzer.
+     *
+     * @param callable $callback
+     * @return void
+     */
+    public static function using($callback)
+    {
+        static::$afterCallback = $callback;
+    }
 
-                $analyzerClasses[] = $analyzerClass;
+    /**
+     * Set the filter callback to filter analyzers that should be run in CI mode.
+     *
+     * @return void
+     */
+    public static function filterAnalyzersForCI()
+    {
+        static::filterUsing(function ($class) {
+            if (!empty($ciAnalyzers = config('enlightn.ci_mode_analyzers'))) {
+                return in_array($class, $ciAnalyzers);
             }
+
+            return $class::$runInCI && !in_array($class, config('enlightn.ci_mode_exclude_analyzers'));
         });
+    }
 
-        if (empty($exclusions = config('enlightn.exclude_analyzers', []))) {
-            return $analyzerClasses;
-        }
+    /**
+     * Register a filter callback on the analyzer.
+     *
+     * @param callable $callback
+     * @return void
+     */
+    public static function filterUsing($callback)
+    {
+        static::$filterCallback = $callback;
+    }
 
-        return collect($analyzerClasses)->filter(function ($analyzerClass) use ($exclusions) {
-            return ! in_array($analyzerClass, $exclusions);
-        })->toArray();
+    /**
+     * Register a before running callback.
+     *
+     * @param callable $callback
+     * @return void
+     */
+    public static function beforeRunning($callback)
+    {
+        static::$beforeRunningCallback = $callback;
+    }
+
+    /**
+     * Flush all the registered Enlightn analyzers and analyzer classes.
+     *
+     * @return void
+     */
+    public static function flush()
+    {
+        static::$analyzers = [];
+
+        static::$categories = [];
+
+        static::$analyzerClasses = [];
+
+        static::$afterCallback = null;
+
+        static::$filterCallback = null;
+
+        static::$beforeRunningCallback = null;
     }
 
     /**
@@ -345,56 +396,5 @@ class Enlightn
     public static function totalAnalyzers()
     {
         return (count(static::$analyzers) > 0) ? count(static::$analyzers) : count(static::$analyzerClasses);
-    }
-
-    /**
-     * Register the configured Enlightn analyzer classes.
-     *
-     * @param array $analyzerClasses
-     * @return void
-     * @throws \ReflectionException
-     */
-    protected static function registerAnalyzers($analyzerClasses = [])
-    {
-        $analyzerClasses = empty($analyzerClasses) ? static::getAnalyzerClasses() : $analyzerClasses;
-
-        foreach ($analyzerClasses as $analyzerClass) {
-            static::registerAnalyzer($analyzerClass);
-        }
-    }
-
-    /**
-     * Register an Enlightn analyzer class.
-     *
-     * @param string $class
-     * @return void
-     * @throws \ReflectionException
-     */
-    protected static function registerAnalyzer($class)
-    {
-        if (is_subclass_of($class, Analyzer::class) &&
-                ! (new ReflectionClass($class))->isAbstract() &&
-                ! static::hasAnalyzer($class) &&
-                static::filter($class)) {
-            static::$analyzerClasses[] = $class;
-
-            static::registerCategory($class);
-        }
-    }
-
-    /**
-     * Register an Enlightn analyzer category.
-     *
-     * @param string $class
-     * @return void
-     */
-    protected static function registerCategory($class)
-    {
-        $category = get_class_vars($class)['category'];
-
-        if (! is_null($category) && ! self::hasCategory($category)) {
-            static::$categories[] = $category;
-            static::$categories = Arr::sort(static::$categories);
-        }
     }
 }

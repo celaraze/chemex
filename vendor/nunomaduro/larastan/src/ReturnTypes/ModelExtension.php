@@ -27,7 +27,7 @@ final class ModelExtension implements DynamicStaticMethodReturnTypeExtension
     private $builderHelper;
 
     /**
-     * @param  BuilderHelper  $builderHelper
+     * @param BuilderHelper $builderHelper
      */
     public function __construct(BuilderHelper $builderHelper)
     {
@@ -56,7 +56,7 @@ final class ModelExtension implements DynamicStaticMethodReturnTypeExtension
             return true;
         }
 
-        if (! $methodReflection->getDeclaringClass()->hasNativeMethod($name)) {
+        if (!$methodReflection->getDeclaringClass()->hasNativeMethod($name)) {
             return false;
         }
 
@@ -72,9 +72,10 @@ final class ModelExtension implements DynamicStaticMethodReturnTypeExtension
      */
     public function getTypeFromStaticMethodCall(
         MethodReflection $methodReflection,
-        StaticCall $methodCall,
-        Scope $scope
-    ): Type {
+        StaticCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $method = $methodReflection->getDeclaringClass()
             ->getMethod($methodReflection->getName(), $scope);
 

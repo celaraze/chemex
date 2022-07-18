@@ -11,9 +11,9 @@
 
 namespace Monolog\Handler;
 
+use Monolog\Logger;
 use Rollbar\RollbarLogger;
 use Throwable;
-use Monolog\Logger;
 
 /**
  * Sends errors to Rollbar
@@ -40,25 +40,23 @@ class RollbarHandler extends AbstractProcessingHandler
 
     /** @var string[] */
     protected $levelMap = [
-        Logger::DEBUG     => 'debug',
-        Logger::INFO      => 'info',
-        Logger::NOTICE    => 'info',
-        Logger::WARNING   => 'warning',
-        Logger::ERROR     => 'error',
-        Logger::CRITICAL  => 'critical',
-        Logger::ALERT     => 'critical',
+        Logger::DEBUG => 'debug',
+        Logger::INFO => 'info',
+        Logger::NOTICE => 'info',
+        Logger::WARNING => 'warning',
+        Logger::ERROR => 'error',
+        Logger::CRITICAL => 'critical',
+        Logger::ALERT => 'critical',
         Logger::EMERGENCY => 'critical',
     ];
-
+    /** @var bool */
+    protected $initialized = false;
     /**
      * Records whether any log records have been added since the last flush of the rollbar notifier
      *
      * @var bool
      */
     private $hasRecords = false;
-
-    /** @var bool */
-    protected $initialized = false;
 
     /**
      * @param RollbarLogger $rollbarLogger RollbarLogger object constructed with valid token
@@ -68,6 +66,32 @@ class RollbarHandler extends AbstractProcessingHandler
         $this->rollbarLogger = $rollbarLogger;
 
         parent::__construct($level, $bubble);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function close(): void
+    {
+        $this->flush();
+    }
+
+    public function flush(): void
+    {
+        if ($this->hasRecords) {
+            $this->rollbarLogger->flush();
+            $this->hasRecords = false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reset()
+    {
+        $this->flush();
+
+        parent::reset();
     }
 
     /**
@@ -101,31 +125,5 @@ class RollbarHandler extends AbstractProcessingHandler
         $this->rollbarLogger->log($context['level'], $toLog, $context);
 
         $this->hasRecords = true;
-    }
-
-    public function flush(): void
-    {
-        if ($this->hasRecords) {
-            $this->rollbarLogger->flush();
-            $this->hasRecords = false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function close(): void
-    {
-        $this->flush();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function reset()
-    {
-        $this->flush();
-
-        parent::reset();
     }
 }

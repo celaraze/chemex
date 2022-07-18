@@ -21,19 +21,6 @@ trait KeyTrait
     protected $key = 'token';
 
     /**
-     * Set the key.
-     *
-     * @param  string  $key
-     * @return $this
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-
-        return $this;
-    }
-
-    /**
      * Get the key.
      *
      * @return string
@@ -41,5 +28,18 @@ trait KeyTrait
     public function getKey()
     {
         return $this->key;
+    }
+
+    /**
+     * Set the key.
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+
+        return $this;
     }
 }

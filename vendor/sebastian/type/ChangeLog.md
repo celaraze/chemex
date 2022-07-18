@@ -14,11 +14,14 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 
 * Support for intersection types introduced in PHP 8.1
 * Support for the `never` return type introduced in PHP 8.1
-* Added `Type::isCallable()`, `Type::isGenericObject()`, `Type::isIterable()`, `Type::isMixed()`, `Type::isNever()`, `Type::isNull()`, `Type::isObject()`, `Type::isSimple()`, `Type::isStatic()`, `Type::isUnion()`, `Type::isUnknown()`, and `Type::isVoid()`
+* Added `Type::isCallable()`, `Type::isGenericObject()`, `Type::isIterable()`, `Type::isMixed()`, `Type::isNever()`
+  , `Type::isNull()`, `Type::isObject()`, `Type::isSimple()`, `Type::isStatic()`, `Type::isUnion()`, `Type::isUnknown()`
+  , and `Type::isVoid()`
 
 ### Changed
 
-* Renamed `ReflectionMapper::fromMethodReturnType(ReflectionMethod $method)` to `ReflectionMapper::fromReturnType(ReflectionFunctionAbstract $functionOrMethod)`
+* Renamed `ReflectionMapper::fromMethodReturnType(ReflectionMethod $method)`
+  to `ReflectionMapper::fromReturnType(ReflectionFunctionAbstract $functionOrMethod)`
 
 ### Removed
 
@@ -53,7 +56,8 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 
 ### Added
 
-* [#14](https://github.com/sebastianbergmann/type/issues/14): Support for `static` return type that is introduced in PHP 8
+* [#14](https://github.com/sebastianbergmann/type/issues/14): Support for `static` return type that is introduced in PHP
+  8
 
 ## [2.2.2] - 2020-09-28
 
@@ -128,23 +132,41 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 
 ## [1.0.0] - 2019-06-06
 
-* Initial release based on [code contributed by Michel Hartmann to PHPUnit](https://github.com/sebastianbergmann/phpunit/pull/3673)
+* Initial release based
+  on [code contributed by Michel Hartmann to PHPUnit](https://github.com/sebastianbergmann/phpunit/pull/3673)
 
 [4.0.0]: https://github.com/sebastianbergmann/type/compare/3.0...master
+
 [3.0.0]: https://github.com/sebastianbergmann/type/compare/2.3.4...3.0.0
+
 [2.3.4]: https://github.com/sebastianbergmann/type/compare/ca39369c41313ed12c071ed38ecda8fcdb248859...2.3.4
+
 [2.3.3]: https://github.com/sebastianbergmann/type/compare/2.3.2...ca39369c41313ed12c071ed38ecda8fcdb248859
+
 [2.3.2]: https://github.com/sebastianbergmann/type/compare/2.3.1...2.3.2
+
 [2.3.1]: https://github.com/sebastianbergmann/type/compare/2.3.0...2.3.1
+
 [2.3.0]: https://github.com/sebastianbergmann/type/compare/2.2.2...2.3.0
+
 [2.2.2]: https://github.com/sebastianbergmann/type/compare/2.2.1...2.2.2
+
 [2.2.1]: https://github.com/sebastianbergmann/type/compare/2.2.0...2.2.1
+
 [2.2.0]: https://github.com/sebastianbergmann/type/compare/2.1.1...2.2.0
+
 [2.1.1]: https://github.com/sebastianbergmann/type/compare/2.1.0...2.1.1
+
 [2.1.0]: https://github.com/sebastianbergmann/type/compare/2.0.0...2.1.0
+
 [2.0.0]: https://github.com/sebastianbergmann/type/compare/1.1.3...2.0.0
+
 [1.1.3]: https://github.com/sebastianbergmann/type/compare/1.1.2...1.1.3
+
 [1.1.2]: https://github.com/sebastianbergmann/type/compare/1.1.1...1.1.2
+
 [1.1.1]: https://github.com/sebastianbergmann/type/compare/1.1.0...1.1.1
+
 [1.1.0]: https://github.com/sebastianbergmann/type/compare/1.0.0...1.1.0
+
 [1.0.0]: https://github.com/sebastianbergmann/type/compare/ff74aa41746bd8d10e931843ebf37d42da513ede...1.0.0

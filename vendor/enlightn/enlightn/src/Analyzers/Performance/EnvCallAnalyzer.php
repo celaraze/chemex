@@ -39,9 +39,9 @@ class EnvCallAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return 'Your application contains env function calls outside of your config files. You must ensure that '
-            .'you are calling the "env" function from within your configuration files. Once the configuration '
-            .'has been cached, the .env file will not be loaded and all calls to the "env" function would '
-            .'return null. This means that your code will not work when your configuration is cached.';
+            . 'you are calling the "env" function from within your configuration files. Once the configuration '
+            . 'has been cached, the .env file will not be loaded and all calls to the "env" function would '
+            . 'return null. This means that your code will not work when your configuration is cached.';
     }
 
     /**

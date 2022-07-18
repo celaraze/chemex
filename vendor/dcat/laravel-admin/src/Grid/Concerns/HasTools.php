@@ -27,7 +27,7 @@ trait HasTools
     }
 
     /**
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function toolsWithOutline(bool $value = true)
@@ -38,9 +38,24 @@ trait HasTools
     }
 
     /**
+     * Set grid batch-action callback.
+     *
+     * @param Closure|BatchAction|BatchAction[] $value
+     * @return $this
+     */
+    public function batchActions($value)
+    {
+        $this->tools(function (Tools $tools) use ($value) {
+            $tools->batch($value);
+        });
+
+        return $this;
+    }
+
+    /**
      * Get or setup grid tools.
      *
-     * @param  Closure|array|Action|Tools\AbstractTool|Renderable|Htmlable|string  $value
+     * @param Closure|array|Action|Tools\AbstractTool|Renderable|Htmlable|string $value
      * @return $this|Tools
      */
     public function tools($value = null)
@@ -55,28 +70,13 @@ trait HasTools
             return $this;
         }
 
-        if (! is_array($value)) {
+        if (!is_array($value)) {
             $value = [$value];
         }
 
         foreach ($value as $tool) {
             $this->tools->append($tool);
         }
-
-        return $this;
-    }
-
-    /**
-     * Set grid batch-action callback.
-     *
-     * @param  Closure|BatchAction|BatchAction[]  $value
-     * @return $this
-     */
-    public function batchActions($value)
-    {
-        $this->tools(function (Tools $tools) use ($value) {
-            $tools->batch($value);
-        });
 
         return $this;
     }
@@ -92,27 +92,38 @@ trait HasTools
     }
 
     /**
-     * @param  bool  $val
-     * @return mixed
-     */
-    public function disableToolbar(bool $val = true)
-    {
-        return $this->option('toolbar', ! $val);
-    }
-
-    /**
-     * @param  bool  $val
+     * @param bool $val
      * @return mixed
      */
     public function showToolbar(bool $val = true)
     {
-        return $this->disableToolbar(! $val);
+        return $this->disableToolbar(!$val);
+    }
+
+    /**
+     * @param bool $val
+     * @return mixed
+     */
+    public function disableToolbar(bool $val = true)
+    {
+        return $this->option('toolbar', !$val);
+    }
+
+    /**
+     * Show batch actions.
+     *
+     * @param bool $val
+     * @return $this
+     */
+    public function showBatchActions(bool $val = true)
+    {
+        return $this->disableBatchActions(!$val);
     }
 
     /**
      * Disable batch actions.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableBatchActions(bool $disable = true)
@@ -123,20 +134,20 @@ trait HasTools
     }
 
     /**
-     * Show batch actions.
+     * Show batch delete.
      *
-     * @param  bool  $val
+     * @param bool $val
      * @return $this
      */
-    public function showBatchActions(bool $val = true)
+    public function showBatchDelete(bool $val = true)
     {
-        return $this->disableBatchActions(! $val);
+        return $this->disableBatchDelete(!$val);
     }
 
     /**
      * Disable batch delete.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableBatchDelete(bool $disable = true)
@@ -149,20 +160,20 @@ trait HasTools
     }
 
     /**
-     * Show batch delete.
+     * Show refresh button.
      *
-     * @param  bool  $val
+     * @param bool $val
      * @return $this
      */
-    public function showBatchDelete(bool $val = true)
+    public function showRefreshButton(bool $val = true)
     {
-        return $this->disableBatchDelete(! $val);
+        return $this->disableRefreshButton(!$val);
     }
 
     /**
      * Disable refresh button.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableRefreshButton(bool $disable = true)
@@ -170,17 +181,6 @@ trait HasTools
         $this->tools->disableRefreshButton($disable);
 
         return $this;
-    }
-
-    /**
-     * Show refresh button.
-     *
-     * @param  bool  $val
-     * @return $this
-     */
-    public function showRefreshButton(bool $val = true)
-    {
-        return $this->disableRefreshButton(! $val);
     }
 
     /**
@@ -196,7 +196,7 @@ trait HasTools
                 $this->tools()->has()
                 || $this->allowExporter()
                 || $this->allowCreateButton()
-                || ! empty($this->variables['title'])
+                || !empty($this->variables['title'])
             )
         ) {
             return true;

@@ -22,7 +22,7 @@ class Checkbox extends Editable
 
     protected function renderCheckbox($options)
     {
-        $checkbox = \Dcat\Admin\Widgets\Checkbox::make($this->getName().'[]');
+        $checkbox = \Dcat\Admin\Widgets\Checkbox::make($this->getName() . '[]');
         $checkbox->options($options);
         $checkbox->class('ie-input');
 
@@ -37,7 +37,7 @@ class Checkbox extends Editable
     protected function getOriginal()
     {
         return json_encode(array_map(function ($value) {
-            return (string) $value;
+            return (string)$value;
         }, Helper::array($this->column->getOriginal(), false)));
     }
 }

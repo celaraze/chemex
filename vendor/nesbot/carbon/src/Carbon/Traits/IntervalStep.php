@@ -55,7 +55,7 @@ trait IntervalStep
      * The interval/step is applied negatively (typically subtraction instead of addition) if $negated is true.
      *
      * @param DateTimeInterface $dateTime
-     * @param bool              $negated
+     * @param bool $negated
      *
      * @return CarbonInterface
      */

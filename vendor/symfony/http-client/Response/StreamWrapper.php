@@ -40,6 +40,10 @@ class StreamWrapper
     private bool $eof = false;
     private int $offset = 0;
 
+    private function __construct()
+    {
+    }
+
     /**
      * Creates a PHP stream resource from a ResponseInterface.
      *
@@ -69,7 +73,7 @@ class StreamWrapper
                 'response' => $response,
             ];
 
-            return fopen('symfony://'.$response->getInfo('url'), 'r', false, stream_context_create(['symfony' => $context])) ?: null;
+            return fopen('symfony://' . $response->getInfo('url'), 'r', false, stream_context_create(['symfony' => $context])) ?: null;
         } finally {
             stream_wrapper_unregister('symfony');
         }
@@ -81,9 +85,9 @@ class StreamWrapper
     }
 
     /**
-     * @param resource|callable|null $handle  The resource handle that should be monitored when
+     * @param resource|callable|null $handle The resource handle that should be monitored when
      *                                        stream_select() is used on the created stream
-     * @param resource|null          $content The seekable resource where the response body is buffered
+     * @param resource|null $content The seekable resource where the response body is buffered
      */
     public function bindHandles(&$handle, &$content): void
     {
@@ -192,7 +196,7 @@ class StreamWrapper
     public function stream_set_option(int $option, int $arg1, ?int $arg2): bool
     {
         if (\STREAM_OPTION_BLOCKING === $option) {
-            $this->blocking = (bool) $arg1;
+            $this->blocking = (bool)$arg1;
         } elseif (\STREAM_OPTION_READ_TIMEOUT === $option) {
             $this->timeout = $arg1 + $arg2 / 1e6;
         } else {
@@ -287,16 +291,12 @@ class StreamWrapper
             'uid' => 0,
             'gid' => 0,
             'rdev' => 0,
-            'size' => (int) ($headers['content-length'][0] ?? -1),
+            'size' => (int)($headers['content-length'][0] ?? -1),
             'atime' => 0,
             'mtime' => strtotime($headers['last-modified'][0] ?? '') ?: 0,
             'ctime' => 0,
             'blksize' => 0,
             'blocks' => 0,
         ];
-    }
-
-    private function __construct()
-    {
     }
 }

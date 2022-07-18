@@ -32,11 +32,11 @@
  * - Karel Sommer (calvera)
  */
 $za = function ($time) {
-    return 'za '.strtr($time, [
-        'hodina' => 'hodinu',
-        'minuta' => 'minutu',
-        'sekunda' => 'sekundu',
-    ]);
+    return 'za ' . strtr($time, [
+            'hodina' => 'hodinu',
+            'minuta' => 'minutu',
+            'sekunda' => 'sekundu',
+        ]);
 };
 
 $pred = function ($time) {

@@ -31,8 +31,8 @@ class DatabaseTransactionsManager
     /**
      * Start a new database transaction.
      *
-     * @param  string  $connection
-     * @param  int  $level
+     * @param string $connection
+     * @param int $level
      * @return void
      */
     public function begin($connection, $level)
@@ -45,14 +45,14 @@ class DatabaseTransactionsManager
     /**
      * Rollback the active database transaction.
      *
-     * @param  string  $connection
-     * @param  int  $level
+     * @param string $connection
+     * @param int $level
      * @return void
      */
     public function rollback($connection, $level)
     {
         $this->transactions = $this->transactions->reject(
-            fn ($transaction) => $transaction->connection == $connection && $transaction->level > $level
+            fn($transaction) => $transaction->connection == $connection && $transaction->level > $level
         )->values();
 
         if ($this->transactions->isEmpty()) {
@@ -63,13 +63,13 @@ class DatabaseTransactionsManager
     /**
      * Commit the active database transaction.
      *
-     * @param  string  $connection
+     * @param string $connection
      * @return void
      */
     public function commit($connection)
     {
         [$forThisConnection, $forOtherConnections] = $this->transactions->partition(
-            fn ($transaction) => $transaction->connection == $connection
+            fn($transaction) => $transaction->connection == $connection
         );
 
         $this->transactions = $forOtherConnections->values();
@@ -84,7 +84,7 @@ class DatabaseTransactionsManager
     /**
      * Register a transaction callback.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return void
      */
     public function addCallback($callback)
@@ -97,19 +97,6 @@ class DatabaseTransactionsManager
     }
 
     /**
-     * Specify that callbacks should ignore the given transaction when determining if they should be executed.
-     *
-     * @param  \Illuminate\Database\DatabaseTransactionRecord  $transaction
-     * @return $this
-     */
-    public function callbacksShouldIgnore(DatabaseTransactionRecord $transaction)
-    {
-        $this->callbacksShouldIgnore = $transaction;
-
-        return $this;
-    }
-
-    /**
      * Get the transactions that are applicable to callbacks.
      *
      * @return \Illuminate\Support\Collection
@@ -119,6 +106,19 @@ class DatabaseTransactionsManager
         return $this->transactions->reject(function ($transaction) {
             return $transaction === $this->callbacksShouldIgnore;
         })->values();
+    }
+
+    /**
+     * Specify that callbacks should ignore the given transaction when determining if they should be executed.
+     *
+     * @param \Illuminate\Database\DatabaseTransactionRecord $transaction
+     * @return $this
+     */
+    public function callbacksShouldIgnore(DatabaseTransactionRecord $transaction)
+    {
+        $this->callbacksShouldIgnore = $transaction;
+
+        return $this;
     }
 
     /**

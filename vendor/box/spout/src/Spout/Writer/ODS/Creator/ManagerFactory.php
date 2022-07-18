@@ -63,26 +63,11 @@ class ManagerFactory implements ManagerFactoryInterface
     }
 
     /**
-     * @param StyleManager $styleManager
-     * @param StyleMerger $styleMerger
-     * @return WorksheetManager
+     * @return StyleMerger
      */
-    private function createWorksheetManager(StyleManager $styleManager, StyleMerger $styleMerger)
+    private function createStyleMerger()
     {
-        $stringsEscaper = $this->helperFactory->createStringsEscaper();
-        $stringsHelper = $this->helperFactory->createStringHelper();
-
-        return new WorksheetManager($styleManager, $styleMerger, $stringsEscaper, $stringsHelper);
-    }
-
-    /**
-     * @return SheetManager
-     */
-    public function createSheetManager()
-    {
-        $stringHelper = $this->helperFactory->createStringHelper();
-
-        return new SheetManager($stringHelper);
+        return new StyleMerger();
     }
 
     /**
@@ -108,10 +93,25 @@ class ManagerFactory implements ManagerFactoryInterface
     }
 
     /**
-     * @return StyleMerger
+     * @param StyleManager $styleManager
+     * @param StyleMerger $styleMerger
+     * @return WorksheetManager
      */
-    private function createStyleMerger()
+    private function createWorksheetManager(StyleManager $styleManager, StyleMerger $styleMerger)
     {
-        return new StyleMerger();
+        $stringsEscaper = $this->helperFactory->createStringsEscaper();
+        $stringsHelper = $this->helperFactory->createStringHelper();
+
+        return new WorksheetManager($styleManager, $styleMerger, $stringsEscaper, $stringsHelper);
+    }
+
+    /**
+     * @return SheetManager
+     */
+    public function createSheetManager()
+    {
+        $stringHelper = $this->helperFactory->createStringHelper();
+
+        return new SheetManager($stringHelper);
     }
 }

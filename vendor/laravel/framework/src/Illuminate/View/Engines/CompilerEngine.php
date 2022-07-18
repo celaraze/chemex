@@ -26,8 +26,8 @@ class CompilerEngine extends PhpEngine
     /**
      * Create a new compiler engine instance.
      *
-     * @param  \Illuminate\View\Compilers\CompilerInterface  $compiler
-     * @param  \Illuminate\Filesystem\Filesystem|null  $files
+     * @param \Illuminate\View\Compilers\CompilerInterface $compiler
+     * @param \Illuminate\Filesystem\Filesystem|null $files
      * @return void
      */
     public function __construct(CompilerInterface $compiler, Filesystem $files = null)
@@ -40,8 +40,8 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the evaluated contents of the view.
      *
-     * @param  string  $path
-     * @param  array  $data
+     * @param string $path
+     * @param array $data
      * @return string
      */
     public function get($path, array $data = [])
@@ -66,10 +66,20 @@ class CompilerEngine extends PhpEngine
     }
 
     /**
+     * Get the compiler implementation.
+     *
+     * @return \Illuminate\View\Compilers\CompilerInterface
+     */
+    public function getCompiler()
+    {
+        return $this->compiler;
+    }
+
+    /**
      * Handle a view exception.
      *
-     * @param  \Throwable  $e
-     * @param  int  $obLevel
+     * @param \Throwable $e
+     * @param int $obLevel
      * @return void
      *
      * @throws \Throwable
@@ -84,21 +94,11 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the exception message for an exception.
      *
-     * @param  \Throwable  $e
+     * @param \Throwable $e
      * @return string
      */
     protected function getMessage(Throwable $e)
     {
-        return $e->getMessage().' (View: '.realpath(last($this->lastCompiled)).')';
-    }
-
-    /**
-     * Get the compiler implementation.
-     *
-     * @return \Illuminate\View\Compilers\CompilerInterface
-     */
-    public function getCompiler()
-    {
-        return $this->compiler;
+        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
     }
 }

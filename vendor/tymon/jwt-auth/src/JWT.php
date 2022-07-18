@@ -53,8 +53,8 @@ class JWT
     /**
      * JWT constructor.
      *
-     * @param  \Tymon\JWTAuth\Manager  $manager
-     * @param  \Tymon\JWTAuth\Http\Parser\Parser  $parser
+     * @param \Tymon\JWTAuth\Manager $manager
+     * @param \Tymon\JWTAuth\Http\Parser\Parser $parser
      * @return void
      */
     public function __construct(Manager $manager, Parser $parser)
@@ -64,9 +64,20 @@ class JWT
     }
 
     /**
+     * Alias to generate a token for a given user.
+     *
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $user
+     * @return string
+     */
+    public function fromUser(JWTSubject $user)
+    {
+        return $this->fromSubject($user);
+    }
+
+    /**
      * Generate a token for a given subject.
      *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $subject
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $subject
      * @return string
      */
     public function fromSubject(JWTSubject $subject)
@@ -77,21 +88,70 @@ class JWT
     }
 
     /**
-     * Alias to generate a token for a given user.
+     * Create a Payload instance.
      *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $user
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $subject
+     * @return \Tymon\JWTAuth\Payload
+     */
+    public function makePayload(JWTSubject $subject)
+    {
+        return $this->factory()->customClaims($this->getClaimsArray($subject))->make();
+    }
+
+    /**
+     * Get the Payload Factory.
+     *
+     * @return \Tymon\JWTAuth\Factory
+     */
+    public function factory()
+    {
+        return $this->manager->getPayloadFactory();
+    }
+
+    /**
+     * Build the claims array and return it.
+     *
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $subject
+     * @return array
+     */
+    protected function getClaimsArray(JWTSubject $subject)
+    {
+        return array_merge(
+            $this->getClaimsForSubject($subject),
+            $subject->getJWTCustomClaims(), // custom claims from JWTSubject method
+            $this->customClaims // custom claims from inline setter
+        );
+    }
+
+    /**
+     * Get the claims associated with a given subject.
+     *
+     * @param \Tymon\JWTAuth\Contracts\JWTSubject $subject
+     * @return array
+     */
+    protected function getClaimsForSubject(JWTSubject $subject)
+    {
+        return array_merge([
+            'sub' => $subject->getJWTIdentifier(),
+        ], $this->lockSubject ? ['prv' => $this->hashSubjectModel($subject)] : []);
+    }
+
+    /**
+     * Hash the subject model and return it.
+     *
+     * @param string|object $model
      * @return string
      */
-    public function fromUser(JWTSubject $user)
+    protected function hashSubjectModel($model)
     {
-        return $this->fromSubject($user);
+        return sha1(is_object($model) ? get_class($model) : $model);
     }
 
     /**
      * Refresh an expired token.
      *
-     * @param  bool  $forceForever
-     * @param  bool  $resetClaims
+     * @param bool $forceForever
+     * @param bool $resetClaims
      * @return string
      */
     public function refresh($forceForever = false, $resetClaims = false)
@@ -99,14 +159,28 @@ class JWT
         $this->requireToken();
 
         return $this->manager->customClaims($this->getCustomClaims())
-                             ->refresh($this->token, $forceForever, $resetClaims)
-                             ->get();
+            ->refresh($this->token, $forceForever, $resetClaims)
+            ->get();
+    }
+
+    /**
+     * Ensure that a token is available.
+     *
+     * @return void
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    protected function requireToken()
+    {
+        if (!$this->token) {
+            throw new JWTException('A token is required');
+        }
     }
 
     /**
      * Invalidate a token (add it to the blacklist).
      *
-     * @param  bool  $forceForever
+     * @param bool $forceForever
      * @return $this
      */
     public function invalidate($forceForever = false)
@@ -116,6 +190,23 @@ class JWT
         $this->manager->invalidate($this->token, $forceForever);
 
         return $this;
+    }
+
+    /**
+     * Check that the token is valid.
+     *
+     * @param bool $getPayload
+     * @return \Tymon\JWTAuth\Payload|bool
+     */
+    public function check($getPayload = false)
+    {
+        try {
+            $payload = $this->checkOrFail();
+        } catch (JWTException $e) {
+            return false;
+        }
+
+        return $getPayload ? $payload : true;
     }
 
     /**
@@ -132,20 +223,15 @@ class JWT
     }
 
     /**
-     * Check that the token is valid.
+     * Get the raw Payload instance.
      *
-     * @param  bool  $getPayload
-     * @return \Tymon\JWTAuth\Payload|bool
+     * @return \Tymon\JWTAuth\Payload
      */
-    public function check($getPayload = false)
+    public function getPayload()
     {
-        try {
-            $payload = $this->checkOrFail();
-        } catch (JWTException $e) {
-            return false;
-        }
+        $this->requireToken();
 
-        return $getPayload ? $payload : true;
+        return $this->manager->decode($this->token);
     }
 
     /**
@@ -167,6 +253,19 @@ class JWT
     }
 
     /**
+     * Set the token.
+     *
+     * @param \Tymon\JWTAuth\Token|string $token
+     * @return $this
+     */
+    public function setToken($token)
+    {
+        $this->token = $token instanceof Token ? $token : new Token($token);
+
+        return $this;
+    }
+
+    /**
      * Parse the token from the request.
      *
      * @return $this
@@ -175,7 +274,7 @@ class JWT
      */
     public function parseToken()
     {
-        if (! $token = $this->parser->parseToken()) {
+        if (!$token = $this->parser->parseToken()) {
             throw new JWTException('The token could not be parsed from the request');
         }
 
@@ -183,15 +282,14 @@ class JWT
     }
 
     /**
-     * Get the raw Payload instance.
+     * Convenience method to get a claim value.
      *
-     * @return \Tymon\JWTAuth\Payload
+     * @param string $claim
+     * @return mixed
      */
-    public function getPayload()
+    public function getClaim($claim)
     {
-        $this->requireToken();
-
-        return $this->manager->decode($this->token);
+        return $this->payload()->get($claim);
     }
 
     /**
@@ -205,70 +303,9 @@ class JWT
     }
 
     /**
-     * Convenience method to get a claim value.
-     *
-     * @param  string  $claim
-     * @return mixed
-     */
-    public function getClaim($claim)
-    {
-        return $this->payload()->get($claim);
-    }
-
-    /**
-     * Create a Payload instance.
-     *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $subject
-     * @return \Tymon\JWTAuth\Payload
-     */
-    public function makePayload(JWTSubject $subject)
-    {
-        return $this->factory()->customClaims($this->getClaimsArray($subject))->make();
-    }
-
-    /**
-     * Build the claims array and return it.
-     *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $subject
-     * @return array
-     */
-    protected function getClaimsArray(JWTSubject $subject)
-    {
-        return array_merge(
-            $this->getClaimsForSubject($subject),
-            $subject->getJWTCustomClaims(), // custom claims from JWTSubject method
-            $this->customClaims // custom claims from inline setter
-        );
-    }
-
-    /**
-     * Get the claims associated with a given subject.
-     *
-     * @param  \Tymon\JWTAuth\Contracts\JWTSubject  $subject
-     * @return array
-     */
-    protected function getClaimsForSubject(JWTSubject $subject)
-    {
-        return array_merge([
-            'sub' => $subject->getJWTIdentifier(),
-        ], $this->lockSubject ? ['prv' => $this->hashSubjectModel($subject)] : []);
-    }
-
-    /**
-     * Hash the subject model and return it.
-     *
-     * @param  string|object  $model
-     * @return string
-     */
-    protected function hashSubjectModel($model)
-    {
-        return sha1(is_object($model) ? get_class($model) : $model);
-    }
-
-    /**
      * Check if the subject model matches the one saved in the token.
      *
-     * @param  string|object  $model
+     * @param string|object $model
      * @return bool
      */
     public function checkSubjectModel($model)
@@ -278,19 +315,6 @@ class JWT
         }
 
         return $this->hashSubjectModel($model) === $prv;
-    }
-
-    /**
-     * Set the token.
-     *
-     * @param  \Tymon\JWTAuth\Token|string  $token
-     * @return $this
-     */
-    public function setToken($token)
-    {
-        $this->token = $token instanceof Token ? $token : new Token($token);
-
-        return $this;
     }
 
     /**
@@ -306,23 +330,9 @@ class JWT
     }
 
     /**
-     * Ensure that a token is available.
-     *
-     * @return void
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\JWTException
-     */
-    protected function requireToken()
-    {
-        if (! $this->token) {
-            throw new JWTException('A token is required');
-        }
-    }
-
-    /**
      * Set the request instance.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return $this
      */
     public function setRequest(Request $request)
@@ -335,7 +345,7 @@ class JWT
     /**
      * Set whether the subject should be "locked".
      *
-     * @param  bool  $lock
+     * @param bool $lock
      * @return $this
      */
     public function lockSubject($lock)
@@ -366,16 +376,6 @@ class JWT
     }
 
     /**
-     * Get the Payload Factory.
-     *
-     * @return \Tymon\JWTAuth\Factory
-     */
-    public function factory()
-    {
-        return $this->manager->getPayloadFactory();
-    }
-
-    /**
      * Get the Blacklist.
      *
      * @return \Tymon\JWTAuth\Blacklist
@@ -388,8 +388,8 @@ class JWT
     /**
      * Magically call the JWT Manager.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      *
      * @throws \BadMethodCallException

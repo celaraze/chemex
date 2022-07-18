@@ -56,10 +56,10 @@ class CollectionConstraint extends Constraint
     /**
      * Validates the items
      *
-     * @param array            $value
-     * @param \stdClass        $schema
+     * @param array $value
+     * @param \stdClass $schema
      * @param JsonPointer|null $path
-     * @param string           $i
+     * @param string $i
      */
     protected function validateItems(&$value, $schema = null, JsonPointer $path = null, $i = null)
     {

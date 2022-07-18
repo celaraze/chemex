@@ -7,11 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const JSON_PRETTY_PRINT;
-use const JSON_UNESCAPED_SLASHES;
-use const JSON_UNESCAPED_UNICODE;
+use PHPUnit\Framework\Exception;
 use function count;
 use function is_array;
 use function is_object;
@@ -19,7 +18,9 @@ use function json_decode;
 use function json_encode;
 use function json_last_error;
 use function ksort;
-use PHPUnit\Framework\Exception;
+use const JSON_PRETTY_PRINT;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -82,8 +83,8 @@ final class Json
             // But EMPTY objects MUST remain empty objects. (Otherwise we will
             // re-encode it as a JSON array rather than a JSON object.)
             // See #2919.
-            if (is_object($json) && count((array) $json) > 0) {
-                $json = (array) $json;
+            if (is_object($json) && count((array)$json) > 0) {
+                $json = (array)$json;
             } else {
                 return;
             }

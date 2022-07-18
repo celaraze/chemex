@@ -27,11 +27,11 @@ class OctaneCompatibilityRule implements Rule
     /** @param MethodCall $node */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier) {
+        if (!$node->name instanceof Node\Identifier) {
             return [];
         }
 
-        if (! in_array($node->name->name, ['singleton', 'bind'], true)) {
+        if (!in_array($node->name->name, ['singleton', 'bind'], true)) {
             return [];
         }
 
@@ -43,17 +43,17 @@ class OctaneCompatibilityRule implements Rule
 
         $calledOnType = $scope->getType($node->var);
 
-        if (! $calledOnType instanceof ObjectType) {
+        if (!$calledOnType instanceof ObjectType) {
             return [];
         }
 
         if ($calledOnType->getClassName() !== Application::class &&
-            ! (new ObjectType(Application::class))->isSuperTypeOf($calledOnType)->yes()
+            !(new ObjectType(Application::class))->isSuperTypeOf($calledOnType)->yes()
         ) {
             return [];
         }
 
-        if (! $args[1]->value instanceof Node\Expr\Closure) {
+        if (!$args[1]->value instanceof Node\Expr\Closure) {
             return [];
         }
 
@@ -75,14 +75,14 @@ class OctaneCompatibilityRule implements Rule
             return [];
         }
 
-        if (! $closureParams[0]->var instanceof Node\Expr\Variable) {
+        if (!$closureParams[0]->var instanceof Node\Expr\Variable) {
             return [];
         }
 
         $containerParameterName = $closureParams[0]->var->name;
 
         $nodes = (new NodeFinder)->find($closure->getStmts(), function (Node $node) use ($containerParameterName): bool {
-            if (! $node instanceof Node\Expr\New_) {
+            if (!$node instanceof Node\Expr\New_) {
                 return false;
             }
 
@@ -90,7 +90,7 @@ class OctaneCompatibilityRule implements Rule
                 return false;
             }
 
-            if (! $node->getArgs()[0]->value instanceof Node\Expr\Variable && ! $node->getArgs()[0]->value instanceof Node\Expr\ArrayDimFetch) {
+            if (!$node->getArgs()[0]->value instanceof Node\Expr\Variable && !$node->getArgs()[0]->value instanceof Node\Expr\ArrayDimFetch) {
                 return false;
             }
 
@@ -106,7 +106,7 @@ class OctaneCompatibilityRule implements Rule
                     return false;
                 }
 
-                if (! $node->getArgs()[0]->value->dim instanceof Node\Scalar\String_) {
+                if (!$node->getArgs()[0]->value->dim instanceof Node\Scalar\String_) {
                     return false;
                 }
 

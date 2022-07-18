@@ -584,6 +584,69 @@ class ConsoleTput
     }
 
     /**
+     * Get pathname to the current terminfo.
+     */
+    public static function getTerminfo($term = null): string
+    {
+        $paths = [];
+
+        if (isset($_SERVER['TERMINFO'])) {
+            $paths[] = $_SERVER['TERMINFO'];
+        }
+
+        if (isset($_SERVER['HOME'])) {
+            $paths[] = $_SERVER['HOME'] . \DIRECTORY_SEPARATOR . '.terminfo';
+        }
+
+        if (isset($_SERVER['TERMINFO_DIRS'])) {
+            foreach (\explode(':', $_SERVER['TERMINFO_DIRS']) as $path) {
+                $paths[] = $path;
+            }
+        }
+
+        $paths[] = '/usr/share/terminfo';
+        $paths[] = '/usr/share/lib/terminfo';
+        $paths[] = '/lib/terminfo';
+        $paths[] = '/usr/lib/terminfo';
+        $paths[] = '/usr/local/share/terminfo';
+        $paths[] = '/usr/local/share/lib/terminfo';
+        $paths[] = '/usr/local/lib/terminfo';
+        $paths[] = '/usr/local/ncurses/lib/terminfo';
+        $paths[] = 'hoa://Library/Terminfo';
+
+        $term = $term ?: static::getTerm();
+        $fileHexa = \dechex(\ord($term[0])) . \DIRECTORY_SEPARATOR . $term;
+        $fileAlpha = $term[0] . \DIRECTORY_SEPARATOR . $term;
+        $pathname = null;
+
+        foreach ($paths as $path) {
+            if (\file_exists($_ = $path . \DIRECTORY_SEPARATOR . $fileHexa) ||
+                \file_exists($_ = $path . \DIRECTORY_SEPARATOR . $fileAlpha)) {
+                $pathname = $_;
+
+                break;
+            }
+        }
+
+        if (null === $pathname && 'xterm' !== $term) {
+            return static::getTerminfo('xterm');
+        }
+
+        return $pathname ?? '';
+    }
+
+    /**
+     * Get current term profile.
+     */
+    public static function getTerm(): string
+    {
+        return
+            isset($_SERVER['TERM']) && !empty($_SERVER['TERM'])
+                ? $_SERVER['TERM']
+                : (\defined('PHP_WINDOWS_VERSION_PLATFORM') ? 'windows-ansi' : 'xterm');
+    }
+
+    /**
      * Parse.
      */
     protected function parse(string $terminfo): array
@@ -597,13 +660,13 @@ class ConsoleTput
         $out = ['file' => $terminfo];
 
         $headers = [
-            'data_size'         => $length,
-            'header_size'       => 12,
-            'magic_number'      => (\ord($data[1]) << 8) | \ord($data[0]),
-            'names_size'        => (\ord($data[3]) << 8) | \ord($data[2]),
-            'bool_count'        => (\ord($data[5]) << 8) | \ord($data[4]),
-            'number_count'      => (\ord($data[7]) << 8) | \ord($data[6]),
-            'string_count'      => (\ord($data[9]) << 8) | \ord($data[8]),
+            'data_size' => $length,
+            'header_size' => 12,
+            'magic_number' => (\ord($data[1]) << 8) | \ord($data[0]),
+            'names_size' => (\ord($data[3]) << 8) | \ord($data[2]),
+            'bool_count' => (\ord($data[5]) << 8) | \ord($data[4]),
+            'number_count' => (\ord($data[7]) << 8) | \ord($data[6]),
+            'string_count' => (\ord($data[9]) << 8) | \ord($data[8]),
             'string_table_size' => (\ord($data[11]) << 8) | \ord($data[10]),
         ];
         $out['headers'] = $headers;
@@ -738,68 +801,5 @@ class ConsoleTput
         }
 
         return $this->_informations['strings'][$string];
-    }
-
-    /**
-     * Get current term profile.
-     */
-    public static function getTerm(): string
-    {
-        return
-            isset($_SERVER['TERM']) && !empty($_SERVER['TERM'])
-                ? $_SERVER['TERM']
-                : (\defined('PHP_WINDOWS_VERSION_PLATFORM') ? 'windows-ansi' : 'xterm');
-    }
-
-    /**
-     * Get pathname to the current terminfo.
-     */
-    public static function getTerminfo($term = null): string
-    {
-        $paths = [];
-
-        if (isset($_SERVER['TERMINFO'])) {
-            $paths[] = $_SERVER['TERMINFO'];
-        }
-
-        if (isset($_SERVER['HOME'])) {
-            $paths[] = $_SERVER['HOME'].\DIRECTORY_SEPARATOR.'.terminfo';
-        }
-
-        if (isset($_SERVER['TERMINFO_DIRS'])) {
-            foreach (\explode(':', $_SERVER['TERMINFO_DIRS']) as $path) {
-                $paths[] = $path;
-            }
-        }
-
-        $paths[] = '/usr/share/terminfo';
-        $paths[] = '/usr/share/lib/terminfo';
-        $paths[] = '/lib/terminfo';
-        $paths[] = '/usr/lib/terminfo';
-        $paths[] = '/usr/local/share/terminfo';
-        $paths[] = '/usr/local/share/lib/terminfo';
-        $paths[] = '/usr/local/lib/terminfo';
-        $paths[] = '/usr/local/ncurses/lib/terminfo';
-        $paths[] = 'hoa://Library/Terminfo';
-
-        $term = $term ?: static::getTerm();
-        $fileHexa = \dechex(\ord($term[0])).\DIRECTORY_SEPARATOR.$term;
-        $fileAlpha = $term[0].\DIRECTORY_SEPARATOR.$term;
-        $pathname = null;
-
-        foreach ($paths as $path) {
-            if (\file_exists($_ = $path.\DIRECTORY_SEPARATOR.$fileHexa) ||
-                \file_exists($_ = $path.\DIRECTORY_SEPARATOR.$fileAlpha)) {
-                $pathname = $_;
-
-                break;
-            }
-        }
-
-        if (null === $pathname && 'xterm' !== $term) {
-            return static::getTerminfo('xterm');
-        }
-
-        return $pathname ?? '';
     }
 }

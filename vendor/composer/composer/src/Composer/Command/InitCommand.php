@@ -16,20 +16,19 @@ use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 use Composer\Package\BasePackage;
-use Composer\Package\Package;
 use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Console\Helper\FormatterHelper;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
@@ -60,7 +59,7 @@ class InitCommand extends BaseCommand
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: ' . implode(', ', array_keys(BasePackage::$stabilities)) . ')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
                 new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)'),
@@ -74,8 +73,7 @@ in the current directory.
 
 Read more at https://getcomposer.org/doc/03-cli.md#init
 EOT
-            )
-        ;
+            );
     }
 
     /**
@@ -90,7 +88,7 @@ EOT
 
         if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
             throw new \InvalidArgumentException(
-                'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                'The package name ' . $options['name'] . ' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
             );
         }
 
@@ -128,8 +126,8 @@ EOT
         $autoloadPath = null;
         if (isset($options['autoload'])) {
             $autoloadPath = $options['autoload'];
-            $namespace = $this->namespaceFromPackageName((string) $input->getOption('name'));
-            $options['autoload'] = (object) array(
+            $namespace = $this->namespaceFromPackageName((string)$input->getOption('name'));
+            $options['autoload'] = (object)array(
                 'psr-4' => array(
                     $namespace . '\\' => $autoloadPath,
                 ),
@@ -151,7 +149,7 @@ EOT
                 throw new \RuntimeException('You have to run this command in interactive mode, or specify at least some data using --name, --require, etc.');
             }
 
-            $io->writeError('Writing '.$file->getPath());
+            $io->writeError('Writing ' . $file->getPath());
         }
 
         $file->write($options);
@@ -200,13 +198,189 @@ EOT
 
         // --autoload - Show post-install configuration info
         if ($autoloadPath) {
-            $namespace = $this->namespaceFromPackageName((string) $input->getOption('name'));
+            $namespace = $this->namespaceFromPackageName((string)$input->getOption('name'));
 
-            $io->writeError('PSR-4 autoloading configured. Use "<comment>namespace '.$namespace.';</comment>" in '.$autoloadPath);
+            $io->writeError('PSR-4 autoloading configured. Use "<comment>namespace ' . $namespace . ';</comment>" in ' . $autoloadPath);
             $io->writeError('Include the Composer autoloader with: <comment>require \'vendor/autoload.php\';</comment>');
         }
 
         return 0;
+    }
+
+    /**
+     * @param string $author
+     *
+     * @return array<int, array{name: string, email?: string}>
+     */
+    protected function formatAuthors(string $author): array
+    {
+        $author = $this->parseAuthorString($author);
+        if (null === $author['email']) {
+            unset($author['email']);
+        }
+
+        return array($author);
+    }
+
+    /**
+     * @param string $author
+     * @return array{name: string, email: string|null}
+     */
+    private function parseAuthorString(string $author): array
+    {
+        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
+            $hasEmail = isset($match['email']) && '' !== $match['email'];
+            if ($hasEmail && !$this->isValidEmail($match['email'])) {
+                throw new \InvalidArgumentException('Invalid email "' . $match['email'] . '"');
+            }
+
+            return array(
+                'name' => trim($match['name']),
+                'email' => $hasEmail ? $match['email'] : null,
+            );
+        }
+
+        throw new \InvalidArgumentException(
+            'Invalid author string.  Must be in the formats: ' .
+            'Jane Doe or John Smith <john@example.com>'
+        );
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
+    protected function isValidEmail(string $email): bool
+    {
+        // assume it's valid if we can't validate it
+        if (!function_exists('filter_var')) {
+            return true;
+        }
+
+        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
+    /**
+     * Extract namespace from package's vendor name.
+     *
+     * new_projects.acme-extra/package-name becomes "NewProjectsAcmeExtra\PackageName"
+     *
+     * @param string $packageName
+     *
+     * @return string|null
+     */
+    public function namespaceFromPackageName(string $packageName): ?string
+    {
+        if (!$packageName || strpos($packageName, '/') === false) {
+            return null;
+        }
+
+        $namespace = array_map(
+            function ($part): string {
+                $part = Preg::replace('/[^a-z0-9]/i', ' ', $part);
+                $part = ucwords($part);
+
+                return str_replace(' ', '', $part);
+            },
+            explode('/', $packageName)
+        );
+
+        return join('\\', $namespace);
+    }
+
+    /**
+     * @param array<string, string|array<string>> $options
+     * @return bool
+     */
+    private function hasDependencies(array $options): bool
+    {
+        $requires = (array)$options['require'];
+        $devRequires = isset($options['require-dev']) ? (array)$options['require-dev'] : array();
+
+        return !empty($requires) || !empty($devRequires);
+    }
+
+    /**
+     * @return void
+     */
+    private function runDumpAutoloadCommand(OutputInterface $output): void
+    {
+        try {
+            $command = $this->getApplication()->find('dump-autoload');
+            $this->getApplication()->resetComposer();
+            $command->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError('Could not run dump-autoload.');
+        }
+    }
+
+    /**
+     * Checks the local .gitignore file for the Composer vendor directory.
+     *
+     * Tested patterns include:
+     *  "/$vendor"
+     *  "$vendor"
+     *  "$vendor/"
+     *  "/$vendor/"
+     *  "/$vendor/*"
+     *  "$vendor/*"
+     *
+     * @param string $ignoreFile
+     * @param string $vendor
+     *
+     * @return bool
+     */
+    protected function hasVendorIgnore(string $ignoreFile, string $vendor = 'vendor'): bool
+    {
+        if (!file_exists($ignoreFile)) {
+            return false;
+        }
+
+        $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
+
+        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+        foreach ($lines as $line) {
+            if (Preg::isMatch($pattern, $line)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $ignoreFile
+     * @param string $vendor
+     *
+     * @return void
+     */
+    protected function addVendorIgnore(string $ignoreFile, string $vendor = '/vendor/'): void
+    {
+        $contents = "";
+        if (file_exists($ignoreFile)) {
+            $contents = file_get_contents($ignoreFile);
+
+            if (strpos($contents, "\n") !== 0) {
+                $contents .= "\n";
+            }
+        }
+
+        file_put_contents($ignoreFile, $contents . $vendor . "\n");
+    }
+
+    /**
+     * @return void
+     */
+    private function updateDependencies(OutputInterface $output): void
+    {
+        try {
+            $updateCommand = $this->getApplication()->find('update');
+            $this->getApplication()->resetComposer();
+            $updateCommand->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError('Could not update dependencies. Run `composer update` to see more information.');
+        }
     }
 
     /**
@@ -291,7 +465,7 @@ EOT
         }
 
         $name = $io->askAndValidate(
-            'Package name (<vendor>/<name>) [<comment>'.$name.'</comment>]: ',
+            'Package name (<vendor>/<name>) [<comment>' . $name . '</comment>]: ',
             function ($value) use ($name) {
                 if (null === $value) {
                     return $name;
@@ -299,7 +473,7 @@ EOT
 
                 if (!Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
                     throw new \InvalidArgumentException(
-                        'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+                        'The package name ' . $value . ' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
                 }
 
@@ -312,7 +486,7 @@ EOT
 
         $description = $input->getOption('description') ?: null;
         $description = $io->ask(
-            'Description [<comment>'.$description.'</comment>]: ',
+            'Description [<comment>' . $description . '</comment>]: ',
             $description
         );
         $input->setOption('description', $description);
@@ -336,7 +510,7 @@ EOT
         }
 
         $author = $io->askAndValidate(
-            'Author ['.(is_string($author) ? '<comment>'.$author.'</comment>, ' : '') . 'n to skip]: ',
+            'Author [' . (is_string($author) ? '<comment>' . $author . '</comment>, ' : '') . 'n to skip]: ',
             function ($value) use ($author) {
                 if ($value === 'n' || $value === 'no') {
                     return;
@@ -357,7 +531,7 @@ EOT
 
         $minimumStability = $input->getOption('stability') ?: null;
         $minimumStability = $io->askAndValidate(
-            'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
+            'Minimum Stability [<comment>' . $minimumStability . '</comment>]: ',
             function ($value) use ($minimumStability) {
                 if (null === $value) {
                     return $minimumStability;
@@ -365,7 +539,7 @@ EOT
 
                 if (!isset(BasePackage::$stabilities[$value])) {
                     throw new \InvalidArgumentException(
-                        'Invalid minimum stability "'.$value.'". Must be empty or one of: '.
+                        'Invalid minimum stability "' . $value . '". Must be empty or one of: ' .
                         implode(', ', array_keys(BasePackage::$stabilities))
                     );
                 }
@@ -379,7 +553,7 @@ EOT
 
         $type = $input->getOption('type') ?: false;
         $type = $io->ask(
-            'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
+            'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>' . $type . '</comment>]: ',
             $type
         );
         $input->setOption('type', $type);
@@ -391,7 +565,7 @@ EOT
         }
 
         $license = $io->ask(
-            'License [<comment>'.$license.'</comment>]: ',
+            'License [<comment>' . $license . '</comment>]: ',
             $license
         );
         $input->setOption('license', $license);
@@ -429,9 +603,9 @@ EOT
 
         // --autoload - input and validation
         $autoload = $input->getOption('autoload') ?: 'src/';
-        $namespace = $this->namespaceFromPackageName((string) $input->getOption('name'));
+        $namespace = $this->namespaceFromPackageName((string)$input->getOption('name'));
         $autoload = $io->askAndValidate(
-            'Add PSR-4 autoload mapping? Maps namespace "'.$namespace.'" to the entered relative path. [<comment>'.$autoload.'</comment>, n to skip]: ',
+            'Add PSR-4 autoload mapping? Maps namespace "' . $namespace . '" to the entered relative path. [<comment>' . $autoload . '</comment>, n to skip]: ',
             function ($value) use ($autoload) {
                 if (null === $value) {
                     return $autoload;
@@ -456,73 +630,6 @@ EOT
             $autoload
         );
         $input->setOption('autoload', $autoload);
-    }
-
-    /**
-     * @param  string $author
-     * @return array{name: string, email: string|null}
-     */
-    private function parseAuthorString(string $author): array
-    {
-        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
-            $hasEmail = isset($match['email']) && '' !== $match['email'];
-            if ($hasEmail && !$this->isValidEmail($match['email'])) {
-                throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
-            }
-
-            return array(
-                'name' => trim($match['name']),
-                'email' => $hasEmail ? $match['email'] : null,
-            );
-        }
-
-        throw new \InvalidArgumentException(
-            'Invalid author string.  Must be in the formats: '.
-            'Jane Doe or John Smith <john@example.com>'
-        );
-    }
-
-    /**
-     * @param string $author
-     *
-     * @return array<int, array{name: string, email?: string}>
-     */
-    protected function formatAuthors(string $author): array
-    {
-        $author = $this->parseAuthorString($author);
-        if (null === $author['email']) {
-            unset($author['email']);
-        }
-
-        return array($author);
-    }
-
-    /**
-     * Extract namespace from package's vendor name.
-     *
-     * new_projects.acme-extra/package-name becomes "NewProjectsAcmeExtra\PackageName"
-     *
-     * @param string $packageName
-     *
-     * @return string|null
-     */
-    public function namespaceFromPackageName(string $packageName): ?string
-    {
-        if (!$packageName || strpos($packageName, '/') === false) {
-            return null;
-        }
-
-        $namespace = array_map(
-            function ($part): string {
-                $part = Preg::replace('/[^a-z0-9]/i', ' ', $part);
-                $part = ucwords($part);
-
-                return str_replace(' ', '', $part);
-            },
-            explode('/', $packageName)
-        );
-
-        return join('\\', $namespace);
     }
 
     /**
@@ -551,114 +658,5 @@ EOT
         }
 
         return $this->gitConfig = array();
-    }
-
-    /**
-     * Checks the local .gitignore file for the Composer vendor directory.
-     *
-     * Tested patterns include:
-     *  "/$vendor"
-     *  "$vendor"
-     *  "$vendor/"
-     *  "/$vendor/"
-     *  "/$vendor/*"
-     *  "$vendor/*"
-     *
-     * @param string $ignoreFile
-     * @param string $vendor
-     *
-     * @return bool
-     */
-    protected function hasVendorIgnore(string $ignoreFile, string $vendor = 'vendor'): bool
-    {
-        if (!file_exists($ignoreFile)) {
-            return false;
-        }
-
-        $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
-
-        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
-        foreach ($lines as $line) {
-            if (Preg::isMatch($pattern, $line)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param string $ignoreFile
-     * @param string $vendor
-     *
-     * @return void
-     */
-    protected function addVendorIgnore(string $ignoreFile, string $vendor = '/vendor/'): void
-    {
-        $contents = "";
-        if (file_exists($ignoreFile)) {
-            $contents = file_get_contents($ignoreFile);
-
-            if (strpos($contents, "\n") !== 0) {
-                $contents .= "\n";
-            }
-        }
-
-        file_put_contents($ignoreFile, $contents . $vendor. "\n");
-    }
-
-    /**
-     * @param string $email
-     *
-     * @return bool
-     */
-    protected function isValidEmail(string $email): bool
-    {
-        // assume it's valid if we can't validate it
-        if (!function_exists('filter_var')) {
-            return true;
-        }
-
-        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
-    }
-
-    /**
-     * @return void
-     */
-    private function updateDependencies(OutputInterface $output): void
-    {
-        try {
-            $updateCommand = $this->getApplication()->find('update');
-            $this->getApplication()->resetComposer();
-            $updateCommand->run(new ArrayInput(array()), $output);
-        } catch (\Exception $e) {
-            $this->getIO()->writeError('Could not update dependencies. Run `composer update` to see more information.');
-        }
-    }
-
-    /**
-     * @return void
-     */
-    private function runDumpAutoloadCommand(OutputInterface $output): void
-    {
-        try {
-            $command = $this->getApplication()->find('dump-autoload');
-            $this->getApplication()->resetComposer();
-            $command->run(new ArrayInput(array()), $output);
-        } catch (\Exception $e) {
-            $this->getIO()->writeError('Could not run dump-autoload.');
-        }
-    }
-
-    /**
-     * @param array<string, string|array<string>> $options
-     * @return bool
-     */
-    private function hasDependencies(array $options): bool
-    {
-        $requires = (array) $options['require'];
-        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
-
-        return !empty($requires) || !empty($devRequires);
     }
 }

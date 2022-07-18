@@ -12,7 +12,6 @@
 
 :cn: 基于 [CC-CEDICT](http://cc-cedict.org/wiki/) 词典的中文转拼音工具，更准确的支持多音字的汉字转拼音解决方案。
 
-
 ## 安装
 
 使用 Composer 安装:
@@ -67,7 +66,6 @@ $pinyin->convert('带着希望去旅行，比到达终点更美好', PINYIN_ASCI
 - 内存型: 将所有字典预先载入内存
 - I/O型: 不载入内存，将字典使用文件流打开逐行遍历并运用php5.5生成器(yield)特性分配单行内存
 
-
 ### 生成用于链接的拼音字符串
 
 ```php
@@ -113,7 +111,9 @@ $pinyin->name('单某某', PINYIN_TONE); // ["shàn","mǒu","mǒu"]
 独立的包在这里：[overtrue/laravel-pinyin](https://github.com/overtrue/laravel-pinyin)
 
 ## Contribution
-欢迎提意见及完善补充词库 [`overtrue/pinyin-dictionary-maker`](https://github.com/overtrue/pinyin-dictionary-maker/tree/master/patches) :kiss:
+
+欢迎提意见及完善补充词库 [`overtrue/pinyin-dictionary-maker`](https://github.com/overtrue/pinyin-dictionary-maker/tree/master/patches) :
+kiss:
 
 ## 参考
 

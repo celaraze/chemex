@@ -63,7 +63,7 @@ class ExecutionClosure
     /**
      * Set the closure instance.
      *
-     * @param Shell    $shell
+     * @param Shell $shell
      * @param \Closure $closure
      */
     protected function setClosure(Shell $shell, \Closure $closure)

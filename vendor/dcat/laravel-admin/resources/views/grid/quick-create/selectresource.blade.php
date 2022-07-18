@@ -2,7 +2,7 @@
     <app></app>
     <div class="input-group-sm">
         @if(!$disabled)
-            <input name="{{$name}}" type="hidden" />
+            <input name="{{$name}}" type="hidden"/>
         @endif
         <div {!! $attributes !!}>
         </div>

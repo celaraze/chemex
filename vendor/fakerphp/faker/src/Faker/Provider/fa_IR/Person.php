@@ -138,11 +138,11 @@ class Person extends \Faker\Provider\Person
     /**
      * This method returns a valid Iranian nationalCode
      *
-     * @example '8075859741'
-     *
+     * @return string
      * @see https://fa.wikipedia.org/wiki/%DA%A9%D8%A7%D8%B1%D8%AA_%D8%B4%D9%86%D8%A7%D8%B3%D8%A7%DB%8C%DB%8C_%D9%85%D9%84%DB%8C#%D8%AD%D8%B3%D8%A7%D8%A8_%DA%A9%D8%B1%D8%AF%D9%86_%DA%A9%D8%AF_%DA%A9%D9%86%D8%AA%D8%B1%D9%84
      *
-     * @return string
+     * @example '8075859741'
+     *
      */
     public static function nationalCode()
     {
@@ -185,9 +185,9 @@ class Person extends \Faker\Provider\Person
      * @param string $area
      * @param string $core
      *
+     * @return int
      * @see https://fa.wikipedia.org/wiki/%DA%A9%D8%A7%D8%B1%D8%AA_%D8%B4%D9%86%D8%A7%D8%B3%D8%A7%DB%8C%DB%8C_%D9%85%D9%84%DB%8C#%D8%AD%D8%B3%D8%A7%D8%A8_%DA%A9%D8%B1%D8%AF%D9%86_%DA%A9%D8%AF_%DA%A9%D9%86%D8%AA%D8%B1%D9%84
      *
-     * @return int
      */
     private static function createControlCode($area, $core)
     {

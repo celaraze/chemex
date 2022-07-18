@@ -14,7 +14,7 @@ class LaravelSolutionTransformer extends SolutionTransformer
     {
         $baseProperties = parent::toArray();
 
-        if (! $this->isRunnable()) {
+        if (!$this->isRunnable()) {
             return $baseProperties;
         }
 
@@ -34,11 +34,11 @@ class LaravelSolutionTransformer extends SolutionTransformer
 
     protected function isRunnable(): bool
     {
-        if (! $this->solution instanceof RunnableSolution) {
+        if (!$this->solution instanceof RunnableSolution) {
             return false;
         }
 
-        if (! $this->executeEndpoint()) {
+        if (!$this->executeEndpoint()) {
             return false;
         }
 
@@ -51,7 +51,7 @@ class LaravelSolutionTransformer extends SolutionTransformer
             // The action class needs to be prefixed with a `\` to Laravel from trying
             // to add its own global namespace from RouteServiceProvider::$namespace.
 
-            return action('\\'.ExecuteSolutionController::class);
+            return action('\\' . ExecuteSolutionController::class);
         } catch (Throwable $exception) {
             report($exception);
 

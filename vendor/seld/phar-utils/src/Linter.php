@@ -42,7 +42,7 @@ class Linter
 
             $command = sprintf($format, $php, $tmpFile);
         } else {
-            $command = "'".$php."' -l";
+            $command = "'" . $php . "' -l";
         }
 
         $descriptorspec = array(
@@ -58,7 +58,7 @@ class Linter
                 continue;
             }
             if (substr($file, -4) === '.php') {
-                $filename = (string) $file;
+                $filename = (string)$file;
                 if (in_array(substr($filename, $baseLen), $excludedPaths, true)) {
                     continue;
                 }
@@ -84,7 +84,7 @@ class Linter
                         if ($isWindows) {
                             $stderr = str_replace($tmpFile, $filename, $stderr);
                         }
-                        throw new \UnexpectedValueException('Failed linting '.$file.': '.$stderr);
+                        throw new \UnexpectedValueException('Failed linting ' . $file . ': ' . $stderr);
                     }
                 } else {
                     throw new \RuntimeException('Could not start linter process');
@@ -107,7 +107,7 @@ class Linter
     {
         // Quote if path contains spaces or brackets
         if (strpbrk($path, " ()") !== false) {
-            $path = '"'.$path.'"';
+            $path = '"' . $path . '"';
         }
 
         return $path;

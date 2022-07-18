@@ -9,9 +9,8 @@ use Illuminate\Support\Str;
 
 class Expand extends AbstractDisplayer
 {
-    protected $button;
-
     protected static $counter = 0;
+    protected $button;
 
     public function button($button)
     {
@@ -26,7 +25,7 @@ class Expand extends AbstractDisplayer
         if ($callbackOrButton && $callbackOrButton instanceof \Closure) {
             $callbackOrButton = $callbackOrButton->call($this->row, $this);
 
-            if (! $callbackOrButton instanceof LazyRenderable) {
+            if (!$callbackOrButton instanceof LazyRenderable) {
                 $html = Helper::render($callbackOrButton);
 
                 $callbackOrButton = null;
@@ -50,10 +49,10 @@ class Expand extends AbstractDisplayer
         $button = is_null($this->button) ? $this->value : $this->button;
 
         return Admin::view('admin::grid.displayer.expand', [
-            'key'     => $this->getKey(),
-            'url'     => $remoteUrl,
-            'button'  => $button,
-            'html'    => $html,
+            'key' => $this->getKey(),
+            'url' => $remoteUrl,
+            'button' => $button,
+            'html' => $html,
             'dataKey' => $this->getDataKey(),
         ]);
     }
@@ -64,6 +63,6 @@ class Expand extends AbstractDisplayer
 
         static::$counter++;
 
-        return $this->grid->makeName($key.'-'.static::$counter);
+        return $this->grid->makeName($key . '-' . static::$counter);
     }
 }

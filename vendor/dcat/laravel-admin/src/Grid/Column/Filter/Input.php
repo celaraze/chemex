@@ -10,24 +10,9 @@ trait Input
     protected $placeholder = null;
 
     /**
-     * Add script.
-     *
-     * @return void
-     */
-    protected function addScript()
-    {
-        $script = <<<'JS'
-$('.dropdown-menu input').on('click', function(e) {
-    e.stopPropagation();
-});
-JS;
-        Admin::script($script);
-    }
-
-    /**
      * Set input placeholder.
      *
-     * @param  null|string  $placeholder
+     * @param null|string $placeholder
      * @return $this
      */
     public function placeholder(?string $placeholder)
@@ -37,9 +22,24 @@ JS;
         return $this;
     }
 
+    /**
+     * @param string|\Closure $valueKey
+     * @return $this
+     */
+    public function valueFilter($valueKey = null)
+    {
+        return $this->resolving(function () use ($valueKey) {
+            $valueFilter = new ValueFilter($this, $valueKey);
+
+            return $this->parent()->display(function ($value) use ($valueFilter) {
+                return $valueFilter->render($value);
+            });
+        });
+    }
+
     protected function renderInput()
     {
-        if (! $this->shouldDisplay()) {
+        if (!$this->shouldDisplay()) {
             return;
         }
 
@@ -66,17 +66,17 @@ HTML;
     }
 
     /**
-     * @param  string|\Closure  $valueKey
-     * @return $this
+     * Add script.
+     *
+     * @return void
      */
-    public function valueFilter($valueKey = null)
+    protected function addScript()
     {
-        return $this->resolving(function () use ($valueKey) {
-            $valueFilter = new ValueFilter($this, $valueKey);
-
-            return $this->parent()->display(function ($value) use ($valueFilter) {
-                return $valueFilter->render($value);
-            });
-        });
+        $script = <<<'JS'
+$('.dropdown-menu input').on('click', function(e) {
+    e.stopPropagation();
+});
+JS;
+        Admin::script($script);
     }
 }

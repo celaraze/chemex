@@ -30,7 +30,7 @@ class Matchers
      *
      * @return \Hamcrest\Arrays\IsArrayContaining
      */
-    public static function hasItemInArray($item)
+    public static function hasValue($item)
     {
         return \Hamcrest\Arrays\IsArrayContaining::hasItemInArray($item);
     }
@@ -42,7 +42,7 @@ class Matchers
      *
      * @return \Hamcrest\Arrays\IsArrayContaining
      */
-    public static function hasValue($item)
+    public static function hasItemInArray($item)
     {
         return \Hamcrest\Arrays\IsArrayContaining::hasItemInArray($item);
     }
@@ -90,7 +90,7 @@ class Matchers
      *
      * @return \Hamcrest\Arrays\IsArrayContainingKey
      */
-    public static function hasKeyInArray($key)
+    public static function hasKey($key)
     {
         return \Hamcrest\Arrays\IsArrayContainingKey::hasKeyInArray($key);
     }
@@ -102,7 +102,7 @@ class Matchers
      *
      * @return \Hamcrest\Arrays\IsArrayContainingKey
      */
-    public static function hasKey($key)
+    public static function hasKeyInArray($key)
     {
         return \Hamcrest\Arrays\IsArrayContainingKey::hasKeyInArray($key);
     }
@@ -110,7 +110,7 @@ class Matchers
     /**
      * Test if an array has both an key and value in parity with each other.
      */
-    public static function hasKeyValuePair($key, $value)
+    public static function hasEntry($key, $value)
     {
         return \Hamcrest\Arrays\IsArrayContainingKeyValuePair::hasKeyValuePair($key, $value);
     }
@@ -118,7 +118,7 @@ class Matchers
     /**
      * Test if an array has both an key and value in parity with each other.
      */
-    public static function hasEntry($key, $value)
+    public static function hasKeyValuePair($key, $value)
     {
         return \Hamcrest\Arrays\IsArrayContainingKeyValuePair::hasKeyValuePair($key, $value);
     }
@@ -333,7 +333,7 @@ class Matchers
      * the signature of the method that sets it up, for example in
      * <code>assertThat($anObject, anInstanceOf('Thing'));</code>
      */
-    public static function anInstanceOf($theClass)
+    public static function any($theClass)
     {
         return \Hamcrest\Core\IsInstanceOf::anInstanceOf($theClass);
     }
@@ -344,7 +344,7 @@ class Matchers
      * the signature of the method that sets it up, for example in
      * <code>assertThat($anObject, anInstanceOf('Thing'));</code>
      */
-    public static function any($theClass)
+    public static function anInstanceOf($theClass)
     {
         return \Hamcrest\Core\IsInstanceOf::anInstanceOf($theClass);
     }
@@ -439,7 +439,7 @@ class Matchers
     /**
      * The value is >= $value.
      */
-    public static function greaterThanOrEqualTo($value)
+    public static function atLeast($value)
     {
         return \Hamcrest\Number\OrderingComparison::greaterThanOrEqualTo($value);
     }
@@ -447,7 +447,7 @@ class Matchers
     /**
      * The value is >= $value.
      */
-    public static function atLeast($value)
+    public static function greaterThanOrEqualTo($value)
     {
         return \Hamcrest\Number\OrderingComparison::greaterThanOrEqualTo($value);
     }
@@ -463,7 +463,7 @@ class Matchers
     /**
      * The value is <= $value.
      */
-    public static function lessThanOrEqualTo($value)
+    public static function atMost($value)
     {
         return \Hamcrest\Number\OrderingComparison::lessThanOrEqualTo($value);
     }
@@ -471,17 +471,9 @@ class Matchers
     /**
      * The value is <= $value.
      */
-    public static function atMost($value)
+    public static function lessThanOrEqualTo($value)
     {
         return \Hamcrest\Number\OrderingComparison::lessThanOrEqualTo($value);
-    }
-
-    /**
-     * Matches if value is a zero-length string.
-     */
-    public static function isEmptyString()
-    {
-        return \Hamcrest\Text\IsEmptyString::isEmptyString();
     }
 
     /**
@@ -493,11 +485,11 @@ class Matchers
     }
 
     /**
-     * Matches if value is null or a zero-length string.
+     * Matches if value is a zero-length string.
      */
-    public static function isEmptyOrNullString()
+    public static function isEmptyString()
     {
-        return \Hamcrest\Text\IsEmptyString::isEmptyOrNullString();
+        return \Hamcrest\Text\IsEmptyString::isEmptyString();
     }
 
     /**
@@ -509,9 +501,17 @@ class Matchers
     }
 
     /**
+     * Matches if value is null or a zero-length string.
+     */
+    public static function isEmptyOrNullString()
+    {
+        return \Hamcrest\Text\IsEmptyString::isEmptyOrNullString();
+    }
+
+    /**
      * Matches if value is a non-zero-length string.
      */
-    public static function isNonEmptyString()
+    public static function nonEmptyString()
     {
         return \Hamcrest\Text\IsEmptyString::isNonEmptyString();
     }
@@ -519,7 +519,7 @@ class Matchers
     /**
      * Matches if value is a non-zero-length string.
      */
-    public static function nonEmptyString()
+    public static function isNonEmptyString()
     {
         return \Hamcrest\Text\IsEmptyString::isNonEmptyString();
     }
@@ -600,7 +600,7 @@ class Matchers
     /**
      * Is the value a boolean?
      */
-    public static function booleanValue()
+    public static function boolValue()
     {
         return \Hamcrest\Type\IsBoolean::booleanValue();
     }
@@ -608,7 +608,7 @@ class Matchers
     /**
      * Is the value a boolean?
      */
-    public static function boolValue()
+    public static function booleanValue()
     {
         return \Hamcrest\Type\IsBoolean::booleanValue();
     }
@@ -624,7 +624,7 @@ class Matchers
     /**
      * Is the value a float/double?
      */
-    public static function doubleValue()
+    public static function floatValue()
     {
         return \Hamcrest\Type\IsDouble::doubleValue();
     }
@@ -632,7 +632,7 @@ class Matchers
     /**
      * Is the value a float/double?
      */
-    public static function floatValue()
+    public static function doubleValue()
     {
         return \Hamcrest\Type\IsDouble::doubleValue();
     }
@@ -640,7 +640,7 @@ class Matchers
     /**
      * Is the value an integer?
      */
-    public static function integerValue()
+    public static function intValue()
     {
         return \Hamcrest\Type\IsInteger::integerValue();
     }
@@ -648,7 +648,7 @@ class Matchers
     /**
      * Is the value an integer?
      */
-    public static function intValue()
+    public static function integerValue()
     {
         return \Hamcrest\Type\IsInteger::integerValue();
     }
@@ -664,7 +664,7 @@ class Matchers
     /**
      * Is the value an object?
      */
-    public static function objectValue()
+    public static function anObject()
     {
         return \Hamcrest\Type\IsObject::objectValue();
     }
@@ -672,7 +672,7 @@ class Matchers
     /**
      * Is the value an object?
      */
-    public static function anObject()
+    public static function objectValue()
     {
         return \Hamcrest\Type\IsObject::objectValue();
     }

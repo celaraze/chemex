@@ -12,10 +12,10 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\VcsRepository;
 use Composer\Util\Perforce;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -28,6 +28,24 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
+    {
+        $this->io->writeError('Perforce driver does not check for local changes before overriding');
+
+        return null;
+    }
+
+    /**
+     * @return void
+     */
+    public function setPerforce(Perforce $perforce): void
+    {
+        $this->perforce = $perforce;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve(null);
@@ -36,10 +54,18 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
+    {
+        return $this->doInstall($target, $path, $url);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         $ref = $package->getSourceReference();
-        $label = $this->getLabelFromSourceReference((string) $ref);
+        $label = $this->getLabelFromSourceReference((string)$ref);
 
         $this->io->writeError('Cloning ' . $ref);
         $this->initPerforce($package, $path, $url);
@@ -101,35 +127,9 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
-    {
-        return $this->doInstall($target, $path, $url);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getLocalChanges(PackageInterface $package, string $path): ?string
-    {
-        $this->io->writeError('Perforce driver does not check for local changes before overriding');
-
-        return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         return $this->perforce->getCommitLogs($fromReference, $toReference);
-    }
-
-    /**
-     * @return void
-     */
-    public function setPerforce(Perforce $perforce): void
-    {
-        $this->perforce = $perforce;
     }
 
     /**

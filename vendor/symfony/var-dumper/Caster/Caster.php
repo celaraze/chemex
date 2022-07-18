@@ -53,7 +53,7 @@ class Caster
             }
         }
 
-        $a = $obj instanceof \Closure ? [] : (array) $obj;
+        $a = $obj instanceof \Closure ? [] : (array)$obj;
 
         if ($obj instanceof \__PHP_Incomplete_Class) {
             return $a;
@@ -73,10 +73,10 @@ class Caster
                         }
                     }
                     if (!isset($publicProperties[$class][$k])) {
-                        $prefixedKeys[$i] = self::PREFIX_DYNAMIC.$k;
+                        $prefixedKeys[$i] = self::PREFIX_DYNAMIC . $k;
                     }
                 } elseif ($debugClass !== $class && 1 === strpos($k, $class)) {
-                    $prefixedKeys[$i] = "\0".$debugClass.strrchr($k, "\0");
+                    $prefixedKeys[$i] = "\0" . $debugClass . strrchr($k, "\0");
                 }
                 ++$i;
             }
@@ -92,10 +92,10 @@ class Caster
         if ($hasDebugInfo && \is_array($debugInfo)) {
             foreach ($debugInfo as $k => $v) {
                 if (!isset($k[0]) || "\0" !== $k[0]) {
-                    if (\array_key_exists(self::PREFIX_DYNAMIC.$k, $a)) {
+                    if (\array_key_exists(self::PREFIX_DYNAMIC . $k, $a)) {
                         continue;
                     }
-                    $k = self::PREFIX_VIRTUAL.$k;
+                    $k = self::PREFIX_VIRTUAL . $k;
                 }
 
                 unset($a[$k]);
@@ -112,10 +112,10 @@ class Caster
      * By default, a single match in the $filter bit field filters properties out, following an "or" logic.
      * When EXCLUDE_STRICT is set, an "and" logic is applied: all bits must match for a property to be removed.
      *
-     * @param array    $a                The array containing the properties to filter
-     * @param int      $filter           A bit field of Caster::EXCLUDE_* constants specifying which properties to filter out
+     * @param array $a The array containing the properties to filter
+     * @param int $filter A bit field of Caster::EXCLUDE_* constants specifying which properties to filter out
      * @param string[] $listedProperties List of properties to exclude when Caster::EXCLUDE_VERBOSE is set, and to preserve when Caster::EXCLUDE_NOT_IMPORTANT is set
-     * @param int      &$count           Set to the number of removed properties
+     * @param int      &$count Set to the number of removed properties
      */
     public static function filter(array $a, int $filter, array $listedProperties = [], ?int &$count = 0): array
     {
@@ -161,7 +161,7 @@ class Caster
     public static function castPhpIncompleteClass(\__PHP_Incomplete_Class $c, array $a, Stub $stub, bool $isNested): array
     {
         if (isset($a['__PHP_Incomplete_Class_Name'])) {
-            $stub->class .= '('.$a['__PHP_Incomplete_Class_Name'].')';
+            $stub->class .= '(' . $a['__PHP_Incomplete_Class_Name'] . ')';
             unset($a['__PHP_Incomplete_Class_Name']);
         }
 

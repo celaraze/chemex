@@ -12,33 +12,29 @@ class CacheHeaderAnalyzer extends PerformanceAnalyzer
     use AnalyzesHeaders;
 
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'Your application caches compiled assets for improved performance.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 15;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
     /**
      * The list of uncached assets.
      *
@@ -64,8 +60,18 @@ class CacheHeaderAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your application does not set appropriate cache headers on your compiled Laravel Mix assets. "
-            ."To improve performance, it is recommended to set Cache Control headers on your Mix assets via "
-            ."your web server configuration. Your uncached assets include: {$this->formatUncachedAssets()}.";
+            . "To improve performance, it is recommended to set Cache Control headers on your Mix assets via "
+            . "your web server configuration. Your uncached assets include: {$this->formatUncachedAssets()}.";
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatUncachedAssets()
+    {
+        return $this->unCachedAssets->map(function ($file) {
+            return "[{$file}]";
+        })->join(', ', ' and ');
     }
 
     /**
@@ -83,8 +89,8 @@ class CacheHeaderAnalyzer extends PerformanceAnalyzer
 
         foreach ($manifest as $key => $value) {
             if (is_string($value) && Str::contains($value, '?id=')
-                && ! $this->headerExistsOnUrl((string) mix($key), 'Cache-Control')
-                && ! $this->headerExistsOnUrl(asset($key), 'Cache-Control')) {
+                && !$this->headerExistsOnUrl((string)mix($key), 'Cache-Control')
+                && !$this->headerExistsOnUrl(asset($key), 'Cache-Control')) {
                 // We only take the cache busted (versioned) files as the others are presumably un-cacheable.
                 $this->unCachedAssets->push($key);
             }
@@ -103,16 +109,6 @@ class CacheHeaderAnalyzer extends PerformanceAnalyzer
     public function skip()
     {
         // Skip the analyzer if it's a local env or if the application does not use Laravel Mix.
-        return $this->isLocalAndShouldSkip() || ! file_exists(public_path('mix-manifest.json'));
-    }
-
-    /**
-     * @return string
-     */
-    protected function formatUncachedAssets()
-    {
-        return $this->unCachedAssets->map(function ($file) {
-            return "[{$file}]";
-        })->join(', ', ' and ');
+        return $this->isLocalAndShouldSkip() || !file_exists(public_path('mix-manifest.json'));
     }
 }

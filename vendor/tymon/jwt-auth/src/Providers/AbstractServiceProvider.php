@@ -85,26 +85,6 @@ abstract class AbstractServiceProvider extends ServiceProvider
     }
 
     /**
-     * Extend Laravel's Auth.
-     *
-     * @return void
-     */
-    protected function extendAuthGuard()
-    {
-        $this->app['auth']->extend('jwt', function ($app, $name, array $config) {
-            $guard = new JWTGuard(
-                $app['tymon.jwt'],
-                $app['auth']->createUserProvider($config['provider']),
-                $app['request']
-            );
-
-            $app->refresh('request', $guard, 'setRequest');
-
-            return $guard;
-        });
-    }
-
-    /**
      * Bind some aliases.
      *
      * @return void
@@ -157,6 +137,18 @@ abstract class AbstractServiceProvider extends ServiceProvider
     }
 
     /**
+     * Helper to get the config values.
+     *
+     * @param string $key
+     * @param string $default
+     * @return mixed
+     */
+    protected function config($key, $default = null)
+    {
+        return config("jwt.$key", $default);
+    }
+
+    /**
      * Register the bindings for the Lcobucci JWT provider.
      *
      * @return void
@@ -170,6 +162,23 @@ abstract class AbstractServiceProvider extends ServiceProvider
                 $this->config('keys')
             );
         });
+    }
+
+    /**
+     * Get an instantiable configuration instance.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    protected function getConfigInstance($key)
+    {
+        $instance = $this->config($key);
+
+        if (is_string($instance)) {
+            return $this->app->make($instance);
+        }
+
+        return $instance;
     }
 
     /**
@@ -197,6 +206,21 @@ abstract class AbstractServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register the bindings for the Blacklist.
+     *
+     * @return void
+     */
+    protected function registerJWTBlacklist()
+    {
+        $this->app->singleton('tymon.jwt.blacklist', function ($app) {
+            $instance = new Blacklist($app['tymon.jwt.provider.storage']);
+
+            return $instance->setGracePeriod($this->config('blacklist_grace_period'))
+                ->setRefreshTTL($this->config('refresh_ttl'));
+        });
+    }
+
+    /**
      * Register the bindings for the JWT Manager.
      *
      * @return void
@@ -210,8 +234,8 @@ abstract class AbstractServiceProvider extends ServiceProvider
                 $app['tymon.jwt.payload.factory']
             );
 
-            return $instance->setBlacklistEnabled((bool) $this->config('blacklist_enabled'))
-                            ->setPersistentClaims($this->config('persistent_claims'));
+            return $instance->setBlacklistEnabled((bool)$this->config('blacklist_enabled'))
+                ->setPersistentClaims($this->config('persistent_claims'));
         });
     }
 
@@ -270,21 +294,6 @@ abstract class AbstractServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the bindings for the Blacklist.
-     *
-     * @return void
-     */
-    protected function registerJWTBlacklist()
-    {
-        $this->app->singleton('tymon.jwt.blacklist', function ($app) {
-            $instance = new Blacklist($app['tymon.jwt.provider.storage']);
-
-            return $instance->setGracePeriod($this->config('blacklist_grace_period'))
-                            ->setRefreshTTL($this->config('refresh_ttl'));
-        });
-    }
-
-    /**
      * Register the bindings for the payload validator.
      *
      * @return void
@@ -310,7 +319,7 @@ abstract class AbstractServiceProvider extends ServiceProvider
             $app->refresh('request', $factory, 'setRequest');
 
             return $factory->setTTL($this->config('ttl'))
-                           ->setLeeway($this->config('leeway'));
+                ->setLeeway($this->config('leeway'));
         });
     }
 
@@ -342,31 +351,22 @@ abstract class AbstractServiceProvider extends ServiceProvider
     }
 
     /**
-     * Helper to get the config values.
+     * Extend Laravel's Auth.
      *
-     * @param  string  $key
-     * @param  string  $default
-     * @return mixed
+     * @return void
      */
-    protected function config($key, $default = null)
+    protected function extendAuthGuard()
     {
-        return config("jwt.$key", $default);
-    }
+        $this->app['auth']->extend('jwt', function ($app, $name, array $config) {
+            $guard = new JWTGuard(
+                $app['tymon.jwt'],
+                $app['auth']->createUserProvider($config['provider']),
+                $app['request']
+            );
 
-    /**
-     * Get an instantiable configuration instance.
-     *
-     * @param  string  $key
-     * @return mixed
-     */
-    protected function getConfigInstance($key)
-    {
-        $instance = $this->config($key);
+            $app->refresh('request', $guard, 'setRequest');
 
-        if (is_string($instance)) {
-            return $this->app->make($instance);
-        }
-
-        return $instance;
+            return $guard;
+        });
     }
 }

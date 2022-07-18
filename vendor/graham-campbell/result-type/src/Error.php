@@ -41,6 +41,16 @@ final class Error extends Result
     }
 
     /**
+     * Get the success option value.
+     *
+     * @return \PhpOption\Option<T>
+     */
+    public function success()
+    {
+        return None::create();
+    }
+
+    /**
      * Create a new error value.
      *
      * @template F
@@ -52,16 +62,6 @@ final class Error extends Result
     public static function create($value)
     {
         return new self($value);
-    }
-
-    /**
-     * Get the success option value.
-     *
-     * @return \PhpOption\Option<T>
-     */
-    public function success()
-    {
-        return None::create();
     }
 
     /**

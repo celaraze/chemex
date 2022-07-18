@@ -7,17 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
-use const PHP_EOL;
-use function count;
-use function function_exists;
-use function get_class;
-use function sprintf;
-use function xdebug_get_monitored_functions;
-use function xdebug_is_debugger_active;
-use function xdebug_start_function_monitor;
-use function xdebug_stop_function_monitor;
 use AssertionError;
 use Countable;
 use Error;
@@ -35,6 +27,15 @@ use SebastianBergmann\Invoker\TimeoutException;
 use SebastianBergmann\ResourceOperations\ResourceOperations;
 use SebastianBergmann\Timer\Timer;
 use Throwable;
+use function count;
+use function function_exists;
+use function get_class;
+use function sprintf;
+use function xdebug_get_monitored_functions;
+use function xdebug_is_debugger_active;
+use function xdebug_start_function_monitor;
+use function xdebug_stop_function_monitor;
+use const PHP_EOL;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -275,132 +276,6 @@ final class TestResult implements Countable
     }
 
     /**
-     * Adds an error to the list of errors.
-     */
-    public function addError(Test $test, Throwable $t, float $time): void
-    {
-        if ($t instanceof RiskyTestError) {
-            $this->recordRisky($test, $t);
-
-            $notifyMethod = 'addRiskyTest';
-
-            if ($test instanceof TestCase) {
-                $test->markAsRisky();
-            }
-
-            if ($this->stopOnRisky || $this->stopOnDefect) {
-                $this->stop();
-            }
-        } elseif ($t instanceof IncompleteTest) {
-            $this->recordNotImplemented($test, $t);
-
-            $notifyMethod = 'addIncompleteTest';
-
-            if ($this->stopOnIncomplete) {
-                $this->stop();
-            }
-        } elseif ($t instanceof SkippedTest) {
-            $this->recordSkipped($test, $t);
-
-            $notifyMethod = 'addSkippedTest';
-
-            if ($this->stopOnSkipped) {
-                $this->stop();
-            }
-        } else {
-            $this->recordError($test, $t);
-
-            $notifyMethod = 'addError';
-
-            if ($this->stopOnError || $this->stopOnFailure) {
-                $this->stop();
-            }
-        }
-
-        // @see https://github.com/sebastianbergmann/phpunit/issues/1953
-        if ($t instanceof Error) {
-            $t = new ExceptionWrapper($t);
-        }
-
-        foreach ($this->listeners as $listener) {
-            $listener->{$notifyMethod}($test, $t, $time);
-        }
-
-        $this->lastTestFailed = true;
-        $this->time += $time;
-    }
-
-    /**
-     * Adds a warning to the list of warnings.
-     * The passed in exception caused the warning.
-     */
-    public function addWarning(Test $test, Warning $e, float $time): void
-    {
-        if ($this->stopOnWarning || $this->stopOnDefect) {
-            $this->stop();
-        }
-
-        $this->recordWarning($test, $e);
-
-        foreach ($this->listeners as $listener) {
-            $listener->addWarning($test, $e, $time);
-        }
-
-        $this->time += $time;
-    }
-
-    /**
-     * Adds a failure to the list of failures.
-     * The passed in exception caused the failure.
-     */
-    public function addFailure(Test $test, AssertionFailedError $e, float $time): void
-    {
-        if ($e instanceof RiskyTestError || $e instanceof OutputError) {
-            $this->recordRisky($test, $e);
-
-            $notifyMethod = 'addRiskyTest';
-
-            if ($test instanceof TestCase) {
-                $test->markAsRisky();
-            }
-
-            if ($this->stopOnRisky || $this->stopOnDefect) {
-                $this->stop();
-            }
-        } elseif ($e instanceof IncompleteTest) {
-            $this->recordNotImplemented($test, $e);
-
-            $notifyMethod = 'addIncompleteTest';
-
-            if ($this->stopOnIncomplete) {
-                $this->stop();
-            }
-        } elseif ($e instanceof SkippedTest) {
-            $this->recordSkipped($test, $e);
-
-            $notifyMethod = 'addSkippedTest';
-
-            if ($this->stopOnSkipped) {
-                $this->stop();
-            }
-        } else {
-            $this->failures[] = new TestFailure($test, $e);
-            $notifyMethod     = 'addFailure';
-
-            if ($this->stopOnFailure || $this->stopOnDefect) {
-                $this->stop();
-            }
-        }
-
-        foreach ($this->listeners as $listener) {
-            $listener->{$notifyMethod}($test, $e, $time);
-        }
-
-        $this->lastTestFailed = true;
-        $this->time += $time;
-    }
-
-    /**
      * Informs the result that a test suite will be started.
      */
     public function startTestSuite(TestSuite $suite): void
@@ -427,82 +302,6 @@ final class TestResult implements Countable
     }
 
     /**
-     * Informs the result that a test will be started.
-     */
-    public function startTest(Test $test): void
-    {
-        $this->lastTestFailed = false;
-        $this->runTests += count($test);
-
-        foreach ($this->listeners as $listener) {
-            $listener->startTest($test);
-        }
-    }
-
-    /**
-     * Informs the result that a test was completed.
-     *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     */
-    public function endTest(Test $test, float $time): void
-    {
-        foreach ($this->listeners as $listener) {
-            $listener->endTest($test, $time);
-        }
-
-        if (!$this->lastTestFailed && $test instanceof TestCase) {
-            $class = get_class($test);
-            $key   = $class . '::' . $test->getName();
-
-            $this->passed[$key] = [
-                'result' => $test->getResult(),
-                'size'   => TestUtil::getSize(
-                    $class,
-                    $test->getName(false)
-                ),
-            ];
-
-            $this->time += $time;
-        }
-
-        if ($this->lastTestFailed && $test instanceof TestCase) {
-            $this->currentTestSuiteFailed = true;
-        }
-    }
-
-    /**
-     * Returns true if no risky test occurred.
-     */
-    public function allHarmless(): bool
-    {
-        return $this->riskyCount() === 0;
-    }
-
-    /**
-     * Gets the number of risky tests.
-     */
-    public function riskyCount(): int
-    {
-        return count($this->risky);
-    }
-
-    /**
-     * Returns true if no incomplete test occurred.
-     */
-    public function allCompletelyImplemented(): bool
-    {
-        return $this->notImplementedCount() === 0;
-    }
-
-    /**
-     * Gets the number of incomplete tests.
-     */
-    public function notImplementedCount(): int
-    {
-        return count($this->notImplemented);
-    }
-
-    /**
      * Returns an array of TestFailure objects for the risky tests.
      *
      * @return TestFailure[]
@@ -520,22 +319,6 @@ final class TestResult implements Countable
     public function notImplemented(): array
     {
         return $this->notImplemented;
-    }
-
-    /**
-     * Returns true if no test has been skipped.
-     */
-    public function noneSkipped(): bool
-    {
-        return $this->skippedCount() === 0;
-    }
-
-    /**
-     * Gets the number of skipped tests.
-     */
-    public function skippedCount(): int
-    {
-        return count($this->skipped);
     }
 
     /**
@@ -648,15 +431,15 @@ final class TestResult implements Countable
             );
 
             $isAnyCoverageRequired = TestUtil::requiresCodeCoverageDataCollection($test);
-            $size                  = $test->getSize();
+            $size = $test->getSize();
         }
 
-        $error      = false;
-        $failure    = false;
-        $warning    = false;
+        $error = false;
+        $failure = false;
+        $warning = false;
         $incomplete = false;
-        $risky      = false;
-        $skipped    = false;
+        $risky = false;
+        $skipped = false;
 
         $this->startTest($test);
 
@@ -672,19 +455,19 @@ final class TestResult implements Countable
         }
 
         $collectCodeCoverage = $this->codeCoverage !== null &&
-                               !$test instanceof ErrorTestCase &&
-                               !$test instanceof WarningTestCase &&
-                               $isAnyCoverageRequired;
+            !$test instanceof ErrorTestCase &&
+            !$test instanceof WarningTestCase &&
+            $isAnyCoverageRequired;
 
         if ($collectCodeCoverage) {
             $this->codeCoverage->start($test);
         }
 
         $monitorFunctions = $this->beStrictAboutResourceUsageDuringSmallTests &&
-                            !$test instanceof ErrorTestCase &&
-                            !$test instanceof WarningTestCase &&
-                            $size === TestUtil::SMALL &&
-                            function_exists('xdebug_start_function_monitor');
+            !$test instanceof ErrorTestCase &&
+            !$test instanceof WarningTestCase &&
+            $size === TestUtil::SMALL &&
+            function_exists('xdebug_start_function_monitor');
 
         if ($monitorFunctions) {
             /* @noinspection ForgottenDebugOutputInspection */
@@ -749,7 +532,7 @@ final class TestResult implements Countable
             $test->addToAssertionCount(1);
 
             $failure = true;
-            $frame   = $e->getTrace()[0];
+            $frame = $e->getTrace()[0];
 
             $e = new AssertionFailedError(
                 sprintf(
@@ -764,7 +547,7 @@ final class TestResult implements Countable
         } catch (Exception $e) {
             $error = true;
         } catch (Throwable $e) {
-            $e     = new ExceptionWrapper($e);
+            $e = new ExceptionWrapper($e);
             $error = true;
         }
 
@@ -827,9 +610,9 @@ final class TestResult implements Countable
         }
 
         if ($collectCodeCoverage) {
-            $append           = !$risky && !$incomplete && !$skipped;
+            $append = !$risky && !$incomplete && !$skipped;
             $linesToBeCovered = [];
-            $linesToBeUsed    = [];
+            $linesToBeUsed = [];
 
             if ($append && $test instanceof TestCase) {
                 try {
@@ -898,7 +681,7 @@ final class TestResult implements Countable
             } catch (ReflectionException $e) {
                 throw new Exception(
                     $e->getMessage(),
-                    (int) $e->getCode(),
+                    (int)$e->getCode(),
                     $e
                 );
             }
@@ -913,7 +696,7 @@ final class TestResult implements Countable
                 } catch (ReflectionException $e) {
                     throw new Exception(
                         $e->getMessage(),
-                        (int) $e->getCode(),
+                        (int)$e->getCode(),
                         $e
                     );
                 }
@@ -975,6 +758,239 @@ final class TestResult implements Countable
         $this->endTest($test, $time);
     }
 
+    public function setRegisterMockObjectsFromTestArgumentsRecursively(bool $flag): void
+    {
+        $this->registerMockObjectsFromTestArgumentsRecursively = $flag;
+    }
+
+    /**
+     * Informs the result that a test will be started.
+     */
+    public function startTest(Test $test): void
+    {
+        $this->lastTestFailed = false;
+        $this->runTests += count($test);
+
+        foreach ($this->listeners as $listener) {
+            $listener->startTest($test);
+        }
+    }
+
+    private function shouldTimeLimitBeEnforced(int $size): bool
+    {
+        if (!$this->enforceTimeLimit) {
+            return false;
+        }
+
+        if (!(($this->defaultTimeLimit || $size !== TestUtil::UNKNOWN))) {
+            return false;
+        }
+
+        if (!extension_loaded('pcntl')) {
+            return false;
+        }
+
+        if (!class_exists(Invoker::class)) {
+            return false;
+        }
+
+        if (extension_loaded('xdebug') && xdebug_is_debugger_active()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Adds a failure to the list of failures.
+     * The passed in exception caused the failure.
+     */
+    public function addFailure(Test $test, AssertionFailedError $e, float $time): void
+    {
+        if ($e instanceof RiskyTestError || $e instanceof OutputError) {
+            $this->recordRisky($test, $e);
+
+            $notifyMethod = 'addRiskyTest';
+
+            if ($test instanceof TestCase) {
+                $test->markAsRisky();
+            }
+
+            if ($this->stopOnRisky || $this->stopOnDefect) {
+                $this->stop();
+            }
+        } elseif ($e instanceof IncompleteTest) {
+            $this->recordNotImplemented($test, $e);
+
+            $notifyMethod = 'addIncompleteTest';
+
+            if ($this->stopOnIncomplete) {
+                $this->stop();
+            }
+        } elseif ($e instanceof SkippedTest) {
+            $this->recordSkipped($test, $e);
+
+            $notifyMethod = 'addSkippedTest';
+
+            if ($this->stopOnSkipped) {
+                $this->stop();
+            }
+        } else {
+            $this->failures[] = new TestFailure($test, $e);
+            $notifyMethod = 'addFailure';
+
+            if ($this->stopOnFailure || $this->stopOnDefect) {
+                $this->stop();
+            }
+        }
+
+        foreach ($this->listeners as $listener) {
+            $listener->{$notifyMethod}($test, $e, $time);
+        }
+
+        $this->lastTestFailed = true;
+        $this->time += $time;
+    }
+
+    private function recordRisky(Test $test, Throwable $t): void
+    {
+        $this->risky[] = new TestFailure($test, $t);
+    }
+
+    /**
+     * Marks that the test run should stop.
+     */
+    public function stop(): void
+    {
+        $this->stop = true;
+    }
+
+    private function recordNotImplemented(Test $test, Throwable $t): void
+    {
+        $this->notImplemented[] = new TestFailure($test, $t);
+    }
+
+    private function recordSkipped(Test $test, Throwable $t): void
+    {
+        $this->skipped[] = new TestFailure($test, $t);
+    }
+
+    /**
+     * Adds a warning to the list of warnings.
+     * The passed in exception caused the warning.
+     */
+    public function addWarning(Test $test, Warning $e, float $time): void
+    {
+        if ($this->stopOnWarning || $this->stopOnDefect) {
+            $this->stop();
+        }
+
+        $this->recordWarning($test, $e);
+
+        foreach ($this->listeners as $listener) {
+            $listener->addWarning($test, $e, $time);
+        }
+
+        $this->time += $time;
+    }
+
+    private function recordWarning(Test $test, Throwable $t): void
+    {
+        $this->warnings[] = new TestFailure($test, $t);
+    }
+
+    /**
+     * Adds an error to the list of errors.
+     */
+    public function addError(Test $test, Throwable $t, float $time): void
+    {
+        if ($t instanceof RiskyTestError) {
+            $this->recordRisky($test, $t);
+
+            $notifyMethod = 'addRiskyTest';
+
+            if ($test instanceof TestCase) {
+                $test->markAsRisky();
+            }
+
+            if ($this->stopOnRisky || $this->stopOnDefect) {
+                $this->stop();
+            }
+        } elseif ($t instanceof IncompleteTest) {
+            $this->recordNotImplemented($test, $t);
+
+            $notifyMethod = 'addIncompleteTest';
+
+            if ($this->stopOnIncomplete) {
+                $this->stop();
+            }
+        } elseif ($t instanceof SkippedTest) {
+            $this->recordSkipped($test, $t);
+
+            $notifyMethod = 'addSkippedTest';
+
+            if ($this->stopOnSkipped) {
+                $this->stop();
+            }
+        } else {
+            $this->recordError($test, $t);
+
+            $notifyMethod = 'addError';
+
+            if ($this->stopOnError || $this->stopOnFailure) {
+                $this->stop();
+            }
+        }
+
+        // @see https://github.com/sebastianbergmann/phpunit/issues/1953
+        if ($t instanceof Error) {
+            $t = new ExceptionWrapper($t);
+        }
+
+        foreach ($this->listeners as $listener) {
+            $listener->{$notifyMethod}($test, $t, $time);
+        }
+
+        $this->lastTestFailed = true;
+        $this->time += $time;
+    }
+
+    private function recordError(Test $test, Throwable $t): void
+    {
+        $this->errors[] = new TestFailure($test, $t);
+    }
+
+    /**
+     * Informs the result that a test was completed.
+     *
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     */
+    public function endTest(Test $test, float $time): void
+    {
+        foreach ($this->listeners as $listener) {
+            $listener->endTest($test, $time);
+        }
+
+        if (!$this->lastTestFailed && $test instanceof TestCase) {
+            $class = get_class($test);
+            $key = $class . '::' . $test->getName();
+
+            $this->passed[$key] = [
+                'result' => $test->getResult(),
+                'size' => TestUtil::getSize(
+                    $class,
+                    $test->getName(false)
+                ),
+            ];
+
+            $this->time += $time;
+        }
+
+        if ($this->lastTestFailed && $test instanceof TestCase) {
+            $this->currentTestSuiteFailed = true;
+        }
+    }
+
     /**
      * Gets the number of run tests.
      */
@@ -989,14 +1005,6 @@ final class TestResult implements Countable
     public function shouldStop(): bool
     {
         return $this->stop;
-    }
-
-    /**
-     * Marks that the test run should stop.
-     */
-    public function stop(): void
-    {
-        $this->stop = true;
     }
 
     /**
@@ -1203,6 +1211,11 @@ final class TestResult implements Countable
         return $this->time;
     }
 
+    public function wasSuccessfulAndNoTestIsRiskyOrSkippedOrIncomplete(): bool
+    {
+        return $this->wasSuccessful() && $this->allHarmless() && $this->allCompletelyImplemented() && $this->noneSkipped();
+    }
+
     /**
      * Returns whether the entire test was successful or not.
      */
@@ -1216,9 +1229,52 @@ final class TestResult implements Countable
         return empty($this->errors) && empty($this->failures);
     }
 
-    public function wasSuccessfulAndNoTestIsRiskyOrSkippedOrIncomplete(): bool
+    /**
+     * Returns true if no risky test occurred.
+     */
+    public function allHarmless(): bool
     {
-        return $this->wasSuccessful() && $this->allHarmless() && $this->allCompletelyImplemented() && $this->noneSkipped();
+        return $this->riskyCount() === 0;
+    }
+
+    /**
+     * Gets the number of risky tests.
+     */
+    public function riskyCount(): int
+    {
+        return count($this->risky);
+    }
+
+    /**
+     * Returns true if no incomplete test occurred.
+     */
+    public function allCompletelyImplemented(): bool
+    {
+        return $this->notImplementedCount() === 0;
+    }
+
+    /**
+     * Gets the number of incomplete tests.
+     */
+    public function notImplementedCount(): int
+    {
+        return count($this->notImplemented);
+    }
+
+    /**
+     * Returns true if no test has been skipped.
+     */
+    public function noneSkipped(): bool
+    {
+        return $this->skippedCount() === 0;
+    }
+
+    /**
+     * Gets the number of skipped tests.
+     */
+    public function skippedCount(): int
+    {
+        return count($this->skipped);
     }
 
     /**
@@ -1246,14 +1302,6 @@ final class TestResult implements Countable
     }
 
     /**
-     * Sets the timeout for large tests.
-     */
-    public function setTimeoutForLargeTests(int $timeout): void
-    {
-        $this->timeoutForLargeTests = $timeout;
-    }
-
-    /**
      * Returns the set timeout for large tests.
      */
     public function getTimeoutForLargeTests(): int
@@ -1261,58 +1309,11 @@ final class TestResult implements Countable
         return $this->timeoutForLargeTests;
     }
 
-    public function setRegisterMockObjectsFromTestArgumentsRecursively(bool $flag): void
+    /**
+     * Sets the timeout for large tests.
+     */
+    public function setTimeoutForLargeTests(int $timeout): void
     {
-        $this->registerMockObjectsFromTestArgumentsRecursively = $flag;
-    }
-
-    private function recordError(Test $test, Throwable $t): void
-    {
-        $this->errors[] = new TestFailure($test, $t);
-    }
-
-    private function recordNotImplemented(Test $test, Throwable $t): void
-    {
-        $this->notImplemented[] = new TestFailure($test, $t);
-    }
-
-    private function recordRisky(Test $test, Throwable $t): void
-    {
-        $this->risky[] = new TestFailure($test, $t);
-    }
-
-    private function recordSkipped(Test $test, Throwable $t): void
-    {
-        $this->skipped[] = new TestFailure($test, $t);
-    }
-
-    private function recordWarning(Test $test, Throwable $t): void
-    {
-        $this->warnings[] = new TestFailure($test, $t);
-    }
-
-    private function shouldTimeLimitBeEnforced(int $size): bool
-    {
-        if (!$this->enforceTimeLimit) {
-            return false;
-        }
-
-        if (!(($this->defaultTimeLimit || $size !== TestUtil::UNKNOWN))) {
-            return false;
-        }
-
-        if (!extension_loaded('pcntl')) {
-            return false;
-        }
-
-        if (!class_exists(Invoker::class)) {
-            return false;
-        }
-
-        if (extension_loaded('xdebug') && xdebug_is_debugger_active()) {
-            return false;
-        }
-
-        return true;
+        $this->timeoutForLargeTests = $timeout;
     }
 }

@@ -22,9 +22,19 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final class HttpClient
 {
     /**
-     * @param array $defaultOptions     Default request's options
-     * @param int   $maxHostConnections The maximum number of connections to a single host
-     * @param int   $maxPendingPushes   The maximum number of pushed responses to accept in the queue
+     * Creates a client that adds options (e.g. authentication headers) only when the request URL matches the provided base URI.
+     */
+    public static function createForBaseUri(string $baseUri, array $defaultOptions = [], int $maxHostConnections = 6, int $maxPendingPushes = 50): HttpClientInterface
+    {
+        $client = self::create([], $maxHostConnections, $maxPendingPushes);
+
+        return ScopingHttpClient::forBaseUri($client, $baseUri, $defaultOptions);
+    }
+
+    /**
+     * @param array $defaultOptions Default request's options
+     * @param int $maxHostConnections The maximum number of connections to a single host
+     * @param int $maxPendingPushes The maximum number of pushed responses to accept in the queue
      *
      * @see HttpClientInterface::OPTIONS_DEFAULTS for available options
      */
@@ -61,18 +71,8 @@ final class HttpClient
             return new AmpHttpClient($defaultOptions, null, $maxHostConnections, $maxPendingPushes);
         }
 
-        @trigger_error((\extension_loaded('curl') ? 'Upgrade' : 'Install').' the curl extension or run "composer require amphp/http-client" to perform async HTTP operations, including full HTTP/2 support', \E_USER_NOTICE);
+        @trigger_error((\extension_loaded('curl') ? 'Upgrade' : 'Install') . ' the curl extension or run "composer require amphp/http-client" to perform async HTTP operations, including full HTTP/2 support', \E_USER_NOTICE);
 
         return new NativeHttpClient($defaultOptions, $maxHostConnections);
-    }
-
-    /**
-     * Creates a client that adds options (e.g. authentication headers) only when the request URL matches the provided base URI.
-     */
-    public static function createForBaseUri(string $baseUri, array $defaultOptions = [], int $maxHostConnections = 6, int $maxPendingPushes = 50): HttpClientInterface
-    {
-        $client = self::create([], $maxHostConnections, $maxPendingPushes);
-
-        return ScopingHttpClient::forBaseUri($client, $baseUri, $defaultOptions);
     }
 }

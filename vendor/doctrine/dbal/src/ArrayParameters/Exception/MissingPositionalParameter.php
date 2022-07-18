@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\ArrayParameters\Exception;
 
 use Doctrine\DBAL\ArrayParameters\Exception;
 use LogicException;
-
 use function sprintf;
 
 /**

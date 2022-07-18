@@ -35,21 +35,21 @@ class HorizonSuggestionAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your application uses the Redis queue driver but does not use Laravel's first party package "
-            ."called Horizon for queue management. Horizon not only offers a beautiful dashboard for queues "
-            ."and job monitoring, it also offers configurable provisioning plans for queue workers, load "
-            ."balancing strategies and memory management features. It is definitely recommended to install "
-            ."the Horizon package for any Laravel application that uses Redis queues.";
+            . "called Horizon for queue management. Horizon not only offers a beautiful dashboard for queues "
+            . "and job monitoring, it also offers configurable provisioning plans for queue workers, load "
+            . "balancing strategies and memory management features. It is definitely recommended to install "
+            . "the Horizon package for any Laravel application that uses Redis queues.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
     {
-        if (! class_exists(\Laravel\Horizon\Horizon::class)) {
+        if (!class_exists(\Laravel\Horizon\Horizon::class)) {
             $this->markFailed();
         }
     }
@@ -62,6 +62,6 @@ class HorizonSuggestionAnalyzer extends PerformanceAnalyzer
     public function skip()
     {
         // Skip the analyzer if application does not use the Redis queue driver.
-        return config('queue.connections.'.config('queue.default').'.driver') !== 'redis';
+        return config('queue.connections.' . config('queue.default') . '.driver') !== 'redis';
     }
 }

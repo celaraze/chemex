@@ -60,11 +60,11 @@ class Perforce
 
     /**
      * @phpstan-param RepoConfig $repoConfig
-     * @param string             $port
-     * @param string             $path
-     * @param ProcessExecutor    $process
-     * @param bool               $isWindows
-     * @param IOInterface        $io
+     * @param string $port
+     * @param string $path
+     * @param ProcessExecutor $process
+     * @param bool $isWindows
+     * @param IOInterface $io
      */
     public function __construct($repoConfig, string $port, string $path, ProcessExecutor $process, bool $isWindows, IOInterface $io)
     {
@@ -77,28 +77,35 @@ class Perforce
     }
 
     /**
-     * @phpstan-param RepoConfig $repoConfig
-     * @param string             $port
-     * @param string             $path
-     * @param ProcessExecutor    $process
-     * @param IOInterface        $io
+     * @param string $path
      *
-     * @return self
+     * @return void
      */
-    public static function create($repoConfig, string $port, string $path, ProcessExecutor $process, IOInterface $io): self
+    public function initializePath(string $path): void
     {
-        return new Perforce($repoConfig, $port, $path, $process, Platform::isWindows(), $io);
+        $this->path = $path;
+        $fs = $this->getFilesystem();
+        $fs->ensureDirectoryExists($path);
     }
 
     /**
-     * @param string          $url
-     * @param ProcessExecutor $processExecutor
-     *
-     * @return bool
+     * @return Filesystem
      */
-    public static function checkServerExists(string $url, ProcessExecutor $processExecutor): bool
+    public function getFilesystem(): Filesystem
     {
-        return 0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $ignoredOutput);
+        if (null === $this->filesystem) {
+            $this->filesystem = new Filesystem($this->process);
+        }
+
+        return $this->filesystem;
+    }
+
+    /**
+     * @return void
+     */
+    public function setFilesystem(Filesystem $fs): void
+    {
+        $this->filesystem = $fs;
     }
 
     /**
@@ -133,22 +140,6 @@ class Perforce
     }
 
     /**
-     * @param string|null $depot
-     * @param string|null $branch
-     *
-     * @return void
-     */
-    public function initializeDepotAndBranch(?string $depot, ?string $branch): void
-    {
-        if (isset($depot)) {
-            $this->p4Depot = $depot;
-        }
-        if (isset($branch)) {
-            $this->p4Branch = $branch;
-        }
-    }
-
-    /**
      * @return non-empty-string
      */
     public function generateUniquePerforceClientName(): string
@@ -157,177 +148,7 @@ class Perforce
     }
 
     /**
-     * @return void
-     */
-    public function cleanupClientSpec(): void
-    {
-        $client = $this->getClient();
-        $task = 'client -d ' . ProcessExecutor::escape($client);
-        $useP4Client = false;
-        $command = $this->generateP4Command($task, $useP4Client);
-        $this->executeCommand($command);
-        $clientSpec = $this->getP4ClientSpec();
-        $fileSystem = $this->getFilesystem();
-        $fileSystem->remove($clientSpec);
-    }
-
-    /**
-     * @param non-empty-string $command
-     *
-     * @return int
-     */
-    protected function executeCommand($command): int
-    {
-        $this->commandResult = '';
-
-        return $this->process->execute($command, $this->commandResult);
-    }
-
-    /**
-     * @return string
-     */
-    public function getClient(): string
-    {
-        if (!isset($this->p4Client)) {
-            $cleanStreamName = str_replace(array('//', '/', '@'), array('', '_', ''), $this->getStream());
-            $this->p4Client = 'composer_perforce_' . $this->uniquePerforceClientName . '_' . $cleanStreamName;
-        }
-
-        return $this->p4Client;
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPath(): string
-    {
-        return $this->path;
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
-    public function initializePath(string $path): void
-    {
-        $this->path = $path;
-        $fs = $this->getFilesystem();
-        $fs->ensureDirectoryExists($path);
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPort(): string
-    {
-        return $this->p4Port;
-    }
-
-    /**
-     * @param string $stream
-     *
-     * @return void
-     */
-    public function setStream(string $stream): void
-    {
-        $this->p4Stream = $stream;
-        $index = strrpos($stream, '/');
-        //Stream format is //depot/stream, while non-streaming depot is //depot
-        if ($index > 2) {
-            $this->p4DepotType = 'stream';
-        }
-    }
-
-    /**
-     * @return bool
-     */
-    public function isStream(): bool
-    {
-        return is_string($this->p4DepotType) && (strcmp($this->p4DepotType, 'stream') === 0);
-    }
-
-    /**
-     * @return string
-     */
-    public function getStream(): string
-    {
-        if (!isset($this->p4Stream)) {
-            if ($this->isStream()) {
-                $this->p4Stream = '//' . $this->p4Depot . '/' . $this->p4Branch;
-            } else {
-                $this->p4Stream = '//' . $this->p4Depot;
-            }
-        }
-
-        return $this->p4Stream;
-    }
-
-    /**
-     * @param string $stream
-     *
-     * @return string
-     */
-    public function getStreamWithoutLabel(string $stream): string
-    {
-        $index = strpos($stream, '@');
-        if ($index === false) {
-            return $stream;
-        }
-
-        return substr($stream, 0, $index);
-    }
-
-    /**
-     * @return non-empty-string
-     */
-    public function getP4ClientSpec(): string
-    {
-        return $this->path . '/' . $this->getClient() . '.p4.spec';
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getUser(): ?string
-    {
-        return $this->p4User;
-    }
-
-    /**
-     * @param string|null $user
-     *
-     * @return void
-     */
-    public function setUser(?string $user): void
-    {
-        $this->p4User = $user;
-    }
-
-    /**
-     * @return void
-     */
-    public function queryP4User(): void
-    {
-        $this->getUser();
-        if (strlen((string) $this->p4User) > 0) {
-            return;
-        }
-        $this->p4User = $this->getP4variable('P4USER');
-        if (strlen((string) $this->p4User) > 0) {
-            return;
-        }
-        $this->p4User = $this->io->ask('Enter P4 User:');
-        if ($this->windowsFlag) {
-            $command = 'p4 set P4USER=' . $this->p4User;
-        } else {
-            $command = 'export P4USER=' . $this->p4User;
-        }
-        $this->executeCommand($command);
-    }
-
-    /**
-     * @param  string  $name
+     * @param string $name
      * @return ?string
      */
     protected function getP4variable(string $name): ?string
@@ -363,25 +184,113 @@ class Perforce
     }
 
     /**
-     * @return string|null
+     * @param non-empty-string $command
+     *
+     * @return int
      */
-    public function queryP4Password(): ?string
+    protected function executeCommand($command): int
     {
-        if (isset($this->p4Password)) {
-            return $this->p4Password;
-        }
-        $password = $this->getP4variable('P4PASSWD');
-        if (strlen((string) $password) <= 0) {
-            $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
-        }
-        $this->p4Password = $password;
+        $this->commandResult = '';
 
-        return $password;
+        return $this->process->execute($command, $this->commandResult);
+    }
+
+    /**
+     * @phpstan-param RepoConfig $repoConfig
+     * @param string $port
+     * @param string $path
+     * @param ProcessExecutor $process
+     * @param IOInterface $io
+     *
+     * @return self
+     */
+    public static function create($repoConfig, string $port, string $path, ProcessExecutor $process, IOInterface $io): self
+    {
+        return new Perforce($repoConfig, $port, $path, $process, Platform::isWindows(), $io);
+    }
+
+    /**
+     * @param string $url
+     * @param ProcessExecutor $processExecutor
+     *
+     * @return bool
+     */
+    public static function checkServerExists(string $url, ProcessExecutor $processExecutor): bool
+    {
+        return 0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $ignoredOutput);
+    }
+
+    /**
+     * @param string|null $depot
+     * @param string|null $branch
+     *
+     * @return void
+     */
+    public function initializeDepotAndBranch(?string $depot, ?string $branch): void
+    {
+        if (isset($depot)) {
+            $this->p4Depot = $depot;
+        }
+        if (isset($branch)) {
+            $this->p4Branch = $branch;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function cleanupClientSpec(): void
+    {
+        $client = $this->getClient();
+        $task = 'client -d ' . ProcessExecutor::escape($client);
+        $useP4Client = false;
+        $command = $this->generateP4Command($task, $useP4Client);
+        $this->executeCommand($command);
+        $clientSpec = $this->getP4ClientSpec();
+        $fileSystem = $this->getFilesystem();
+        $fileSystem->remove($clientSpec);
+    }
+
+    /**
+     * @return string
+     */
+    public function getClient(): string
+    {
+        if (!isset($this->p4Client)) {
+            $cleanStreamName = str_replace(array('//', '/', '@'), array('', '_', ''), $this->getStream());
+            $this->p4Client = 'composer_perforce_' . $this->uniquePerforceClientName . '_' . $cleanStreamName;
+        }
+
+        return $this->p4Client;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStream(): string
+    {
+        if (!isset($this->p4Stream)) {
+            if ($this->isStream()) {
+                $this->p4Stream = '//' . $this->p4Depot . '/' . $this->p4Branch;
+            } else {
+                $this->p4Stream = '//' . $this->p4Depot;
+            }
+        }
+
+        return $this->p4Stream;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStream(): bool
+    {
+        return is_string($this->p4DepotType) && (strcmp($this->p4DepotType, 'stream') === 0);
     }
 
     /**
      * @param string $command
-     * @param bool   $useClient
+     * @param bool $useClient
      *
      * @return non-empty-string
      */
@@ -398,26 +307,52 @@ class Perforce
     }
 
     /**
-     * @return bool
+     * @return string|null
      */
-    public function isLoggedIn(): bool
+    public function getUser(): ?string
     {
-        $command = $this->generateP4Command('login -s', false);
-        $exitCode = $this->executeCommand($command);
-        if ($exitCode) {
-            $errorOutput = $this->process->getErrorOutput();
-            $index = strpos($errorOutput, $this->getUser());
-            if ($index === false) {
-                $index = strpos($errorOutput, 'p4');
-                if ($index === false) {
-                    return false;
-                }
-                throw new \Exception('p4 command not found in path: ' . $errorOutput);
-            }
-            throw new \Exception('Invalid user name: ' . $this->getUser());
-        }
+        return $this->p4User;
+    }
 
-        return true;
+    /**
+     * @return string
+     */
+    protected function getPort(): string
+    {
+        return $this->p4Port;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function getP4ClientSpec(): string
+    {
+        return $this->path . '/' . $this->getClient() . '.p4.spec';
+    }
+
+    /**
+     * @param string $stream
+     *
+     * @return void
+     */
+    public function setStream(string $stream): void
+    {
+        $this->p4Stream = $stream;
+        $index = strrpos($stream, '/');
+        //Stream format is //depot/stream, while non-streaming depot is //depot
+        if ($index > 2) {
+            $this->p4DepotType = 'stream';
+        }
+    }
+
+    /**
+     * @param string|null $user
+     *
+     * @return void
+     */
+    public function setUser(?string $user): void
+    {
+        $this->p4User = $user;
     }
 
     /**
@@ -449,6 +384,22 @@ class Perforce
     }
 
     /**
+     * @return void
+     */
+    public function writeP4ClientSpec(): void
+    {
+        $clientSpec = $this->getP4ClientSpec();
+        $spec = fopen($clientSpec, 'w');
+        try {
+            $this->writeClientSpecToFile($spec);
+        } catch (\Exception $e) {
+            fclose($spec);
+            throw $e;
+        }
+        fclose($spec);
+    }
+
+    /**
      * @param resource|false $spec
      *
      * @return void
@@ -477,36 +428,108 @@ class Perforce
     }
 
     /**
-     * @return void
+     * @return string
      */
-    public function writeP4ClientSpec(): void
+    protected function getPath(): string
     {
-        $clientSpec = $this->getP4ClientSpec();
-        $spec = fopen($clientSpec, 'w');
-        try {
-            $this->writeClientSpecToFile($spec);
-        } catch (\Exception $e) {
-            fclose($spec);
-            throw $e;
-        }
-        fclose($spec);
+        return $this->path;
     }
 
     /**
-     * @param resource $pipe
-     * @param mixed    $name
+     * @param string $stream
      *
+     * @return string
+     */
+    public function getStreamWithoutLabel(string $stream): string
+    {
+        $index = strpos($stream, '@');
+        if ($index === false) {
+            return $stream;
+        }
+
+        return substr($stream, 0, $index);
+    }
+
+    /**
      * @return void
      */
-    protected function read($pipe, $name): void
+    public function p4Login(): void
     {
-        if (feof($pipe)) {
+        $this->queryP4User();
+        if (!$this->isLoggedIn()) {
+            $password = $this->queryP4Password();
+            if ($this->windowsFlag) {
+                $this->windowsLogin($password);
+            } else {
+                $command = 'echo ' . ProcessExecutor::escape($password) . ' | ' . $this->generateP4Command(' login -a', false);
+                $exitCode = $this->executeCommand($command);
+                if ($exitCode) {
+                    throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
+                }
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function queryP4User(): void
+    {
+        $this->getUser();
+        if (strlen((string)$this->p4User) > 0) {
             return;
         }
-        $line = fgets($pipe);
-        while ($line !== false) {
-            $line = fgets($pipe);
+        $this->p4User = $this->getP4variable('P4USER');
+        if (strlen((string)$this->p4User) > 0) {
+            return;
         }
+        $this->p4User = $this->io->ask('Enter P4 User:');
+        if ($this->windowsFlag) {
+            $command = 'p4 set P4USER=' . $this->p4User;
+        } else {
+            $command = 'export P4USER=' . $this->p4User;
+        }
+        $this->executeCommand($command);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLoggedIn(): bool
+    {
+        $command = $this->generateP4Command('login -s', false);
+        $exitCode = $this->executeCommand($command);
+        if ($exitCode) {
+            $errorOutput = $this->process->getErrorOutput();
+            $index = strpos($errorOutput, $this->getUser());
+            if ($index === false) {
+                $index = strpos($errorOutput, 'p4');
+                if ($index === false) {
+                    return false;
+                }
+                throw new \Exception('p4 command not found in path: ' . $errorOutput);
+            }
+            throw new \Exception('Invalid user name: ' . $this->getUser());
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function queryP4Password(): ?string
+    {
+        if (isset($this->p4Password)) {
+            return $this->p4Password;
+        }
+        $password = $this->getP4variable('P4PASSWD');
+        if (strlen((string)$password) <= 0) {
+            $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
+        }
+        $this->p4Password = $password;
+
+        return $password;
     }
 
     /**
@@ -521,26 +544,6 @@ class Perforce
         $process = Process::fromShellCommandline($command, null, null, $password);
 
         return $process->run();
-    }
-
-    /**
-     * @return void
-     */
-    public function p4Login(): void
-    {
-        $this->queryP4User();
-        if (!$this->isLoggedIn()) {
-            $password = $this->queryP4Password();
-            if ($this->windowsFlag) {
-                $this->windowsLogin($password);
-            } else {
-                $command = 'echo ' . ProcessExecutor::escape($password)  . ' | ' . $this->generateP4Command(' login -a', false);
-                $exitCode = $this->executeCommand($command);
-                if ($exitCode) {
-                    throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
-                }
-            }
-        }
     }
 
     /**
@@ -590,7 +593,7 @@ class Perforce
     {
         $index = strpos($identifier, '@');
         if ($index === false) {
-            return $identifier. '/' . $file;
+            return $identifier . '/' . $file;
         }
 
         $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
@@ -620,7 +623,7 @@ class Perforce
         if (!$this->isStream()) {
             $possibleBranches[$this->p4Branch] = $this->getStream();
         } else {
-            $command = $this->generateP4Command('streams '.ProcessExecutor::escape('//' . $this->p4Depot . '/...'));
+            $command = $this->generateP4Command('streams ' . ProcessExecutor::escape('//' . $this->p4Depot . '/...'));
             $this->executeCommand($command);
             $result = $this->commandResult;
             $resArray = explode(PHP_EOL, $result);
@@ -632,7 +635,7 @@ class Perforce
                 }
             }
         }
-        $command = $this->generateP4Command('changes '. ProcessExecutor::escape($this->getStream() . '/...'), false);
+        $command = $this->generateP4Command('changes ' . ProcessExecutor::escape($this->getStream() . '/...'), false);
         $this->executeCommand($command);
         $result = $this->commandResult;
         $resArray = explode(PHP_EOL, $result);
@@ -640,7 +643,7 @@ class Perforce
         $lastCommitArr = explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
 
-        return array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
+        return array('master' => $possibleBranches[$this->p4Branch] . '@' . $lastCommitNum);
     }
 
     /**
@@ -687,7 +690,30 @@ class Perforce
     }
 
     /**
-     * @param  string     $reference
+     * @param string $fromReference
+     * @param string $toReference
+     * @return mixed|null
+     */
+    public function getCommitLogs(string $fromReference, string $toReference): mixed
+    {
+        $fromChangeList = $this->getChangeList($fromReference);
+        if ($fromChangeList === null) {
+            return null;
+        }
+        $toChangeList = $this->getChangeList($toReference);
+        if ($toChangeList === null) {
+            return null;
+        }
+        $index = strpos($fromReference, '@');
+        $main = substr($fromReference, 0, $index) . '/...';
+        $command = $this->generateP4Command('filelog ' . ProcessExecutor::escape($main . '@' . $fromChangeList . ',' . $toChangeList));
+        $this->executeCommand($command);
+
+        return $this->commandResult;
+    }
+
+    /**
+     * @param string $reference
      * @return mixed|null
      */
     protected function getChangeList(string $reference): mixed
@@ -709,45 +735,19 @@ class Perforce
     }
 
     /**
-     * @param  string     $fromReference
-     * @param  string     $toReference
-     * @return mixed|null
-     */
-    public function getCommitLogs(string $fromReference, string $toReference): mixed
-    {
-        $fromChangeList = $this->getChangeList($fromReference);
-        if ($fromChangeList === null) {
-            return null;
-        }
-        $toChangeList = $this->getChangeList($toReference);
-        if ($toChangeList === null) {
-            return null;
-        }
-        $index = strpos($fromReference, '@');
-        $main = substr($fromReference, 0, $index) . '/...';
-        $command = $this->generateP4Command('filelog ' . ProcessExecutor::escape($main . '@' . $fromChangeList. ',' . $toChangeList));
-        $this->executeCommand($command);
-
-        return $this->commandResult;
-    }
-
-    /**
-     * @return Filesystem
-     */
-    public function getFilesystem(): Filesystem
-    {
-        if (null === $this->filesystem) {
-            $this->filesystem = new Filesystem($this->process);
-        }
-
-        return $this->filesystem;
-    }
-
-    /**
+     * @param resource $pipe
+     * @param mixed $name
+     *
      * @return void
      */
-    public function setFilesystem(Filesystem $fs): void
+    protected function read($pipe, $name): void
     {
-        $this->filesystem = $fs;
+        if (feof($pipe)) {
+            return;
+        }
+        $line = fgets($pipe);
+        while ($line !== false) {
+            $line = fgets($pipe);
+        }
     }
 }

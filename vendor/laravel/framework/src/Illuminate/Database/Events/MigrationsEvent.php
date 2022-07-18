@@ -16,7 +16,7 @@ abstract class MigrationsEvent implements MigrationEventContract
     /**
      * Create a new event instance.
      *
-     * @param  string  $method
+     * @param string $method
      * @return void
      */
     public function __construct($method)

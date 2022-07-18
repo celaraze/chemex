@@ -24,17 +24,6 @@ class RunkitReloader extends AbstractListener
     private $timestamps = [];
 
     /**
-     * Only enabled if Runkit is installed.
-     *
-     * @return bool
-     */
-    public static function isSupported(): bool
-    {
-        // runkit_import was removed in runkit7-4.0.0a1
-        return \extension_loaded('runkit') || \extension_loaded('runkit7') && \function_exists('runkit_import');
-    }
-
-    /**
      * Construct a Runkit Reloader.
      *
      * @todo Pass in Parser Factory instance for dependency injection?
@@ -46,9 +35,20 @@ class RunkitReloader extends AbstractListener
     }
 
     /**
+     * Only enabled if Runkit is installed.
+     *
+     * @return bool
+     */
+    public static function isSupported(): bool
+    {
+        // runkit_import was removed in runkit7-4.0.0a1
+        return \extension_loaded('runkit') || \extension_loaded('runkit7') && \function_exists('runkit_import');
+    }
+
+    /**
      * Reload code on input.
      *
-     * @param Shell  $shell
+     * @param Shell $shell
      * @param string $input
      */
     public function onInput(Shell $shell, string $input)

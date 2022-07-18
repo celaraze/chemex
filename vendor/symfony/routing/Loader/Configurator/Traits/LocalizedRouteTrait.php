@@ -44,26 +44,26 @@ trait LocalizedRouteTrait
                         throw new \LogicException(sprintf('Route "%s" with locale "%s" is missing a corresponding prefix in its parent collection.', $name, $locale));
                     }
 
-                    $paths[$locale] = $prefixes[$locale].$localePath;
+                    $paths[$locale] = $prefixes[$locale] . $localePath;
                 }
             }
         } elseif (null !== $prefixes) {
             foreach ($prefixes as $locale => $prefix) {
-                $paths[$locale] = $prefix.$path;
+                $paths[$locale] = $prefix . $path;
             }
         } else {
-            $routes->add($namePrefix.$name, $route = $this->createRoute($path));
-            $collection->add($namePrefix.$name, $route);
+            $routes->add($namePrefix . $name, $route = $this->createRoute($path));
+            $collection->add($namePrefix . $name, $route);
 
             return $routes;
         }
 
         foreach ($paths as $locale => $path) {
-            $routes->add($name.'.'.$locale, $route = $this->createRoute($path));
-            $collection->add($namePrefix.$name.'.'.$locale, $route);
+            $routes->add($name . '.' . $locale, $route = $this->createRoute($path));
+            $collection->add($namePrefix . $name . '.' . $locale, $route);
             $route->setDefault('_locale', $locale);
             $route->setRequirement('_locale', preg_quote($locale));
-            $route->setDefault('_canonical_route', $namePrefix.$name);
+            $route->setDefault('_canonical_route', $namePrefix . $name);
         }
 
         return $routes;

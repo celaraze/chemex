@@ -11,13 +11,13 @@
 
 namespace Prophecy\Prediction;
 
-use Prophecy\Call\Call;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Argument\ArgumentsWildcard;
 use Prophecy\Argument\Token\AnyValuesToken;
-use Prophecy\Util\StringUtil;
+use Prophecy\Call\Call;
 use Prophecy\Exception\Prediction\UnexpectedCallsCountException;
+use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Util\StringUtil;
 
 /**
  * Prediction interface.
@@ -33,19 +33,19 @@ class CallTimesPrediction implements PredictionInterface
     /**
      * Initializes prediction.
      *
-     * @param int        $times
+     * @param int $times
      * @param StringUtil $util
      */
     public function __construct($times, StringUtil $util = null)
     {
         $this->times = intval($times);
-        $this->util  = $util ?: new StringUtil;
+        $this->util = $util ?: new StringUtil;
     }
 
     /**
      * Tests that there was exact amount of calls made.
      *
-     * @param Call[]         $calls
+     * @param Call[] $calls
      * @param ObjectProphecy $object
      * @param MethodProphecy $method
      *
@@ -64,8 +64,8 @@ class CallTimesPrediction implements PredictionInterface
 
         if (count($calls)) {
             $message = sprintf(
-                "Expected exactly %d calls that match:\n".
-                "  %s->%s(%s)\n".
+                "Expected exactly %d calls that match:\n" .
+                "  %s->%s(%s)\n" .
                 "but %d were made:\n%s",
 
                 $this->times,
@@ -77,9 +77,9 @@ class CallTimesPrediction implements PredictionInterface
             );
         } elseif (count($methodCalls)) {
             $message = sprintf(
-                "Expected exactly %d calls that match:\n".
-                "  %s->%s(%s)\n".
-                "but none were made.\n".
+                "Expected exactly %d calls that match:\n" .
+                "  %s->%s(%s)\n" .
+                "but none were made.\n" .
                 "Recorded `%s(...)` calls:\n%s",
 
                 $this->times,
@@ -91,8 +91,8 @@ class CallTimesPrediction implements PredictionInterface
             );
         } else {
             $message = sprintf(
-                "Expected exactly %d calls that match:\n".
-                "  %s->%s(%s)\n".
+                "Expected exactly %d calls that match:\n" .
+                "  %s->%s(%s)\n" .
                 "but none were made.",
 
                 $this->times,

@@ -26,12 +26,12 @@ class BCJWSTest extends TestCase
             $jwsOld = new JWS(array('alg' => 'RS256'));
             $jwsOld->setEncoder(new Base64Encoder());
             $jwsOld->setPayload($payload);
-            $jwsOld->sign(openssl_pkey_get_private(SSL_KEYS_PATH.'private.key', self::SSL_KEY_PASSPHRASE));
+            $jwsOld->sign(openssl_pkey_get_private(SSL_KEYS_PATH . 'private.key', self::SSL_KEY_PASSPHRASE));
 
             $t = $jwsOld->getTokenString();
 
             $jwsNew = JWS::load($t);
-            $this->assertTrue($jwsNew->verify(openssl_pkey_get_public(SSL_KEYS_PATH.'public.key')));
+            $this->assertTrue($jwsNew->verify(openssl_pkey_get_public(SSL_KEYS_PATH . 'public.key')));
         }
     }
 }

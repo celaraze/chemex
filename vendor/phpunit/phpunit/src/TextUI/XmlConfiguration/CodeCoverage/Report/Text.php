@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report;
 
 use PHPUnit\TextUI\XmlConfiguration\File;
@@ -34,9 +35,9 @@ final class Text
 
     public function __construct(File $target, bool $showUncoveredFiles, bool $showOnlySummary)
     {
-        $this->target             = $target;
+        $this->target = $target;
         $this->showUncoveredFiles = $showUncoveredFiles;
-        $this->showOnlySummary    = $showOnlySummary;
+        $this->showOnlySummary = $showOnlySummary;
     }
 
     public function target(): File

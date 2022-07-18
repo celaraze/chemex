@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
 /**
@@ -22,9 +23,9 @@ final class Blacklist
     }
 
     /**
+     * @return string[]
      * @throws Exception
      *
-     * @return string[]
      */
     public function getBlacklistedDirectories(): array
     {

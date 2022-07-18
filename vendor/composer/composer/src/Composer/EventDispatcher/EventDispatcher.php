@@ -12,23 +12,23 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\DependencyResolver\Transaction;
-use Composer\Installer\InstallerEvent;
-use Composer\IO\IOInterface;
+use Composer\Autoload\ClassLoader;
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Transaction;
+use Composer\Installer\BinaryInstaller;
+use Composer\Installer\InstallerEvent;
+use Composer\Installer\PackageEvent;
+use Composer\IO\IOInterface;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
-use Composer\Util\Platform;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Script;
-use Composer\Installer\PackageEvent;
-use Composer\Installer\BinaryInstaller;
-use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
-use Composer\Autoload\ClassLoader;
-use Symfony\Component\Process\PhpExecutableFinder;
+use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
  * The Event Dispatcher.
@@ -64,7 +64,7 @@ class EventDispatcher
      * Constructor.
      *
      * @param PartialComposer $composer The composer instance
-     * @param IOInterface     $io       The IOInterface instance
+     * @param IOInterface $io The IOInterface instance
      * @param ProcessExecutor $process
      */
     public function __construct(PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null)
@@ -83,7 +83,7 @@ class EventDispatcher
      */
     public function setRunScripts(bool $runScripts = true): self
     {
-        $this->runScripts = (bool) $runScripts;
+        $this->runScripts = (bool)$runScripts;
 
         return $this;
     }
@@ -91,8 +91,8 @@ class EventDispatcher
     /**
      * Dispatch an event
      *
-     * @param  string|null $eventName The event name, required if no $event is provided
-     * @param  Event       $event An event instance, required if no $eventName is provided
+     * @param string|null $eventName The event name, required if no $event is provided
+     * @param Event $event An event instance, required if no $eventName is provided
      * @return int         return code of the executed script if any, for php scripts a false return
      *                          value is changed to 1, anything else to 0
      */
@@ -100,7 +100,7 @@ class EventDispatcher
     {
         if (null === $event) {
             if (null === $eventName) {
-                throw new \InvalidArgumentException('If no $event is passed in to '.__METHOD__.' you have to pass in an $eventName, got null.');
+                throw new \InvalidArgumentException('If no $event is passed in to ' . __METHOD__ . ' you have to pass in an $eventName, got null.');
             }
             $event = new Event($eventName);
         }
@@ -109,75 +109,21 @@ class EventDispatcher
     }
 
     /**
-     * Dispatch a script event.
-     *
-     * @param  string               $eventName      The constant in ScriptEvents
-     * @param  bool                 $devMode
-     * @param  array<int, mixed>    $additionalArgs Arguments passed by the user
-     * @param  array<string, mixed> $flags          Optional flags to pass data not as argument
-     * @return int                                  return code of the executed script if any, for php scripts a false return
-     *                                              value is changed to 1, anything else to 0
-     */
-    public function dispatchScript(string $eventName, bool $devMode = false, array $additionalArgs = array(), array $flags = array()): int
-    {
-        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
-
-        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
-    }
-
-    /**
-     * Dispatch a package event.
-     *
-     * @param string               $eventName  The constant in PackageEvents
-     * @param bool                 $devMode    Whether or not we are in dev mode
-     * @param RepositoryInterface  $localRepo  The installed repository
-     * @param OperationInterface[] $operations The list of operations
-     * @param OperationInterface   $operation  The package being installed/updated/removed
-     *
-     * @return int return code of the executed script if any, for php scripts a false return
-     *             value is changed to 1, anything else to 0
-     */
-    public function dispatchPackageEvent(string $eventName, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation): int
-    {
-        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
-
-        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $localRepo, $operations, $operation));
-    }
-
-    /**
-     * Dispatch a installer event.
-     *
-     * @param string      $eventName         The constant in InstallerEvents
-     * @param bool        $devMode           Whether or not we are in dev mode
-     * @param bool        $executeOperations True if operations will be executed, false in --dry-run
-     * @param Transaction $transaction       The transaction contains the list of operations
-     *
-     * @return int return code of the executed script if any, for php scripts a false return
-     *             value is changed to 1, anything else to 0
-     */
-    public function dispatchInstallerEvent(string $eventName, bool $devMode, bool $executeOperations, Transaction $transaction): int
-    {
-        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
-
-        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $executeOperations, $transaction));
-    }
-
-    /**
      * Triggers the listeners of an event.
      *
-     * @param  Event                        $event The event object to pass to the event handlers/listeners.
-     * @throws \RuntimeException|\Exception
+     * @param Event $event The event object to pass to the event handlers/listeners.
      * @return int                          return code of the executed script if any, for php scripts a false return
      *                                            value is changed to 1, anything else to 0
+     * @throws \RuntimeException|\Exception
      */
     protected function doDispatch(Event $event)
     {
         if (Platform::getEnv('COMPOSER_DEBUG_EVENTS')) {
             $details = null;
             if ($event instanceof PackageEvent) {
-                $details = (string) $event->getOperation();
+                $details = (string)$event->getOperation();
             }
-            $this->io->writeError('Dispatching <info>'.$event->getName().'</info>'.($details ? ' ('.$details.')' : '').' event');
+            $this->io->writeError('Dispatching <info>' . $event->getName() . '</info>' . ($details ? ' (' . $details . ')' : '') . ' event');
         }
 
         $listeners = $this->getListeners($event);
@@ -194,10 +140,10 @@ class EventDispatcher
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
 
-                        throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
+                        throw new \RuntimeException('Subscriber ' . $className . '::' . $callable[1] . ' for event ' . $event->getName() . ' is not callable, make sure the function is defined and public');
                     }
                     if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
-                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
+                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]) . '->' . $callable[1]), true, IOInterface::VERBOSE);
                     }
                     $return = false === call_user_func($callable, $event) ? 1 : 0;
                 } elseif ($this->isComposerScript($callable)) {
@@ -212,9 +158,9 @@ class EventDispatcher
                     if (strpos($callable, '@composer ') === 0) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
-                            $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
+                            $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code ' . $exitCode . '</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
-                            throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                            throw new ScriptExecutionException('Error Output: ' . $this->process->getErrorOutput(), $exitCode);
                         }
                     } else {
                         if (!$this->getListeners(new Event($scriptName))) {
@@ -236,11 +182,11 @@ class EventDispatcher
                     $methodName = substr($callable, strpos($callable, '::') + 2);
 
                     if (!class_exists($className)) {
-                        $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        $this->io->writeError('<warning>Class ' . $className . ' is not autoloadable, can not call ' . $event->getName() . ' script</warning>', true, IOInterface::QUIET);
                         continue;
                     }
                     if (!is_callable($callable)) {
-                        $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        $this->io->writeError('<warning>Method ' . $callable . ' is not callable, can not call ' . $event->getName() . ' script</warning>', true, IOInterface::QUIET);
                         continue;
                     }
 
@@ -248,12 +194,12 @@ class EventDispatcher
                         $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
-                        $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
+                        $this->io->writeError('<error>' . sprintf($message, $callable, $event->getName()) . '</error>', true, IOInterface::QUIET);
                         throw $e;
                     }
                 } else {
                     $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
-                    $exec = $callable . ($args === '' ? '' : ' '.$args);
+                    $exec = $callable . ($args === '' ? '' : ' ' . $args);
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
                     } elseif ($event->getName() !== '__exec_command') {
@@ -264,9 +210,9 @@ class EventDispatcher
                     $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
                     if ($possibleLocalBinaries) {
                         foreach ($possibleLocalBinaries as $localExec) {
-                            if (Preg::isMatch('{\b'.preg_quote($callable).'$}', $localExec)) {
+                            if (Preg::isMatch('{\b' . preg_quote($callable) . '$}', $localExec)) {
                                 $caller = BinaryInstaller::determineBinaryCaller($localExec);
-                                $exec = Preg::replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
+                                $exec = Preg::replace('{^' . preg_quote($callable) . '}', $caller . ' ' . $localExec, $exec);
                                 break;
                             }
                         }
@@ -321,9 +267,9 @@ class EventDispatcher
                     }
 
                     if (0 !== ($exitCode = $this->executeTty($exec))) {
-                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
+                        $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code ' . $exitCode . '</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
-                        throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                        throw new ScriptExecutionException('Error Output: ' . $this->process->getErrorOutput(), $exitCode);
                     }
                 }
 
@@ -341,116 +287,9 @@ class EventDispatcher
     }
 
     /**
-     * @param string $exec
-     *
-     * @return int
-     */
-    protected function executeTty(string $exec): int
-    {
-        if ($this->io->isInteractive()) {
-            return $this->process->executeTty($exec);
-        }
-
-        return $this->process->execute($exec);
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPhpExecCommand(): string
-    {
-        $finder = new PhpExecutableFinder();
-        $phpPath = $finder->find(false);
-        if (!$phpPath) {
-            throw new \RuntimeException('Failed to locate PHP binary to execute '.$phpPath);
-        }
-        $phpArgs = $finder->findArguments();
-        $phpArgs = $phpArgs ? ' ' . implode(' ', $phpArgs) : '';
-        $allowUrlFOpenFlag = ' -d allow_url_fopen=' . ProcessExecutor::escape(ini_get('allow_url_fopen'));
-        $disableFunctionsFlag = ' -d disable_functions=' . ProcessExecutor::escape(ini_get('disable_functions'));
-        $memoryLimitFlag = ' -d memory_limit=' . ProcessExecutor::escape(ini_get('memory_limit'));
-
-        return ProcessExecutor::escape($phpPath) . $phpArgs . $allowUrlFOpenFlag . $disableFunctionsFlag . $memoryLimitFlag;
-    }
-
-    /**
-     * @param string $className
-     * @param string $methodName
-     * @param Event  $event      Event invoking the PHP callable
-     *
-     * @return mixed
-     */
-    protected function executeEventPhpScript(string $className, string $methodName, Event $event)
-    {
-        if ($this->io->isVerbose()) {
-            $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
-        } else {
-            $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
-        }
-
-        return $className::$methodName($event);
-    }
-
-    /**
-     * Add a listener for a particular event
-     *
-     * @param string          $eventName The event name - typically a constant
-     * @param callable|string $listener  A callable expecting an event argument, or a command string to be executed (same as a composer.json "scripts" entry)
-     * @param int             $priority  A higher value represents a higher priority
-     *
-     * @return void
-     */
-    public function addListener(string $eventName, $listener, int $priority = 0): void
-    {
-        $this->listeners[$eventName][$priority][] = $listener;
-    }
-
-    /**
-     * @param callable|object $listener A callable or an object instance for which all listeners should be removed
-     *
-     * @return void
-     */
-    public function removeListener($listener): void
-    {
-        foreach ($this->listeners as $eventName => $priorities) {
-            foreach ($priorities as $priority => $listeners) {
-                foreach ($listeners as $index => $candidate) {
-                    if ($listener === $candidate || (is_array($candidate) && is_object($listener) && $candidate[0] === $listener)) {
-                        unset($this->listeners[$eventName][$priority][$index]);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Adds object methods as listeners for the events in getSubscribedEvents
-     *
-     * @see EventSubscriberInterface
-     *
-     * @param EventSubscriberInterface $subscriber
-     *
-     * @return void
-     */
-    public function addSubscriber(EventSubscriberInterface $subscriber): void
-    {
-        foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
-            if (is_string($params)) {
-                $this->addListener($eventName, array($subscriber, $params));
-            } elseif (is_string($params[0])) {
-                $this->addListener($eventName, array($subscriber, $params[0]), $params[1] ?? 0);
-            } else {
-                foreach ($params as $listener) {
-                    $this->addListener($eventName, array($subscriber, $listener[0]), $listener[1] ?? 0);
-                }
-            }
-        }
-    }
-
-    /**
      * Retrieves all listeners for a given event
      *
-     * @param  Event $event
+     * @param Event $event
      * @return array<callable|string> All listeners: callables and scripts
      */
     protected function getListeners(Event $event): array
@@ -469,22 +308,9 @@ class EventDispatcher
     }
 
     /**
-     * Checks if an event has listeners registered
-     *
-     * @param  Event $event
-     * @return bool
-     */
-    public function hasEventListeners(Event $event): bool
-    {
-        $listeners = $this->getListeners($event);
-
-        return count($listeners) > 0;
-    }
-
-    /**
      * Finds all listeners defined as scripts in the package
      *
-     * @param  Event $event Event object
+     * @param Event $event Event object
      * @return string[] Listeners
      */
     protected function getScriptListeners(Event $event): array
@@ -517,33 +343,11 @@ class EventDispatcher
     }
 
     /**
-     * Checks if string given references a class path and method
-     *
-     * @param  string $callable
-     * @return bool
-     */
-    protected function isPhpScript(string $callable): bool
-    {
-        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
-    }
-
-    /**
-     * Checks if string given references a composer run-script
-     *
-     * @param  string $callable
-     * @return bool
-     */
-    protected function isComposerScript(string $callable): bool
-    {
-        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
-    }
-
-    /**
      * Push an event to the stack of active event
      *
-     * @param  Event             $event
-     * @throws \RuntimeException
+     * @param Event $event
      * @return int
+     * @throws \RuntimeException
      */
     protected function pushEvent(Event $event): int
     {
@@ -553,16 +357,6 @@ class EventDispatcher
         }
 
         return array_push($this->eventStack, $eventName);
-    }
-
-    /**
-     * Pops the active event from the stack
-     *
-     * @return string|null
-     */
-    protected function popEvent(): ?string
-    {
-        return array_pop($this->eventStack);
     }
 
     /**
@@ -583,10 +377,216 @@ class EventDispatcher
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
-            $pathValue = (string) Platform::getEnv($pathEnv);
-            if (!Preg::isMatch('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $pathValue)) {
-                Platform::putEnv($pathEnv, $binDir.PATH_SEPARATOR.$pathValue);
+            $pathValue = (string)Platform::getEnv($pathEnv);
+            if (!Preg::isMatch('{(^|' . PATH_SEPARATOR . ')' . preg_quote($binDir) . '($|' . PATH_SEPARATOR . ')}', $pathValue)) {
+                Platform::putEnv($pathEnv, $binDir . PATH_SEPARATOR . $pathValue);
             }
         }
+    }
+
+    /**
+     * Checks if string given references a composer run-script
+     *
+     * @param string $callable
+     * @return bool
+     */
+    protected function isComposerScript(string $callable): bool
+    {
+        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getPhpExecCommand(): string
+    {
+        $finder = new PhpExecutableFinder();
+        $phpPath = $finder->find(false);
+        if (!$phpPath) {
+            throw new \RuntimeException('Failed to locate PHP binary to execute ' . $phpPath);
+        }
+        $phpArgs = $finder->findArguments();
+        $phpArgs = $phpArgs ? ' ' . implode(' ', $phpArgs) : '';
+        $allowUrlFOpenFlag = ' -d allow_url_fopen=' . ProcessExecutor::escape(ini_get('allow_url_fopen'));
+        $disableFunctionsFlag = ' -d disable_functions=' . ProcessExecutor::escape(ini_get('disable_functions'));
+        $memoryLimitFlag = ' -d memory_limit=' . ProcessExecutor::escape(ini_get('memory_limit'));
+
+        return ProcessExecutor::escape($phpPath) . $phpArgs . $allowUrlFOpenFlag . $disableFunctionsFlag . $memoryLimitFlag;
+    }
+
+    /**
+     * @param string $exec
+     *
+     * @return int
+     */
+    protected function executeTty(string $exec): int
+    {
+        if ($this->io->isInteractive()) {
+            return $this->process->executeTty($exec);
+        }
+
+        return $this->process->execute($exec);
+    }
+
+    /**
+     * Checks if string given references a class path and method
+     *
+     * @param string $callable
+     * @return bool
+     */
+    protected function isPhpScript(string $callable): bool
+    {
+        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+    }
+
+    /**
+     * @param string $className
+     * @param string $methodName
+     * @param Event $event Event invoking the PHP callable
+     *
+     * @return mixed
+     */
+    protected function executeEventPhpScript(string $className, string $methodName, Event $event)
+    {
+        if ($this->io->isVerbose()) {
+            $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
+        } else {
+            $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
+        }
+
+        return $className::$methodName($event);
+    }
+
+    /**
+     * Pops the active event from the stack
+     *
+     * @return string|null
+     */
+    protected function popEvent(): ?string
+    {
+        return array_pop($this->eventStack);
+    }
+
+    /**
+     * Dispatch a script event.
+     *
+     * @param string $eventName The constant in ScriptEvents
+     * @param bool $devMode
+     * @param array<int, mixed> $additionalArgs Arguments passed by the user
+     * @param array<string, mixed> $flags Optional flags to pass data not as argument
+     * @return int                                  return code of the executed script if any, for php scripts a false return
+     *                                              value is changed to 1, anything else to 0
+     */
+    public function dispatchScript(string $eventName, bool $devMode = false, array $additionalArgs = array(), array $flags = array()): int
+    {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
+        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
+    }
+
+    /**
+     * Dispatch a package event.
+     *
+     * @param string $eventName The constant in PackageEvents
+     * @param bool $devMode Whether or not we are in dev mode
+     * @param RepositoryInterface $localRepo The installed repository
+     * @param OperationInterface[] $operations The list of operations
+     * @param OperationInterface $operation The package being installed/updated/removed
+     *
+     * @return int return code of the executed script if any, for php scripts a false return
+     *             value is changed to 1, anything else to 0
+     */
+    public function dispatchPackageEvent(string $eventName, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation): int
+    {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
+        return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $localRepo, $operations, $operation));
+    }
+
+    /**
+     * Dispatch a installer event.
+     *
+     * @param string $eventName The constant in InstallerEvents
+     * @param bool $devMode Whether or not we are in dev mode
+     * @param bool $executeOperations True if operations will be executed, false in --dry-run
+     * @param Transaction $transaction The transaction contains the list of operations
+     *
+     * @return int return code of the executed script if any, for php scripts a false return
+     *             value is changed to 1, anything else to 0
+     */
+    public function dispatchInstallerEvent(string $eventName, bool $devMode, bool $executeOperations, Transaction $transaction): int
+    {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
+        return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $executeOperations, $transaction));
+    }
+
+    /**
+     * @param callable|object $listener A callable or an object instance for which all listeners should be removed
+     *
+     * @return void
+     */
+    public function removeListener($listener): void
+    {
+        foreach ($this->listeners as $eventName => $priorities) {
+            foreach ($priorities as $priority => $listeners) {
+                foreach ($listeners as $index => $candidate) {
+                    if ($listener === $candidate || (is_array($candidate) && is_object($listener) && $candidate[0] === $listener)) {
+                        unset($this->listeners[$eventName][$priority][$index]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds object methods as listeners for the events in getSubscribedEvents
+     *
+     * @param EventSubscriberInterface $subscriber
+     *
+     * @return void
+     * @see EventSubscriberInterface
+     *
+     */
+    public function addSubscriber(EventSubscriberInterface $subscriber): void
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->addListener($eventName, array($subscriber, $params));
+            } elseif (is_string($params[0])) {
+                $this->addListener($eventName, array($subscriber, $params[0]), $params[1] ?? 0);
+            } else {
+                foreach ($params as $listener) {
+                    $this->addListener($eventName, array($subscriber, $listener[0]), $listener[1] ?? 0);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add a listener for a particular event
+     *
+     * @param string $eventName The event name - typically a constant
+     * @param callable|string $listener A callable expecting an event argument, or a command string to be executed (same as a composer.json "scripts" entry)
+     * @param int $priority A higher value represents a higher priority
+     *
+     * @return void
+     */
+    public function addListener(string $eventName, $listener, int $priority = 0): void
+    {
+        $this->listeners[$eventName][$priority][] = $listener;
+    }
+
+    /**
+     * Checks if an event has listeners registered
+     *
+     * @param Event $event
+     * @return bool
+     */
+    public function hasEventListeners(Event $event): bool
+    {
+        $listeners = $this->getListeners($event);
+
+        return count($listeners) > 0;
     }
 }

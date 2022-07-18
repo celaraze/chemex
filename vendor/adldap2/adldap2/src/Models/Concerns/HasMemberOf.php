@@ -2,28 +2,13 @@
 
 namespace Adldap\Models\Concerns;
 
-use Adldap\Utilities;
-use Adldap\Models\User;
 use Adldap\Models\Group;
+use Adldap\Models\User;
 use Adldap\Query\Collection;
+use Adldap\Utilities;
 
 trait HasMemberOf
 {
-    /**
-     * Returns an array of distinguished names of groups that the current model belongs to.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms677099(v=vs.85).aspx
-     *
-     * @return array
-     */
-    public function getMemberOf()
-    {
-        $dns = $this->getAttribute($this->schema->memberOf());
-
-        // Normalize returned distinguished names if the attribute is null.
-        return is_array($dns) ? $dns : [];
-    }
-
     /**
      * Adds the current model to the specified group.
      *
@@ -46,6 +31,39 @@ trait HasMemberOf
         }
 
         return false;
+    }
+
+    /**
+     * Removes the current model from all groups.
+     *
+     * @return array The group distinguished names that were successfully removed
+     */
+    public function removeAllGroups()
+    {
+        $removed = [];
+
+        foreach ($this->getMemberOf() as $group) {
+            if ($this->removeGroup($group)) {
+                $removed[] = $group;
+            }
+        }
+
+        return $removed;
+    }
+
+    /**
+     * Returns an array of distinguished names of groups that the current model belongs to.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/ms677099(v=vs.85).aspx
+     *
+     * @return array
+     */
+    public function getMemberOf()
+    {
+        $dns = $this->getAttribute($this->schema->memberOf());
+
+        // Normalize returned distinguished names if the attribute is null.
+        return is_array($dns) ? $dns : [];
     }
 
     /**
@@ -73,21 +91,25 @@ trait HasMemberOf
     }
 
     /**
-     * Removes the current model from all groups.
+     * Returns the models groups names in a single dimension array.
      *
-     * @return array The group distinguished names that were successfully removed
+     * If a recursive option is given, groups of groups
+     * are retrieved and then merged with
+     * the resulting collection.
+     *
+     * @param bool $recursive
+     *
+     * @return array
      */
-    public function removeAllGroups()
+    public function getGroupNames($recursive = false)
     {
-        $removed = [];
+        $fields = [$this->schema->commonName(), $this->schema->memberOf()];
 
-        foreach ($this->getMemberOf() as $group) {
-            if ($this->removeGroup($group)) {
-                $removed[] = $group;
-            }
-        }
+        $names = $this->getGroups($fields, $recursive)->map(function (Group $group) {
+            return $group->getCommonName();
+        })->toArray();
 
-        return $removed;
+        return array_unique($names);
     }
 
     /**
@@ -100,7 +122,7 @@ trait HasMemberOf
      * @link https://msdn.microsoft.com/en-us/library/ms677099(v=vs.85).aspx
      *
      * @param array $fields
-     * @param bool  $recursive
+     * @param bool $recursive
      * @param array $visited
      *
      * @return Collection
@@ -150,32 +172,29 @@ trait HasMemberOf
     }
 
     /**
-     * Returns the models groups names in a single dimension array.
+     * Retrieves groups by their distinguished name.
      *
-     * If a recursive option is given, groups of groups
-     * are retrieved and then merged with
-     * the resulting collection.
+     * @param array $dns
+     * @param array $fields
      *
-     * @param bool $recursive
-     *
-     * @return array
+     * @return Collection
      */
-    public function getGroupNames($recursive = false)
+    protected function getGroupsByNames(array $dns = [], $fields = [])
     {
-        $fields = [$this->schema->commonName(), $this->schema->memberOf()];
+        $query = $this->query->newInstance();
 
-        $names = $this->getGroups($fields, $recursive)->map(function (Group $group) {
-            return $group->getCommonName();
-        })->toArray();
-
-        return array_unique($names);
+        return $query->newCollection($dns)->map(function ($dn) use ($query, $fields) {
+            return $query->select($fields)->clearFilters()->findByDn($dn);
+        })->filter(function ($group) {
+            return $group instanceof Group;
+        });
     }
 
     /**
      * Determine if the current model is a member of the specified group(s).
      *
      * @param mixed $group
-     * @param bool  $recursive
+     * @param bool $recursive
      *
      * @return bool
      */
@@ -196,8 +215,8 @@ trait HasMemberOf
             // model must be apart of, then go through the models
             // actual groups and perform validation.
             $exists = $memberOf->filter(function (Group $parent) use ($group) {
-                return $this->groupIsParent($group, $parent);
-            })->count() !== 0;
+                    return $this->groupIsParent($group, $parent);
+                })->count() !== 0;
 
             if (!$exists) {
                 // If the current group isn't at all contained
@@ -211,29 +230,10 @@ trait HasMemberOf
     }
 
     /**
-     * Retrieves groups by their distinguished name.
-     *
-     * @param array $dns
-     * @param array $fields
-     *
-     * @return Collection
-     */
-    protected function getGroupsByNames(array $dns = [], $fields = [])
-    {
-        $query = $this->query->newInstance();
-
-        return $query->newCollection($dns)->map(function ($dn) use ($query, $fields) {
-            return $query->select($fields)->clearFilters()->findByDn($dn);
-        })->filter(function ($group) {
-            return $group instanceof Group;
-        });
-    }
-
-    /**
      * Validates if the specified group is the given parent instance.
      *
      * @param Group|string $group
-     * @param Group        $parent
+     * @param Group $parent
      *
      * @return bool
      */

@@ -52,7 +52,7 @@ class Footer implements Renderable
     /**
      * Footer constructor.
      *
-     * @param  Builder  $builder
+     * @param Builder $builder
      */
     public function __construct(Builder $builder)
     {
@@ -62,12 +62,12 @@ class Footer implements Renderable
     /**
      * Disable reset button.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableReset(bool $disable = true)
     {
-        $this->buttons['reset'] = ! $disable;
+        $this->buttons['reset'] = !$disable;
 
         return $this;
     }
@@ -75,12 +75,12 @@ class Footer implements Renderable
     /**
      * Disable submit button.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableSubmit(bool $disable = true)
     {
-        $this->buttons['submit'] = ! $disable;
+        $this->buttons['submit'] = !$disable;
 
         return $this;
     }
@@ -88,12 +88,12 @@ class Footer implements Renderable
     /**
      * Disable View Checkbox.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableViewCheck(bool $disable = true)
     {
-        $this->checkboxes['view'] = ! $disable;
+        $this->checkboxes['view'] = !$disable;
 
         return $this;
     }
@@ -101,25 +101,12 @@ class Footer implements Renderable
     /**
      * Disable Editing Checkbox.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableEditingCheck(bool $disable = true)
     {
-        $this->checkboxes['continue_editing'] = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * Disable Creating Checkbox.
-     *
-     * @param  bool  $disable
-     * @return $this
-     */
-    public function disableCreatingCheck(bool $disable = true)
-    {
-        $this->checkboxes['continue_creating'] = ! $disable;
+        $this->checkboxes['continue_editing'] = !$disable;
 
         return $this;
     }
@@ -127,7 +114,7 @@ class Footer implements Renderable
     /**
      * default View Checked.
      *
-     * @param  bool  $checked
+     * @param bool $checked
      * @return $this
      */
     public function defaultViewChecked(bool $checked = true)
@@ -140,7 +127,7 @@ class Footer implements Renderable
     /**
      * default Editing Checked.
      *
-     * @param  bool  $checked
+     * @param bool $checked
      * @return $this
      */
     public function defaultEditingChecked(bool $checked = true)
@@ -153,7 +140,7 @@ class Footer implements Renderable
     /**
      * default Creating Checked.
      *
-     * @param  bool  $checked
+     * @param bool $checked
      * @return $this
      */
     public function defaultCreatingChecked(bool $checked = true)
@@ -161,6 +148,37 @@ class Footer implements Renderable
         $this->defaultcheckeds['continue_creating'] = $checked;
 
         return $this;
+    }
+
+    /**
+     * Use custom view.
+     *
+     * @param string $view
+     * @param array $data
+     */
+    public function view(string $view, array $data = [])
+    {
+        $this->view = $view;
+
+        $this->data = $data;
+    }
+
+    /**
+     * Render footer.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $data = [
+            'buttons' => $this->buttons,
+            'checkboxes' => $this->buildCheckboxes(),
+            'width' => $this->builder->getWidth(),
+        ];
+
+        $data = array_merge($data, $this->data);
+
+        return view($this->view, $data)->render();
     }
 
     /**
@@ -201,7 +219,7 @@ class Footer implements Renderable
             $checked[] = 3;
         }
 
-        if (! $options) {
+        if (!$options) {
             return;
         }
 
@@ -209,33 +227,15 @@ class Footer implements Renderable
     }
 
     /**
-     * Use custom view.
+     * Disable Creating Checkbox.
      *
-     * @param  string  $view
-     * @param  array  $data
+     * @param bool $disable
+     * @return $this
      */
-    public function view(string $view, array $data = [])
+    public function disableCreatingCheck(bool $disable = true)
     {
-        $this->view = $view;
+        $this->checkboxes['continue_creating'] = !$disable;
 
-        $this->data = $data;
-    }
-
-    /**
-     * Render footer.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $data = [
-            'buttons'    => $this->buttons,
-            'checkboxes' => $this->buildCheckboxes(),
-            'width'      => $this->builder->getWidth(),
-        ];
-
-        $data = array_merge($data, $this->data);
-
-        return view($this->view, $data)->render();
+        return $this;
     }
 }

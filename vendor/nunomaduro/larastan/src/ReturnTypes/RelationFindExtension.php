@@ -42,23 +42,15 @@ final class RelationFindExtension implements DynamicMethodReturnTypeExtension
     /**
      * {@inheritdoc}
      */
-    public function getClass(): string
-    {
-        return Relation::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function isMethodSupported(MethodReflection $methodReflection): bool
     {
-        if (! Str::startsWith($methodReflection->getName(), 'find')) {
+        if (!Str::startsWith($methodReflection->getName(), 'find')) {
             return false;
         }
 
         $modelType = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TRelatedModel');
 
-        if (! $modelType instanceof ObjectType) {
+        if (!$modelType instanceof ObjectType) {
             return false;
         }
 
@@ -70,11 +62,20 @@ final class RelationFindExtension implements DynamicMethodReturnTypeExtension
     /**
      * {@inheritdoc}
      */
+    public function getClass(): string
+    {
+        return Relation::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         /** @var ObjectType $modelType */
         $modelType = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TRelatedModel');
 

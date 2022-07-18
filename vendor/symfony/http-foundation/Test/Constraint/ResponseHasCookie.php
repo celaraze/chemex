@@ -29,6 +29,37 @@ final class ResponseHasCookie extends Constraint
     }
 
     /**
+     * @param Response $response
+     *
+     * {@inheritdoc}
+     */
+    protected function matches($response): bool
+    {
+        return null !== $this->getCookie($response);
+    }
+
+    private function getCookie(Response $response): ?Cookie
+    {
+        $cookies = $response->headers->getCookies();
+
+        $filteredCookies = array_filter($cookies, function (Cookie $cookie) {
+            return $cookie->getName() === $this->name && $cookie->getPath() === $this->path && $cookie->getDomain() === $this->domain;
+        });
+
+        return reset($filteredCookies) ?: null;
+    }
+
+    /**
+     * @param Response $response
+     *
+     * {@inheritdoc}
+     */
+    protected function failureDescription($response): string
+    {
+        return 'the Response ' . $this->toString();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function toString(): string
@@ -42,36 +73,5 @@ final class ResponseHasCookie extends Constraint
         }
 
         return $str;
-    }
-
-    /**
-     * @param Response $response
-     *
-     * {@inheritdoc}
-     */
-    protected function matches($response): bool
-    {
-        return null !== $this->getCookie($response);
-    }
-
-    /**
-     * @param Response $response
-     *
-     * {@inheritdoc}
-     */
-    protected function failureDescription($response): string
-    {
-        return 'the Response '.$this->toString();
-    }
-
-    private function getCookie(Response $response): ?Cookie
-    {
-        $cookies = $response->headers->getCookies();
-
-        $filteredCookies = array_filter($cookies, function (Cookie $cookie) {
-            return $cookie->getName() === $this->name && $cookie->getPath() === $this->path && $cookie->getDomain() === $this->domain;
-        });
-
-        return reset($filteredCookies) ?: null;
     }
 }

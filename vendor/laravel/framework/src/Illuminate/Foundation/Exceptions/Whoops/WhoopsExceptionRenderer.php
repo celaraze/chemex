@@ -3,15 +3,15 @@
 namespace Illuminate\Foundation\Exceptions\Whoops;
 
 use Illuminate\Contracts\Foundation\ExceptionRenderer;
-use function tap;
 use Whoops\Run as Whoops;
+use function tap;
 
 class WhoopsExceptionRenderer implements ExceptionRenderer
 {
     /**
      * Renders the given exception as HTML.
      *
-     * @param  \Throwable  $throwable
+     * @param \Throwable $throwable
      * @return string
      */
     public function render($throwable)

@@ -88,7 +88,7 @@ class RuleWatchNode
     /**
      * Given one watched literal, this method returns the other watched literal
      *
-     * @param  int $literal The watched literal that should not be returned
+     * @param int $literal The watched literal that should not be returned
      * @return int A literal
      */
     public function getOtherWatch(int $literal): int
@@ -104,7 +104,7 @@ class RuleWatchNode
      * Moves a watch from one literal to another
      *
      * @param int $from The previously watched literal
-     * @param int $to   The literal to be watched now
+     * @param int $to The literal to be watched now
      * @return void
      */
     public function moveWatch(int $from, int $to): void

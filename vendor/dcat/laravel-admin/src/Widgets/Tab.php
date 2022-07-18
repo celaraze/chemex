@@ -19,31 +19,31 @@ class Tab extends Widget
      * @var array
      */
     protected $data = [
-        'id'       => '',
-        'title'    => '',
-        'tabs'     => [],
+        'id' => '',
+        'title' => '',
+        'tabs' => [],
         'dropDown' => [],
-        'active'   => 0,
-        'padding'  => null,
+        'active' => 0,
+        'padding' => null,
         'tabStyle' => '',
     ];
 
     /**
      * Add a tab and its contents.
      *
-     * @param  string  $title
-     * @param  string|Renderable  $content
-     * @param  bool  $active
-     * @param  string|null  $id
+     * @param string $title
+     * @param string|Renderable $content
+     * @param bool $active
+     * @param string|null $id
      * @return $this
      */
     public function add($title, $content, $active = false, $id = null)
     {
         $this->data['tabs'][] = [
-            'id'      => $id ?: mt_rand(),
-            'title'   => $title,
+            'id' => $id ?: mt_rand(),
+            'title' => $title,
             'content' => $this->toString($this->formatRenderable($content)),
-            'type'    => static::TYPE_CONTENT,
+            'type' => static::TYPE_CONTENT,
         ];
 
         if ($active) {
@@ -56,35 +56,23 @@ class Tab extends Widget
     /**
      * Add a link on tab.
      *
-     * @param  string  $title
-     * @param  string  $href
-     * @param  bool  $active
+     * @param string $title
+     * @param string $href
+     * @param bool $active
      * @return $this
      */
     public function addLink($title, $href, $active = false)
     {
         $this->data['tabs'][] = [
-            'id'      => mt_rand(),
-            'title'   => $title,
-            'href'    => $href,
-            'type'    => static::TYPE_LINK,
+            'id' => mt_rand(),
+            'title' => $title,
+            'href' => $href,
+            'type' => static::TYPE_LINK,
         ];
 
         if ($active) {
             $this->data['active'] = count($this->data['tabs']) - 1;
         }
-
-        return $this;
-    }
-
-    /**
-     * Set tab content padding.
-     *
-     * @param  string  $padding
-     */
-    public function padding(string $padding)
-    {
-        $this->data['padding'] = 'padding:'.$padding;
 
         return $this;
     }
@@ -95,9 +83,21 @@ class Tab extends Widget
     }
 
     /**
+     * Set tab content padding.
+     *
+     * @param string $padding
+     */
+    public function padding(string $padding)
+    {
+        $this->data['padding'] = 'padding:' . $padding;
+
+        return $this;
+    }
+
+    /**
      * Set title.
      *
-     * @param  string  $title
+     * @param string $title
      */
     public function title($title = '')
     {
@@ -109,7 +109,7 @@ class Tab extends Widget
     /**
      * Set drop-down items.
      *
-     * @param  array  $links
+     * @param array $links
      * @return $this
      */
     public function dropdown(array $links)
@@ -145,18 +145,18 @@ class Tab extends Widget
             ->tabStyle('nav-left flex-column');
     }
 
-    public function theme(string $style = 'primary')
-    {
-        return $this
-            ->class('nav-theme-'.$style, true)
-            ->style('padding:0!important;');
-    }
-
     public function tabStyle($type)
     {
         $this->data['tabStyle'] = $type;
 
         return $this;
+    }
+
+    public function theme(string $style = 'primary')
+    {
+        return $this
+            ->class('nav-theme-' . $style, true)
+            ->style('padding:0!important;');
     }
 
     /**

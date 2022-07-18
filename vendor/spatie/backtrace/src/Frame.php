@@ -24,12 +24,13 @@ class Frame
 
     public function __construct(
         string $file,
-        int $lineNumber,
+        int    $lineNumber,
         ?array $arguments,
         string $method = null,
         string $class = null,
-        bool $isApplicationFrame = false
-    ) {
+        bool   $isApplicationFrame = false
+    )
+    {
         $this->file = $file;
 
         $this->lineNumber = $lineNumber;
@@ -43,14 +44,6 @@ class Frame
         $this->applicationFrame = $isApplicationFrame;
     }
 
-    public function getSnippet(int $lineCount): array
-    {
-        return (new CodeSnippet())
-            ->surroundingLine($this->lineNumber)
-            ->snippetLineCount($lineCount)
-            ->get($this->file);
-    }
-
     public function getSnippetProperties(int $lineCount): array
     {
         $snippet = $this->getSnippet($lineCount);
@@ -61,5 +54,13 @@ class Frame
                 'text' => $snippet[$lineNumber],
             ];
         }, array_keys($snippet));
+    }
+
+    public function getSnippet(int $lineCount): array
+    {
+        return (new CodeSnippet())
+            ->surroundingLine($this->lineNumber)
+            ->snippetLineCount($lineCount)
+            ->get($this->file);
     }
 }

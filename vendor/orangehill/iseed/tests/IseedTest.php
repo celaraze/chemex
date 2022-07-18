@@ -13,8 +13,8 @@ class IseedTest extends TestCase
     {
         parent::__construct();
 
-        static::$stubsDir = __DIR__.'/../src/Orangehill/Iseed/stubs';
-        static::$testStubsDir = __DIR__.'/stubs';
+        static::$stubsDir = __DIR__ . '/../src/Orangehill/Iseed/stubs';
+        static::$testStubsDir = __DIR__ . '/stubs';
     }
 
     public function tearDown(): void
@@ -26,15 +26,15 @@ class IseedTest extends TestCase
     {
         $composer = m::mock('Composer')->makePartial();
 
-        $productionStub = $this->readStubFile(static::$stubsDir.'/seed.stub');
+        $productionStub = $this->readStubFile(static::$stubsDir . '/seed.stub');
 
         $testStubs = [
             'blank' => [
-                'content' => $this->readStubFile(static::$testStubsDir.'/seed_blank.stub'),
+                'content' => $this->readStubFile(static::$testStubsDir . '/seed_blank.stub'),
                 'data' => [],
             ],
             'entries_5' => [
-                'content' => $this->readStubFile(static::$testStubsDir.'/seed_5.stub'),
+                'content' => $this->readStubFile(static::$testStubsDir . '/seed_5.stub'),
                 'data' => [
                     [
                         'id' => '1',
@@ -59,7 +59,7 @@ class IseedTest extends TestCase
                 ],
             ],
             'entries_505' => [
-                'content' => $this->readStubFile(static::$testStubsDir.'/seed_505.stub'),
+                'content' => $this->readStubFile(static::$testStubsDir . '/seed_505.stub'),
                 'data' => [
                     [
                         'id' => '1',
@@ -2131,7 +2131,7 @@ class IseedTest extends TestCase
     {
         $iseed = new Orangehill\Iseed\Iseed();
         $output = $iseed->getStubPath();
-        $expected = substr(__DIR__, 0, -5).'src'.DIRECTORY_SEPARATOR.'Orangehill'.DIRECTORY_SEPARATOR.'Iseed'.DIRECTORY_SEPARATOR.'stubs';
+        $expected = substr(__DIR__, 0, -5) . 'src' . DIRECTORY_SEPARATOR . 'Orangehill' . DIRECTORY_SEPARATOR . 'Iseed' . DIRECTORY_SEPARATOR . 'stubs';
         $this->assertEquals($expected, $output);
     }
 
@@ -2141,8 +2141,8 @@ class IseedTest extends TestCase
         $composer = m::mock(\Illuminate\Support\Composer::class, [$file])->makePartial();
         $mocked = m::mock(\Orangehill\Iseed\Iseed::class, [$file, $composer])->makePartial();
         $mocked->shouldReceive('readStubFile')
-               ->once()
-               ->with(substr(__DIR__, 0, -5).'src'.DIRECTORY_SEPARATOR.'Orangehill'.DIRECTORY_SEPARATOR.'Iseed'.DIRECTORY_SEPARATOR.'stubs'.DIRECTORY_SEPARATOR.'seed.stub');
+            ->once()
+            ->with(substr(__DIR__, 0, -5) . 'src' . DIRECTORY_SEPARATOR . 'Orangehill' . DIRECTORY_SEPARATOR . 'Iseed' . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'seed.stub');
         $file->shouldReceive('put')->once()->with('seedPath', 'populatedStub');
         $mocked->shouldReceive('hasTable')->once()->andReturn(true);
         $mocked->shouldReceive('getData')->once()->andReturn([]);

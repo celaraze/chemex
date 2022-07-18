@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/en.php', [
+return array_replace_recursive(require __DIR__ . '/en.php', [
     'meridiem' => ['Adduha', 'Aluula'],
     'weekdays' => ['Alhadi', 'Atini', 'Atalata', 'Alarba', 'Alhamiisa', 'Aljuma', 'Assabdu'],
     'weekdays_short' => ['Alh', 'Ati', 'Ata', 'Ala', 'Alm', 'Alj', 'Ass'],

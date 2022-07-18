@@ -105,6 +105,30 @@ final class UriNormalizer
      */
     public const SORT_QUERY_PARAMETERS = 128;
 
+    private function __construct()
+    {
+        // cannot be instantiated
+    }
+
+    /**
+     * Whether two URIs can be considered equivalent.
+     *
+     * Both URIs are normalized automatically before comparison with the given $normalizations bitmask. The method also
+     * accepts relative URI references and returns true when they are equivalent. This of course assumes they will be
+     * resolved against the same base URI. If this is not the case, determination of equivalence or difference of
+     * relative references does not mean anything.
+     *
+     * @param UriInterface $uri1 An URI to compare
+     * @param UriInterface $uri2 An URI to compare
+     * @param int $normalizations A bitmask of normalizations to apply, see constants
+     *
+     * @link https://tools.ietf.org/html/rfc3986#section-6.1
+     */
+    public static function isEquivalent(UriInterface $uri1, UriInterface $uri2, int $normalizations = self::PRESERVING_NORMALIZATIONS): bool
+    {
+        return (string)self::normalize($uri1, $normalizations) === (string)self::normalize($uri2, $normalizations);
+    }
+
     /**
      * Returns a normalized URI.
      *
@@ -116,8 +140,8 @@ final class UriNormalizer
      * treated equivalent which is not necessarily true according to RFC 3986. But that difference
      * is highly uncommon in reality. So this potential normalization is implied in PSR-7 as well.
      *
-     * @param UriInterface $uri   The URI to normalize
-     * @param int          $flags A bitmask of normalizations to apply, see constants
+     * @param UriInterface $uri The URI to normalize
+     * @param int $flags A bitmask of normalizations to apply, see constants
      *
      * @link https://tools.ietf.org/html/rfc3986#section-6.2
      */
@@ -162,25 +186,6 @@ final class UriNormalizer
         return $uri;
     }
 
-    /**
-     * Whether two URIs can be considered equivalent.
-     *
-     * Both URIs are normalized automatically before comparison with the given $normalizations bitmask. The method also
-     * accepts relative URI references and returns true when they are equivalent. This of course assumes they will be
-     * resolved against the same base URI. If this is not the case, determination of equivalence or difference of
-     * relative references does not mean anything.
-     *
-     * @param UriInterface $uri1           An URI to compare
-     * @param UriInterface $uri2           An URI to compare
-     * @param int          $normalizations A bitmask of normalizations to apply, see constants
-     *
-     * @link https://tools.ietf.org/html/rfc3986#section-6.1
-     */
-    public static function isEquivalent(UriInterface $uri1, UriInterface $uri2, int $normalizations = self::PRESERVING_NORMALIZATIONS): bool
-    {
-        return (string) self::normalize($uri1, $normalizations) === (string) self::normalize($uri2, $normalizations);
-    }
-
     private static function capitalizePercentEncoding(UriInterface $uri): UriInterface
     {
         $regex = '/(?:%[A-Fa-f0-9]{2})++/';
@@ -211,10 +216,5 @@ final class UriNormalizer
             )->withQuery(
                 preg_replace_callback($regex, $callback, $uri->getQuery())
             );
-    }
-
-    private function __construct()
-    {
-        // cannot be instantiated
     }
 }

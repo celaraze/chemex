@@ -43,10 +43,11 @@ class WorksheetManager implements WorksheetManagerInterface
      */
     public function __construct(
         StyleManager $styleManager,
-        StyleMerger $styleMerger,
-        ODSEscaper $stringsEscaper,
+        StyleMerger  $styleMerger,
+        ODSEscaper   $stringsEscaper,
         StringHelper $stringHelper
-    ) {
+    )
+    {
         $this->styleManager = $styleManager;
         $this->styleMerger = $styleMerger;
         $this->stringsEscaper = $stringsEscaper;
@@ -57,8 +58,8 @@ class WorksheetManager implements WorksheetManagerInterface
      * Prepares the worksheet to accept data
      *
      * @param Worksheet $worksheet The worksheet to start
-     * @throws \Box\Spout\Common\Exception\IOException If the sheet data file cannot be opened for writing
      * @return void
+     * @throws \Box\Spout\Common\Exception\IOException If the sheet data file cannot be opened for writing
      */
     public function startSheet(Worksheet $worksheet)
     {
@@ -72,8 +73,8 @@ class WorksheetManager implements WorksheetManagerInterface
      * Checks if the sheet has been sucessfully created. Throws an exception if not.
      *
      * @param bool|resource $sheetFilePointer Pointer to the sheet data file or FALSE if unable to open the file
-     * @throws IOException If the sheet data file cannot be opened for writing
      * @return void
+     * @throws IOException If the sheet data file cannot be opened for writing
      */
     private function throwIfSheetFilePointerIsNotAvailable($sheetFilePointer)
     {
@@ -105,9 +106,9 @@ class WorksheetManager implements WorksheetManagerInterface
      *
      * @param Worksheet $worksheet The worksheet to add the row to
      * @param Row $row The row to be added
-     * @throws InvalidArgumentException If a cell value's type is not supported
-     * @throws IOException If the data cannot be written
      * @return void
+     * @throws IOException If the data cannot be written
+     * @throws InvalidArgumentException If a cell value's type is not supported
      */
     public function addRow(Worksheet $worksheet, Row $row)
     {
@@ -156,10 +157,10 @@ class WorksheetManager implements WorksheetManagerInterface
      *
      * @param Cell $cell
      * @param Style $rowStyle
-     * @throws InvalidArgumentException If a cell value's type is not supported
      * @return RegisteredStyle
+     * @throws InvalidArgumentException If a cell value's type is not supported
      */
-    private function applyStyleAndRegister(Cell $cell, Style $rowStyle) : RegisteredStyle
+    private function applyStyleAndRegister(Cell $cell, Style $rowStyle): RegisteredStyle
     {
         $isMatchingRowStyle = false;
         if ($cell->getStyle()->isEmpty()) {
@@ -190,7 +191,7 @@ class WorksheetManager implements WorksheetManagerInterface
         return new RegisteredStyle($registeredStyle, $isMatchingRowStyle);
     }
 
-    private function getCellXMLWithStyle(Cell $cell, Style $style, int $currentCellIndex, int $nextCellIndex) : string
+    private function getCellXMLWithStyle(Cell $cell, Style $style, int $currentCellIndex, int $nextCellIndex): string
     {
         $styleIndex = $style->getId() + 1; // 1-based
 
@@ -205,8 +206,8 @@ class WorksheetManager implements WorksheetManagerInterface
      * @param Cell $cell The cell to be written
      * @param int $styleIndex Index of the used style
      * @param int $numTimesValueRepeated Number of times the value is consecutively repeated
-     * @throws InvalidArgumentException If a cell value's type is not supported
      * @return string The cell XML content
+     * @throws InvalidArgumentException If a cell value's type is not supported
      */
     private function getCellXML(Cell $cell, $styleIndex, $numTimesValueRepeated)
     {

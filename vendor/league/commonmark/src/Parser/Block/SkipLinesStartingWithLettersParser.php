@@ -34,7 +34,7 @@ final class SkipLinesStartingWithLettersParser implements BlockStartParserInterf
 {
     public function tryStart(Cursor $cursor, MarkdownParserStateInterface $parserState): ?BlockStart
     {
-        if (! $cursor->isIndented() && RegexHelper::isLetter($cursor->getNextNonSpaceCharacter())) {
+        if (!$cursor->isIndented() && RegexHelper::isLetter($cursor->getNextNonSpaceCharacter())) {
             $cursor->advanceToNextNonSpaceOrTab();
 
             return BlockStart::abort();

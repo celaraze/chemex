@@ -33,7 +33,7 @@ abstract class RowAction extends GridAction
     /**
      * Set row model.
      *
-     * @param  mixed  $key
+     * @param mixed $key
      * @return \Illuminate\Database\Eloquent\Model|mixed
      */
     public function row($key = null)
@@ -45,10 +45,15 @@ abstract class RowAction extends GridAction
         return $this->row->{$key};
     }
 
+    public function getRow()
+    {
+        return $this->row;
+    }
+
     /**
      * Set row model.
      *
-     * @param  Fluent|\Illuminate\Database\Eloquent\Model  $row
+     * @param Fluent|\Illuminate\Database\Eloquent\Model $row
      * @return $this
      */
     public function setRow($row)
@@ -58,13 +63,8 @@ abstract class RowAction extends GridAction
         return $this;
     }
 
-    public function getRow()
-    {
-        return $this->row;
-    }
-
     /**
-     * @param  Column  $column
+     * @param Column $column
      * @return $this
      */
     public function setColumn(Column $column)

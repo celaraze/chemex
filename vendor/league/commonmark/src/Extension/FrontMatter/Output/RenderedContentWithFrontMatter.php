@@ -30,8 +30,8 @@ final class RenderedContentWithFrontMatter extends RenderedContent implements Fr
     private $frontMatter;
 
     /**
-     * @param Document   $document    The parsed Document object
-     * @param string     $content     The final HTML
+     * @param Document $document The parsed Document object
+     * @param string $content The final HTML
      * @param mixed|null $frontMatter Any parsed front matter
      */
     public function __construct(Document $document, string $content, $frontMatter)

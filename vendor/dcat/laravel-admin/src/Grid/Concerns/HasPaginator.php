@@ -28,7 +28,7 @@ trait HasPaginator
     /**
      * Paginate the grid.
      *
-     * @param  int  $perPage
+     * @param int $perPage
      * @return void
      */
     public function paginate(int $perPage = 20)
@@ -41,7 +41,7 @@ trait HasPaginator
     /**
      * 是否使用 simplePaginate 方法分页.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function simplePaginate(bool $value = true)
@@ -60,7 +60,7 @@ trait HasPaginator
     }
 
     /**
-     * @param  string  $paginator
+     * @param string $paginator
      * @return $this
      */
     public function setPaginatorClass(string $paginator)
@@ -77,7 +77,7 @@ trait HasPaginator
      */
     public function paginator()
     {
-        if (! $this->paginator) {
+        if (!$this->paginator) {
             $paginatorClass = $this->options['paginator_class'] ?: (config('admin.grid.paginator_class') ?: Tools\Paginator::class);
 
             $this->paginator = new $paginatorClass($this);
@@ -97,23 +97,23 @@ trait HasPaginator
     }
 
     /**
+     * @return $this
+     */
+    public function disablePerPages()
+    {
+        return $this->perPages([]);
+    }
+
+    /**
      * Set per-page options.
      *
-     * @param  array  $perPages
+     * @param array $perPages
      */
     public function perPages(array $perPages)
     {
         $this->perPages = $perPages;
 
         return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function disablePerPages()
-    {
-        return $this->perPages([]);
     }
 
     /**
@@ -127,26 +127,26 @@ trait HasPaginator
     }
 
     /**
+     * Show grid pagination.
+     *
+     * @param bool $val
+     * @return $this
+     */
+    public function showPagination(bool $val = true)
+    {
+        return $this->disablePagination(!$val);
+    }
+
+    /**
      * Disable grid pagination.
      *
      * @return $this
      */
     public function disablePagination(bool $disable = true)
     {
-        $this->model->usePaginate(! $disable);
+        $this->model->usePaginate(!$disable);
 
-        return $this->option('pagination', ! $disable);
-    }
-
-    /**
-     * Show grid pagination.
-     *
-     * @param  bool  $val
-     * @return $this
-     */
-    public function showPagination(bool $val = true)
-    {
-        return $this->disablePagination(! $val);
+        return $this->option('pagination', !$disable);
     }
 
     /**

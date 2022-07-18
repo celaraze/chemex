@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 use Hamcrest\FeatureMatcher;
 use Hamcrest\Matcher;
@@ -26,6 +28,16 @@ class HasToString extends FeatureMatcher
         );
     }
 
+    /**
+     * Does array size satisfy a given matcher?
+     *
+     * @factory
+     */
+    public static function hasToString($matcher)
+    {
+        return new self(Util::wrapValueWithIsEqual($matcher));
+    }
+
     public function matchesSafelyWithDiagnosticDescription($actual, Description $mismatchDescription)
     {
         if (method_exists($actual, 'toString') || method_exists($actual, '__toString')) {
@@ -41,16 +53,6 @@ class HasToString extends FeatureMatcher
             return $actual->toString();
         }
 
-        return (string) $actual;
-    }
-
-    /**
-     * Does array size satisfy a given matcher?
-     *
-     * @factory
-     */
-    public static function hasToString($matcher)
-    {
-        return new self(Util::wrapValueWithIsEqual($matcher));
+        return (string)$actual;
     }
 }

@@ -42,6 +42,15 @@ class Envelope
         return new DelayedEnvelope($message);
     }
 
+    /**
+     * @return Address Returns a "mailbox" as specified by RFC 2822
+     *                 Must be converted to an "addr-spec" when used as a "MAIL FROM" value in SMTP (use getAddress())
+     */
+    public function getSender(): Address
+    {
+        return $this->sender;
+    }
+
     public function setSender(Address $sender): void
     {
         // to ensure deliverability of bounce emails independent of UTF-8 capabilities of SMTP servers
@@ -52,12 +61,11 @@ class Envelope
     }
 
     /**
-     * @return Address Returns a "mailbox" as specified by RFC 2822
-     *                 Must be converted to an "addr-spec" when used as a "MAIL FROM" value in SMTP (use getAddress())
+     * @return Address[]
      */
-    public function getSender(): Address
+    public function getRecipients(): array
     {
-        return $this->sender;
+        return $this->recipients;
     }
 
     /**
@@ -76,13 +84,5 @@ class Envelope
             }
             $this->recipients[] = new Address($recipient->getAddress());
         }
-    }
-
-    /**
-     * @return Address[]
-     */
-    public function getRecipients(): array
-    {
-        return $this->recipients;
     }
 }

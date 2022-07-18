@@ -33,6 +33,13 @@ class SurrogateListener implements EventSubscriberInterface
         $this->surrogate = $surrogate;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::RESPONSE => 'onKernelResponse',
+        ];
+    }
+
     /**
      * Filters the Response.
      */
@@ -56,12 +63,5 @@ class SurrogateListener implements EventSubscriberInterface
         }
 
         $surrogate->addSurrogateControl($event->getResponse());
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::RESPONSE => 'onKernelResponse',
-        ];
     }
 }

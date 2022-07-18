@@ -108,30 +108,6 @@ class Person extends \Faker\Provider\Person
     protected static $lastNameSuffix = ['а', ''];
 
     /**
-     * Return male middle name
-     *
-     * @example 'Иванович'
-     *
-     * @return string Middle name
-     */
-    public function middleNameMale()
-    {
-        return static::randomElement(static::$middleNameMale);
-    }
-
-    /**
-     * Return female middle name
-     *
-     * @example 'Ивановна'
-     *
-     * @return string Middle name
-     */
-    public function middleNameFemale()
-    {
-        return static::randomElement(static::$middleNameFemale);
-    }
-
-    /**
      * Return middle name for the specified gender.
      *
      * @param string|null $gender A gender the middle name should be generated
@@ -153,6 +129,30 @@ class Person extends \Faker\Provider\Person
             static::GENDER_MALE,
             static::GENDER_FEMALE,
         ]));
+    }
+
+    /**
+     * Return male middle name
+     *
+     * @return string Middle name
+     * @example 'Иванович'
+     *
+     */
+    public function middleNameMale()
+    {
+        return static::randomElement(static::$middleNameMale);
+    }
+
+    /**
+     * Return female middle name
+     *
+     * @return string Middle name
+     * @example 'Ивановна'
+     *
+     */
+    public function middleNameFemale()
+    {
+        return static::randomElement(static::$middleNameFemale);
     }
 
     /**

@@ -19,8 +19,8 @@ use League\Config\ConfigurationInterface;
 
 final class ExternalLinkProcessor
 {
-    public const APPLY_NONE     = '';
-    public const APPLY_ALL      = 'all';
+    public const APPLY_NONE = '';
+    public const APPLY_ALL = 'all';
     public const APPLY_EXTERNAL = 'external';
     public const APPLY_INTERNAL = 'internal';
 
@@ -34,17 +34,17 @@ final class ExternalLinkProcessor
 
     public function __invoke(DocumentParsedEvent $e): void
     {
-        $internalHosts   = $this->config->get('external_link/internal_hosts');
+        $internalHosts = $this->config->get('external_link/internal_hosts');
         $openInNewWindow = $this->config->get('external_link/open_in_new_window');
-        $classes         = $this->config->get('external_link/html_class');
+        $classes = $this->config->get('external_link/html_class');
 
         foreach ($e->getDocument()->iterator() as $link) {
-            if (! ($link instanceof Link)) {
+            if (!($link instanceof Link)) {
                 continue;
             }
 
             $host = \parse_url($link->getUrl(), PHP_URL_HOST);
-            if (! \is_string($host)) {
+            if (!\is_string($host)) {
                 // Something is terribly wrong with this URL
                 continue;
             }
@@ -60,6 +60,44 @@ final class ExternalLinkProcessor
         }
     }
 
+    /**
+     * @param mixed $compareTo
+     * @internal This method is only public so we can easily test it. DO NOT USE THIS OUTSIDE OF THIS EXTENSION!
+     *
+     */
+    public static function hostMatches(string $host, $compareTo): bool
+    {
+        foreach ((array)$compareTo as $c) {
+            if (\strpos($c, '/') === 0) {
+                if (\preg_match($c, $host)) {
+                    return true;
+                }
+            } elseif ($c === $host) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function applyRelAttribute(Link $link, bool $isExternal): void
+    {
+        $options = [
+            'nofollow' => $this->config->get('external_link/nofollow'),
+            'noopener' => $this->config->get('external_link/noopener'),
+            'noreferrer' => $this->config->get('external_link/noreferrer'),
+        ];
+
+        foreach ($options as $type => $option) {
+            switch (true) {
+                case $option === self::APPLY_ALL:
+                case $isExternal && $option === self::APPLY_EXTERNAL:
+                case !$isExternal && $option === self::APPLY_INTERNAL:
+                    $link->data->append('attributes/rel', $type);
+            }
+        }
+    }
+
     private function markLinkAsExternal(Link $link, bool $openInNewWindow, string $classes): void
     {
         $link->data->set('external', true);
@@ -72,43 +110,5 @@ final class ExternalLinkProcessor
         if ($classes !== '') {
             $link->data->append('attributes/class', $classes);
         }
-    }
-
-    private function applyRelAttribute(Link $link, bool $isExternal): void
-    {
-        $options = [
-            'nofollow'   => $this->config->get('external_link/nofollow'),
-            'noopener'   => $this->config->get('external_link/noopener'),
-            'noreferrer' => $this->config->get('external_link/noreferrer'),
-        ];
-
-        foreach ($options as $type => $option) {
-            switch (true) {
-                case $option === self::APPLY_ALL:
-                case $isExternal && $option === self::APPLY_EXTERNAL:
-                case ! $isExternal && $option === self::APPLY_INTERNAL:
-                    $link->data->append('attributes/rel', $type);
-            }
-        }
-    }
-
-    /**
-     * @internal This method is only public so we can easily test it. DO NOT USE THIS OUTSIDE OF THIS EXTENSION!
-     *
-     * @param mixed $compareTo
-     */
-    public static function hostMatches(string $host, $compareTo): bool
-    {
-        foreach ((array) $compareTo as $c) {
-            if (\strpos($c, '/') === 0) {
-                if (\preg_match($c, $host)) {
-                    return true;
-                }
-            } elseif ($c === $host) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -15,8 +15,8 @@ declare(strict_types=1);
 namespace League\CommonMark\Extension\Footnote\Node;
 
 use League\CommonMark\Node\Inline\AbstractInline;
-use League\CommonMark\Reference\ReferenceInterface;
 use League\CommonMark\Reference\ReferenceableInterface;
+use League\CommonMark\Reference\ReferenceInterface;
 
 final class FootnoteRef extends AbstractInline implements ReferenceableInterface
 {
@@ -33,7 +33,7 @@ final class FootnoteRef extends AbstractInline implements ReferenceableInterface
         parent::__construct();
 
         $this->reference = $reference;
-        $this->content   = $content;
+        $this->content = $content;
 
         $this->data->import($data);
     }

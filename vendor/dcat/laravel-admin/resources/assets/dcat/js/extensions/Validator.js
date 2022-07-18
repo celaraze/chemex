@@ -1,4 +1,3 @@
-
 export default class Validator {
     constructor(Dcat) {
         Dcat.validator = this;

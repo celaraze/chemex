@@ -8,19 +8,9 @@ use Tests\Browser\Components\Form\Field\HasMany;
 class PainterCreatePage extends Page
 {
     /**
-     * Get the URL for the page.
-     *
-     * @return string
-     */
-    public function url()
-    {
-        return admin_base_path('tests/painters/create');
-    }
-
-    /**
      * Assert that the browser is on the page.
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -39,6 +29,16 @@ class PainterCreatePage extends Page
     }
 
     /**
+     * Get the URL for the page.
+     *
+     * @return string
+     */
+    public function url()
+    {
+        return admin_base_path('tests/painters/create');
+    }
+
+    /**
      * Get the element shortcuts for the page.
      *
      * @return array
@@ -53,8 +53,8 @@ class PainterCreatePage extends Page
     /**
      * 注入表单.
      *
-     * @param  Browser  $browser
-     * @param  array  $input
+     * @param Browser $browser
+     * @param array $input
      * @return Browser
      */
     public function fill(Browser $browser, array $input)
@@ -92,7 +92,7 @@ class PainterCreatePage extends Page
     /**
      * 提交表单.
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return Browser
      */
     public function submit(Browser $browser)

@@ -24,11 +24,24 @@ class Text extends Presenter
     /**
      * Text constructor.
      *
-     * @param  string  $placeholder
+     * @param string $placeholder
      */
     public function __construct($placeholder = '')
     {
         $this->placeholder($placeholder);
+    }
+
+    /**
+     * Set input placeholder.
+     *
+     * @param string $placeholder
+     * @return $this
+     */
+    public function placeholder($placeholder = '')
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
     }
 
     /**
@@ -40,23 +53,10 @@ class Text extends Presenter
     {
         return [
             'placeholder' => $this->placeholder,
-            'icon'        => $this->icon,
-            'type'        => $this->type,
-            'group'       => $this->filter->group,
+            'icon' => $this->icon,
+            'type' => $this->type,
+            'group' => $this->filter->group,
         ];
-    }
-
-    /**
-     * Set input placeholder.
-     *
-     * @param  string  $placeholder
-     * @return $this
-     */
-    public function placeholder($placeholder = '')
-    {
-        $this->placeholder = $placeholder;
-
-        return $this;
     }
 
     /**
@@ -65,6 +65,26 @@ class Text extends Presenter
     public function url()
     {
         return $this->inputmask(['alias' => 'url'], 'internet-explorer');
+    }
+
+    /**
+     * @param array $options
+     * @param string $icon
+     * @return $this
+     */
+    public function inputmask($options = [], $icon = 'pencil')
+    {
+        Admin::js('@jquery.inputmask');
+
+        $options['rightAlign'] = false;
+
+        $options = json_encode($options);
+
+        Admin::script("$('#{$this->filter->parent()->filterID()} input.{$this->filter->getId()}').inputmask($options);");
+
+        $this->icon = $icon;
+
+        return $this;
     }
 
     /**
@@ -84,11 +104,11 @@ class Text extends Presenter
     }
 
     /**
-     * @param  array  $options
-     *
-     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     * @param array $options
      *
      * @return Text
+     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     *
      */
     public function decimal($options = [])
     {
@@ -96,27 +116,27 @@ class Text extends Presenter
     }
 
     /**
-     * @param  array  $options
-     *
-     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     * @param array $options
      *
      * @return Text
+     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     *
      */
     public function currency($options = [])
     {
         return $this->inputmask(array_merge($options, [
-            'alias'              => 'currency',
-            'prefix'             => '',
+            'alias' => 'currency',
+            'prefix' => '',
             'removeMaskOnSubmit' => true,
         ]));
     }
 
     /**
-     * @param  array  $options
-     *
-     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     * @param array $options
      *
      * @return Text
+     * @see https://github.com/RobinHerbots/Inputmask/blob/4.x/README_numeric.md
+     *
      */
     public function percentage($options = [])
     {
@@ -142,31 +162,11 @@ class Text extends Presenter
     }
 
     /**
-     * @param  string  $mask
+     * @param string $mask
      * @return Text
      */
     public function mobile($mask = '19999999999')
     {
         return $this->inputmask(compact('mask'), 'phone');
-    }
-
-    /**
-     * @param  array  $options
-     * @param  string  $icon
-     * @return $this
-     */
-    public function inputmask($options = [], $icon = 'pencil')
-    {
-        Admin::js('@jquery.inputmask');
-
-        $options['rightAlign'] = false;
-
-        $options = json_encode($options);
-
-        Admin::script("$('#{$this->filter->parent()->filterID()} input.{$this->filter->getId()}').inputmask($options);");
-
-        $this->icon = $icon;
-
-        return $this;
     }
 }

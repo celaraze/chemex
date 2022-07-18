@@ -132,8 +132,8 @@
         });
 
         // Observe the target element.
-        var defaultObeserverOpts = { childList: true, subtree: true, attributes: msobserver.isComplex };
-        observer.observe(options.target, options.observer || defaultObeserverOpts );
+        var defaultObeserverOpts = {childList: true, subtree: true, attributes: msobserver.isComplex};
+        observer.observe(options.target, options.observer || defaultObeserverOpts);
 
         return observer;
     };

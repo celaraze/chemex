@@ -7,8 +7,8 @@ interface Encrypter
     /**
      * Encrypt the given value.
      *
-     * @param  mixed  $value
-     * @param  bool  $serialize
+     * @param mixed $value
+     * @param bool $serialize
      * @return string
      *
      * @throws \Illuminate\Contracts\Encryption\EncryptException
@@ -18,8 +18,8 @@ interface Encrypter
     /**
      * Decrypt the given value.
      *
-     * @param  string  $payload
-     * @param  bool  $unserialize
+     * @param string $payload
+     * @param bool $unserialize
      * @return mixed
      *
      * @throws \Illuminate\Contracts\Encryption\DecryptException

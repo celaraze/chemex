@@ -29,14 +29,6 @@ abstract class AbstractDriverMiddleware implements VersionAwarePlatformDriver
     /**
      * {@inheritdoc}
      */
-    public function getDatabasePlatform()
-    {
-        return $this->wrappedDriver->getDatabasePlatform();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSchemaManager(Connection $conn, AbstractPlatform $platform)
     {
         return $this->wrappedDriver->getSchemaManager($conn, $platform);
@@ -56,6 +48,14 @@ abstract class AbstractDriverMiddleware implements VersionAwarePlatformDriver
             return $this->wrappedDriver->createDatabasePlatformForVersion($version);
         }
 
+        return $this->wrappedDriver->getDatabasePlatform();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDatabasePlatform()
+    {
         return $this->wrappedDriver->getDatabasePlatform();
     }
 }

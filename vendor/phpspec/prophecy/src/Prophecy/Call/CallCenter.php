@@ -11,11 +11,11 @@
 
 namespace Prophecy\Call;
 
+use Prophecy\Argument\ArgumentsWildcard;
+use Prophecy\Exception\Call\UnexpectedCallException;
 use Prophecy\Exception\Prophecy\MethodProphecyException;
 use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Argument\ArgumentsWildcard;
 use Prophecy\Util\StringUtil;
-use Prophecy\Exception\Call\UnexpectedCallException;
 use SplObjectStorage;
 
 /**
@@ -52,8 +52,8 @@ class CallCenter
      * Makes and records specific method call for object prophecy.
      *
      * @param ObjectProphecy $prophecy
-     * @param string         $methodName
-     * @param array          $arguments
+     * @param string $methodName
+     * @param array $arguments
      *
      * @return mixed Returns null if no promise for prophecy found or promise return value.
      *
@@ -90,13 +90,15 @@ class CallCenter
         }
 
         // Sort matches by their score value
-        @usort($matches, function ($match1, $match2) { return $match2[0] - $match1[0]; });
+        @usort($matches, function ($match1, $match2) {
+            return $match2[0] - $match1[0];
+        });
 
         $score = $matches[0][0];
         // If Highest rated method prophecy has a promise - execute it or return null instead
         $methodProphecy = $matches[0][1];
         $returnValue = null;
-        $exception   = null;
+        $exception = null;
         if ($promise = $methodProphecy->getPromise()) {
             try {
                 $returnValue = $promise->execute($arguments, $prophecy, $methodProphecy);
@@ -125,9 +127,28 @@ class CallCenter
     }
 
     /**
+     * @param ObjectProphecy $prophecy
+     * @param string $methodName
+     * @param array $arguments
+     *
+     * @return array
+     */
+    private function findMethodProphecies(ObjectProphecy $prophecy, $methodName, array $arguments)
+    {
+        $matches = array();
+        foreach ($prophecy->getMethodProphecies($methodName) as $methodProphecy) {
+            if (0 < $score = $methodProphecy->getArgumentsWildcard()->scoreArguments($arguments)) {
+                $matches[] = array($score, $methodProphecy);
+            }
+        }
+
+        return $matches;
+    }
+
+    /**
      * Searches for calls by method name & arguments wildcard.
      *
-     * @param string            $methodName
+     * @param string $methodName
      * @param ArgumentsWildcard $wildcard
      *
      * @return Call[]
@@ -139,8 +160,7 @@ class CallCenter
         return array_values(
             array_filter($this->recordedCalls, function (Call $call) use ($methodName, $wildcard) {
                 return $methodName === strtolower($call->getMethodName())
-                    && 0 < $call->getScore($wildcard)
-                ;
+                    && 0 < $call->getScore($wildcard);
             })
         );
     }
@@ -162,7 +182,7 @@ class CallCenter
     }
 
     private function createUnexpectedCallException(ObjectProphecy $prophecy, $methodName,
-                                                   array $arguments)
+                                                   array          $arguments)
     {
         $classname = get_class($prophecy->reveal());
         $indentationLength = 8; // looks good
@@ -194,11 +214,11 @@ class CallCenter
 
         return new UnexpectedCallException(
             sprintf(
-                "Unexpected method call on %s:\n".
-                "  - %s(\n".
-                "%s\n".
-                "    )\n".
-                "expected calls were:\n".
+                "Unexpected method call on %s:\n" .
+                "  - %s(\n" .
+                "%s\n" .
+                "    )\n" .
+                "expected calls were:\n" .
                 "%s",
 
                 $classname, $methodName, $argstring, implode("\n", $expected)
@@ -217,24 +237,5 @@ class CallCenter
             },
             $arguments
         );
-    }
-
-    /**
-     * @param ObjectProphecy $prophecy
-     * @param string $methodName
-     * @param array $arguments
-     *
-     * @return array
-     */
-    private function findMethodProphecies(ObjectProphecy $prophecy, $methodName, array $arguments)
-    {
-        $matches = array();
-        foreach ($prophecy->getMethodProphecies($methodName) as $methodProphecy) {
-            if (0 < $score = $methodProphecy->getArgumentsWildcard()->scoreArguments($arguments)) {
-                $matches[] = array($score, $methodProphecy);
-            }
-        }
-
-        return $matches;
     }
 }

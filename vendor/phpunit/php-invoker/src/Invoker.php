@@ -7,16 +7,17 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Invoker;
 
-use const SIGALRM;
+use Throwable;
 use function call_user_func_array;
 use function function_exists;
 use function pcntl_alarm;
 use function pcntl_async_signals;
 use function pcntl_signal;
 use function sprintf;
-use Throwable;
+use const SIGALRM;
 
 final class Invoker
 {

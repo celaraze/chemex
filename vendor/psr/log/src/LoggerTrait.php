@@ -16,7 +16,7 @@ trait LoggerTrait
      * System is unusable.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -26,13 +26,26 @@ trait LoggerTrait
     }
 
     /**
+     * Logs with an arbitrary level.
+     *
+     * @param mixed $level
+     * @param string|\Stringable $message
+     * @param array $context
+     *
+     * @return void
+     *
+     * @throws \Psr\Log\InvalidArgumentException
+     */
+    abstract public function log($level, string|\Stringable $message, array $context = []): void;
+
+    /**
      * Action must be taken immediately.
      *
      * Example: Entire website down, database unavailable, etc. This should
      * trigger the SMS alerts and wake you up.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -47,7 +60,7 @@ trait LoggerTrait
      * Example: Application component unavailable, unexpected exception.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -61,7 +74,7 @@ trait LoggerTrait
      * be logged and monitored.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -77,7 +90,7 @@ trait LoggerTrait
      * that are not necessarily wrong.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -90,7 +103,7 @@ trait LoggerTrait
      * Normal but significant events.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -105,7 +118,7 @@ trait LoggerTrait
      * Example: User logs in, SQL logs.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -118,7 +131,7 @@ trait LoggerTrait
      * Detailed debug information.
      *
      * @param string|\Stringable $message
-     * @param array  $context
+     * @param array $context
      *
      * @return void
      */
@@ -126,17 +139,4 @@ trait LoggerTrait
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
-
-    /**
-     * Logs with an arbitrary level.
-     *
-     * @param mixed  $level
-     * @param string|\Stringable $message
-     * @param array  $context
-     *
-     * @return void
-     *
-     * @throws \Psr\Log\InvalidArgumentException
-     */
-    abstract public function log($level, string|\Stringable $message, array $context = []): void;
 }

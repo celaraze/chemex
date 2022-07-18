@@ -7,7 +7,6 @@ use Doctrine\DBAL\Driver\PDO\Statement as PDOStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Deprecations\Deprecation;
 use PDO;
-
 use function func_num_args;
 
 final class Statement extends AbstractStatementMiddleware
@@ -27,12 +26,20 @@ final class Statement extends AbstractStatementMiddleware
 
     /**
      * {@inheritdoc}
+     */
+    public function bindValue($param, $value, $type = ParameterType::STRING): bool
+    {
+        return $this->bindParam($param, $value, $type);
+    }
+
+    /**
+     * {@inheritdoc}
      *
      * @param string|int $param
-     * @param mixed      $variable
-     * @param int        $type
-     * @param int|null   $length
-     * @param mixed      $driverOptions The usage of the argument is deprecated.
+     * @param mixed $variable
+     * @param int $type
+     * @param int|null $length
+     * @param mixed $driverOptions The usage of the argument is deprecated.
      */
     public function bindParam(
         $param,
@@ -40,7 +47,8 @@ final class Statement extends AbstractStatementMiddleware
         $type = ParameterType::STRING,
         $length = null,
         $driverOptions = null
-    ): bool {
+    ): bool
+    {
         if (func_num_args() > 4) {
             Deprecation::triggerIfCalledFromOutside(
                 'doctrine/dbal',
@@ -59,20 +67,12 @@ final class Statement extends AbstractStatementMiddleware
                 break;
 
             case ParameterType::ASCII:
-                $type          = ParameterType::STRING;
-                $length        = 0;
+                $type = ParameterType::STRING;
+                $length = 0;
                 $driverOptions = PDO::SQLSRV_ENCODING_SYSTEM;
                 break;
         }
 
         return $this->statement->bindParam($param, $variable, $type, $length ?? 0, $driverOptions);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function bindValue($param, $value, $type = ParameterType::STRING): bool
-    {
-        return $this->bindParam($param, $value, $type);
     }
 }

@@ -18,12 +18,13 @@ class ArrayItem extends Expr
     /**
      * Constructs an array item node.
      *
-     * @param Expr      $value      Value
-     * @param null|Expr $key        Key
-     * @param bool      $byRef      Whether to assign by reference
-     * @param array     $attributes Additional attributes
+     * @param Expr $value Value
+     * @param null|Expr $key Key
+     * @param bool $byRef Whether to assign by reference
+     * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $value, Expr $key = null, bool $byRef = false, array $attributes = [], bool $unpack = false) {
+    public function __construct(Expr $value, Expr $key = null, bool $byRef = false, array $attributes = [], bool $unpack = false)
+    {
         $this->attributes = $attributes;
         $this->key = $key;
         $this->value = $value;
@@ -31,11 +32,13 @@ class ArrayItem extends Expr
         $this->unpack = $unpack;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['key', 'value', 'byRef', 'unpack'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Expr_ArrayItem';
     }
 }

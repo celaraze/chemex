@@ -40,11 +40,14 @@
     <a href="http://adldap2.github.io/Adldap2/">Documentation</a>
 </h4>
 
--   **Up and running in minutes.** Effortlessly connect to your LDAP servers and start running queries & operations in a matter of minutes.
+- **Up and running in minutes.** Effortlessly connect to your LDAP servers and start running queries & operations in a
+  matter of minutes.
 
--   **Fluent query builder.** Building LDAP queries has never been so easy. Find the records you're looking for in a couple lines or less with a fluent interface.
+- **Fluent query builder.** Building LDAP queries has never been so easy. Find the records you're looking for in a
+  couple lines or less with a fluent interface.
 
--   **Supercharged Active Record.** Create and modify LDAP records with ease. All LDAP records are individual models. Simply modify the attributes on the model and save it to persist the changes to your LDAP server.
+- **Supercharged Active Record.** Create and modify LDAP records with ease. All LDAP records are individual models.
+  Simply modify the attributes on the model and save it to persist the changes to your LDAP server.
 
 ---
 

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
 use DOMDocument;
@@ -32,9 +33,10 @@ abstract class Node
         $this->setContextNode($context);
     }
 
-    public function dom(): DOMDocument
+    protected function setContextNode(DOMElement $context): void
     {
-        return $this->dom;
+        $this->dom = $context->ownerDocument;
+        $this->contextNode = $context;
     }
 
     public function totals(): Totals
@@ -53,6 +55,11 @@ abstract class Node
         return new Totals($totalsContainer);
     }
 
+    protected function contextNode(): DOMElement
+    {
+        return $this->contextNode;
+    }
+
     public function addDirectory(string $name): Directory
     {
         $dirNode = $this->dom()->createElementNS(
@@ -64,6 +71,11 @@ abstract class Node
         $this->contextNode()->appendChild($dirNode);
 
         return new Directory($dirNode);
+    }
+
+    public function dom(): DOMDocument
+    {
+        return $this->dom;
     }
 
     public function addFile(string $name, string $href): File
@@ -78,16 +90,5 @@ abstract class Node
         $this->contextNode()->appendChild($fileNode);
 
         return new File($fileNode);
-    }
-
-    protected function setContextNode(DOMElement $context): void
-    {
-        $this->dom         = $context->ownerDocument;
-        $this->contextNode = $context;
-    }
-
-    protected function contextNode(): DOMElement
-    {
-        return $this->contextNode;
     }
 }

@@ -46,19 +46,6 @@ final class ParagraphRenderer implements NodeRendererInterface, XmlNodeRendererI
         return new HtmlElement('p', $attrs, $childRenderer->renderNodes($node->children()));
     }
 
-    public function getXmlTagName(Node $node): string
-    {
-        return 'paragraph';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getXmlAttributes(Node $node): array
-    {
-        return [];
-    }
-
     private function inTightList(Paragraph $node): bool
     {
         // Only check up to two (2) levels above this for tightness
@@ -70,5 +57,18 @@ final class ParagraphRenderer implements NodeRendererInterface, XmlNodeRendererI
         }
 
         return false;
+    }
+
+    public function getXmlTagName(Node $node): string
+    {
+        return 'paragraph';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getXmlAttributes(Node $node): array
+    {
+        return [];
     }
 }

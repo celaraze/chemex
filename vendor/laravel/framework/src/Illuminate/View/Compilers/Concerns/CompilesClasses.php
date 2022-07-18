@@ -7,7 +7,7 @@ trait CompilesClasses
     /**
      * Compile the conditional class statement into valid PHP.
      *
-     * @param  string  $expression
+     * @param string $expression
      * @return string
      */
     protected function compileClass($expression)

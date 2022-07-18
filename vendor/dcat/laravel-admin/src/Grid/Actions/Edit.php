@@ -15,7 +15,7 @@ class Edit extends RowAction
             return $this->title;
         }
 
-        return '<i class="feather icon-edit-1"></i> '.__('admin.edit').' &nbsp;&nbsp;';
+        return '<i class="feather icon-edit-1"></i> ' . __('admin.edit') . ' &nbsp;&nbsp;';
     }
 
     /**

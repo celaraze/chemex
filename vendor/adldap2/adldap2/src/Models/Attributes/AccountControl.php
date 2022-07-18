@@ -76,13 +76,53 @@ class AccountControl
     }
 
     /**
+     * Extract and apply the flag.
+     *
+     * @param int $flag
+     */
+    public function apply($flag)
+    {
+        $this->setValues($this->extractFlags($flag));
+    }
+
+    /**
+     * Extracts the given flag into an array of flags used.
+     *
+     * @param int $flag
+     *
+     * @return array
+     */
+    public function extractFlags($flag)
+    {
+        $flags = [];
+
+        for ($i = 0; $i <= 26; $i++) {
+            if ((int)$flag & (1 << $i)) {
+                $flags[1 << $i] = 1 << $i;
+            }
+        }
+
+        return $flags;
+    }
+
+    /**
      * Get the value when casted to string.
      *
      * @return string
      */
     public function __toString()
     {
-        return (string) $this->getValue();
+        return (string)$this->getValue();
+    }
+
+    /**
+     * Get the account control value.
+     *
+     * @return int
+     */
+    public function getValue()
+    {
+        return array_sum($this->values);
     }
 
     /**
@@ -93,22 +133,6 @@ class AccountControl
     public function __toInt()
     {
         return $this->getValue();
-    }
-
-    /**
-     * Add the value to the account control values.
-     *
-     * @param int $value
-     *
-     * @return AccountControl
-     */
-    public function add($value)
-    {
-        // Use the value as a key so if the same value
-        // is used, it will always be overwritten
-        $this->values[$value] = $value;
-
-        return $this;
     }
 
     /**
@@ -123,16 +147,6 @@ class AccountControl
         unset($this->values[$value]);
 
         return $this;
-    }
-
-    /**
-     * Extract and apply the flag.
-     *
-     * @param int $flag
-     */
-    public function apply($flag)
-    {
-        $this->setValues($this->extractFlags($flag));
     }
 
     /**
@@ -159,6 +173,22 @@ class AccountControl
     public function runLoginScript()
     {
         return $this->add(static::SCRIPT);
+    }
+
+    /**
+     * Add the value to the account control values.
+     *
+     * @param int $value
+     *
+     * @return AccountControl
+     */
+    public function add($value)
+    {
+        // Use the value as a key so if the same value
+        // is used, it will always be overwritten
+        $this->values[$value] = $value;
+
+        return $this;
     }
 
     /**
@@ -397,16 +427,6 @@ class AccountControl
     }
 
     /**
-     * Get the account control value.
-     *
-     * @return int
-     */
-    public function getValue()
-    {
-        return array_sum($this->values);
-    }
-
-    /**
      * Get the account control flag values.
      *
      * @return array
@@ -434,25 +454,5 @@ class AccountControl
     public function getAllFlags()
     {
         return (new ReflectionClass(__CLASS__))->getConstants();
-    }
-
-    /**
-     * Extracts the given flag into an array of flags used.
-     *
-     * @param int $flag
-     *
-     * @return array
-     */
-    public function extractFlags($flag)
-    {
-        $flags = [];
-
-        for ($i = 0; $i <= 26; $i++) {
-            if ((int) $flag & (1 << $i)) {
-                $flags[1 << $i] = 1 << $i;
-            }
-        }
-
-        return $flags;
     }
 }

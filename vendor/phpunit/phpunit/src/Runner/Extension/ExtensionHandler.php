@@ -7,10 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Runner\Extension;
 
-use function class_exists;
-use function sprintf;
 use PHPUnit\Framework\TestListener;
 use PHPUnit\Runner\Exception;
 use PHPUnit\Runner\Hook;
@@ -18,6 +17,8 @@ use PHPUnit\TextUI\TestRunner;
 use PHPUnit\TextUI\XmlConfiguration\Extension;
 use ReflectionClass;
 use ReflectionException;
+use function class_exists;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -45,27 +46,6 @@ final class ExtensionHandler
 
     /**
      * @throws Exception
-     *
-     * @deprecated
-     */
-    public function createTestListenerInstance(Extension $listenerConfiguration): TestListener
-    {
-        $listener = $this->createInstance($listenerConfiguration);
-
-        if (!$listener instanceof TestListener) {
-            throw new Exception(
-                sprintf(
-                    'Class "%s" does not implement the PHPUnit\Framework\TestListener interface',
-                    $listenerConfiguration->className()
-                )
-            );
-        }
-
-        return $listener;
-    }
-
-    /**
-     * @throws Exception
      */
     private function createInstance(Extension $extensionConfiguration): object
     {
@@ -76,7 +56,7 @@ final class ExtensionHandler
         } catch (ReflectionException $e) {
             throw new Exception(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -113,5 +93,26 @@ final class ExtensionHandler
                 )
             );
         }
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @deprecated
+     */
+    public function createTestListenerInstance(Extension $listenerConfiguration): TestListener
+    {
+        $listener = $this->createInstance($listenerConfiguration);
+
+        if (!$listener instanceof TestListener) {
+            throw new Exception(
+                sprintf(
+                    'Class "%s" does not implement the PHPUnit\Framework\TestListener interface',
+                    $listenerConfiguration->className()
+                )
+            );
+        }
+
+        return $listener;
     }
 }

@@ -16,9 +16,9 @@ use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\HttpDownloader;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -69,8 +69,7 @@ exist it will look for composer.json and do the same.
 
 Read more at https://getcomposer.org/doc/03-cli.md#install-i
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -85,7 +84,7 @@ EOT
 
         $args = $input->getArgument('packages');
         if (count($args) > 0) {
-            $io->writeError('<error>Invalid argument '.implode(' ', $args).'. Use "composer require '.implode(' ', $args).'" instead to add packages to your composer.json.</error>');
+            $io->writeError('<error>Invalid argument ' . implode(' ', $args) . '. Use "composer require ' . implode(' ', $args) . '" instead to add packages to your composer.json.</error>');
 
             return 1;
         }
@@ -127,8 +126,7 @@ EOT
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)
-            ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
-        ;
+            ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
 
         if ($input->getOption('no-plugins')) {
             $install->disablePlugins();

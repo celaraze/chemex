@@ -13,10 +13,10 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\EventDispatcher\Event;
+use Composer\IO\IOInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * The Package Event.
@@ -58,13 +58,13 @@ class PackageEvent extends Event
     /**
      * Constructor.
      *
-     * @param string               $eventName
-     * @param Composer             $composer
-     * @param IOInterface          $io
-     * @param bool                 $devMode
-     * @param RepositoryInterface  $localRepo
+     * @param string $eventName
+     * @param Composer $composer
+     * @param IOInterface $io
+     * @param bool $devMode
+     * @param RepositoryInterface $localRepo
      * @param OperationInterface[] $operations
-     * @param OperationInterface   $operation
+     * @param OperationInterface $operation
      */
     public function __construct(string $eventName, Composer $composer, IOInterface $io, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {

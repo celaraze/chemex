@@ -32,9 +32,9 @@ class ProviderRepository
     /**
      * Create a new service repository instance.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  string  $manifestPath
+     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param string $manifestPath
      * @return void
      */
     public function __construct(ApplicationContract $app, Filesystem $files, $manifestPath)
@@ -47,7 +47,7 @@ class ProviderRepository
     /**
      * Register the application service providers.
      *
-     * @param  array  $providers
+     * @param array $providers
      * @return void
      */
     public function load(array $providers)
@@ -100,8 +100,8 @@ class ProviderRepository
     /**
      * Determine if the manifest should be compiled.
      *
-     * @param  array  $manifest
-     * @param  array  $providers
+     * @param array $manifest
+     * @param array $providers
      * @return bool
      */
     public function shouldRecompile($manifest, $providers)
@@ -110,27 +110,9 @@ class ProviderRepository
     }
 
     /**
-     * Register the load events for the given provider.
-     *
-     * @param  string  $provider
-     * @param  array  $events
-     * @return void
-     */
-    protected function registerLoadEvents($provider, array $events)
-    {
-        if (count($events) < 1) {
-            return;
-        }
-
-        $this->app->make('events')->listen($events, function () use ($provider) {
-            $this->app->register($provider);
-        });
-    }
-
-    /**
      * Compile the application service manifest file.
      *
-     * @param  array  $providers
+     * @param array $providers
      * @return array
      */
     protected function compileManifest($providers)
@@ -168,7 +150,7 @@ class ProviderRepository
     /**
      * Create a fresh service manifest data structure.
      *
-     * @param  array  $providers
+     * @param array $providers
      * @return array
      */
     protected function freshManifest(array $providers)
@@ -177,34 +159,52 @@ class ProviderRepository
     }
 
     /**
+     * Create a new provider instance.
+     *
+     * @param string $provider
+     * @return \Illuminate\Support\ServiceProvider
+     */
+    public function createProvider($provider)
+    {
+        return new $provider($this->app);
+    }
+
+    /**
      * Write the service manifest file to disk.
      *
-     * @param  array  $manifest
+     * @param array $manifest
      * @return array
      *
      * @throws \Exception
      */
     public function writeManifest($manifest)
     {
-        if (! is_writable($dirname = dirname($this->manifestPath))) {
+        if (!is_writable($dirname = dirname($this->manifestPath))) {
             throw new Exception("The {$dirname} directory must be present and writable.");
         }
 
         $this->files->replace(
-            $this->manifestPath, '<?php return '.var_export($manifest, true).';'
+            $this->manifestPath, '<?php return ' . var_export($manifest, true) . ';'
         );
 
         return array_merge(['when' => []], $manifest);
     }
 
     /**
-     * Create a new provider instance.
+     * Register the load events for the given provider.
      *
-     * @param  string  $provider
-     * @return \Illuminate\Support\ServiceProvider
+     * @param string $provider
+     * @param array $events
+     * @return void
      */
-    public function createProvider($provider)
+    protected function registerLoadEvents($provider, array $events)
     {
-        return new $provider($this->app);
+        if (count($events) < 1) {
+            return;
+        }
+
+        $this->app->make('events')->listen($events, function () use ($provider) {
+            $this->app->register($provider);
+        });
     }
 }

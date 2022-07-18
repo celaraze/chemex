@@ -31,6 +31,20 @@ final class Result implements ResultInterface
     }
 
     /**
+     * @return mixed|false
+     *
+     * @throws Exception
+     */
+    private function fetch(int $mode)
+    {
+        try {
+            return $this->statement->fetch($mode);
+        } catch (PDOException $exception) {
+            throw Exception::new($exception);
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function fetchAssociative()
@@ -52,6 +66,20 @@ final class Result implements ResultInterface
     public function fetchAllNumeric(): array
     {
         return $this->fetchAll(PDO::FETCH_NUM);
+    }
+
+    /**
+     * @return list<mixed>
+     *
+     * @throws Exception
+     */
+    private function fetchAll(int $mode): array
+    {
+        try {
+            return $this->statement->fetchAll($mode);
+        } catch (PDOException $exception) {
+            throw Exception::new($exception);
+        }
     }
 
     /**
@@ -91,33 +119,5 @@ final class Result implements ResultInterface
     public function free(): void
     {
         $this->statement->closeCursor();
-    }
-
-    /**
-     * @return mixed|false
-     *
-     * @throws Exception
-     */
-    private function fetch(int $mode)
-    {
-        try {
-            return $this->statement->fetch($mode);
-        } catch (PDOException $exception) {
-            throw Exception::new($exception);
-        }
-    }
-
-    /**
-     * @return list<mixed>
-     *
-     * @throws Exception
-     */
-    private function fetchAll(int $mode): array
-    {
-        try {
-            return $this->statement->fetchAll($mode);
-        } catch (PDOException $exception) {
-            throw Exception::new($exception);
-        }
     }
 }

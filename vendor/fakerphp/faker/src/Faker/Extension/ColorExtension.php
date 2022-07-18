@@ -18,9 +18,9 @@ interface ColorExtension extends Extension
     public function safeHexColor(): string;
 
     /**
+     * @return int[]
      * @example 'array(0,255,122)'
      *
-     * @return int[]
      */
     public function rgbColorAsArray(): array;
 
@@ -55,9 +55,9 @@ interface ColorExtension extends Extension
     public function hslColor(): string;
 
     /**
+     * @return int[]
      * @example array(340, 50, 20)
      *
-     * @return int[]
      */
     public function hslColorAsArray(): array;
 }

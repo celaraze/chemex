@@ -34,7 +34,7 @@ class FilteringProvider implements ProviderInterface
 
     public function __toString(): string
     {
-        return (string) $this->provider;
+        return (string)$this->provider;
     }
 
     /**

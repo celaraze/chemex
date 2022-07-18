@@ -25,45 +25,15 @@ class Cache
     }
 
     /**
-     * Get an item from the cache.
-     *
-     * @param string $key
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
-     *
-     * @return mixed
-     */
-    public function get($key)
-    {
-        return $this->store->get($key);
-    }
-
-    /**
-     * Store an item in the cache.
-     *
-     * @param string                                    $key
-     * @param mixed                                     $value
-     * @param \DateTimeInterface|\DateInterval|int|null $ttl
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
-     *
-     * @return bool
-     */
-    public function put($key, $value, $ttl = null)
-    {
-        return $this->store->set($key, $value, $ttl);
-    }
-
-    /**
      * Get an item from the cache, or execute the given Closure and store the result.
      *
-     * @param string                                    $key
+     * @param string $key
      * @param \DateTimeInterface|\DateInterval|int|null $ttl
-     * @param Closure                                   $callback
-     *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @param Closure $callback
      *
      * @return mixed
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
      */
     public function remember($key, $ttl, Closure $callback)
     {
@@ -79,14 +49,44 @@ class Cache
     }
 
     /**
+     * Get an item from the cache.
+     *
+     * @param string $key
+     *
+     * @return mixed
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     */
+    public function get($key)
+    {
+        return $this->store->get($key);
+    }
+
+    /**
+     * Store an item in the cache.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @param \DateTimeInterface|\DateInterval|int|null $ttl
+     *
+     * @return bool
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     *
+     */
+    public function put($key, $value, $ttl = null)
+    {
+        return $this->store->set($key, $value, $ttl);
+    }
+
+    /**
      * Delete an item from the cache.
      *
      * @param string $key
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return bool
      * @throws \Psr\SimpleCache\InvalidArgumentException
      *
-     * @return bool
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function delete($key)
     {

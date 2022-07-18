@@ -46,7 +46,7 @@ class Status
     /** @var bool */
     private $modeOff;
 
-     /** @var float */
+    /** @var float */
     private $time;
 
     /**
@@ -82,28 +82,14 @@ class Status
     public function report(string $op, ?string $data): void
     {
         if ($this->logger !== null || $this->debug) {
-            $callable = [$this, 'report'.$op];
+            $callable = [$this, 'report' . $op];
 
             if (!is_callable($callable)) {
-                throw new \InvalidArgumentException('Unknown op handler: '.$op);
+                throw new \InvalidArgumentException('Unknown op handler: ' . $op);
             }
 
             $params = $data !== null ? [$data] : [];
             call_user_func_array($callable, $params);
-        }
-    }
-
-    /**
-     * Outputs a status message
-     */
-    private function output(string $text, ?string $level = null): void
-    {
-        if ($this->logger !== null) {
-            $this->logger->log($level !== null ? $level: LogLevel::DEBUG, $text);
-        }
-
-        if ($this->debug) {
-            fwrite(STDERR, sprintf('xdebug-handler[%d] %s', getmypid(), $text.PHP_EOL));
         }
     }
 
@@ -115,10 +101,24 @@ class Status
         list($version, $mode) = explode('|', $loaded);
 
         if ($version !== '') {
-            $this->loaded = '('.$version.')'.($mode !== '' ? ' xdebug.mode='.$mode : '');
+            $this->loaded = '(' . $version . ')' . ($mode !== '' ? ' xdebug.mode=' . $mode : '');
         }
         $this->modeOff = $mode === 'off';
-        $this->output('Checking '.$this->envAllowXdebug);
+        $this->output('Checking ' . $this->envAllowXdebug);
+    }
+
+    /**
+     * Outputs a status message
+     */
+    private function output(string $text, ?string $level = null): void
+    {
+        if ($this->logger !== null) {
+            $this->logger->log($level !== null ? $level : LogLevel::DEBUG, $text);
+        }
+
+        if ($this->debug) {
+            fwrite(STDERR, sprintf('xdebug-handler[%d] %s', getmypid(), $text . PHP_EOL));
+        }
     }
 
     /**
@@ -146,11 +146,28 @@ class Status
 
         if ($this->loaded !== null) {
             $text = sprintf('No restart (%s)', $this->getEnvAllow());
-            if (!((bool) getenv($this->envAllowXdebug))) {
-                $text .= ' Allowed by '.($this->modeOff ? 'xdebug.mode' : 'application');
+            if (!((bool)getenv($this->envAllowXdebug))) {
+                $text .= ' Allowed by ' . ($this->modeOff ? 'xdebug.mode' : 'application');
             }
             $this->output($text);
         }
+    }
+
+    /**
+     * Returns the Xdebug status and version
+     */
+    private function getLoadedMessage(): string
+    {
+        $loaded = $this->loaded !== null ? sprintf('loaded %s', $this->loaded) : 'not loaded';
+        return 'The Xdebug extension is ' . $loaded;
+    }
+
+    /**
+     * Returns the _ALLOW_XDEBUG environment variable as name=value
+     */
+    private function getEnvAllow(): string
+    {
+        return $this->envAllowXdebug . '=' . getenv($this->envAllowXdebug);
     }
 
     /**
@@ -159,7 +176,7 @@ class Status
     private function reportRestart(): void
     {
         $this->output($this->getLoadedMessage());
-        Process::setEnv(self::ENV_RESTART, (string) microtime(true));
+        Process::setEnv(self::ENV_RESTART, (string)microtime(true));
     }
 
     /**
@@ -180,24 +197,7 @@ class Status
     {
         $text = sprintf('Process restarting (%s)', $this->getEnvAllow());
         $this->output($text);
-        $text = 'Running '.$command;
+        $text = 'Running ' . $command;
         $this->output($text);
-    }
-
-    /**
-     * Returns the _ALLOW_XDEBUG environment variable as name=value
-     */
-    private function getEnvAllow(): string
-    {
-        return $this->envAllowXdebug.'='.getenv($this->envAllowXdebug);
-    }
-
-    /**
-     * Returns the Xdebug status and version
-     */
-    private function getLoadedMessage(): string
-    {
-        $loaded = $this->loaded !== null ? sprintf('loaded %s', $this->loaded) : 'not loaded';
-        return 'The Xdebug extension is '.$loaded;
     }
 }

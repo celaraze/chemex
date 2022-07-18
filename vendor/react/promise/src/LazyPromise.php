@@ -20,6 +20,25 @@ class LazyPromise implements ExtendedPromiseInterface, CancellablePromiseInterfa
         return $this->promise()->then($onFulfilled, $onRejected, $onProgress);
     }
 
+    /**
+     * @internal
+     * @see Promise::settle()
+     */
+    public function promise()
+    {
+        if (null === $this->promise) {
+            try {
+                $this->promise = resolve(\call_user_func($this->factory));
+            } catch (\Throwable $exception) {
+                $this->promise = new RejectedPromise($exception);
+            } catch (\Exception $exception) {
+                $this->promise = new RejectedPromise($exception);
+            }
+        }
+
+        return $this->promise;
+    }
+
     public function done(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
     {
         return $this->promise()->done($onFulfilled, $onRejected, $onProgress);
@@ -43,24 +62,5 @@ class LazyPromise implements ExtendedPromiseInterface, CancellablePromiseInterfa
     public function cancel()
     {
         return $this->promise()->cancel();
-    }
-
-    /**
-     * @internal
-     * @see Promise::settle()
-     */
-    public function promise()
-    {
-        if (null === $this->promise) {
-            try {
-                $this->promise = resolve(\call_user_func($this->factory));
-            } catch (\Throwable $exception) {
-                $this->promise = new RejectedPromise($exception);
-            } catch (\Exception $exception) {
-                $this->promise = new RejectedPromise($exception);
-            }
-        }
-
-        return $this->promise;
     }
 }

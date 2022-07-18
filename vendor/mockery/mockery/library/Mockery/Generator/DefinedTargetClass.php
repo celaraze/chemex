@@ -31,14 +31,14 @@ class DefinedTargetClass implements TargetClassInterface
         $this->name = $alias === null ? $rfc->getName() : $alias;
     }
 
-    public static function factory($name, $alias = null)
-    {
-        return new self(new \ReflectionClass($name), $alias);
-    }
-
     public function getName()
     {
         return $this->name;
+    }
+
+    public static function factory($name, $alias = null)
+    {
+        return new self(new \ReflectionClass($name), $alias);
     }
 
     public function isAbstract()

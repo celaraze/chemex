@@ -4,15 +4,15 @@ namespace Adldap\Connections;
 
 use Adldap\Adldap;
 use Adldap\Auth\Guard;
-use Adldap\Query\Cache;
-use InvalidArgumentException;
 use Adldap\Auth\GuardInterface;
+use Adldap\Configuration\DomainConfiguration;
+use Adldap\Models\Factory as ModelFactory;
+use Adldap\Query\Cache;
+use Adldap\Query\Factory as SearchFactory;
 use Adldap\Schemas\ActiveDirectory;
 use Adldap\Schemas\SchemaInterface;
+use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
-use Adldap\Models\Factory as ModelFactory;
-use Adldap\Query\Factory as SearchFactory;
-use Adldap\Configuration\DomainConfiguration;
 
 /**
  * Class Provider.
@@ -80,6 +80,14 @@ class Provider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setConfiguration($configuration = [])
     {
         if (is_array($configuration)) {
@@ -107,6 +115,14 @@ class Provider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setConnection(ConnectionInterface $connection = null)
     {
         // We will create a standard connection if one isn't given.
@@ -127,56 +143,6 @@ class Provider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function setSchema(SchemaInterface $schema = null)
-    {
-        $this->schema = $schema ?: new ActiveDirectory();
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setGuard(GuardInterface $guard)
-    {
-        $this->guard = $guard;
-
-        return $this;
-    }
-
-    /**
-     * Sets the cache store.
-     *
-     * @param CacheInterface $store
-     *
-     * @return $this
-     */
-    public function setCache(CacheInterface $store)
-    {
-        $this->cache = new Cache($store);
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfiguration()
-    {
-        return $this->configuration;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getConnection()
-    {
-        return $this->connection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSchema()
     {
         return $this->schema;
@@ -185,25 +151,11 @@ class Provider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getGuard()
+    public function setSchema(SchemaInterface $schema = null)
     {
-        if (!$this->guard instanceof GuardInterface) {
-            $this->setGuard($this->getDefaultGuard($this->connection, $this->configuration));
-        }
+        $this->schema = $schema ?: new ActiveDirectory();
 
-        return $this->guard;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDefaultGuard(ConnectionInterface $connection, DomainConfiguration $configuration)
-    {
-        $guard = new Guard($connection, $configuration);
-
-        $guard->setDispatcher(Adldap::getEventDispatcher());
-
-        return $guard;
+        return $this;
     }
 
     /**
@@ -235,11 +187,59 @@ class Provider implements ProviderInterface
     }
 
     /**
+     * Sets the cache store.
+     *
+     * @param CacheInterface $store
+     *
+     * @return $this
+     */
+    public function setCache(CacheInterface $store)
+    {
+        $this->cache = new Cache($store);
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function auth()
     {
         return $this->getGuard();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getGuard()
+    {
+        if (!$this->guard instanceof GuardInterface) {
+            $this->setGuard($this->getDefaultGuard($this->connection, $this->configuration));
+        }
+
+        return $this->guard;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setGuard(GuardInterface $guard)
+    {
+        $this->guard = $guard;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDefaultGuard(ConnectionInterface $connection, DomainConfiguration $configuration)
+    {
+        $guard = new Guard($connection, $configuration);
+
+        $guard->setDispatcher(Adldap::getEventDispatcher());
+
+        return $guard;
     }
 
     /**
@@ -265,9 +265,9 @@ class Provider implements ProviderInterface
     /**
      * Prepares the connection by setting configured parameters.
      *
+     * @return void
      * @throws \Adldap\Configuration\ConfigurationException When configuration options requested do not exist
      *
-     * @return void
      */
     protected function prepareConnection()
     {
@@ -281,8 +281,8 @@ class Provider implements ProviderInterface
             $this->configuration->get('custom_options'),
             [
                 LDAP_OPT_PROTOCOL_VERSION => $this->configuration->get('version'),
-                LDAP_OPT_NETWORK_TIMEOUT  => $this->configuration->get('timeout'),
-                LDAP_OPT_REFERRALS        => $this->configuration->get('follow_referrals'),
+                LDAP_OPT_NETWORK_TIMEOUT => $this->configuration->get('timeout'),
+                LDAP_OPT_REFERRALS => $this->configuration->get('follow_referrals'),
             ]
         );
 

@@ -38,11 +38,11 @@ $pdf->setSubject('TCPDF Tutorial');
 $pdf->setKeywords('TCPDF, PDF, example, test, guide');
 
 // set default header data
-$pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 050', PDF_HEADER_STRING);
+$pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE . ' 050', PDF_HEADER_STRING);
 
 // set header and footer fonts
-$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+$pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
 // set default monospaced font
 $pdf->setDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -59,9 +59,9 @@ $pdf->setAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 // set some language-dependent strings (optional)
-if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-	require_once(dirname(__FILE__).'/lang/eng.php');
-	$pdf->setLanguageArray($l);
+if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
+    require_once(dirname(__FILE__) . '/lang/eng.php');
+    $pdf->setLanguageArray($l);
 }
 
 // ---------------------------------------------------------
@@ -85,13 +85,13 @@ $pdf->setFont('helvetica', '', 10);
 
 // set style for barcode
 $style = array(
-	'border' => true,
-	'vpadding' => 'auto',
-	'hpadding' => 'auto',
-	'fgcolor' => array(0,0,0),
-	'bgcolor' => false, //array(255,255,255)
-	'module_width' => 1, // width of a single module in points
-	'module_height' => 1 // height of a single module in points
+    'border' => true,
+    'vpadding' => 'auto',
+    'hpadding' => 'auto',
+    'fgcolor' => array(0, 0, 0),
+    'bgcolor' => false, //array(255,255,255)
+    'module_width' => 1, // width of a single module in points
+    'module_height' => 1 // height of a single module in points
 );
 
 // write RAW 2D Barcode
@@ -107,13 +107,13 @@ $pdf->write2DBarcode($code, 'RAW2', 80, 60, 30, 20, $style, 'N');
 
 // set style for barcode
 $style = array(
-	'border' => 2,
-	'vpadding' => 'auto',
-	'hpadding' => 'auto',
-	'fgcolor' => array(0,0,0),
-	'bgcolor' => false, //array(255,255,255)
-	'module_width' => 1, // width of a single module in points
-	'module_height' => 1 // height of a single module in points
+    'border' => 2,
+    'vpadding' => 'auto',
+    'hpadding' => 'auto',
+    'fgcolor' => array(0, 0, 0),
+    'bgcolor' => false, //array(255,255,255)
+    'module_width' => 1, // width of a single module in points
+    'module_height' => 1 // height of a single module in points
 );
 
 // QRCODE,L : QR-CODE Low error correction
@@ -178,10 +178,10 @@ $pdf->Text(80, 145, 'DATAMATRIX (ISO/IEC 16022:2006)');
 
 // new style
 $style = array(
-	'border' => 2,
-	'padding' => 'auto',
-	'fgcolor' => array(0,0,255),
-	'bgcolor' => array(255,255,64)
+    'border' => 2,
+    'padding' => 'auto',
+    'fgcolor' => array(0, 0, 255),
+    'bgcolor' => array(255, 255, 64)
 );
 
 // QRCODE,H : QR-CODE Best error correction
@@ -190,10 +190,10 @@ $pdf->Text(80, 205, 'QRCODE H - COLORED');
 
 // new style
 $style = array(
-	'border' => false,
-	'padding' => 0,
-	'fgcolor' => array(128,0,0),
-	'bgcolor' => false
+    'border' => false,
+    'padding' => 0,
+    'fgcolor' => array(128, 0, 0),
+    'bgcolor' => false
 );
 
 // QRCODE,H : QR-CODE Best error correction

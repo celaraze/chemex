@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -41,7 +41,7 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param string                     $name       package name
+     * @param string $name package name
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return BasePackage|null
@@ -51,7 +51,7 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param string                     $name       package name
+     * @param string $name package name
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return BasePackage[]
@@ -71,10 +71,10 @@ interface RepositoryInterface extends \Countable
      * - The packages returned are the packages found which match the constraints, acceptable stability and stability flags provided
      * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
      *
-     * @param ConstraintInterface[]                          $packageNameMap        package names pointing to constraints
+     * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
      * @param array<string, BasePackage::STABILITY_*>        $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags        an array of package name => BasePackage::STABILITY_* value
-     * @param array<string, array<string, PackageInterface>> $alreadyLoaded         an array of package name => package version => package
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded an array of package name => package version => package
      *
      * @return array
      *
@@ -86,9 +86,9 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches the repository for packages containing the query
      *
-     * @param string  $query search query, for SEARCH_NAME and SEARCH_VENDOR regular expressions metacharacters are supported by implementations, and user input should be escaped through preg_quote by callers
-     * @param int     $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only, default is SEARCH_FULLTEXT
-     * @param ?string $type  The type of package to search for. Defaults to all types of packages
+     * @param string $query search query, for SEARCH_NAME and SEARCH_VENDOR regular expressions metacharacters are supported by implementations, and user input should be escaped through preg_quote by callers
+     * @param int $mode a set of SEARCH_* constants to search on, implementations should do a best effort only, default is SEARCH_FULLTEXT
+     * @param ?string $type The type of package to search for. Defaults to all types of packages
      *
      * @return array[] an array of array('name' => '...', 'description' => '...'|null, 'abandoned' => 'string'|true|unset) For SEARCH_VENDOR the name will be in "vendor" form
      * @phpstan-return list<array{name: string, description: ?string, abandoned?: string|true, url?: string}>

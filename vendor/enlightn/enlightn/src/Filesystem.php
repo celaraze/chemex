@@ -14,14 +14,14 @@ class Filesystem extends BaseFilesystem
     /**
      * Get the contents of a file one line at a time.
      *
-     * @param  string  $path
+     * @param string $path
      * @return \Illuminate\Support\LazyCollection
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function lines($path)
     {
-        if (! $this->isFile($path)) {
+        if (!$this->isFile($path)) {
             throw new FileNotFoundException(
                 "File does not exist at path {$path}."
             );
@@ -32,7 +32,7 @@ class Filesystem extends BaseFilesystem
 
             $file->setFlags(SplFileObject::DROP_NEW_LINE);
 
-            while (! $file->eof()) {
+            while (!$file->eof()) {
                 yield $file->fgets();
             }
         });

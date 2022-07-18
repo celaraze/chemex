@@ -31,40 +31,34 @@ use Stringable;
 class PSR7Worker implements PSR7WorkerInterface
 {
     /**
+     * @var string[] Valid values for HTTP protocol version
+     */
+    private static array $allowedVersions = ['1.0', '1.1', '2'];
+    /**
      * @var int Preferred chunk size for streaming output.
      *      if not greater than 0, then streaming response is turned off
      */
     public int $chunkSize = 0;
-
     /**
      * @var HttpWorker
      */
     private HttpWorker $httpWorker;
-
     /**
      * @var ServerRequestFactoryInterface
      */
     private ServerRequestFactoryInterface $requestFactory;
-
     /**
      * @var StreamFactoryInterface
      */
     private StreamFactoryInterface $streamFactory;
-
     /**
      * @var UploadedFileFactoryInterface
      */
     private UploadedFileFactoryInterface $uploadsFactory;
-
     /**
      * @var array
      */
     private array $originalServer;
-
-    /**
-     * @var string[] Valid values for HTTP protocol version
-     */
-    private static array $allowedVersions = ['1.0', '1.1', '2'];
 
     /**
      * @param WorkerInterface $worker
@@ -73,11 +67,12 @@ class PSR7Worker implements PSR7WorkerInterface
      * @param UploadedFileFactoryInterface $uploadsFactory
      */
     public function __construct(
-        WorkerInterface $worker,
+        WorkerInterface               $worker,
         ServerRequestFactoryInterface $requestFactory,
-        StreamFactoryInterface $streamFactory,
-        UploadedFileFactoryInterface $uploadsFactory
-    ) {
+        StreamFactoryInterface        $streamFactory,
+        UploadedFileFactoryInterface  $uploadsFactory
+    )
+    {
         $this->httpWorker = new HttpWorker($worker);
         $this->requestFactory = $requestFactory;
         $this->streamFactory = $streamFactory;
@@ -107,55 +102,6 @@ class PSR7Worker implements PSR7WorkerInterface
         $_SERVER = $this->configureServer($httpRequest);
 
         return $this->mapRequest($httpRequest, $_SERVER);
-    }
-
-    /**
-     * Send response to the application server.
-     *
-     * @param ResponseInterface $response
-     * @throws \JsonException
-     */
-    public function respond(ResponseInterface $response): void
-    {
-        if ($this->chunkSize > 0) {
-            $this->httpWorker->respondStream(
-                $response->getStatusCode(),
-                $this->streamToGenerator($response->getBody()),
-                $response->getHeaders()
-            );
-        } else {
-            $this->httpWorker->respond(
-                $response->getStatusCode(),
-                (string)$response->getBody(),
-                $response->getHeaders());
-        }
-    }
-
-    /**
-     * @return Generator<mixed, scalar|Stringable, mixed, Stringable|scalar|null> Compatible
-     *         with {@see \Spiral\RoadRunner\Http\HttpWorker::respondStream()}.
-     */
-    private function streamToGenerator(StreamInterface $stream): Generator
-    {
-        $stream->rewind();
-        $size = $stream->getSize();
-        if ($size !== null && $size < $this->chunkSize) {
-            return (string)$stream;
-        }
-        $sum = 0;
-        while (!$stream->eof()) {
-            if ($size === null) {
-                $chunk = $stream->read($this->chunkSize);
-            } else {
-                $left = $size - $sum;
-                $chunk = $stream->read(\min($this->chunkSize, $left));
-                if ($left <= $this->chunkSize && \strlen($chunk) === $left) {
-                    return $chunk;
-                }
-            }
-            $sum += \strlen($chunk);
-            yield $chunk;
-        }
     }
 
     /**
@@ -222,8 +168,7 @@ class PSR7Worker implements PSR7WorkerInterface
             ->withProtocolVersion(static::fetchProtocolVersion($httpRequest->protocol))
             ->withCookieParams($httpRequest->cookies)
             ->withQueryParams($httpRequest->query)
-            ->withUploadedFiles($this->wrapUploads($httpRequest->uploads))
-        ;
+            ->withUploadedFiles($this->wrapUploads($httpRequest->uploads));
 
         /** @psalm-suppress MixedAssignment */
         foreach ($httpRequest->attributes as $name => $value) {
@@ -246,6 +191,28 @@ class PSR7Worker implements PSR7WorkerInterface
     }
 
     /**
+     * Normalize HTTP protocol version to valid values
+     *
+     * @param string $version
+     * @return string
+     */
+    private static function fetchProtocolVersion(string $version): string
+    {
+        $v = \substr($version, 5);
+
+        if ($v === '2.0') {
+            return '2';
+        }
+
+        // Fallback for values outside of valid protocol versions
+        if (!\in_array($v, static::$allowedVersions, true)) {
+            return '1.1';
+        }
+
+        return $v;
+    }
+
+    /**
      * Wraps all uploaded files with UploadedFile.
      *
      * @param UploadedFilesList $files
@@ -256,7 +223,7 @@ class PSR7Worker implements PSR7WorkerInterface
         $result = [];
 
         foreach ($files as $index => $file) {
-            if (! isset($file['name'])) {
+            if (!isset($file['name'])) {
                 /** @psalm-var UploadedFilesList $file */
                 $result[$index] = $this->wrapUploads($file);
                 continue;
@@ -281,24 +248,51 @@ class PSR7Worker implements PSR7WorkerInterface
     }
 
     /**
-     * Normalize HTTP protocol version to valid values
+     * Send response to the application server.
      *
-     * @param string $version
-     * @return string
+     * @param ResponseInterface $response
+     * @throws \JsonException
      */
-    private static function fetchProtocolVersion(string $version): string
+    public function respond(ResponseInterface $response): void
     {
-        $v = \substr($version, 5);
-
-        if ($v === '2.0') {
-            return '2';
+        if ($this->chunkSize > 0) {
+            $this->httpWorker->respondStream(
+                $response->getStatusCode(),
+                $this->streamToGenerator($response->getBody()),
+                $response->getHeaders()
+            );
+        } else {
+            $this->httpWorker->respond(
+                $response->getStatusCode(),
+                (string)$response->getBody(),
+                $response->getHeaders());
         }
+    }
 
-        // Fallback for values outside of valid protocol versions
-        if (! \in_array($v, static::$allowedVersions, true)) {
-            return '1.1';
+    /**
+     * @return Generator<mixed, scalar|Stringable, mixed, Stringable|scalar|null> Compatible
+     *         with {@see \Spiral\RoadRunner\Http\HttpWorker::respondStream()}.
+     */
+    private function streamToGenerator(StreamInterface $stream): Generator
+    {
+        $stream->rewind();
+        $size = $stream->getSize();
+        if ($size !== null && $size < $this->chunkSize) {
+            return (string)$stream;
         }
-
-        return $v;
+        $sum = 0;
+        while (!$stream->eof()) {
+            if ($size === null) {
+                $chunk = $stream->read($this->chunkSize);
+            } else {
+                $left = $size - $sum;
+                $chunk = $stream->read(\min($this->chunkSize, $left));
+                if ($left <= $this->chunkSize && \strlen($chunk) === $left) {
+                    return $chunk;
+                }
+            }
+            $sum += \strlen($chunk);
+            yield $chunk;
+        }
     }
 }

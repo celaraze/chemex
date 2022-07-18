@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class FileCollection implements Countable, IteratorAggregate
      */
     private $files;
 
+    private function __construct(File ...$files)
+    {
+        $this->files = $files;
+    }
+
     /**
      * @param File[] $files
      */
     public static function fromArray(array $files): self
     {
         return new self(...$files);
-    }
-
-    private function __construct(File ...$files)
-    {
-        $this->files = $files;
     }
 
     /**
@@ -45,11 +46,6 @@ final class FileCollection implements Countable, IteratorAggregate
         return $this->files;
     }
 
-    public function count(): int
-    {
-        return count($this->files);
-    }
-
     public function getIterator(): FileCollectionIterator
     {
         return new FileCollectionIterator($this);
@@ -58,5 +54,10 @@ final class FileCollection implements Countable, IteratorAggregate
     public function isEmpty(): bool
     {
         return $this->count() === 0;
+    }
+
+    public function count(): int
+    {
+        return count($this->files);
     }
 }

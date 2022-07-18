@@ -12,13 +12,13 @@ class ChunkQuery implements Exporters\ChunkQuery
     protected $generators;
 
     /**
-     * @param  callable|callable[]  $generator
+     * @param callable|callable[] $generator
      */
     public function __construct($generator)
     {
         $generator = (is_array($generator) && is_callable($generator)) ? [$generator] : $generator;
 
-        $this->generators = (array) $generator;
+        $this->generators = (array)$generator;
     }
 
     /**
@@ -36,7 +36,7 @@ class ChunkQuery implements Exporters\ChunkQuery
     }
 
     /**
-     * @param  callable|object  $callback
+     * @param callable|object $callback
      * @return \Generator
      */
     protected function makeGenerator($callback)
@@ -53,8 +53,23 @@ class ChunkQuery implements Exporters\ChunkQuery
     }
 
     /**
-     * @param  callable  $callback
-     * @param  int  $times
+     * @param callable $generator
+     * @return callable
+     */
+    protected function resolve(callable $generator)
+    {
+        if (is_callable($generator)) {
+            return $generator;
+        }
+
+        return function ($times) use ($generator) {
+            return $generator($times);
+        };
+    }
+
+    /**
+     * @param callable $callback
+     * @param int $times
      * @return array|null
      */
     protected function fetchArray(callable $callback, int $times)
@@ -72,20 +87,5 @@ class ChunkQuery implements Exporters\ChunkQuery
         if (is_array($data)) {
             return $data;
         }
-    }
-
-    /**
-     * @param  callable  $generator
-     * @return callable
-     */
-    protected function resolve(callable $generator)
-    {
-        if (is_callable($generator)) {
-            return $generator;
-        }
-
-        return function ($times) use ($generator) {
-            return $generator($times);
-        };
     }
 }

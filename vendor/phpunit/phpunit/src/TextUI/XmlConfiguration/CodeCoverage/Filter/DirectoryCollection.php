@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Filter;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class DirectoryCollection implements Countable, IteratorAggregate
      */
     private $directories;
 
+    private function __construct(Directory ...$directories)
+    {
+        $this->directories = $directories;
+    }
+
     /**
      * @param Directory[] $directories
      */
     public static function fromArray(array $directories): self
     {
         return new self(...$directories);
-    }
-
-    private function __construct(Directory ...$directories)
-    {
-        $this->directories = $directories;
     }
 
     /**

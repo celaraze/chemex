@@ -36,43 +36,20 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
 {
     use HttpClientTrait;
 
+    private static array $emptyDefaults = self::OPTIONS_DEFAULTS + ['auth_ntlm' => null];
     private array $defaultOptions = self::OPTIONS_DEFAULTS + [
         'auth_ntlm' => null, // array|string - an array containing the username as first value, and optionally the
-                             //   password as the second one; or string like username:password - enabling NTLM auth
+        //   password as the second one; or string like username:password - enabling NTLM auth
         'extra' => [
             'curl' => [],    // A list of extra curl options indexed by their corresponding CURLOPT_*
         ],
     ];
-    private static array $emptyDefaults = self::OPTIONS_DEFAULTS + ['auth_ntlm' => null];
-
     private ?LoggerInterface $logger = null;
 
     /**
      * An internal object to share state between the client and its responses.
      */
     private CurlClientState $multi;
-
-    /**
-     * @param array $defaultOptions     Default request's options
-     * @param int   $maxHostConnections The maximum number of connections to a single host
-     * @param int   $maxPendingPushes   The maximum number of pushed responses to accept in the queue
-     *
-     * @see HttpClientInterface::OPTIONS_DEFAULTS for available options
-     */
-    public function __construct(array $defaultOptions = [], int $maxHostConnections = 6, int $maxPendingPushes = 50)
-    {
-        if (!\extension_loaded('curl')) {
-            throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\CurlHttpClient" as the "curl" extension is not installed.');
-        }
-
-        $this->defaultOptions['buffer'] ??= self::shouldBuffer(...);
-
-        if ($defaultOptions) {
-            [, $this->defaultOptions] = self::prepareRequest(null, null, $defaultOptions, $this->defaultOptions);
-        }
-
-        $this->multi = new CurlClientState($maxHostConnections, $maxPendingPushes);
-    }
 
     public function setLogger(LoggerInterface $logger): void
     {
@@ -123,11 +100,11 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             \CURLOPT_CERTINFO => $options['capture_peer_cert_chain'],
         ];
 
-        if (1.0 === (float) $options['http_version']) {
+        if (1.0 === (float)$options['http_version']) {
             $curlopts[\CURLOPT_HTTP_VERSION] = \CURL_HTTP_VERSION_1_0;
-        } elseif (1.1 === (float) $options['http_version']) {
+        } elseif (1.1 === (float)$options['http_version']) {
             $curlopts[\CURLOPT_HTTP_VERSION] = \CURL_HTTP_VERSION_1_1;
-        } elseif (\defined('CURL_VERSION_HTTP2') && (\CURL_VERSION_HTTP2 & CurlClientState::$curlVersion['features']) && ('https:' === $scheme || 2.0 === (float) $options['http_version'])) {
+        } elseif (\defined('CURL_VERSION_HTTP2') && (\CURL_VERSION_HTTP2 & CurlClientState::$curlVersion['features']) && ('https:' === $scheme || 2.0 === (float)$options['http_version'])) {
             $curlopts[\CURLOPT_HTTP_VERSION] = \CURL_HTTP_VERSION_2_0;
         }
 
@@ -212,7 +189,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
         // Prevent curl from sending its default Accept and Expect headers
         foreach (['accept', 'expect'] as $header) {
             if (!isset($options['normalized_headers'][$header][0])) {
-                $curlopts[\CURLOPT_HTTPHEADER][] = $header.':';
+                $curlopts[\CURLOPT_HTTPHEADER][] = $header . ':';
             }
         }
 
@@ -246,10 +223,10 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
 
         if ($options['peer_fingerprint']) {
             if (!isset($options['peer_fingerprint']['pin-sha256'])) {
-                throw new TransportException(__CLASS__.' supports only "pin-sha256" fingerprints.');
+                throw new TransportException(__CLASS__ . ' supports only "pin-sha256" fingerprints.');
             }
 
-            $curlopts[\CURLOPT_PINNEDPUBLICKEY] = 'sha256//'.implode(';sha256//', $options['peer_fingerprint']['pin-sha256']);
+            $curlopts[\CURLOPT_PINNEDPUBLICKEY] = 'sha256//' . implode(';sha256//', $options['peer_fingerprint']['pin-sha256']);
         }
 
         if ($options['bindto']) {
@@ -304,56 +281,9 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
         return $pushedResponse ?? new CurlResponse($this->multi, $ch, $options, $this->logger, $method, self::createRedirectResolver($options, $host, $port), CurlClientState::$curlVersion['version_number'], $url);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function stream(ResponseInterface|iterable $responses, float $timeout = null): ResponseStreamInterface
-    {
-        if ($responses instanceof CurlResponse) {
-            $responses = [$responses];
-        }
-
-        if ($this->multi->handle instanceof \CurlMultiHandle) {
-            $active = 0;
-            while (\CURLM_CALL_MULTI_PERFORM === curl_multi_exec($this->multi->handle, $active)) {
-            }
-        }
-
-        return new ResponseStream(CurlResponse::stream($responses, $timeout));
-    }
-
     public function reset()
     {
         $this->multi->reset();
-    }
-
-    /**
-     * Accepts pushed responses only if their headers related to authentication match the request.
-     */
-    private static function acceptPushForRequest(string $method, array $options, PushedResponse $pushedResponse): bool
-    {
-        if ('' !== $options['body'] || $method !== $pushedResponse->requestHeaders[':method'][0]) {
-            return false;
-        }
-
-        foreach (['proxy', 'no_proxy', 'bindto', 'local_cert', 'local_pk'] as $k) {
-            if ($options[$k] !== $pushedResponse->parentOptions[$k]) {
-                return false;
-            }
-        }
-
-        foreach (['authorization', 'cookie', 'range', 'proxy-authorization'] as $k) {
-            $normalizedHeaders = $options['normalized_headers'][$k] ?? [];
-            foreach ($normalizedHeaders as $i => $v) {
-                $normalizedHeaders[$i] = substr($v, \strlen($k) + 2);
-            }
-
-            if (($pushedResponse->requestHeaders[$k] ?? []) !== $normalizedHeaders) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -374,73 +304,6 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
         $buffer = substr($buffer, $length);
 
         return $data;
-    }
-
-    /**
-     * Resolves relative URLs on redirects and deals with authentication headers.
-     *
-     * Work around CVE-2018-1000007: Authorization and Cookie headers should not follow redirects - fixed in Curl 7.64
-     */
-    private static function createRedirectResolver(array $options, string $host, int $port): \Closure
-    {
-        $redirectHeaders = [];
-        if (0 < $options['max_redirects']) {
-            $redirectHeaders['host'] = $host;
-            $redirectHeaders['port'] = $port;
-            $redirectHeaders['with_auth'] = $redirectHeaders['no_auth'] = array_filter($options['headers'], static function ($h) {
-                return 0 !== stripos($h, 'Host:');
-            });
-
-            if (isset($options['normalized_headers']['authorization'][0]) || isset($options['normalized_headers']['cookie'][0])) {
-                $redirectHeaders['no_auth'] = array_filter($options['headers'], static function ($h) {
-                    return 0 !== stripos($h, 'Authorization:') && 0 !== stripos($h, 'Cookie:');
-                });
-            }
-        }
-
-        return static function ($ch, string $location, bool $noContent) use (&$redirectHeaders) {
-            try {
-                $location = self::parseUrl($location);
-            } catch (InvalidArgumentException) {
-                return null;
-            }
-
-            if ($noContent && $redirectHeaders) {
-                $filterContentHeaders = static function ($h) {
-                    return 0 !== stripos($h, 'Content-Length:') && 0 !== stripos($h, 'Content-Type:') && 0 !== stripos($h, 'Transfer-Encoding:');
-                };
-                $redirectHeaders['no_auth'] = array_filter($redirectHeaders['no_auth'], $filterContentHeaders);
-                $redirectHeaders['with_auth'] = array_filter($redirectHeaders['with_auth'], $filterContentHeaders);
-            }
-
-            if ($redirectHeaders && $host = parse_url('http:'.$location['authority'], \PHP_URL_HOST)) {
-                $port = parse_url('http:'.$location['authority'], \PHP_URL_PORT) ?: ('http:' === $location['scheme'] ? 80 : 443);
-                $requestHeaders = $redirectHeaders['host'] === $host && $redirectHeaders['port'] === $port ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
-                curl_setopt($ch, \CURLOPT_HTTPHEADER, $requestHeaders);
-            } elseif ($noContent && $redirectHeaders) {
-                curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders['with_auth']);
-            }
-
-            $url = self::parseUrl(curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL));
-            $url = self::resolveUrl($location, $url);
-
-            curl_setopt($ch, \CURLOPT_PROXY, $options['proxy']
-                ?? ('https:' === $url['scheme'] ? $_SERVER['https_proxy'] ?? $_SERVER['HTTPS_PROXY'] ?? null : null)
-                // Ignore HTTP_PROXY except on the CLI to work around httpoxy set of vulnerabilities
-                ?? $_SERVER['http_proxy'] ?? (\in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) ? $_SERVER['HTTP_PROXY'] ?? null : null) ?? $_SERVER['all_proxy'] ?? $_SERVER['ALL_PROXY'] ?? null
-            );
-
-            return implode('', $url);
-        };
-    }
-
-    private function findConstantName(int $opt): ?string
-    {
-        $constants = array_filter(get_defined_constants(), static function ($v, $k) use ($opt) {
-            return $v === $opt && 'C' === $k[0] && (str_starts_with($k, 'CURLOPT_') || str_starts_with($k, 'CURLINFO_'));
-        }, \ARRAY_FILTER_USE_BOTH);
-
-        return key($constants);
     }
 
     /**
@@ -542,5 +405,141 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
                 throw new InvalidArgumentException(sprintf('Cannot set "%s" with "extra.curl".', $constName));
             }
         }
+    }
+
+    private function findConstantName(int $opt): ?string
+    {
+        $constants = array_filter(get_defined_constants(), static function ($v, $k) use ($opt) {
+            return $v === $opt && 'C' === $k[0] && (str_starts_with($k, 'CURLOPT_') || str_starts_with($k, 'CURLINFO_'));
+        }, \ARRAY_FILTER_USE_BOTH);
+
+        return key($constants);
+    }
+
+    /**
+     * Accepts pushed responses only if their headers related to authentication match the request.
+     */
+    private static function acceptPushForRequest(string $method, array $options, PushedResponse $pushedResponse): bool
+    {
+        if ('' !== $options['body'] || $method !== $pushedResponse->requestHeaders[':method'][0]) {
+            return false;
+        }
+
+        foreach (['proxy', 'no_proxy', 'bindto', 'local_cert', 'local_pk'] as $k) {
+            if ($options[$k] !== $pushedResponse->parentOptions[$k]) {
+                return false;
+            }
+        }
+
+        foreach (['authorization', 'cookie', 'range', 'proxy-authorization'] as $k) {
+            $normalizedHeaders = $options['normalized_headers'][$k] ?? [];
+            foreach ($normalizedHeaders as $i => $v) {
+                $normalizedHeaders[$i] = substr($v, \strlen($k) + 2);
+            }
+
+            if (($pushedResponse->requestHeaders[$k] ?? []) !== $normalizedHeaders) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $defaultOptions Default request's options
+     * @param int $maxHostConnections The maximum number of connections to a single host
+     * @param int $maxPendingPushes The maximum number of pushed responses to accept in the queue
+     *
+     * @see HttpClientInterface::OPTIONS_DEFAULTS for available options
+     */
+    public function __construct(array $defaultOptions = [], int $maxHostConnections = 6, int $maxPendingPushes = 50)
+    {
+        if (!\extension_loaded('curl')) {
+            throw new \LogicException('You cannot use the "Symfony\Component\HttpClient\CurlHttpClient" as the "curl" extension is not installed.');
+        }
+
+        $this->defaultOptions['buffer'] ??= self::shouldBuffer(...);
+
+        if ($defaultOptions) {
+            [, $this->defaultOptions] = self::prepareRequest(null, null, $defaultOptions, $this->defaultOptions);
+        }
+
+        $this->multi = new CurlClientState($maxHostConnections, $maxPendingPushes);
+    }
+
+    /**
+     * Resolves relative URLs on redirects and deals with authentication headers.
+     *
+     * Work around CVE-2018-1000007: Authorization and Cookie headers should not follow redirects - fixed in Curl 7.64
+     */
+    private static function createRedirectResolver(array $options, string $host, int $port): \Closure
+    {
+        $redirectHeaders = [];
+        if (0 < $options['max_redirects']) {
+            $redirectHeaders['host'] = $host;
+            $redirectHeaders['port'] = $port;
+            $redirectHeaders['with_auth'] = $redirectHeaders['no_auth'] = array_filter($options['headers'], static function ($h) {
+                return 0 !== stripos($h, 'Host:');
+            });
+
+            if (isset($options['normalized_headers']['authorization'][0]) || isset($options['normalized_headers']['cookie'][0])) {
+                $redirectHeaders['no_auth'] = array_filter($options['headers'], static function ($h) {
+                    return 0 !== stripos($h, 'Authorization:') && 0 !== stripos($h, 'Cookie:');
+                });
+            }
+        }
+
+        return static function ($ch, string $location, bool $noContent) use (&$redirectHeaders) {
+            try {
+                $location = self::parseUrl($location);
+            } catch (InvalidArgumentException) {
+                return null;
+            }
+
+            if ($noContent && $redirectHeaders) {
+                $filterContentHeaders = static function ($h) {
+                    return 0 !== stripos($h, 'Content-Length:') && 0 !== stripos($h, 'Content-Type:') && 0 !== stripos($h, 'Transfer-Encoding:');
+                };
+                $redirectHeaders['no_auth'] = array_filter($redirectHeaders['no_auth'], $filterContentHeaders);
+                $redirectHeaders['with_auth'] = array_filter($redirectHeaders['with_auth'], $filterContentHeaders);
+            }
+
+            if ($redirectHeaders && $host = parse_url('http:' . $location['authority'], \PHP_URL_HOST)) {
+                $port = parse_url('http:' . $location['authority'], \PHP_URL_PORT) ?: ('http:' === $location['scheme'] ? 80 : 443);
+                $requestHeaders = $redirectHeaders['host'] === $host && $redirectHeaders['port'] === $port ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
+                curl_setopt($ch, \CURLOPT_HTTPHEADER, $requestHeaders);
+            } elseif ($noContent && $redirectHeaders) {
+                curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders['with_auth']);
+            }
+
+            $url = self::parseUrl(curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL));
+            $url = self::resolveUrl($location, $url);
+
+            curl_setopt($ch, \CURLOPT_PROXY, $options['proxy']
+                ?? ('https:' === $url['scheme'] ? $_SERVER['https_proxy'] ?? $_SERVER['HTTPS_PROXY'] ?? null : null)
+                // Ignore HTTP_PROXY except on the CLI to work around httpoxy set of vulnerabilities
+                ?? $_SERVER['http_proxy'] ?? (\in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) ? $_SERVER['HTTP_PROXY'] ?? null : null) ?? $_SERVER['all_proxy'] ?? $_SERVER['ALL_PROXY'] ?? null
+            );
+
+            return implode('', $url);
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function stream(ResponseInterface|iterable $responses, float $timeout = null): ResponseStreamInterface
+    {
+        if ($responses instanceof CurlResponse) {
+            $responses = [$responses];
+        }
+
+        if ($this->multi->handle instanceof \CurlMultiHandle) {
+            $active = 0;
+            while (\CURLM_CALL_MULTI_PERFORM === curl_multi_exec($this->multi->handle, $active)) {
+            }
+        }
+
+        return new ResponseStream(CurlResponse::stream($responses, $timeout));
     }
 }

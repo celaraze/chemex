@@ -2,34 +2,37 @@
 
 <title>CodeMirror: Dylan mode</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="../../doc/docs.css">
+<link href="../../doc/docs.css" rel=stylesheet>
 
-<link rel="stylesheet" href="../../lib/codemirror.css">
+<link href="../../lib/codemirror.css" rel="stylesheet">
 <script src="../../lib/codemirror.js"></script>
 <script src="../../addon/edit/matchbrackets.js"></script>
 <script src="../../addon/comment/continuecomment.js"></script>
 <script src="../../addon/comment/comment.js"></script>
 <script src="dylan.js"></script>
-<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
+<style type="text/css">.CodeMirror {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}</style>
 <div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
 
-  <ul>
-    <li><a href="../../index.html">Home</a>
-    <li><a href="../../doc/manual.html">Manual</a>
-    <li><a href="https://github.com/codemirror/codemirror">Code</a>
-  </ul>
-  <ul>
-    <li><a href="../index.html">Language modes</a>
-    <li><a class=active href="#">Dylan</a>
-  </ul>
+    <ul>
+        <li><a href="../../index.html">Home</a>
+        <li><a href="../../doc/manual.html">Manual</a>
+        <li><a href="https://github.com/codemirror/codemirror">Code</a>
+    </ul>
+    <ul>
+        <li><a href="../index.html">Language modes</a>
+        <li><a class=active href="#">Dylan</a>
+    </ul>
 </div>
 
 <article>
-<h2>Dylan mode</h2>
+    <h2>Dylan mode</h2>
 
 
-<div><textarea id="code" name="code">
+    <div><textarea id="code" name="code">
 Module:       locators-internals
 Synopsis:     Abstract modeling of locations
 Author:       Andy Armstrong
@@ -159,7 +162,7 @@ end class <locator-error>;
 
 define function locator-error
     (format-string :: <string>, #rest format-arguments)
-  error(make(<locator-error>, 
+  error(make(<locator-error>,
              format-string:    format-string,
              format-arguments: format-arguments))
 end function locator-error;
@@ -218,7 +221,7 @@ define method simplify-locator
   let relative? = locator.locator-relative?;
   let resolve-parent? = ~locator.locator-might-have-links?;
   let simplified-path
-    = simplify-path(path, 
+    = simplify-path(path,
                     resolve-parent?: resolve-parent?,
                     relative?: relative?);
   if (path ~= simplified-path)
@@ -350,7 +353,7 @@ define method merge-locators
     (locator :: <file-locator>, from-locator :: <directory-locator>)
  => (merged-locator :: <file-locator>)
   let directory = locator.locator-directory;
-  let merged-directory 
+  let merged-directory
     = if (directory)
         merge-locators(directory, from-locator)
       else
@@ -392,15 +395,15 @@ end method open-locator;
 </textarea></div>
 
     <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        mode: "text/x-dylan",
-        lineNumbers: true,
-        matchBrackets: true,
-        continueComments: "Enter",
-        extraKeys: {"Ctrl-Q": "toggleComment"},
-        tabMode: "indent",
-        indentUnit: 2
-      });
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            mode: "text/x-dylan",
+            lineNumbers: true,
+            matchBrackets: true,
+            continueComments: "Enter",
+            extraKeys: {"Ctrl-Q": "toggleComment"},
+            tabMode: "indent",
+            indentUnit: 2
+        });
     </script>
 
     <p><strong>MIME types defined:</strong> <code>text/x-dylan</code>.</p>

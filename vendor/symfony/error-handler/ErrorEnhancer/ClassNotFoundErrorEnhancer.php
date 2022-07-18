@@ -46,14 +46,14 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
         }
 
         if ($candidates = $this->getClassCandidates($className)) {
-            $tail = array_pop($candidates).'"?';
+            $tail = array_pop($candidates) . '"?';
             if ($candidates) {
-                $tail = ' for e.g. "'.implode('", "', $candidates).'" or "'.$tail;
+                $tail = ' for e.g. "' . implode('", "', $candidates) . '" or "' . $tail;
             } else {
-                $tail = ' for "'.$tail;
+                $tail = ' for "' . $tail;
             }
         }
-        $message .= "\nDid you forget a \"use\" statement".$tail;
+        $message .= "\nDid you forget a \"use\" statement" . $tail;
 
         return new ClassNotFoundError($message, $error);
     }
@@ -110,12 +110,12 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
 
     private function findClassInPath(string $path, string $class, string $prefix): array
     {
-        if (!$path = realpath($path.'/'.strtr($prefix, '\\_', '//')) ?: realpath($path.'/'.\dirname(strtr($prefix, '\\_', '//'))) ?: realpath($path)) {
+        if (!$path = realpath($path . '/' . strtr($prefix, '\\_', '//')) ?: realpath($path . '/' . \dirname(strtr($prefix, '\\_', '//'))) ?: realpath($path)) {
             return [];
         }
 
         $classes = [];
-        $filename = $class.'.php';
+        $filename = $class . '.php';
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
             if ($filename == $file->getFileName() && $class = $this->convertFileToClass($path, $file->getPathName(), $prefix)) {
                 $classes[] = $class;
@@ -129,21 +129,23 @@ class ClassNotFoundErrorEnhancer implements ErrorEnhancerInterface
     {
         $candidates = [
             // namespaced class
-            $namespacedClass = str_replace([$path.\DIRECTORY_SEPARATOR, '.php', '/'], ['', '', '\\'], $file),
+            $namespacedClass = str_replace([$path . \DIRECTORY_SEPARATOR, '.php', '/'], ['', '', '\\'], $file),
             // namespaced class (with target dir)
-            $prefix.$namespacedClass,
+            $prefix . $namespacedClass,
             // namespaced class (with target dir and separator)
-            $prefix.'\\'.$namespacedClass,
+            $prefix . '\\' . $namespacedClass,
             // PEAR class
             str_replace('\\', '_', $namespacedClass),
             // PEAR class (with target dir)
-            str_replace('\\', '_', $prefix.$namespacedClass),
+            str_replace('\\', '_', $prefix . $namespacedClass),
             // PEAR class (with target dir and separator)
-            str_replace('\\', '_', $prefix.'\\'.$namespacedClass),
+            str_replace('\\', '_', $prefix . '\\' . $namespacedClass),
         ];
 
         if ($prefix) {
-            $candidates = array_filter($candidates, function ($candidate) use ($prefix) { return str_starts_with($candidate, $prefix); });
+            $candidates = array_filter($candidates, function ($candidate) use ($prefix) {
+                return str_starts_with($candidate, $prefix);
+            });
         }
 
         // We cannot use the autoloader here as most of them use require; but if the class

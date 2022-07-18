@@ -15,4 +15,4 @@
  * - Ian De La Cruz
  * - JD Isaacks
  */
-return require __DIR__.'/tl.php';
+return require __DIR__ . '/tl.php';

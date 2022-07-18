@@ -23,17 +23,6 @@ class StyleManager implements StyleManagerInterface
     }
 
     /**
-     * Returns the default style
-     *
-     * @return Style Default style
-     */
-    protected function getDefaultStyle()
-    {
-        // By construction, the default style has ID 0
-        return $this->styleRegistry->getRegisteredStyles()[0];
-    }
-
-    /**
      * Registers the given style as a used style.
      * Duplicate styles won't be registered more than once.
      *
@@ -52,7 +41,7 @@ class StyleManager implements StyleManagerInterface
      * @param Cell $cell
      * @return PossiblyUpdatedStyle The eventually updated style
      */
-    public function applyExtraStylesIfNeeded(Cell $cell) : PossiblyUpdatedStyle
+    public function applyExtraStylesIfNeeded(Cell $cell): PossiblyUpdatedStyle
     {
         return $this->applyWrapTextIfCellContainsNewLine($cell);
     }
@@ -69,7 +58,7 @@ class StyleManager implements StyleManagerInterface
      * @param Cell $cell The cell the style should be applied to
      * @return PossiblyUpdatedStyle The eventually updated style
      */
-    protected function applyWrapTextIfCellContainsNewLine(Cell $cell) : PossiblyUpdatedStyle
+    protected function applyWrapTextIfCellContainsNewLine(Cell $cell): PossiblyUpdatedStyle
     {
         $cellStyle = $cell->getStyle();
 
@@ -81,5 +70,16 @@ class StyleManager implements StyleManagerInterface
         }
 
         return new PossiblyUpdatedStyle($cellStyle, false);
+    }
+
+    /**
+     * Returns the default style
+     *
+     * @return Style Default style
+     */
+    protected function getDefaultStyle()
+    {
+        // By construction, the default style has ID 0
+        return $this->styleRegistry->getRegisteredStyles()[0];
     }
 }

@@ -63,51 +63,6 @@ HELP
     }
 
     /**
-     * Obtains the correct stack frame in the full backtrace.
-     *
-     * @return array
-     */
-    protected function trace(): array
-    {
-        foreach (\array_reverse($this->backtrace) as $stackFrame) {
-            if ($this->isDebugCall($stackFrame)) {
-                return $stackFrame;
-            }
-        }
-
-        return \end($this->backtrace);
-    }
-
-    private static function isDebugCall(array $stackFrame): bool
-    {
-        $class = isset($stackFrame['class']) ? $stackFrame['class'] : null;
-        $function = isset($stackFrame['function']) ? $stackFrame['function'] : null;
-
-        return ($class === null && $function === 'Psy\\debug') ||
-            ($class === Shell::class && \in_array($function, ['__construct', 'debug']));
-    }
-
-    /**
-     * Determine the file and line based on the specific backtrace.
-     *
-     * @return array
-     */
-    protected function fileInfo(): array
-    {
-        $stackFrame = $this->trace();
-        if (\preg_match('/eval\(/', $stackFrame['file'])) {
-            \preg_match_all('/([^\(]+)\((\d+)/', $stackFrame['file'], $matches);
-            $file = $matches[1][0];
-            $line = (int) $matches[2][0];
-        } else {
-            $file = $stackFrame['file'];
-            $line = $stackFrame['line'];
-        }
-
-        return \compact('file', 'line');
-    }
-
-    /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -139,6 +94,51 @@ HELP
     }
 
     /**
+     * Determine the file and line based on the specific backtrace.
+     *
+     * @return array
+     */
+    protected function fileInfo(): array
+    {
+        $stackFrame = $this->trace();
+        if (\preg_match('/eval\(/', $stackFrame['file'])) {
+            \preg_match_all('/([^\(]+)\((\d+)/', $stackFrame['file'], $matches);
+            $file = $matches[1][0];
+            $line = (int)$matches[2][0];
+        } else {
+            $file = $stackFrame['file'];
+            $line = $stackFrame['line'];
+        }
+
+        return \compact('file', 'line');
+    }
+
+    /**
+     * Obtains the correct stack frame in the full backtrace.
+     *
+     * @return array
+     */
+    protected function trace(): array
+    {
+        foreach (\array_reverse($this->backtrace) as $stackFrame) {
+            if ($this->isDebugCall($stackFrame)) {
+                return $stackFrame;
+            }
+        }
+
+        return \end($this->backtrace);
+    }
+
+    private static function isDebugCall(array $stackFrame): bool
+    {
+        $class = isset($stackFrame['class']) ? $stackFrame['class'] : null;
+        $function = isset($stackFrame['function']) ? $stackFrame['function'] : null;
+
+        return ($class === null && $function === 'Psy\\debug') ||
+            ($class === Shell::class && \in_array($function, ['__construct', 'debug']));
+    }
+
+    /**
      * Replace the given directory from the start of a filepath.
      *
      * @param string $file
@@ -152,8 +152,8 @@ HELP
             return $file;
         }
 
-        $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR).\DIRECTORY_SEPARATOR;
+        $cwd = \rtrim($cwd, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
 
-        return \preg_replace('/^'.\preg_quote($cwd, '/').'/', '', $file);
+        return \preg_replace('/^' . \preg_quote($cwd, '/') . '/', '', $file);
     }
 }

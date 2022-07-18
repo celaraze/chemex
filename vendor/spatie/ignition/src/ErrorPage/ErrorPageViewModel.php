@@ -19,18 +19,19 @@ class ErrorPageViewModel
      * @param string|null $solutionTransformerClass
      */
     public function __construct(
-        protected ?Throwable $throwable,
+        protected ?Throwable     $throwable,
         protected IgnitionConfig $ignitionConfig,
-        protected Report $report,
-        protected array $solutions,
-        protected ?string $solutionTransformerClass = null
-    ) {
+        protected Report         $report,
+        protected array          $solutions,
+        protected ?string        $solutionTransformerClass = null
+    )
+    {
         $this->solutionTransformerClass ??= SolutionTransformer::class;
     }
 
     public function throwableString(): string
     {
-        if (! $this->throwable) {
+        if (!$this->throwable) {
             return '';
         }
 
@@ -51,17 +52,17 @@ class ErrorPageViewModel
         return htmlspecialchars($this->report->getMessage());
     }
 
+    public function theme(): string
+    {
+        return $this->config()['theme'] ?? 'auto';
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function config(): array
     {
         return $this->ignitionConfig->toArray();
-    }
-
-    public function theme(): string
-    {
-        return $this->config()['theme'] ?? 'auto';
     }
 
     /**
@@ -80,14 +81,6 @@ class ErrorPageViewModel
         }, $this->solutions);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function report(): array
-    {
-        return $this->report->toArray();
-    }
-
     public function jsonEncode(mixed $data): string
     {
         $jsonOptions = JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
@@ -97,7 +90,7 @@ class ErrorPageViewModel
 
     public function getAssetContents(string $asset): string
     {
-        $assetPath = __DIR__."/../../resources/compiled/{$asset}";
+        $assetPath = __DIR__ . "/../../resources/compiled/{$asset}";
 
         return (string)file_get_contents($assetPath);
     }
@@ -110,9 +103,17 @@ class ErrorPageViewModel
         return (new ReportTrimmer())->trim($this->report());
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function report(): array
+    {
+        return $this->report->toArray();
+    }
+
     public function updateConfigEndpoint(): string
     {
         // TODO: Should be based on Ignition config
-        return  '/_ignition/update-config';
+        return '/_ignition/update-config';
     }
 }

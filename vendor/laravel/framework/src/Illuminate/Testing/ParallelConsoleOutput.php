@@ -27,7 +27,7 @@ class ParallelConsoleOutput extends ConsoleOutput
     /**
      * Create a new Parallel ConsoleOutput instance.
      *
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @return void
      */
     public function __construct($output)
@@ -44,15 +44,15 @@ class ParallelConsoleOutput extends ConsoleOutput
     /**
      * Writes a message to the output.
      *
-     * @param  string|iterable  $messages
-     * @param  bool  $newline
-     * @param  int  $options
+     * @param string|iterable $messages
+     * @param bool $newline
+     * @param int $options
      * @return void
      */
     public function write($messages, bool $newline = false, int $options = 0)
     {
         $messages = collect($messages)->filter(function ($message) {
-            return ! Str::contains($message, $this->ignore);
+            return !Str::contains($message, $this->ignore);
         });
 
         $this->output->write($messages->toArray(), $newline, $options);

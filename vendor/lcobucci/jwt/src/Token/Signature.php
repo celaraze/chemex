@@ -10,7 +10,7 @@ final class Signature
 
     public function __construct(string $hash, string $encoded)
     {
-        $this->hash    = $hash;
+        $this->hash = $hash;
         $this->encoded = $encoded;
     }
 

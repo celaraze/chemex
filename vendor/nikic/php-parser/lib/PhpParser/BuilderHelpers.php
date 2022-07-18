@@ -18,25 +18,6 @@ use PhpParser\Node\Stmt;
 final class BuilderHelpers
 {
     /**
-     * Normalizes a node: Converts builder objects to nodes.
-     *
-     * @param Node|Builder $node The node to normalize
-     *
-     * @return Node The normalized node
-     */
-    public static function normalizeNode($node) : Node {
-        if ($node instanceof Builder) {
-            return $node->getNode();
-        }
-
-        if ($node instanceof Node) {
-            return $node;
-        }
-
-        throw new \LogicException('Expected node or builder object');
-    }
-
-    /**
      * Normalizes a node to a statement.
      *
      * Expressions are wrapped in a Stmt\Expression node.
@@ -45,7 +26,8 @@ final class BuilderHelpers
      *
      * @return Stmt The normalized statement node
      */
-    public static function normalizeStmt($node) : Stmt {
+    public static function normalizeStmt($node): Stmt
+    {
         $node = self::normalizeNode($node);
         if ($node instanceof Stmt) {
             return $node;
@@ -59,13 +41,34 @@ final class BuilderHelpers
     }
 
     /**
+     * Normalizes a node: Converts builder objects to nodes.
+     *
+     * @param Node|Builder $node The node to normalize
+     *
+     * @return Node The normalized node
+     */
+    public static function normalizeNode($node): Node
+    {
+        if ($node instanceof Builder) {
+            return $node->getNode();
+        }
+
+        if ($node instanceof Node) {
+            return $node;
+        }
+
+        throw new \LogicException('Expected node or builder object');
+    }
+
+    /**
      * Normalizes strings to Identifier.
      *
      * @param string|Identifier $name The identifier to normalize
      *
      * @return Identifier The normalized identifier
      */
-    public static function normalizeIdentifier($name) : Identifier {
+    public static function normalizeIdentifier($name): Identifier
+    {
         if ($name instanceof Identifier) {
             return $name;
         }
@@ -84,7 +87,8 @@ final class BuilderHelpers
      *
      * @return Identifier|Expr The normalized identifier or expression
      */
-    public static function normalizeIdentifierOrExpr($name) {
+    public static function normalizeIdentifierOrExpr($name)
+    {
         if ($name instanceof Identifier || $name instanceof Expr) {
             return $name;
         }
@@ -97,13 +101,36 @@ final class BuilderHelpers
     }
 
     /**
+     * Normalizes a name: Converts string names to Name nodes, while also allowing expressions.
+     *
+     * @param Expr|Name|string $name The name to normalize
+     *
+     * @return Name|Expr The normalized name or expression
+     */
+    public static function normalizeNameOrExpr($name)
+    {
+        if ($name instanceof Expr) {
+            return $name;
+        }
+
+        if (!is_string($name) && !($name instanceof Name)) {
+            throw new \LogicException(
+                'Name must be a string or an instance of Node\Name or Node\Expr'
+            );
+        }
+
+        return self::normalizeName($name);
+    }
+
+    /**
      * Normalizes a name: Converts string names to Name nodes.
      *
      * @param Name|string $name The name to normalize
      *
      * @return Name The normalized name
      */
-    public static function normalizeName($name) : Name {
+    public static function normalizeName($name): Name
+    {
         if ($name instanceof Name) {
             return $name;
         }
@@ -128,27 +155,6 @@ final class BuilderHelpers
     }
 
     /**
-     * Normalizes a name: Converts string names to Name nodes, while also allowing expressions.
-     *
-     * @param Expr|Name|string $name The name to normalize
-     *
-     * @return Name|Expr The normalized name or expression
-     */
-    public static function normalizeNameOrExpr($name) {
-        if ($name instanceof Expr) {
-            return $name;
-        }
-
-        if (!is_string($name) && !($name instanceof Name)) {
-            throw new \LogicException(
-                'Name must be a string or an instance of Node\Name or Node\Expr'
-            );
-        }
-
-        return self::normalizeName($name);
-    }
-
-    /**
      * Normalizes a type: Converts plain-text type names into proper AST representation.
      *
      * In particular, builtin types become Identifiers, custom types become Names and nullables
@@ -158,7 +164,8 @@ final class BuilderHelpers
      *
      * @return Name|Identifier|ComplexType The normalized type
      */
-    public static function normalizeType($type) {
+    public static function normalizeType($type)
+    {
         if (!is_string($type)) {
             if (
                 !$type instanceof Name && !$type instanceof Identifier &&
@@ -191,7 +198,7 @@ final class BuilderHelpers
         $notNullableTypes = [
             'void', 'mixed', 'never',
         ];
-        if ($nullable && in_array((string) $type, $notNullableTypes)) {
+        if ($nullable && in_array((string)$type, $notNullableTypes)) {
             throw new \LogicException(sprintf('%s type cannot be nullable', $type));
         }
 
@@ -206,7 +213,8 @@ final class BuilderHelpers
      *
      * @return Expr The normalized value
      */
-    public static function normalizeValue($value) : Expr {
+    public static function normalizeValue($value): Expr
+    {
         if ($value instanceof Node\Expr) {
             return $value;
         }
@@ -266,7 +274,8 @@ final class BuilderHelpers
      *
      * @return Comment\Doc The normalized doc comment
      */
-    public static function normalizeDocComment($docComment) : Comment\Doc {
+    public static function normalizeDocComment($docComment): Comment\Doc
+    {
         if ($docComment instanceof Comment\Doc) {
             return $docComment;
         }
@@ -285,7 +294,7 @@ final class BuilderHelpers
      *
      * @return Node\AttributeGroup The Attribute Group
      */
-    public static function normalizeAttribute($attribute) : Node\AttributeGroup
+    public static function normalizeAttribute($attribute): Node\AttributeGroup
     {
         if ($attribute instanceof Node\AttributeGroup) {
             return $attribute;
@@ -302,11 +311,12 @@ final class BuilderHelpers
      * Adds a modifier and returns new modifier bitmask.
      *
      * @param int $modifiers Existing modifiers
-     * @param int $modifier  Modifier to set
+     * @param int $modifier Modifier to set
      *
      * @return int New modifiers
      */
-    public static function addModifier(int $modifiers, int $modifier) : int {
+    public static function addModifier(int $modifiers, int $modifier): int
+    {
         Stmt\Class_::verifyModifier($modifiers, $modifier);
         return $modifiers | $modifier;
     }
@@ -315,7 +325,8 @@ final class BuilderHelpers
      * Adds a modifier and returns new modifier bitmask.
      * @return int New modifiers
      */
-    public static function addClassModifier(int $existingModifiers, int $modifierToSet) : int {
+    public static function addClassModifier(int $existingModifiers, int $modifierToSet): int
+    {
         Stmt\Class_::verifyClassModifier($existingModifiers, $modifierToSet);
         return $existingModifiers | $modifierToSet;
     }

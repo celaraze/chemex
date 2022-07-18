@@ -13,7 +13,7 @@
  * Authors:
  * - Ankur Group, Taneem Ahmed, Jamil Ahmed
  */
-return array_replace_recursive(require __DIR__.'/bn.php', [
+return array_replace_recursive(require __DIR__ . '/bn.php', [
     'formats' => [
         'L' => 'D/M/YY',
     ],

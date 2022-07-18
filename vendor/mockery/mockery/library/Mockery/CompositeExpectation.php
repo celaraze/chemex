@@ -49,17 +49,6 @@ class CompositeExpectation implements ExpectationInterface
     }
 
     /**
-     * Set a return value, or sequential queue of return values
-     *
-     * @param mixed ...$args
-     * @return self
-     */
-    public function andReturns(...$args)
-    {
-        return call_user_func_array([$this, 'andReturn'], $args);
-    }
-
-    /**
      * Intercept any expectation calls and direct against all expectations
      *
      * @param string $method
@@ -75,6 +64,17 @@ class CompositeExpectation implements ExpectationInterface
     }
 
     /**
+     * Set a return value, or sequential queue of return values
+     *
+     * @param mixed ...$args
+     * @return self
+     */
+    public function andReturns(...$args)
+    {
+        return call_user_func_array([$this, 'andReturn'], $args);
+    }
+
+    /**
      * Return order number of the first expectation
      *
      * @return int
@@ -87,6 +87,16 @@ class CompositeExpectation implements ExpectationInterface
     }
 
     /**
+     * Mockery API alias to getMock
+     *
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    public function mock()
+    {
+        return $this->getMock();
+    }
+
+    /**
      * Return the parent mock of the first expectation
      *
      * @return \Mockery\MockInterface|\Mockery\LegacyMockInterface
@@ -96,16 +106,6 @@ class CompositeExpectation implements ExpectationInterface
         reset($this->_expectations);
         $first = current($this->_expectations);
         return $first->getMock();
-    }
-
-    /**
-     * Mockery API alias to getMock
-     *
-     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    public function mock()
-    {
-        return $this->getMock();
     }
 
     /**
@@ -146,7 +146,7 @@ class CompositeExpectation implements ExpectationInterface
         $return = '[';
         $parts = array();
         foreach ($this->_expectations as $exp) {
-            $parts[] = (string) $exp;
+            $parts[] = (string)$exp;
         }
         $return .= implode(', ', $parts) . ']';
         return $return;

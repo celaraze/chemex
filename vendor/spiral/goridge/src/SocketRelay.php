@@ -30,7 +30,7 @@ class SocketRelay extends Relay implements StringableRelayInterface
     /**#@+
      * Supported socket types.
      */
-    public const SOCK_TCP  = 0;
+    public const SOCK_TCP = 0;
     public const SOCK_UNIX = 1;
     /**#@-*/
 
@@ -73,18 +73,19 @@ class SocketRelay extends Relay implements StringableRelayInterface
      *  $relay = new SocketRelay("/tmp/rpc.sock", null, Socket::UNIX_SOCKET);
      * </code>
      *
-     * @param string          $address Localhost, ip address or hostname.
-     * @param PortType        $port    Ignored for UNIX sockets.
-     * @param SocketRelayType $type    Default: TCP_SOCKET
+     * @param string $address Localhost, ip address or hostname.
+     * @param PortType $port Ignored for UNIX sockets.
+     * @param SocketRelayType $type Default: TCP_SOCKET
      *
      * @throws InvalidArgumentException
      */
     public function __construct(
         string $address,
-        ?int $port = null,
+        ?int   $port = null,
         #[ExpectedValues(valuesFromClass: SocketRelay::class)]
-        int $type = self::SOCK_TCP
-    ) {
+        int    $type = self::SOCK_TCP
+    )
+    {
         // Guaranteed at the level of composer's json config
         assert(\extension_loaded('sockets'));
 
@@ -127,6 +128,32 @@ class SocketRelay extends Relay implements StringableRelayInterface
     }
 
     /**
+     * @return bool
+     */
+    public function isConnected(): bool
+    {
+        return $this->socket !== null;
+    }
+
+    /**
+     * Close connection.
+     *
+     * @throws RelayException
+     * @psalm-suppress PossiblyNullArgument Reason: Using the "isConnected()" assertion guarantees
+     *                                      the existence of the socket.
+     */
+    public function close(): void
+    {
+        if (!$this->isConnected()) {
+            throw new RelayException("Unable to close socket '{$this}', socket already closed");
+        }
+
+        /** @psalm-suppress PossiblyInvalidArgument Reason: PHP 7-8 compatibility */
+        \socket_close($this->socket);
+        $this->socket = null;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -160,14 +187,6 @@ class SocketRelay extends Relay implements StringableRelayInterface
     public function getType(): int
     {
         return $this->type;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isConnected(): bool
-    {
-        return $this->socket !== null;
     }
 
     /**
@@ -217,23 +236,6 @@ class SocketRelay extends Relay implements StringableRelayInterface
         }
 
         return Frame::initFrame($parts, $payload);
-    }
-
-    /**
-     * @param Frame $frame
-     * @psalm-suppress PossiblyNullArgument Reason: Using the "connect()" method guarantees
-     *                                      the existence of the socket.
-     */
-    public function send(Frame $frame): void
-    {
-        $this->connect();
-
-        $body = Frame::packFrame($frame);
-
-        /** @psalm-suppress PossiblyInvalidArgument Reason: PHP 7-8 compatibility */
-        if (\socket_send($this->socket, $body, \strlen($body), 0) === false) {
-            throw new TransportException('Unable to write payload to the stream');
-        }
     }
 
     /**
@@ -287,24 +289,6 @@ class SocketRelay extends Relay implements StringableRelayInterface
     }
 
     /**
-     * Close connection.
-     *
-     * @throws RelayException
-     * @psalm-suppress PossiblyNullArgument Reason: Using the "isConnected()" assertion guarantees
-     *                                      the existence of the socket.
-     */
-    public function close(): void
-    {
-        if (! $this->isConnected()) {
-            throw new RelayException("Unable to close socket '{$this}', socket already closed");
-        }
-
-        /** @psalm-suppress PossiblyInvalidArgument Reason: PHP 7-8 compatibility */
-        \socket_close($this->socket);
-        $this->socket = null;
-    }
-
-    /**
      * @return Socket|resource|false
      */
     private function createSocket()
@@ -314,5 +298,22 @@ class SocketRelay extends Relay implements StringableRelayInterface
         }
 
         return \socket_create(\AF_INET, \SOCK_STREAM, \SOL_TCP);
+    }
+
+    /**
+     * @param Frame $frame
+     * @psalm-suppress PossiblyNullArgument Reason: Using the "connect()" method guarantees
+     *                                      the existence of the socket.
+     */
+    public function send(Frame $frame): void
+    {
+        $this->connect();
+
+        $body = Frame::packFrame($frame);
+
+        /** @psalm-suppress PossiblyInvalidArgument Reason: PHP 7-8 compatibility */
+        if (\socket_send($this->socket, $body, \strlen($body), 0) === false) {
+            throw new TransportException('Unable to write payload to the stream');
+        }
     }
 }

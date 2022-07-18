@@ -39,7 +39,7 @@ class Table extends AbstractDisplayer
 
         $variables = [
             'titles' => $titles,
-            'data'   => $data,
+            'data' => $data,
         ];
 
         return view('admin::grid.displayer.table', $variables)->render();

@@ -25,9 +25,41 @@ class WhoopsHandler
     }
 
     /**
+     * Register the editor with the handler.
+     *
+     * @param \Whoops\Handler\PrettyPageHandler $handler
+     * @return $this
+     */
+    protected function registerEditor($handler)
+    {
+        if (config('app.editor', false)) {
+            $handler->setEditor(config('app.editor'));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Register the blacklist with the handler.
+     *
+     * @param \Whoops\Handler\PrettyPageHandler $handler
+     * @return $this
+     */
+    protected function registerBlacklist($handler)
+    {
+        foreach (config('app.debug_blacklist', config('app.debug_hide', [])) as $key => $secrets) {
+            foreach ($secrets as $secret) {
+                $handler->blacklist($key, $secret);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Register the application paths with the handler.
      *
-     * @param  \Whoops\Handler\PrettyPageHandler  $handler
+     * @param \Whoops\Handler\PrettyPageHandler $handler
      * @return $this
      */
     protected function registerApplicationPaths($handler)
@@ -50,37 +82,5 @@ class WhoopsHandler
             array_flip((new Filesystem)->directories(base_path())),
             [base_path('vendor')]
         );
-    }
-
-    /**
-     * Register the blacklist with the handler.
-     *
-     * @param  \Whoops\Handler\PrettyPageHandler  $handler
-     * @return $this
-     */
-    protected function registerBlacklist($handler)
-    {
-        foreach (config('app.debug_blacklist', config('app.debug_hide', [])) as $key => $secrets) {
-            foreach ($secrets as $secret) {
-                $handler->blacklist($key, $secret);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Register the editor with the handler.
-     *
-     * @param  \Whoops\Handler\PrettyPageHandler  $handler
-     * @return $this
-     */
-    protected function registerEditor($handler)
-    {
-        if (config('app.editor', false)) {
-            $handler->setEditor(config('app.editor'));
-        }
-
-        return $this;
     }
 }

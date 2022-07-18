@@ -14,6 +14,25 @@ class AdvisoryAnalyzer
         $this->advisories = $advisories;
     }
 
+    public function analyzeDependencies($dependencies)
+    {
+        $vulnerabilities = [];
+
+        foreach ($dependencies as $package => $versionInfo) {
+            $advisories = $this->analyzeDependency($package, $versionInfo['version'], $versionInfo['time']);
+
+            if (!empty($advisories)) {
+                $vulnerabilities[$package] = [
+                    'version' => $versionInfo['version'],
+                    'time' => $versionInfo['time'],
+                    'advisories' => $advisories,
+                ];
+            }
+        }
+
+        return $vulnerabilities;
+    }
+
     /**
      * Returns an array of vulnerabilities for the given package and version.
      *
@@ -24,7 +43,7 @@ class AdvisoryAnalyzer
      */
     public function analyzeDependency($package, $version, $time = null)
     {
-        if (! isset($this->advisories[$package])) {
+        if (!isset($this->advisories[$package])) {
             return [];
         }
 
@@ -80,25 +99,6 @@ class AdvisoryAnalyzer
         return $vulnerabilities;
     }
 
-    public function analyzeDependencies($dependencies)
-    {
-        $vulnerabilities = [];
-
-        foreach ($dependencies as $package => $versionInfo) {
-            $advisories = $this->analyzeDependency($package, $versionInfo['version'], $versionInfo['time']);
-
-            if (! empty($advisories)) {
-                $vulnerabilities[$package] = [
-                    'version' => $versionInfo['version'],
-                    'time' => $versionInfo['time'],
-                    'advisories' => $advisories,
-                ];
-            }
-        }
-
-        return $vulnerabilities;
-    }
-
     protected function normalizeVersion($version)
     {
         return preg_replace(['/-dev$/', '/^dev-/'], '', $version);
@@ -106,6 +106,6 @@ class AdvisoryAnalyzer
 
     protected function isDevPackage($version)
     {
-        return ! is_null(preg_filter(['/-dev$/', '/^dev-/'], '', $version));
+        return !is_null(preg_filter(['/-dev$/', '/^dev-/'], '', $version));
     }
 }

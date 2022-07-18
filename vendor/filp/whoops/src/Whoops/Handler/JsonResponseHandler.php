@@ -32,21 +32,7 @@ class JsonResponseHandler extends Handler
      */
     public function setJsonApi($jsonApi = false)
     {
-        $this->jsonApi = (bool) $jsonApi;
-        return $this;
-    }
-
-    /**
-     * @param  bool|null  $returnFrames
-     * @return bool|static
-     */
-    public function addTraceToOutput($returnFrames = null)
-    {
-        if (func_num_args() == 0) {
-            return $this->returnFrames;
-        }
-
-        $this->returnFrames = (bool) $returnFrames;
+        $this->jsonApi = (bool)$jsonApi;
         return $this;
     }
 
@@ -76,6 +62,20 @@ class JsonResponseHandler extends Handler
         echo json_encode($response, defined('JSON_PARTIAL_OUTPUT_ON_ERROR') ? JSON_PARTIAL_OUTPUT_ON_ERROR : 0);
 
         return Handler::QUIT;
+    }
+
+    /**
+     * @param bool|null $returnFrames
+     * @return bool|static
+     */
+    public function addTraceToOutput($returnFrames = null)
+    {
+        if (func_num_args() == 0) {
+            return $this->returnFrames;
+        }
+
+        $this->returnFrames = (bool)$returnFrames;
+        return $this;
     }
 
     /**

@@ -49,6 +49,20 @@ abstract class ReflectingCommand extends Command implements ContextAware
     }
 
     /**
+     * Get a Reflector and documentation for a function, class or instance, constant, method or property.
+     *
+     * @param string $valueName Function, class, variable, constant, method or property name
+     *
+     * @return array (value, Reflector)
+     */
+    protected function getTargetAndReflector(string $valueName): array
+    {
+        list($value, $member, $kind) = $this->getTarget($valueName);
+
+        return [$value, Mirror::get($value, $member, $kind)];
+    }
+
+    /**
      * Get the target for a value.
      *
      * @throws \InvalidArgumentException when the value specified can't be resolved
@@ -88,12 +102,12 @@ abstract class ReflectingCommand extends Command implements ContextAware
     /**
      * Resolve a class or function name (with the current shell namespace).
      *
-     * @throws ErrorException when `self` or `static` is used in a non-class scope
-     *
      * @param string $name
-     * @param bool   $includeFunctions (default: false)
+     * @param bool $includeFunctions (default: false)
      *
      * @return string
+     * @throws ErrorException when `self` or `static` is used in a non-class scope
+     *
      */
     protected function resolveName(string $name, bool $includeFunctions = false): string
     {
@@ -120,14 +134,14 @@ abstract class ReflectingCommand extends Command implements ContextAware
         // Check $name against the current namespace and use statements.
         if (self::couldBeClassName($name)) {
             try {
-                $name = $this->resolveCode($name.'::class');
+                $name = $this->resolveCode($name . '::class');
             } catch (RuntimeException $e) {
                 // /shrug
             }
         }
 
         if ($namespace = $shell->getNamespace()) {
-            $fullName = $namespace.'\\'.$name;
+            $fullName = $namespace . '\\' . $name;
 
             if (\class_exists($fullName) || \interface_exists($fullName) || ($includeFunctions && \function_exists($fullName))) {
                 return $fullName;
@@ -147,27 +161,13 @@ abstract class ReflectingCommand extends Command implements ContextAware
     }
 
     /**
-     * Get a Reflector and documentation for a function, class or instance, constant, method or property.
-     *
-     * @param string $valueName Function, class, variable, constant, method or property name
-     *
-     * @return array (value, Reflector)
-     */
-    protected function getTargetAndReflector(string $valueName): array
-    {
-        list($value, $member, $kind) = $this->getTarget($valueName);
-
-        return [$value, Mirror::get($value, $member, $kind)];
-    }
-
-    /**
      * Resolve code to a value in the current scope.
-     *
-     * @throws RuntimeException when the code does not return a value in the current scope
      *
      * @param string $code
      *
      * @return mixed Variable value
+     * @throws RuntimeException when the code does not return a value in the current scope
+     *
      */
     protected function resolveCode(string $code)
     {
@@ -178,7 +178,7 @@ abstract class ReflectingCommand extends Command implements ContextAware
         }
 
         if (!isset($value) || $value instanceof NoReturnValue) {
-            throw new RuntimeException('Unknown target: '.$code);
+            throw new RuntimeException('Unknown target: ' . $code);
         }
 
         return $value;
@@ -187,11 +187,11 @@ abstract class ReflectingCommand extends Command implements ContextAware
     /**
      * Resolve code to an object in the current scope.
      *
-     * @throws UnexpectedTargetException when the code resolves to a non-object value
-     *
      * @param string $code
      *
      * @return object Variable instance
+     * @throws UnexpectedTargetException when the code resolves to a non-object value
+     *
      */
     private function resolveObject(string $code)
     {
@@ -205,11 +205,11 @@ abstract class ReflectingCommand extends Command implements ContextAware
     }
 
     /**
-     * @deprecated Use `resolveCode` instead
-     *
      * @param string $name
      *
      * @return mixed Variable instance
+     * @deprecated Use `resolveCode` instead
+     *
      */
     protected function resolveInstance(string $name)
     {

@@ -185,6 +185,11 @@ class RequestContext
         return $this;
     }
 
+    public function isSecure(): bool
+    {
+        return 'https' === $this->scheme;
+    }
+
     /**
      * Gets the HTTP port.
      */
@@ -241,7 +246,7 @@ class RequestContext
     public function setQueryString(?string $queryString): static
     {
         // string cast to be fault-tolerant, accepting null
-        $this->queryString = (string) $queryString;
+        $this->queryString = (string)$queryString;
 
         return $this;
     }
@@ -294,10 +299,5 @@ class RequestContext
         $this->parameters[$name] = $parameter;
 
         return $this;
-    }
-
-    public function isSecure(): bool
-    {
-        return 'https' === $this->scheme;
     }
 }

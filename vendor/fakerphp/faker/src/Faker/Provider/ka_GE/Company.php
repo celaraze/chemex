@@ -26,16 +26,6 @@ class Company extends \Faker\Provider\Company
         '{{companyPrefix}} {{companyNameElement}}{{companyNameElement}}{{companyNameElement}}{{companyNameSuffix}}',
     ];
 
-    /**
-     * @example 'იმ ელექტროალმასგეოსაბჭო'
-     */
-    public function company()
-    {
-        $format = static::randomElement(static::$companyNameFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function companyPrefix()
     {
         return static::randomElement(static::$companyPrefixes);
@@ -49,5 +39,15 @@ class Company extends \Faker\Provider\Company
     public static function companyNameSuffix()
     {
         return static::randomElement(static::$companyNameSuffixes);
+    }
+
+    /**
+     * @example 'იმ ელექტროალმასგეოსაბჭო'
+     */
+    public function company()
+    {
+        $format = static::randomElement(static::$companyNameFormats);
+
+        return $this->generator->parse($format);
     }
 }

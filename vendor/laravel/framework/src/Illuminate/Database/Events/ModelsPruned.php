@@ -21,8 +21,8 @@ class ModelsPruned
     /**
      * Create a new event instance.
      *
-     * @param  string  $model
-     * @param  int  $count
+     * @param string $model
+     * @param int $count
      * @return void
      */
     public function __construct($model, $count)

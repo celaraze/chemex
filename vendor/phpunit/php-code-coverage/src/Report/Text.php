@@ -7,9 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report;
 
-use const PHP_EOL;
+use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\Node\File;
+use SebastianBergmann\CodeCoverage\Util\Percentage;
 use function array_map;
 use function date;
 use function ksort;
@@ -17,9 +20,7 @@ use function max;
 use function sprintf;
 use function str_pad;
 use function strlen;
-use SebastianBergmann\CodeCoverage\CodeCoverage;
-use SebastianBergmann\CodeCoverage\Node\File;
-use SebastianBergmann\CodeCoverage\Util\Percentage;
+use const PHP_EOL;
 
 final class Text
 {
@@ -75,10 +76,10 @@ final class Text
 
     public function __construct(int $lowUpperBound = 50, int $highLowerBound = 90, bool $showUncoveredFiles = false, bool $showOnlySummary = false)
     {
-        $this->lowUpperBound      = $lowUpperBound;
-        $this->highLowerBound     = $highLowerBound;
+        $this->lowUpperBound = $lowUpperBound;
+        $this->highLowerBound = $highLowerBound;
         $this->showUncoveredFiles = $showUncoveredFiles;
-        $this->showOnlySummary    = $showOnlySummary;
+        $this->showOnlySummary = $showOnlySummary;
     }
 
     public function process(CodeCoverage $coverage, bool $showColors = false): string
@@ -89,14 +90,14 @@ final class Text
         $report = $coverage->getReport();
 
         $colors = [
-            'header'   => '',
-            'classes'  => '',
-            'methods'  => '',
-            'lines'    => '',
+            'header' => '',
+            'classes' => '',
+            'methods' => '',
+            'lines' => '',
             'branches' => '',
-            'paths'    => '',
-            'reset'    => '',
-            'eol'      => '',
+            'paths' => '',
+            'reset' => '',
+            'eol' => '',
         ];
 
         if ($showColors) {
@@ -125,9 +126,9 @@ final class Text
                 $report->numberOfExecutablePaths()
             );
 
-            $colors['reset']  = self::COLOR_RESET;
+            $colors['reset'] = self::COLOR_RESET;
             $colors['header'] = self::COLOR_HEADER;
-            $colors['eol']    = self::COLOR_EOL;
+            $colors['eol'] = self::COLOR_EOL;
         }
 
         $classes = sprintf(
@@ -150,7 +151,7 @@ final class Text
             $report->numberOfMethods()
         );
 
-        $paths    = '';
+        $paths = '';
         $branches = '';
 
         if ($hasBranchCoverage) {
@@ -188,12 +189,12 @@ final class Text
         $padding = max(array_map('strlen', [$classes, $methods, $lines]));
 
         if ($this->showOnlySummary) {
-            $title   = 'Code Coverage Report Summary:';
+            $title = 'Code Coverage Report Summary:';
             $padding = max($padding, strlen($title));
 
             $output .= $this->format($colors['header'], $padding, $title);
         } else {
-            $date  = date('  Y-m-d H:i:s');
+            $date = date('  Y-m-d H:i:s');
             $title = 'Code Coverage Report:';
 
             $output .= $this->format($colors['header'], $padding, $title);
@@ -225,14 +226,14 @@ final class Text
             $classes = $item->classesAndTraits();
 
             foreach ($classes as $className => $class) {
-                $classExecutableLines    = 0;
-                $classExecutedLines      = 0;
+                $classExecutableLines = 0;
+                $classExecutedLines = 0;
                 $classExecutableBranches = 0;
-                $classExecutedBranches   = 0;
-                $classExecutablePaths    = 0;
-                $classExecutedPaths      = 0;
-                $coveredMethods          = 0;
-                $classMethods            = 0;
+                $classExecutedBranches = 0;
+                $classExecutablePaths = 0;
+                $classExecutedPaths = 0;
+                $coveredMethods = 0;
+                $classMethods = 0;
 
                 foreach ($class['methods'] as $method) {
                     if ($method['executableLines'] == 0) {
@@ -253,36 +254,36 @@ final class Text
                 }
 
                 $classCoverage[$className] = [
-                    'namespace'         => $class['namespace'],
-                    'className'         => $className,
-                    'methodsCovered'    => $coveredMethods,
-                    'methodCount'       => $classMethods,
+                    'namespace' => $class['namespace'],
+                    'className' => $className,
+                    'methodsCovered' => $coveredMethods,
+                    'methodCount' => $classMethods,
                     'statementsCovered' => $classExecutedLines,
-                    'statementCount'    => $classExecutableLines,
-                    'branchesCovered'   => $classExecutedBranches,
-                    'branchesCount'     => $classExecutableBranches,
-                    'pathsCovered'      => $classExecutedPaths,
-                    'pathsCount'        => $classExecutablePaths,
+                    'statementCount' => $classExecutableLines,
+                    'branchesCovered' => $classExecutedBranches,
+                    'branchesCount' => $classExecutableBranches,
+                    'pathsCovered' => $classExecutedPaths,
+                    'pathsCount' => $classExecutablePaths,
                 ];
             }
         }
 
         ksort($classCoverage);
 
-        $methodColor   = '';
-        $pathsColor    = '';
+        $methodColor = '';
+        $pathsColor = '';
         $branchesColor = '';
-        $linesColor    = '';
-        $resetColor    = '';
+        $linesColor = '';
+        $resetColor = '';
 
         foreach ($classCoverage as $fullQualifiedPath => $classInfo) {
             if ($this->showUncoveredFiles || $classInfo['statementsCovered'] != 0) {
                 if ($showColors) {
-                    $methodColor   = $this->coverageColor($classInfo['methodsCovered'], $classInfo['methodCount']);
-                    $pathsColor    = $this->coverageColor($classInfo['pathsCovered'], $classInfo['pathsCount']);
+                    $methodColor = $this->coverageColor($classInfo['methodsCovered'], $classInfo['methodCount']);
+                    $pathsColor = $this->coverageColor($classInfo['pathsCovered'], $classInfo['pathsCount']);
                     $branchesColor = $this->coverageColor($classInfo['branchesCovered'], $classInfo['branchesCount']);
-                    $linesColor    = $this->coverageColor($classInfo['statementsCovered'], $classInfo['statementCount']);
-                    $resetColor    = $colors['reset'];
+                    $linesColor = $this->coverageColor($classInfo['statementsCovered'], $classInfo['statementCount']);
+                    $resetColor = $colors['reset'];
                 }
 
                 $output .= PHP_EOL . $fullQualifiedPath . PHP_EOL
@@ -290,7 +291,7 @@ final class Text
 
                 if ($hasBranchCoverage) {
                     $output .= '  ' . $pathsColor . 'Paths: ' . $this->printCoverageCounts($classInfo['pathsCovered'], $classInfo['pathsCount'], 3) . $resetColor . ' '
-                    . '  ' . $branchesColor . 'Branches: ' . $this->printCoverageCounts($classInfo['branchesCovered'], $classInfo['branchesCount'], 3) . $resetColor . ' ';
+                        . '  ' . $branchesColor . 'Branches: ' . $this->printCoverageCounts($classInfo['branchesCovered'], $classInfo['branchesCount'], 3) . $resetColor . ' ';
                 }
                 $output .= '  ' . $linesColor . 'Lines: ' . $this->printCoverageCounts($classInfo['statementsCovered'], $classInfo['statementCount'], 3) . $resetColor;
             }
@@ -317,18 +318,6 @@ final class Text
         return self::COLOR_RED;
     }
 
-    private function printCoverageCounts(int $numberOfCoveredElements, int $totalNumberOfElements, int $precision): string
-    {
-        $format = '%' . $precision . 's';
-
-        return Percentage::fromFractionAndTotal(
-            $numberOfCoveredElements,
-            $totalNumberOfElements
-        )->asFixedWidthString() .
-            ' (' . sprintf($format, $numberOfCoveredElements) . '/' .
-        sprintf($format, $totalNumberOfElements) . ')';
-    }
-
     /**
      * @param false|string $string
      */
@@ -336,6 +325,18 @@ final class Text
     {
         $reset = $color ? self::COLOR_RESET : '';
 
-        return $color . str_pad((string) $string, $padding) . $reset . PHP_EOL;
+        return $color . str_pad((string)$string, $padding) . $reset . PHP_EOL;
+    }
+
+    private function printCoverageCounts(int $numberOfCoveredElements, int $totalNumberOfElements, int $precision): string
+    {
+        $format = '%' . $precision . 's';
+
+        return Percentage::fromFractionAndTotal(
+                $numberOfCoveredElements,
+                $totalNumberOfElements
+            )->asFixedWidthString() .
+            ' (' . sprintf($format, $numberOfCoveredElements) . '/' .
+            sprintf($format, $totalNumberOfElements) . ')';
     }
 }

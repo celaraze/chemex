@@ -3,10 +3,32 @@
 namespace TijsVerkoyen\CssToInlineStyles\Css\Rule;
 
 use Symfony\Component\CssSelector\Node\Specificity;
-use \TijsVerkoyen\CssToInlineStyles\Css\Property\Processor as PropertyProcessor;
+use TijsVerkoyen\CssToInlineStyles\Css\Property\Processor as PropertyProcessor;
 
 class Processor
 {
+    /**
+     * Sorts an array on the specificity element in an ascending way
+     * Lower specificity will be sorted to the beginning of the array
+     *
+     * @param Rule $e1 The first element.
+     * @param Rule $e2 The second element.
+     *
+     * @return int
+     */
+    public static function sortOnSpecificity(Rule $e1, Rule $e2)
+    {
+        $e1Specificity = $e1->getSpecificity();
+        $value = $e1Specificity->compareTo($e2->getSpecificity());
+
+        // if the specificity is the same, use the order in which the element appeared
+        if ($value === 0) {
+            $value = $e1->getOrder() - $e2->getOrder();
+        }
+
+        return $value;
+    }
+
     /**
      * Splits a string into separate rules
      *
@@ -18,7 +40,7 @@ class Processor
     {
         $rulesString = $this->cleanup($rulesString);
 
-        return (array) explode('}', $rulesString);
+        return (array)explode('}', $rulesString);
     }
 
     /**
@@ -44,7 +66,7 @@ class Processor
      * Converts a rule-string into an object
      *
      * @param string $rule
-     * @param int    $originalOrder
+     * @param int $originalOrder
      *
      * @return Rule[]
      */
@@ -58,7 +80,7 @@ class Processor
         }
         $propertiesProcessor = new PropertyProcessor();
         $rules = array();
-        $selectors = (array) explode(',', trim($chunks[0]));
+        $selectors = (array)explode(',', trim($chunks[0]));
         $properties = $propertiesProcessor->splitIntoSeparateProperties($chunks[1]);
 
         foreach ($selectors as $selector) {
@@ -124,7 +146,7 @@ class Processor
 
     /**
      * @param string[] $rules
-     * @param Rule[]   $objects
+     * @param Rule[] $objects
      *
      * @return Rule[]
      */
@@ -137,27 +159,5 @@ class Processor
         }
 
         return $objects;
-    }
-
-    /**
-     * Sorts an array on the specificity element in an ascending way
-     * Lower specificity will be sorted to the beginning of the array
-     *
-     * @param Rule $e1 The first element.
-     * @param Rule $e2 The second element.
-     *
-     * @return int
-     */
-    public static function sortOnSpecificity(Rule $e1, Rule $e2)
-    {
-        $e1Specificity = $e1->getSpecificity();
-        $value = $e1Specificity->compareTo($e2->getSpecificity());
-
-        // if the specificity is the same, use the order in which the element appeared
-        if ($value === 0) {
-            $value = $e1->getOrder() - $e2->getOrder();
-        }
-
-        return $value;
     }
 }

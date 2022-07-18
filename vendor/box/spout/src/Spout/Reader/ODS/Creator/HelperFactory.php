@@ -23,20 +23,20 @@ class HelperFactory extends \Box\Spout\Common\Creator\HelperFactory
     }
 
     /**
-     * @param InternalEntityFactory $entityFactory
-     * @return SettingsHelper
-     */
-    public function createSettingsHelper($entityFactory)
-    {
-        return new SettingsHelper($entityFactory);
-    }
-
-    /**
      * @return \Box\Spout\Common\Helper\Escaper\ODS
      */
     public function createStringsEscaper()
     {
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
         return new \Box\Spout\Common\Helper\Escaper\ODS();
+    }
+
+    /**
+     * @param InternalEntityFactory $entityFactory
+     * @return SettingsHelper
+     */
+    public function createSettingsHelper($entityFactory)
+    {
+        return new SettingsHelper($entityFactory);
     }
 }

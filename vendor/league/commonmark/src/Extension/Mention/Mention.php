@@ -29,8 +29,8 @@ class Mention extends Link
 
     public function __construct(string $name, string $prefix, string $identifier, ?string $label = null)
     {
-        $this->name       = $name;
-        $this->prefix     = $prefix;
+        $this->name = $name;
+        $this->prefix = $prefix;
         $this->identifier = $identifier;
 
         parent::__construct('', $label ?? \sprintf('%s%s', $prefix, $identifier));
@@ -43,6 +43,17 @@ class Mention extends Link
         }
 
         return $labelNode->getLiteral();
+    }
+
+    private function findLabelNode(): ?Text
+    {
+        foreach ($this->children() as $child) {
+            if ($child instanceof Text) {
+                return $child;
+            }
+        }
+
+        return null;
     }
 
     public function getIdentifier(): string
@@ -78,16 +89,5 @@ class Mention extends Link
         $labelNode->setLiteral($label);
 
         return $this;
-    }
-
-    private function findLabelNode(): ?Text
-    {
-        foreach ($this->children() as $child) {
-            if ($child instanceof Text) {
-                return $child;
-            }
-        }
-
-        return null;
     }
 }

@@ -1,7 +1,12 @@
 {
     "name": "seld/jsonlint",
     "description": "JSON Linter",
-    "keywords": ["json", "parser", "linter", "validator"],
+    "keywords": [
+        "json",
+        "parser",
+        "linter",
+        "validator"
+    ],
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -19,9 +24,13 @@
         "phpstan/phpstan": "^1.5"
     },
     "autoload": {
-        "psr-4": { "Seld\\JsonLint\\": "src/Seld/JsonLint/" }
+        "psr-4": {
+            "Seld\\JsonLint\\": "src/Seld/JsonLint/"
+        }
     },
-    "bin": ["bin/jsonlint"],
+    "bin": [
+        "bin/jsonlint"
+    ],
     "scripts": {
         "test": "vendor/bin/phpunit",
         "phpstan": "vendor/bin/phpstan analyse"

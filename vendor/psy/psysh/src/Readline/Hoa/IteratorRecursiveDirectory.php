@@ -73,6 +73,14 @@ class IteratorRecursiveDirectory extends \RecursiveDirectoryIterator
     }
 
     /**
+     * Set SplFileInfo classname.
+     */
+    public function setSplFileInfoClass($splFileInfoClass)
+    {
+        $this->_splFileInfoClass = $splFileInfoClass;
+    }
+
+    /**
      * Current.
      * Please, see \RecursiveDirectoryIterator::current() method.
      */
@@ -95,6 +103,14 @@ class IteratorRecursiveDirectory extends \RecursiveDirectoryIterator
     }
 
     /**
+     * Get relative path (if given).
+     */
+    public function getRelativePath(): string
+    {
+        return $this->_relativePath;
+    }
+
+    /**
      * Get children.
      * Please, see \RecursiveDirectoryIterator::getChildren() method.
      */
@@ -106,21 +122,5 @@ class IteratorRecursiveDirectory extends \RecursiveDirectoryIterator
         $out->setSplFileInfoClass($this->_splFileInfoClass);
 
         return $out;
-    }
-
-    /**
-     * Set SplFileInfo classname.
-     */
-    public function setSplFileInfoClass($splFileInfoClass)
-    {
-        $this->_splFileInfoClass = $splFileInfoClass;
-    }
-
-    /**
-     * Get relative path (if given).
-     */
-    public function getRelativePath(): string
-    {
-        return $this->_relativePath;
     }
 }

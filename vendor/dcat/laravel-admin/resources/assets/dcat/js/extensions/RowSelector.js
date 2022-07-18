@@ -1,4 +1,3 @@
-
 export default class RowSelector {
     constructor(options) {
         let _this = this;
@@ -25,13 +24,13 @@ export default class RowSelector {
             $document = $(document),
             selectAll = options.selectAllSelector;
 
-        $(selectAll).on('change', function() {
+        $(selectAll).on('change', function () {
             let checked = this.checked;
 
             $.each($(this).parents(options.container).find(checkboxSelector), function (_, checkbox) {
                 let $this = $(checkbox);
 
-                if (! $this.attr('disabled')) {
+                if (!$this.attr('disabled')) {
                     $this.prop('checked', checked).trigger('change');
                 }
             });
@@ -46,7 +45,7 @@ export default class RowSelector {
                 }
             });
 
-            $document.off('click', options.container+' tr').on('click', options.container+' tr', function () {
+            $document.off('click', options.container + ' tr').on('click', options.container + ' tr', function () {
                 $(this).find(checkboxSelector).click();
             });
         }
@@ -73,7 +72,7 @@ export default class RowSelector {
     getSelectedKeys() {
         let selected = [];
 
-        $(this.options.checkboxSelector+':checked').each(function() {
+        $(this.options.checkboxSelector + ':checked').each(function () {
             var id = $(this).data('id');
             if (selected.indexOf(id) === -1) {
                 selected.push(id);
@@ -91,7 +90,7 @@ export default class RowSelector {
     getSelectedRows() {
         let selected = [];
 
-        $(this.options.checkboxSelector+':checked').each(function() {
+        $(this.options.checkboxSelector + ':checked').each(function () {
             var id = $(this).data('id'), i, exist;
 
             for (i in selected) {

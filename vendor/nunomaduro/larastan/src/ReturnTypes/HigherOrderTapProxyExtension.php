@@ -40,9 +40,10 @@ final class HigherOrderTapProxyExtension implements DynamicMethodReturnTypeExten
      */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $type = $scope->getType($methodCall->var);
         if ($type instanceof GenericObjectType) {
             $types = $type->getTypes();

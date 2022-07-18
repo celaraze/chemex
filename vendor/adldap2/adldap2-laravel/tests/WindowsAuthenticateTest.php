@@ -19,10 +19,10 @@ class WindowsAuthenticateTest extends DatabaseTestCase
         $request->server->set('AUTH_USER', 'jdoe');
 
         $user = $this->makeLdapUser([
-            'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
-            'cn'                => ['John Doe'],
+            'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
+            'cn' => ['John Doe'],
             'userprincipalname' => ['jdoe@email.com'],
-            'samaccountname'    => ['jdoe'],
+            'samaccountname' => ['jdoe'],
         ]);
 
         $query = m::mock(Builder::class);
@@ -90,10 +90,10 @@ class WindowsAuthenticateTest extends DatabaseTestCase
         $request->server->set('AUTH_USER', 'jdoe');
 
         $user = $this->makeLdapUser([
-            'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
-            'cn'                => ['John Doe'],
+            'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
+            'cn' => ['John Doe'],
             'userprincipalname' => ['jdoe@email.com'],
-            'samaccountname'    => ['jdoe'],
+            'samaccountname' => ['jdoe'],
         ]);
 
         $query = m::mock(Builder::class);

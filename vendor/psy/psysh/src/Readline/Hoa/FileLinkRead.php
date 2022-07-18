@@ -49,27 +49,159 @@ class FileLinkRead extends FileLink implements StreamIn
      * Open a file.
      *
      * @param string $streamName stream name
-     * @param string $mode       open mode, see the parent::MODE_* constants
-     * @param string $context    context ID (please, see the
+     * @param string $mode open mode, see the parent::MODE_* constants
+     * @param string $context context ID (please, see the
      *                           \Hoa\Stream\Context class)
-     * @param bool   $wait       differ opening or not
+     * @param bool $wait differ opening or not
      */
     public function __construct(
         string $streamName,
         string $mode = parent::MODE_READ,
         string $context = null,
-        bool $wait = false
-    ) {
+        bool   $wait = false
+    )
+    {
         parent::__construct($streamName, $mode, $context, $wait);
 
         return;
     }
 
     /**
+     * Test for end-of-file.
+     *
+     * @return bool
+     */
+    public function eof(): bool
+    {
+        return \feof($this->getStream());
+    }
+
+    /**
+     * Alias of $this->read().
+     *
+     * @param int $length length
+     *
+     * @return string
+     */
+    public function readString(int $length)
+    {
+        return $this->read($length);
+    }
+
+    /**
+     * Read n characters.
+     *
+     * @param int $length length
+     *
+     * @return string
+     *
+     * @throws \Hoa\File\Exception
+     */
+    public function read(int $length)
+    {
+        if (0 > $length) {
+            throw new FileException('Length must be greater than 0, given %d.', 2, $length);
+        }
+
+        return \fread($this->getStream(), $length);
+    }
+
+    /**
+     * Read a character.
+     *
+     * @return string
+     */
+    public function readCharacter()
+    {
+        return \fgetc($this->getStream());
+    }
+
+    /**
+     * Read a boolean.
+     *
+     * @return bool
+     */
+    public function readBoolean()
+    {
+        return (bool)$this->read(1);
+    }
+
+    /**
+     * Read an integer.
+     *
+     * @param int $length length
+     *
+     * @return int
+     */
+    public function readInteger(int $length = 1)
+    {
+        return (int)$this->read($length);
+    }
+
+    /**
+     * Read a float.
+     *
+     * @param int $length length
+     *
+     * @return float
+     */
+    public function readFloat(int $length = 1)
+    {
+        return (float)$this->read($length);
+    }
+
+    /**
+     * Read an array.
+     * Alias of the $this->scanf() method.
+     *
+     * @param string $format format (see printf's formats)
+     *
+     * @return array
+     */
+    public function readArray(string $format = null)
+    {
+        return $this->scanf($format);
+    }
+
+    /**
+     * Parse input from a stream according to a format.
+     *
+     * @param string $format format (see printf's formats)
+     *
+     * @return array
+     */
+    public function scanf(string $format): array
+    {
+        return \fscanf($this->getStream(), $format);
+    }
+
+    /**
+     * Read a line.
+     *
+     * @return string
+     */
+    public function readLine()
+    {
+        return \fgets($this->getStream());
+    }
+
+    /**
+     * Read all, i.e. read as much as possible.
+     *
+     * @param int $offset offset
+     *
+     * @return string
+     */
+    public function readAll(int $offset = 0)
+    {
+        return \stream_get_contents($this->getStream(), -1, $offset);
+    }
+
+    /**
      * Open the stream and return the associated resource.
      *
-     * @param string              $streamName Stream name (e.g. path or URL).
-     * @param \Hoa\Stream\Context $context    context
+     * @param string $streamName Stream name (e.g. path or URL).
+     * @param \Hoa\Stream\Context $context context
      *
      * @return resource
      *
@@ -96,136 +228,5 @@ class FileLinkRead extends FileLink implements StreamIn
         $out = parent::_open($streamName, $context);
 
         return $out;
-    }
-
-    /**
-     * Test for end-of-file.
-     *
-     * @return bool
-     */
-    public function eof(): bool
-    {
-        return \feof($this->getStream());
-    }
-
-    /**
-     * Read n characters.
-     *
-     * @param int $length length
-     *
-     * @return string
-     *
-     * @throws \Hoa\File\Exception
-     */
-    public function read(int $length)
-    {
-        if (0 > $length) {
-            throw new FileException('Length must be greater than 0, given %d.', 2, $length);
-        }
-
-        return \fread($this->getStream(), $length);
-    }
-
-    /**
-     * Alias of $this->read().
-     *
-     * @param int $length length
-     *
-     * @return string
-     */
-    public function readString(int $length)
-    {
-        return $this->read($length);
-    }
-
-    /**
-     * Read a character.
-     *
-     * @return string
-     */
-    public function readCharacter()
-    {
-        return \fgetc($this->getStream());
-    }
-
-    /**
-     * Read a boolean.
-     *
-     * @return bool
-     */
-    public function readBoolean()
-    {
-        return (bool) $this->read(1);
-    }
-
-    /**
-     * Read an integer.
-     *
-     * @param int $length length
-     *
-     * @return int
-     */
-    public function readInteger(int $length = 1)
-    {
-        return (int) $this->read($length);
-    }
-
-    /**
-     * Read a float.
-     *
-     * @param int $length length
-     *
-     * @return float
-     */
-    public function readFloat(int $length = 1)
-    {
-        return (float) $this->read($length);
-    }
-
-    /**
-     * Read an array.
-     * Alias of the $this->scanf() method.
-     *
-     * @param string $format format (see printf's formats)
-     *
-     * @return array
-     */
-    public function readArray(string $format = null)
-    {
-        return $this->scanf($format);
-    }
-
-    /**
-     * Read a line.
-     *
-     * @return string
-     */
-    public function readLine()
-    {
-        return \fgets($this->getStream());
-    }
-
-    /**
-     * Read all, i.e. read as much as possible.
-     *
-     * @param int $offset offset
-     *
-     * @return string
-     */
-    public function readAll(int $offset = 0)
-    {
-        return \stream_get_contents($this->getStream(), -1, $offset);
-    }
-
-    /**
-     * Parse input from a stream according to a format.
-     *
-     * @param string $format format (see printf's formats)
-     *
-     * @return array
-     */
-    public function scanf(string $format): array
-    {
-        return \fscanf($this->getStream(), $format);
     }
 }

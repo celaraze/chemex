@@ -39,19 +39,19 @@ if (\in_array('-h', $argv) || \in_array('--help', $argv)) {
 
 if (false === getenv('SYMFONY_PATCH_TYPE_DECLARATIONS')) {
     putenv('SYMFONY_PATCH_TYPE_DECLARATIONS=force=2');
-    echo 'No SYMFONY_PATCH_TYPE_DECLARATIONS env var set, patching type declarations in all methods (run the command with "-h" for more information).'.PHP_EOL;
+    echo 'No SYMFONY_PATCH_TYPE_DECLARATIONS env var set, patching type declarations in all methods (run the command with "-h" for more information).' . PHP_EOL;
 }
 
-if (is_file($autoload = __DIR__.'/../../../../autoload.php')) {
+if (is_file($autoload = __DIR__ . '/../../../../autoload.php')) {
     // noop
-} elseif (is_file($autoload = __DIR__.'/../../../../../../../autoload.php')) {
+} elseif (is_file($autoload = __DIR__ . '/../../../../../../../autoload.php')) {
     // noop
 } else {
-    echo PHP_EOL.'  /!\ Cannot find the Composer autoloader, did you forget to run "composer install"?'.PHP_EOL;
+    echo PHP_EOL . '  /!\ Cannot find the Composer autoloader, did you forget to run "composer install"?' . PHP_EOL;
     exit(1);
 }
 
-if (is_file($phpunitAutoload = dirname($autoload).'/bin/.phpunit/phpunit/vendor/autoload.php')) {
+if (is_file($phpunitAutoload = dirname($autoload) . '/bin/.phpunit/phpunit/vendor/autoload.php')) {
     require $phpunitAutoload;
 }
 
@@ -65,13 +65,13 @@ set_error_handler(function ($type, $msg, $file, $line, $context = []) use (&$dep
         return;
     }
 
-    [,,,,, $class,] = explode('"', $msg);
+    [, , , , , $class,] = explode('"', $msg);
     $deprecations[$class][] = $msg;
 });
 
 $exclude = getenv('SYMFONY_PATCH_TYPE_EXCLUDE') ?: null;
 foreach ($loader->getClassMap() as $class => $file) {
-    if (str_contains($file = realpath($file), \DIRECTORY_SEPARATOR.'vendor'.\DIRECTORY_SEPARATOR)) {
+    if (str_contains($file = realpath($file), \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR)) {
         continue;
     }
 
@@ -85,10 +85,10 @@ foreach ($loader->getClassMap() as $class => $file) {
 Symfony\Component\ErrorHandler\DebugClassLoader::checkClasses();
 
 foreach ($deprecations as $class => $classDeprecations) {
-    echo $class.' ('.\count($classDeprecations).')'.PHP_EOL;
-    echo implode(PHP_EOL, $classDeprecations).PHP_EOL.PHP_EOL;
+    echo $class . ' (' . \count($classDeprecations) . ')' . PHP_EOL;
+    echo implode(PHP_EOL, $classDeprecations) . PHP_EOL . PHP_EOL;
 }
 
 if ($deprecations && str_contains(getenv('SYMFONY_PATCH_TYPE_DECLARATIONS') ?? '', 'force')) {
-    echo 'These deprecations might be fixed by the patch script, run this again to check for type deprecations.'.PHP_EOL;
+    echo 'These deprecations might be fixed by the patch script, run this again to check for type deprecations.' . PHP_EOL;
 }

@@ -9,13 +9,13 @@ class MultipleSelect2 extends Select2
     /**
      * 选中下拉选框.
      *
-     * @param  Browser  $browser
-     * @param  array  $values
+     * @param Browser $browser
+     * @param array $values
      * @return Browser
      */
     public function choose(Browser $browser, $values)
     {
-        $values = implode(',', (array) $values);
+        $values = implode(',', (array)$values);
 
         $browser->script(
             <<<JS

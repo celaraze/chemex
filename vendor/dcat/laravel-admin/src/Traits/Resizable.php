@@ -9,14 +9,14 @@ trait Resizable
     /**
      * Method for returning specific thumbnail for model.
      *
-     * @param  string  $type
-     * @param  string  $attribute
+     * @param string $type
+     * @param string $attribute
      * @return string|null
      */
     public function thumbnail($type, $attribute = 'image', $disk = null)
     {
         // Return empty string if the field not found
-        if (! isset($this->attributes[$attribute])) {
+        if (!isset($this->attributes[$attribute])) {
             return '';
         }
 
@@ -41,9 +41,9 @@ trait Resizable
         $ext = pathinfo($image, PATHINFO_EXTENSION);
 
         // We remove extension from file name so we can append thumbnail type
-        $name = Str::replaceLast('.'.$ext, '', $image);
+        $name = Str::replaceLast('.' . $ext, '', $image);
 
         // We merge original name + type + extension
-        return $name.'-'.$type.'.'.$ext;
+        return $name . '-' . $type . '.' . $ext;
     }
 }

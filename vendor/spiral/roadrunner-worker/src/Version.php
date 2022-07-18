@@ -31,20 +31,6 @@ final class Version
     /**
      * @return string
      */
-    public static function current(): string
-    {
-        foreach (self::PACKAGE_NAMES as $name) {
-            if (InstalledVersions::isInstalled($name)) {
-                return \ltrim((string)InstalledVersions::getPrettyVersion($name), 'v');
-            }
-        }
-
-        return self::VERSION_FALLBACK;
-    }
-
-    /**
-     * @return string
-     */
     public static function constraint(): string
     {
         $current = self::current();
@@ -56,5 +42,19 @@ final class Version
         }
 
         return '*';
+    }
+
+    /**
+     * @return string
+     */
+    public static function current(): string
+    {
+        foreach (self::PACKAGE_NAMES as $name) {
+            if (InstalledVersions::isInstalled($name)) {
+                return \ltrim((string)InstalledVersions::getPrettyVersion($name), 'v');
+            }
+        }
+
+        return self::VERSION_FALLBACK;
     }
 }

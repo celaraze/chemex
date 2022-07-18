@@ -52,12 +52,34 @@ final class Headers
         }
     }
 
-    public function __clone()
+    /**
+     * @return $this
+     */
+    public function add(HeaderInterface $header): static
     {
-        foreach ($this->headers as $name => $collection) {
-            foreach ($collection as $i => $header) {
-                $this->headers[$name][$i] = clone $header;
-            }
+        self::checkHeaderClass($header);
+
+        $header->setMaxLineLength($this->lineLength);
+        $name = strtolower($header->getName());
+
+        if (\in_array($name, self::UNIQUE_HEADERS, true) && isset($this->headers[$name]) && \count($this->headers[$name]) > 0) {
+            throw new LogicException(sprintf('Impossible to set header "%s" as it\'s already defined and must be unique.', $header->getName()));
+        }
+
+        $this->headers[$name][] = $header;
+
+        return $this;
+    }
+
+    /**
+     * @throws LogicException if the header name and class are not compatible
+     */
+    public static function checkHeaderClass(HeaderInterface $header): void
+    {
+        $name = strtolower($header->getName());
+
+        if (($c = self::HEADER_CLASS_MAP[$name] ?? null) && !$header instanceof $c) {
+            throw new LogicException(sprintf('The "%s" header must be an instance of "%s" (got "%s").', $header->getName(), $c, get_debug_type($header)));
         }
     }
 
@@ -66,6 +88,35 @@ final class Headers
         $this->lineLength = $lineLength;
         foreach ($this->all() as $header) {
             $header->setMaxLineLength($lineLength);
+        }
+    }
+
+    public function all(string $name = null): iterable
+    {
+        if (null === $name) {
+            foreach ($this->headers as $name => $collection) {
+                foreach ($collection as $header) {
+                    yield $name => $header;
+                }
+            }
+        } elseif (isset($this->headers[strtolower($name)])) {
+            foreach ($this->headers[strtolower($name)] as $header) {
+                yield $header;
+            }
+        }
+    }
+
+    public static function isUniqueHeader(string $name): bool
+    {
+        return \in_array(strtolower($name), self::UNIQUE_HEADERS, true);
+    }
+
+    public function __clone()
+    {
+        foreach ($this->headers as $name => $collection) {
+            foreach ($collection as $i => $header) {
+                $this->headers[$name][$i] = clone $header;
+            }
         }
     }
 
@@ -138,7 +189,7 @@ final class Headers
     public function addHeader(string $name, mixed $argument, array $more = []): static
     {
         $parts = explode('\\', self::HEADER_CLASS_MAP[strtolower($name)] ?? UnstructuredHeader::class);
-        $method = 'add'.ucfirst(array_pop($parts));
+        $method = 'add' . ucfirst(array_pop($parts));
         if ('addUnstructuredHeader' === $method) {
             $method = 'addTextHeader';
         } elseif ('addIdentificationHeader' === $method) {
@@ -146,57 +197,6 @@ final class Headers
         }
 
         return $this->$method($name, $argument, $more);
-    }
-
-    public function has(string $name): bool
-    {
-        return isset($this->headers[strtolower($name)]);
-    }
-
-    /**
-     * @return $this
-     */
-    public function add(HeaderInterface $header): static
-    {
-        self::checkHeaderClass($header);
-
-        $header->setMaxLineLength($this->lineLength);
-        $name = strtolower($header->getName());
-
-        if (\in_array($name, self::UNIQUE_HEADERS, true) && isset($this->headers[$name]) && \count($this->headers[$name]) > 0) {
-            throw new LogicException(sprintf('Impossible to set header "%s" as it\'s already defined and must be unique.', $header->getName()));
-        }
-
-        $this->headers[$name][] = $header;
-
-        return $this;
-    }
-
-    public function get(string $name): ?HeaderInterface
-    {
-        $name = strtolower($name);
-        if (!isset($this->headers[$name])) {
-            return null;
-        }
-
-        $values = array_values($this->headers[$name]);
-
-        return array_shift($values);
-    }
-
-    public function all(string $name = null): iterable
-    {
-        if (null === $name) {
-            foreach ($this->headers as $name => $collection) {
-                foreach ($collection as $header) {
-                    yield $name => $header;
-                }
-            }
-        } elseif (isset($this->headers[strtolower($name)])) {
-            foreach ($this->headers[strtolower($name)] as $header) {
-                yield $header;
-            }
-        }
     }
 
     public function getNames(): array
@@ -209,28 +209,11 @@ final class Headers
         unset($this->headers[strtolower($name)]);
     }
 
-    public static function isUniqueHeader(string $name): bool
-    {
-        return \in_array(strtolower($name), self::UNIQUE_HEADERS, true);
-    }
-
-    /**
-     * @throws LogicException if the header name and class are not compatible
-     */
-    public static function checkHeaderClass(HeaderInterface $header): void
-    {
-        $name = strtolower($header->getName());
-
-        if (($c = self::HEADER_CLASS_MAP[$name] ?? null) && !$header instanceof $c) {
-            throw new LogicException(sprintf('The "%s" header must be an instance of "%s" (got "%s").', $header->getName(), $c, get_debug_type($header)));
-        }
-    }
-
     public function toString(): string
     {
         $string = '';
         foreach ($this->toArray() as $str) {
-            $string .= $str."\r\n";
+            $string .= $str . "\r\n";
         }
 
         return $string;
@@ -253,6 +236,23 @@ final class Headers
         return $this->has($name) ? $this->get($name)->getBody() : null;
     }
 
+    public function has(string $name): bool
+    {
+        return isset($this->headers[strtolower($name)]);
+    }
+
+    public function get(string $name): ?HeaderInterface
+    {
+        $name = strtolower($name);
+        if (!isset($this->headers[$name])) {
+            return null;
+        }
+
+        $values = array_values($this->headers[$name]);
+
+        return array_shift($values);
+    }
+
     /**
      * @internal
      */
@@ -261,7 +261,7 @@ final class Headers
         if ($this->has($name)) {
             $this->get($name)->setBody($body);
         } else {
-            $this->{'add'.$type.'Header'}($name, $body);
+            $this->{'add' . $type . 'Header'}($name, $body);
         }
     }
 

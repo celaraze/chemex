@@ -62,7 +62,7 @@ return [
         'sameElse' => 'L',
     ],
     'ordinal' => function ($number) {
-        return $number.(($number === 1 || $number === 8 || $number >= 20) ? 'ste' : 'de');
+        return $number . (($number === 1 || $number === 8 || $number >= 20) ? 'ste' : 'de');
     },
     'months' => ['jannewaris', 'febrewaris', 'maart', 'april', 'maaie', 'juny', 'july', 'augustus', 'septimber', 'oktober', 'novimber', 'desimber'],
     'months_short' => ['jan', 'feb', 'mrt', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'],

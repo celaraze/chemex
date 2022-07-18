@@ -36,11 +36,12 @@ class Reader extends ReaderAbstract
      * @param ManagerFactory $managerFactory
      */
     public function __construct(
-        OptionsManagerInterface $optionsManager,
-        GlobalFunctionsHelper $globalFunctionsHelper,
+        OptionsManagerInterface        $optionsManager,
+        GlobalFunctionsHelper          $globalFunctionsHelper,
         InternalEntityFactoryInterface $entityFactory,
-        ManagerFactory $managerFactory
-    ) {
+        ManagerFactory                 $managerFactory
+    )
+    {
         parent::__construct($optionsManager, $globalFunctionsHelper, $entityFactory);
         $this->managerFactory = $managerFactory;
     }
@@ -71,10 +72,10 @@ class Reader extends ReaderAbstract
      * It also parses the sharedStrings.xml file to get all the shared strings available in memory
      * and fetches all the available sheets.
      *
-     * @param  string $filePath Path of the file to be read
-     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path or its content cannot be read
-     * @throws \Box\Spout\Reader\Exception\NoSheetsFoundException If there are no sheets in the file
+     * @param string $filePath Path of the file to be read
      * @return void
+     * @throws \Box\Spout\Reader\Exception\NoSheetsFoundException If there are no sheets in the file
+     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path or its content cannot be read
      */
     protected function openReader($filePath)
     {

@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Types;
 
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function assert;
 use function fopen;
 use function fseek;
@@ -42,7 +41,7 @@ class BinaryType extends Type
             $value = $fp;
         }
 
-        if (! is_resource($value)) {
+        if (!is_resource($value)) {
             throw ConversionException::conversionFailed($value, Types::BINARY);
         }
 

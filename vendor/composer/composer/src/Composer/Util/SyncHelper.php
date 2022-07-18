@@ -23,10 +23,10 @@ class SyncHelper
      *
      * This executes all the required steps and waits for promises to complete
      *
-     * @param Loop                  $loop        Loop instance which you can get from $composer->getLoop()
-     * @param DownloaderInterface   $downloader  Downloader instance you can get from $composer->getDownloadManager()->getDownloader('zip') for example
-     * @param string                $path        the installation path for the package
-     * @param PackageInterface      $package     the package to install
+     * @param Loop $loop Loop instance which you can get from $composer->getLoop()
+     * @param DownloaderInterface $downloader Downloader instance you can get from $composer->getDownloadManager()->getDownloader('zip') for example
+     * @param string $path the installation path for the package
+     * @param PackageInterface $package the package to install
      * @param PackageInterface|null $prevPackage the previous package if this is an update and not an initial installation
      *
      * @return void
@@ -56,7 +56,7 @@ class SyncHelper
     /**
      * Waits for a promise to resolve
      *
-     * @param Loop                  $loop    Loop instance which you can get from $composer->getLoop()
+     * @param Loop $loop Loop instance which you can get from $composer->getLoop()
      * @param PromiseInterface|null $promise
      *
      * @return void

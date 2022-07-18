@@ -33,7 +33,7 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     private $value;
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return void
      */
     public function __construct($value)
@@ -42,57 +42,9 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     }
 
     /**
-     * Set the claim value, and call a validate method.
-     *
-     * @param  mixed  $value
-     * @return $this
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\InvalidClaimException
-     */
-    public function setValue($value)
-    {
-        $this->value = $this->validateCreate($value);
-
-        return $this;
-    }
-
-    /**
-     * Get the claim value.
-     *
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /**
-     * Set the claim name.
-     *
-     * @param  string  $name
-     * @return $this
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the claim name.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
      * Validate the claim in a standalone Claim context.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function validateCreate($value)
@@ -111,9 +63,34 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     }
 
     /**
+     * Get the claim value.
+     *
+     * @return mixed
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Set the claim value, and call a validate method.
+     *
+     * @param mixed $value
+     * @return $this
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\InvalidClaimException
+     */
+    public function setValue($value)
+    {
+        $this->value = $this->validateCreate($value);
+
+        return $this;
+    }
+
+    /**
      * Validate the Claim within a refresh context.
      *
-     * @param  int  $refreshTTL
+     * @param int $refreshTTL
      * @return bool
      */
     public function validateRefresh($refreshTTL)
@@ -124,8 +101,8 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     /**
      * Checks if the value matches the claim.
      *
-     * @param  mixed  $value
-     * @param  bool  $strict
+     * @param mixed $value
+     * @param bool $strict
      * @return bool
      */
     public function matches($value, $strict = true)
@@ -155,14 +132,26 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     }
 
     /**
-     * Get the claim as JSON.
+     * Get the claim name.
      *
-     * @param  int  $options
      * @return string
      */
-    public function toJson($options = JSON_UNESCAPED_SLASHES)
+    public function getName()
     {
-        return json_encode($this->toArray(), $options);
+        return $this->name;
+    }
+
+    /**
+     * Set the claim name.
+     *
+     * @param string $name
+     * @return $this
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -173,5 +162,16 @@ abstract class Claim implements Arrayable, ClaimContract, Jsonable, JsonSerializ
     public function __toString()
     {
         return $this->toJson();
+    }
+
+    /**
+     * Get the claim as JSON.
+     *
+     * @param int $options
+     * @return string
+     */
+    public function toJson($options = JSON_UNESCAPED_SLASHES)
+    {
+        return json_encode($this->toArray(), $options);
     }
 }

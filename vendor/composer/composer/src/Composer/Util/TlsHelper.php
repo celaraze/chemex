@@ -24,9 +24,9 @@ final class TlsHelper
     /**
      * Match hostname against a certificate.
      *
-     * @param mixed  $certificate X.509 certificate
-     * @param string $hostname    Hostname in the URL
-     * @param string $cn          Set to the common name of the certificate iff match found
+     * @param mixed $certificate X.509 certificate
+     * @param string $hostname Hostname in the URL
+     * @param string $cn Set to the common name of the certificate iff match found
      *
      * @return bool
      */
@@ -95,6 +95,64 @@ final class TlsHelper
     }
 
     /**
+     * Test if it is safe to use the PHP function openssl_x509_parse().
+     *
+     * This checks if OpenSSL extensions is vulnerable to remote code execution
+     * via the exploit documented as CVE-2013-6420.
+     *
+     * @return bool
+     */
+    public static function isOpensslParseSafe(): bool
+    {
+        return CaBundle::isOpensslParseSafe();
+    }
+
+    /**
+     * Convert certificate name into matching function.
+     *
+     * @param string $certName CN/SAN
+     *
+     * @return callable|null
+     */
+    private static function certNameMatcher(string $certName): ?callable
+    {
+        $wildcards = substr_count($certName, '*');
+
+        if (0 === $wildcards) {
+            // Literal match.
+            return function ($hostname) use ($certName): bool {
+                return $hostname === $certName;
+            };
+        }
+
+        if (1 === $wildcards) {
+            $components = explode('.', $certName);
+
+            if (3 > count($components)) {
+                // Must have 3+ components
+                return null;
+            }
+
+            $firstComponent = $components[0];
+
+            // Wildcard must be the last character.
+            if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
+                return null;
+            }
+
+            $wildcardRegex = preg_quote($certName);
+            $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
+            $wildcardRegex = "{^{$wildcardRegex}$}";
+
+            return function ($hostname) use ($wildcardRegex): bool {
+                return Preg::isMatch($wildcardRegex, $hostname);
+            };
+        }
+
+        return null;
+    }
+
+    /**
      * Get the certificate pin.
      *
      * By Kevin McArthur of StormTide Digital Studios Inc.
@@ -151,63 +209,5 @@ final class TlsHelper
         $der = base64_decode($pemtrim);
 
         return sha1($der);
-    }
-
-    /**
-     * Test if it is safe to use the PHP function openssl_x509_parse().
-     *
-     * This checks if OpenSSL extensions is vulnerable to remote code execution
-     * via the exploit documented as CVE-2013-6420.
-     *
-     * @return bool
-     */
-    public static function isOpensslParseSafe(): bool
-    {
-        return CaBundle::isOpensslParseSafe();
-    }
-
-    /**
-     * Convert certificate name into matching function.
-     *
-     * @param string $certName CN/SAN
-     *
-     * @return callable|null
-     */
-    private static function certNameMatcher(string $certName): ?callable
-    {
-        $wildcards = substr_count($certName, '*');
-
-        if (0 === $wildcards) {
-            // Literal match.
-            return function ($hostname) use ($certName): bool {
-                return $hostname === $certName;
-            };
-        }
-
-        if (1 === $wildcards) {
-            $components = explode('.', $certName);
-
-            if (3 > count($components)) {
-                // Must have 3+ components
-                return null;
-            }
-
-            $firstComponent = $components[0];
-
-            // Wildcard must be the last character.
-            if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
-                return null;
-            }
-
-            $wildcardRegex = preg_quote($certName);
-            $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
-            $wildcardRegex = "{^{$wildcardRegex}$}";
-
-            return function ($hostname) use ($wildcardRegex): bool {
-                return Preg::isMatch($wildcardRegex, $hostname);
-            };
-        }
-
-        return null;
     }
 }

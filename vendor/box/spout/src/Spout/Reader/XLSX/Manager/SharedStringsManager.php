@@ -64,7 +64,8 @@ class SharedStringsManager
         $entityFactory,
         $helperFactory,
         $cachingStrategyFactory
-    ) {
+    )
+    {
         $this->filePath = $filePath;
         $this->tempFolder = $tempFolder;
         $this->workbookRelationshipsManager = $workbookRelationshipsManager;
@@ -132,8 +133,8 @@ class SharedStringsManager
      * Returns the shared strings unique count, as specified in <sst> tag.
      *
      * @param \Box\Spout\Reader\Wrapper\XMLReader $xmlReader XMLReader instance
-     * @throws \Box\Spout\Common\Exception\IOException If sharedStrings.xml is invalid and can't be read
      * @return int|null Number of unique shared strings in the sharedStrings.xml file
+     * @throws \Box\Spout\Common\Exception\IOException If sharedStrings.xml is invalid and can't be read
      */
     protected function getSharedStringsUniqueCount($xmlReader)
     {
@@ -152,7 +153,7 @@ class SharedStringsManager
             $uniqueCount = $xmlReader->getAttribute(self::XML_ATTRIBUTE_COUNT);
         }
 
-        return ($uniqueCount !== null) ? (int) $uniqueCount : null;
+        return ($uniqueCount !== null) ? (int)$uniqueCount : null;
     }
 
     /**
@@ -164,7 +165,7 @@ class SharedStringsManager
     protected function getBestSharedStringsCachingStrategy($sharedStringsUniqueCount)
     {
         return $this->cachingStrategyFactory
-                ->createBestCachingStrategy($sharedStringsUniqueCount, $this->tempFolder, $this->helperFactory);
+            ->createBestCachingStrategy($sharedStringsUniqueCount, $this->tempFolder, $this->helperFactory);
     }
 
     /**
@@ -226,8 +227,8 @@ class SharedStringsManager
      * Returns the shared string at the given index, using the previously chosen caching strategy.
      *
      * @param int $sharedStringIndex Index of the shared string in the sharedStrings.xml file
-     * @throws \Box\Spout\Reader\Exception\SharedStringNotFoundException If no shared string found for the given index
      * @return string The shared string at the given index
+     * @throws \Box\Spout\Reader\Exception\SharedStringNotFoundException If no shared string found for the given index
      */
     public function getStringAtIndex($sharedStringIndex)
     {

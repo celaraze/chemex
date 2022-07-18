@@ -135,13 +135,11 @@ Identical to the RC release.
 
 - Restored partial HHVM 3 support
 
-
 ## [1.6.1] - 2019-07-02
 
 ### Fixed
 
 - Accept null and bool header values again
-
 
 ## [1.6.0] - 2019-06-30
 
@@ -162,20 +160,17 @@ Identical to the RC release.
 - Fixed readable/writable detection for certain stream modes (#248)
 - Fixed encoding of special characters in the `userInfo` component of an URI (#253)
 
-
 ## [1.5.2] - 2018-12-04
 
 ### Fixed
 
 - Check body size when getting the message summary
 
-
 ## [1.5.1] - 2018-12-04
 
 ### Fixed
 
 - Get the summary of a body only if it is readable
-
 
 ## [1.5.0] - 2018-12-03
 
@@ -200,9 +195,7 @@ Identical to the RC release.
 - `InflateStream` preserves `isSeekable` attribute of the underlying stream
 - `ServerRequest::getUriFromGlobals` to support URLs in query parameters
 
-
 Several other fixes and improvements.
-
 
 ## [1.4.2] - 2017-03-20
 
@@ -210,7 +203,6 @@ Several other fixes and improvements.
 
 - Reverted BC break to `Uri::resolve` and `Uri::removeDotSegments` by removing
   calls to `trigger_error` when deprecated methods are invoked.
-
 
 ## [1.4.1] - 2017-02-27
 
@@ -224,22 +216,21 @@ Several other fixes and improvements.
   relative path and an authority by adding a leading slash to the path. It's only
   deprecated now.
 
-
 ## [1.4.0] - 2017-02-21
 
 ### Added
 
 - Added common URI utility methods based on RFC 3986 (see documentation in the readme):
-  - `Uri::isDefaultPort`
-  - `Uri::isAbsolute`
-  - `Uri::isNetworkPathReference`
-  - `Uri::isAbsolutePathReference`
-  - `Uri::isRelativePathReference`
-  - `Uri::isSameDocumentReference`
-  - `Uri::composeComponents`
-  - `UriNormalizer::normalize`
-  - `UriNormalizer::isEquivalent`
-  - `UriResolver::relativize`
+    - `Uri::isDefaultPort`
+    - `Uri::isAbsolute`
+    - `Uri::isNetworkPathReference`
+    - `Uri::isAbsolutePathReference`
+    - `Uri::isRelativePathReference`
+    - `Uri::isSameDocumentReference`
+    - `Uri::composeComponents`
+    - `UriNormalizer::normalize`
+    - `UriNormalizer::isEquivalent`
+    - `UriResolver::relativize`
 
 ### Changed
 
@@ -248,9 +239,9 @@ Several other fixes and improvements.
 - Ensure each URI modification results in a valid URI according to PSR-7 discussions.
   Invalid modifications will throw an exception instead of returning a wrong URI or
   doing some magic.
-  - `(new Uri)->withPath('foo')->withHost('example.com')` will throw an exception
-    because the path of a URI with an authority must start with a slash "/" or be empty
-  - `(new Uri())->withScheme('http')` will return `'http://localhost'`
+    - `(new Uri)->withPath('foo')->withHost('example.com')` will throw an exception
+      because the path of a URI with an authority must start with a slash "/" or be empty
+    - `(new Uri())->withScheme('http')` will return `'http://localhost'`
 
 ### Deprecated
 
@@ -263,7 +254,6 @@ Several other fixes and improvements.
 - `copy_to_stream` reads bytes in chunks instead of `maxLen` into memory.
 - `ServerRequest::getUriFromGlobals` when `Host` header contains port.
 - Compatibility of URIs with `file` scheme and empty host.
-
 
 ## [1.3.1] - 2016-06-25
 
@@ -284,7 +274,6 @@ Several other fixes and improvements.
   consistent with withPath, withQuery etc.
 - `ServerRequest::withoutAttribute` when attribute value is null.
 
-
 ## [1.3.0] - 2016-04-13
 
 ### Added
@@ -298,8 +287,8 @@ Several other fixes and improvements.
 - Can now extend Uri.
 
 ### Fixed
-- A bug in validating request methods by making it more permissive.
 
+- A bug in validating request methods by making it more permissive.
 
 ## [1.2.3] - 2016-02-18
 
@@ -308,7 +297,6 @@ Several other fixes and improvements.
 - Support in `GuzzleHttp\Psr7\CachingStream` for seeking forward on remote
   streams, which can sometimes return fewer bytes than requested with `fread`.
 - Handling of gzipped responses with FNAME headers.
-
 
 ## [1.2.2] - 2016-01-22
 
@@ -319,13 +307,11 @@ Several other fixes and improvements.
 - Support for using '0' as a filename.
 - Support for including non-standard ports in Host headers.
 
-
 ## [1.2.1] - 2015-11-02
 
 ### Changes
 
 - Now supporting negative offsets when seeking to SEEK_END.
-
 
 ## [1.2.0] - 2015-08-15
 
@@ -338,7 +324,6 @@ Several other fixes and improvements.
 - functions.php is now conditionally required.
 - user-info is no longer dropped when resolving URIs.
 
-
 ## [1.1.0] - 2015-06-24
 
 ### Changed
@@ -350,7 +335,6 @@ Several other fixes and improvements.
 - A port is no longer added to a URI when the scheme is missing and no port is
   present.
 
-
 ## 1.0.0 - 2015-05-19
 
 Initial release.
@@ -360,19 +344,30 @@ Currently unsupported:
 - `Psr\Http\Message\ServerRequestInterface`
 - `Psr\Http\Message\UploadedFileInterface`
 
-
-
 [1.6.0]: https://github.com/guzzle/psr7/compare/1.5.2...1.6.0
+
 [1.5.2]: https://github.com/guzzle/psr7/compare/1.5.1...1.5.2
+
 [1.5.1]: https://github.com/guzzle/psr7/compare/1.5.0...1.5.1
+
 [1.5.0]: https://github.com/guzzle/psr7/compare/1.4.2...1.5.0
+
 [1.4.2]: https://github.com/guzzle/psr7/compare/1.4.1...1.4.2
+
 [1.4.1]: https://github.com/guzzle/psr7/compare/1.4.0...1.4.1
+
 [1.4.0]: https://github.com/guzzle/psr7/compare/1.3.1...1.4.0
+
 [1.3.1]: https://github.com/guzzle/psr7/compare/1.3.0...1.3.1
+
 [1.3.0]: https://github.com/guzzle/psr7/compare/1.2.3...1.3.0
+
 [1.2.3]: https://github.com/guzzle/psr7/compare/1.2.2...1.2.3
+
 [1.2.2]: https://github.com/guzzle/psr7/compare/1.2.1...1.2.2
+
 [1.2.1]: https://github.com/guzzle/psr7/compare/1.2.0...1.2.1
+
 [1.2.0]: https://github.com/guzzle/psr7/compare/1.1.0...1.2.0
+
 [1.1.0]: https://github.com/guzzle/psr7/compare/1.0.0...1.1.0

@@ -14,7 +14,7 @@ class SolutionProviderMakeCommand extends GeneratorCommand
 
     protected function getStub(): string
     {
-        return __DIR__.'/stubs/solution-provider.stub';
+        return __DIR__ . '/stubs/solution-provider.stub';
     }
 
     protected function getDefaultNamespace($rootNamespace)

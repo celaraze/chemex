@@ -20,13 +20,6 @@ abstract class LazyRenderable extends Renderable
     protected $simple = false;
 
     /**
-     * 创建表格.
-     *
-     * @return Grid
-     */
-    abstract public function grid(): Grid;
-
-    /**
      * {@inheritdoc}
      */
     public function render()
@@ -46,23 +39,22 @@ HTML;
     }
 
     /**
-     * 是否启用简化模式.
+     * 判断是否启用简化模式.
      *
-     * @param  bool  $value
-     * @return $this
+     * @return bool
      */
-    public function simple(bool $value = true)
+    public function allowSimpleMode()
     {
-        return $this->payload([static::SIMPLE_NAME => $value]);
+        return $this->simple || $this->_simple_;
     }
 
     /**
-     * @param  Grid  $grid
+     * @param Grid $grid
      * @return Grid
      */
     protected function prepare(Grid $grid)
     {
-        if (! $grid->getName()) {
+        if (!$grid->getName()) {
             $grid->setName($this->getDefaultName());
         }
 
@@ -79,7 +71,7 @@ HTML;
             $grid->rowSelector()->click();
         }
 
-        if (! empty($this->payload[static::ROW_SELECTOR_COLUMN_NAME])) {
+        if (!empty($this->payload[static::ROW_SELECTOR_COLUMN_NAME])) {
             [$key, $visibleColumn] = $this->payload[static::ROW_SELECTOR_COLUMN_NAME];
 
             $key && $grid->rowSelector()->idColumn($key);
@@ -91,16 +83,6 @@ HTML;
     }
 
     /**
-     * 判断是否启用简化模式.
-     *
-     * @return bool
-     */
-    public function allowSimpleMode()
-    {
-        return $this->simple || $this->_simple_;
-    }
-
-    /**
      * 获取默认名称.
      *
      * @return string
@@ -108,5 +90,23 @@ HTML;
     protected function getDefaultName()
     {
         return strtolower(str_replace('\\', '-', static::class));
+    }
+
+    /**
+     * 创建表格.
+     *
+     * @return Grid
+     */
+    abstract public function grid(): Grid;
+
+    /**
+     * 是否启用简化模式.
+     *
+     * @param bool $value
+     * @return $this
+     */
+    public function simple(bool $value = true)
+    {
+        return $this->payload([static::SIMPLE_NAME => $value]);
     }
 }

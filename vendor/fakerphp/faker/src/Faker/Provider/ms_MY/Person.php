@@ -541,9 +541,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay male first name
      *
+     * @return string
      * @example 'Ahmad'
      *
-     * @return string
      */
     public static function firstNameMaleMalay()
     {
@@ -553,9 +553,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay female first name
      *
+     * @return string
      * @example 'Adibah'
      *
-     * @return string
      */
     public static function firstNameFemaleMalay()
     {
@@ -563,23 +563,11 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * Return a Malay last name
-     *
-     * @example 'Abdullah'
-     *
-     * @return string
-     */
-    public function lastNameMalay()
-    {
-        return static::randomElement(static::$lastNameMalay);
-    }
-
-    /**
      * Return a Malay male 'Muhammad' name
      *
+     * @return string
      * @example 'Muhammad'
      *
-     * @return string
      */
     public static function muhammadName()
     {
@@ -589,9 +577,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay female 'Nur' name
      *
+     * @return string
      * @example 'Nur'
      *
-     * @return string
      */
     public static function nurName()
     {
@@ -601,9 +589,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay male 'Haji' title
      *
+     * @return string
      * @example 'Haji'
      *
-     * @return string
      */
     public static function haji()
     {
@@ -613,9 +601,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay female 'Hajjah' title
      *
+     * @return string
      * @example 'Hajjah'
      *
-     * @return string
      */
     public static function hajjah()
     {
@@ -625,9 +613,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Malay title
      *
+     * @return string
      * @example 'Syed'
      *
-     * @return string
      */
     public static function titleMaleMalay()
     {
@@ -637,9 +625,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Chinese last name
      *
+     * @return string
      * @example 'Lim'
      *
-     * @return string
      */
     public static function lastNameChinese()
     {
@@ -649,9 +637,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Chinese male first name
      *
+     * @return string
      * @example 'Goh Tong'
      *
-     * @return string
      */
     public static function firstNameMaleChinese()
     {
@@ -661,9 +649,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Chinese female first name
      *
+     * @return string
      * @example 'Mew Choo'
      *
-     * @return string
      */
     public static function firstNameFemaleChinese()
     {
@@ -673,9 +661,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Christian male name
      *
+     * @return string
      * @example 'Aaron'
      *
-     * @return string
      */
     public static function firstNameMaleChristian()
     {
@@ -685,9 +673,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return a Christian female name
      *
+     * @return string
      * @example 'Alice'
      *
-     * @return string
      */
     public static function firstNameFemaleChristian()
     {
@@ -697,9 +685,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return an Indian initial
      *
+     * @return string
      * @example 'S. '
      *
-     * @return string
      */
     public static function initialIndian()
     {
@@ -709,9 +697,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return an Indian male first name
      *
+     * @return string
      * @example 'Arumugam'
      *
-     * @return string
      */
     public static function firstNameMaleIndian()
     {
@@ -721,9 +709,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return an Indian female first name
      *
+     * @return string
      * @example 'Ambiga'
      *
-     * @return string
      */
     public static function firstNameFemaleIndian()
     {
@@ -733,9 +721,9 @@ class Person extends \Faker\Provider\Person
     /**
      * Return an Indian last name
      *
+     * @return string
      * @example 'Subramaniam'
      *
-     * @return string
      */
     public static function lastNameIndian()
     {
@@ -743,34 +731,16 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * Return a random last name
-     *
-     * @example 'Lee'
-     *
-     * @return string
-     */
-    public function lastName()
-    {
-        $formats = [
-            '{{lastNameMalay}}',
-            '{{lastNameChinese}}',
-            '{{lastNameIndian}}',
-        ];
-
-        return $this->generator->parse(static::randomElement($formats));
-    }
-
-    /**
      * Return a Malaysian I.C. No.
      *
-     * @example '890123-45-6789'
-     *
-     * @see https://en.wikipedia.org/wiki/Malaysian_identity_card#Structure_of_the_National_Registration_Identity_Card_Number_(NRIC)
-     *
-     * @param string|null      $gender 'male', 'female' or null for any
+     * @param string|null $gender 'male', 'female' or null for any
      * @param bool|string|null $hyphen true, false, or any separator characters
      *
      * @return string
+     * @see https://en.wikipedia.org/wiki/Malaysian_identity_card#Structure_of_the_National_Registration_Identity_Card_Number_(NRIC)
+     *
+     * @example '890123-45-6789'
+     *
      */
     public static function myKadNumber($gender = null, $hyphen = false)
     {
@@ -807,5 +777,35 @@ class Person extends \Faker\Provider\Person
         }
 
         return sprintf('%02d%02d%02d%s%02d%s%03d%01d', $yy, $mm, $dd, $hyphen, $pb, $hyphen, $nnn, $g);
+    }
+
+    /**
+     * Return a Malay last name
+     *
+     * @return string
+     * @example 'Abdullah'
+     *
+     */
+    public function lastNameMalay()
+    {
+        return static::randomElement(static::$lastNameMalay);
+    }
+
+    /**
+     * Return a random last name
+     *
+     * @return string
+     * @example 'Lee'
+     *
+     */
+    public function lastName()
+    {
+        $formats = [
+            '{{lastNameMalay}}',
+            '{{lastNameChinese}}',
+            '{{lastNameIndian}}',
+        ];
+
+        return $this->generator->parse(static::randomElement($formats));
     }
 }

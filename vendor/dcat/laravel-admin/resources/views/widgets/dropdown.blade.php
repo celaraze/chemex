@@ -1,6 +1,7 @@
 @if(! empty($button['text']) || $click)
     <span class="drop{{ $direction }}" style="display:inline-block">
-        <a id="{{ $buttonId }}" class="dropdown-toggle {{ $button['class'] }}" data-toggle="dropdown" href="javascript:void(0)">
+        <a id="{{ $buttonId }}" class="dropdown-toggle {{ $button['class'] }}" data-toggle="dropdown"
+           href="javascript:void(0)">
             <stub>{!! $button['text'] !!}</stub>
             <span class="caret"></span>
         </a>
@@ -20,7 +21,7 @@
             $btn.find('stub').html($(this).html() + ' &nbsp;');
         });
 
-        if (text.replace(/(^\s*)|(\s*$)/g,"")) {
+        if (text.replace(/(^\s*)|(\s*$)/g, "")) {
             $btn.find('stub').html(text + ' &nbsp;');
         } else {
             (!$a.length) || $btn.find('stub').html($($a[0]).html() + ' &nbsp;');

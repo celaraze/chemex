@@ -25,7 +25,7 @@ class LaravelRequestContextProvider extends RequestContextProvider
             /** @phpstan-ignore-next-line */
             $user = $this->request?->user();
 
-            if (! $user) {
+            if (!$user) {
                 return null;
             }
         } catch (Throwable) {
@@ -47,6 +47,22 @@ class LaravelRequestContextProvider extends RequestContextProvider
         return null;
     }
 
+    /** @return array<int, mixed> */
+    public function toArray(): array
+    {
+        $properties = parent::toArray();
+
+        if ($route = $this->getRoute()) {
+            $properties['route'] = $route;
+        }
+
+        if ($user = $this->getUser()) {
+            $properties['user'] = $user;
+        }
+
+        return $properties;
+    }
+
     /** @return null|array<string, mixed> */
     public function getRoute(): array|null
     {
@@ -56,7 +72,7 @@ class LaravelRequestContextProvider extends RequestContextProvider
          */
         $route = $this->request->route();
 
-        if (! $route) {
+        if (!$route) {
             return null;
         }
 
@@ -74,7 +90,7 @@ class LaravelRequestContextProvider extends RequestContextProvider
         try {
             /** @phpstan-ignore-next-line */
             return collect(optional($this->request->route())->parameters ?? [])
-                ->map(fn ($parameter) => $parameter instanceof Model ? $parameter->withoutRelations() : $parameter)
+                ->map(fn($parameter) => $parameter instanceof Model ? $parameter->withoutRelations() : $parameter)
                 ->map(function ($parameter) {
                     return method_exists($parameter, 'toFlare') ? $parameter->toFlare() : $parameter;
                 })
@@ -82,21 +98,5 @@ class LaravelRequestContextProvider extends RequestContextProvider
         } catch (Throwable) {
             return [];
         }
-    }
-
-    /** @return array<int, mixed> */
-    public function toArray(): array
-    {
-        $properties = parent::toArray();
-
-        if ($route = $this->getRoute()) {
-            $properties['route'] = $route;
-        }
-
-        if ($user = $this->getUser()) {
-            $properties['user'] = $user;
-        }
-
-        return $properties;
     }
 }

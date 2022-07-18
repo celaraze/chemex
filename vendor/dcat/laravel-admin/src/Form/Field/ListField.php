@@ -28,7 +28,7 @@ class ListField extends Field
     /**
      * Set Max list size.
      *
-     * @param  int  $size
+     * @param int $size
      * @return $this
      */
     public function max(int $size)
@@ -41,7 +41,7 @@ class ListField extends Field
     /**
      * Set Minimum list size.
      *
-     * @param  int  $size
+     * @param int $size
      * @return $this
      */
     public function min(int $size)
@@ -74,20 +74,20 @@ class ListField extends Field
             return $this->validator->call($this, $input);
         }
 
-        if (! is_string($this->column)) {
+        if (!is_string($this->column)) {
             return false;
         }
 
         $rules = $attributes = [];
         if (
-            (! $fieldRules = $this->getRules())
-            && ! $this->max
-            && ! $this->min
+            (!$fieldRules = $this->getRules())
+            && !$this->max
+            && !$this->min
         ) {
             return false;
         }
 
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -97,11 +97,11 @@ class ListField extends Field
         $attributes["{$this->column}.values.*"] = __('Value');
         $rules["{$this->column}.values"][] = 'array';
 
-        if (! is_null($this->max)) {
+        if (!is_null($this->max)) {
             $rules["{$this->column}.values"][] = "max:$this->max";
         }
 
-        if (! is_null($this->min)) {
+        if (!is_null($this->min)) {
             $rules["{$this->column}.values"][] = "min:$this->min";
         }
 
@@ -110,6 +110,13 @@ class ListField extends Field
         $input = $this->prepareValidatorInput($input);
 
         return validator($input, $rules, $this->getValidationMessages(), $attributes);
+    }
+
+    protected function prepareValidatorInput(array $input)
+    {
+        Arr::forget($input, "{$this->column}.values." . static::DEFAULT_FLAG_NAME);
+
+        return $input;
     }
 
     public function formatValidatorMessages($messageBag)
@@ -123,11 +130,16 @@ class ListField extends Field
         return $messages;
     }
 
-    protected function prepareValidatorInput(array $input)
+    /**
+     * {@inheritdoc}
+     */
+    public function render()
     {
-        Arr::forget($input, "{$this->column}.values.".static::DEFAULT_FLAG_NAME);
+        $value = $this->value();
 
-        return $input;
+        $this->addVariables(['count' => $value ? count($value) : 0]);
+
+        return parent::render();
     }
 
     /**
@@ -142,17 +154,5 @@ class ListField extends Field
         }
 
         return array_values($value['values']);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
-    {
-        $value = $this->value();
-
-        $this->addVariables(['count' => $value ? count($value) : 0]);
-
-        return parent::render();
     }
 }

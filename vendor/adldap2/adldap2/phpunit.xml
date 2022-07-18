@@ -8,7 +8,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-        >
+>
     <testsuites>
         <testsuite name="Adldap2 Test Suite">
             <directory suffix="Test.php">./tests/</directory>
@@ -20,7 +20,7 @@
         </whitelist>
     </filter>
     <php>
-        <env name="SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT" value="1" />
-        <env name="SYMFONY_DEPRECATIONS_HELPER" value="/.*/" />
+        <env name="SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT" value="1"/>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="/.*/"/>
     </php>
 </phpunit>

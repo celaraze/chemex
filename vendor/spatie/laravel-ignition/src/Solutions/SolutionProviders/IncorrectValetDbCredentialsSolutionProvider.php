@@ -17,19 +17,19 @@ class IncorrectValetDbCredentialsSolutionProvider implements HasSolutionsForThro
             return false;
         }
 
-        if (! $throwable instanceof QueryException) {
+        if (!$throwable instanceof QueryException) {
             return false;
         }
 
-        if (! $this->isAccessDeniedCode($throwable->getCode())) {
+        if (!$this->isAccessDeniedCode($throwable->getCode())) {
             return false;
         }
 
-        if (! $this->envFileExists()) {
+        if (!$this->envFileExists()) {
             return false;
         }
 
-        if (! $this->isValetInstalled()) {
+        if (!$this->isValetInstalled()) {
             return false;
         }
 
@@ -40,19 +40,14 @@ class IncorrectValetDbCredentialsSolutionProvider implements HasSolutionsForThro
         return true;
     }
 
-    public function getSolutions(Throwable $throwable): array
+    protected function isAccessDeniedCode(string $code): bool
     {
-        return [new UseDefaultValetDbCredentialsSolution()];
+        return $code === static::MYSQL_ACCESS_DENIED_CODE;
     }
 
     protected function envFileExists(): bool
     {
         return file_exists(base_path('.env'));
-    }
-
-    protected function isAccessDeniedCode(string $code): bool
-    {
-        return $code === static::MYSQL_ACCESS_DENIED_CODE;
     }
 
     protected function isValetInstalled(): bool
@@ -63,5 +58,10 @@ class IncorrectValetDbCredentialsSolutionProvider implements HasSolutionsForThro
     protected function usingCorrectDefaultCredentials(): bool
     {
         return env('DB_USERNAME') === 'root' && env('DB_PASSWORD') === '';
+    }
+
+    public function getSolutions(Throwable $throwable): array
+    {
+        return [new UseDefaultValetDbCredentialsSolution()];
     }
 }

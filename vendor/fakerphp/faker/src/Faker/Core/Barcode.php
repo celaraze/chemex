@@ -12,16 +12,16 @@ use Faker\Extension;
  */
 final class Barcode implements Extension\BarcodeExtension
 {
+    public function ean13(): string
+    {
+        return $this->ean();
+    }
+
     private function ean(int $length = 13): string
     {
         $code = Extension\Helper::numerify(str_repeat('#', $length - 1));
 
         return sprintf('%s%s', $code, Calculator\Ean::checksum($code));
-    }
-
-    public function ean13(): string
-    {
-        return $this->ean();
     }
 
     public function ean8(): string

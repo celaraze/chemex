@@ -14,6 +14,18 @@ trait Batchable
     public $batchId;
 
     /**
+     * Determine if the batch is still active and processing.
+     *
+     * @return bool
+     */
+    public function batching()
+    {
+        $batch = $this->batch();
+
+        return $batch && !$batch->cancelled();
+    }
+
+    /**
      * Get the batch instance for the job, if applicable.
      *
      * @return \Illuminate\Bus\Batch|null
@@ -26,21 +38,9 @@ trait Batchable
     }
 
     /**
-     * Determine if the batch is still active and processing.
-     *
-     * @return bool
-     */
-    public function batching()
-    {
-        $batch = $this->batch();
-
-        return $batch && ! $batch->cancelled();
-    }
-
-    /**
      * Set the batch ID on the job.
      *
-     * @param  string  $batchId
+     * @param string $batchId
      * @return $this
      */
     public function withBatchId(string $batchId)

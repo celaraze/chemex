@@ -25,7 +25,7 @@ class PhpFileDumper extends FileDumper
      */
     public function formatCatalogue(MessageCatalogue $messages, string $domain, array $options = []): string
     {
-        return "<?php\n\nreturn ".var_export($messages->all($domain), true).";\n";
+        return "<?php\n\nreturn " . var_export($messages->all($domain), true) . ";\n";
     }
 
     /**

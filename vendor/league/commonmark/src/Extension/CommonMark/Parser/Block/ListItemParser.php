@@ -35,11 +35,6 @@ final class ListItemParser extends AbstractBlockContinueParser
         $this->block = new ListItem($listData);
     }
 
-    public function getBlock(): ListItem
-    {
-        return $this->block;
-    }
-
     public function isContainer(): bool
     {
         return true;
@@ -86,5 +81,10 @@ final class ListItemParser extends AbstractBlockContinueParser
 
         // Note: We'll hit this case for lazy continuation lines, they will get added later.
         return BlockContinue::none();
+    }
+
+    public function getBlock(): ListItem
+    {
+        return $this->block;
     }
 }

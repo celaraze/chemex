@@ -7,26 +7,35 @@ use Illuminate\Contracts\Redis\LimiterTimeoutException;
 class DurationLimiter
 {
     /**
+     * The timestamp of the end of the current duration.
+     *
+     * @var int
+     */
+    public $decaysAt;
+    /**
+     * The number of remaining slots.
+     *
+     * @var int
+     */
+    public $remaining;
+    /**
      * The Redis factory implementation.
      *
      * @var \Illuminate\Redis\Connections\Connection
      */
     private $redis;
-
     /**
      * The unique name of the lock.
      *
      * @var string
      */
     private $name;
-
     /**
      * The allowed number of concurrent tasks.
      *
      * @var int
      */
     private $maxLocks;
-
     /**
      * The number of seconds a slot should be maintained.
      *
@@ -35,26 +44,12 @@ class DurationLimiter
     private $decay;
 
     /**
-     * The timestamp of the end of the current duration.
-     *
-     * @var int
-     */
-    public $decaysAt;
-
-    /**
-     * The number of remaining slots.
-     *
-     * @var int
-     */
-    public $remaining;
-
-    /**
      * Create a new duration limiter instance.
      *
-     * @param  \Illuminate\Redis\Connections\Connection  $redis
-     * @param  string  $name
-     * @param  int  $maxLocks
-     * @param  int  $decay
+     * @param \Illuminate\Redis\Connections\Connection $redis
+     * @param string $name
+     * @param int $maxLocks
+     * @param int $decay
      * @return void
      */
     public function __construct($redis, $name, $maxLocks, $decay)
@@ -68,9 +63,9 @@ class DurationLimiter
     /**
      * Attempt to acquire the lock for the given number of seconds.
      *
-     * @param  int  $timeout
-     * @param  callable|null  $callback
-     * @param  int  $sleep
+     * @param int $timeout
+     * @param callable|null $callback
+     * @param int $sleep
      * @return mixed
      *
      * @throws \Illuminate\Contracts\Redis\LimiterTimeoutException
@@ -79,7 +74,7 @@ class DurationLimiter
     {
         $starting = time();
 
-        while (! $this->acquire()) {
+        while (!$this->acquire()) {
             if (time() - $timeout >= $starting) {
                 throw new LimiterTimeoutException;
             }
@@ -109,31 +104,7 @@ class DurationLimiter
 
         $this->remaining = max(0, $results[2]);
 
-        return (bool) $results[0];
-    }
-
-    /**
-     * Determine if the key has been "accessed" too many times.
-     *
-     * @return bool
-     */
-    public function tooManyAttempts()
-    {
-        [$this->decaysAt, $this->remaining] = $this->redis->eval(
-            $this->tooManyAttemptsLuaScript(), 1, $this->name, microtime(true), time(), $this->decay, $this->maxLocks
-        );
-
-        return $this->remaining <= 0;
-    }
-
-    /**
-     * Clear the limiter.
-     *
-     * @return void
-     */
-    public function clear()
-    {
-        $this->redis->del($this->name);
+        return (bool)$results[0];
     }
 
     /**
@@ -172,6 +143,20 @@ LUA;
     }
 
     /**
+     * Determine if the key has been "accessed" too many times.
+     *
+     * @return bool
+     */
+    public function tooManyAttempts()
+    {
+        [$this->decaysAt, $this->remaining] = $this->redis->eval(
+            $this->tooManyAttemptsLuaScript(), 1, $this->name, microtime(true), time(), $this->decay, $this->maxLocks
+        );
+
+        return $this->remaining <= 0;
+    }
+
+    /**
      * Get the Lua script to determine if the key has been "accessed" too many times.
      *
      * KEYS[1] - The limiter name
@@ -199,5 +184,15 @@ end
 
 return {0, ARGV[2] + ARGV[3]}
 LUA;
+    }
+
+    /**
+     * Clear the limiter.
+     *
+     * @return void
+     */
+    public function clear()
+    {
+        $this->redis->del($this->name);
     }
 }

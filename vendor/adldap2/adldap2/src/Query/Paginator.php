@@ -2,8 +2,8 @@
 
 namespace Adldap\Query;
 
-use Countable;
 use ArrayIterator;
+use Countable;
 use IteratorAggregate;
 
 class Paginator implements Countable, IteratorAggregate
@@ -47,9 +47,9 @@ class Paginator implements Countable, IteratorAggregate
      * Constructor.
      *
      * @param array $results
-     * @param int   $perPage
-     * @param int   $currentPage
-     * @param int   $pages
+     * @param int $perPage
+     * @param int $currentPage
+     * @param int $pages
      */
     public function __construct(array $results = [], $perPage = 50, $currentPage = 0, $pages = 0)
     {
@@ -58,6 +58,55 @@ class Paginator implements Countable, IteratorAggregate
             ->setCurrentPage($currentPage)
             ->setPages($pages)
             ->setCurrentOffset(($this->getCurrentPage() * $this->getPerPage()));
+    }
+
+    /**
+     * Returns the current page number.
+     *
+     * @return int
+     */
+    public function getCurrentPage()
+    {
+        return $this->currentPage;
+    }
+
+    /**
+     * Sets the current page number.
+     *
+     * @param int $currentPage
+     *
+     * @return Paginator
+     */
+    protected function setCurrentPage($currentPage = 0)
+    {
+        $this->currentPage = (int)$currentPage;
+
+        return $this;
+    }
+
+    /**
+     * Returns the total amount of entries
+     * allowed per page.
+     *
+     * @return int
+     */
+    public function getPerPage()
+    {
+        return $this->perPage;
+    }
+
+    /**
+     * Sets the number of entries per page.
+     *
+     * @param int $perPage
+     *
+     * @return Paginator
+     */
+    protected function setPerPage($perPage = 50)
+    {
+        $this->perPage = (int)$perPage;
+
+        return $this;
     }
 
     /**
@@ -84,59 +133,6 @@ class Paginator implements Countable, IteratorAggregate
     }
 
     /**
-     * Returns the total amount of pages
-     * in a paginated result.
-     *
-     * @return int
-     */
-    public function getPages()
-    {
-        return $this->pages;
-    }
-
-    /**
-     * Returns the total amount of entries
-     * allowed per page.
-     *
-     * @return int
-     */
-    public function getPerPage()
-    {
-        return $this->perPage;
-    }
-
-    /**
-     * Returns the current page number.
-     *
-     * @return int
-     */
-    public function getCurrentPage()
-    {
-        return $this->currentPage;
-    }
-
-    /**
-     * Returns the current offset number.
-     *
-     * @return int
-     */
-    public function getCurrentOffset()
-    {
-        return $this->currentOffset;
-    }
-
-    /**
-     * Returns the total amount of results.
-     *
-     * @return int
-     */
-    #[\ReturnTypeWillChange]
-    public function count()
-    {
-        return count($this->results);
-    }
-
-    /**
      * Sets the results array property.
      *
      * @param array $results
@@ -151,45 +147,13 @@ class Paginator implements Countable, IteratorAggregate
     }
 
     /**
-     * Sets the total number of pages.
+     * Returns the current offset number.
      *
-     * @param int $pages
-     *
-     * @return Paginator
+     * @return int
      */
-    protected function setPages($pages = 0)
+    public function getCurrentOffset()
     {
-        $this->pages = (int) $pages;
-
-        return $this;
-    }
-
-    /**
-     * Sets the number of entries per page.
-     *
-     * @param int $perPage
-     *
-     * @return Paginator
-     */
-    protected function setPerPage($perPage = 50)
-    {
-        $this->perPage = (int) $perPage;
-
-        return $this;
-    }
-
-    /**
-     * Sets the current page number.
-     *
-     * @param int $currentPage
-     *
-     * @return Paginator
-     */
-    protected function setCurrentPage($currentPage = 0)
-    {
-        $this->currentPage = (int) $currentPage;
-
-        return $this;
+        return $this->currentOffset;
     }
 
     /**
@@ -201,8 +165,44 @@ class Paginator implements Countable, IteratorAggregate
      */
     protected function setCurrentOffset($offset = 0)
     {
-        $this->currentOffset = (int) $offset;
+        $this->currentOffset = (int)$offset;
 
         return $this;
+    }
+
+    /**
+     * Returns the total amount of pages
+     * in a paginated result.
+     *
+     * @return int
+     */
+    public function getPages()
+    {
+        return $this->pages;
+    }
+
+    /**
+     * Sets the total number of pages.
+     *
+     * @param int $pages
+     *
+     * @return Paginator
+     */
+    protected function setPages($pages = 0)
+    {
+        $this->pages = (int)$pages;
+
+        return $this;
+    }
+
+    /**
+     * Returns the total amount of results.
+     *
+     * @return int
+     */
+    #[\ReturnTypeWillChange]
+    public function count()
+    {
+        return count($this->results);
     }
 }

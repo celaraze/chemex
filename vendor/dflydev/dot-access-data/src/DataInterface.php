@@ -29,7 +29,7 @@ interface DataInterface
      * If the key references a non-array it's existing contents will be added into a new array before appending the new value.
      *
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @throws InvalidPathException if the given key is empty
      */
@@ -41,7 +41,7 @@ interface DataInterface
      * If the key does not yet exist it will be created.
      *
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @throws InvalidPathException if the given key is empty
      * @throws DataException if the given key does not target an array
@@ -107,7 +107,7 @@ interface DataInterface
     /**
      * Import data into existing data
      *
-     * @param array<string, mixed>                     $data
+     * @param array<string, mixed> $data
      * @param self::PRESERVE|self::REPLACE|self::MERGE $mode
      */
     public function import(array $data, int $mode = self::REPLACE): void;
@@ -115,7 +115,7 @@ interface DataInterface
     /**
      * Import data from an external data into existing data
      *
-     * @param DataInterface                            $data
+     * @param DataInterface $data
      * @param self::PRESERVE|self::REPLACE|self::MERGE $mode
      */
     public function importData(DataInterface $data, int $mode = self::REPLACE): void;

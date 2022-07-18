@@ -55,13 +55,15 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 ### Fixed
 
 * [#53](https://github.com/sebastianbergmann/comparator/pull/53): `DOMNodeComparator` ignores `$ignoreCase` parameter
-* [#58](https://github.com/sebastianbergmann/comparator/pull/58): `ScalarComparator` does not handle extremely ugly string comparison edge cases
+* [#58](https://github.com/sebastianbergmann/comparator/pull/58): `ScalarComparator` does not handle extremely ugly
+  string comparison edge cases
 
 ## [3.0.0] - 2018-04-18
 
 ### Fixed
 
-* Fixed [#48](https://github.com/sebastianbergmann/comparator/issues/48): `DateTimeComparator` does not support fractional second deltas
+* Fixed [#48](https://github.com/sebastianbergmann/comparator/issues/48): `DateTimeComparator` does not support
+  fractional second deltas
 
 ### Removed
 
@@ -93,16 +95,29 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 * Added support for `phpunit/phpunit-mock-objects` version `^5.0`
 
 [4.0.6]: https://github.com/sebastianbergmann/comparator/compare/4.0.5...4.0.6
+
 [4.0.5]: https://github.com/sebastianbergmann/comparator/compare/4.0.4...4.0.5
+
 [4.0.4]: https://github.com/sebastianbergmann/comparator/compare/4.0.3...4.0.4
+
 [4.0.3]: https://github.com/sebastianbergmann/comparator/compare/4.0.2...4.0.3
+
 [4.0.2]: https://github.com/sebastianbergmann/comparator/compare/4.0.1...4.0.2
+
 [4.0.1]: https://github.com/sebastianbergmann/comparator/compare/4.0.0...4.0.1
+
 [4.0.0]: https://github.com/sebastianbergmann/comparator/compare/3.0.2...4.0.0
+
 [3.0.2]: https://github.com/sebastianbergmann/comparator/compare/3.0.1...3.0.2
+
 [3.0.1]: https://github.com/sebastianbergmann/comparator/compare/3.0.0...3.0.1
+
 [3.0.0]: https://github.com/sebastianbergmann/comparator/compare/2.1.3...3.0.0
+
 [2.1.3]: https://github.com/sebastianbergmann/comparator/compare/2.1.2...2.1.3
+
 [2.1.2]: https://github.com/sebastianbergmann/comparator/compare/2.1.1...2.1.2
+
 [2.1.1]: https://github.com/sebastianbergmann/comparator/compare/2.1.0...2.1.1
+
 [2.1.0]: https://github.com/sebastianbergmann/comparator/compare/2.0.2...2.1.0

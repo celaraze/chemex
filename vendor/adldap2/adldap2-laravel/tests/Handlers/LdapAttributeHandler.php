@@ -10,7 +10,7 @@ class LdapAttributeHandler
     /**
      * Synchronizes ldap attributes to the specified model.
      *
-     * @param User  $user
+     * @param User $user
      * @param Model $model
      *
      * @return void

@@ -8,14 +8,14 @@ class BaseSolution implements Solution
     protected $description;
     protected $links = [];
 
-    public static function create(string $title)
-    {
-        return new static($title);
-    }
-
     public function __construct(string $title)
     {
         $this->title = $title;
+    }
+
+    public static function create(string $title)
+    {
+        return new static($title);
     }
 
     public function getSolutionTitle(): string

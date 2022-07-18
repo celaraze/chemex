@@ -66,6 +66,54 @@ class SpdxLicenses
     }
 
     /**
+     * @return void
+     */
+    private function loadLicenses()
+    {
+        if (null !== $this->licenses) {
+            return;
+        }
+
+        $json = file_get_contents(self::getResourcesDir() . '/' . self::LICENSES_FILE);
+        if (false === $json) {
+            throw new \RuntimeException('Missing license file in ' . self::getResourcesDir() . '/' . self::LICENSES_FILE);
+        }
+        $this->licenses = array();
+
+        foreach (json_decode($json, true) as $identifier => $license) {
+            $this->licenses[strtolower($identifier)] = array($identifier, $license[0], $license[1], $license[2]);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public static function getResourcesDir()
+    {
+        return dirname(__DIR__) . '/res';
+    }
+
+    /**
+     * @return void
+     */
+    private function loadExceptions()
+    {
+        if (null !== $this->exceptions) {
+            return;
+        }
+
+        $json = file_get_contents(self::getResourcesDir() . '/' . self::EXCEPTIONS_FILE);
+        if (false === $json) {
+            throw new \RuntimeException('Missing exceptions file in ' . self::getResourcesDir() . '/' . self::EXCEPTIONS_FILE);
+        }
+        $this->exceptions = array();
+
+        foreach (json_decode($json, true) as $identifier => $exception) {
+            $this->exceptions[strtolower($identifier)] = array($identifier, $exception[0]);
+        }
+    }
+
+    /**
      * Returns license metadata by license identifier.
      *
      * This function adds a link to the full license text to the license metadata.
@@ -184,9 +232,9 @@ class SpdxLicenses
     /**
      * @param string[]|string $license
      *
+     * @return bool
      * @throws \InvalidArgumentException
      *
-     * @return bool
      */
     public function validate($license)
     {
@@ -195,7 +243,7 @@ class SpdxLicenses
             if ($count !== count(array_filter($license, 'is_string'))) {
                 throw new \InvalidArgumentException('Array of strings expected.');
             }
-            $license = $count > 1  ? '(' . implode(' OR ', $license) . ')' : (string) reset($license);
+            $license = $count > 1 ? '(' . implode(' OR ', $license) . ')' : (string)reset($license);
         }
 
         if (!is_string($license)) {
@@ -209,89 +257,11 @@ class SpdxLicenses
     }
 
     /**
-     * @return string
-     */
-    public static function getResourcesDir()
-    {
-        return dirname(__DIR__) . '/res';
-    }
-
-    /**
-     * @return void
-     */
-    private function loadLicenses()
-    {
-        if (null !== $this->licenses) {
-            return;
-        }
-
-        $json = file_get_contents(self::getResourcesDir() . '/' . self::LICENSES_FILE);
-        if (false === $json) {
-            throw new \RuntimeException('Missing license file in ' . self::getResourcesDir() . '/' . self::LICENSES_FILE);
-        }
-        $this->licenses = array();
-
-        foreach (json_decode($json, true) as $identifier => $license) {
-            $this->licenses[strtolower($identifier)] = array($identifier, $license[0], $license[1], $license[2]);
-        }
-    }
-
-    /**
-     * @return void
-     */
-    private function loadExceptions()
-    {
-        if (null !== $this->exceptions) {
-            return;
-        }
-
-        $json = file_get_contents(self::getResourcesDir() . '/' . self::EXCEPTIONS_FILE);
-        if (false === $json) {
-            throw new \RuntimeException('Missing exceptions file in ' . self::getResourcesDir() . '/' . self::EXCEPTIONS_FILE);
-        }
-        $this->exceptions = array();
-
-        foreach (json_decode($json, true) as $identifier => $exception) {
-            $this->exceptions[strtolower($identifier)] = array($identifier, $exception[0]);
-        }
-    }
-
-    /**
-     * @return string
-     */
-    private function getLicensesExpression()
-    {
-        if (null === $this->licensesExpression) {
-            $licenses = array_map('preg_quote', array_keys($this->licenses));
-            rsort($licenses);
-            $licenses = implode('|', $licenses);
-            $this->licensesExpression = $licenses;
-        }
-
-        return $this->licensesExpression;
-    }
-
-    /**
-     * @return string
-     */
-    private function getExceptionsExpression()
-    {
-        if (null === $this->exceptionsExpression) {
-            $exceptions = array_map('preg_quote', array_keys($this->exceptions));
-            rsort($exceptions);
-            $exceptions = implode('|', $exceptions);
-            $this->exceptionsExpression = $exceptions;
-        }
-
-        return $this->exceptionsExpression;
-    }
-
-    /**
      * @param string $license
      *
+     * @return bool
      * @throws \RuntimeException
      *
-     * @return bool
      */
     private function isValidLicenseString($license)
     {
@@ -353,5 +323,35 @@ REGEX;
         }
 
         return true;
+    }
+
+    /**
+     * @return string
+     */
+    private function getLicensesExpression()
+    {
+        if (null === $this->licensesExpression) {
+            $licenses = array_map('preg_quote', array_keys($this->licenses));
+            rsort($licenses);
+            $licenses = implode('|', $licenses);
+            $this->licensesExpression = $licenses;
+        }
+
+        return $this->licensesExpression;
+    }
+
+    /**
+     * @return string
+     */
+    private function getExceptionsExpression()
+    {
+        if (null === $this->exceptionsExpression) {
+            $exceptions = array_map('preg_quote', array_keys($this->exceptions));
+            rsort($exceptions);
+            $exceptions = implode('|', $exceptions);
+            $this->exceptionsExpression = $exceptions;
+        }
+
+        return $this->exceptionsExpression;
     }
 }

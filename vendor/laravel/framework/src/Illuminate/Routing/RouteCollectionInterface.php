@@ -9,7 +9,7 @@ interface RouteCollectionInterface
     /**
      * Add a Route instance to the collection.
      *
-     * @param  \Illuminate\Routing\Route  $route
+     * @param \Illuminate\Routing\Route $route
      * @return \Illuminate\Routing\Route
      */
     public function add(Route $route);
@@ -35,7 +35,7 @@ interface RouteCollectionInterface
     /**
      * Find the first route matching a given request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Routing\Route
      *
      * @throws \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
@@ -46,7 +46,7 @@ interface RouteCollectionInterface
     /**
      * Get routes from the collection by method.
      *
-     * @param  string|null  $method
+     * @param string|null $method
      * @return \Illuminate\Routing\Route[]
      */
     public function get($method = null);
@@ -54,7 +54,7 @@ interface RouteCollectionInterface
     /**
      * Determine if the route collection contains a given named route.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function hasNamedRoute($name);
@@ -62,7 +62,7 @@ interface RouteCollectionInterface
     /**
      * Get a route instance by its name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return \Illuminate\Routing\Route|null
      */
     public function getByName($name);
@@ -70,7 +70,7 @@ interface RouteCollectionInterface
     /**
      * Get a route instance by its controller action.
      *
-     * @param  string  $action
+     * @param string $action
      * @return \Illuminate\Routing\Route|null
      */
     public function getByAction($action);

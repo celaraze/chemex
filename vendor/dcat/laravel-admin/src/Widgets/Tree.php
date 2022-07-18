@@ -12,11 +12,11 @@ class Tree extends Widget
 
     protected $options = [
         'plugins' => ['checkbox', 'types'],
-        'core'    => [
+        'core' => [
             'check_callback' => true,
 
             'themes' => [
-                'name'       => 'proton',
+                'name' => 'proton',
                 'responsive' => true,
             ],
         ],
@@ -33,8 +33,8 @@ class Tree extends Widget
     protected $id;
 
     protected $columnNames = [
-        'id'     => 'id',
-        'text'   => 'name',
+        'id' => 'id',
+        'text' => 'name',
         'parent' => 'parent_id',
     ];
 
@@ -48,7 +48,28 @@ class Tree extends Widget
     {
         $this->nodes($nodes);
 
-        $this->id = 'widget-tree-'.Str::random(8);
+        $this->id = 'widget-tree-' . Str::random(8);
+    }
+
+    /**
+     * @param array $data exp:
+     *                       {
+     *                       "id": "1",
+     *                       "parent": "#",
+     *                       "text": "Dashboard",
+     *                       // "state": {"selected": true}
+     *                       }
+     * @param array $data
+     * @return $this
+     */
+    public function nodes($data)
+    {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+        $this->nodes = &$data;
+
+        return $this;
     }
 
     public function checkAll()
@@ -86,27 +107,6 @@ class Tree extends Widget
         return $this;
     }
 
-    /**
-     * @param  array  $data  exp:
-     *                       {
-     *                       "id": "1",
-     *                       "parent": "#",
-     *                       "text": "Dashboard",
-     *                       // "state": {"selected": true}
-     *                       }
-     * @param  array  $data
-     * @return $this
-     */
-    public function nodes($data)
-    {
-        if ($data instanceof Arrayable) {
-            $data = $data->toArray();
-        }
-        $this->nodes = &$data;
-
-        return $this;
-    }
-
     public function render()
     {
         $this->id($this->id);
@@ -116,7 +116,7 @@ class Tree extends Widget
         $this->formatNodes();
 
         $this->variables = [
-            'id'    => $this->id,
+            'id' => $this->id,
             'nodes' => &$this->nodes,
         ];
 
@@ -126,12 +126,12 @@ class Tree extends Widget
     protected function formatNodes()
     {
         $value = $this->value;
-        if ($value && ! is_array($value)) {
+        if ($value && !is_array($value)) {
             $value = explode(',', $value);
         }
-        $value = (array) $value;
+        $value = (array)$value;
 
-        if (! $this->nodes) {
+        if (!$this->nodes) {
             return;
         }
 
@@ -160,10 +160,10 @@ class Tree extends Widget
             $v['state']['disabled'] = true;
 
             $nodes[] = [
-                'id'     => $v[$idColumn],
-                'text'   => $v[$textColumn] ?? null,
+                'id' => $v[$idColumn],
+                'text' => $v[$textColumn] ?? null,
                 'parent' => $parentId,
-                'state'  => $v['state'],
+                'state' => $v['state'],
             ];
         }
 

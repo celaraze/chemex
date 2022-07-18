@@ -15,8 +15,8 @@ class EloquentAuthenticateTest extends DatabaseTestCase
         $this->app['config']->set('auth.guards.web.provider', 'users');
 
         $user = $this->makeLdapUser([
-            'objectguid'        => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
-            'cn'                => ['John Doe'],
+            'objectguid' => ['cc07cacc-5d9d-fa40-a9fb-3a4d50a172b0'],
+            'cn' => ['John Doe'],
             'userprincipalname' => ['jdoe@email.com'],
         ]);
 

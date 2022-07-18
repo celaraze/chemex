@@ -71,7 +71,7 @@ class HtmlOutputFormatter extends OutputFormatter
 
         $clearEscapeCodes = '(?:39|49|0|22|24|25|27|28)';
 
-        return Preg::replaceCallback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", Closure::fromCallable([$this, 'formatHtml']), $formatted);
+        return Preg::replaceCallback("{\033\[([0-9;]+)m(.*?)\033\[(?:" . $clearEscapeCodes . ";)*?" . $clearEscapeCodes . "m}s", Closure::fromCallable([$this, 'formatHtml']), $formatted);
     }
 
     /**
@@ -81,12 +81,12 @@ class HtmlOutputFormatter extends OutputFormatter
     {
         $out = '<span style="';
         foreach (explode(';', $matches[1]) as $code) {
-            if (isset(self::$availableForegroundColors[(int) $code])) {
-                $out .= 'color:'.self::$availableForegroundColors[(int) $code].';';
-            } elseif (isset(self::$availableBackgroundColors[(int) $code])) {
-                $out .= 'background-color:'.self::$availableBackgroundColors[(int) $code].';';
-            } elseif (isset(self::$availableOptions[(int) $code])) {
-                switch (self::$availableOptions[(int) $code]) {
+            if (isset(self::$availableForegroundColors[(int)$code])) {
+                $out .= 'color:' . self::$availableForegroundColors[(int)$code] . ';';
+            } elseif (isset(self::$availableBackgroundColors[(int)$code])) {
+                $out .= 'background-color:' . self::$availableBackgroundColors[(int)$code] . ';';
+            } elseif (isset(self::$availableOptions[(int)$code])) {
+                switch (self::$availableOptions[(int)$code]) {
                     case 'bold':
                         $out .= 'font-weight:bold;';
                         break;
@@ -98,6 +98,6 @@ class HtmlOutputFormatter extends OutputFormatter
             }
         }
 
-        return $out.'">'.$matches[2].'</span>';
+        return $out . '">' . $matches[2] . '</span>';
     }
 }

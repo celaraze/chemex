@@ -21,11 +21,11 @@ use League\CommonMark\Node\Block\TightBlockInterface;
 
 class ListBlock extends AbstractBlock implements TightBlockInterface
 {
-    public const TYPE_BULLET  = 'bullet';
+    public const TYPE_BULLET = 'bullet';
     public const TYPE_ORDERED = 'ordered';
 
     public const DELIM_PERIOD = 'period';
-    public const DELIM_PAREN  = 'paren';
+    public const DELIM_PAREN = 'paren';
 
     protected bool $tight = false;
 

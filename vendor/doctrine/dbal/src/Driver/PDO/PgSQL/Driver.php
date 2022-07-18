@@ -19,7 +19,7 @@ final class Driver extends AbstractPostgreSQLDriver
     {
         $driverOptions = $params['driverOptions'] ?? [];
 
-        if (! empty($params['persistent'])) {
+        if (!empty($params['persistent'])) {
             $driverOptions[PDO::ATTR_PERSISTENT] = true;
         }
 
@@ -35,7 +35,7 @@ final class Driver extends AbstractPostgreSQLDriver
         }
 
         if (
-            ! isset($driverOptions[PDO::PGSQL_ATTR_DISABLE_PREPARES])
+            !isset($driverOptions[PDO::PGSQL_ATTR_DISABLE_PREPARES])
             || $driverOptions[PDO::PGSQL_ATTR_DISABLE_PREPARES] === true
         ) {
             $pdo->setAttribute(PDO::PGSQL_ATTR_DISABLE_PREPARES, true);

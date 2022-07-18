@@ -1,7 +1,12 @@
 {
     "name": "phpoption/phpoption",
     "description": "Option Type for PHP",
-    "keywords": ["php", "option", "language", "type"],
+    "keywords": [
+        "php",
+        "option",
+        "language",
+        "type"
+    ],
     "license": "Apache-2.0",
     "authors": [
         {

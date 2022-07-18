@@ -9,7 +9,7 @@
             @foreach($fields as $field)
                 &nbsp;{!! $field->render() !!}
             @endforeach
-                &nbsp;
+            &nbsp;
             &nbsp;
             <button type="submit" class="btn btn-primary btn-sm">{{ __('admin.submit') }}</button>&nbsp;
             &nbsp;
@@ -58,13 +58,13 @@
             url: '{!! $url !!}',
             type: '{!! $method !!}',
             data: $(this).serialize(),
-            success: function(data) {
+            success: function (data) {
                 ctr.attr('submitting', '');
                 btn.buttonLoading(false);
 
                 Dcat.handleJsonResponse(data);
             },
-            error:function(xhq){
+            error: function (xhq) {
                 btn.buttonLoading(false);
                 ctr.attr('submitting', '');
                 var json = xhq.responseJSON;

@@ -16,18 +16,16 @@ use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Package\CompleteAliasPackage;
-use Composer\Package\CompletePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
+use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\Util\Url;
-use Composer\Util\Git as GitUtil;
 
 /**
  * This repository allows installing local packages that are not necessarily under their own VCS.
@@ -109,7 +107,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * @param array{url?: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}} $repoConfig
      * @param IOInterface $io
-     * @param Config      $config
+     * @param Config $config
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $dispatcher = null, ProcessExecutor $process = null)
     {
@@ -133,7 +131,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
     public function getRepoName(): string
     {
-        return 'path repo ('.Url::sanitize($this->repoConfig['url']).')';
+        return 'path repo (' . Url::sanitize($this->repoConfig['url']) . ')';
     }
 
     public function getRepoConfig(): array
@@ -169,7 +167,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
         foreach ($urlMatches as $url) {
             $path = realpath($url) . DIRECTORY_SEPARATOR;
-            $composerFilePath = $path.'composer.json';
+            $composerFilePath = $path . 'composer.json';
 
             if (!file_exists($composerFilePath)) {
                 continue;
@@ -207,7 +205,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
+            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H' . GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
 
@@ -242,7 +240,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         if (defined('GLOB_BRACE')) {
             $flags |= GLOB_BRACE;
         } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
-            throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
+            throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url ' . $this->url);
         }
 
         // Ensure environment-specific path separators are normalized to URL separators

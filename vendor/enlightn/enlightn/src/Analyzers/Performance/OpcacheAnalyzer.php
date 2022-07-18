@@ -5,32 +5,29 @@ namespace Enlightn\Enlightn\Analyzers\Performance;
 class OpcacheAnalyzer extends PerformanceAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = 'OPcache is enabled.';
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 10;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
 
     /**
      * Get the error message describing the analyzer insights.
@@ -40,7 +37,7 @@ class OpcacheAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "OPcache is currently disabled. OPcache can give your application a significant performance boost "
-            ."and it is recommended to enable it in production.";
+            . "and it is recommended to enable it in production.";
     }
 
     /**

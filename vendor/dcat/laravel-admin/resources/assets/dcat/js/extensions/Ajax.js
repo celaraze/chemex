@@ -1,4 +1,3 @@
-
 export default class Ajax {
     constructor(Dcat) {
         this.dcat = Dcat;
@@ -96,10 +95,11 @@ export default class Ajax {
                             err.push(json.errors[i].join('<br/>'));
                         }
                         Dcat.error(err.join('<br/>'));
-                    } catch (e) {}
+                    } catch (e) {
+                    }
                     return;
                 }
-             case 0:
+            case 0:
                 return;
         }
 
@@ -111,7 +111,7 @@ export default class Ajax {
         let Dcat = this.dcat,
             data = response.data;
 
-        if (! response) {
+        if (!response) {
             return;
         }
 
@@ -159,7 +159,7 @@ export default class Ajax {
         let message = data.message || response.message;
 
         // 判断默认弹窗类型.
-        if (! data.type) {
+        if (!data.type) {
             data.type = response.status ? 'success' : 'error';
         }
 
@@ -167,7 +167,7 @@ export default class Ajax {
             if (data.alert) {
                 Dcat.swal[data.type](message, data.detail);
             } else {
-                Dcat[data.type](message, null, data.timeout ? {timeOut: data.timeout*1000} : {});
+                Dcat[data.type](message, null, data.timeout ? {timeOut: data.timeout * 1000} : {});
             }
         }
 

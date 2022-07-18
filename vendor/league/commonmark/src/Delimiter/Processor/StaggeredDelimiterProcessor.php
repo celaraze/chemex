@@ -48,21 +48,6 @@ final class StaggeredDelimiterProcessor implements DelimiterProcessorInterface
         $this->add($processor);
     }
 
-    public function getOpeningCharacter(): string
-    {
-        return $this->delimiterChar;
-    }
-
-    public function getClosingCharacter(): string
-    {
-        return $this->delimiterChar;
-    }
-
-    public function getMinLength(): int
-    {
-        return $this->minLength;
-    }
-
     /**
      * Adds the given processor to this staggered delimiter processor
      */
@@ -80,14 +65,24 @@ final class StaggeredDelimiterProcessor implements DelimiterProcessorInterface
         $this->minLength = \min($this->minLength, $len);
     }
 
+    public function getMinLength(): int
+    {
+        return $this->minLength;
+    }
+
+    public function getOpeningCharacter(): string
+    {
+        return $this->delimiterChar;
+    }
+
+    public function getClosingCharacter(): string
+    {
+        return $this->delimiterChar;
+    }
+
     public function getDelimiterUse(DelimiterInterface $opener, DelimiterInterface $closer): int
     {
         return $this->findProcessor($opener->getLength())->getDelimiterUse($opener, $closer);
-    }
-
-    public function process(AbstractStringContainer $opener, AbstractStringContainer $closer, int $delimiterUse): void
-    {
-        $this->findProcessor($delimiterUse)->process($opener, $closer, $delimiterUse);
     }
 
     private function findProcessor(int $len): DelimiterProcessorInterface
@@ -104,5 +99,10 @@ final class StaggeredDelimiterProcessor implements DelimiterProcessorInterface
         \assert($first instanceof DelimiterProcessorInterface);
 
         return $first;
+    }
+
+    public function process(AbstractStringContainer $opener, AbstractStringContainer $closer, int $delimiterUse): void
+    {
+        $this->findProcessor($delimiterUse)->process($opener, $closer, $delimiterUse);
     }
 }

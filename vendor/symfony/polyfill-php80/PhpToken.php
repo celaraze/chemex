@@ -46,39 +46,6 @@ class PhpToken implements \Stringable
         $this->pos = $position;
     }
 
-    public function getTokenName(): ?string
-    {
-        if ('UNKNOWN' === $name = token_name($this->id)) {
-            $name = \strlen($this->text) > 1 || \ord($this->text) < 32 ? null : $this->text;
-        }
-
-        return $name;
-    }
-
-    /**
-     * @param int|string|array $kind
-     */
-    public function is($kind): bool
-    {
-        foreach ((array) $kind as $value) {
-            if (\in_array($value, [$this->id, $this->text], true)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function isIgnorable(): bool
-    {
-        return \in_array($this->id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true);
-    }
-
-    public function __toString(): string
-    {
-        return (string) $this->text;
-    }
-
     /**
      * @return static[]
      */
@@ -99,5 +66,38 @@ class PhpToken implements \Stringable
         }
 
         return $tokens;
+    }
+
+    public function getTokenName(): ?string
+    {
+        if ('UNKNOWN' === $name = token_name($this->id)) {
+            $name = \strlen($this->text) > 1 || \ord($this->text) < 32 ? null : $this->text;
+        }
+
+        return $name;
+    }
+
+    /**
+     * @param int|string|array $kind
+     */
+    public function is($kind): bool
+    {
+        foreach ((array)$kind as $value) {
+            if (\in_array($value, [$this->id, $this->text], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isIgnorable(): bool
+    {
+        return \in_array($this->id, [\T_WHITESPACE, \T_COMMENT, \T_DOC_COMMENT, \T_OPEN_TAG], true);
+    }
+
+    public function __toString(): string
+    {
+        return (string)$this->text;
     }
 }

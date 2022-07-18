@@ -2,7 +2,14 @@
     "name": "symfony/http-client-contracts",
     "type": "library",
     "description": "Generic abstractions related to HTTP clients",
-    "keywords": ["abstractions", "contracts", "decoupling", "interfaces", "interoperability", "standards"],
+    "keywords": [
+        "abstractions",
+        "contracts",
+        "decoupling",
+        "interfaces",
+        "interoperability",
+        "standards"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -22,7 +29,9 @@
         "symfony/http-client-implementation": ""
     },
     "autoload": {
-        "psr-4": { "Symfony\\Contracts\\HttpClient\\": "" },
+        "psr-4": {
+            "Symfony\\Contracts\\HttpClient\\": ""
+        },
         "exclude-from-classmap": [
             "/Test/"
         ]

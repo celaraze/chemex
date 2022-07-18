@@ -81,6 +81,14 @@ class Address extends \Faker\Provider\Address
     }
 
     /**
+     * @example 'کد پستی'
+     */
+    public static function postcodePrefix()
+    {
+        return static::randomElement(static::$postcodePrefix);
+    }
+
+    /**
      * @example 'ساختمان آفتاب پلاک 24'
      */
     public function building()
@@ -88,13 +96,5 @@ class Address extends \Faker\Provider\Address
         $format = static::randomElement(static::$buildingFormat);
 
         return $this->generator->parse($format);
-    }
-
-    /**
-     * @example 'کد پستی'
-     */
-    public static function postcodePrefix()
-    {
-        return static::randomElement(static::$postcodePrefix);
     }
 }

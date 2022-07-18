@@ -30,6 +30,13 @@ class MessageLoggerListener implements EventSubscriberInterface, ResetInterface
         $this->events = new MessageEvents();
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            MessageEvent::class => ['onMessage', -255],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -46,12 +53,5 @@ class MessageLoggerListener implements EventSubscriberInterface, ResetInterface
     public function getEvents(): MessageEvents
     {
         return $this->events;
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            MessageEvent::class => ['onMessage', -255],
-        ];
     }
 }

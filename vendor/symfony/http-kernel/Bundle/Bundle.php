@@ -88,6 +88,45 @@ abstract class Bundle implements BundleInterface
     }
 
     /**
+     * Creates the bundle's container extension.
+     */
+    protected function createContainerExtension(): ?ExtensionInterface
+    {
+        return class_exists($class = $this->getContainerExtensionClass()) ? new $class() : null;
+    }
+
+    /**
+     * Returns the bundle's container extension class.
+     */
+    protected function getContainerExtensionClass(): string
+    {
+        $basename = preg_replace('/Bundle$/', '', $this->getName());
+
+        return $this->getNamespace() . '\\DependencyInjection\\' . $basename . 'Extension';
+    }
+
+    /**
+     * Returns the bundle name (the class short name).
+     */
+    final public function getName(): string
+    {
+        if (null === $this->name) {
+            $this->parseClassName();
+        }
+
+        return $this->name;
+    }
+
+    private function parseClassName()
+    {
+        $pos = strrpos(static::class, '\\');
+        $this->namespace = false === $pos ? '' : substr(static::class, 0, $pos);
+        if (null === $this->name) {
+            $this->name = false === $pos ? static::class : substr(static::class, $pos + 1);
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getNamespace(): string
@@ -112,46 +151,7 @@ abstract class Bundle implements BundleInterface
         return $this->path;
     }
 
-    /**
-     * Returns the bundle name (the class short name).
-     */
-    final public function getName(): string
-    {
-        if (null === $this->name) {
-            $this->parseClassName();
-        }
-
-        return $this->name;
-    }
-
     public function registerCommands(Application $application)
     {
-    }
-
-    /**
-     * Returns the bundle's container extension class.
-     */
-    protected function getContainerExtensionClass(): string
-    {
-        $basename = preg_replace('/Bundle$/', '', $this->getName());
-
-        return $this->getNamespace().'\\DependencyInjection\\'.$basename.'Extension';
-    }
-
-    /**
-     * Creates the bundle's container extension.
-     */
-    protected function createContainerExtension(): ?ExtensionInterface
-    {
-        return class_exists($class = $this->getContainerExtensionClass()) ? new $class() : null;
-    }
-
-    private function parseClassName()
-    {
-        $pos = strrpos(static::class, '\\');
-        $this->namespace = false === $pos ? '' : substr(static::class, 0, $pos);
-        if (null === $this->name) {
-            $this->name = false === $pos ? static::class : substr(static::class, $pos + 1);
-        }
     }
 }

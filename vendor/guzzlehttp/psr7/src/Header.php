@@ -19,7 +19,7 @@ final class Header
         static $trimmed = "\"'  \n\t\r";
         $params = $matches = [];
 
-        foreach ((array) $header as $value) {
+        foreach ((array)$header as $value) {
             foreach (self::splitList($value) as $val) {
                 $part = [];
                 foreach (preg_split('/;(?=([^"]*"[^"]*")*[^"]*$)/', $val) as $kvp) {
@@ -39,26 +39,6 @@ final class Header
         }
 
         return $params;
-    }
-
-    /**
-     * Converts an array of header values that may contain comma separated
-     * headers into an array of headers with no comma separated values.
-     *
-     * @param string|array $header Header to normalize.
-     *
-     * @deprecated Use self::splitList() instead.
-     */
-    public static function normalize($header): array
-    {
-        $result = [];
-        foreach ((array) $header as $value) {
-            foreach (self::splitList($value) as $parsed) {
-                $result[] = $parsed;
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -126,6 +106,26 @@ final class Header
             $v = \trim($v);
             if ($v !== '') {
                 $result[] = $v;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Converts an array of header values that may contain comma separated
+     * headers into an array of headers with no comma separated values.
+     *
+     * @param string|array $header Header to normalize.
+     *
+     * @deprecated Use self::splitList() instead.
+     */
+    public static function normalize($header): array
+    {
+        $result = [];
+        foreach ((array)$header as $value) {
+            foreach (self::splitList($value) as $parsed) {
+                $result[] = $parsed;
             }
         }
 

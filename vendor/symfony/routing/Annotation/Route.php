@@ -31,26 +31,27 @@ class Route
 
     /**
      * @param array<string|\Stringable> $requirements
-     * @param string[]|string           $methods
-     * @param string[]|string           $schemes
+     * @param string[]|string $methods
+     * @param string[]|string $schemes
      */
     public function __construct(
-        string|array $path = null,
+        string|array    $path = null,
         private ?string $name = null,
-        private array $requirements = [],
-        private array $options = [],
-        private array $defaults = [],
+        private array   $requirements = [],
+        private array   $options = [],
+        private array   $defaults = [],
         private ?string $host = null,
-        array|string $methods = [],
-        array|string $schemes = [],
+        array|string    $methods = [],
+        array|string    $schemes = [],
         private ?string $condition = null,
-        private ?int $priority = null,
-        string $locale = null,
-        string $format = null,
-        bool $utf8 = null,
-        bool $stateless = null,
+        private ?int    $priority = null,
+        string          $locale = null,
+        string          $format = null,
+        bool            $utf8 = null,
+        bool            $stateless = null,
         private ?string $env = null
-    ) {
+    )
+    {
         if (\is_array($path)) {
             $this->localizedPaths = $path;
         } else {
@@ -76,24 +77,24 @@ class Route
         }
     }
 
-    public function setPath(string $path)
-    {
-        $this->path = $path;
-    }
-
     public function getPath()
     {
         return $this->path;
     }
 
-    public function setLocalizedPaths(array $localizedPaths)
+    public function setPath(string $path)
     {
-        $this->localizedPaths = $localizedPaths;
+        $this->path = $path;
     }
 
     public function getLocalizedPaths(): array
     {
         return $this->localizedPaths;
+    }
+
+    public function setLocalizedPaths(array $localizedPaths)
+    {
+        $this->localizedPaths = $localizedPaths;
     }
 
     public function setHost(string $pattern)
@@ -146,24 +147,24 @@ class Route
         return $this->defaults;
     }
 
-    public function setSchemes(array|string $schemes)
-    {
-        $this->schemes = (array) $schemes;
-    }
-
     public function getSchemes()
     {
         return $this->schemes;
     }
 
-    public function setMethods(array|string $methods)
+    public function setSchemes(array|string $schemes)
     {
-        $this->methods = (array) $methods;
+        $this->schemes = (array)$schemes;
     }
 
     public function getMethods()
     {
         return $this->methods;
+    }
+
+    public function setMethods(array|string $methods)
+    {
+        $this->methods = (array)$methods;
     }
 
     public function setCondition(?string $condition)

@@ -28,70 +28,6 @@ class PrettyPageHandler extends Handler
     const EDITOR_ESPRESSO = "espresso";
     const EDITOR_XDEBUG = "xdebug";
     const EDITOR_NETBEANS = "netbeans";
-
-    /**
-     * Search paths to be scanned for resources.
-     *
-     * Stored in the reverse order they're declared.
-     *
-     * @var array
-     */
-    private $searchPaths = [];
-
-    /**
-     * Fast lookup cache for known resource locations.
-     *
-     * @var array
-     */
-    private $resourceCache = [];
-
-    /**
-     * The name of the custom css file.
-     *
-     * @var string|null
-     */
-    private $customCss = null;
-
-    /**
-     * The name of the custom js file.
-     *
-     * @var string|null
-     */
-    private $customJs = null;
-
-    /**
-     * @var array[]
-     */
-    private $extraTables = [];
-
-    /**
-     * @var bool
-     */
-    private $handleUnconditionally = false;
-
-    /**
-     * @var string
-     */
-    private $pageTitle = "Whoops! There was an error.";
-
-    /**
-     * @var array[]
-     */
-    private $applicationPaths;
-
-    /**
-     * @var array[]
-     */
-    private $blacklist = [
-        '_GET' => [],
-        '_POST' => [],
-        '_FILES' => [],
-        '_COOKIE' => [],
-        '_SESSION' => [],
-        '_SERVER' => [],
-        '_ENV' => [],
-    ];
-
     /**
      * An identifier for a known IDE/text editor.
      *
@@ -105,29 +41,81 @@ class PrettyPageHandler extends Handler
      * @var callable|string $editor
      */
     protected $editor;
-
     /**
      * A list of known editor strings.
      *
      * @var array
      */
     protected $editors = [
-        "sublime"  => "subl://open?url=file://%file&line=%line",
+        "sublime" => "subl://open?url=file://%file&line=%line",
         "textmate" => "txmt://open?url=file://%file&line=%line",
-        "emacs"    => "emacs://open?url=file://%file&line=%line",
-        "macvim"   => "mvim://open/?url=file://%file&line=%line",
+        "emacs" => "emacs://open?url=file://%file&line=%line",
+        "macvim" => "mvim://open/?url=file://%file&line=%line",
         "phpstorm" => "phpstorm://open?file=%file&line=%line",
-        "idea"     => "idea://open?file=%file&line=%line",
-        "vscode"   => "vscode://file/%file:%line",
-        "atom"     => "atom://core/open/file?filename=%file&line=%line",
+        "idea" => "idea://open?file=%file&line=%line",
+        "vscode" => "vscode://file/%file:%line",
+        "atom" => "atom://core/open/file?filename=%file&line=%line",
         "espresso" => "x-espresso://open?filepath=%file&lines=%line",
         "netbeans" => "netbeans://open/?f=%file:%line",
     ];
-
     /**
      * @var TemplateHelper
      */
     protected $templateHelper;
+    /**
+     * Search paths to be scanned for resources.
+     *
+     * Stored in the reverse order they're declared.
+     *
+     * @var array
+     */
+    private $searchPaths = [];
+    /**
+     * Fast lookup cache for known resource locations.
+     *
+     * @var array
+     */
+    private $resourceCache = [];
+    /**
+     * The name of the custom css file.
+     *
+     * @var string|null
+     */
+    private $customCss = null;
+    /**
+     * The name of the custom js file.
+     *
+     * @var string|null
+     */
+    private $customJs = null;
+    /**
+     * @var array[]
+     */
+    private $extraTables = [];
+    /**
+     * @var bool
+     */
+    private $handleUnconditionally = false;
+    /**
+     * @var string
+     */
+    private $pageTitle = "Whoops! There was an error.";
+    /**
+     * @var array[]
+     */
+    private $applicationPaths;
+    /**
+     * @var array[]
+     */
+    private $blacklist = [
+        '_GET' => [],
+        '_POST' => [],
+        '_FILES' => [],
+        '_COOKIE' => [],
+        '_SESSION' => [],
+        '_SERVER' => [],
+        '_ENV' => [],
+    ];
 
     /**
      * Constructor.
@@ -176,6 +164,22 @@ class PrettyPageHandler extends Handler
     }
 
     /**
+     * blacklist a sensitive value within one of the superglobal arrays.
+     * Alias for the hideSuperglobalKey method.
+     *
+     * @param string $superGlobalName The name of the superglobal array, e.g. '_GET'
+     * @param string $key The key within the superglobal
+     * @return static
+     * @see hideSuperglobalKey
+     *
+     */
+    public function blacklist($superGlobalName, $key)
+    {
+        $this->blacklist[$superGlobalName][] = $key;
+        return $this;
+    }
+
+    /**
      * @return int|null
      *
      * @throws \Exception
@@ -191,7 +195,7 @@ class PrettyPageHandler extends Handler
                 if (isset($_ENV['whoops-test'])) {
                     throw new \Exception(
                         'Use handleUnconditionally instead of whoops-test'
-                        .' environment variable'
+                        . ' environment variable'
                     );
                 }
 
@@ -200,12 +204,12 @@ class PrettyPageHandler extends Handler
         }
 
         $templateFile = $this->getResource("views/layout.html.php");
-        $cssFile      = $this->getResource("css/whoops.base.css");
-        $zeptoFile    = $this->getResource("js/zepto.min.js");
+        $cssFile = $this->getResource("css/whoops.base.css");
+        $zeptoFile = $this->getResource("js/zepto.min.js");
         $prismJs = $this->getResource("js/prism.js");
         $prismCss = $this->getResource("css/prism.css");
-        $clipboard    = $this->getResource("js/clipboard.min.js");
-        $jsFile       = $this->getResource("js/whoops.base.js");
+        $clipboard = $this->getResource("js/clipboard.min.js");
+        $jsFile = $this->getResource("js/whoops.base.js");
 
         if ($this->customCss) {
             $customCssFile = $this->getResource($this->customCss);
@@ -225,48 +229,48 @@ class PrettyPageHandler extends Handler
 
             // @todo: Asset compiler
             "stylesheet" => file_get_contents($cssFile),
-            "zepto"      => file_get_contents($zeptoFile),
-            "prismJs"   => file_get_contents($prismJs),
-            "prismCss"   => file_get_contents($prismCss),
-            "clipboard"  => file_get_contents($clipboard),
+            "zepto" => file_get_contents($zeptoFile),
+            "prismJs" => file_get_contents($prismJs),
+            "prismCss" => file_get_contents($prismCss),
+            "clipboard" => file_get_contents($clipboard),
             "javascript" => file_get_contents($jsFile),
 
             // Template paths:
-            "header"                     => $this->getResource("views/header.html.php"),
-            "header_outer"               => $this->getResource("views/header_outer.html.php"),
-            "frame_list"                 => $this->getResource("views/frame_list.html.php"),
-            "frames_description"         => $this->getResource("views/frames_description.html.php"),
-            "frames_container"           => $this->getResource("views/frames_container.html.php"),
-            "panel_details"              => $this->getResource("views/panel_details.html.php"),
-            "panel_details_outer"        => $this->getResource("views/panel_details_outer.html.php"),
-            "panel_left"                 => $this->getResource("views/panel_left.html.php"),
-            "panel_left_outer"           => $this->getResource("views/panel_left_outer.html.php"),
-            "frame_code"                 => $this->getResource("views/frame_code.html.php"),
-            "env_details"                => $this->getResource("views/env_details.html.php"),
+            "header" => $this->getResource("views/header.html.php"),
+            "header_outer" => $this->getResource("views/header_outer.html.php"),
+            "frame_list" => $this->getResource("views/frame_list.html.php"),
+            "frames_description" => $this->getResource("views/frames_description.html.php"),
+            "frames_container" => $this->getResource("views/frames_container.html.php"),
+            "panel_details" => $this->getResource("views/panel_details.html.php"),
+            "panel_details_outer" => $this->getResource("views/panel_details_outer.html.php"),
+            "panel_left" => $this->getResource("views/panel_left.html.php"),
+            "panel_left_outer" => $this->getResource("views/panel_left_outer.html.php"),
+            "frame_code" => $this->getResource("views/frame_code.html.php"),
+            "env_details" => $this->getResource("views/env_details.html.php"),
 
-            "title"            => $this->getPageTitle(),
-            "name"             => explode("\\", $inspector->getExceptionName()),
-            "message"          => $inspector->getExceptionMessage(),
+            "title" => $this->getPageTitle(),
+            "name" => explode("\\", $inspector->getExceptionName()),
+            "message" => $inspector->getExceptionMessage(),
             "previousMessages" => $inspector->getPreviousExceptionMessages(),
-            "docref_url"       => $inspector->getExceptionDocrefUrl(),
-            "code"             => $code,
-            "previousCodes"    => $inspector->getPreviousExceptionCodes(),
-            "plain_exception"  => Formatter::formatExceptionPlain($inspector),
-            "frames"           => $frames,
-            "has_frames"       => !!count($frames),
-            "handler"          => $this,
-            "handlers"         => $this->getRun()->getHandlers(),
+            "docref_url" => $inspector->getExceptionDocrefUrl(),
+            "code" => $code,
+            "previousCodes" => $inspector->getPreviousExceptionCodes(),
+            "plain_exception" => Formatter::formatExceptionPlain($inspector),
+            "frames" => $frames,
+            "has_frames" => !!count($frames),
+            "handler" => $this,
+            "handlers" => $this->getRun()->getHandlers(),
 
-            "active_frames_tab" => count($frames) && $frames->offsetGet(0)->isApplication() ?  'application' : 'all',
-            "has_frames_tabs"   => $this->getApplicationPaths(),
+            "active_frames_tab" => count($frames) && $frames->offsetGet(0)->isApplication() ? 'application' : 'all',
+            "has_frames_tabs" => $this->getApplicationPaths(),
 
-            "tables"      => [
-                "GET Data"              => $this->masked($_GET, '_GET'),
-                "POST Data"             => $this->masked($_POST, '_POST'),
-                "Files"                 => isset($_FILES) ? $this->masked($_FILES, '_FILES') : [],
-                "Cookies"               => $this->masked($_COOKIE, '_COOKIE'),
-                "Session"               => isset($_SESSION) ? $this->masked($_SESSION, '_SESSION') :  [],
-                "Server/Request Data"   => $this->masked($_SERVER, '_SERVER'),
+            "tables" => [
+                "GET Data" => $this->masked($_GET, '_GET'),
+                "POST Data" => $this->masked($_POST, '_POST'),
+                "Files" => isset($_FILES) ? $this->masked($_FILES, '_FILES') : [],
+                "Cookies" => $this->masked($_COOKIE, '_COOKIE'),
+                "Session" => isset($_SESSION) ? $this->masked($_SESSION, '_SESSION') : [],
+                "Server/Request Data" => $this->masked($_SERVER, '_SERVER'),
                 "Environment Variables" => $this->masked($_ENV, '_ENV'),
             ],
         ];
@@ -289,12 +293,73 @@ class PrettyPageHandler extends Handler
         $plainTextHandler = new PlainTextHandler();
         $plainTextHandler->setException($this->getException());
         $plainTextHandler->setInspector($this->getInspector());
-        $vars["preface"] = "<!--\n\n\n" .  $this->templateHelper->escape($plainTextHandler->generateResponse()) . "\n\n\n\n\n\n\n\n\n\n\n-->";
+        $vars["preface"] = "<!--\n\n\n" . $this->templateHelper->escape($plainTextHandler->generateResponse()) . "\n\n\n\n\n\n\n\n\n\n\n-->";
 
         $this->templateHelper->setVariables($vars);
         $this->templateHelper->render($templateFile);
 
         return Handler::QUIT;
+    }
+
+    /**
+     * Set whether to handle unconditionally.
+     *
+     * Allows to disable all attempts to dynamically decide whether to handle
+     * or return prematurely. Set this to ensure that the handler will perform,
+     * no matter what.
+     *
+     * @param bool|null $value
+     *
+     * @return bool|static
+     */
+    public function handleUnconditionally($value = null)
+    {
+        if (func_num_args() == 0) {
+            return $this->handleUnconditionally;
+        }
+
+        $this->handleUnconditionally = (bool)$value;
+        return $this;
+    }
+
+    /**
+     * Finds a resource, by its relative path, in all available search paths.
+     *
+     * The search is performed starting at the last search path, and all the
+     * way back to the first, enabling a cascading-type system of overrides for
+     * all resources.
+     *
+     * @param string $resource
+     *
+     * @return string
+     * @throws RuntimeException If resource cannot be found in any of the available paths
+     *
+     */
+    protected function getResource($resource)
+    {
+        // If the resource was found before, we can speed things up
+        // by caching its absolute, resolved path:
+        if (isset($this->resourceCache[$resource])) {
+            return $this->resourceCache[$resource];
+        }
+
+        // Search through available search paths, until we find the
+        // resource we're after:
+        foreach ($this->searchPaths as $path) {
+            $fullPath = $path . "/$resource";
+
+            if (is_file($fullPath)) {
+                // Cache the result:
+                $this->resourceCache[$resource] = $fullPath;
+                return $fullPath;
+            }
+        }
+
+        // If we got this far, nothing was found.
+        throw new RuntimeException(
+            "Could not find resource '$resource' in any resource paths."
+            . "(searched: " . join(", ", $this->searchPaths) . ")"
+        );
     }
 
     /**
@@ -321,6 +386,28 @@ class PrettyPageHandler extends Handler
     }
 
     /**
+     * Return the application paths.
+     *
+     * @return array
+     */
+    public function getApplicationPaths()
+    {
+        return $this->applicationPaths;
+    }
+
+    /**
+     * Set the application paths.
+     *
+     * @param array $applicationPaths
+     *
+     * @return void
+     */
+    public function setApplicationPaths($applicationPaths)
+    {
+        $this->applicationPaths = $applicationPaths;
+    }
+
+    /**
      * Get the code of the exception currently being handled.
      *
      * @return string
@@ -335,7 +422,78 @@ class PrettyPageHandler extends Handler
             $code = Misc::translateErrorCode($exception->getSeverity());
         }
 
-        return (string) $code;
+        return (string)$code;
+    }
+
+    /**
+     * Get the page title.
+     *
+     * @return string
+     */
+    public function getPageTitle()
+    {
+        return $this->pageTitle;
+    }
+
+    /**
+     * Set the page title.
+     *
+     * @param string $title
+     *
+     * @return static
+     */
+    public function setPageTitle($title)
+    {
+        $this->pageTitle = (string)$title;
+        return $this;
+    }
+
+    /**
+     * Checks all values within the given superGlobal array.
+     *
+     * Blacklisted values will be replaced by a equal length string containing
+     * only '*' characters for string values.
+     * Non-string values will be replaced with a fixed asterisk count.
+     * We intentionally dont rely on $GLOBALS as it depends on the 'auto_globals_jit' php.ini setting.
+     *
+     * @param array|\ArrayAccess $superGlobal One of the superglobal arrays
+     * @param string $superGlobalName The name of the superglobal array, e.g. '_GET'
+     *
+     * @return array $values without sensitive data
+     */
+    private function masked($superGlobal, $superGlobalName)
+    {
+        $blacklisted = $this->blacklist[$superGlobalName];
+
+        $values = $superGlobal;
+
+        foreach ($blacklisted as $key) {
+            if (isset($superGlobal[$key])) {
+                $values[$key] = str_repeat('*', is_string($superGlobal[$key]) ? strlen($superGlobal[$key]) : 3);
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * Returns all the extra data tables registered with this handler.
+     *
+     * Optionally accepts a 'label' parameter, to only return the data table
+     * under that label.
+     *
+     * @param string|null $label
+     *
+     * @return array[]|callable
+     */
+    public function getDataTables($label = null)
+    {
+        if ($label !== null) {
+            return isset($this->extraTables[$label]) ?
+                $this->extraTables[$label] : [];
+        }
+
+        return $this->extraTables;
     }
 
     /**
@@ -353,7 +511,7 @@ class PrettyPageHandler extends Handler
      * will be flattened with `print_r`.
      *
      * @param string $label
-     * @param array  $data
+     * @param array $data
      *
      * @return static
      */
@@ -370,12 +528,12 @@ class PrettyPageHandler extends Handler
      * rendered, it should produce a simple associative array. Any nested
      * arrays will be flattened with `print_r`.
      *
-     * @param string   $label
+     * @param string $label
      * @param callable $callback Callable returning an associative array
      *
+     * @return static
      * @throws InvalidArgumentException If $callback is not callable
      *
-     * @return static
      */
     public function addDataTableCallback($label, /* callable */ $callback)
     {
@@ -399,65 +557,24 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * Returns all the extra data tables registered with this handler.
-     *
-     * Optionally accepts a 'label' parameter, to only return the data table
-     * under that label.
-     *
-     * @param string|null $label
-     *
-     * @return array[]|callable
-     */
-    public function getDataTables($label = null)
-    {
-        if ($label !== null) {
-            return isset($this->extraTables[$label]) ?
-                   $this->extraTables[$label] : [];
-        }
-
-        return $this->extraTables;
-    }
-
-    /**
-     * Set whether to handle unconditionally.
-     *
-     * Allows to disable all attempts to dynamically decide whether to handle
-     * or return prematurely. Set this to ensure that the handler will perform,
-     * no matter what.
-     *
-     * @param bool|null $value
-     *
-     * @return bool|static
-     */
-    public function handleUnconditionally($value = null)
-    {
-        if (func_num_args() == 0) {
-            return $this->handleUnconditionally;
-        }
-
-        $this->handleUnconditionally = (bool) $value;
-        return $this;
-    }
-
-    /**
      * Adds an editor resolver.
      *
      * Either a string, or a closure that resolves a string, that can be used
      * to open a given file in an editor. If the string contains the special
      * substrings %file or %line, they will be replaced with the correct data.
      *
-     * @example
-     *  $run->addEditor('macvim', "mvim://open?url=file://%file&line=%line")
+     * @param string $identifier
+     * @param string|callable $resolver
+     *
+     * @return static
      * @example
      *   $run->addEditor('remove-it', function($file, $line) {
      *       unlink($file);
      *       return "http://stackoverflow.com";
      *   });
      *
-     * @param string          $identifier
-     * @param string|callable $resolver
-     *
-     * @return static
+     * @example
+     *  $run->addEditor('macvim', "mvim://open?url=file://%file&line=%line")
      */
     public function addEditor($identifier, $resolver)
     {
@@ -466,44 +583,14 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * Set the editor to use to open referenced files.
-     *
-     * Pass either the name of a configured editor, or a closure that directly
-     * resolves an editor string.
-     *
-     * @example
-     *   $run->setEditor(function($file, $line) { return "file:///{$file}"; });
-     * @example
-     *   $run->setEditor('sublime');
-     *
-     * @param string|callable $editor
-     *
-     * @throws InvalidArgumentException If invalid argument identifier provided
-     *
-     * @return static
-     */
-    public function setEditor($editor)
-    {
-        if (!is_callable($editor) && !isset($this->editors[$editor])) {
-            throw new InvalidArgumentException(
-                "Unknown editor identifier: $editor. Known editors:" .
-                implode(",", array_keys($this->editors))
-            );
-        }
-
-        $this->editor = $editor;
-        return $this;
-    }
-
-    /**
      * Get the editor href for a given file and line, if available.
      *
      * @param string $filePath
-     * @param int    $line
-     *
-     * @throws InvalidArgumentException If editor resolver does not return a string
+     * @param int $line
      *
      * @return string|bool
+     * @throws InvalidArgumentException If editor resolver does not return a string
+     *
      */
     public function getEditorHref($filePath, $line)
     {
@@ -528,33 +615,10 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * Determine if the editor link should act as an Ajax request.
-     *
-     * @param string $filePath
-     * @param int    $line
-     *
-     * @throws UnexpectedValueException If editor resolver does not return a boolean
-     *
-     * @return bool
-     */
-    public function getEditorAjax($filePath, $line)
-    {
-        $editor = $this->getEditor($filePath, $line);
-
-        // Check that the ajax is a bool
-        if (!isset($editor['ajax']) || !is_bool($editor['ajax'])) {
-            throw new UnexpectedValueException(
-                __METHOD__ . " should always resolve to a bool; got something else instead."
-            );
-        }
-        return $editor['ajax'];
-    }
-
-    /**
      * Determines both the editor and if ajax should be used.
      *
      * @param string $filePath
-     * @param int    $line
+     * @param int $line
      *
      * @return array
      */
@@ -599,47 +663,56 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * Set the page title.
+     * Set the editor to use to open referenced files.
      *
-     * @param string $title
+     * Pass either the name of a configured editor, or a closure that directly
+     * resolves an editor string.
      *
-     * @return static
-     */
-    public function setPageTitle($title)
-    {
-        $this->pageTitle = (string) $title;
-        return $this;
-    }
-
-    /**
-     * Get the page title.
-     *
-     * @return string
-     */
-    public function getPageTitle()
-    {
-        return $this->pageTitle;
-    }
-
-    /**
-     * Adds a path to the list of paths to be searched for resources.
-     *
-     * @param string $path
-     *
-     * @throws InvalidArgumentException If $path is not a valid directory
+     * @param string|callable $editor
      *
      * @return static
+     * @throws InvalidArgumentException If invalid argument identifier provided
+     *
+     * @example
+     *   $run->setEditor('sublime');
+     *
+     * @example
+     *   $run->setEditor(function($file, $line) { return "file:///{$file}"; });
      */
-    public function addResourcePath($path)
+    public function setEditor($editor)
     {
-        if (!is_dir($path)) {
+        if (!is_callable($editor) && !isset($this->editors[$editor])) {
             throw new InvalidArgumentException(
-                "'$path' is not a valid directory"
+                "Unknown editor identifier: $editor. Known editors:" .
+                implode(",", array_keys($this->editors))
             );
         }
 
-        array_unshift($this->searchPaths, $path);
+        $this->editor = $editor;
         return $this;
+    }
+
+    /**
+     * Determine if the editor link should act as an Ajax request.
+     *
+     * @param string $filePath
+     * @param int $line
+     *
+     * @return bool
+     * @throws UnexpectedValueException If editor resolver does not return a boolean
+     *
+     */
+    public function getEditorAjax($filePath, $line)
+    {
+        $editor = $this->getEditor($filePath, $line);
+
+        // Check that the ajax is a bool
+        if (!isset($editor['ajax']) || !is_bool($editor['ajax'])) {
+            throw new UnexpectedValueException(
+                __METHOD__ . " should always resolve to a bool; got something else instead."
+            );
+        }
+        return $editor['ajax'];
     }
 
     /**
@@ -669,57 +742,9 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * @return array
-     */
-    public function getResourcePaths()
-    {
-        return $this->searchPaths;
-    }
-
-    /**
-     * Finds a resource, by its relative path, in all available search paths.
-     *
-     * The search is performed starting at the last search path, and all the
-     * way back to the first, enabling a cascading-type system of overrides for
-     * all resources.
-     *
-     * @param string $resource
-     *
-     * @throws RuntimeException If resource cannot be found in any of the available paths
-     *
      * @return string
-     */
-    protected function getResource($resource)
-    {
-        // If the resource was found before, we can speed things up
-        // by caching its absolute, resolved path:
-        if (isset($this->resourceCache[$resource])) {
-            return $this->resourceCache[$resource];
-        }
-
-        // Search through available search paths, until we find the
-        // resource we're after:
-        foreach ($this->searchPaths as $path) {
-            $fullPath = $path . "/$resource";
-
-            if (is_file($fullPath)) {
-                // Cache the result:
-                $this->resourceCache[$resource] = $fullPath;
-                return $fullPath;
-            }
-        }
-
-        // If we got this far, nothing was found.
-        throw new RuntimeException(
-            "Could not find resource '$resource' in any resource paths."
-            . "(searched: " . join(", ", $this->searchPaths). ")"
-        );
-    }
-
-    /**
      * @deprecated
      *
-     * @return string
      */
     public function getResourcesPath()
     {
@@ -730,11 +755,19 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * @deprecated
-     *
+     * @return array
+     */
+    public function getResourcePaths()
+    {
+        return $this->searchPaths;
+    }
+
+    /**
      * @param string $resourcesPath
      *
      * @return static
+     * @deprecated
+     *
      */
     public function setResourcesPath($resourcesPath)
     {
@@ -743,25 +776,24 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * Return the application paths.
+     * Adds a path to the list of paths to be searched for resources.
      *
-     * @return array
+     * @param string $path
+     *
+     * @return static
+     * @throws InvalidArgumentException If $path is not a valid directory
+     *
      */
-    public function getApplicationPaths()
+    public function addResourcePath($path)
     {
-        return $this->applicationPaths;
-    }
+        if (!is_dir($path)) {
+            throw new InvalidArgumentException(
+                "'$path' is not a valid directory"
+            );
+        }
 
-    /**
-     * Set the application paths.
-     *
-     * @param array $applicationPaths
-     *
-     * @return void
-     */
-    public function setApplicationPaths($applicationPaths)
-    {
-        $this->applicationPaths = $applicationPaths;
+        array_unshift($this->searchPaths, $path);
+        return $this;
     }
 
     /**
@@ -777,58 +809,14 @@ class PrettyPageHandler extends Handler
     }
 
     /**
-     * blacklist a sensitive value within one of the superglobal arrays.
-     * Alias for the hideSuperglobalKey method.
-     *
-     * @param string $superGlobalName The name of the superglobal array, e.g. '_GET'
-     * @param string $key             The key within the superglobal
-     * @see hideSuperglobalKey
-     *
-     * @return static
-     */
-    public function blacklist($superGlobalName, $key)
-    {
-        $this->blacklist[$superGlobalName][] = $key;
-        return $this;
-    }
-
-    /**
      * Hide a sensitive value within one of the superglobal arrays.
      *
      * @param string $superGlobalName The name of the superglobal array, e.g. '_GET'
-     * @param string $key             The key within the superglobal
+     * @param string $key The key within the superglobal
      * @return static
      */
     public function hideSuperglobalKey($superGlobalName, $key)
     {
         return $this->blacklist($superGlobalName, $key);
-    }
-
-    /**
-     * Checks all values within the given superGlobal array.
-     *
-     * Blacklisted values will be replaced by a equal length string containing
-     * only '*' characters for string values.
-     * Non-string values will be replaced with a fixed asterisk count.
-     * We intentionally dont rely on $GLOBALS as it depends on the 'auto_globals_jit' php.ini setting.
-     *
-     * @param array|\ArrayAccess  $superGlobal     One of the superglobal arrays
-     * @param string $superGlobalName The name of the superglobal array, e.g. '_GET'
-     *
-     * @return array $values without sensitive data
-     */
-    private function masked($superGlobal, $superGlobalName)
-    {
-        $blacklisted = $this->blacklist[$superGlobalName];
-
-        $values = $superGlobal;
-
-        foreach ($blacklisted as $key) {
-            if (isset($superGlobal[$key])) {
-                $values[$key] = str_repeat('*', is_string($superGlobal[$key]) ? strlen($superGlobal[$key]) : 3);
-            }
-        }
-
-        return $values;
     }
 }

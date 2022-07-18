@@ -37,9 +37,9 @@ class CalledClassPass extends CodeCleanerPass
     }
 
     /**
+     * @param Node $node
      * @throws ErrorException if get_class or get_called_class is called without an object from outside a class
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {
@@ -67,6 +67,15 @@ class CalledClassPass extends CodeCleanerPass
         }
     }
 
+    private function isNull(Node $node): bool
+    {
+        if ($node instanceof VariadicPlaceholder) {
+            return false;
+        }
+
+        return $node->value instanceof ConstFetch && \strtolower($node->value->name) === 'null';
+    }
+
     /**
      * @param Node $node
      */
@@ -75,14 +84,5 @@ class CalledClassPass extends CodeCleanerPass
         if ($node instanceof Class_) {
             $this->inClass = false;
         }
-    }
-
-    private function isNull(Node $node): bool
-    {
-        if ($node instanceof VariadicPlaceholder) {
-            return false;
-        }
-
-        return $node->value instanceof ConstFetch && \strtolower($node->value->name) === 'null';
     }
 }

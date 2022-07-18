@@ -24,8 +24,8 @@ class RedisConnector implements ConnectorInterface
     /**
      * Create a new Redis queue connector instance.
      *
-     * @param  \Illuminate\Contracts\Redis\Factory  $redis
-     * @param  string|null  $connection
+     * @param \Illuminate\Contracts\Redis\Factory $redis
+     * @param string|null $connection
      * @return void
      */
     public function __construct(Redis $redis, $connection = null)
@@ -37,7 +37,7 @@ class RedisConnector implements ConnectorInterface
     /**
      * Establish a queue connection.
      *
-     * @param  array  $config
+     * @param array $config
      * @return \Illuminate\Contracts\Queue\Queue
      */
     public function connect(array $config)

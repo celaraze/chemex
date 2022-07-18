@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report;
 
 use PHPUnit\TextUI\XmlConfiguration\File;
@@ -29,7 +30,7 @@ final class Crap4j
 
     public function __construct(File $target, int $threshold)
     {
-        $this->target    = $target;
+        $this->target = $target;
         $this->threshold = $threshold;
     }
 

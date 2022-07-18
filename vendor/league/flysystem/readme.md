@@ -13,13 +13,14 @@
 Flysystem is a file storage library for PHP. It provides one interface to
 interact with many types of filesystems. When you use Flysystem, you're
 not only protected from vendor lock-in, you'll also have a consistent experience
-for which ever storage is right for you. 
+for which ever storage is right for you.
 
 ## Getting Started
 
 * **[New in V3](https://flysystem.thephpleague.com/docs/what-is-new/)**: What is new in Flysystem V2/V3?
 * **[Architecture](https://flysystem.thephpleague.com/docs/architecture/)**: Flysystem's internal architecture
-* **[Flysystem API](https://flysystem.thephpleague.com/docs/usage/filesystem-api/)**: How to interact with your Flysystem instance
+* **[Flysystem API](https://flysystem.thephpleague.com/docs/usage/filesystem-api/)**: How to interact with your
+  Flysystem instance
 * **[Upgrade from 1x](https://flysystem.thephpleague.com/docs/upgrade-from-1.x/)**: How to upgrade from 1.x/2.x
 
 ### Officially supported adapters

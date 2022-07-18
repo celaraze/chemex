@@ -22,12 +22,12 @@ final class FencedCodeStartParser implements BlockStartParserInterface
 {
     public function tryStart(Cursor $cursor, MarkdownParserStateInterface $parserState): ?BlockStart
     {
-        if ($cursor->isIndented() || ! \in_array($cursor->getNextNonSpaceCharacter(), ['`', '~'], true)) {
+        if ($cursor->isIndented() || !\in_array($cursor->getNextNonSpaceCharacter(), ['`', '~'], true)) {
             return BlockStart::none();
         }
 
         $indent = $cursor->getIndent();
-        $fence  = $cursor->match('/^[ \t]*(?:`{3,}(?!.*`)|~{3,})/');
+        $fence = $cursor->match('/^[ \t]*(?:`{3,}(?!.*`)|~{3,})/');
         if ($fence === null) {
             return BlockStart::none();
         }

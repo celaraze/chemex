@@ -54,25 +54,6 @@ class DoubleEndedQueue extends Queue implements DoubleEndedQueueInterface
     /**
      * @inheritDoc
      */
-    public function addFirst($element): bool
-    {
-        if ($this->checkType($this->getType(), $element) === false) {
-            throw new InvalidArgumentException(
-                'Value must be of type ' . $this->getType() . '; value is '
-                . $this->toolValueToString($element)
-            );
-        }
-
-        $this->index--;
-
-        $this->data[$this->index] = $element;
-
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function addLast($element): bool
     {
         return $this->add($element);
@@ -88,6 +69,25 @@ class DoubleEndedQueue extends Queue implements DoubleEndedQueueInterface
         } catch (InvalidArgumentException $e) {
             return false;
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addFirst($element): bool
+    {
+        if ($this->checkType($this->getType(), $element) === false) {
+            throw new InvalidArgumentException(
+                'Value must be of type ' . $this->getType() . '; value is '
+                . $this->toolValueToString($element)
+            );
+        }
+
+        $this->index--;
+
+        $this->data[$this->index] = $element;
+
+        return true;
     }
 
     /**
@@ -123,14 +123,6 @@ class DoubleEndedQueue extends Queue implements DoubleEndedQueueInterface
     /**
      * @inheritDoc
      */
-    public function pollFirst()
-    {
-        return $this->poll();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function pollLast()
     {
         if ($this->count() === 0) {
@@ -143,6 +135,14 @@ class DoubleEndedQueue extends Queue implements DoubleEndedQueueInterface
         $this->tail--;
 
         return $tail;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function pollFirst()
+    {
+        return $this->poll();
     }
 
     /**

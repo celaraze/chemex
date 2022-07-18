@@ -22,8 +22,8 @@ final class MarkdownInputWithFrontMatter extends MarkdownInput implements FrontM
     private $frontMatter;
 
     /**
-     * @param string     $content     Markdown content without the raw front matter
-     * @param int        $lineOffset  Line offset (based on number of front matter lines removed)
+     * @param string $content Markdown content without the raw front matter
+     * @param int $lineOffset Line offset (based on number of front matter lines removed)
      * @param mixed|null $frontMatter Parsed front matter
      */
     public function __construct(string $content, int $lineOffset = 0, $frontMatter = null)

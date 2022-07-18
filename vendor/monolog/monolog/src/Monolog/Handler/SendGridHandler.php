@@ -51,11 +51,11 @@ class SendGridHandler extends MailHandler
     protected $subject;
 
     /**
-     * @param string          $apiUser The SendGrid API User
-     * @param string          $apiKey  The SendGrid API Key
-     * @param string          $from    The sender of the email
-     * @param string|string[] $to      The recipients of the email
-     * @param string          $subject The subject of the mail
+     * @param string $apiUser The SendGrid API User
+     * @param string $apiKey The SendGrid API Key
+     * @param string $from The sender of the email
+     * @param string|string[] $to The recipients of the email
+     * @param string $subject The subject of the mail
      */
     public function __construct(string $apiUser, string $apiKey, string $from, $to, string $subject, $level = Logger::ERROR, bool $bubble = true)
     {
@@ -67,7 +67,7 @@ class SendGridHandler extends MailHandler
         $this->apiUser = $apiUser;
         $this->apiKey = $apiKey;
         $this->from = $from;
-        $this->to = (array) $to;
+        $this->to = (array)$to;
         $this->subject = $subject;
     }
 

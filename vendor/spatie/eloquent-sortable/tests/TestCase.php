@@ -14,6 +14,23 @@ abstract class TestCase extends Orchestra
         $this->setUpDatabase();
     }
 
+    protected function setUpDatabase()
+    {
+        $this->app['db']->connection()->getSchemaBuilder()->create('dummies', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('custom_column_sort');
+            $table->integer('order_column');
+        });
+
+        collect(range(1, 20))->each(function (int $i) {
+            Dummy::create([
+                'name' => $i,
+                'custom_column_sort' => rand(),
+            ]);
+        });
+    }
+
     /**
      * @param \Illuminate\Foundation\Application $app
      *
@@ -37,23 +54,6 @@ abstract class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix' => '',
         ]);
-    }
-
-    protected function setUpDatabase()
-    {
-        $this->app['db']->connection()->getSchemaBuilder()->create('dummies', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->string('custom_column_sort');
-            $table->integer('order_column');
-        });
-
-        collect(range(1, 20))->each(function (int $i) {
-            Dummy::create([
-                'name' => $i,
-                'custom_column_sort' => rand(),
-            ]);
-        });
     }
 
     protected function setUpSoftDeletes()

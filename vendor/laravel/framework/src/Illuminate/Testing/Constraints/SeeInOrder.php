@@ -24,7 +24,7 @@ class SeeInOrder extends Constraint
     /**
      * Create a new constraint instance.
      *
-     * @param  string  $content
+     * @param string $content
      * @return void
      */
     public function __construct($content)
@@ -35,7 +35,7 @@ class SeeInOrder extends Constraint
     /**
      * Determine if the rule passes validation.
      *
-     * @param  array  $values
+     * @param array $values
      * @return bool
      */
     public function matches($values): bool
@@ -64,7 +64,7 @@ class SeeInOrder extends Constraint
     /**
      * Get the description of the failure.
      *
-     * @param  array  $values
+     * @param array $values
      * @return string
      */
     public function failureDescription($values): string

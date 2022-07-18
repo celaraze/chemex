@@ -45,7 +45,7 @@ final class AndExpr implements ExpressionInterface
     public function __invoke(Node $node): bool
     {
         foreach ($this->conditions as $condition) {
-            if (! $condition($node)) {
+            if (!$condition($node)) {
                 return false;
             }
         }

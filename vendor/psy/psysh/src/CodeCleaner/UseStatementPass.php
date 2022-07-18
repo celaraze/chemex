@@ -82,7 +82,7 @@ class UseStatementPass extends CodeCleanerPass
                 $alias = $use->alias ?: \end($use->name->parts);
                 $this->aliases[\strtolower($alias)] = Name::concat($node->prefix, $use->name, [
                     'startLine' => $node->prefix->getAttribute('startLine'),
-                    'endLine'   => $use->name->getAttribute('endLine'),
+                    'endLine' => $use->name->getAttribute('endLine'),
                 ]);
             }
 
@@ -128,8 +128,8 @@ class UseStatementPass extends CodeCleanerPass
         foreach ($this->aliases as $alias => $prefix) {
             if ($that === $alias) {
                 return new FullyQualifiedName($prefix->toString());
-            } elseif (\substr($that, 0, \strlen($alias) + 1) === $alias.'\\') {
-                return new FullyQualifiedName($prefix->toString().\substr($name, \strlen($alias)));
+            } elseif (\substr($that, 0, \strlen($alias) + 1) === $alias . '\\') {
+                return new FullyQualifiedName($prefix->toString() . \substr($name, \strlen($alias)));
             }
         }
     }

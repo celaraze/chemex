@@ -31,31 +31,9 @@ class Condition
         $this->form = $form;
     }
 
-    public function then(\Closure $closure)
-    {
-        $this->next[] = $closure;
-
-        return $this;
-    }
-
     public function now(\Closure $next = null)
     {
         $this->process($next);
-    }
-
-    public function else(\Closure $next = null)
-    {
-        $self = $this;
-
-        $condition = $this->form->if(function () use ($self) {
-            return ! $self->getResult();
-        });
-
-        if ($next) {
-            $condition->then($next);
-        }
-
-        return $condition;
     }
 
     public function process(\Closure $next = null)
@@ -65,7 +43,7 @@ class Condition
         }
         $this->done = true;
 
-        if (! $this->is()) {
+        if (!$this->is()) {
             return;
         }
 
@@ -87,14 +65,36 @@ class Condition
         return $this->result = $this->condition ? true : false;
     }
 
-    public function getResult()
-    {
-        return $this->result;
-    }
-
     protected function call(\Closure $callback)
     {
         return $callback($this->form);
+    }
+
+    public function then(\Closure $closure)
+    {
+        $this->next[] = $closure;
+
+        return $this;
+    }
+
+    public function else(\Closure $next = null)
+    {
+        $self = $this;
+
+        $condition = $this->form->if(function () use ($self) {
+            return !$self->getResult();
+        });
+
+        if ($next) {
+            $condition->then($next);
+        }
+
+        return $condition;
+    }
+
+    public function getResult()
+    {
+        return $this->result;
     }
 
     public function __call($name, $arguments)

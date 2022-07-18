@@ -46,14 +46,6 @@ class HelperSet implements \IteratorAggregate
     }
 
     /**
-     * Returns true if the helper if defined.
-     */
-    public function has(string $name): bool
-    {
-        return isset($this->helpers[$name]);
-    }
-
-    /**
      * Gets a helper value.
      *
      * @throws InvalidArgumentException if the helper is not defined
@@ -65,6 +57,14 @@ class HelperSet implements \IteratorAggregate
         }
 
         return $this->helpers[$name];
+    }
+
+    /**
+     * Returns true if the helper if defined.
+     */
+    public function has(string $name): bool
+    {
+        return isset($this->helpers[$name]);
     }
 
     public function getIterator(): \Traversable

@@ -31,8 +31,8 @@ class PsrLogMessageProcessor implements ProcessorInterface
     private $removeUsedContextFields;
 
     /**
-     * @param string|null $dateFormat              The format of the timestamp: one supported by DateTime::format
-     * @param bool        $removeUsedContextFields If set to true the fields interpolated into message gets unset
+     * @param string|null $dateFormat The format of the timestamp: one supported by DateTime::format
+     * @param bool $removeUsedContextFields If set to true the fields interpolated into message gets unset
      */
     public function __construct(?string $dateFormat = null, bool $removeUsedContextFields = false)
     {
@@ -62,16 +62,16 @@ class PsrLogMessageProcessor implements ProcessorInterface
                 if (!$this->dateFormat && $val instanceof \Monolog\DateTimeImmutable) {
                     // handle monolog dates using __toString if no specific dateFormat was asked for
                     // so that it follows the useMicroseconds flag
-                    $replacements[$placeholder] = (string) $val;
+                    $replacements[$placeholder] = (string)$val;
                 } else {
                     $replacements[$placeholder] = $val->format($this->dateFormat ?: static::SIMPLE_DATE);
                 }
             } elseif (is_object($val)) {
-                $replacements[$placeholder] = '[object '.Utils::getClass($val).']';
+                $replacements[$placeholder] = '[object ' . Utils::getClass($val) . ']';
             } elseif (is_array($val)) {
-                $replacements[$placeholder] = 'array'.Utils::jsonEncode($val, null, true);
+                $replacements[$placeholder] = 'array' . Utils::jsonEncode($val, null, true);
             } else {
-                $replacements[$placeholder] = '['.gettype($val).']';
+                $replacements[$placeholder] = '[' . gettype($val) . ']';
             }
 
             if ($this->removeUsedContextFields) {

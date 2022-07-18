@@ -18,7 +18,7 @@ Changelog
 ### Removed
 
 * Removed `symfony/polyfill-ctype` as a dependency, and require `ext-cytpe` instead.
-  * You can still require the `symfony/polyfill-ctype` in your project if you need it, as it provides `ext-ctype`
+    * You can still require the `symfony/polyfill-ctype` in your project if you need it, as it provides `ext-ctype`
 
 ## 1.10.0
 
@@ -51,10 +51,10 @@ Changelog
 ## Changed
 
 * the `all*` & `nullOr*` methods are now declared on an interface, instead of `@method` annotations.
-This interface is linked to the `Assert` class with a `@mixin` annotation. Most IDE's have supported this
-for a long time, and you should not lose any autocompletion capabilities. PHPStan has supported this since
-version `0.12.20`. This package is marked incompatible (with a composer conflict) with phpstan version prior to that.
-If you do not use PHPStan than this does not matter.
+  This interface is linked to the `Assert` class with a `@mixin` annotation. Most IDE's have supported this
+  for a long time, and you should not lose any autocompletion capabilities. PHPStan has supported this since
+  version `0.12.20`. This package is marked incompatible (with a composer conflict) with phpstan version prior to that.
+  If you do not use PHPStan than this does not matter.
 
 ## 1.8.0
 
@@ -92,20 +92,20 @@ If you do not use PHPStan than this does not matter.
 ### Fixed
 
 * `ResourceBundle` & `SimpleXMLElement` now pass the `isCountable` assertions.
-They are countable, without implementing the `Countable` interface.
+  They are countable, without implementing the `Countable` interface.
 * The doc block of `range` now has the proper variables.
 * An empty array will now pass `isList` and `isMap`. As it is a valid form of both.
-If a non-empty variant is needed, use `isNonEmptyList` or `isNonEmptyMap`.
+  If a non-empty variant is needed, use `isNonEmptyList` or `isNonEmptyMap`.
 
 ### Changed
 
 * Removed some `@psalm-assert` annotations, that were 'side effect' assertions See:
-  * [#144](https://github.com/webmozart/assert/pull/144)
-  * [#145](https://github.com/webmozart/assert/issues/145)
-  * [#146](https://github.com/webmozart/assert/pull/146)
-  * [#150](https://github.com/webmozart/assert/pull/150)
+    * [#144](https://github.com/webmozart/assert/pull/144)
+    * [#145](https://github.com/webmozart/assert/issues/145)
+    * [#146](https://github.com/webmozart/assert/pull/146)
+    * [#150](https://github.com/webmozart/assert/pull/150)
 * If you use Psalm, the minimum version needed is `3.6.0`. Which is enforced through a composer conflict.
-If you don't use Psalm, then this has no impact.
+  If you don't use Psalm, then this has no impact.
 
 ## 1.5.0 (2019-08-24)
 
@@ -119,9 +119,11 @@ If you don't use Psalm, then this has no impact.
 ### Fixed
 
 * `Assert::endsWith()` would not give the correct result when dealing with a multibyte suffix.
-* `Assert::length(), minLength, maxLength, lengthBetween` would not give the correct result when dealing with multibyte characters.
+* `Assert::length(), minLength, maxLength, lengthBetween` would not give the correct result when dealing with multibyte
+  characters.
 
-**NOTE**: These 2 changes may break your assertions if you relied on the fact that multibyte characters didn't behave correctly.
+**NOTE**: These 2 changes may break your assertions if you relied on the fact that multibyte characters didn't behave
+correctly.
 
 ### Changed
 
@@ -132,7 +134,8 @@ If you don't use Psalm, then this has no impact.
 ### Deprecation
 
 * deprecated `Assert::isTraversable()` in favor of `Assert::isIterable()`
-  * This was already done in 1.3.0, but it was only done through a silenced `trigger_error`. It is now annotated as well.
+    * This was already done in 1.3.0, but it was only done through a silenced `trigger_error`. It is now annotated as
+      well.
 
 ## 1.4.0 (2018-12-25)
 
@@ -176,32 +179,32 @@ If you don't use Psalm, then this has no impact.
 
 ## 1.2.0 (2016-11-23)
 
- * added `Assert::throws()`
- * added `Assert::count()`
- * added extension point `Assert::reportInvalidArgument()` for custom subclasses
+* added `Assert::throws()`
+* added `Assert::count()`
+* added extension point `Assert::reportInvalidArgument()` for custom subclasses
 
 ## 1.1.0 (2016-08-09)
 
- * added `Assert::object()`
- * added `Assert::propertyExists()`
- * added `Assert::propertyNotExists()`
- * added `Assert::methodExists()`
- * added `Assert::methodNotExists()`
- * added `Assert::uuid()`
+* added `Assert::object()`
+* added `Assert::propertyExists()`
+* added `Assert::propertyNotExists()`
+* added `Assert::methodExists()`
+* added `Assert::methodNotExists()`
+* added `Assert::uuid()`
 
 ## 1.0.2 (2015-08-24)
 
- * integrated Style CI
- * add tests for minimum package dependencies on Travis CI
+* integrated Style CI
+* add tests for minimum package dependencies on Travis CI
 
 ## 1.0.1 (2015-05-12)
 
- * added support for PHP 5.3.3
+* added support for PHP 5.3.3
 
 ## 1.0.0 (2015-05-12)
 
- * first stable release
+* first stable release
 
 ## 1.0.0-beta (2015-03-19)
 
- * first beta release
+* first beta release

@@ -13,9 +13,10 @@ class ExecuteSolutionController
     use ValidatesRequests;
 
     public function __invoke(
-        ExecuteSolutionRequest $request,
+        ExecuteSolutionRequest     $request,
         SolutionProviderRepository $solutionProviderRepository
-    ) {
+    )
+    {
         $this
             ->ensureLocalEnvironment()
             ->ensureLocalRequest();
@@ -25,15 +26,6 @@ class ExecuteSolutionController
         $solution->run($request->get('parameters', []));
 
         return response()->noContent();
-    }
-
-    public function ensureLocalEnvironment(): self
-    {
-        if (! app()->environment('local')) {
-            throw CannotExecuteSolutionForNonLocalEnvironment::make();
-        }
-
-        return $this;
     }
 
     public function ensureLocalRequest(): self
@@ -46,6 +38,15 @@ class ExecuteSolutionController
 
         if ($ipIsPublic) {
             throw CannotExecuteSolutionForNonLocalIp::make();
+        }
+
+        return $this;
+    }
+
+    public function ensureLocalEnvironment(): self
+    {
+        if (!app()->environment('local')) {
+            throw CannotExecuteSolutionForNonLocalEnvironment::make();
         }
 
         return $this;

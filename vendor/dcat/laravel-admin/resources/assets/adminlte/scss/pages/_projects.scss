@@ -3,24 +3,24 @@
 //
 
 .projects {
-  td {
-    vertical-align: middle;
-  }
+    td {
+        vertical-align: middle;
+    }
 
-  .list-inline {
-    margin-bottom: 0;
-  }
+    .list-inline {
+        margin-bottom: 0;
+    }
 
-  // table avatar
-  img.table-avatar,
-  .table-avatar img {
-    border-radius: 50%;
-    display: inline;
-    width: 2.5rem;
-  }
+    // table avatar
+    img.table-avatar,
+    .table-avatar img {
+        border-radius: 50%;
+        display: inline;
+        width: 2.5rem;
+    }
 
-  // project state
-  .project-state {
-    text-align: center;
-  }
+    // project state
+    .project-state {
+        text-align: center;
+    }
 }

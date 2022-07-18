@@ -51,6 +51,48 @@ final class LinkParserHelper
         );
     }
 
+    private static function manuallyParseLinkDestination(Cursor $cursor): ?string
+    {
+        $oldPosition = $cursor->getPosition();
+        $oldState = $cursor->saveState();
+
+        $openParens = 0;
+        while (($c = $cursor->getCurrentCharacter()) !== null) {
+            if ($c === '\\' && ($peek = $cursor->peek()) !== null && RegexHelper::isEscapable($peek)) {
+                $cursor->advanceBy(2);
+            } elseif ($c === '(') {
+                $cursor->advanceBy(1);
+                $openParens++;
+            } elseif ($c === ')') {
+                if ($openParens < 1) {
+                    break;
+                }
+
+                $cursor->advanceBy(1);
+                $openParens--;
+            } elseif (\preg_match(RegexHelper::REGEX_WHITESPACE_CHAR, $c)) {
+                break;
+            } else {
+                $cursor->advanceBy(1);
+            }
+        }
+
+        if ($openParens !== 0) {
+            return null;
+        }
+
+        if ($cursor->getPosition() === $oldPosition && (!isset($c) || $c !== ')')) {
+            return null;
+        }
+
+        $newPos = $cursor->getPosition();
+        $cursor->restoreState($oldState);
+
+        $cursor->advanceBy($newPos - $cursor->getPosition());
+
+        return $cursor->getPreviousText();
+    }
+
     public static function parseLinkLabel(Cursor $cursor): int
     {
         $match = $cursor->match('/^\[(?:[^\\\\\[\]]|\\\\.){0,1000}\]/');
@@ -90,53 +132,11 @@ final class LinkParserHelper
     public static function parsePartialLinkTitle(Cursor $cursor, string $endDelimiter): ?string
     {
         $endDelimiter = \preg_quote($endDelimiter, '/');
-        $regex        = \sprintf('/(%s|[^%s\x00])*(?:%s)?/', RegexHelper::PARTIAL_ESCAPED_CHAR, $endDelimiter, $endDelimiter);
+        $regex = \sprintf('/(%s|[^%s\x00])*(?:%s)?/', RegexHelper::PARTIAL_ESCAPED_CHAR, $endDelimiter, $endDelimiter);
         if (($partialTitle = $cursor->match($regex)) === null) {
             return null;
         }
 
         return RegexHelper::unescape($partialTitle);
-    }
-
-    private static function manuallyParseLinkDestination(Cursor $cursor): ?string
-    {
-        $oldPosition = $cursor->getPosition();
-        $oldState    = $cursor->saveState();
-
-        $openParens = 0;
-        while (($c = $cursor->getCurrentCharacter()) !== null) {
-            if ($c === '\\' && ($peek = $cursor->peek()) !== null && RegexHelper::isEscapable($peek)) {
-                $cursor->advanceBy(2);
-            } elseif ($c === '(') {
-                $cursor->advanceBy(1);
-                $openParens++;
-            } elseif ($c === ')') {
-                if ($openParens < 1) {
-                    break;
-                }
-
-                $cursor->advanceBy(1);
-                $openParens--;
-            } elseif (\preg_match(RegexHelper::REGEX_WHITESPACE_CHAR, $c)) {
-                break;
-            } else {
-                $cursor->advanceBy(1);
-            }
-        }
-
-        if ($openParens !== 0) {
-            return null;
-        }
-
-        if ($cursor->getPosition() === $oldPosition && (! isset($c) || $c !== ')')) {
-            return null;
-        }
-
-        $newPos = $cursor->getPosition();
-        $cursor->restoreState($oldState);
-
-        $cursor->advanceBy($newPos - $cursor->getPosition());
-
-        return $cursor->getPreviousText();
     }
 }

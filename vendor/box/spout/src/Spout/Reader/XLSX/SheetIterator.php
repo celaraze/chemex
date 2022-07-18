@@ -72,6 +72,19 @@ class SheetIterator implements IteratorInterface
     }
 
     /**
+     * Cleans up what was created to iterate over the object.
+     *
+     * @return void
+     */
+    public function end()
+    {
+        // make sure we are not leaking memory in case the iteration stopped before the end
+        foreach ($this->sheets as $sheet) {
+            $sheet->getRowIterator()->end();
+        }
+    }
+
+    /**
      * Return the current element
      * @see http://php.net/manual/en/iterator.current.php
      *
@@ -91,18 +104,5 @@ class SheetIterator implements IteratorInterface
     public function key()
     {
         return $this->currentSheetIndex + 1;
-    }
-
-    /**
-     * Cleans up what was created to iterate over the object.
-     *
-     * @return void
-     */
-    public function end()
-    {
-        // make sure we are not leaking memory in case the iteration stopped before the end
-        foreach ($this->sheets as $sheet) {
-            $sheet->getRowIterator()->end();
-        }
     }
 }

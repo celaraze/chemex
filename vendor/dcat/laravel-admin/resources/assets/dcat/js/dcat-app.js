@@ -1,4 +1,3 @@
-
 /*=========================================================================================
   File Name: app.js
   Description: Dcat Admin JS脚本.
@@ -34,7 +33,7 @@ let win = window,
     $ = jQuery;
 
 // 扩展Dcat对象
-function extend (Dcat) {
+function extend(Dcat) {
     // ajax处理相关扩展函数
     new Ajax(Dcat);
     // Toastr简化使用函数
@@ -122,6 +121,6 @@ function prepare(Dcat) {
 /**
  * @returns {Dcat}
  */
-win.CreateDcat = function(config) {
+win.CreateDcat = function (config) {
     return prepare(new Dcat(config));
 };

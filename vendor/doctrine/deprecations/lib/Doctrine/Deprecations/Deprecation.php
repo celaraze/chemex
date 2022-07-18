@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Deprecations;
 
 use Psr\Log\LoggerInterface;
-
 use function array_key_exists;
 use function array_reduce;
 use function debug_backtrace;
@@ -14,7 +13,6 @@ use function strpos;
 use function strrpos;
 use function substr;
 use function trigger_error;
-
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use const DIRECTORY_SEPARATOR;
 use const E_USER_DEPRECATED;
@@ -41,10 +39,10 @@ use const E_USER_DEPRECATED;
  */
 class Deprecation
 {
-    private const TYPE_NONE               = 0;
+    private const TYPE_NONE = 0;
     private const TYPE_TRACK_DEPRECATIONS = 1;
-    private const TYPE_TRIGGER_ERROR      = 2;
-    private const TYPE_PSR_LOGGER         = 4;
+    private const TYPE_TRIGGER_ERROR = 2;
+    private const TYPE_PSR_LOGGER = 4;
 
     /** @var int */
     private static $type = self::TYPE_NONE;
@@ -95,6 +93,53 @@ class Deprecation
         $message = sprintf($message, ...$args);
 
         self::delegateTriggerToBackend($message, $backtrace, $link, $package);
+    }
+
+    /**
+     * @param array<mixed> $backtrace
+     */
+    private static function delegateTriggerToBackend(string $message, array $backtrace, string $link, string $package): void
+    {
+        if ((self::$type & self::TYPE_PSR_LOGGER) > 0) {
+            $context = [
+                'file' => $backtrace[0]['file'],
+                'line' => $backtrace[0]['line'],
+                'package' => $package,
+                'link' => $link,
+            ];
+
+            self::$logger->notice($message, $context);
+        }
+
+        if (!((self::$type & self::TYPE_TRIGGER_ERROR) > 0)) {
+            return;
+        }
+
+        $message .= sprintf(
+            ' (%s:%d called by %s:%d, %s, package %s)',
+            self::basename($backtrace[0]['file']),
+            $backtrace[0]['line'],
+            self::basename($backtrace[1]['file']),
+            $backtrace[1]['line'],
+            $link,
+            $package
+        );
+
+        @trigger_error($message, E_USER_DEPRECATED);
+    }
+
+    /**
+     * A non-local-aware version of PHPs basename function.
+     */
+    private static function basename(string $filename): string
+    {
+        $pos = strrpos($filename, DIRECTORY_SEPARATOR);
+
+        if ($pos === false) {
+            return $filename;
+        }
+
+        return substr($filename, $pos + 1);
     }
 
     /**
@@ -156,53 +201,6 @@ class Deprecation
         self::delegateTriggerToBackend($message, $backtrace, $link, $package);
     }
 
-    /**
-     * @param array<mixed> $backtrace
-     */
-    private static function delegateTriggerToBackend(string $message, array $backtrace, string $link, string $package): void
-    {
-        if ((self::$type & self::TYPE_PSR_LOGGER) > 0) {
-            $context = [
-                'file' => $backtrace[0]['file'],
-                'line' => $backtrace[0]['line'],
-                'package' => $package,
-                'link' => $link,
-            ];
-
-            self::$logger->notice($message, $context);
-        }
-
-        if (! ((self::$type & self::TYPE_TRIGGER_ERROR) > 0)) {
-            return;
-        }
-
-        $message .= sprintf(
-            ' (%s:%d called by %s:%d, %s, package %s)',
-            self::basename($backtrace[0]['file']),
-            $backtrace[0]['line'],
-            self::basename($backtrace[1]['file']),
-            $backtrace[1]['line'],
-            $link,
-            $package
-        );
-
-        @trigger_error($message, E_USER_DEPRECATED);
-    }
-
-    /**
-     * A non-local-aware version of PHPs basename function.
-     */
-    private static function basename(string $filename): string
-    {
-        $pos = strrpos($filename, DIRECTORY_SEPARATOR);
-
-        if ($pos === false) {
-            return $filename;
-        }
-
-        return substr($filename, $pos + 1);
-    }
-
     public static function enableTrackingDeprecations(): void
     {
         self::$type |= self::TYPE_TRACK_DEPRECATIONS;
@@ -215,7 +213,7 @@ class Deprecation
 
     public static function enableWithPsrLogger(LoggerInterface $logger): void
     {
-        self::$type  |= self::TYPE_PSR_LOGGER;
+        self::$type |= self::TYPE_PSR_LOGGER;
         self::$logger = $logger;
     }
 
@@ -226,8 +224,8 @@ class Deprecation
 
     public static function disable(): void
     {
-        self::$type          = self::TYPE_NONE;
-        self::$logger        = null;
+        self::$type = self::TYPE_NONE;
+        self::$logger = null;
         self::$deduplication = true;
 
         foreach (self::$ignoredLinks as $link => $count) {

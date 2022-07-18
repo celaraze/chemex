@@ -16,7 +16,7 @@ class ViewController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  \Illuminate\Contracts\Routing\ResponseFactory  $response
+     * @param \Illuminate\Contracts\Routing\ResponseFactory $response
      * @return void
      */
     public function __construct(ResponseFactory $response)
@@ -27,13 +27,13 @@ class ViewController extends Controller
     /**
      * Invoke the controller method.
      *
-     * @param  array  $args
+     * @param array $args
      * @return \Illuminate\Http\Response
      */
     public function __invoke(...$args)
     {
         $routeParameters = array_filter($args, function ($key) {
-            return ! in_array($key, ['view', 'data', 'status', 'headers']);
+            return !in_array($key, ['view', 'data', 'status', 'headers']);
         }, ARRAY_FILTER_USE_KEY);
 
         $args['data'] = array_merge($args['data'], $routeParameters);
@@ -49,8 +49,8 @@ class ViewController extends Controller
     /**
      * Execute an action on the controller.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function callAction($method, $parameters)

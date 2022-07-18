@@ -67,7 +67,7 @@ class Schedule
     /**
      * Create a new schedule instance.
      *
-     * @param  \DateTimeZone|string|null  $timezone
+     * @param \DateTimeZone|string|null $timezone
      * @return void
      *
      * @throws \RuntimeException
@@ -76,7 +76,7 @@ class Schedule
     {
         $this->timezone = $timezone;
 
-        if (! class_exists(Container::class)) {
+        if (!class_exists(Container::class)) {
             throw new RuntimeException(
                 'A container implementation is required to use the scheduler. Please install the illuminate/container package.'
             );
@@ -85,35 +85,19 @@ class Schedule
         $container = Container::getInstance();
 
         $this->eventMutex = $container->bound(EventMutex::class)
-                                ? $container->make(EventMutex::class)
-                                : $container->make(CacheEventMutex::class);
+            ? $container->make(EventMutex::class)
+            : $container->make(CacheEventMutex::class);
 
         $this->schedulingMutex = $container->bound(SchedulingMutex::class)
-                                ? $container->make(SchedulingMutex::class)
-                                : $container->make(CacheSchedulingMutex::class);
-    }
-
-    /**
-     * Add a new callback event to the schedule.
-     *
-     * @param  string|callable  $callback
-     * @param  array  $parameters
-     * @return \Illuminate\Console\Scheduling\CallbackEvent
-     */
-    public function call($callback, array $parameters = [])
-    {
-        $this->events[] = $event = new CallbackEvent(
-            $this->eventMutex, $callback, $parameters, $this->timezone
-        );
-
-        return $event;
+            ? $container->make(SchedulingMutex::class)
+            : $container->make(CacheSchedulingMutex::class);
     }
 
     /**
      * Add a new Artisan command event to the schedule.
      *
-     * @param  string  $command
-     * @param  array  $parameters
+     * @param string $command
+     * @param array $parameters
      * @return \Illuminate\Console\Scheduling\Event
      */
     public function command($command, array $parameters = [])
@@ -132,104 +116,16 @@ class Schedule
     }
 
     /**
-     * Add a new job callback event to the schedule.
-     *
-     * @param  object|string  $job
-     * @param  string|null  $queue
-     * @param  string|null  $connection
-     * @return \Illuminate\Console\Scheduling\CallbackEvent
-     */
-    public function job($job, $queue = null, $connection = null)
-    {
-        return $this->call(function () use ($job, $queue, $connection) {
-            $job = is_string($job) ? Container::getInstance()->make($job) : $job;
-
-            if ($job instanceof ShouldQueue) {
-                $this->dispatchToQueue($job, $queue ?? $job->queue, $connection ?? $job->connection);
-            } else {
-                $this->dispatchNow($job);
-            }
-        })->name(is_string($job) ? $job : get_class($job));
-    }
-
-    /**
-     * Dispatch the given job to the queue.
-     *
-     * @param  object  $job
-     * @param  string|null  $queue
-     * @param  string|null  $connection
-     * @return void
-     *
-     * @throws \RuntimeException
-     */
-    protected function dispatchToQueue($job, $queue, $connection)
-    {
-        if ($job instanceof Closure) {
-            if (! class_exists(CallQueuedClosure::class)) {
-                throw new RuntimeException(
-                    'To enable support for closure jobs, please install the illuminate/queue package.'
-                );
-            }
-
-            $job = CallQueuedClosure::create($job);
-        }
-
-        if ($job instanceof ShouldBeUnique) {
-            return $this->dispatchUniqueJobToQueue($job, $queue, $connection);
-        }
-
-        $this->getDispatcher()->dispatch(
-            $job->onConnection($connection)->onQueue($queue)
-        );
-    }
-
-    /**
-     * Dispatch the given unique job to the queue.
-     *
-     * @param  object  $job
-     * @param  string|null  $queue
-     * @param  string|null  $connection
-     * @return void
-     *
-     * @throws \RuntimeException
-     */
-    protected function dispatchUniqueJobToQueue($job, $queue, $connection)
-    {
-        if (! Container::getInstance()->bound(Cache::class)) {
-            throw new RuntimeException('Cache driver not available. Scheduling unique jobs not supported.');
-        }
-
-        if (! (new UniqueLock(Container::getInstance()->make(Cache::class)))->acquire($job)) {
-            return;
-        }
-
-        $this->getDispatcher()->dispatch(
-            $job->onConnection($connection)->onQueue($queue)
-        );
-    }
-
-    /**
-     * Dispatch the given job right now.
-     *
-     * @param  object  $job
-     * @return void
-     */
-    protected function dispatchNow($job)
-    {
-        $this->getDispatcher()->dispatchNow($job);
-    }
-
-    /**
      * Add a new command event to the schedule.
      *
-     * @param  string  $command
-     * @param  array  $parameters
+     * @param string $command
+     * @param array $parameters
      * @return \Illuminate\Console\Scheduling\Event
      */
     public function exec($command, array $parameters = [])
     {
         if (count($parameters)) {
-            $command .= ' '.$this->compileParameters($parameters);
+            $command .= ' ' . $this->compileParameters($parameters);
         }
 
         $this->events[] = $event = new Event($this->eventMutex, $command, $this->timezone);
@@ -240,7 +136,7 @@ class Schedule
     /**
      * Compile parameters for a command.
      *
-     * @param  array  $parameters
+     * @param array $parameters
      * @return string
      */
     protected function compileParameters(array $parameters)
@@ -250,7 +146,7 @@ class Schedule
                 return $this->compileArrayInput($key, $value);
             }
 
-            if (! is_numeric($value) && ! preg_match('/^(-.$|--.*)/i', $value)) {
+            if (!is_numeric($value) && !preg_match('/^(-.$|--.*)/i', $value)) {
                 $value = ProcessUtils::escapeArgument($value);
             }
 
@@ -261,8 +157,8 @@ class Schedule
     /**
      * Compile array input for a command.
      *
-     * @param  string|int  $key
-     * @param  array  $value
+     * @param string|int $key
+     * @param array $value
      * @return string
      */
     public function compileArrayInput($key, $value)
@@ -285,55 +181,96 @@ class Schedule
     }
 
     /**
-     * Determine if the server is allowed to run this event.
+     * Add a new job callback event to the schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Event  $event
-     * @param  \DateTimeInterface  $time
-     * @return bool
+     * @param object|string $job
+     * @param string|null $queue
+     * @param string|null $connection
+     * @return \Illuminate\Console\Scheduling\CallbackEvent
      */
-    public function serverShouldRun(Event $event, DateTimeInterface $time)
+    public function job($job, $queue = null, $connection = null)
     {
-        return $this->schedulingMutex->create($event, $time);
+        return $this->call(function () use ($job, $queue, $connection) {
+            $job = is_string($job) ? Container::getInstance()->make($job) : $job;
+
+            if ($job instanceof ShouldQueue) {
+                $this->dispatchToQueue($job, $queue ?? $job->queue, $connection ?? $job->connection);
+            } else {
+                $this->dispatchNow($job);
+            }
+        })->name(is_string($job) ? $job : get_class($job));
     }
 
     /**
-     * Get all of the events on the schedule that are due.
+     * Add a new callback event to the schedule.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @return \Illuminate\Support\Collection
+     * @param string|callable $callback
+     * @param array $parameters
+     * @return \Illuminate\Console\Scheduling\CallbackEvent
      */
-    public function dueEvents($app)
+    public function call($callback, array $parameters = [])
     {
-        return collect($this->events)->filter->isDue($app);
+        $this->events[] = $event = new CallbackEvent(
+            $this->eventMutex, $callback, $parameters, $this->timezone
+        );
+
+        return $event;
     }
 
     /**
-     * Get all of the events on the schedule.
+     * Dispatch the given job to the queue.
      *
-     * @return \Illuminate\Console\Scheduling\Event[]
+     * @param object $job
+     * @param string|null $queue
+     * @param string|null $connection
+     * @return void
+     *
+     * @throws \RuntimeException
      */
-    public function events()
+    protected function dispatchToQueue($job, $queue, $connection)
     {
-        return $this->events;
-    }
+        if ($job instanceof Closure) {
+            if (!class_exists(CallQueuedClosure::class)) {
+                throw new RuntimeException(
+                    'To enable support for closure jobs, please install the illuminate/queue package.'
+                );
+            }
 
-    /**
-     * Specify the cache store that should be used to store mutexes.
-     *
-     * @param  string  $store
-     * @return $this
-     */
-    public function useCache($store)
-    {
-        if ($this->eventMutex instanceof CacheAware) {
-            $this->eventMutex->useStore($store);
+            $job = CallQueuedClosure::create($job);
         }
 
-        if ($this->schedulingMutex instanceof CacheAware) {
-            $this->schedulingMutex->useStore($store);
+        if ($job instanceof ShouldBeUnique) {
+            return $this->dispatchUniqueJobToQueue($job, $queue, $connection);
         }
 
-        return $this;
+        $this->getDispatcher()->dispatch(
+            $job->onConnection($connection)->onQueue($queue)
+        );
+    }
+
+    /**
+     * Dispatch the given unique job to the queue.
+     *
+     * @param object $job
+     * @param string|null $queue
+     * @param string|null $connection
+     * @return void
+     *
+     * @throws \RuntimeException
+     */
+    protected function dispatchUniqueJobToQueue($job, $queue, $connection)
+    {
+        if (!Container::getInstance()->bound(Cache::class)) {
+            throw new RuntimeException('Cache driver not available. Scheduling unique jobs not supported.');
+        }
+
+        if (!(new UniqueLock(Container::getInstance()->make(Cache::class)))->acquire($job)) {
+            return;
+        }
+
+        $this->getDispatcher()->dispatch(
+            $job->onConnection($connection)->onQueue($queue)
+        );
     }
 
     /**
@@ -357,5 +294,68 @@ class Schedule
         }
 
         return $this->dispatcher;
+    }
+
+    /**
+     * Dispatch the given job right now.
+     *
+     * @param object $job
+     * @return void
+     */
+    protected function dispatchNow($job)
+    {
+        $this->getDispatcher()->dispatchNow($job);
+    }
+
+    /**
+     * Determine if the server is allowed to run this event.
+     *
+     * @param \Illuminate\Console\Scheduling\Event $event
+     * @param \DateTimeInterface $time
+     * @return bool
+     */
+    public function serverShouldRun(Event $event, DateTimeInterface $time)
+    {
+        return $this->schedulingMutex->create($event, $time);
+    }
+
+    /**
+     * Get all of the events on the schedule that are due.
+     *
+     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @return \Illuminate\Support\Collection
+     */
+    public function dueEvents($app)
+    {
+        return collect($this->events)->filter->isDue($app);
+    }
+
+    /**
+     * Get all of the events on the schedule.
+     *
+     * @return \Illuminate\Console\Scheduling\Event[]
+     */
+    public function events()
+    {
+        return $this->events;
+    }
+
+    /**
+     * Specify the cache store that should be used to store mutexes.
+     *
+     * @param string $store
+     * @return $this
+     */
+    public function useCache($store)
+    {
+        if ($this->eventMutex instanceof CacheAware) {
+            $this->eventMutex->useStore($store);
+        }
+
+        if ($this->schedulingMutex instanceof CacheAware) {
+            $this->schedulingMutex->useStore($store);
+        }
+
+        return $this;
     }
 }

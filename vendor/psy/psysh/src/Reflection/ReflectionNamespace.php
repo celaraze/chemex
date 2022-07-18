@@ -29,16 +29,6 @@ class ReflectionNamespace implements \Reflector
     }
 
     /**
-     * Gets the constant name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
      * This can't (and shouldn't) do anything :).
      *
      * @throws \RuntimeException
@@ -56,5 +46,15 @@ class ReflectionNamespace implements \Reflector
     public function __toString(): string
     {
         return $this->getName();
+    }
+
+    /**
+     * Gets the constant name.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

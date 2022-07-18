@@ -2,7 +2,14 @@
     "name": "dcat/laravel-admin",
     "description": "dcat admin",
     "type": "library",
-    "keywords": ["dcat", "laravel", "admin", "grid", "form", "laravel admin"],
+    "keywords": [
+        "dcat",
+        "laravel",
+        "admin",
+        "grid",
+        "form",
+        "laravel admin"
+    ],
     "homepage": "https://github.com/jqhph/dcat-admin",
     "license": "MIT",
     "authors": [

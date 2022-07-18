@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
 use PhpParser\Node;
@@ -88,18 +89,6 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
     }
 
-    /**
-     * @psalm-return array<int, int>
-     */
-    public function executableLines(): array
-    {
-        $this->computeReturns();
-
-        sort($this->executableLines);
-
-        return $this->executableLines;
-    }
-
     private function savePropertyLines(Node $node): void
     {
         if (!$node instanceof Property && !$node instanceof Node\Stmt\ClassConst) {
@@ -111,23 +100,44 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
     }
 
-    private function computeReturns(): void
+    private function isExecutable(Node $node): bool
     {
-        foreach ($this->returns as $return) {
-            foreach (range($return->getStartLine(), $return->getEndLine()) as $loc) {
-                if (isset($this->executableLines[$loc])) {
-                    continue 2;
-                }
-            }
-
-            $line = $return->getEndLine();
-
-            if ($return->expr !== null) {
-                $line = $return->expr->getStartLine();
-            }
-
-            $this->executableLines[$line] = $line;
-        }
+        return $node instanceof Assign ||
+            $node instanceof ArrayDimFetch ||
+            $node instanceof Array_ ||
+            $node instanceof BinaryOp ||
+            $node instanceof Break_ ||
+            $node instanceof CallLike ||
+            $node instanceof Case_ ||
+            $node instanceof Cast ||
+            $node instanceof Catch_ ||
+            $node instanceof ClassMethod ||
+            $node instanceof Closure ||
+            $node instanceof Continue_ ||
+            $node instanceof Do_ ||
+            $node instanceof Echo_ ||
+            $node instanceof ElseIf_ ||
+            $node instanceof Else_ ||
+            $node instanceof Encapsed ||
+            $node instanceof Expression ||
+            $node instanceof Finally_ ||
+            $node instanceof For_ ||
+            $node instanceof Foreach_ ||
+            $node instanceof Goto_ ||
+            $node instanceof If_ ||
+            $node instanceof Match_ ||
+            $node instanceof MatchArm ||
+            $node instanceof MethodCall ||
+            $node instanceof NullsafePropertyFetch ||
+            $node instanceof PropertyFetch ||
+            $node instanceof Return_ ||
+            $node instanceof StaticPropertyFetch ||
+            $node instanceof Switch_ ||
+            $node instanceof Ternary ||
+            $node instanceof Throw_ ||
+            $node instanceof TryCatch ||
+            $node instanceof Unset_ ||
+            $node instanceof While_;
     }
 
     /**
@@ -215,10 +225,10 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof Expression && (
-            $node->expr instanceof Cast ||
-            $node->expr instanceof Match_ ||
-            $node->expr instanceof MethodCall
-        )) {
+                $node->expr instanceof Cast ||
+                $node->expr instanceof Match_ ||
+                $node->expr instanceof MethodCall
+            )) {
             return [];
         }
 
@@ -231,43 +241,34 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         return [$node->getStartLine()];
     }
 
-    private function isExecutable(Node $node): bool
+    /**
+     * @psalm-return array<int, int>
+     */
+    public function executableLines(): array
     {
-        return $node instanceof Assign ||
-               $node instanceof ArrayDimFetch ||
-               $node instanceof Array_ ||
-               $node instanceof BinaryOp ||
-               $node instanceof Break_ ||
-               $node instanceof CallLike ||
-               $node instanceof Case_ ||
-               $node instanceof Cast ||
-               $node instanceof Catch_ ||
-               $node instanceof ClassMethod ||
-               $node instanceof Closure ||
-               $node instanceof Continue_ ||
-               $node instanceof Do_ ||
-               $node instanceof Echo_ ||
-               $node instanceof ElseIf_ ||
-               $node instanceof Else_ ||
-               $node instanceof Encapsed ||
-               $node instanceof Expression ||
-               $node instanceof Finally_ ||
-               $node instanceof For_ ||
-               $node instanceof Foreach_ ||
-               $node instanceof Goto_ ||
-               $node instanceof If_ ||
-               $node instanceof Match_ ||
-               $node instanceof MatchArm ||
-               $node instanceof MethodCall ||
-               $node instanceof NullsafePropertyFetch ||
-               $node instanceof PropertyFetch ||
-               $node instanceof Return_ ||
-               $node instanceof StaticPropertyFetch ||
-               $node instanceof Switch_ ||
-               $node instanceof Ternary ||
-               $node instanceof Throw_ ||
-               $node instanceof TryCatch ||
-               $node instanceof Unset_ ||
-               $node instanceof While_;
+        $this->computeReturns();
+
+        sort($this->executableLines);
+
+        return $this->executableLines;
+    }
+
+    private function computeReturns(): void
+    {
+        foreach ($this->returns as $return) {
+            foreach (range($return->getStartLine(), $return->getEndLine()) as $loc) {
+                if (isset($this->executableLines[$loc])) {
+                    continue 2;
+                }
+            }
+
+            $line = $return->getEndLine();
+
+            if ($return->expr !== null) {
+                $line = $return->expr->getStartLine();
+            }
+
+            $this->executableLines[$line] = $line;
+        }
     }
 }

@@ -39,7 +39,7 @@ class CliDescriptor implements DumpDescriptorInterface
         $io = $output instanceof SymfonyStyle ? $output : new SymfonyStyle(new ArrayInput([]), $output);
         $this->dumper->setColors($output->isDecorated());
 
-        $rows = [['date', date('r', (int) $context['timestamp'])]];
+        $rows = [['date', date('r', (int)$context['timestamp'])]];
         $lastIdentifier = $this->lastIdentifier;
         $this->lastIdentifier = $clientId;
 
@@ -53,7 +53,7 @@ class CliDescriptor implements DumpDescriptorInterface
             }
         } elseif (isset($context['cli'])) {
             $this->lastIdentifier = $context['cli']['identifier'];
-            $section = '$ '.$context['cli']['command_line'];
+            $section = '$ ' . $context['cli']['command_line'];
         }
 
         if ($this->lastIdentifier !== $lastIdentifier) {

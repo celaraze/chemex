@@ -58,7 +58,7 @@ class Content implements Renderable
     /**
      * Content constructor.
      *
-     * @param  Closure|null  $callback
+     * @param Closure|null $callback
      */
     public function __construct(\Closure $callback = null)
     {
@@ -72,7 +72,7 @@ class Content implements Renderable
     /**
      * Create a content instance.
      *
-     * @param  mixed  ...$params
+     * @param mixed ...$params
      * @return $this
      */
     public static function make(...$params)
@@ -81,7 +81,18 @@ class Content implements Renderable
     }
 
     /**
-     * @param  string  $header
+     * Register a composed event.
+     *
+     * @param callable $callback
+     * @param bool $once
+     */
+    public static function composed(callable $callback, bool $once = false)
+    {
+        static::addBuilderListeners('builder.composed', $callback, $once);
+    }
+
+    /**
+     * @param string $header
      * @return $this
      */
     public function header($header = '')
@@ -92,7 +103,7 @@ class Content implements Renderable
     /**
      * Set title of content.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title($title)
@@ -105,7 +116,7 @@ class Content implements Renderable
     /**
      * Set description of content.
      *
-     * @param  string  $description
+     * @param string $description
      * @return $this
      */
     public function description($description = '')
@@ -118,7 +129,7 @@ class Content implements Renderable
     /**
      * 设置翻译文件路径.
      *
-     * @param  string|null  $translation
+     * @param string|null $translation
      * @return $this
      */
     public function translation(?string $translation)
@@ -139,16 +150,29 @@ class Content implements Renderable
     }
 
     /**
+     * Set content view.
+     *
+     * @param null|string $view
+     * @return $this
+     */
+    public function view(?string $view)
+    {
+        $this->view = $view;
+
+        return $this;
+    }
+
+    /**
      * Set breadcrumb of content.
      *
+     * @param array ...$breadcrumb
+     * @return $this
      * @example
      *     $this->breadcrumb('Menu', 'auth/menu', 'fa fa-align-justify');
      *     $this->breadcrumb([
      *         ['text' => 'Menu', 'url' => 'auth/menu', 'icon' => 'fa fa-align-justify']
      *     ]);
      *
-     * @param  array  ...$breadcrumb
-     * @return $this
      */
     public function breadcrumb(...$breadcrumb)
     {
@@ -160,35 +184,35 @@ class Content implements Renderable
     }
 
     /**
-     * @param  array  $breadcrumb
+     * @param array $breadcrumb
      * @return void
      *
      * @throws \Exception
      */
     protected function formatBreadcrumb(array &$breadcrumb)
     {
-        if (! $breadcrumb) {
+        if (!$breadcrumb) {
             throw new RuntimeException('Breadcrumb format error!');
         }
 
         $notArray = false;
         foreach ($breadcrumb as &$item) {
             $isArray = is_array($item);
-            if ($isArray && ! isset($item['text'])) {
+            if ($isArray && !isset($item['text'])) {
                 throw new RuntimeException('Breadcrumb format error!');
             }
-            if (! $isArray && $item) {
+            if (!$isArray && $item) {
                 $notArray = true;
             }
         }
-        if (! $breadcrumb) {
+        if (!$breadcrumb) {
             throw new RuntimeException('Breadcrumb format error!');
         }
         if ($notArray) {
             $breadcrumb = [
                 [
                     'text' => $breadcrumb[0] ?? null,
-                    'url'  => $breadcrumb[1] ?? null,
+                    'url' => $breadcrumb[1] ?? null,
                     'icon' => $breadcrumb[2] ?? null,
                 ],
             ];
@@ -198,7 +222,7 @@ class Content implements Renderable
     /**
      * Alias of method row.
      *
-     * @param  mixed  $content
+     * @param mixed $content
      * @return Content
      */
     public function body($content)
@@ -226,6 +250,16 @@ class Content implements Renderable
     }
 
     /**
+     * Add Row.
+     *
+     * @param Row $row
+     */
+    protected function addRow(Row $row)
+    {
+        $this->rows[] = $row;
+    }
+
+    /**
      * @param $content
      * @return $this
      */
@@ -248,16 +282,6 @@ class Content implements Renderable
     }
 
     /**
-     * Add Row.
-     *
-     * @param  Row  $row
-     */
-    protected function addRow(Row $row)
-    {
-        $this->rows[] = $row;
-    }
-
-    /**
      * Build html of content.
      *
      * @return string
@@ -275,232 +299,6 @@ class Content implements Renderable
         } catch (\Throwable $e) {
             return $this->handleException($e);
         }
-    }
-
-    /**
-     * @param  \Throwable  $e
-     * @return mixed|string
-     */
-    protected function handleException(\Throwable $e)
-    {
-        $response = Admin::handleException($e);
-
-        if (is_string($response) || $response instanceof Renderable) {
-            $row = new Row($response);
-
-            return $row->render();
-        }
-
-        return $response;
-    }
-
-    /**
-     * Set success message for content.
-     *
-     * @param  string  $title
-     * @param  string  $message
-     * @return $this
-     */
-    public function withSuccess($title = '', $message = '')
-    {
-        admin_success($title, $message);
-
-        return $this;
-    }
-
-    /**
-     * Set error message for content.
-     *
-     * @param  string  $title
-     * @param  string  $message
-     * @return $this
-     */
-    public function withError($title = '', $message = '')
-    {
-        admin_error($title, $message);
-
-        return $this;
-    }
-
-    /**
-     * Set warning message for content.
-     *
-     * @param  string  $title
-     * @param  string  $message
-     * @return $this
-     */
-    public function withWarning($title = '', $message = '')
-    {
-        admin_warning($title, $message);
-
-        return $this;
-    }
-
-    /**
-     * Set info message for content.
-     *
-     * @param  string  $title
-     * @param  string  $message
-     * @return $this
-     */
-    public function withInfo($title = '', $message = '')
-    {
-        admin_info($title, $message);
-
-        return $this;
-    }
-
-    /**
-     * Set content view.
-     *
-     * @param  null|string  $view
-     * @return $this
-     */
-    public function view(?string $view)
-    {
-        $this->view = $view;
-
-        return $this;
-    }
-
-    /**
-     * @param  string|array  $key
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function with($key, $value = null)
-    {
-        if (is_array($key)) {
-            $this->variables = array_merge($this->variables, $key);
-        } else {
-            $this->variables[$key] = $value;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param  string|array  $key
-     * @param  mixed  $value
-     * @return $this
-     */
-    public function withConfig($key, $value = null)
-    {
-        if (is_array($key)) {
-            $this->config = array_merge($this->config, $key);
-        } else {
-            $this->config[$key] = $value;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return void
-     */
-    protected function shareDefaultErrors()
-    {
-        if (! session()->all()) {
-            view()->share(['errors' => new ViewErrorBag()]);
-        }
-    }
-
-    /**
-     * @return array
-     */
-    protected function variables()
-    {
-        return array_merge([
-            'header'          => $this->title,
-            'description'     => $this->description,
-            'breadcrumb'      => $this->breadcrumb,
-            'configData'      => $this->applyClasses(),
-            'pjaxContainerId' => Admin::getPjaxContainerId(),
-        ], $this->variables);
-    }
-
-    /**
-     * @return array
-     */
-    protected function applyClasses()
-    {
-        // default data array
-        $defaultData = [
-            'theme'             => '',
-            'sidebar_collapsed' => false,
-            'sidebar_style'     => 'sidebar-light-primary',
-            'navbar_color'      => '',
-            'navbar_class'      => 'sticky',
-            'footer_type'       => '',
-            'body_class'        => [],
-            'horizontal_menu'   => false,
-        ];
-
-        $data = array_merge(
-            config('admin.layout') ?: [],
-            $this->config
-        );
-
-        $allOptions = [
-            'theme'             => '',
-            'footer_type'       => '',
-            'body_class'        => [],
-            'sidebar_style'     => ['light' => 'sidebar-light-primary', 'primary' => 'sidebar-primary', 'dark' => 'sidebar-dark-white'],
-            'sidebar_collapsed' => [],
-            'navbar_color'      => [],
-            'navbar_class'      => ['floating' => 'floating-nav', 'sticky' => 'fixed-top', 'hidden' => 'd-none'],
-            'horizontal_menu'   => [],
-        ];
-
-        $maps = [
-            'footer_type' => 'footer_type',
-        ];
-
-        foreach ($allOptions as $key => $value) {
-            if (! array_key_exists($key, $defaultData)) {
-                continue;
-            }
-
-            if (! isset($data[$key])) {
-                $data[$key] = $defaultData[$key];
-
-                continue;
-            }
-
-            if (
-                isset($maps[$key])
-                && ! isset($allOptions[$maps[$key]][$data[$key]])
-            ) {
-                $data[$key] = $defaultData[$key];
-            }
-
-            if (! is_array($data[$key]) && isset($value[$data[$key]])) {
-                $data[$key] = $value[$data[$key]];
-            }
-        }
-
-        if (! is_array($data['body_class'])) {
-            $data['body_class'] = explode(' ', (string) $data['body_class']);
-        }
-
-        if ($data['body_class'] && in_array('dark-mode', $data['body_class'], true)) {
-            $data['sidebar_style'] = 'sidebar-dark-white';
-        }
-
-        if ($data['horizontal_menu']) {
-            $data['body_class'][] = 'horizontal-menu';
-        }
-
-        return [
-            'theme'             => $data['theme'],
-            'sidebar_collapsed' => $data['sidebar_collapsed'],
-            'navbar_color'      => $data['navbar_color'],
-            'navbar_class'      => $allOptions['navbar_class'][$data['navbar_class']],
-            'sidebar_class'     => $data['sidebar_collapsed'] ? 'sidebar-collapse' : '',
-            'body_class'        => implode(' ', $data['body_class']),
-            'sidebar_style'     => $data['sidebar_style'],
-            'horizontal_menu'   => $data['horizontal_menu'],
-        ];
     }
 
     /**
@@ -525,23 +323,225 @@ class Content implements Renderable
     }
 
     /**
-     * Register a composed event.
-     *
-     * @param  callable  $callback
-     * @param  bool  $once
+     * @return void
      */
-    public static function composed(callable $callback, bool $once = false)
+    protected function shareDefaultErrors()
     {
-        static::addBuilderListeners('builder.composed', $callback, $once);
+        if (!session()->all()) {
+            view()->share(['errors' => new ViewErrorBag()]);
+        }
     }
 
     /**
      * Call the composed callbacks.
      *
-     * @param  array  ...$params
+     * @param array ...$params
      */
     protected function callComposed(...$params)
     {
         $this->fireBuilderEvent('builder.composed', ...$params);
+    }
+
+    /**
+     * @return array
+     */
+    protected function variables()
+    {
+        return array_merge([
+            'header' => $this->title,
+            'description' => $this->description,
+            'breadcrumb' => $this->breadcrumb,
+            'configData' => $this->applyClasses(),
+            'pjaxContainerId' => Admin::getPjaxContainerId(),
+        ], $this->variables);
+    }
+
+    /**
+     * @return array
+     */
+    protected function applyClasses()
+    {
+        // default data array
+        $defaultData = [
+            'theme' => '',
+            'sidebar_collapsed' => false,
+            'sidebar_style' => 'sidebar-light-primary',
+            'navbar_color' => '',
+            'navbar_class' => 'sticky',
+            'footer_type' => '',
+            'body_class' => [],
+            'horizontal_menu' => false,
+        ];
+
+        $data = array_merge(
+            config('admin.layout') ?: [],
+            $this->config
+        );
+
+        $allOptions = [
+            'theme' => '',
+            'footer_type' => '',
+            'body_class' => [],
+            'sidebar_style' => ['light' => 'sidebar-light-primary', 'primary' => 'sidebar-primary', 'dark' => 'sidebar-dark-white'],
+            'sidebar_collapsed' => [],
+            'navbar_color' => [],
+            'navbar_class' => ['floating' => 'floating-nav', 'sticky' => 'fixed-top', 'hidden' => 'd-none'],
+            'horizontal_menu' => [],
+        ];
+
+        $maps = [
+            'footer_type' => 'footer_type',
+        ];
+
+        foreach ($allOptions as $key => $value) {
+            if (!array_key_exists($key, $defaultData)) {
+                continue;
+            }
+
+            if (!isset($data[$key])) {
+                $data[$key] = $defaultData[$key];
+
+                continue;
+            }
+
+            if (
+                isset($maps[$key])
+                && !isset($allOptions[$maps[$key]][$data[$key]])
+            ) {
+                $data[$key] = $defaultData[$key];
+            }
+
+            if (!is_array($data[$key]) && isset($value[$data[$key]])) {
+                $data[$key] = $value[$data[$key]];
+            }
+        }
+
+        if (!is_array($data['body_class'])) {
+            $data['body_class'] = explode(' ', (string)$data['body_class']);
+        }
+
+        if ($data['body_class'] && in_array('dark-mode', $data['body_class'], true)) {
+            $data['sidebar_style'] = 'sidebar-dark-white';
+        }
+
+        if ($data['horizontal_menu']) {
+            $data['body_class'][] = 'horizontal-menu';
+        }
+
+        return [
+            'theme' => $data['theme'],
+            'sidebar_collapsed' => $data['sidebar_collapsed'],
+            'navbar_color' => $data['navbar_color'],
+            'navbar_class' => $allOptions['navbar_class'][$data['navbar_class']],
+            'sidebar_class' => $data['sidebar_collapsed'] ? 'sidebar-collapse' : '',
+            'body_class' => implode(' ', $data['body_class']),
+            'sidebar_style' => $data['sidebar_style'],
+            'horizontal_menu' => $data['horizontal_menu'],
+        ];
+    }
+
+    /**
+     * @param \Throwable $e
+     * @return mixed|string
+     */
+    protected function handleException(\Throwable $e)
+    {
+        $response = Admin::handleException($e);
+
+        if (is_string($response) || $response instanceof Renderable) {
+            $row = new Row($response);
+
+            return $row->render();
+        }
+
+        return $response;
+    }
+
+    /**
+     * Set success message for content.
+     *
+     * @param string $title
+     * @param string $message
+     * @return $this
+     */
+    public function withSuccess($title = '', $message = '')
+    {
+        admin_success($title, $message);
+
+        return $this;
+    }
+
+    /**
+     * Set error message for content.
+     *
+     * @param string $title
+     * @param string $message
+     * @return $this
+     */
+    public function withError($title = '', $message = '')
+    {
+        admin_error($title, $message);
+
+        return $this;
+    }
+
+    /**
+     * Set warning message for content.
+     *
+     * @param string $title
+     * @param string $message
+     * @return $this
+     */
+    public function withWarning($title = '', $message = '')
+    {
+        admin_warning($title, $message);
+
+        return $this;
+    }
+
+    /**
+     * Set info message for content.
+     *
+     * @param string $title
+     * @param string $message
+     * @return $this
+     */
+    public function withInfo($title = '', $message = '')
+    {
+        admin_info($title, $message);
+
+        return $this;
+    }
+
+    /**
+     * @param string|array $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function with($key, $value = null)
+    {
+        if (is_array($key)) {
+            $this->variables = array_merge($this->variables, $key);
+        } else {
+            $this->variables[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string|array $key
+     * @param mixed $value
+     * @return $this
+     */
+    public function withConfig($key, $value = null)
+    {
+        if (is_array($key)) {
+            $this->config = array_merge($this->config, $key);
+        } else {
+            $this->config[$key] = $value;
+        }
+
+        return $this;
     }
 }

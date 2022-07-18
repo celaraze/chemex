@@ -88,7 +88,7 @@ class PublishCommand extends Command
         }
 
         // 设置默认标签.
-        if (! $tags && ! $this->tags) {
+        if (!$tags && !$this->tags) {
             $this->tags[] = 'dcat-admin-lang';
             $tags = [
                 'dcat-admin-migrations',
@@ -135,13 +135,29 @@ class PublishCommand extends Command
 
     protected function publishFile($from, $to)
     {
-        if (! $this->files->exists($to) || $this->option('force')) {
+        if (!$this->files->exists($to) || $this->option('force')) {
             $this->createParentDirectory(dirname($to));
 
             $this->files->copy($from, $to);
 
             $this->status($from, $to, 'File');
         }
+    }
+
+    protected function createParentDirectory($directory)
+    {
+        if (!$this->files->isDirectory($directory)) {
+            $this->files->makeDirectory($directory, 0755, true);
+        }
+    }
+
+    protected function status($from, $to, $type)
+    {
+        $from = str_replace(base_path(), '', realpath($from));
+
+        $to = str_replace(base_path(), '', realpath($to));
+
+        $this->line('<info>Copied ' . $type . '</info> <comment>[' . $from . ']</comment> <info>To</info> <comment>[' . $to . ']</comment>');
     }
 
     protected function publishDirectory($from, $to)
@@ -162,10 +178,10 @@ class PublishCommand extends Command
             foreach ($manager->listContents('from://', true) as $file) {
                 if (
                     $file['type'] === 'file'
-                    && (! $manager->has('to://'.$file['path']) || $this->option('force'))
-                    && ! $this->isExceptPath($manager, $file['path'])
+                    && (!$manager->has('to://' . $file['path']) || $this->option('force'))
+                    && !$this->isExceptPath($manager, $file['path'])
                 ) {
-                    $manager->put('to://'.$file['path'], $manager->read('from://'.$file['path']));
+                    $manager->put('to://' . $file['path'], $manager->read('from://' . $file['path']));
                 }
             }
 
@@ -175,30 +191,14 @@ class PublishCommand extends Command
         foreach ($manager->listContents('from://', true) as $file) {
             $path = Str::after($file['path'], 'from://');
 
-            if ($file['type'] === 'file' && (! $manager->fileExists('to://'.$path) || $this->option('force'))) {
-                $manager->write('to://'.$path, $manager->read($file['path']));
+            if ($file['type'] === 'file' && (!$manager->fileExists('to://' . $path) || $this->option('force'))) {
+                $manager->write('to://' . $path, $manager->read($file['path']));
             }
         }
     }
 
     protected function isExceptPath($manager, $path)
     {
-        return $manager->has('to://'.$path) && Str::contains($path, ['/menu.php', '/global.php']);
-    }
-
-    protected function createParentDirectory($directory)
-    {
-        if (! $this->files->isDirectory($directory)) {
-            $this->files->makeDirectory($directory, 0755, true);
-        }
-    }
-
-    protected function status($from, $to, $type)
-    {
-        $from = str_replace(base_path(), '', realpath($from));
-
-        $to = str_replace(base_path(), '', realpath($to));
-
-        $this->line('<info>Copied '.$type.'</info> <comment>['.$from.']</comment> <info>To</info> <comment>['.$to.']</comment>');
+        return $manager->has('to://' . $path) && Str::contains($path, ['/menu.php', '/global.php']);
     }
 }

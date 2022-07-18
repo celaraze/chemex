@@ -53,7 +53,7 @@ final class AmpClientState extends ClientState
 
     public function __construct(?callable $clientConfigurator, int $maxHostConnections, int $maxPendingPushes, ?LoggerInterface &$logger)
     {
-        $clientConfigurator ??= static fn (PooledHttpClient $client) => new InterceptedHttpClient($client, new RetryRequests(2));
+        $clientConfigurator ??= static fn(PooledHttpClient $client) => new InterceptedHttpClient($client, new RetryRequests(2));
         $this->clientConfigurator = $clientConfigurator(...);
 
         $this->maxHostConnections = $maxHostConnections;
@@ -74,7 +74,7 @@ final class AmpClientState extends ClientState
             // Matching "no_proxy" should follow the behavior of curl
             $host = $request->getUri()->getHost();
             foreach ($options['proxy']['no_proxy'] as $rule) {
-                $dotRule = '.'.ltrim($rule, '.');
+                $dotRule = '.' . ltrim($rule, '.');
 
                 if ('*' === $rule || $host === $rule || str_ends_with($host, $dotRule)) {
                     $options['proxy'] = null;
@@ -98,7 +98,7 @@ final class AmpClientState extends ClientState
             return $this->handlePush($request, $response, $options);
         });
 
-        ($request->hasHeader('content-length') ? new Success((int) $request->getHeader('content-length')) : $request->getBody()->getBodyLength())
+        ($request->hasHeader('content-length') ? new Success((int)$request->getHeader('content-length')) : $request->getBody()->getBodyLength())
             ->onResolve(static function ($e, $bodySize) use (&$info) {
                 if (null !== $bodySize && 0 <= $bodySize) {
                     $info['upload_content_length'] = ((1 + $info['upload_content_length']) ?? 1) - 1 + $bodySize;
@@ -114,6 +114,29 @@ final class AmpClientState extends ClientState
         });
 
         return $response;
+    }
+
+    private function handlePush(Request $request, Promise $response, array $options): Promise
+    {
+        $deferred = new Deferred();
+        $authority = $request->getUri()->getAuthority();
+
+        if ($this->maxPendingPushes <= \count($this->pushedResponses[$authority] ?? [])) {
+            $fifoUrl = key($this->pushedResponses[$authority]);
+            unset($this->pushedResponses[$authority][$fifoUrl]);
+            $this->logger?->debug(sprintf('Evicting oldest pushed response: "%s"', $fifoUrl));
+        }
+
+        $url = (string)$request->getUri();
+        $this->logger?->debug(sprintf('Queueing pushed response: "%s"', $url));
+        $this->pushedResponses[$authority][] = [$url, $deferred, $request, $response, [
+            'proxy' => $options['proxy'],
+            'bindto' => $options['bindto'],
+            'local_cert' => $options['local_cert'],
+            'local_pk' => $options['local_pk'],
+        ]];
+
+        return $deferred->promise();
     }
 
     private function getClient(array $options): array
@@ -167,7 +190,7 @@ final class AmpClientState extends ClientState
 
         if ($options['bindto']) {
             if (file_exists($options['bindto'])) {
-                $connector->uri = 'unix://'.$options['bindto'];
+                $connector->uri = 'unix://' . $options['bindto'];
             } else {
                 $context = $context->withBindTo($options['bindto']);
             }
@@ -190,28 +213,5 @@ final class AmpClientState extends ClientState
         $pool = ConnectionLimitingPool::byAuthority($maxHostConnections, $pool);
 
         return $this->clients[$key] = [($this->clientConfigurator)(new PooledHttpClient($pool)), $handleConnector];
-    }
-
-    private function handlePush(Request $request, Promise $response, array $options): Promise
-    {
-        $deferred = new Deferred();
-        $authority = $request->getUri()->getAuthority();
-
-        if ($this->maxPendingPushes <= \count($this->pushedResponses[$authority] ?? [])) {
-            $fifoUrl = key($this->pushedResponses[$authority]);
-            unset($this->pushedResponses[$authority][$fifoUrl]);
-            $this->logger?->debug(sprintf('Evicting oldest pushed response: "%s"', $fifoUrl));
-        }
-
-        $url = (string) $request->getUri();
-        $this->logger?->debug(sprintf('Queueing pushed response: "%s"', $url));
-        $this->pushedResponses[$authority][] = [$url, $deferred, $request, $response, [
-            'proxy' => $options['proxy'],
-            'bindto' => $options['bindto'],
-            'local_cert' => $options['local_cert'],
-            'local_pk' => $options['local_pk'],
-        ]];
-
-        return $deferred->promise();
     }
 }

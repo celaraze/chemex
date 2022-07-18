@@ -5,22 +5,6 @@ namespace Faker\Provider\de_DE;
 class Payment extends \Faker\Provider\Payment
 {
     /**
-     * International Bank Account Number (IBAN)
-     *
-     * @see http://en.wikipedia.org/wiki/International_Bank_Account_Number
-     *
-     * @param string $prefix      for generating bank account number of a specific bank
-     * @param string $countryCode ISO 3166-1 alpha-2 country code
-     * @param int    $length      total length without country code and 2 check digits
-     *
-     * @return string
-     */
-    public static function bankAccountNumber($prefix = '', $countryCode = 'DE', $length = null)
-    {
-        return static::iban($countryCode, $prefix, $length);
-    }
-
-    /**
      * Sources:
      * The 19 largest German banks by total assets
      *
@@ -49,6 +33,22 @@ class Payment extends \Faker\Provider\Payment
         'Vereinigte Volksbank', 'Volksbank, Hildesheim-Lehrte-Pattensen', 'Volksbank Alzey-Worms', 'Volksbank Braunschweig Wolfsburg', 'Volksbank Darmstadt - Südhessen', 'Volksbank Hohenlohe', 'Volksbank Kraichgau Wiesloch-Sinsheim', 'Volksbank Lüneburger Heide', 'Volksbank Mittelhessen', 'Volksbank Paderborn-Höxter-Detmold', 'Volksbank Raiffeisenbank Rosenheim-Chiemsee', 'Volksbank Stuttgart', 'VR Bank Main-Kinzig-Büdingen',
         'WGZ Bank',
     ];
+
+    /**
+     * International Bank Account Number (IBAN)
+     *
+     * @see http://en.wikipedia.org/wiki/International_Bank_Account_Number
+     *
+     * @param string $prefix for generating bank account number of a specific bank
+     * @param string $countryCode ISO 3166-1 alpha-2 country code
+     * @param int $length total length without country code and 2 check digits
+     *
+     * @return string
+     */
+    public static function bankAccountNumber($prefix = '', $countryCode = 'DE', $length = null)
+    {
+        return static::iban($countryCode, $prefix, $length);
+    }
 
     /**
      * @example 'Volksbank Stuttgart'

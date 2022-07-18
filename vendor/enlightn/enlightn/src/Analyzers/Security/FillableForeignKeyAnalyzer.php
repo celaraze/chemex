@@ -38,7 +38,7 @@ class FillableForeignKeyAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application declares potential foreign keys as fillable. This could expose "
-            ."your application to mass assignment attacks.";
+            . "your application to mass assignment attacks.";
     }
 
     /**

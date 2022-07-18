@@ -16,6 +16,15 @@ use PHPStan\Type\Type;
  */
 class ViewStringType extends StringType
 {
+    /**
+     * @param mixed[] $properties
+     * @return Type
+     */
+    public static function __set_state(array $properties): Type
+    {
+        return new self();
+    }
+
     public function describe(\PHPStan\Type\VerbosityLevel $level): string
     {
         return 'view-string';
@@ -67,14 +76,5 @@ class ViewStringType extends StringType
         }
 
         return TrinaryLogic::createNo();
-    }
-
-    /**
-     * @param  mixed[]  $properties
-     * @return Type
-     */
-    public static function __set_state(array $properties): Type
-    {
-        return new self();
     }
 }

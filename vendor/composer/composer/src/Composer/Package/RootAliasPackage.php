@@ -23,9 +23,9 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param RootPackage $aliasOf       The package this package is an alias of
-     * @param string      $version       The version the alias must report
-     * @param string      $prettyVersion The alias's non-normalized version
+     * @param RootPackage $aliasOf The package this package is an alias of
+     * @param string $version The version the alias must report
+     * @param string $prettyVersion The alias's non-normalized version
      */
     public function __construct(RootPackage $aliasOf, string $version, string $prettyVersion)
     {

@@ -22,5 +22,5 @@ interface StoppableEventInterface
      *   True if the Event is complete and no further listeners should be called.
      *   False to continue calling listeners.
      */
-    public function isPropagationStopped() : bool;
+    public function isPropagationStopped(): bool;
 }

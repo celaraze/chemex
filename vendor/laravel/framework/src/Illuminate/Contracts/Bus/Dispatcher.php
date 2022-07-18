@@ -7,7 +7,7 @@ interface Dispatcher
     /**
      * Dispatch a command to its appropriate handler.
      *
-     * @param  mixed  $command
+     * @param mixed $command
      * @return mixed
      */
     public function dispatch($command);
@@ -17,8 +17,8 @@ interface Dispatcher
      *
      * Queueable jobs will be dispatched to the "sync" queue.
      *
-     * @param  mixed  $command
-     * @param  mixed  $handler
+     * @param mixed $command
+     * @param mixed $handler
      * @return mixed
      */
     public function dispatchSync($command, $handler = null);
@@ -26,8 +26,8 @@ interface Dispatcher
     /**
      * Dispatch a command to its appropriate handler in the current process.
      *
-     * @param  mixed  $command
-     * @param  mixed  $handler
+     * @param mixed $command
+     * @param mixed $handler
      * @return mixed
      */
     public function dispatchNow($command, $handler = null);
@@ -35,7 +35,7 @@ interface Dispatcher
     /**
      * Determine if the given command has a handler.
      *
-     * @param  mixed  $command
+     * @param mixed $command
      * @return bool
      */
     public function hasCommandHandler($command);
@@ -43,7 +43,7 @@ interface Dispatcher
     /**
      * Retrieve the handler for a command.
      *
-     * @param  mixed  $command
+     * @param mixed $command
      * @return bool|mixed
      */
     public function getCommandHandler($command);
@@ -51,7 +51,7 @@ interface Dispatcher
     /**
      * Set the pipes commands should be piped through before dispatching.
      *
-     * @param  array  $pipes
+     * @param array $pipes
      * @return $this
      */
     public function pipeThrough(array $pipes);
@@ -59,7 +59,7 @@ interface Dispatcher
     /**
      * Map a command to a handler.
      *
-     * @param  array  $map
+     * @param array $map
      * @return $this
      */
     public function map(array $map);

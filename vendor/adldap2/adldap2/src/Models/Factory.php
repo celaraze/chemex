@@ -39,20 +39,6 @@ class Factory
     }
 
     /**
-     * Sets the current query builder.
-     *
-     * @param Builder $builder
-     *
-     * @return $this
-     */
-    public function setQuery(Builder $builder)
-    {
-        $this->query = $builder;
-
-        return $this;
-    }
-
-    /**
      * Sets the current schema.
      *
      * If null is given, a default ActiveDirectory schema is set.
@@ -69,6 +55,20 @@ class Factory
     }
 
     /**
+     * Sets the current query builder.
+     *
+     * @param Builder $builder
+     *
+     * @return $this
+     */
+    public function setQuery(Builder $builder)
+    {
+        $this->query = $builder;
+
+        return $this;
+    }
+
+    /**
      * Creates a new generic LDAP entry instance.
      *
      * @param array $attributes
@@ -80,21 +80,6 @@ class Factory
         $model = $this->schema->entryModel();
 
         return new $model($attributes, $this->query);
-    }
-
-    /**
-     * Creates a new user instance.
-     *
-     * @param array $attributes
-     *
-     * @return User
-     */
-    public function user(array $attributes = [])
-    {
-        $model = $this->schema->userModel();
-
-        return (new $model($attributes, $this->query))
-            ->setAttribute($this->schema->objectClass(), $this->schema->userObjectClasses());
     }
 
     /**
@@ -205,5 +190,20 @@ class Factory
                 $this->schema->user(),
                 $this->schema->computer(),
             ]);
+    }
+
+    /**
+     * Creates a new user instance.
+     *
+     * @param array $attributes
+     *
+     * @return User
+     */
+    public function user(array $attributes = [])
+    {
+        $model = $this->schema->userModel();
+
+        return (new $model($attributes, $this->query))
+            ->setAttribute($this->schema->objectClass(), $this->schema->userObjectClasses());
     }
 }

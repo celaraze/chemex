@@ -32,8 +32,8 @@ class UdpSocket
     }
 
     /**
-     * @param  string $line
-     * @param  string $header
+     * @param string $line
+     * @param string $header
      * @return void
      */
     public function write($line, $header = "")
@@ -41,12 +41,9 @@ class UdpSocket
         $this->send($this->assembleMessage($line, $header));
     }
 
-    public function close(): void
+    protected function send(string $chunk): void
     {
-        if (is_resource($this->socket) || $this->socket instanceof Socket) {
-            socket_close($this->socket);
-            $this->socket = null;
-        }
+        socket_sendto($this->getSocket(), $chunk, strlen($chunk), $flags = 0, $this->ip, $this->port);
     }
 
     /**
@@ -68,15 +65,10 @@ class UdpSocket
 
         $this->socket = socket_create($domain, SOCK_DGRAM, $protocol) ?: null;
         if (null === $this->socket) {
-            throw new \RuntimeException('The UdpSocket to '.$this->ip.':'.$this->port.' could not be opened via socket_create');
+            throw new \RuntimeException('The UdpSocket to ' . $this->ip . ':' . $this->port . ' could not be opened via socket_create');
         }
 
         return $this->socket;
-    }
-
-    protected function send(string $chunk): void
-    {
-        socket_sendto($this->getSocket(), $chunk, strlen($chunk), $flags = 0, $this->ip, $this->port);
     }
 
     protected function assembleMessage(string $line, string $header): string
@@ -84,5 +76,13 @@ class UdpSocket
         $chunkSize = static::DATAGRAM_MAX_LENGTH - strlen($header);
 
         return $header . Utils::substr($line, 0, $chunkSize);
+    }
+
+    public function close(): void
+    {
+        if (is_resource($this->socket) || $this->socket instanceof Socket) {
+            socket_close($this->socket);
+            $this->socket = null;
+        }
     }
 }

@@ -23,7 +23,7 @@ final class Exception extends AbstractException
                 $code = 0;
             }
         } else {
-            $code     = $exception->getCode();
+            $code = $exception->getCode();
             $sqlState = null;
         }
 

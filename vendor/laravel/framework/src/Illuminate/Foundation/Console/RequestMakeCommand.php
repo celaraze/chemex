@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class RequestMakeCommand extends GeneratorCommand
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:request';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class RequestMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:request';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:request';
     /**
      * The console command description.
      *
@@ -53,24 +51,24 @@ class RequestMakeCommand extends GeneratorCommand
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
-                        ? $customPath
-                        : __DIR__.$stub;
+            ? $customPath
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Http\Requests';
+        return $rootNamespace . '\Http\Requests';
     }
 }

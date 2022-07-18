@@ -21,7 +21,6 @@
 namespace Mockery\Exception;
 
 use Mockery;
-use Mockery\Exception\RuntimeException;
 
 class InvalidCountException extends Mockery\CountValidator\Exception
 {
@@ -70,11 +69,6 @@ class InvalidCountException extends Mockery\CountValidator\Exception
         return $this;
     }
 
-    public function getMock()
-    {
-        return $this->mockObject;
-    }
-
     public function getMethodName()
     {
         return $this->method;
@@ -93,6 +87,11 @@ class InvalidCountException extends Mockery\CountValidator\Exception
     public function getMockName()
     {
         return $this->getMock()->mockery_getName();
+    }
+
+    public function getMock()
+    {
+        return $this->mockObject;
     }
 
     public function getExpectedCountComparative()

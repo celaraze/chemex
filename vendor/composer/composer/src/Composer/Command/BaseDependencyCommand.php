@@ -12,21 +12,20 @@
 
 namespace Composer\Command;
 
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
-use Composer\Repository\InstalledArrayRepository;
+use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RootPackageRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
+use Composer\Repository\RootPackageRepository;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -48,7 +47,7 @@ abstract class BaseDependencyCommand extends BaseCommand
     /**
      * Execute the command.
      *
-     * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
+     * @param bool $inverted Whether to invert matching process (why-not vs why behaviour)
      * @return int             Exit code of the operation.
      */
     protected function doExecute(InputInterface $input, OutputInterface $output, bool $inverted = false): int
@@ -131,44 +130,6 @@ abstract class BaseDependencyCommand extends BaseCommand
     }
 
     /**
-     * Assembles and prints a bottom-up table of the dependencies.
-     *
-     * @param array{PackageInterface, Link, mixed}[] $results
-     *
-     * @return void
-     */
-    protected function printTable(OutputInterface $output, $results): void
-    {
-        $table = array();
-        $doubles = array();
-        do {
-            $queue = array();
-            $rows = array();
-            foreach ($results as $result) {
-                /**
-                 * @var PackageInterface $package
-                 * @var Link             $link
-                 */
-                list($package, $link, $children) = $result;
-                $unique = (string) $link;
-                if (isset($doubles[$unique])) {
-                    continue;
-                }
-                $doubles[$unique] = true;
-                $version = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '-' : $package->getPrettyVersion();
-                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
-                if ($children) {
-                    $queue = array_merge($queue, $children);
-                }
-            }
-            $results = $queue;
-            $table = array_merge($rows, $table);
-        } while (!empty($results));
-
-        $this->renderTable($table, $output);
-    }
-
-    /**
      * Init styles for tree
      *
      * @return void
@@ -193,8 +154,8 @@ abstract class BaseDependencyCommand extends BaseCommand
      * Recursively prints a tree of the selected results.
      *
      * @param array{PackageInterface, Link, mixed[]|bool}[] $results Results to be printed at this level.
-     * @param string  $prefix  Prefix of the current tree level.
-     * @param int     $level   Current level of recursion.
+     * @param string $prefix Prefix of the current tree level.
+     * @param int $level Current level of recursion.
      *
      * @return void
      */
@@ -232,5 +193,43 @@ abstract class BaseDependencyCommand extends BaseCommand
         }
 
         $io->write($line);
+    }
+
+    /**
+     * Assembles and prints a bottom-up table of the dependencies.
+     *
+     * @param array{PackageInterface, Link, mixed}[] $results
+     *
+     * @return void
+     */
+    protected function printTable(OutputInterface $output, $results): void
+    {
+        $table = array();
+        $doubles = array();
+        do {
+            $queue = array();
+            $rows = array();
+            foreach ($results as $result) {
+                /**
+                 * @var PackageInterface $package
+                 * @var Link $link
+                 */
+                list($package, $link, $children) = $result;
+                $unique = (string)$link;
+                if (isset($doubles[$unique])) {
+                    continue;
+                }
+                $doubles[$unique] = true;
+                $version = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '-' : $package->getPrettyVersion();
+                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
+                if ($children) {
+                    $queue = array_merge($queue, $children);
+                }
+            }
+            $results = $queue;
+            $table = array_merge($rows, $table);
+        } while (!empty($results));
+
+        $this->renderTable($table, $output);
     }
 }

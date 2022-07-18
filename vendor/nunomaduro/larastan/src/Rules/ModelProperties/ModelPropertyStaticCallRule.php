@@ -46,15 +46,15 @@ class ModelPropertyStaticCallRule implements Rule
     }
 
     /**
-     * @param  Node\Expr\StaticCall  $node
-     * @param  Scope  $scope
+     * @param Node\Expr\StaticCall $node
+     * @param Scope $scope
      * @return string[]
      *
      * @throws \PHPStan\ShouldNotHappenException|\PHPStan\Reflection\MissingMethodFromReflectionException
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier) {
+        if (!$node->name instanceof Node\Identifier) {
             return [];
         }
 
@@ -67,17 +67,17 @@ class ModelPropertyStaticCallRule implements Rule
         $class = $node->class;
 
         if ($class instanceof Node\Name) {
-            $className = (string) $class;
+            $className = (string)$class;
             $lowercasedClassName = strtolower($className);
 
             if (in_array($lowercasedClassName, ['self', 'static'], true)) {
-                if (! $scope->isInClass()) {
+                if (!$scope->isInClass()) {
                     return [];
                 }
 
                 $modelReflection = $scope->getClassReflection();
             } elseif ($lowercasedClassName === 'parent') {
-                if (! $scope->isInClass()) {
+                if (!$scope->isInClass()) {
                     return [];
                 }
 
@@ -99,7 +99,7 @@ class ModelPropertyStaticCallRule implements Rule
 
                 $modelReflection = $parentClass;
             } else {
-                if (! $this->reflectionProvider->hasClass($className)) {
+                if (!$this->reflectionProvider->hasClass($className)) {
                     return [];
                 }
 
@@ -136,11 +136,11 @@ class ModelPropertyStaticCallRule implements Rule
             return [];
         }
 
-        if (! $modelReflection->isSubclassOf(Model::class)) {
+        if (!$modelReflection->isSubclassOf(Model::class)) {
             return [];
         }
 
-        if (! $modelReflection->hasMethod($methodName)) {
+        if (!$modelReflection->hasMethod($methodName)) {
             return [];
         }
 

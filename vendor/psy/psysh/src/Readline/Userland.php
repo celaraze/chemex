@@ -36,22 +36,6 @@ class Userland implements Readline
     private $output;
 
     /**
-     * @return bool
-     */
-    public static function isSupported(): bool
-    {
-        return HoaUstring::checkMbString();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function supportsBracketedPaste(): bool
-    {
-        return false;
-    }
-
-    /**
      * Doesn't (currently) support history file, size or erase dupes configs.
      */
     public function __construct($historyFile = null, $historySize = 0, $eraseDups = false)
@@ -83,6 +67,32 @@ class Userland implements Readline
         \class_exists('Psy\Readline\Hoa\ProtocolWrapper'); // A side effect registers hoa:// stream wrapper
         \class_exists('Psy\Readline\Hoa\Stream');          // A side effect registers hoa://Library/Stream
         \class_exists('Psy\Readline\Hoa\ConsoleWindow');   // A side effect binds terminal resize
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function redisplay()
+    {
+        $currentLine = $this->hoaReadline->getLine();
+        HoaConsoleCursor::clear('all');
+        echo $this->lastPrompt, $currentLine;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isSupported(): bool
+    {
+        return HoaUstring::checkMbString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function supportsBracketedPaste(): bool
+    {
+        return false;
     }
 
     /**
@@ -130,25 +140,15 @@ class Userland implements Readline
     /**
      * {@inheritdoc}
      *
+     * @return string
      * @throws BreakException if user hits Ctrl+D
      *
-     * @return string
      */
     public function readline(string $prompt = null)
     {
         $this->lastPrompt = $prompt;
 
         return $this->hoaReadline->readLine($prompt);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function redisplay()
-    {
-        $currentLine = $this->hoaReadline->getLine();
-        HoaConsoleCursor::clear('all');
-        echo $this->lastPrompt, $currentLine;
     }
 
     /**

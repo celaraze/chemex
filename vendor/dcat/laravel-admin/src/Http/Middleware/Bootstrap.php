@@ -23,17 +23,6 @@ class Bootstrap
         return $response;
     }
 
-    protected function setUpDarkMode()
-    {
-        if (
-            config('admin.layout.dark_mode_switch')
-            && ! Helper::isAjaxRequest()
-            && ! request()->routeIs(admin_api_route_name('*'))
-        ) {
-            Admin::navbar()->right((new DarkModeSwitcher())->render());
-        }
-    }
-
     protected function includeBootstrapFile()
     {
         if (is_file($bootstrap = admin_path('bootstrap.php'))) {
@@ -54,8 +43,19 @@ class Bootstrap
         Admin::callBooted();
     }
 
+    protected function setUpDarkMode()
+    {
+        if (
+            config('admin.layout.dark_mode_switch')
+            && !Helper::isAjaxRequest()
+            && !request()->routeIs(admin_api_route_name('*'))
+        ) {
+            Admin::navbar()->right((new DarkModeSwitcher())->render());
+        }
+    }
+
     /**
-     * @param  \Illuminate\Http\Request
+     * @param \Illuminate\Http\Request
      * @return void
      */
     protected function storeCurrentUrl(Request $request)
@@ -63,8 +63,8 @@ class Bootstrap
         if (
             $request->method() === 'GET'
             && $request->route()
-            && ! Helper::isAjaxRequest()
-            && ! $this->prefetch($request)
+            && !Helper::isAjaxRequest()
+            && !$this->prefetch($request)
         ) {
             Admin::addIgnoreQueryName(['_token', '_pjax']);
 
@@ -75,7 +75,7 @@ class Bootstrap
     }
 
     /**
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public function prefetch($request)

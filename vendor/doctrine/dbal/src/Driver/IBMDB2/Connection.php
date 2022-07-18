@@ -11,7 +11,6 @@ use Doctrine\DBAL\Driver\Statement as DriverStatement;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Deprecations\Deprecation;
 use stdClass;
-
 use function assert;
 use function db2_autocommit;
 use function db2_commit;
@@ -24,7 +23,6 @@ use function db2_rollback;
 use function db2_server_info;
 use function error_get_last;
 use function is_bool;
-
 use const DB2_AUTOCOMMIT_OFF;
 use const DB2_AUTOCOMMIT_ON;
 
@@ -34,9 +32,9 @@ final class Connection implements ServerInfoAwareConnection
     private $connection;
 
     /**
+     * @param resource $connection
      * @internal The connection can be only instantiated by its driver.
      *
-     * @param resource $connection
      */
     public function __construct($connection)
     {
@@ -54,6 +52,11 @@ final class Connection implements ServerInfoAwareConnection
         return $serverInfo->DBMS_VER;
     }
 
+    public function query(string $sql): ResultInterface
+    {
+        return $this->prepare($sql)->execute();
+    }
+
     public function prepare(string $sql): DriverStatement
     {
         $stmt = @db2_prepare($this->connection, $sql);
@@ -63,11 +66,6 @@ final class Connection implements ServerInfoAwareConnection
         }
 
         return new Statement($stmt);
-    }
-
-    public function query(string $sql): ResultInterface
-    {
-        return $this->prepare($sql)->execute();
     }
 
     /**
@@ -121,7 +119,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function commit(): bool
     {
-        if (! db2_commit($this->connection)) {
+        if (!db2_commit($this->connection)) {
             throw ConnectionError::new($this->connection);
         }
 
@@ -133,7 +131,7 @@ final class Connection implements ServerInfoAwareConnection
 
     public function rollBack(): bool
     {
-        if (! db2_rollback($this->connection)) {
+        if (!db2_rollback($this->connection)) {
             throw ConnectionError::new($this->connection);
         }
 

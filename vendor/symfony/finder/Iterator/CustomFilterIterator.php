@@ -27,7 +27,7 @@ class CustomFilterIterator extends \FilterIterator
 
     /**
      * @param \Iterator<string, \SplFileInfo> $iterator The Iterator to filter
-     * @param callable[]                      $filters  An array of PHP callbacks
+     * @param callable[] $filters An array of PHP callbacks
      *
      * @throws \InvalidArgumentException
      */

@@ -33,6 +33,12 @@ class Queue extends AbstractArray implements QueueInterface
     use ValueToStringTrait;
 
     /**
+     * The index of the head of the queue.
+     *
+     * @var int
+     */
+    protected $index = 0;
+    /**
      * The type of elements stored in this queue.
      *
      * A queue's type is immutable once it is set. For this reason, this
@@ -41,13 +47,6 @@ class Queue extends AbstractArray implements QueueInterface
      * @var string
      */
     private $queueType;
-
-    /**
-     * The index of the head of the queue.
-     *
-     * @var int
-     */
-    protected $index = 0;
 
     /**
      * Constructs a queue object of the specified type, optionally with the
@@ -81,14 +80,9 @@ class Queue extends AbstractArray implements QueueInterface
         $this->data[] = $value;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function add($element): bool
+    public function getType(): string
     {
-        $this[] = $element;
-
-        return true;
+        return $this->queueType;
     }
 
     /**
@@ -110,6 +104,18 @@ class Queue extends AbstractArray implements QueueInterface
     /**
      * @inheritDoc
      */
+    public function peek()
+    {
+        if ($this->count() === 0) {
+            return null;
+        }
+
+        return $this[$this->index];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function offer($element): bool
     {
         try {
@@ -122,13 +128,25 @@ class Queue extends AbstractArray implements QueueInterface
     /**
      * @inheritDoc
      */
-    public function peek()
+    public function add($element): bool
     {
-        if ($this->count() === 0) {
-            return null;
+        $this[] = $element;
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function remove()
+    {
+        $head = $this->poll();
+
+        if ($head === null) {
+            throw new NoSuchElementException('Can\'t return element from Queue. Queue is empty.');
         }
 
-        return $this[$this->index];
+        return $head;
     }
 
     /**
@@ -146,24 +164,5 @@ class Queue extends AbstractArray implements QueueInterface
         $this->index++;
 
         return $head;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function remove()
-    {
-        $head = $this->poll();
-
-        if ($head === null) {
-            throw new NoSuchElementException('Can\'t return element from Queue. Queue is empty.');
-        }
-
-        return $head;
-    }
-
-    public function getType(): string
-    {
-        return $this->queueType;
     }
 }

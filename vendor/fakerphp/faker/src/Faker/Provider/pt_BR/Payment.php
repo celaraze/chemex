@@ -56,23 +56,6 @@ class Payment extends \Faker\Provider\Payment
             '50#############',
         ],
     ];
-
-    /**
-     * International Bank Account Number (IBAN)
-     *
-     * @see http://en.wikipedia.org/wiki/International_Bank_Account_Number
-     *
-     * @param string $prefix      for generating bank account number of a specific bank
-     * @param string $countryCode ISO 3166-1 alpha-2 country code
-     * @param int    $length      total length without country code and 2 check digits
-     *
-     * @return string
-     */
-    public static function bankAccountNumber($prefix = '', $countryCode = 'BR', $length = null)
-    {
-        return static::iban($countryCode, $prefix, $length);
-    }
-
     /**
      * @see list of Brazilians banks (2018-02-15), source: https://pt.wikipedia.org/wiki/Lista_de_bancos_do_Brasil
      */
@@ -137,6 +120,22 @@ class Payment extends \Faker\Provider\Payment
         'Nu Pagamentos S.A',
         'XP Investimentos Corretora de Câmbio Títulos e Valores Mobiliários S.A',
     ];
+
+    /**
+     * International Bank Account Number (IBAN)
+     *
+     * @see http://en.wikipedia.org/wiki/International_Bank_Account_Number
+     *
+     * @param string $prefix for generating bank account number of a specific bank
+     * @param string $countryCode ISO 3166-1 alpha-2 country code
+     * @param int $length total length without country code and 2 check digits
+     *
+     * @return string
+     */
+    public static function bankAccountNumber($prefix = '', $countryCode = 'BR', $length = null)
+    {
+        return static::iban($countryCode, $prefix, $length);
+    }
 
     /**
      * @example 'Banco Neon'

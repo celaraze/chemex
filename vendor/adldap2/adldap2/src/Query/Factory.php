@@ -2,10 +2,10 @@
 
 namespace Adldap\Query;
 
+use Adldap\Connections\ConnectionInterface;
 use Adldap\Models\RootDse;
 use Adldap\Schemas\ActiveDirectory;
 use Adldap\Schemas\SchemaInterface;
-use Adldap\Connections\ConnectionInterface;
 
 /**
  * Adldap2 Search Factory.
@@ -46,9 +46,9 @@ class Factory
     /**
      * Constructor.
      *
-     * @param ConnectionInterface  $connection The connection to use when constructing a new query.
-     * @param SchemaInterface|null $schema     The schema to use for the query and models located.
-     * @param string               $baseDn     The base DN to use for all searches.
+     * @param ConnectionInterface $connection The connection to use when constructing a new query.
+     * @param SchemaInterface|null $schema The schema to use for the query and models located.
+     * @param string $baseDn The base DN to use for all searches.
      */
     public function __construct(ConnectionInterface $connection, SchemaInterface $schema = null, $baseDn = '')
     {
@@ -58,15 +58,15 @@ class Factory
     }
 
     /**
-     * Sets the connection property.
+     * Sets the base distinguished name to perform searches upon.
      *
-     * @param ConnectionInterface $connection
+     * @param string $base
      *
      * @return $this
      */
-    public function setConnection(ConnectionInterface $connection)
+    public function setBaseDn($base = '')
     {
-        $this->connection = $connection;
+        $this->base = $base;
 
         return $this;
     }
@@ -86,17 +86,63 @@ class Factory
     }
 
     /**
-     * Sets the base distinguished name to perform searches upon.
+     * Sets the connection property.
      *
-     * @param string $base
+     * @param ConnectionInterface $connection
      *
      * @return $this
      */
-    public function setBaseDn($base = '')
+    public function setConnection(ConnectionInterface $connection)
     {
-        $this->base = $base;
+        $this->connection = $connection;
 
         return $this;
+    }
+
+    /**
+     * Performs a global 'all' search query on the current
+     * connection by performing a search for all entries
+     * that contain a common name attribute.
+     *
+     * @return \Adldap\Query\Collection|array
+     */
+    public function get()
+    {
+        return $this->newQuery()->whereHas($this->schema->commonName())->get();
+    }
+
+    /**
+     * Returns a new query builder instance.
+     *
+     * @return Builder
+     */
+    public function newQuery()
+    {
+        return $this->newBuilder()->in($this->base);
+    }
+
+    /**
+     * Returns a new query builder instance.
+     *
+     * @return Builder
+     */
+    protected function newBuilder()
+    {
+        $builder = new Builder($this->connection, $this->newGrammar(), $this->schema);
+
+        $builder->setCache($this->cache);
+
+        return $builder;
+    }
+
+    /**
+     * Returns a new query grammar instance.
+     *
+     * @return Grammar
+     */
+    protected function newGrammar()
+    {
+        return new Grammar();
     }
 
     /**
@@ -111,28 +157,6 @@ class Factory
         $this->cache = $cache;
 
         return $this;
-    }
-
-    /**
-     * Returns a new query builder instance.
-     *
-     * @return Builder
-     */
-    public function newQuery()
-    {
-        return $this->newBuilder()->in($this->base);
-    }
-
-    /**
-     * Performs a global 'all' search query on the current
-     * connection by performing a search for all entries
-     * that contain a common name attribute.
-     *
-     * @return \Adldap\Query\Collection|array
-     */
-    public function get()
-    {
-        return $this->newQuery()->whereHas($this->schema->commonName())->get();
     }
 
     /**
@@ -262,36 +286,12 @@ class Factory
      * Handle dynamic method calls on the query builder object.
      *
      * @param string $method
-     * @param array  $parameters
+     * @param array $parameters
      *
      * @return mixed
      */
     public function __call($method, $parameters)
     {
         return call_user_func_array([$this->newQuery(), $method], $parameters);
-    }
-
-    /**
-     * Returns a new query grammar instance.
-     *
-     * @return Grammar
-     */
-    protected function newGrammar()
-    {
-        return new Grammar();
-    }
-
-    /**
-     * Returns a new query builder instance.
-     *
-     * @return Builder
-     */
-    protected function newBuilder()
-    {
-        $builder = new Builder($this->connection, $this->newGrammar(), $this->schema);
-
-        $builder->setCache($this->cache);
-
-        return $builder;
     }
 }

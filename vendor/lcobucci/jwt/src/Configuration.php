@@ -32,17 +32,18 @@ final class Configuration
     private array $validationConstraints = [];
 
     private function __construct(
-        Signer $signer,
-        Key $signingKey,
-        Key $verificationKey,
+        Signer   $signer,
+        Key      $signingKey,
+        Key      $verificationKey,
         ?Encoder $encoder = null,
         ?Decoder $decoder = null
-    ) {
-        $this->signer          = $signer;
-        $this->signingKey      = $signingKey;
+    )
+    {
+        $this->signer = $signer;
+        $this->signingKey = $signingKey;
         $this->verificationKey = $verificationKey;
-        $this->parser          = new Token\Parser($decoder ?? new JoseEncoder());
-        $this->validator       = new Validation\Validator();
+        $this->parser = new Token\Parser($decoder ?? new JoseEncoder());
+        $this->validator = new Validation\Validator();
 
         $this->builderFactory = static function (ClaimsFormatter $claimFormatter) use ($encoder): Builder {
             return new Token\Builder($encoder ?? new JoseEncoder(), $claimFormatter);
@@ -50,12 +51,13 @@ final class Configuration
     }
 
     public static function forAsymmetricSigner(
-        Signer $signer,
-        Key $signingKey,
-        Key $verificationKey,
+        Signer   $signer,
+        Key      $signingKey,
+        Key      $verificationKey,
         ?Encoder $encoder = null,
         ?Decoder $decoder = null
-    ): self {
+    ): self
+    {
         return new self(
             $signer,
             $signingKey,
@@ -66,11 +68,12 @@ final class Configuration
     }
 
     public static function forSymmetricSigner(
-        Signer $signer,
-        Key $key,
+        Signer   $signer,
+        Key      $key,
         ?Encoder $encoder = null,
         ?Decoder $decoder = null
-    ): self {
+    ): self
+    {
         return new self(
             $signer,
             $key,
@@ -83,7 +86,8 @@ final class Configuration
     public static function forUnsecuredSigner(
         ?Encoder $encoder = null,
         ?Decoder $decoder = null
-    ): self {
+    ): self
+    {
         $key = InMemory::empty();
 
         return new self(

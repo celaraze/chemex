@@ -33,16 +33,16 @@ class InvalidDateException extends BaseInvalidArgumentException implements Inval
     /**
      * Constructor.
      *
-     * @param string         $field
-     * @param mixed          $value
-     * @param int            $code
+     * @param string $field
+     * @param mixed $value
+     * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct($field, $value, $code = 0, Throwable $previous = null)
     {
         $this->field = $field;
         $this->value = $value;
-        parent::__construct($field.' : '.$value.' is not a valid value.', $code, $previous);
+        parent::__construct($field . ' : ' . $value . ' is not a valid value.', $code, $previous);
     }
 
     /**

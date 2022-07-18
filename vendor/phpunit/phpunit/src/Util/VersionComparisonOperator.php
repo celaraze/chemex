@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
 use function in_array;
@@ -31,14 +32,6 @@ final class VersionComparisonOperator
     }
 
     /**
-     * @return '!='|'<'|'<='|'<>'|'='|'=='|'>'|'>='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
-     */
-    public function asString(): string
-    {
-        return $this->operator;
-    }
-
-    /**
      * @throws Exception
      *
      * @psalm-assert '<'|'lt'|'<='|'le'|'>'|'gt'|'>='|'ge'|'=='|'='|'eq'|'!='|'<>'|'ne' $operator
@@ -53,5 +46,13 @@ final class VersionComparisonOperator
                 )
             );
         }
+    }
+
+    /**
+     * @return '!='|'<'|'<='|'<>'|'='|'=='|'>'|'>='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
+     */
+    public function asString(): string
+    {
+        return $this->operator;
     }
 }

@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Internal\SelfDescribingValue;
 
 /**
@@ -19,12 +21,10 @@ abstract class BaseDescription implements Description
         return $this;
     }
 
-    public function appendDescriptionOf(SelfDescribing $value)
-    {
-        $value->describeTo($this);
-
-        return $this;
-    }
+    /**
+     * Append the String <var>$str</var> to the description.
+     */
+    abstract protected function append($str);
 
     public function appendValue($value)
     {
@@ -55,52 +55,6 @@ abstract class BaseDescription implements Description
         return $this;
     }
 
-    public function appendValueList($start, $separator, $end, $values)
-    {
-        $list = array();
-        foreach ($values as $v) {
-            $list[] = new SelfDescribingValue($v);
-        }
-
-        $this->appendList($start, $separator, $end, $list);
-
-        return $this;
-    }
-
-    public function appendList($start, $separator, $end, $values)
-    {
-        $this->append($start);
-
-        $separate = false;
-
-        foreach ($values as $value) {
-            /*if (!($value instanceof Hamcrest\SelfDescribing)) {
-                $value = new Hamcrest\Internal\SelfDescribingValue($value);
-            }*/
-
-            if ($separate) {
-                $this->append($separator);
-            }
-
-            $this->appendDescriptionOf($value);
-
-            $separate = true;
-        }
-
-        $this->append($end);
-
-        return $this;
-    }
-
-    // -- Protected Methods
-
-    /**
-     * Append the String <var>$str</var> to the description.
-     */
-    abstract protected function append($str);
-
-    // -- Private Methods
-
     private function _toPhpSyntax($value)
     {
         $str = '"';
@@ -128,5 +82,53 @@ abstract class BaseDescription implements Description
         }
         $str .= '"';
         $this->append($str);
+    }
+
+    public function appendValueList($start, $separator, $end, $values)
+    {
+        $list = array();
+        foreach ($values as $v) {
+            $list[] = new SelfDescribingValue($v);
+        }
+
+        $this->appendList($start, $separator, $end, $list);
+
+        return $this;
+    }
+
+    // -- Protected Methods
+
+    public function appendList($start, $separator, $end, $values)
+    {
+        $this->append($start);
+
+        $separate = false;
+
+        foreach ($values as $value) {
+            /*if (!($value instanceof Hamcrest\SelfDescribing)) {
+                $value = new Hamcrest\Internal\SelfDescribingValue($value);
+            }*/
+
+            if ($separate) {
+                $this->append($separator);
+            }
+
+            $this->appendDescriptionOf($value);
+
+            $separate = true;
+        }
+
+        $this->append($end);
+
+        return $this;
+    }
+
+    // -- Private Methods
+
+    public function appendDescriptionOf(SelfDescribing $value)
+    {
+        $value->describeTo($this);
+
+        return $this;
     }
 }

@@ -16,7 +16,7 @@ class RouteParameterBinder
     /**
      * Create a new Route parameter binder instance.
      *
-     * @param  \Illuminate\Routing\Route  $route
+     * @param \Illuminate\Routing\Route $route
      * @return void
      */
     public function __construct($route)
@@ -27,7 +27,7 @@ class RouteParameterBinder
     /**
      * Get the parameters for the route.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function parameters($request)
@@ -37,7 +37,7 @@ class RouteParameterBinder
         // If the route has a regular expression for the host part of the URI, we will
         // compile that and get the parameter matches for this domain. We will then
         // merge them into this parameters array so that this array is completed.
-        if (! is_null($this->route->compiled->getHostRegex())) {
+        if (!is_null($this->route->compiled->getHostRegex())) {
             $parameters = $this->bindHostParameters(
                 $request, $parameters
             );
@@ -49,12 +49,12 @@ class RouteParameterBinder
     /**
      * Get the parameter matches for the path portion of the URI.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     protected function bindPathParameters($request)
     {
-        $path = '/'.ltrim($request->decodedPath(), '/');
+        $path = '/' . ltrim($request->decodedPath(), '/');
 
         preg_match($this->route->compiled->getRegex(), $path, $matches);
 
@@ -62,23 +62,9 @@ class RouteParameterBinder
     }
 
     /**
-     * Extract the parameter list from the host part of the request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array  $parameters
-     * @return array
-     */
-    protected function bindHostParameters($request, $parameters)
-    {
-        preg_match($this->route->compiled->getHostRegex(), $request->getHost(), $matches);
-
-        return array_merge($this->matchToKeys(array_slice($matches, 1)), $parameters);
-    }
-
-    /**
      * Combine a set of parameter matches with the route's keys.
      *
-     * @param  array  $matches
+     * @param array $matches
      * @return array
      */
     protected function matchToKeys(array $matches)
@@ -95,9 +81,23 @@ class RouteParameterBinder
     }
 
     /**
+     * Extract the parameter list from the host part of the request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param array $parameters
+     * @return array
+     */
+    protected function bindHostParameters($request, $parameters)
+    {
+        preg_match($this->route->compiled->getHostRegex(), $request->getHost(), $matches);
+
+        return array_merge($this->matchToKeys(array_slice($matches, 1)), $parameters);
+    }
+
+    /**
      * Replace null parameters with their defaults.
      *
-     * @param  array  $parameters
+     * @param array $parameters
      * @return array
      */
     protected function replaceDefaults(array $parameters)
@@ -107,7 +107,7 @@ class RouteParameterBinder
         }
 
         foreach ($this->route->defaults as $key => $value) {
-            if (! isset($parameters[$key])) {
+            if (!isset($parameters[$key])) {
                 $parameters[$key] = $value;
             }
         }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
 use function array_unique;
@@ -32,39 +33,6 @@ final class IntersectionType extends Type
         $this->ensureNoDuplicateTypes(...$types);
 
         $this->types = $types;
-    }
-
-    public function isAssignable(Type $other): bool
-    {
-        return $other->isObject();
-    }
-
-    public function asString(): string
-    {
-        return $this->name();
-    }
-
-    public function name(): string
-    {
-        $types = [];
-
-        foreach ($this->types as $type) {
-            $types[] = $type->name();
-        }
-
-        sort($types);
-
-        return implode('&', $types);
-    }
-
-    public function allowsNull(): bool
-    {
-        return false;
-    }
-
-    public function isIntersection(): bool
-    {
-        return true;
     }
 
     /**
@@ -111,5 +79,38 @@ final class IntersectionType extends Type
                 'An intersection type must not contain duplicate types'
             );
         }
+    }
+
+    public function isAssignable(Type $other): bool
+    {
+        return $other->isObject();
+    }
+
+    public function asString(): string
+    {
+        return $this->name();
+    }
+
+    public function name(): string
+    {
+        $types = [];
+
+        foreach ($this->types as $type) {
+            $types[] = $type->name();
+        }
+
+        sort($types);
+
+        return implode('&', $types);
+    }
+
+    public function allowsNull(): bool
+    {
+        return false;
+    }
+
+    public function isIntersection(): bool
+    {
+        return true;
     }
 }

@@ -23,6 +23,11 @@ class CachedDoubler extends Doubler
 {
     private static $classes = array();
 
+    public function resetCache()
+    {
+        self::$classes = array();
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -37,7 +42,7 @@ class CachedDoubler extends Doubler
     }
 
     /**
-     * @param ReflectionClass   $class
+     * @param ReflectionClass $class
      * @param ReflectionClass[] $interfaces
      *
      * @return string
@@ -57,10 +62,5 @@ class CachedDoubler extends Doubler
         sort($parts);
 
         return md5(implode('', $parts));
-    }
-
-    public function resetCache()
-    {
-        self::$classes = array();
     }
 }

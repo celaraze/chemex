@@ -38,12 +38,12 @@ class ActionCommand extends GeneratorCommand
      */
     protected $namespaceMap = [
         'grid-batch' => 'Grid',
-        'grid-row'   => 'Grid',
-        'grid-tool'  => 'Grid',
-        'form-tool'  => 'Form',
-        'show-tool'  => 'Show',
-        'tree-row'   => 'Tree',
-        'tree-tool'  => 'Tree',
+        'grid-row' => 'Grid',
+        'grid-tool' => 'Grid',
+        'form-tool' => 'Form',
+        'show-tool' => 'Show',
+        'tree-row' => 'Tree',
+        'tree-tool' => 'Tree',
     ];
 
     public function handle()
@@ -57,7 +57,7 @@ class ActionCommand extends GeneratorCommand
 
         $this->className = ucfirst(trim($this->ask('Please enter a name of action class')));
 
-        if (! $this->className) {
+        if (!$this->className) {
             goto INPUT_NAME;
         }
 
@@ -86,41 +86,9 @@ class ActionCommand extends GeneratorCommand
     }
 
     /**
-     * Replace the class name for the given stub.
-     *
-     * @param  string  $stub
-     * @param  string  $name
-     * @return string
-     */
-    protected function replaceClass($stub, $name)
-    {
-        $stub = parent::replaceClass($stub, $name);
-
-        return str_replace(
-            [
-                'DummyName',
-            ],
-            [
-                $this->className,
-            ],
-            $stub
-        );
-    }
-
-    /**
-     * Get the stub file for the generator.
-     *
-     * @return string
-     */
-    public function getStub()
-    {
-        return __DIR__."/stubs/actions/{$this->choice}.stub";
-    }
-
-    /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
@@ -138,6 +106,38 @@ class ActionCommand extends GeneratorCommand
         }
 
         return implode('\\', $segments);
+    }
+
+    /**
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    public function getStub()
+    {
+        return __DIR__ . "/stubs/actions/{$this->choice}.stub";
+    }
+
+    /**
+     * Replace the class name for the given stub.
+     *
+     * @param string $stub
+     * @param string $name
+     * @return string
+     */
+    protected function replaceClass($stub, $name)
+    {
+        $stub = parent::replaceClass($stub, $name);
+
+        return str_replace(
+            [
+                'DummyName',
+            ],
+            [
+                $this->className,
+            ],
+            $stub
+        );
     }
 
     /**

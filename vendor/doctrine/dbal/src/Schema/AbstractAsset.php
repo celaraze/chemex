@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Schema;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\Deprecations\Deprecation;
-
 use function array_map;
 use function crc32;
 use function dechex;
@@ -36,29 +35,6 @@ abstract class AbstractAsset
 
     /** @var bool */
     protected $_quoted = false;
-
-    /**
-     * Sets the name of this asset.
-     *
-     * @param string $name
-     *
-     * @return void
-     */
-    protected function _setName($name)
-    {
-        if ($this->isIdentifierQuoted($name)) {
-            $this->_quoted = true;
-            $name          = $this->trimQuotes($name);
-        }
-
-        if (strpos($name, '.') !== false) {
-            $parts            = explode('.', $name);
-            $this->_namespace = $parts[0];
-            $name             = $parts[1];
-        }
-
-        $this->_name = $name;
-    }
 
     /**
      * Is this asset in the default namespace?
@@ -103,6 +79,67 @@ abstract class AbstractAsset
     }
 
     /**
+     * Returns the name of this schema asset.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        if ($this->_namespace !== null) {
+            return $this->_namespace . '.' . $this->_name;
+        }
+
+        return $this->_name;
+    }
+
+    /**
+     * Sets the name of this asset.
+     *
+     * @param string $name
+     *
+     * @return void
+     */
+    protected function _setName($name)
+    {
+        if ($this->isIdentifierQuoted($name)) {
+            $this->_quoted = true;
+            $name = $this->trimQuotes($name);
+        }
+
+        if (strpos($name, '.') !== false) {
+            $parts = explode('.', $name);
+            $this->_namespace = $parts[0];
+            $name = $parts[1];
+        }
+
+        $this->_name = $name;
+    }
+
+    /**
+     * Checks if this identifier is quoted.
+     *
+     * @param string $identifier
+     *
+     * @return bool
+     */
+    protected function isIdentifierQuoted($identifier)
+    {
+        return isset($identifier[0]) && ($identifier[0] === '`' || $identifier[0] === '"' || $identifier[0] === '[');
+    }
+
+    /**
+     * Trim quotes from the identifier.
+     *
+     * @param string $identifier
+     *
+     * @return string
+     */
+    protected function trimQuotes($identifier)
+    {
+        return str_replace(['`', '"', '[', ']'], '', $identifier);
+    }
+
+    /**
      * The normalized name is full-qualified and lower-cased. Lower-casing is
      * actually wrong, but we have to do it to keep our sanity. If you are
      * using database objects that only differentiate in the casing (FOO vs
@@ -111,11 +148,11 @@ abstract class AbstractAsset
      * Every non-namespaced element is prefixed with the default namespace
      * name which is passed as argument to this method.
      *
-     * @deprecated Use {@see getNamespaceName()} and {@see getName()} instead.
-     *
      * @param string $defaultNamespaceName
      *
      * @return string
+     * @deprecated Use {@see getNamespaceName()} and {@see getName()} instead.
+     *
      */
     public function getFullQualifiedName($defaultNamespaceName)
     {
@@ -145,44 +182,6 @@ abstract class AbstractAsset
     }
 
     /**
-     * Checks if this identifier is quoted.
-     *
-     * @param string $identifier
-     *
-     * @return bool
-     */
-    protected function isIdentifierQuoted($identifier)
-    {
-        return isset($identifier[0]) && ($identifier[0] === '`' || $identifier[0] === '"' || $identifier[0] === '[');
-    }
-
-    /**
-     * Trim quotes from the identifier.
-     *
-     * @param string $identifier
-     *
-     * @return string
-     */
-    protected function trimQuotes($identifier)
-    {
-        return str_replace(['`', '"', '[', ']'], '', $identifier);
-    }
-
-    /**
-     * Returns the name of this schema asset.
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        if ($this->_namespace !== null) {
-            return $this->_namespace . '.' . $this->_name;
-        }
-
-        return $this->_name;
-    }
-
-    /**
      * Gets the quoted representation of this asset but only if it was defined with one. Otherwise
      * return the plain unquoted value as inserted.
      *
@@ -191,7 +190,7 @@ abstract class AbstractAsset
     public function getQuotedName(AbstractPlatform $platform)
     {
         $keywords = $platform->getReservedKeywordsList();
-        $parts    = explode('.', $this->getName());
+        $parts = explode('.', $this->getName());
         foreach ($parts as $k => $v) {
             $parts[$k] = $this->_quoted || $keywords->isKeyword($v) ? $platform->quoteIdentifier($v) : $v;
         }
@@ -207,8 +206,8 @@ abstract class AbstractAsset
      * very long names.
      *
      * @param string[] $columnNames
-     * @param string   $prefix
-     * @param int      $maxSize
+     * @param string $prefix
+     * @param int $maxSize
      *
      * @return string
      */

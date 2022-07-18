@@ -47,10 +47,10 @@ class NotificationSender
     /**
      * Create a new notification sender instance.
      *
-     * @param  \Illuminate\Notifications\ChannelManager  $manager
-     * @param  \Illuminate\Contracts\Bus\Dispatcher  $bus
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $events
-     * @param  string|null  $locale
+     * @param \Illuminate\Notifications\ChannelManager $manager
+     * @param \Illuminate\Contracts\Bus\Dispatcher $bus
+     * @param \Illuminate\Contracts\Events\Dispatcher $events
+     * @param string|null $locale
      * @return void
      */
     public function __construct($manager, $bus, $events, $locale = null)
@@ -64,8 +64,8 @@ class NotificationSender
     /**
      * Send the given notification to the given notifiable entities.
      *
-     * @param  \Illuminate\Support\Collection|array|mixed  $notifiables
-     * @param  mixed  $notification
+     * @param \Illuminate\Support\Collection|array|mixed $notifiables
+     * @param mixed $notification
      * @return void
      */
     public function send($notifiables, $notification)
@@ -80,103 +80,26 @@ class NotificationSender
     }
 
     /**
-     * Send the given notification immediately.
+     * Format the notifiables into a Collection / array if necessary.
      *
-     * @param  \Illuminate\Support\Collection|array|mixed  $notifiables
-     * @param  mixed  $notification
-     * @param  array|null  $channels
-     * @return void
+     * @param mixed $notifiables
+     * @return \Illuminate\Database\Eloquent\Collection|array
      */
-    public function sendNow($notifiables, $notification, array $channels = null)
+    protected function formatNotifiables($notifiables)
     {
-        $notifiables = $this->formatNotifiables($notifiables);
-
-        $original = clone $notification;
-
-        foreach ($notifiables as $notifiable) {
-            if (empty($viaChannels = $channels ?: $notification->via($notifiable))) {
-                continue;
-            }
-
-            $this->withLocale($this->preferredLocale($notifiable, $notification), function () use ($viaChannels, $notifiable, $original) {
-                $notificationId = Str::uuid()->toString();
-
-                foreach ((array) $viaChannels as $channel) {
-                    if (! ($notifiable instanceof AnonymousNotifiable && $channel === 'database')) {
-                        $this->sendToNotifiable($notifiable, $notificationId, clone $original, $channel);
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * Get the notifiable's preferred locale for the notification.
-     *
-     * @param  mixed  $notifiable
-     * @param  mixed  $notification
-     * @return string|null
-     */
-    protected function preferredLocale($notifiable, $notification)
-    {
-        return $notification->locale ?? $this->locale ?? value(function () use ($notifiable) {
-            if ($notifiable instanceof HasLocalePreference) {
-                return $notifiable->preferredLocale();
-            }
-        });
-    }
-
-    /**
-     * Send the given notification to the given notifiable via a channel.
-     *
-     * @param  mixed  $notifiable
-     * @param  string  $id
-     * @param  mixed  $notification
-     * @param  string  $channel
-     * @return void
-     */
-    protected function sendToNotifiable($notifiable, $id, $notification, $channel)
-    {
-        if (! $notification->id) {
-            $notification->id = $id;
+        if (!$notifiables instanceof Collection && !is_array($notifiables)) {
+            return $notifiables instanceof Model
+                ? new ModelCollection([$notifiables]) : [$notifiables];
         }
 
-        if (! $this->shouldSendNotification($notifiable, $notification, $channel)) {
-            return;
-        }
-
-        $response = $this->manager->driver($channel)->send($notifiable, $notification);
-
-        $this->events->dispatch(
-            new NotificationSent($notifiable, $notification, $channel, $response)
-        );
-    }
-
-    /**
-     * Determines if the notification can be sent.
-     *
-     * @param  mixed  $notifiable
-     * @param  mixed  $notification
-     * @param  string  $channel
-     * @return bool
-     */
-    protected function shouldSendNotification($notifiable, $notification, $channel)
-    {
-        if (method_exists($notification, 'shouldSend') &&
-            $notification->shouldSend($notifiable, $channel) === false) {
-            return false;
-        }
-
-        return $this->events->until(
-            new NotificationSending($notifiable, $notification, $channel)
-        ) !== false;
+        return $notifiables;
     }
 
     /**
      * Queue the given notification instances.
      *
-     * @param  mixed  $notifiables
-     * @param  \Illuminate\Notifications\Notification  $notification
+     * @param mixed $notifiables
+     * @param \Illuminate\Notifications\Notification $notification
      * @return void
      */
     protected function queueNotification($notifiables, $notification)
@@ -188,14 +111,14 @@ class NotificationSender
         foreach ($notifiables as $notifiable) {
             $notificationId = Str::uuid()->toString();
 
-            foreach ((array) $original->via($notifiable) as $channel) {
+            foreach ((array)$original->via($notifiable) as $channel) {
                 $notification = clone $original;
 
-                if (! $notification->id) {
+                if (!$notification->id) {
                     $notification->id = $notificationId;
                 }
 
-                if (! is_null($this->locale)) {
+                if (!is_null($this->locale)) {
                     $notification->locale = $this->locale;
                 }
 
@@ -213,33 +136,110 @@ class NotificationSender
 
                 $this->bus->dispatch(
                     (new SendQueuedNotifications($notifiable, $notification, [$channel]))
-                            ->onConnection($notification->connection)
-                            ->onQueue($queue)
-                            ->delay(is_array($delay) ? ($delay[$channel] ?? null) : $delay)
-                            ->through(
-                                array_merge(
-                                    method_exists($notification, 'middleware') ? $notification->middleware() : [],
-                                    $notification->middleware ?? []
-                                )
+                        ->onConnection($notification->connection)
+                        ->onQueue($queue)
+                        ->delay(is_array($delay) ? ($delay[$channel] ?? null) : $delay)
+                        ->through(
+                            array_merge(
+                                method_exists($notification, 'middleware') ? $notification->middleware() : [],
+                                $notification->middleware ?? []
                             )
+                        )
                 );
             }
         }
     }
 
     /**
-     * Format the notifiables into a Collection / array if necessary.
+     * Send the given notification immediately.
      *
-     * @param  mixed  $notifiables
-     * @return \Illuminate\Database\Eloquent\Collection|array
+     * @param \Illuminate\Support\Collection|array|mixed $notifiables
+     * @param mixed $notification
+     * @param array|null $channels
+     * @return void
      */
-    protected function formatNotifiables($notifiables)
+    public function sendNow($notifiables, $notification, array $channels = null)
     {
-        if (! $notifiables instanceof Collection && ! is_array($notifiables)) {
-            return $notifiables instanceof Model
-                            ? new ModelCollection([$notifiables]) : [$notifiables];
+        $notifiables = $this->formatNotifiables($notifiables);
+
+        $original = clone $notification;
+
+        foreach ($notifiables as $notifiable) {
+            if (empty($viaChannels = $channels ?: $notification->via($notifiable))) {
+                continue;
+            }
+
+            $this->withLocale($this->preferredLocale($notifiable, $notification), function () use ($viaChannels, $notifiable, $original) {
+                $notificationId = Str::uuid()->toString();
+
+                foreach ((array)$viaChannels as $channel) {
+                    if (!($notifiable instanceof AnonymousNotifiable && $channel === 'database')) {
+                        $this->sendToNotifiable($notifiable, $notificationId, clone $original, $channel);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Get the notifiable's preferred locale for the notification.
+     *
+     * @param mixed $notifiable
+     * @param mixed $notification
+     * @return string|null
+     */
+    protected function preferredLocale($notifiable, $notification)
+    {
+        return $notification->locale ?? $this->locale ?? value(function () use ($notifiable) {
+                if ($notifiable instanceof HasLocalePreference) {
+                    return $notifiable->preferredLocale();
+                }
+            });
+    }
+
+    /**
+     * Send the given notification to the given notifiable via a channel.
+     *
+     * @param mixed $notifiable
+     * @param string $id
+     * @param mixed $notification
+     * @param string $channel
+     * @return void
+     */
+    protected function sendToNotifiable($notifiable, $id, $notification, $channel)
+    {
+        if (!$notification->id) {
+            $notification->id = $id;
         }
 
-        return $notifiables;
+        if (!$this->shouldSendNotification($notifiable, $notification, $channel)) {
+            return;
+        }
+
+        $response = $this->manager->driver($channel)->send($notifiable, $notification);
+
+        $this->events->dispatch(
+            new NotificationSent($notifiable, $notification, $channel, $response)
+        );
+    }
+
+    /**
+     * Determines if the notification can be sent.
+     *
+     * @param mixed $notifiable
+     * @param mixed $notification
+     * @param string $channel
+     * @return bool
+     */
+    protected function shouldSendNotification($notifiable, $notification, $channel)
+    {
+        if (method_exists($notification, 'shouldSend') &&
+            $notification->shouldSend($notifiable, $channel) === false) {
+            return false;
+        }
+
+        return $this->events->until(
+                new NotificationSending($notifiable, $notification, $channel)
+            ) !== false;
     }
 }

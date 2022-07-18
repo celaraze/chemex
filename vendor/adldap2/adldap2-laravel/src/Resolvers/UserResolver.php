@@ -53,16 +53,6 @@ class UserResolver implements ResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function byId($identifier)
-    {
-        if ($user = $this->query()->findByGuid($identifier)) {
-            return $user;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function byCredentials(array $credentials = [])
     {
         if (empty($credentials)) {
@@ -76,7 +66,7 @@ class UserResolver implements ResolverInterface
             $this->getLdapDiscoveryAttribute() :
             $this->getDatabaseUsernameColumn();
 
-        if (! array_key_exists($attribute, $credentials)) {
+        if (!array_key_exists($attribute, $credentials)) {
             throw new RuntimeException(
                 "The '$attribute' key is missing from the given credentials array."
             );
@@ -89,11 +79,116 @@ class UserResolver implements ResolverInterface
     }
 
     /**
+     * Returns the default guards provider instance.
+     *
+     * @return UserProvider
+     */
+    protected function getAppAuthProvider(): UserProvider
+    {
+        return Auth::guard()->getProvider();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLdapDiscoveryAttribute(): string
+    {
+        return Config::get('ldap_auth.identifiers.ldap.locate_users_by', 'userprincipalname');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseUsernameColumn(): string
+    {
+        return Config::get('ldap_auth.identifiers.database.username_column', 'email');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function query(): Builder
+    {
+        $query = $this->getLdapAuthProvider()->search()->users();
+
+        // We will ensure our object GUID attribute is always selected
+        // along will all attributes. Otherwise, if the object GUID
+        // attribute is virtual, it may not be returned.
+        $selects = array_unique(array_merge(['*', $query->getSchema()->objectGuid()], $query->getSelects()));
+
+        $query->select($selects);
+
+        foreach ($this->getQueryScopes() as $scope) {
+            app($scope)->apply($query);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Retrieves the provider for the current connection.
+     *
+     * @return ProviderInterface
+     * @throws \Adldap\AdldapException
+     *
+     */
+    protected function getLdapAuthProvider(): ProviderInterface
+    {
+        $provider = $this->ldap->getProvider($this->connection ?? $this->getLdapAuthConnectionName());
+
+        if (!$provider->getConnection()->isBound()) {
+            // We'll make sure we have a bound connection before
+            // allowing dynamic calls on the default provider.
+            $provider->connect();
+        }
+
+        return $provider;
+    }
+
+    /**
+     * Returns the connection name of the authentication provider.
+     *
+     * @return string
+     */
+    protected function getLdapAuthConnectionName()
+    {
+        return Config::get('ldap_auth.connection', 'default');
+    }
+
+    /**
+     * Returns the configured query scopes.
+     *
+     * @return array
+     */
+    protected function getQueryScopes()
+    {
+        return Config::get('ldap_auth.scopes', []);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function byModel(Authenticatable $model)
     {
         return $this->byId($model->{$this->getDatabaseIdColumn()});
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function byId($identifier)
+    {
+        if ($user = $this->query()->findByGuid($identifier)) {
+            return $user;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseIdColumn(): string
+    {
+        return Config::get('ldap_auth.identifiers.database.guid_column', 'objectguid');
     }
 
     /**
@@ -130,54 +225,9 @@ class UserResolver implements ResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function query(): Builder
-    {
-        $query = $this->getLdapAuthProvider()->search()->users();
-
-        // We will ensure our object GUID attribute is always selected
-        // along will all attributes. Otherwise, if the object GUID
-        // attribute is virtual, it may not be returned.
-        $selects = array_unique(array_merge(['*', $query->getSchema()->objectGuid()], $query->getSelects()));
-
-        $query->select($selects);
-
-        foreach ($this->getQueryScopes() as $scope) {
-            app($scope)->apply($query);
-        }
-
-        return $query;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLdapDiscoveryAttribute(): string
-    {
-        return Config::get('ldap_auth.identifiers.ldap.locate_users_by', 'userprincipalname');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getLdapAuthAttribute(): string
     {
         return Config::get('ldap_auth.identifiers.ldap.bind_users_by', 'distinguishedname');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDatabaseUsernameColumn(): string
-    {
-        return Config::get('ldap_auth.identifiers.database.username_column', 'email');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDatabaseIdColumn(): string
-    {
-        return Config::get('ldap_auth.identifiers.database.guid_column', 'objectguid');
     }
 
     /**
@@ -190,55 +240,5 @@ class UserResolver implements ResolverInterface
     protected function getPasswordFromCredentials($credentials)
     {
         return Arr::get($credentials, 'password');
-    }
-
-    /**
-     * Retrieves the provider for the current connection.
-     *
-     * @throws \Adldap\AdldapException
-     *
-     * @return ProviderInterface
-     */
-    protected function getLdapAuthProvider(): ProviderInterface
-    {
-        $provider = $this->ldap->getProvider($this->connection ?? $this->getLdapAuthConnectionName());
-
-        if (! $provider->getConnection()->isBound()) {
-            // We'll make sure we have a bound connection before
-            // allowing dynamic calls on the default provider.
-            $provider->connect();
-        }
-
-        return $provider;
-    }
-
-    /**
-     * Returns the default guards provider instance.
-     *
-     * @return UserProvider
-     */
-    protected function getAppAuthProvider(): UserProvider
-    {
-        return Auth::guard()->getProvider();
-    }
-
-    /**
-     * Returns the connection name of the authentication provider.
-     *
-     * @return string
-     */
-    protected function getLdapAuthConnectionName()
-    {
-        return Config::get('ldap_auth.connection', 'default');
-    }
-
-    /**
-     * Returns the configured query scopes.
-     *
-     * @return array
-     */
-    protected function getQueryScopes()
-    {
-        return Config::get('ldap_auth.scopes', []);
     }
 }

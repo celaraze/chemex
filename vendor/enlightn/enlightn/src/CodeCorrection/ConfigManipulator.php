@@ -18,28 +18,6 @@ class ConfigManipulator
     use ConstructsConfigurationAST;
 
     /**
-     * Get the config values as pretty printed code.
-     *
-     * @param array $configValues
-     * @return string
-     */
-    public function get($configValues = [])
-    {
-        $items = [];
-
-        foreach ($configValues as $key => $configValue) {
-            $items[] = new ArrayItem(
-                $this->getConfiguration($configValue),
-                new String_($key)
-            );
-        }
-
-        $ast = [new Array_($items)];
-
-        return (new Standard(['shortArraySyntax' => true]))->prettyPrint($ast);
-    }
-
-    /**
      * Modify the config file with the given config values.
      *
      * @param string $configFilePath
@@ -74,7 +52,7 @@ class ConfigManipulator
         $newAst = $traverser->traverse($ast);
 
         foreach ($configValues as $key => $configValue) {
-            if (! isset($config[$key])
+            if (!isset($config[$key])
                 && isset($newAst[0])
                 && $newAst[0] instanceof Return_
                 && $newAst[0]->expr instanceof Array_) {
@@ -88,5 +66,27 @@ class ConfigManipulator
         $newCode = (new Standard(['shortArraySyntax' => true]))->printFormatPreserving($newAst, $ast, $oldTokens);
 
         (new Filesystem)->put($configFilePath, $newCode);
+    }
+
+    /**
+     * Get the config values as pretty printed code.
+     *
+     * @param array $configValues
+     * @return string
+     */
+    public function get($configValues = [])
+    {
+        $items = [];
+
+        foreach ($configValues as $key => $configValue) {
+            $items[] = new ArrayItem(
+                $this->getConfiguration($configValue),
+                new String_($key)
+            );
+        }
+
+        $ast = [new Array_($items)];
+
+        return (new Standard(['shortArraySyntax' => true]))->prettyPrint($ast);
     }
 }

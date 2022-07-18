@@ -11,7 +11,7 @@ class Exists
     /**
      * Ignore soft deleted models during the existence check.
      *
-     * @param  string  $deletedAtColumn
+     * @param string $deletedAtColumn
      * @return $this
      */
     public function withoutTrashed($deletedAtColumn = 'deleted_at')

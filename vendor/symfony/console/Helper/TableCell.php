@@ -54,7 +54,7 @@ class TableCell
      */
     public function getColspan(): int
     {
-        return (int) $this->options['colspan'];
+        return (int)$this->options['colspan'];
     }
 
     /**
@@ -62,7 +62,7 @@ class TableCell
      */
     public function getRowspan(): int
     {
-        return (int) $this->options['rowspan'];
+        return (int)$this->options['rowspan'];
     }
 
     public function getStyle(): ?TableCellStyle

@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Cache;
 
 use Doctrine\DBAL\Driver\FetchUtils;
 use Doctrine\DBAL\Driver\Result;
-
 use function array_values;
 use function count;
 use function reset;
@@ -48,6 +47,18 @@ final class ArrayResult implements Result
         }
 
         return array_values($row);
+    }
+
+    /**
+     * @return array<string, mixed>|false
+     */
+    private function fetch()
+    {
+        if (!isset($this->data[$this->num])) {
+            return false;
+        }
+
+        return $this->data[$this->num++];
     }
 
     /**
@@ -109,17 +120,5 @@ final class ArrayResult implements Result
     public function free(): void
     {
         $this->data = [];
-    }
-
-    /**
-     * @return array<string, mixed>|false
-     */
-    private function fetch()
-    {
-        if (! isset($this->data[$this->num])) {
-            return false;
-        }
-
-        return $this->data[$this->num++];
     }
 }

@@ -16,11 +16,11 @@ class MissingColumnSolutionProvider implements HasSolutionsForThrowable
 
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof QueryException) {
+        if (!$throwable instanceof QueryException) {
             return false;
         }
 
-        return  $this->isBadTableErrorCode($throwable->getCode());
+        return $this->isBadTableErrorCode($throwable->getCode());
     }
 
     protected function isBadTableErrorCode(string $code): bool

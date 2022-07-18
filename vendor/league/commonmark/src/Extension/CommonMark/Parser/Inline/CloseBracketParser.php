@@ -51,7 +51,7 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
             return false;
         }
 
-        if (! $opener->isActive()) {
+        if (!$opener->isActive()) {
             // no matched opener; remove from emphasis stack
             $inlineContext->getDelimiterStack()->removeDelimiter($opener);
 
@@ -60,7 +60,7 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
 
         $cursor = $inlineContext->getCursor();
 
-        $startPos      = $cursor->getPosition();
+        $startPos = $cursor->getPosition();
         $previousState = $cursor->saveState();
 
         $cursor->advanceBy(1);
@@ -72,7 +72,7 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
             $link = $result;
         } elseif ($link = $this->tryParseReference($cursor, $inlineContext->getReferenceMap(), $opener->getIndex(), $startPos)) {
             $reference = $link;
-            $link      = ['url' => $link->getDestination(), 'title' => $link->getTitle()];
+            $link = ['url' => $link->getDestination(), 'title' => $link->getTitle()];
         } else {
             // No match
             $inlineContext->getDelimiterStack()->removeDelimiter($opener); // Remove this opener from stack
@@ -104,7 +104,7 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
 
         // Process delimiters such as emphasis inside link/image
         $delimiterStack = $inlineContext->getDelimiterStack();
-        $stackBottom    = $opener->getPrevious();
+        $stackBottom = $opener->getPrevious();
         $delimiterStack->processDelimiters($stackBottom, $this->environment->getDelimiterProcessors());
         $delimiterStack->removeAll($stackBottom);
 
@@ -113,16 +113,11 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
 
         // processEmphasis will remove this and later delimiters.
         // Now, for a link, we also remove earlier link openers (no links in links)
-        if (! $isImage) {
+        if (!$isImage) {
             $inlineContext->getDelimiterStack()->removeEarlierMatches('[');
         }
 
         return true;
-    }
-
-    public function setEnvironment(EnvironmentInterface $environment): void
-    {
-        $this->environment = $environment;
     }
 
     /**
@@ -174,14 +169,14 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
             return null;
         }
 
-        $savePos     = $cursor->saveState();
+        $savePos = $cursor->saveState();
         $beforeLabel = $cursor->getPosition();
-        $n           = LinkParserHelper::parseLinkLabel($cursor);
+        $n = LinkParserHelper::parseLinkLabel($cursor);
         if ($n === 0 || $n === 2) {
-            $start  = $openerIndex;
+            $start = $openerIndex;
             $length = $startPos - $openerIndex;
         } else {
-            $start  = $beforeLabel + 1;
+            $start = $beforeLabel + 1;
             $length = $n - 2;
         }
 
@@ -208,5 +203,10 @@ final class CloseBracketParser implements InlineParserInterface, EnvironmentAwar
         }
 
         return $inline;
+    }
+
+    public function setEnvironment(EnvironmentInterface $environment): void
+    {
+        $this->environment = $environment;
     }
 }

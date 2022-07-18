@@ -5,7 +5,8 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/spatie/backtrace.svg?style=flat-square)](https://packagist.org/packages/spatie/backtrace)
 
 To get the backtrace in PHP you can use the `debug_backtrace` function. By default, it can be hard to work with. The
-reported function name for a frame is skewed: it belongs to the previous frame. Also, options need to be passed using a bitmask.
+reported function name for a frame is skewed: it belongs to the previous frame. Also, options need to be passed using a
+bitmask.
 
 This package provides a better way than `debug_backtrace` to work with a back trace. Here's an example:
 
@@ -101,7 +102,8 @@ $frames = Backtrace::create()
 
 With this code, all frames before the frame that concerns `MyClass` will have been filtered out.
 
-Alternatively, you can use the `offSet` method, which will skip the given number of frames. In this example the first 2 frames will not end up in `$frames`.
+Alternatively, you can use the `offSet` method, which will skip the given number of frames. In this example the first 2
+frames will not end up in `$frames`.
 
 ```php
 $frames = Spatie\Backtrace\Backtrace::create()
@@ -119,7 +121,7 @@ $frames = Spatie\Backtrace\Backtrace::create()
     ->frames();
 ```
 
-###  Getting a backtrace for a throwable
+### Getting a backtrace for a throwable
 
 Here's how you can get a backtrace for a throwable.
 
@@ -127,7 +129,8 @@ Here's how you can get a backtrace for a throwable.
 $frames = Spatie\Backtrace\Backtrace::createForThrowable($throwable)
 ```
 
-Because we will use the backtrace that is already available the throwable, the frames will always contain the arguments used.
+Because we will use the backtrace that is already available the throwable, the frames will always contain the arguments
+used.
 
 ## Testing
 

@@ -7,10 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Complexity;
 
-use function assert;
-use function is_array;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -20,6 +19,8 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use function assert;
+use function is_array;
 
 final class ComplexityCalculatingVisitor extends NodeVisitorAbstract
 {
@@ -66,9 +67,23 @@ final class ComplexityCalculatingVisitor extends NodeVisitorAbstract
         return null;
     }
 
-    public function result(): ComplexityCollection
+    private function classMethodName(ClassMethod $node): string
     {
-        return ComplexityCollection::fromList(...$this->result);
+        $parent = $node->getAttribute('parent');
+
+        assert($parent instanceof Class_ || $parent instanceof Trait_);
+        assert(isset($parent->namespacedName));
+        assert($parent->namespacedName instanceof Name);
+
+        return $parent->namespacedName->toString() . '::' . $node->name->toString();
+    }
+
+    private function functionName(Function_ $node): string
+    {
+        assert(isset($node->namespacedName));
+        assert($node->namespacedName instanceof Name);
+
+        return $node->namespacedName->toString();
     }
 
     /**
@@ -88,22 +103,8 @@ final class ComplexityCalculatingVisitor extends NodeVisitorAbstract
         return $cyclomaticComplexityCalculatingVisitor->cyclomaticComplexity();
     }
 
-    private function classMethodName(ClassMethod $node): string
+    public function result(): ComplexityCollection
     {
-        $parent = $node->getAttribute('parent');
-
-        assert($parent instanceof Class_ || $parent instanceof Trait_);
-        assert(isset($parent->namespacedName));
-        assert($parent->namespacedName instanceof Name);
-
-        return $parent->namespacedName->toString() . '::' . $node->name->toString();
-    }
-
-    private function functionName(Function_ $node): string
-    {
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
-        return $node->namespacedName->toString();
+        return ComplexityCollection::fromList(...$this->result);
     }
 }

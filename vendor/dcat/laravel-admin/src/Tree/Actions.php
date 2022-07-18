@@ -9,15 +9,13 @@ use Illuminate\Contracts\Support\Renderable;
 class Actions implements Renderable
 {
     /**
-     * @var Tree
-     */
-    protected $parent;
-
-    /**
      * @var \Illuminate\Database\Eloquent\Model
      */
     public $row;
-
+    /**
+     * @var Tree
+     */
+    protected $parent;
     /**
      * @var array
      */
@@ -32,22 +30,22 @@ class Actions implements Renderable
      * @var array
      */
     protected $actions = [
-        'delete'    => true,
+        'delete' => true,
         'quickEdit' => true,
-        'edit'      => false,
+        'edit' => false,
     ];
 
     /**
      * @var array
      */
     protected $defaultActions = [
-        'edit'      => Tree\Actions\Edit::class,
+        'edit' => Tree\Actions\Edit::class,
         'quickEdit' => Tree\Actions\QuickEdit::class,
-        'delete'    => Tree\Actions\Delete::class,
+        'delete' => Tree\Actions\Delete::class,
     ];
 
     /**
-     * @param  string|Renderable|\Dcat\Admin\Actions\Action|\Illuminate\Contracts\Support\Htmlable  $action
+     * @param string|Renderable|\Dcat\Admin\Actions\Action|\Illuminate\Contracts\Support\Htmlable $action
      * @return $this
      */
     public function append($action)
@@ -59,22 +57,32 @@ class Actions implements Renderable
         return $this;
     }
 
-    /**
-     * @param  string|Renderable|\Dcat\Admin\Actions\Action|\Illuminate\Contracts\Support\Htmlable  $action
-     * @return $this
-     */
-    public function prepend($action)
+    protected function prepareAction($action)
     {
-        $this->prepareAction($action);
+        if ($action instanceof RowAction) {
+            $action->setParent($this);
+            $action->setRow($this->row);
+        }
+    }
 
-        array_unshift($this->prepends, $action);
-
-        return $this;
+    public function setParent(Tree $tree)
+    {
+        $this->parent = $tree;
     }
 
     public function getKey()
     {
         return $this->row->{$this->parent()->getKeyName()};
+    }
+
+    public function parent()
+    {
+        return $this->parent;
+    }
+
+    public function disableQuickEdit(bool $value = true)
+    {
+        return $this->quickEdit(!$value);
     }
 
     public function quickEdit(bool $value = true)
@@ -84,9 +92,9 @@ class Actions implements Renderable
         return $this;
     }
 
-    public function disableQuickEdit(bool $value = true)
+    public function disableEdit(bool $value = true)
     {
-        return $this->quickEdit(! $value);
+        return $this->edit(!$value);
     }
 
     public function edit(bool $value = true)
@@ -96,9 +104,9 @@ class Actions implements Renderable
         return $this;
     }
 
-    public function disableEdit(bool $value = true)
+    public function disableDelete(bool $value = true)
     {
-        return $this->edit(! $value);
+        return $this->delete(!$value);
     }
 
     public function delete(bool $value = true)
@@ -106,11 +114,6 @@ class Actions implements Renderable
         $this->actions['delete'] = $value;
 
         return $this;
-    }
-
-    public function disableDelete(bool $value = true)
-    {
-        return $this->delete(! $value);
     }
 
     public function render()
@@ -125,18 +128,10 @@ class Actions implements Renderable
         return implode('', array_merge($prepends, $appends));
     }
 
-    protected function prepareAction($action)
-    {
-        if ($action instanceof RowAction) {
-            $action->setParent($this);
-            $action->setRow($this->row);
-        }
-    }
-
     protected function prependDefaultActions()
     {
         foreach ($this->actions as $action => $enable) {
-            if (! $enable) {
+            if (!$enable) {
                 continue;
             }
 
@@ -148,14 +143,17 @@ class Actions implements Renderable
         }
     }
 
-    public function parent()
+    /**
+     * @param string|Renderable|\Dcat\Admin\Actions\Action|\Illuminate\Contracts\Support\Htmlable $action
+     * @return $this
+     */
+    public function prepend($action)
     {
-        return $this->parent;
-    }
+        $this->prepareAction($action);
 
-    public function setParent(Tree $tree)
-    {
-        $this->parent = $tree;
+        array_unshift($this->prepends, $action);
+
+        return $this;
     }
 
     public function getRow()

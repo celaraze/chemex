@@ -23,10 +23,16 @@ class RejectedPromise implements PromiseInterface
         $this->reason = $reason;
     }
 
+    public function otherwise(callable $onRejected)
+    {
+        return $this->then(null, $onRejected);
+    }
+
     public function then(
         callable $onFulfilled = null,
         callable $onRejected = null
-    ) {
+    )
+    {
         // If there's no onRejected callback then just return self.
         if (!$onRejected) {
             return $this;
@@ -53,9 +59,16 @@ class RejectedPromise implements PromiseInterface
         return $p;
     }
 
-    public function otherwise(callable $onRejected)
+    public function resolve($value)
     {
-        return $this->then(null, $onRejected);
+        throw new \LogicException("Cannot resolve a rejected promise");
+    }
+
+    public function reject($reason)
+    {
+        if ($reason !== $this->reason) {
+            throw new \LogicException("Cannot reject a rejected promise");
+        }
     }
 
     public function wait($unwrap = true, $defaultDelivery = null)
@@ -70,18 +83,6 @@ class RejectedPromise implements PromiseInterface
     public function getState()
     {
         return self::REJECTED;
-    }
-
-    public function resolve($value)
-    {
-        throw new \LogicException("Cannot resolve a rejected promise");
-    }
-
-    public function reject($reason)
-    {
-        if ($reason !== $this->reason) {
-            throw new \LogicException("Cannot reject a rejected promise");
-        }
     }
 
     public function cancel()

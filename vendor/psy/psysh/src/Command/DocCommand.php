@@ -125,6 +125,15 @@ HELP
         return 0;
     }
 
+    private function getManualDocById($id)
+    {
+        if ($db = $this->getApplication()->getManualDb()) {
+            return $db
+                ->query(\sprintf('SELECT doc FROM php_manual WHERE id = %s', $db->quote($id)))
+                ->fetchColumn(0);
+        }
+    }
+
     private function getManualDoc($reflector)
     {
         switch (\get_class($reflector)) {
@@ -135,11 +144,11 @@ HELP
                 break;
 
             case \ReflectionMethod::class:
-                $id = $reflector->class.'::'.$reflector->name;
+                $id = $reflector->class . '::' . $reflector->name;
                 break;
 
             case \ReflectionProperty::class:
-                $id = $reflector->class.'::$'.$reflector->name;
+                $id = $reflector->class . '::$' . $reflector->name;
                 break;
 
             case \ReflectionClassConstant::class:
@@ -147,7 +156,7 @@ HELP
                 // @todo this is going to collide with ReflectionMethod ids
                 // someday... start running the query by id + type if the DB
                 // supports it.
-                $id = $reflector->class.'::'.$reflector->name;
+                $id = $reflector->class . '::' . $reflector->name;
                 break;
 
             case ReflectionConstant_::class:
@@ -236,15 +245,6 @@ HELP
                     }
                 }
                 break;
-        }
-    }
-
-    private function getManualDocById($id)
-    {
-        if ($db = $this->getApplication()->getManualDb()) {
-            return $db
-                ->query(\sprintf('SELECT doc FROM php_manual WHERE id = %s', $db->quote($id)))
-                ->fetchColumn(0);
         }
     }
 }

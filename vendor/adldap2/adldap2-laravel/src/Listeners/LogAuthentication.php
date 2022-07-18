@@ -17,7 +17,7 @@ class LogAuthentication
      */
     public function handle(Authenticating $event)
     {
-        $username = $this->getPrefix().$event->username.$this->getSuffix();
+        $username = $this->getPrefix() . $event->username . $this->getSuffix();
 
         Log::info("User '{$event->user->getCommonName()}' is authenticating with username: '{$username}'");
     }
@@ -33,16 +33,6 @@ class LogAuthentication
     }
 
     /**
-     * Returns the account suffix that is applied to username's.
-     *
-     * @return string|null
-     */
-    protected function getSuffix()
-    {
-        return Config::get("{$this->getConfigSettingsPath()}.account_suffix");
-    }
-
-    /**
      * Returns the current connections configuration path.
      *
      * @return string
@@ -52,5 +42,15 @@ class LogAuthentication
         $connection = Config::get('ldap_auth.connection');
 
         return "ldap.connections.$connection.settings";
+    }
+
+    /**
+     * Returns the account suffix that is applied to username's.
+     *
+     * @return string|null
+     */
+    protected function getSuffix()
+    {
+        return Config::get("{$this->getConfigSettingsPath()}.account_suffix");
     }
 }

@@ -1,7 +1,12 @@
 {
     "name": "adldap2/adldap2-laravel",
     "description": "LDAP Authentication & Management for Laravel.",
-    "keywords": ["adldap", "adldap2", "ldap", "laravel"],
+    "keywords": [
+        "adldap",
+        "adldap2",
+        "ldap",
+        "laravel"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
@@ -15,7 +20,9 @@
         "orchestra/testbench": "~3.7|~4.0"
     },
     "archive": {
-        "exclude": ["/tests"]
+        "exclude": [
+            "/tests"
+        ]
     },
     "autoload": {
         "psr-4": {

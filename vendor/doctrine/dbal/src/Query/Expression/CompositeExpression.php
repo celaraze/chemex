@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Query\Expression;
 use Countable;
 use Doctrine\Deprecations\Deprecation;
 use ReturnTypeWillChange;
-
 use function array_merge;
 use function count;
 use function implode;
@@ -40,10 +39,10 @@ class CompositeExpression implements Countable
     private $parts = [];
 
     /**
+     * @param string $type Instance type of composite expression.
+     * @param self[]|string[] $parts Composition of expressions to be joined on composite expression.
      * @internal Use the and() / or() factory methods.
      *
-     * @param string          $type  Instance type of composite expression.
-     * @param self[]|string[] $parts Composition of expressions to be joined on composite expression.
      */
     public function __construct($type, array $parts = [])
     {
@@ -59,31 +58,13 @@ class CompositeExpression implements Countable
     }
 
     /**
-     * @param self|string $part
-     * @param self|string ...$parts
-     */
-    public static function and($part, ...$parts): self
-    {
-        return new self(self::TYPE_AND, array_merge([$part], $parts));
-    }
-
-    /**
-     * @param self|string $part
-     * @param self|string ...$parts
-     */
-    public static function or($part, ...$parts): self
-    {
-        return new self(self::TYPE_OR, array_merge([$part], $parts));
-    }
-
-    /**
      * Adds multiple parts to composite expression.
-     *
-     * @deprecated This class will be made immutable. Use with() instead.
      *
      * @param self[]|string[] $parts
      *
      * @return CompositeExpression
+     * @deprecated This class will be made immutable. Use with() instead.
+     *
      */
     public function addMultiple(array $parts = [])
     {
@@ -103,11 +84,11 @@ class CompositeExpression implements Countable
     /**
      * Adds an expression to composite expression.
      *
-     * @deprecated This class will be made immutable. Use with() instead.
-     *
      * @param mixed $part
      *
      * @return CompositeExpression
+     * @deprecated This class will be made immutable. Use with() instead.
+     *
      */
     public function add($part)
     {
@@ -131,6 +112,24 @@ class CompositeExpression implements Countable
     }
 
     /**
+     * @param self|string $part
+     * @param self|string ...$parts
+     */
+    public static function and($part, ...$parts): self
+    {
+        return new self(self::TYPE_AND, array_merge([$part], $parts));
+    }
+
+    /**
+     * @param self|string $part
+     * @param self|string ...$parts
+     */
+    public static function or($part, ...$parts): self
+    {
+        return new self(self::TYPE_OR, array_merge([$part], $parts));
+    }
+
+    /**
      * Returns a new CompositeExpression with the given parts added.
      *
      * @param self|string $part
@@ -146,6 +145,20 @@ class CompositeExpression implements Countable
     }
 
     /**
+     * Retrieves the string representation of this composite expression.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        if ($this->count() === 1) {
+            return (string)$this->parts[0];
+        }
+
+        return '(' . implode(') ' . $this->type . ' (', $this->parts) . ')';
+    }
+
+    /**
      * Retrieves the amount of expressions on composite expression.
      *
      * @return int
@@ -154,20 +167,6 @@ class CompositeExpression implements Countable
     public function count()
     {
         return count($this->parts);
-    }
-
-    /**
-     * Retrieves the string representation of this composite expression.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        if ($this->count() === 1) {
-            return (string) $this->parts[0];
-        }
-
-        return '(' . implode(') ' . $this->type . ' (', $this->parts) . ')';
     }
 
     /**

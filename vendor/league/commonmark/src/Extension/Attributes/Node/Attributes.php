@@ -18,9 +18,9 @@ use League\CommonMark\Node\Block\AbstractBlock;
 
 final class Attributes extends AbstractBlock
 {
-    public const TARGET_PARENT   = 0;
+    public const TARGET_PARENT = 0;
     public const TARGET_PREVIOUS = 1;
-    public const TARGET_NEXT     = 2;
+    public const TARGET_NEXT = 2;
 
     /** @var array<string, mixed> */
     private array $attributes;

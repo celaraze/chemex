@@ -40,11 +40,21 @@ class CompositeRepository implements RepositoryInterface
         }
     }
 
-    public function getRepoName(): string
+    /**
+     * Add a repository.
+     * @param RepositoryInterface $repository
+     *
+     * @return void
+     */
+    public function addRepository(RepositoryInterface $repository): void
     {
-        return 'composite repo ('.implode(', ', array_map(function ($repo): string {
-            return $repo->getRepoName();
-        }, $this->repositories)).')';
+        if ($repository instanceof self) {
+            foreach ($repository->getRepositories() as $repo) {
+                $this->addRepository($repo);
+            }
+        } else {
+            $this->repositories[] = $repository;
+        }
     }
 
     /**
@@ -55,6 +65,13 @@ class CompositeRepository implements RepositoryInterface
     public function getRepositories(): array
     {
         return $this->repositories;
+    }
+
+    public function getRepoName(): string
+    {
+        return 'composite repo (' . implode(', ', array_map(function ($repo): string {
+                return $repo->getRepoName();
+            }, $this->repositories)) . ')';
     }
 
     /**
@@ -188,22 +205,5 @@ class CompositeRepository implements RepositoryInterface
         }
 
         return $total;
-    }
-
-    /**
-     * Add a repository.
-     * @param RepositoryInterface $repository
-     *
-     * @return void
-     */
-    public function addRepository(RepositoryInterface $repository): void
-    {
-        if ($repository instanceof self) {
-            foreach ($repository->getRepositories() as $repo) {
-                $this->addRepository($repo);
-            }
-        } else {
-            $this->repositories[] = $repository;
-        }
     }
 }

@@ -16,7 +16,7 @@ trait ValidatesWhenResolvedTrait
     {
         $this->prepareForValidation();
 
-        if (! $this->passesAuthorization()) {
+        if (!$this->passesAuthorization()) {
             $this->failedAuthorization();
         }
 
@@ -37,39 +37,6 @@ trait ValidatesWhenResolvedTrait
     protected function prepareForValidation()
     {
         //
-    }
-
-    /**
-     * Get the validator instance for the request.
-     *
-     * @return \Illuminate\Validation\Validator
-     */
-    protected function getValidatorInstance()
-    {
-        return $this->validator();
-    }
-
-    /**
-     * Handle a passed validation attempt.
-     *
-     * @return void
-     */
-    protected function passedValidation()
-    {
-        //
-    }
-
-    /**
-     * Handle a failed validation attempt.
-     *
-     * @param  \Illuminate\Validation\Validator  $validator
-     * @return void
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    protected function failedValidation(Validator $validator)
-    {
-        throw new ValidationException($validator);
     }
 
     /**
@@ -96,5 +63,38 @@ trait ValidatesWhenResolvedTrait
     protected function failedAuthorization()
     {
         throw new UnauthorizedException;
+    }
+
+    /**
+     * Get the validator instance for the request.
+     *
+     * @return \Illuminate\Validation\Validator
+     */
+    protected function getValidatorInstance()
+    {
+        return $this->validator();
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     *
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        throw new ValidationException($validator);
+    }
+
+    /**
+     * Handle a passed validation attempt.
+     *
+     * @return void
+     */
+    protected function passedValidation()
+    {
+        //
     }
 }

@@ -7,19 +7,20 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI;
 
-use const PHP_VERSION;
+use PHPUnit\Framework\Exception as FrameworkException;
+use PHPUnit\Framework\TestSuite as TestSuiteObject;
+use PHPUnit\TextUI\XmlConfiguration\TestSuiteCollection;
+use SebastianBergmann\FileIterator\Facade;
 use function explode;
 use function in_array;
 use function is_dir;
 use function is_file;
 use function strpos;
 use function version_compare;
-use PHPUnit\Framework\Exception as FrameworkException;
-use PHPUnit\Framework\TestSuite as TestSuiteObject;
-use PHPUnit\TextUI\XmlConfiguration\TestSuiteCollection;
-use SebastianBergmann\FileIterator\Facade;
+use const PHP_VERSION;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -35,14 +36,14 @@ final class TestSuiteMapper
     {
         try {
             $filterAsArray = $filter ? explode(',', $filter) : [];
-            $result        = new TestSuiteObject;
+            $result = new TestSuiteObject;
 
             foreach ($configuration as $testSuiteConfiguration) {
                 if (!empty($filterAsArray) && !in_array($testSuiteConfiguration->name(), $filterAsArray, true)) {
                     continue;
                 }
 
-                $testSuite      = new TestSuiteObject($testSuiteConfiguration->name());
+                $testSuite = new TestSuiteObject($testSuiteConfiguration->name());
                 $testSuiteEmpty = true;
 
                 $exclude = [];
@@ -95,7 +96,7 @@ final class TestSuiteMapper
         } catch (FrameworkException $e) {
             throw new RuntimeException(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }

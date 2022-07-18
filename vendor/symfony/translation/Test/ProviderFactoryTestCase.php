@@ -40,8 +40,6 @@ abstract class ProviderFactoryTestCase extends TestCase
     protected XliffFileDumper|MockObject $xliffFileDumper;
     protected TranslatorBagInterface|MockObject $translatorBag;
 
-    abstract public function createFactory(): ProviderFactoryInterface;
-
     /**
      * @return iterable<array{0: bool, 1: string}>
      */
@@ -78,6 +76,8 @@ abstract class ProviderFactoryTestCase extends TestCase
         $this->assertSame($expected, $factory->supports(new Dsn($dsn)));
     }
 
+    abstract public function createFactory(): ProviderFactoryInterface;
+
     /**
      * @dataProvider createProvider
      */
@@ -86,7 +86,7 @@ abstract class ProviderFactoryTestCase extends TestCase
         $factory = $this->createFactory();
         $provider = $factory->create(new Dsn($dsn));
 
-        $this->assertSame($expected, (string) $provider);
+        $this->assertSame($expected, (string)$provider);
     }
 
     /**

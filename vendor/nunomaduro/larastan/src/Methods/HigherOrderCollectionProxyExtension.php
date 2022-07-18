@@ -23,8 +23,9 @@ final class HigherOrderCollectionProxyExtension implements MethodsClassReflectio
 
     public function getMethod(
         ClassReflection $classReflection,
-        string $methodName
-    ): MethodReflection {
+        string          $methodName
+    ): MethodReflection
+    {
         $activeTemplateTypeMap = $classReflection->getActiveTemplateTypeMap();
 
         /** @var Type\Constant\ConstantStringType $methodType */
@@ -39,8 +40,7 @@ final class HigherOrderCollectionProxyExtension implements MethodsClassReflectio
 
         $returnType = HigherOrderCollectionProxyHelper::determineReturnType($methodType->getValue(), $valueType, $modelMethodReturnType);
 
-        return new class($classReflection, $methodName, $modelMethodReflection, $returnType) implements MethodReflection
-        {
+        return new class($classReflection, $methodName, $modelMethodReflection, $returnType) implements MethodReflection {
             /** @var ClassReflection */
             private $classReflection;
 

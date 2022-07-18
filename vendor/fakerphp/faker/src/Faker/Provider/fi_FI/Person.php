@@ -92,7 +92,7 @@ class Person extends \Faker\Provider\Person
      * @see http://www.finlex.fi/fi/laki/ajantasa/2010/20100128
      *
      * @param \DateTime $birthdate
-     * @param string    $gender    Person::GENDER_MALE || Person::GENDER_FEMALE
+     * @param string $gender Person::GENDER_MALE || Person::GENDER_FEMALE
      *
      * @return string on format DDMMYYCZZZQ, where DDMMYY is the date of birth, C the century sign, ZZZ the individual number and Q the control character (checksum)
      */
@@ -105,7 +105,7 @@ class Person extends \Faker\Provider\Person
         }
         $datePart = $birthdate->format('dmy');
 
-        switch ((int) ($birthdate->format('Y') / 100)) {
+        switch ((int)($birthdate->format('Y') / 100)) {
             case 18:
                 $centurySign = '+';
 
@@ -143,12 +143,12 @@ class Person extends \Faker\Provider\Person
             if ($randomDigits === 0) {
                 $randomDigits .= self::numberBetween(2, 9);
             } else {
-                $randomDigits .= (string) static::numerify('#');
+                $randomDigits .= (string)static::numerify('#');
             }
         }
         $randomDigits = str_pad($randomDigits, 3, '0', STR_PAD_LEFT);
 
-        $checksum = $checksumCharacters[(int) ($datePart . $randomDigits) % strlen($checksumCharacters)];
+        $checksum = $checksumCharacters[(int)($datePart . $randomDigits) % strlen($checksumCharacters)];
 
         return $datePart . $centurySign . $randomDigits . $checksum;
     }

@@ -12,7 +12,7 @@ class NoDatabaseProviderTest extends NoDatabaseTestCase
     public function only_ldap_is_used_when_authenticating()
     {
         $credentials = [
-            'email'    => 'jdoe@email.com',
+            'email' => 'jdoe@email.com',
             'password' => '12345',
         ];
 

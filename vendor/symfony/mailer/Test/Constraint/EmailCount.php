@@ -28,14 +28,6 @@ final class EmailCount extends Constraint
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return sprintf('%shas %s "%d" emails', $this->transport ? $this->transport.' ' : '', $this->queued ? 'queued' : 'sent', $this->expectedValue);
-    }
-
-    /**
      * @param MessageEvents $events
      *
      * {@inheritdoc}
@@ -43,16 +35,6 @@ final class EmailCount extends Constraint
     protected function matches($events): bool
     {
         return $this->expectedValue === $this->countEmails($events);
-    }
-
-    /**
-     * @param MessageEvents $events
-     *
-     * {@inheritdoc}
-     */
-    protected function failureDescription($events): string
-    {
-        return sprintf('the Transport %s (%d %s)', $this->toString(), $this->countEmails($events), $this->queued ? 'queued' : 'sent');
     }
 
     private function countEmails(MessageEvents $events): int
@@ -69,5 +51,23 @@ final class EmailCount extends Constraint
         }
 
         return $count;
+    }
+
+    /**
+     * @param MessageEvents $events
+     *
+     * {@inheritdoc}
+     */
+    protected function failureDescription($events): string
+    {
+        return sprintf('the Transport %s (%d %s)', $this->toString(), $this->countEmails($events), $this->queued ? 'queued' : 'sent');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return sprintf('%shas %s "%d" emails', $this->transport ? $this->transport . ' ' : '', $this->queued ? 'queued' : 'sent', $this->expectedValue);
     }
 }

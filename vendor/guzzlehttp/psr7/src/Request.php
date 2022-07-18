@@ -26,19 +26,20 @@ class Request implements RequestInterface
     private $uri;
 
     /**
-     * @param string                               $method  HTTP method
-     * @param string|UriInterface                  $uri     URI
-     * @param array<string, string|string[]>       $headers Request headers
-     * @param string|resource|StreamInterface|null $body    Request body
-     * @param string                               $version Protocol version
+     * @param string $method HTTP method
+     * @param string|UriInterface $uri URI
+     * @param array<string, string|string[]> $headers Request headers
+     * @param string|resource|StreamInterface|null $body Request body
+     * @param string $version Protocol version
      */
     public function __construct(
         string $method,
-        $uri,
-        array $headers = [],
-        $body = null,
+               $uri,
+        array  $headers = [],
+               $body = null,
         string $version = '1.1'
-    ) {
+    )
+    {
         $this->assertMethod($method);
         if (!($uri instanceof UriInterface)) {
             $uri = new Uri($uri);
@@ -56,6 +57,39 @@ class Request implements RequestInterface
         if ($body !== '' && $body !== null) {
             $this->stream = Utils::streamFor($body);
         }
+    }
+
+    /**
+     * @param mixed $method
+     */
+    private function assertMethod($method): void
+    {
+        if (!is_string($method) || $method === '') {
+            throw new InvalidArgumentException('Method must be a non-empty string.');
+        }
+    }
+
+    private function updateHostFromUri(): void
+    {
+        $host = $this->uri->getHost();
+
+        if ($host == '') {
+            return;
+        }
+
+        if (($port = $this->uri->getPort()) !== null) {
+            $host .= ':' . $port;
+        }
+
+        if (isset($this->headerNames['host'])) {
+            $header = $this->headerNames['host'];
+        } else {
+            $header = 'Host';
+            $this->headerNames['host'] = 'Host';
+        }
+        // Ensure Host is the first header.
+        // See: http://tools.ietf.org/html/rfc7230#section-5.4
+        $this->headers = [$header => [$host]] + $this->headers;
     }
 
     public function getRequestTarget(): string
@@ -120,38 +154,5 @@ class Request implements RequestInterface
         }
 
         return $new;
-    }
-
-    private function updateHostFromUri(): void
-    {
-        $host = $this->uri->getHost();
-
-        if ($host == '') {
-            return;
-        }
-
-        if (($port = $this->uri->getPort()) !== null) {
-            $host .= ':' . $port;
-        }
-
-        if (isset($this->headerNames['host'])) {
-            $header = $this->headerNames['host'];
-        } else {
-            $header = 'Host';
-            $this->headerNames['host'] = 'Host';
-        }
-        // Ensure Host is the first header.
-        // See: http://tools.ietf.org/html/rfc7230#section-5.4
-        $this->headers = [$header => [$host]] + $this->headers;
-    }
-
-    /**
-     * @param mixed $method
-     */
-    private function assertMethod($method): void
-    {
-        if (!is_string($method) || $method === '') {
-            throw new InvalidArgumentException('Method must be a non-empty string.');
-        }
     }
 }

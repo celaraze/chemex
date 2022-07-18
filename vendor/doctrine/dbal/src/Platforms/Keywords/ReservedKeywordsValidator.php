@@ -9,7 +9,6 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Sequence;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Schema\Visitor\Visitor;
-
 use function count;
 use function implode;
 use function str_replace;
@@ -39,30 +38,18 @@ class ReservedKeywordsValidator implements Visitor
     }
 
     /**
-     * @param string $word
-     *
-     * @return string[]
+     * {@inheritdoc}
      */
-    private function isReservedWord($word): array
+    public function acceptColumn(Table $table, Column $column)
     {
-        if ($word[0] === '`') {
-            $word = str_replace('`', '', $word);
-        }
-
-        $keywordLists = [];
-        foreach ($this->keywordLists as $keywordList) {
-            if (! $keywordList->isKeyword($word)) {
-                continue;
-            }
-
-            $keywordLists[] = $keywordList->getName();
-        }
-
-        return $keywordLists;
+        $this->addViolation(
+            'Table ' . $table->getName() . ' column ' . $column->getName(),
+            $this->isReservedWord($column->getName())
+        );
     }
 
     /**
-     * @param string   $asset
+     * @param string $asset
      * @param string[] $violatedPlatforms
      */
     private function addViolation($asset, $violatedPlatforms): void
@@ -75,14 +62,26 @@ class ReservedKeywordsValidator implements Visitor
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $word
+     *
+     * @return string[]
      */
-    public function acceptColumn(Table $table, Column $column)
+    private function isReservedWord($word): array
     {
-        $this->addViolation(
-            'Table ' . $table->getName() . ' column ' . $column->getName(),
-            $this->isReservedWord($column->getName())
-        );
+        if ($word[0] === '`') {
+            $word = str_replace('`', '', $word);
+        }
+
+        $keywordLists = [];
+        foreach ($this->keywordLists as $keywordList) {
+            if (!$keywordList->isKeyword($word)) {
+                continue;
+            }
+
+            $keywordLists[] = $keywordList->getName();
+        }
+
+        return $keywordLists;
     }
 
     /**

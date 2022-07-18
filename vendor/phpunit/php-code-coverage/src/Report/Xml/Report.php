@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
+use DOMDocument;
 use function basename;
 use function dirname;
-use DOMDocument;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -31,6 +32,12 @@ final class Report extends File
         parent::__construct($contextNode);
 
         $this->setName($name);
+    }
+
+    private function setName(string $name): void
+    {
+        $this->contextNode()->setAttribute('name', basename($name));
+        $this->contextNode()->setAttribute('path', dirname($name));
     }
 
     public function asDom(): DOMDocument
@@ -55,6 +62,18 @@ final class Report extends File
         return $this->unitObject('class', $name);
     }
 
+    private function unitObject(string $tagName, $name): Unit
+    {
+        $node = $this->contextNode()->appendChild(
+            $this->dom()->createElementNS(
+                'https://schema.phpunit.de/coverage/1.0',
+                $tagName
+            )
+        );
+
+        return new Unit($node, $name);
+    }
+
     public function traitObject($name): Unit
     {
         return $this->unitObject('trait', $name);
@@ -77,23 +96,5 @@ final class Report extends File
         }
 
         return new Source($source);
-    }
-
-    private function setName(string $name): void
-    {
-        $this->contextNode()->setAttribute('name', basename($name));
-        $this->contextNode()->setAttribute('path', dirname($name));
-    }
-
-    private function unitObject(string $tagName, $name): Unit
-    {
-        $node = $this->contextNode()->appendChild(
-            $this->dom()->createElementNS(
-                'https://schema.phpunit.de/coverage/1.0',
-                $tagName
-            )
-        );
-
-        return new Unit($node, $name);
     }
 }

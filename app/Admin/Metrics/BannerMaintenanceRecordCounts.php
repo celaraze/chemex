@@ -21,7 +21,7 @@ class BannerMaintenanceRecordCounts extends Card
         if ($content instanceof LazyGrid) {
             $content->simple();
         }
-        $value = MaintenanceRecord::where('status','0')->count();
+        $value = MaintenanceRecord::where('status', '0')->count();
         $text = trans('main.maintenance_record_counts');
         $route = admin_route('maintenance.records.index');
         $bg = url('static/images/purple.png');

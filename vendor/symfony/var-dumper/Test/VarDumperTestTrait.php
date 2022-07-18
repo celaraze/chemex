@@ -27,29 +27,18 @@ trait VarDumperTestTrait
         'flags' => null,
     ];
 
-    protected function setUpVarDumper(array $casters, int $flags = null): void
-    {
-        $this->varDumperConfig['casters'] = $casters;
-        $this->varDumperConfig['flags'] = $flags;
-    }
-
-    /**
-     * @after
-     */
-    protected function tearDownVarDumper(): void
-    {
-        $this->varDumperConfig['casters'] = [];
-        $this->varDumperConfig['flags'] = null;
-    }
-
     public function assertDumpEquals(mixed $expected, mixed $data, int $filter = 0, string $message = '')
     {
         $this->assertSame($this->prepareExpectation($expected, $filter), $this->getDump($data, null, $filter), $message);
     }
 
-    public function assertDumpMatchesFormat(mixed $expected, mixed $data, int $filter = 0, string $message = '')
+    private function prepareExpectation(mixed $expected, int $filter): string
     {
-        $this->assertStringMatchesFormat($this->prepareExpectation($expected, $filter), $this->getDump($data, null, $filter), $message);
+        if (!\is_string($expected)) {
+            $expected = $this->getDump($expected, null, $filter);
+        }
+
+        return rtrim($expected);
     }
 
     protected function getDump(mixed $data, string|int $key = null, int $filter = 0): ?string
@@ -73,12 +62,23 @@ trait VarDumperTestTrait
         return rtrim($dumper->dump($data, true));
     }
 
-    private function prepareExpectation(mixed $expected, int $filter): string
+    public function assertDumpMatchesFormat(mixed $expected, mixed $data, int $filter = 0, string $message = '')
     {
-        if (!\is_string($expected)) {
-            $expected = $this->getDump($expected, null, $filter);
-        }
+        $this->assertStringMatchesFormat($this->prepareExpectation($expected, $filter), $this->getDump($data, null, $filter), $message);
+    }
 
-        return rtrim($expected);
+    protected function setUpVarDumper(array $casters, int $flags = null): void
+    {
+        $this->varDumperConfig['casters'] = $casters;
+        $this->varDumperConfig['flags'] = $flags;
+    }
+
+    /**
+     * @after
+     */
+    protected function tearDownVarDumper(): void
+    {
+        $this->varDumperConfig['casters'] = [];
+        $this->varDumperConfig['flags'] = null;
     }
 }

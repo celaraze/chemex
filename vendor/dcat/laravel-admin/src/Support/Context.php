@@ -19,22 +19,6 @@ use Illuminate\Support\Fluent;
  */
 class Context extends Fluent
 {
-    public function set($key, $value = null)
-    {
-        $data = is_array($key) ? $key : [$key => $value];
-
-        foreach ($data as $key => $value) {
-            Arr::set($this->attributes, $key, $value);
-        }
-
-        return $this;
-    }
-
-    public function get($key, $default = null)
-    {
-        return Arr::get($this->attributes, $key, $default);
-    }
-
     public function remember($key, \Closure $callback)
     {
         if (($value = $this->get($key)) !== null) {
@@ -46,9 +30,20 @@ class Context extends Fluent
         });
     }
 
-    public function getArray($key, $default = null)
+    public function get($key, $default = null)
     {
-        return Helper::array($this->get($key, $default), false);
+        return Arr::get($this->attributes, $key, $default);
+    }
+
+    public function set($key, $value = null)
+    {
+        $data = is_array($key) ? $key : [$key => $value];
+
+        foreach ($data as $key => $value) {
+            Arr::set($this->attributes, $key, $value);
+        }
+
+        return $this;
     }
 
     public function add($key, $value, $k = null)
@@ -62,6 +57,11 @@ class Context extends Fluent
         }
 
         return $this->set($key, $results);
+    }
+
+    public function getArray($key, $default = null)
+    {
+        return Helper::array($this->get($key, $default), false);
     }
 
     public function merge($key, array $value)

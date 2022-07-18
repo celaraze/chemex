@@ -10,38 +10,15 @@ trait MenuCache
     protected $cacheKey = 'dcat-admin-menus-%d-%s';
 
     /**
-     * Get an item from the cache, or execute the given Closure and store the result.
-     *
-     * @param  \Closure  $builder
-     * @return mixed
-     */
-    protected function remember(\Closure $builder)
-    {
-        if (! $this->enableCache()) {
-            return $builder();
-        }
-
-        return $this->getStore()->remember($this->getCacheKey(), null, $builder);
-    }
-
-    /**
      * @return bool|void
      */
     public function flushCache()
     {
-        if (! $this->enableCache()) {
+        if (!$this->enableCache()) {
             return;
         }
 
         return $this->getStore()->delete($this->getCacheKey());
-    }
-
-    /**
-     * @return string
-     */
-    protected function getCacheKey()
-    {
-        return sprintf($this->cacheKey, (int) static::withPermission(), Admin::app()->getName());
     }
 
     /**
@@ -60,5 +37,28 @@ trait MenuCache
     public function getStore()
     {
         return Cache::store(config('admin.menu.cache.store', 'file'));
+    }
+
+    /**
+     * @return string
+     */
+    protected function getCacheKey()
+    {
+        return sprintf($this->cacheKey, (int)static::withPermission(), Admin::app()->getName());
+    }
+
+    /**
+     * Get an item from the cache, or execute the given Closure and store the result.
+     *
+     * @param \Closure $builder
+     * @return mixed
+     */
+    protected function remember(\Closure $builder)
+    {
+        if (!$this->enableCache()) {
+            return $builder();
+        }
+
+        return $this->getStore()->remember($this->getCacheKey(), null, $builder);
     }
 }

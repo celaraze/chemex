@@ -47,7 +47,7 @@ final class ImageRenderer implements NodeRendererInterface, XmlNodeRendererInter
 
         $attrs = $node->data->get('attributes');
 
-        $forbidUnsafeLinks = ! $this->config->get('allow_unsafe_links');
+        $forbidUnsafeLinks = !$this->config->get('allow_unsafe_links');
         if ($forbidUnsafeLinks && RegexHelper::isLinkPotentiallyUnsafe($node->getUrl())) {
             $attrs['src'] = '';
         } else {
@@ -61,6 +61,21 @@ final class ImageRenderer implements NodeRendererInterface, XmlNodeRendererInter
         }
 
         return new HtmlElement('img', $attrs, '', true);
+    }
+
+    private function getAltText(Image $node): string
+    {
+        $altText = '';
+
+        foreach ((new NodeIterator($node)) as $n) {
+            if ($n instanceof StringContainerInterface) {
+                $altText .= $n->getLiteral();
+            } elseif ($n instanceof Newline) {
+                $altText .= "\n";
+            }
+        }
+
+        return $altText;
     }
 
     public function setConfiguration(ConfigurationInterface $configuration): void
@@ -88,20 +103,5 @@ final class ImageRenderer implements NodeRendererInterface, XmlNodeRendererInter
             'destination' => $node->getUrl(),
             'title' => $node->getTitle() ?? '',
         ];
-    }
-
-    private function getAltText(Image $node): string
-    {
-        $altText = '';
-
-        foreach ((new NodeIterator($node)) as $n) {
-            if ($n instanceof StringContainerInterface) {
-                $altText .= $n->getLiteral();
-            } elseif ($n instanceof Newline) {
-                $altText .= "\n";
-            }
-        }
-
-        return $altText;
     }
 }

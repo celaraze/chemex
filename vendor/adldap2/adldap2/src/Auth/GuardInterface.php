@@ -2,8 +2,8 @@
 
 namespace Adldap\Auth;
 
-use Adldap\Connections\ConnectionInterface;
 use Adldap\Configuration\DomainConfiguration;
+use Adldap\Connections\ConnectionInterface;
 
 interface GuardInterface
 {
@@ -18,15 +18,15 @@ interface GuardInterface
     /**
      * Authenticates a user using the specified credentials.
      *
-     * @param string $username   The users LDAP username.
-     * @param string $password   The users LDAP password.
-     * @param bool   $bindAsUser Whether or not to bind as the user.
+     * @param string $username The users LDAP username.
+     * @param string $password The users LDAP password.
+     * @param bool $bindAsUser Whether or not to bind as the user.
      *
-     * @throws \Adldap\Auth\BindException             When re-binding to your LDAP server fails.
+     * @return bool
      * @throws \Adldap\Auth\UsernameRequiredException When username is empty.
      * @throws \Adldap\Auth\PasswordRequiredException When password is empty.
      *
-     * @return bool
+     * @throws \Adldap\Auth\BindException             When re-binding to your LDAP server fails.
      */
     public function attempt($username, $password, $bindAsUser = false);
 
@@ -36,10 +36,10 @@ interface GuardInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws \Adldap\Auth\BindException              If binding to the LDAP server fails.
+     * @return void
      * @throws \Adldap\Connections\ConnectionException If upgrading the connection to TLS fails
      *
-     * @return void
+     * @throws \Adldap\Auth\BindException              If binding to the LDAP server fails.
      */
     public function bind($username = null, $password = null);
 
@@ -47,9 +47,9 @@ interface GuardInterface
      * Binds to the current LDAP server using the
      * configuration administrator credentials.
      *
+     * @return void
      * @throws \Adldap\Auth\BindException When binding as your administrator account fails.
      *
-     * @return void
      */
     public function bindAsAdministrator();
 }

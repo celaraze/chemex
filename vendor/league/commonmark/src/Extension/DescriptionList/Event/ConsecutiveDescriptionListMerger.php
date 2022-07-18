@@ -22,11 +22,11 @@ final class ConsecutiveDescriptionListMerger
     public function __invoke(DocumentParsedEvent $event): void
     {
         foreach ($event->getDocument()->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $node) {
-            if (! $node instanceof DescriptionList) {
+            if (!$node instanceof DescriptionList) {
                 continue;
             }
 
-            if (! ($prev = $node->previous()) instanceof DescriptionList) {
+            if (!($prev = $node->previous()) instanceof DescriptionList) {
                 continue;
             }
 

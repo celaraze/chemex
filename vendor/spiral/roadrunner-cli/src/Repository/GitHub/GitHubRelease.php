@@ -40,29 +40,15 @@ final class GitHubRelease extends Release
      */
     public function __construct(
         HttpClientInterface $client,
-        string $name,
-        string $version,
-        string $repository,
-        iterable $assets = []
-    ) {
+        string              $name,
+        string              $version,
+        string              $repository,
+        iterable            $assets = []
+    )
+    {
         $this->client = $client;
 
         parent::__construct($name, $version, $repository, $assets);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getConfig(): string
-    {
-        $config = \vsprintf('https://raw.githubusercontent.com/%s/%s/.rr.yaml', [
-            $this->getRepositoryName(),
-            $this->getVersion(),
-        ]);
-
-        $response = $this->client->request('GET', $config);
-
-        return $response->getContent();
     }
 
     /**
@@ -73,7 +59,7 @@ final class GitHubRelease extends Release
      */
     public static function fromApiResponse(GitHubRepository $repository, HttpClientInterface $client, array $release): self
     {
-        if (! isset($release['name'])) {
+        if (!isset($release['name'])) {
             throw new \InvalidArgumentException(
                 'Passed array must contain "name" value of type string'
             );
@@ -113,5 +99,20 @@ final class GitHubRelease extends Release
                 return 'dev-' . $release['tag_name'];
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getConfig(): string
+    {
+        $config = \vsprintf('https://raw.githubusercontent.com/%s/%s/.rr.yaml', [
+            $this->getRepositoryName(),
+            $this->getVersion(),
+        ]);
+
+        $response = $this->client->request('GET', $config);
+
+        return $response->getContent();
     }
 }

@@ -7,7 +7,6 @@ use DateTime;
 use DateTimeInterface;
 use Psr\Cache\CacheItemInterface;
 use TypeError;
-
 use function get_class;
 use function gettype;
 use function is_int;
@@ -27,13 +26,13 @@ final class CacheItem implements CacheItemInterface
     private $expiry;
 
     /**
+     * @param mixed $data
      * @internal
      *
-     * @param mixed $data
      */
     public function __construct(string $key, $data, bool $isHit)
     {
-        $this->key   = $key;
+        $this->key = $key;
         $this->value = $data;
         $this->isHit = $isHit;
     }
@@ -76,7 +75,7 @@ final class CacheItem implements CacheItemInterface
         if ($expiration === null) {
             $this->expiry = null;
         } elseif ($expiration instanceof DateTimeInterface) {
-            $this->expiry = (float) $expiration->format('U.u');
+            $this->expiry = (float)$expiration->format('U.u');
         } else {
             throw new TypeError(sprintf(
                 'Expected $expiration to be an instance of DateTimeInterface or null, got %s',

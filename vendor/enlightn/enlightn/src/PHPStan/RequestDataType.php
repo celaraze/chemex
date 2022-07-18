@@ -21,7 +21,7 @@ class RequestDataType extends StringType
         return new self();
     }
 
-    public function isSuperTypeOf(Type $type) : TrinaryLogic
+    public function isSuperTypeOf(Type $type): TrinaryLogic
     {
         if ($type instanceof self) {
             return TrinaryLogic::createYes();

@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class FlushFailedCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:flush {--hours= : The number of hours to retain failed job data}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class FlushFailedCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:flush';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:flush {--hours= : The number of hours to retain failed job data}';
     /**
      * The console command description.
      *

@@ -33,7 +33,7 @@ interface Connection
      * or {@see AbstractPlatform::quoteStringLiteral()} instead.
      *
      * @param mixed $value
-     * @param int   $type
+     * @param int $type
      *
      * @return mixed
      */

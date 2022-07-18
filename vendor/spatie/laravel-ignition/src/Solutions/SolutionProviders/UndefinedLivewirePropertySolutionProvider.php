@@ -30,7 +30,7 @@ class UndefinedLivewirePropertySolutionProvider implements HasSolutionsForThrowa
                 return new SuggestLivewirePropertyNameSolution(
                     $variable,
                     $parsed->getComponentClass(),
-                    '$'.$suggested
+                    '$' . $suggested
                 );
             })
             ->toArray();

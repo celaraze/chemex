@@ -91,7 +91,7 @@ final class Psr18Client implements ClientInterface, RequestFactoryInterface, Str
                 $body->seek(0);
             }
 
-            $response = $this->client->request($request->getMethod(), (string) $request->getUri(), [
+            $response = $this->client->request($request->getMethod(), (string)$request->getUri(), [
                 'headers' => $request->getHeaders(),
                 'body' => $body->getContents(),
                 'http_version' => '1.0' === $request->getProtocolVersion() ? '1.0' : null,
@@ -120,6 +120,14 @@ final class Psr18Client implements ClientInterface, RequestFactoryInterface, Str
 
             throw new Psr18NetworkException($e, $request);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createStreamFromResource($resource): StreamInterface
+    {
+        return $this->streamFactory->createStreamFromResource($resource);
     }
 
     /**
@@ -162,14 +170,6 @@ final class Psr18Client implements ClientInterface, RequestFactoryInterface, Str
     public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
     {
         return $this->streamFactory->createStreamFromFile($filename, $mode);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function createStreamFromResource($resource): StreamInterface
-    {
-        return $this->streamFactory->createStreamFromResource($resource);
     }
 
     /**

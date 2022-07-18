@@ -23,8 +23,8 @@ class Embeds extends Field implements FieldsCollection
     /**
      * Create a new HasMany field instance.
      *
-     * @param  string  $column
-     * @param  array  $arguments
+     * @param string $column
+     * @param array $arguments
      */
     public function __construct($column, $arguments = [])
     {
@@ -41,24 +41,11 @@ class Embeds extends Field implements FieldsCollection
     }
 
     /**
-     * Prepare input data for insert or update.
-     *
-     * @param  array  $input
-     * @return array
-     */
-    protected function prepareInputValue($input)
-    {
-        $form = $this->buildEmbeddedForm();
-
-        return $form->setOriginal($this->original)->prepare($input);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getValidator(array $input)
     {
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -68,7 +55,7 @@ class Embeds extends Field implements FieldsCollection
 
         /** @var Field $field */
         foreach ($this->buildEmbeddedForm()->fields() as $field) {
-            if (! $fieldRules = $field->getRules()) {
+            if (!$fieldRules = $field->getRules()) {
                 continue;
             }
 
@@ -144,98 +131,13 @@ class Embeds extends Field implements FieldsCollection
     }
 
     /**
-     * Format validation messages.
+     * 获取所有字段.
      *
-     * @param  array  $input
-     * @param  array  $messages
-     * @return array
+     * @return void
      */
-    protected function formatValidationMessages(array $input, array $messages)
+    public function fields()
     {
-        $result = [];
-        foreach ($messages as $k => $message) {
-            $result[$this->column.'.'.$k] = $message;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Format validation attributes.
-     *
-     * @param  array  $input
-     * @param  string  $label
-     * @param  string  $column
-     * @return array
-     */
-    protected function formatValidationAttribute($input, $label, $column)
-    {
-        $new = $attributes = [];
-
-        if (is_array($column)) {
-            foreach ($column as $index => $col) {
-                $new[$col.$index] = $col;
-            }
-        }
-
-        foreach (array_keys(Arr::dot($input)) as $key) {
-            if (is_string($column)) {
-                if (Str::endsWith($key, ".$column")) {
-                    $attributes[$key] = $label;
-                }
-            } else {
-                foreach ($new as $k => $val) {
-                    if (Str::endsWith($key, ".$k")) {
-                        $attributes[$key] = $label."[$val]";
-                    }
-                }
-            }
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * Reset input key for validation.
-     *
-     * @param  array  $input
-     * @param  array  $column  $column is the column name array set
-     * @return void.
-     */
-    public function resetInputKey(array &$input, array $column)
-    {
-        $column = array_flip($column);
-
-        foreach (Arr::get($input, $this->column) as $key => $value) {
-            if (! array_key_exists($key, $column)) {
-                continue;
-            }
-
-            $newKey = $key.$column[$key];
-
-            /*
-             * set new key
-             */
-            Arr::set($input, "{$this->column}.$newKey", $value);
-            /*
-             * forget the old key and value
-             */
-            Arr::forget($input, "{$this->column}.$key");
-        }
-    }
-
-    /**
-     * Get data for Embedded form.
-     *
-     * Normally, data is obtained from the database.
-     *
-     * When the data validation errors, data is obtained from session flash.
-     *
-     * @return array
-     */
-    protected function getEmbeddedData()
-    {
-        return Helper::array($this->value);
+        return $this->buildEmbeddedForm()->fields();
     }
 
     /**
@@ -259,6 +161,101 @@ class Embeds extends Field implements FieldsCollection
     }
 
     /**
+     * Get data for Embedded form.
+     *
+     * Normally, data is obtained from the database.
+     *
+     * When the data validation errors, data is obtained from session flash.
+     *
+     * @return array
+     */
+    protected function getEmbeddedData()
+    {
+        return Helper::array($this->value);
+    }
+
+    /**
+     * Reset input key for validation.
+     *
+     * @param array $input
+     * @param array $column $column is the column name array set
+     * @return void.
+     */
+    public function resetInputKey(array &$input, array $column)
+    {
+        $column = array_flip($column);
+
+        foreach (Arr::get($input, $this->column) as $key => $value) {
+            if (!array_key_exists($key, $column)) {
+                continue;
+            }
+
+            $newKey = $key . $column[$key];
+
+            /*
+             * set new key
+             */
+            Arr::set($input, "{$this->column}.$newKey", $value);
+            /*
+             * forget the old key and value
+             */
+            Arr::forget($input, "{$this->column}.$key");
+        }
+    }
+
+    /**
+     * Format validation attributes.
+     *
+     * @param array $input
+     * @param string $label
+     * @param string $column
+     * @return array
+     */
+    protected function formatValidationAttribute($input, $label, $column)
+    {
+        $new = $attributes = [];
+
+        if (is_array($column)) {
+            foreach ($column as $index => $col) {
+                $new[$col . $index] = $col;
+            }
+        }
+
+        foreach (array_keys(Arr::dot($input)) as $key) {
+            if (is_string($column)) {
+                if (Str::endsWith($key, ".$column")) {
+                    $attributes[$key] = $label;
+                }
+            } else {
+                foreach ($new as $k => $val) {
+                    if (Str::endsWith($key, ".$k")) {
+                        $attributes[$key] = $label . "[$val]";
+                    }
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Format validation messages.
+     *
+     * @param array $input
+     * @param array $messages
+     * @return array
+     */
+    protected function formatValidationMessages(array $input, array $messages)
+    {
+        $result = [];
+        foreach ($messages as $k => $message) {
+            $result[$this->column . '.' . $k] = $message;
+        }
+
+        return $result;
+    }
+
+    /**
      * Render the form.
      *
      * @return \Illuminate\View\View
@@ -273,7 +270,7 @@ class Embeds extends Field implements FieldsCollection
     /**
      * 根据字段名称查找字段.
      *
-     * @param  string  $column
+     * @param string $column
      * @return Field|null
      */
     public function field($name)
@@ -284,12 +281,15 @@ class Embeds extends Field implements FieldsCollection
     }
 
     /**
-     * 获取所有字段.
+     * Prepare input data for insert or update.
      *
-     * @return void
+     * @param array $input
+     * @return array
      */
-    public function fields()
+    protected function prepareInputValue($input)
     {
-        return $this->buildEmbeddedForm()->fields();
+        $form = $this->buildEmbeddedForm();
+
+        return $form->setOriginal($this->original)->prepare($input);
     }
 }

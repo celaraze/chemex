@@ -12,19 +12,22 @@ class Isset_ extends Expr
     /**
      * Constructs an array node.
      *
-     * @param Expr[] $vars       Variables
-     * @param array  $attributes Additional attributes
+     * @param Expr[] $vars Variables
+     * @param array $attributes Additional attributes
      */
-    public function __construct(array $vars, array $attributes = []) {
+    public function __construct(array $vars, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->vars = $vars;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['vars'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_Isset';
     }
 }

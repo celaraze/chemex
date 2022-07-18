@@ -33,6 +33,17 @@ class Bar extends RadialBar
     protected $chartPullRight = true;
 
     /**
+     * 设置柱间距.
+     *
+     * @param string $value
+     * @return $this
+     */
+    public function chartBarColumnWidth($value)
+    {
+        return $this->chartOption('plotOptions.bar.columnWidth', $value);
+    }
+
+    /**
      * 图表默认配置.
      *
      * @return array
@@ -86,16 +97,5 @@ class Bar extends RadialBar
                 'type' => 'numeric',
             ],
         ];
-    }
-
-    /**
-     * 设置柱间距.
-     *
-     * @param  string  $value
-     * @return $this
-     */
-    public function chartBarColumnWidth($value)
-    {
-        return $this->chartOption('plotOptions.bar.columnWidth', $value);
     }
 }

@@ -26,6 +26,53 @@ final class Query
         $this->condition = new AndExpr();
     }
 
+    /**
+     * @return callable(Node): bool
+     */
+    public static function type(string $class): callable
+    {
+        return static fn(Node $node): bool => $node instanceof $class;
+    }
+
+    /**
+     * @psalm-param ?callable(Node): bool $condition
+     *
+     * @return callable(Node): bool
+     */
+    public static function hasChild(?callable $condition = null): callable
+    {
+        return static function (Node $node) use ($condition): bool {
+            foreach ($node->children() as $child) {
+                if ($condition === null || $condition($child)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+    }
+
+    /**
+     * @psalm-param ?callable(Node): bool $condition
+     *
+     * @return callable(Node): bool
+     */
+    public static function hasParent(?callable $condition = null): callable
+    {
+        return static function (Node $node) use ($condition): bool {
+            $parent = $node->parent();
+            if ($parent === null) {
+                return false;
+            }
+
+            if ($condition === null) {
+                return true;
+            }
+
+            return $condition($parent);
+        };
+    }
+
     public function where(callable ...$conditions): self
     {
         return $this->andWhere(...$conditions);
@@ -80,7 +127,7 @@ final class Query
                 break;
             }
 
-            if (! \call_user_func($this->condition, $n)) {
+            if (!\call_user_func($this->condition, $n)) {
                 continue;
             }
 
@@ -88,52 +135,5 @@ final class Query
 
             yield $n;
         }
-    }
-
-    /**
-     * @return callable(Node): bool
-     */
-    public static function type(string $class): callable
-    {
-        return static fn (Node $node): bool => $node instanceof $class;
-    }
-
-    /**
-     * @psalm-param ?callable(Node): bool $condition
-     *
-     * @return callable(Node): bool
-     */
-    public static function hasChild(?callable $condition = null): callable
-    {
-        return static function (Node $node) use ($condition): bool {
-            foreach ($node->children() as $child) {
-                if ($condition === null || $condition($child)) {
-                    return true;
-                }
-            }
-
-            return false;
-        };
-    }
-
-    /**
-     * @psalm-param ?callable(Node): bool $condition
-     *
-     * @return callable(Node): bool
-     */
-    public static function hasParent(?callable $condition = null): callable
-    {
-        return static function (Node $node) use ($condition): bool {
-            $parent = $node->parent();
-            if ($parent === null) {
-                return false;
-            }
-
-            if ($condition === null) {
-                return true;
-            }
-
-            return $condition($parent);
-        };
     }
 }

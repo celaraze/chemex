@@ -14,7 +14,7 @@ trait CompilesLayouts
     /**
      * Compile the extends statements into valid PHP.
      *
-     * @param  string  $expression
+     * @param string $expression
      * @return string
      */
     protected function compileExtends($expression)
@@ -31,7 +31,7 @@ trait CompilesLayouts
     /**
      * Compile the extends-first statements into valid PHP.
      *
-     * @param  string  $expression
+     * @param string $expression
      * @return string
      */
     protected function compileExtendsFirst($expression)
@@ -48,7 +48,7 @@ trait CompilesLayouts
     /**
      * Compile the section statements into valid PHP.
      *
-     * @param  string  $expression
+     * @param string $expression
      * @return string
      */
     protected function compileSection($expression)
@@ -73,7 +73,7 @@ trait CompilesLayouts
     /**
      * Compile the yield statements into valid PHP.
      *
-     * @param  string  $expression
+     * @param string $expression
      * @return string
      */
     protected function compileYield($expression)

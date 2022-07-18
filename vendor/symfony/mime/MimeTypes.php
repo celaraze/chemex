@@ -36,113 +36,6 @@ use Symfony\Component\Mime\Exception\LogicException;
  */
 final class MimeTypes implements MimeTypesInterface
 {
-    private array $extensions = [];
-    private array $mimeTypes = [];
-
-    /**
-     * @var MimeTypeGuesserInterface[]
-     */
-    private array $guessers = [];
-    private static MimeTypes $default;
-
-    public function __construct(array $map = [])
-    {
-        foreach ($map as $mimeType => $extensions) {
-            $this->extensions[$mimeType] = $extensions;
-
-            foreach ($extensions as $extension) {
-                $this->mimeTypes[$extension][] = $mimeType;
-            }
-        }
-        $this->registerGuesser(new FileBinaryMimeTypeGuesser());
-        $this->registerGuesser(new FileinfoMimeTypeGuesser());
-    }
-
-    public static function setDefault(self $default)
-    {
-        self::$default = $default;
-    }
-
-    public static function getDefault(): self
-    {
-        return self::$default ?? self::$default = new self();
-    }
-
-    /**
-     * Registers a MIME type guesser.
-     *
-     * The last registered guesser has precedence over the other ones.
-     */
-    public function registerGuesser(MimeTypeGuesserInterface $guesser)
-    {
-        array_unshift($this->guessers, $guesser);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getExtensions(string $mimeType): array
-    {
-        if ($this->extensions) {
-            $extensions = $this->extensions[$mimeType] ?? $this->extensions[$lcMimeType = strtolower($mimeType)] ?? null;
-        }
-
-        return $extensions ?? self::MAP[$mimeType] ?? self::MAP[$lcMimeType ?? strtolower($mimeType)] ?? [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getMimeTypes(string $ext): array
-    {
-        if ($this->mimeTypes) {
-            $mimeTypes = $this->mimeTypes[$ext] ?? $this->mimeTypes[$lcExt = strtolower($ext)] ?? null;
-        }
-
-        return $mimeTypes ?? self::REVERSE_MAP[$ext] ?? self::REVERSE_MAP[$lcExt ?? strtolower($ext)] ?? [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isGuesserSupported(): bool
-    {
-        foreach ($this->guessers as $guesser) {
-            if ($guesser->isGuesserSupported()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * The file is passed to each registered MIME type guesser in reverse order
-     * of their registration (last registered is queried first). Once a guesser
-     * returns a value that is not null, this method terminates and returns the
-     * value.
-     */
-    public function guessMimeType(string $path): ?string
-    {
-        foreach ($this->guessers as $guesser) {
-            if (!$guesser->isGuesserSupported()) {
-                continue;
-            }
-
-            if (null !== $mimeType = $guesser->guessMimeType($path)) {
-                return $mimeType;
-            }
-        }
-
-        if (!$this->isGuesserSupported()) {
-            throw new LogicException('Unable to guess the MIME type as no guessers are available (have you enabled the php_fileinfo extension?).');
-        }
-
-        return null;
-    }
-
     /**
      * A map of MIME types and their default extensions.
      *
@@ -1816,7 +1709,6 @@ final class MimeTypes implements MimeTypesInterface
         'zz-application/zz-winassoc-uu' => ['uue'],
         'zz-application/zz-winassoc-xls' => ['xls', 'xlc', 'xll', 'xlm', 'xlw', 'xla', 'xlt', 'xld'],
     ];
-
     private const REVERSE_MAP = [
         '1km' => ['application/vnd.1000minds.decision-model+xml'],
         '32x' => ['application/x-genesis-32x-rom'],
@@ -3534,4 +3426,109 @@ final class MimeTypes implements MimeTypesInterface
         '602' => ['application/x-t602'],
         '669' => ['audio/x-mod'],
     ];
+    private static MimeTypes $default;
+    private array $extensions = [];
+    private array $mimeTypes = [];
+    /**
+     * @var MimeTypeGuesserInterface[]
+     */
+    private array $guessers = [];
+
+    public function __construct(array $map = [])
+    {
+        foreach ($map as $mimeType => $extensions) {
+            $this->extensions[$mimeType] = $extensions;
+
+            foreach ($extensions as $extension) {
+                $this->mimeTypes[$extension][] = $mimeType;
+            }
+        }
+        $this->registerGuesser(new FileBinaryMimeTypeGuesser());
+        $this->registerGuesser(new FileinfoMimeTypeGuesser());
+    }
+
+    /**
+     * Registers a MIME type guesser.
+     *
+     * The last registered guesser has precedence over the other ones.
+     */
+    public function registerGuesser(MimeTypeGuesserInterface $guesser)
+    {
+        array_unshift($this->guessers, $guesser);
+    }
+
+    public static function getDefault(): self
+    {
+        return self::$default ?? self::$default = new self();
+    }
+
+    public static function setDefault(self $default)
+    {
+        self::$default = $default;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExtensions(string $mimeType): array
+    {
+        if ($this->extensions) {
+            $extensions = $this->extensions[$mimeType] ?? $this->extensions[$lcMimeType = strtolower($mimeType)] ?? null;
+        }
+
+        return $extensions ?? self::MAP[$mimeType] ?? self::MAP[$lcMimeType ?? strtolower($mimeType)] ?? [];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMimeTypes(string $ext): array
+    {
+        if ($this->mimeTypes) {
+            $mimeTypes = $this->mimeTypes[$ext] ?? $this->mimeTypes[$lcExt = strtolower($ext)] ?? null;
+        }
+
+        return $mimeTypes ?? self::REVERSE_MAP[$ext] ?? self::REVERSE_MAP[$lcExt ?? strtolower($ext)] ?? [];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * The file is passed to each registered MIME type guesser in reverse order
+     * of their registration (last registered is queried first). Once a guesser
+     * returns a value that is not null, this method terminates and returns the
+     * value.
+     */
+    public function guessMimeType(string $path): ?string
+    {
+        foreach ($this->guessers as $guesser) {
+            if (!$guesser->isGuesserSupported()) {
+                continue;
+            }
+
+            if (null !== $mimeType = $guesser->guessMimeType($path)) {
+                return $mimeType;
+            }
+        }
+
+        if (!$this->isGuesserSupported()) {
+            throw new LogicException('Unable to guess the MIME type as no guessers are available (have you enabled the php_fileinfo extension?).');
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isGuesserSupported(): bool
+    {
+        foreach ($this->guessers as $guesser) {
+            if ($guesser->isGuesserSupported()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

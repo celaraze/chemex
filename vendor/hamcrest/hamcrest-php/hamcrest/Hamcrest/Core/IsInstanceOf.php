@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 use Hamcrest\DiagnosingMatcher;
 
@@ -27,31 +29,6 @@ class IsInstanceOf extends DiagnosingMatcher
         $this->_theClass = $theClass;
     }
 
-    protected function matchesWithDiagnosticDescription($item, Description $mismatchDescription)
-    {
-        if (!is_object($item)) {
-            $mismatchDescription->appendText('was ')->appendValue($item);
-
-            return false;
-        }
-
-        if (!($item instanceof $this->_theClass)) {
-            $mismatchDescription->appendText('[' . get_class($item) . '] ')
-                                                    ->appendValue($item);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    public function describeTo(Description $description)
-    {
-        $description->appendText('an instance of ')
-                                ->appendText($this->_theClass)
-                                ;
-    }
-
     /**
      * Is the value an instance of a particular type?
      * This version assumes no relationship between the required type and
@@ -63,5 +40,29 @@ class IsInstanceOf extends DiagnosingMatcher
     public static function anInstanceOf($theClass)
     {
         return new self($theClass);
+    }
+
+    public function describeTo(Description $description)
+    {
+        $description->appendText('an instance of ')
+            ->appendText($this->_theClass);
+    }
+
+    protected function matchesWithDiagnosticDescription($item, Description $mismatchDescription)
+    {
+        if (!is_object($item)) {
+            $mismatchDescription->appendText('was ')->appendValue($item);
+
+            return false;
+        }
+
+        if (!($item instanceof $this->_theClass)) {
+            $mismatchDescription->appendText('[' . get_class($item) . '] ')
+                ->appendValue($item);
+
+            return false;
+        }
+
+        return true;
     }
 }

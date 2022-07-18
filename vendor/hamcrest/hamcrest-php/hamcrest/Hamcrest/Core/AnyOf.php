@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 use Hamcrest\Util;
 
@@ -18,16 +20,6 @@ class AnyOf extends ShortcutCombination
     public function __construct(array $matchers)
     {
         parent::__construct($matchers);
-    }
-
-    public function matches($item)
-    {
-        return $this->matchesWithShortcut($item, true);
-    }
-
-    public function describeTo(Description $description)
-    {
-        $this->describeToWithOperator($description, 'or');
     }
 
     /**
@@ -54,5 +46,15 @@ class AnyOf extends ShortcutCombination
         return IsNot::not(
             new self(Util::createMatcherArray($args))
         );
+    }
+
+    public function matches($item)
+    {
+        return $this->matchesWithShortcut($item, true);
+    }
+
+    public function describeTo(Description $description)
+    {
+        $this->describeToWithOperator($description, 'or');
     }
 }

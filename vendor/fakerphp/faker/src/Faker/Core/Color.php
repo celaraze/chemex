@@ -54,16 +54,6 @@ final class Color implements Extension\ColorExtension
     ];
 
     /**
-     * @example '#fa3cc2'
-     */
-    public function hexColor(): string
-    {
-        $number = new Number();
-
-        return '#' . str_pad(dechex($number->numberBetween(1, 16777215)), 6, '0', STR_PAD_LEFT);
-    }
-
-    /**
      * @example '#ff0044'
      */
     public function safeHexColor(): string
@@ -83,9 +73,28 @@ final class Color implements Extension\ColorExtension
     }
 
     /**
+     * @example 'rgb(0,255,122)'
+     */
+    public function rgbCssColor(): string
+    {
+        return sprintf(
+            'rgb(%s)',
+            $this->rgbColor()
+        );
+    }
+
+    /**
+     * @example '0,255,122'
+     */
+    public function rgbColor(): string
+    {
+        return implode(',', $this->rgbColorAsArray());
+    }
+
+    /**
+     * @return int[]
      * @example 'array(0,255,122)'
      *
-     * @return int[]
      */
     public function rgbColorAsArray(): array
     {
@@ -99,22 +108,13 @@ final class Color implements Extension\ColorExtension
     }
 
     /**
-     * @example '0,255,122'
+     * @example '#fa3cc2'
      */
-    public function rgbColor(): string
+    public function hexColor(): string
     {
-        return implode(',', $this->rgbColorAsArray());
-    }
+        $number = new Number();
 
-    /**
-     * @example 'rgb(0,255,122)'
-     */
-    public function rgbCssColor(): string
-    {
-        return sprintf(
-            'rgb(%s)',
-            $this->rgbColor()
-        );
+        return '#' . str_pad(dechex($number->numberBetween(1, 16777215)), 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -163,9 +163,9 @@ final class Color implements Extension\ColorExtension
     }
 
     /**
+     * @return int[]
      * @example array(340, 50, 20)
      *
-     * @return int[]
      */
     public function hslColorAsArray(): array
     {

@@ -22,20 +22,6 @@ class XmlResponseHandler extends Handler
     private $returnFrames = false;
 
     /**
-     * @param  bool|null  $returnFrames
-     * @return bool|static
-     */
-    public function addTraceToOutput($returnFrames = null)
-    {
-        if (func_num_args() == 0) {
-            return $this->returnFrames;
-        }
-
-        $this->returnFrames = (bool) $returnFrames;
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function handle()
@@ -53,16 +39,37 @@ class XmlResponseHandler extends Handler
     }
 
     /**
-     * @return string
+     * @param bool|null $returnFrames
+     * @return bool|static
      */
-    public function contentType()
+    public function addTraceToOutput($returnFrames = null)
     {
-        return 'application/xml';
+        if (func_num_args() == 0) {
+            return $this->returnFrames;
+        }
+
+        $this->returnFrames = (bool)$returnFrames;
+        return $this;
     }
 
     /**
-     * @param  SimpleXMLElement  $node Node to append data to, will be modified in place
-     * @param  array|\Traversable $data
+     * The main function for converting to an XML document.
+     *
+     * @param array|\Traversable $data
+     * @return string            XML
+     */
+    private static function toXml($data)
+    {
+        assert(is_array($data) || $data instanceof Traversable);
+
+        $node = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><root />");
+
+        return self::addDataToNode($node, $data)->asXML();
+    }
+
+    /**
+     * @param SimpleXMLElement $node Node to append data to, will be modified in place
+     * @param array|\Traversable $data
      * @return SimpleXMLElement  The modified node, for chaining
      */
     private static function addDataToNode(\SimpleXMLElement $node, $data)
@@ -72,7 +79,7 @@ class XmlResponseHandler extends Handler
         foreach ($data as $key => $value) {
             if (is_numeric($key)) {
                 // Convert the key to a valid string
-                $key = "unknownNode_". (string) $key;
+                $key = "unknownNode_" . (string)$key;
             }
 
             // Delete any char not allowed in XML element names
@@ -91,17 +98,10 @@ class XmlResponseHandler extends Handler
     }
 
     /**
-     * The main function for converting to an XML document.
-     *
-     * @param  array|\Traversable $data
-     * @return string            XML
+     * @return string
      */
-    private static function toXml($data)
+    public function contentType()
     {
-        assert(is_array($data) || $data instanceof Traversable);
-
-        $node = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><root />");
-
-        return self::addDataToNode($node, $data)->asXML();
+        return 'application/xml';
     }
 }

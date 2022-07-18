@@ -49,9 +49,9 @@ abstract class Provider
     /**
      * Constructor.
      *
-     * @param  string  $secret
-     * @param  string  $algo
-     * @param  array  $keys
+     * @param string $secret
+     * @param string $algo
+     * @param array $keys
      * @return void
      */
     public function __construct($secret, $algo, array $keys)
@@ -59,19 +59,6 @@ abstract class Provider
         $this->secret = $secret;
         $this->algo = $algo;
         $this->keys = $keys;
-    }
-
-    /**
-     * Set the algorithm used to sign the token.
-     *
-     * @param  string  $algo
-     * @return $this
-     */
-    public function setAlgo($algo)
-    {
-        $this->algo = $algo;
-
-        return $this;
     }
 
     /**
@@ -85,37 +72,14 @@ abstract class Provider
     }
 
     /**
-     * Set the secret used to sign the token.
+     * Set the algorithm used to sign the token.
      *
-     * @param  string  $secret
+     * @param string $algo
      * @return $this
      */
-    public function setSecret($secret)
+    public function setAlgo($algo)
     {
-        $this->secret = $secret;
-
-        return $this;
-    }
-
-    /**
-     * Get the secret used to sign the token.
-     *
-     * @return string
-     */
-    public function getSecret()
-    {
-        return $this->secret;
-    }
-
-    /**
-     * Set the keys used to sign the token.
-     *
-     * @param  array  $keys
-     * @return $this
-     */
-    public function setKeys(array $keys)
-    {
-        $this->keys = $keys;
+        $this->algo = $algo;
 
         return $this;
     }
@@ -131,23 +95,16 @@ abstract class Provider
     }
 
     /**
-     * Get the public key used to sign tokens with an asymmetric algorithm.
+     * Set the keys used to sign the token.
      *
-     * @return string|null
+     * @param array $keys
+     * @return $this
      */
-    public function getPublicKey()
+    public function setKeys(array $keys)
     {
-        return Arr::get($this->keys, 'public');
-    }
+        $this->keys = $keys;
 
-    /**
-     * Get the private key used to sign tokens with an asymmetric algorithm.
-     *
-     * @return string|null
-     */
-    public function getPrivateKey()
-    {
-        return Arr::get($this->keys, 'private');
+        return $this;
     }
 
     /**
@@ -172,6 +129,46 @@ abstract class Provider
     }
 
     /**
+     * Determine if the algorithm is asymmetric, and thus requires a public/private key combo.
+     *
+     * @return bool
+     */
+    abstract protected function isAsymmetric();
+
+    /**
+     * Get the private key used to sign tokens with an asymmetric algorithm.
+     *
+     * @return string|null
+     */
+    public function getPrivateKey()
+    {
+        return Arr::get($this->keys, 'private');
+    }
+
+    /**
+     * Get the secret used to sign the token.
+     *
+     * @return string
+     */
+    public function getSecret()
+    {
+        return $this->secret;
+    }
+
+    /**
+     * Set the secret used to sign the token.
+     *
+     * @param string $secret
+     * @return $this
+     */
+    public function setSecret($secret)
+    {
+        $this->secret = $secret;
+
+        return $this;
+    }
+
+    /**
      * Get the key used to verify the tokens.
      *
      * @return string|null
@@ -182,9 +179,12 @@ abstract class Provider
     }
 
     /**
-     * Determine if the algorithm is asymmetric, and thus requires a public/private key combo.
+     * Get the public key used to sign tokens with an asymmetric algorithm.
      *
-     * @return bool
+     * @return string|null
      */
-    abstract protected function isAsymmetric();
+    public function getPublicKey()
+    {
+        return Arr::get($this->keys, 'public');
+    }
 }

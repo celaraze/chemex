@@ -50,8 +50,8 @@ final class Lines
     /**
      * Used to make all multiline variable process.
      *
-     * @param bool     $multiline
-     * @param string   $line
+     * @param bool $multiline
+     * @param string $line
      * @param string[] $buffer
      *
      * @return array{bool,string,string[]}
@@ -94,7 +94,7 @@ final class Lines
      * Determine if the given line can be the start of a multiline variable.
      *
      * @param string $line
-     * @param bool   $started
+     * @param bool $started
      *
      * @return bool
      */

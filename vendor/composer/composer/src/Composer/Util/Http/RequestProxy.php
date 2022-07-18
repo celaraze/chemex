@@ -12,8 +12,6 @@
 
 namespace Composer\Util\Http;
 
-use Composer\Util\Url;
-
 /**
  * @internal
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
@@ -30,9 +28,9 @@ class RequestProxy
     private $url;
 
     /**
-     * @param string  $url
+     * @param string $url
      * @param mixed[] $contextOptions
-     * @param string  $formattedUrl
+     * @param string $formattedUrl
      */
     public function __construct(string $url, array $contextOptions, string $formattedUrl)
     {
@@ -55,7 +53,7 @@ class RequestProxy
     /**
      * Returns the safe proxy url from the last request
      *
-     * @param  string|null $format Output format specifier
+     * @param string|null $format Output format specifier
      * @return string      Safe proxy, no proxy or empty
      */
     public function getFormattedUrl(?string $format = ''): string

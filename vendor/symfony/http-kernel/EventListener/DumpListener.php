@@ -36,6 +36,16 @@ class DumpListener implements EventSubscriberInterface
         $this->connection = $connection;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        if (!class_exists(ConsoleEvents::class)) {
+            return [];
+        }
+
+        // Register early to have a working dump() as early as possible
+        return [ConsoleEvents::COMMAND => ['configure', 1024]];
+    }
+
     public function configure()
     {
         $cloner = $this->cloner;
@@ -49,15 +59,5 @@ class DumpListener implements EventSubscriberInterface
                 $dumper->dump($data);
             }
         });
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        if (!class_exists(ConsoleEvents::class)) {
-            return [];
-        }
-
-        // Register early to have a working dump() as early as possible
-        return [ConsoleEvents::COMMAND => ['configure', 1024]];
     }
 }

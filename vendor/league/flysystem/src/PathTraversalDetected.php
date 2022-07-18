@@ -13,16 +13,16 @@ class PathTraversalDetected extends RuntimeException implements FilesystemExcept
      */
     private $path;
 
-    public function path(): string
-    {
-        return $this->path;
-    }
-
     public static function forPath(string $path): PathTraversalDetected
     {
         $e = new PathTraversalDetected("Path traversal detected: {$path}");
         $e->path = $path;
 
         return $e;
+    }
+
+    public function path(): string
+    {
+        return $this->path;
     }
 }

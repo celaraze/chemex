@@ -1,4 +1,3 @@
-
 import debounce from './Debounce'
 
 export default class Helpers {
@@ -23,7 +22,7 @@ export default class Helpers {
         }
         let i, len = 0;
 
-        for(i in obj) {
+        for (i in obj) {
             len += 1;
         }
 
@@ -143,7 +142,7 @@ export default class Helpers {
         }
 
         for (i in array) {
-            if (! this.isset(array2, i)) {
+            if (!this.isset(array2, i)) {
                 return false;
             }
 
@@ -152,7 +151,7 @@ export default class Helpers {
             }
 
             if (typeof array[i] === 'object' && typeof array2[i] === 'object') {
-                if (! this.equal(array[i], array2[i], strict)) {
+                if (!this.equal(array[i], array2[i], strict)) {
                     return false;
                 }
                 continue;
@@ -214,7 +213,7 @@ export default class Helpers {
             let srcw = this.width,
                 srch = this.height,
                 width = srcw > clientWidth ? clientWidth : srcw,
-                height = Math.ceil(width * (srch/srcw));
+                height = Math.ceil(width * (srch / srcw));
 
             height = height > clientHeight ? clientHeight : height;
 
@@ -232,7 +231,7 @@ export default class Helpers {
                 shadeClose: true,
                 closeBtn: 2,
                 content: $(img),
-                area: [width+'px', (height) + 'px'],
+                area: [width + 'px', (height) + 'px'],
                 skin: 'layui-layer-nobg',
                 end: function () {
                     document.body.removeChild(img);
@@ -271,10 +270,10 @@ export default class Helpers {
      * @param options
      */
     loadFields(_this, options) {
-        let refreshOptions = function(url, target) {
+        let refreshOptions = function (url, target) {
             Dcat.loading();
 
-            $.ajax(url).then(function(data) {
+            $.ajax(url).then(function (data) {
                 Dcat.loading(false);
                 target.find("option").remove();
 
@@ -289,7 +288,7 @@ export default class Helpers {
         let promises = [],
             values = [];
 
-        if (! options.values) {
+        if (!options.values) {
             $(_this).find('option:selected').each(function () {
                 if (String(this.value) === '0' || this.value) {
                     values.push(this.value)
@@ -302,19 +301,20 @@ export default class Helpers {
             }
         }
 
-        if (! values.length) {
+        if (!values.length) {
             return;
         }
 
-        options.fields.forEach(function(field, index){
+        options.fields.forEach(function (field, index) {
             var target = $(_this).closest(options.group).find('.' + options.fields[index]);
 
-            if (! values.length) {
+            if (!values.length) {
                 return;
             }
-            promises.push(refreshOptions(options.urls[index] + (options.urls[index].match(/\?/)?'&':'?') + "q="+ values.join(','), target));
+            promises.push(refreshOptions(options.urls[index] + (options.urls[index].match(/\?/) ? '&' : '?') + "q=" + values.join(','), target));
         });
 
-        $.when(promises).then(function() {});
+        $.when(promises).then(function () {
+        });
     }
 }

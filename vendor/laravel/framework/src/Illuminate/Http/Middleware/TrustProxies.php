@@ -24,8 +24,8 @@ class TrustProxies
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
@@ -37,52 +37,6 @@ class TrustProxies
         $this->setTrustedProxyIpAddresses($request);
 
         return $next($request);
-    }
-
-    /**
-     * Sets the trusted proxies on the request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
-    protected function setTrustedProxyIpAddresses(Request $request)
-    {
-        $trustedIps = $this->proxies() ?: config('trustedproxy.proxies');
-
-        if ($trustedIps === '*' || $trustedIps === '**') {
-            return $this->setTrustedProxyIpAddressesToTheCallingIp($request);
-        }
-
-        $trustedIps = is_string($trustedIps)
-                ? array_map('trim', explode(',', $trustedIps))
-                : $trustedIps;
-
-        if (is_array($trustedIps)) {
-            return $this->setTrustedProxyIpAddressesToSpecificIps($request, $trustedIps);
-        }
-    }
-
-    /**
-     * Specify the IP addresses to trust explicitly.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  array  $trustedIps
-     * @return void
-     */
-    protected function setTrustedProxyIpAddressesToSpecificIps(Request $request, array $trustedIps)
-    {
-        $request->setTrustedProxies($trustedIps, $this->getTrustedHeaderNames());
-    }
-
-    /**
-     * Set the trusted proxy to be the IP address calling this servers.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
-    protected function setTrustedProxyIpAddressesToTheCallingIp(Request $request)
-    {
-        $request->setTrustedProxies([$request->server->get('REMOTE_ADDR')], $this->getTrustedHeaderNames());
     }
 
     /**
@@ -105,6 +59,29 @@ class TrustProxies
     }
 
     /**
+     * Sets the trusted proxies on the request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     */
+    protected function setTrustedProxyIpAddresses(Request $request)
+    {
+        $trustedIps = $this->proxies() ?: config('trustedproxy.proxies');
+
+        if ($trustedIps === '*' || $trustedIps === '**') {
+            return $this->setTrustedProxyIpAddressesToTheCallingIp($request);
+        }
+
+        $trustedIps = is_string($trustedIps)
+            ? array_map('trim', explode(',', $trustedIps))
+            : $trustedIps;
+
+        if (is_array($trustedIps)) {
+            return $this->setTrustedProxyIpAddressesToSpecificIps($request, $trustedIps);
+        }
+    }
+
+    /**
      * Get the trusted proxies.
      *
      * @return array|string|null
@@ -112,5 +89,28 @@ class TrustProxies
     protected function proxies()
     {
         return $this->proxies;
+    }
+
+    /**
+     * Set the trusted proxy to be the IP address calling this servers.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     */
+    protected function setTrustedProxyIpAddressesToTheCallingIp(Request $request)
+    {
+        $request->setTrustedProxies([$request->server->get('REMOTE_ADDR')], $this->getTrustedHeaderNames());
+    }
+
+    /**
+     * Specify the IP addresses to trust explicitly.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param array $trustedIps
+     * @return void
+     */
+    protected function setTrustedProxyIpAddressesToSpecificIps(Request $request, array $trustedIps)
+    {
+        $request->setTrustedProxies($trustedIps, $this->getTrustedHeaderNames());
     }
 }

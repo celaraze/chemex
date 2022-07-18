@@ -2,11 +2,11 @@
 
 namespace Adldap\Query;
 
+use Adldap\Connections\ConnectionInterface;
 use Adldap\Models\Entry;
 use Adldap\Models\Model;
-use InvalidArgumentException;
 use Adldap\Schemas\SchemaInterface;
-use Adldap\Connections\ConnectionInterface;
+use InvalidArgumentException;
 
 class Processor
 {
@@ -38,6 +38,29 @@ class Processor
     }
 
     /**
+     * Processes paginated LDAP results.
+     *
+     * @param array $pages
+     * @param int $perPage
+     * @param int $currentPage
+     *
+     * @return Paginator
+     */
+    public function processPaginated(array $pages = [], $perPage = 50, $currentPage = 0)
+    {
+        $models = [];
+
+        foreach ($pages as $entries) {
+            // Go through each page and process the results into an objects array.
+            $models = array_merge($models, $this->process($entries));
+        }
+
+        $models = $this->processSort($models)->toArray();
+
+        return $this->newPaginator($models, $perPage, $currentPage, count($pages));
+    }
+
+    /**
      * Processes LDAP search results and constructs their model instances.
      *
      * @param array $entries The LDAP entries to process.
@@ -54,7 +77,7 @@ class Processor
 
         $models = [];
 
-	if (is_array($entries) && array_key_exists('count', $entries)) {
+        if (is_array($entries) && array_key_exists('count', $entries)) {
             for ($i = 0; $i < $entries['count']; $i++) {
                 // We'll go through each entry and construct a new
                 // model instance with the raw LDAP attributes.
@@ -75,29 +98,6 @@ class Processor
 
         // Otherwise, we'll return a regular unsorted collection.
         return $this->newCollection($models);
-    }
-
-    /**
-     * Processes paginated LDAP results.
-     *
-     * @param array $pages
-     * @param int   $perPage
-     * @param int   $currentPage
-     *
-     * @return Paginator
-     */
-    public function processPaginated(array $pages = [], $perPage = 50, $currentPage = 0)
-    {
-        $models = [];
-
-        foreach ($pages as $entries) {
-            // Go through each page and process the results into an objects array.
-            $models = array_merge($models, $this->process($entries));
-        }
-
-        $models = $this->processSort($models)->toArray();
-
-        return $this->newPaginator($models, $perPage, $currentPage, count($pages));
     }
 
     /**
@@ -144,12 +144,12 @@ class Processor
     /**
      * Creates a new model instance.
      *
-     * @param array       $attributes
+     * @param array $attributes
      * @param string|null $model
      *
+     * @return mixed|Entry
      * @throws InvalidArgumentException
      *
-     * @return mixed|Entry
      */
     public function newModel($attributes = [], $model = null)
     {
@@ -160,33 +160,6 @@ class Processor
         }
 
         return new $model($attributes, $this->builder->newInstance());
-    }
-
-    /**
-     * Returns a new Paginator object instance.
-     *
-     * @param array $models
-     * @param int   $perPage
-     * @param int   $currentPage
-     * @param int   $pages
-     *
-     * @return Paginator
-     */
-    public function newPaginator(array $models = [], $perPage = 25, $currentPage = 0, $pages = 1)
-    {
-        return new Paginator($models, $perPage, $currentPage, $pages);
-    }
-
-    /**
-     * Returns a new collection instance.
-     *
-     * @param array $items
-     *
-     * @return Collection
-     */
-    public function newCollection(array $items = [])
-    {
-        return new Collection($items);
     }
 
     /**
@@ -207,5 +180,32 @@ class Processor
         $desc = ($direction === 'desc' ? true : false);
 
         return $this->newCollection($models)->sortBy($field, $flags, $desc);
+    }
+
+    /**
+     * Returns a new collection instance.
+     *
+     * @param array $items
+     *
+     * @return Collection
+     */
+    public function newCollection(array $items = [])
+    {
+        return new Collection($items);
+    }
+
+    /**
+     * Returns a new Paginator object instance.
+     *
+     * @param array $models
+     * @param int $perPage
+     * @param int $currentPage
+     * @param int $pages
+     *
+     * @return Paginator
+     */
+    public function newPaginator(array $models = [], $perPage = 25, $currentPage = 0, $pages = 1)
+    {
+        return new Paginator($models, $perPage, $currentPage, $pages);
     }
 }

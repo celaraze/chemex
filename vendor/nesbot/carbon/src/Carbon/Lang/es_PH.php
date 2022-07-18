@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/es.php', [
+return array_replace_recursive(require __DIR__ . '/es.php', [
     'first_day_of_week' => 0,
     'formats' => [
         'LT' => 'h:mm a',

@@ -15,21 +15,6 @@ trait Interaction
     protected $interacted = [];
 
     /**
-     * Marks the property as interacted.
-     *
-     * @param  string  $key
-     * @return void
-     */
-    protected function interactsWith(string $key): void
-    {
-        $prop = Str::before($key, '.');
-
-        if (! in_array($prop, $this->interacted, true)) {
-            $this->interacted[] = $prop;
-        }
-    }
-
-    /**
      * Asserts that all properties have been interacted with.
      *
      * @return void
@@ -46,6 +31,14 @@ trait Interaction
     }
 
     /**
+     * Retrieve a prop within the current scope using "dot" notation.
+     *
+     * @param string|null $key
+     * @return mixed
+     */
+    abstract protected function prop(string $key = null);
+
+    /**
      * Disables the interaction check.
      *
      * @return $this
@@ -58,10 +51,17 @@ trait Interaction
     }
 
     /**
-     * Retrieve a prop within the current scope using "dot" notation.
+     * Marks the property as interacted.
      *
-     * @param  string|null  $key
-     * @return mixed
+     * @param string $key
+     * @return void
      */
-    abstract protected function prop(string $key = null);
+    protected function interactsWith(string $key): void
+    {
+        $prop = Str::before($key, '.');
+
+        if (!in_array($prop, $this->interacted, true)) {
+            $this->interacted[] = $prop;
+        }
+    }
 }

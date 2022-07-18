@@ -49,6 +49,16 @@ class FactoryClass
         return $methods;
     }
 
+    public function getMethods()
+    {
+        return $this->methods;
+    }
+
+    public function isFactory()
+    {
+        return !empty($this->methods);
+    }
+
     public function getFile()
     {
         return $this->file;
@@ -57,15 +67,5 @@ class FactoryClass
     public function getName()
     {
         return $this->reflector->name;
-    }
-
-    public function isFactory()
-    {
-        return !empty($this->methods);
-    }
-
-    public function getMethods()
-    {
-        return $this->methods;
     }
 }

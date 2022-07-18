@@ -15,23 +15,12 @@ use Psr\Cache\CacheItemPoolInterface;
  */
 class Configuration
 {
-    /** @var Middleware[] */
-    private $middlewares = [];
-
     /**
      * The SQL logger in use. If null, SQL logging is disabled.
      *
      * @var SQLLogger|null
      */
     protected $sqlLogger;
-
-    /**
-     * The cache driver implementation that is used for query result caching.
-     *
-     * @var CacheItemPoolInterface|null
-     */
-    private $resultCache;
-
     /**
      * The cache driver implementation that is used for query result caching.
      *
@@ -40,28 +29,26 @@ class Configuration
      * @var Cache|null
      */
     protected $resultCacheImpl;
-
     /**
      * The callable to use to filter schema assets.
      *
      * @var callable|null
      */
     protected $schemaAssetsFilter;
-
     /**
      * The default auto-commit mode for connections.
      *
      * @var bool
      */
     protected $autoCommit = true;
-
+    /** @var Middleware[] */
+    private $middlewares = [];
     /**
-     * Sets the SQL logger to use. Defaults to NULL which means SQL logging is disabled.
+     * The cache driver implementation that is used for query result caching.
+     *
+     * @var CacheItemPoolInterface|null
      */
-    public function setSQLLogger(?SQLLogger $logger = null): void
-    {
-        $this->sqlLogger = $logger;
-    }
+    private $resultCache;
 
     /**
      * Gets the SQL logger that is used.
@@ -72,11 +59,28 @@ class Configuration
     }
 
     /**
+     * Sets the SQL logger to use. Defaults to NULL which means SQL logging is disabled.
+     */
+    public function setSQLLogger(?SQLLogger $logger = null): void
+    {
+        $this->sqlLogger = $logger;
+    }
+
+    /**
      * Gets the cache driver implementation that is used for query result caching.
      */
     public function getResultCache(): ?CacheItemPoolInterface
     {
         return $this->resultCache;
+    }
+
+    /**
+     * Sets the cache driver implementation that is used for query result caching.
+     */
+    public function setResultCache(CacheItemPoolInterface $cache): void
+    {
+        $this->resultCacheImpl = DoctrineProvider::wrap($cache);
+        $this->resultCache = $cache;
     }
 
     /**
@@ -98,15 +102,6 @@ class Configuration
 
     /**
      * Sets the cache driver implementation that is used for query result caching.
-     */
-    public function setResultCache(CacheItemPoolInterface $cache): void
-    {
-        $this->resultCacheImpl = DoctrineProvider::wrap($cache);
-        $this->resultCache     = $cache;
-    }
-
-    /**
-     * Sets the cache driver implementation that is used for query result caching.
      *
      * @deprecated Use {@see setResultCache()} instead.
      */
@@ -120,15 +115,7 @@ class Configuration
         );
 
         $this->resultCacheImpl = $cacheImpl;
-        $this->resultCache     = CacheAdapter::wrap($cacheImpl);
-    }
-
-    /**
-     * Sets the callable to use to filter schema assets.
-     */
-    public function setSchemaAssetsFilter(?callable $callable = null): void
-    {
-        $this->schemaAssetsFilter = $callable;
+        $this->resultCache = CacheAdapter::wrap($cacheImpl);
     }
 
     /**
@@ -140,15 +127,35 @@ class Configuration
     }
 
     /**
+     * Sets the callable to use to filter schema assets.
+     */
+    public function setSchemaAssetsFilter(?callable $callable = null): void
+    {
+        $this->schemaAssetsFilter = $callable;
+    }
+
+    /**
+     * Returns the default auto-commit mode for connections.
+     *
+     * @return bool True if auto-commit mode is enabled by default for connections, false otherwise.
+     * @see    setAutoCommit
+     *
+     */
+    public function getAutoCommit(): bool
+    {
+        return $this->autoCommit;
+    }
+
+    /**
      * Sets the default auto-commit mode for connections.
      *
      * If a connection is in auto-commit mode, then all its SQL statements will be executed and committed as individual
      * transactions. Otherwise, its SQL statements are grouped into transactions that are terminated by a call to either
      * the method commit or the method rollback. By default, new connections are in auto-commit mode.
      *
+     * @param bool $autoCommit True to enable auto-commit mode; false to disable it
      * @see   getAutoCommit
      *
-     * @param bool $autoCommit True to enable auto-commit mode; false to disable it
      */
     public function setAutoCommit(bool $autoCommit): void
     {
@@ -156,15 +163,11 @@ class Configuration
     }
 
     /**
-     * Returns the default auto-commit mode for connections.
-     *
-     * @see    setAutoCommit
-     *
-     * @return bool True if auto-commit mode is enabled by default for connections, false otherwise.
+     * @return Middleware[]
      */
-    public function getAutoCommit(): bool
+    public function getMiddlewares(): array
     {
-        return $this->autoCommit;
+        return $this->middlewares;
     }
 
     /**
@@ -177,13 +180,5 @@ class Configuration
         $this->middlewares = $middlewares;
 
         return $this;
-    }
-
-    /**
-     * @return Middleware[]
-     */
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
     }
 }

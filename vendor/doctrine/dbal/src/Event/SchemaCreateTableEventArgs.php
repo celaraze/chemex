@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Event;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Table;
-
 use function array_merge;
 use function func_get_args;
 use function is_array;
@@ -31,13 +30,13 @@ class SchemaCreateTableEventArgs extends SchemaEventArgs
 
     /**
      * @param mixed[][] $columns
-     * @param mixed[]   $options
+     * @param mixed[] $options
      */
     public function __construct(Table $table, array $columns, array $options, AbstractPlatform $platform)
     {
-        $this->table    = $table;
-        $this->columns  = $columns;
-        $this->options  = $options;
+        $this->table = $table;
+        $this->columns = $columns;
+        $this->options = $options;
         $this->platform = $platform;
     }
 

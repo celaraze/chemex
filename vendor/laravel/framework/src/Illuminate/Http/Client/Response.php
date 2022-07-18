@@ -30,42 +30,12 @@ class Response implements ArrayAccess
     /**
      * Create a new response instance.
      *
-     * @param  \Psr\Http\Message\MessageInterface  $response
+     * @param \Psr\Http\Message\MessageInterface $response
      * @return void
      */
     public function __construct($response)
     {
         $this->response = $response;
-    }
-
-    /**
-     * Get the body of the response.
-     *
-     * @return string
-     */
-    public function body()
-    {
-        return (string) $this->response->getBody();
-    }
-
-    /**
-     * Get the JSON decoded body of the response as an array or scalar value.
-     *
-     * @param  string|null  $key
-     * @param  mixed  $default
-     * @return mixed
-     */
-    public function json($key = null, $default = null)
-    {
-        if (! $this->decoded) {
-            $this->decoded = json_decode($this->body(), true);
-        }
-
-        if (is_null($key)) {
-            return $this->decoded;
-        }
-
-        return data_get($this->decoded, $key, $default);
     }
 
     /**
@@ -79,9 +49,19 @@ class Response implements ArrayAccess
     }
 
     /**
+     * Get the body of the response.
+     *
+     * @return string
+     */
+    public function body()
+    {
+        return (string)$this->response->getBody();
+    }
+
+    /**
      * Get the JSON decoded body of the response as a collection.
      *
-     * @param  string|null  $key
+     * @param string|null $key
      * @return \Illuminate\Support\Collection
      */
     public function collect($key = null)
@@ -90,9 +70,29 @@ class Response implements ArrayAccess
     }
 
     /**
+     * Get the JSON decoded body of the response as an array or scalar value.
+     *
+     * @param string|null $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function json($key = null, $default = null)
+    {
+        if (!$this->decoded) {
+            $this->decoded = json_decode($this->body(), true);
+        }
+
+        if (is_null($key)) {
+            return $this->decoded;
+        }
+
+        return data_get($this->decoded, $key, $default);
+    }
+
+    /**
      * Get a header from the response.
      *
-     * @param  string  $header
+     * @param string $header
      * @return string
      */
     public function header(string $header)
@@ -108,16 +108,6 @@ class Response implements ArrayAccess
     public function headers()
     {
         return $this->response->getHeaders();
-    }
-
-    /**
-     * Get the status code of the response.
-     *
-     * @return int
-     */
-    public function status()
-    {
-        return (int) $this->response->getStatusCode();
     }
 
     /**
@@ -148,6 +138,16 @@ class Response implements ArrayAccess
     public function successful()
     {
         return $this->status() >= 200 && $this->status() < 300;
+    }
+
+    /**
+     * Get the status code of the response.
+     *
+     * @return int
+     */
+    public function status()
+    {
+        return (int)$this->response->getStatusCode();
     }
 
     /**
@@ -191,6 +191,21 @@ class Response implements ArrayAccess
     }
 
     /**
+     * Execute the given callback if there was a server or client error.
+     *
+     * @param callable $callback
+     * @return $this
+     */
+    public function onError(callable $callback)
+    {
+        if ($this->failed()) {
+            $callback($this);
+        }
+
+        return $this;
+    }
+
+    /**
      * Determine if the response indicates a client or server error occurred.
      *
      * @return bool
@@ -198,16 +213,6 @@ class Response implements ArrayAccess
     public function failed()
     {
         return $this->serverError() || $this->clientError();
-    }
-
-    /**
-     * Determine if the response indicates a client error occurred.
-     *
-     * @return bool
-     */
-    public function clientError()
-    {
-        return $this->status() >= 400 && $this->status() < 500;
     }
 
     /**
@@ -221,18 +226,13 @@ class Response implements ArrayAccess
     }
 
     /**
-     * Execute the given callback if there was a server or client error.
+     * Determine if the response indicates a client error occurred.
      *
-     * @param  callable  $callback
-     * @return $this
+     * @return bool
      */
-    public function onError(callable $callback)
+    public function clientError()
     {
-        if ($this->failed()) {
-            $callback($this);
-        }
-
-        return $this;
+        return $this->status() >= 400 && $this->status() < 500;
     }
 
     /**
@@ -278,21 +278,22 @@ class Response implements ArrayAccess
     }
 
     /**
-     * Create an exception if a server or client error occurred.
+     * Throw an exception if a server or client error occurred and the given condition evaluates to true.
      *
-     * @return \Illuminate\Http\Client\RequestException|null
+     * @param bool $condition
+     * @return $this
+     *
+     * @throws \Illuminate\Http\Client\RequestException
      */
-    public function toException()
+    public function throwIf($condition)
     {
-        if ($this->failed()) {
-            return new RequestException($this);
-        }
+        return $condition ? $this->throw() : $this;
     }
 
     /**
      * Throw an exception if a server or client error occurred.
      *
-     * @param  \Closure|null  $callback
+     * @param \Closure|null $callback
      * @return $this
      *
      * @throws \Illuminate\Http\Client\RequestException
@@ -313,22 +314,21 @@ class Response implements ArrayAccess
     }
 
     /**
-     * Throw an exception if a server or client error occurred and the given condition evaluates to true.
+     * Create an exception if a server or client error occurred.
      *
-     * @param  bool  $condition
-     * @return $this
-     *
-     * @throws \Illuminate\Http\Client\RequestException
+     * @return \Illuminate\Http\Client\RequestException|null
      */
-    public function throwIf($condition)
+    public function toException()
     {
-        return $condition ? $this->throw() : $this;
+        if ($this->failed()) {
+            return new RequestException($this);
+        }
     }
 
     /**
      * Determine if the given offset exists.
      *
-     * @param  string  $offset
+     * @param string $offset
      * @return bool
      */
     public function offsetExists($offset): bool
@@ -339,7 +339,7 @@ class Response implements ArrayAccess
     /**
      * Get the value for a given offset.
      *
-     * @param  string  $offset
+     * @param string $offset
      * @return mixed
      */
     public function offsetGet($offset): mixed
@@ -350,8 +350,8 @@ class Response implements ArrayAccess
     /**
      * Set the value at the given offset.
      *
-     * @param  string  $offset
-     * @param  mixed  $value
+     * @param string $offset
+     * @param mixed $value
      * @return void
      *
      * @throws \LogicException
@@ -364,7 +364,7 @@ class Response implements ArrayAccess
     /**
      * Unset the value at the given offset.
      *
-     * @param  string  $offset
+     * @param string $offset
      * @return void
      *
      * @throws \LogicException
@@ -387,14 +387,14 @@ class Response implements ArrayAccess
     /**
      * Dynamically proxy other methods to the underlying response.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
     {
         return static::hasMacro($method)
-                    ? $this->macroCall($method, $parameters)
-                    : $this->response->{$method}(...$parameters);
+            ? $this->macroCall($method, $parameters)
+            : $this->response->{$method}(...$parameters);
     }
 }

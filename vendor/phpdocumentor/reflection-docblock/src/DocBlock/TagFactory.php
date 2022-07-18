@@ -69,9 +69,9 @@ interface TagFactory
      * to register the name of a tag with the FQCN of a 'Tag Handler'. The Tag handler should implement
      * the {@see Tag} interface (and thus the create method).
      *
-     * @param string                    $tagName Name of tag to register a handler for. When registering a namespaced
+     * @param string $tagName Name of tag to register a handler for. When registering a namespaced
      *                                   tag, the full name, along with a prefixing slash MUST be provided.
-     * @param class-string<Tag>         $handler FQCN of handler.
+     * @param class-string<Tag> $handler FQCN of handler.
      *
      * @throws InvalidArgumentException If the tag name is not a string.
      * @throws InvalidArgumentException If the tag name is namespaced (contains backslashes) but

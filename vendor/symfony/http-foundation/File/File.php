@@ -25,8 +25,8 @@ class File extends \SplFileInfo
     /**
      * Constructs a new file from the given path.
      *
-     * @param string $path      The path to the file
-     * @param bool   $checkPath Whether to check the path or not
+     * @param string $path The path to the file
+     * @param bool $checkPath Whether to check the path or not
      *
      * @throws FileNotFoundException If the given path is not a file
      */
@@ -86,7 +86,9 @@ class File extends \SplFileInfo
     {
         $target = $this->getTargetFile($directory, $name);
 
-        set_error_handler(function ($type, $msg) use (&$error) { $error = $msg; });
+        set_error_handler(function ($type, $msg) use (&$error) {
+            $error = $msg;
+        });
         try {
             $renamed = rename($this->getPathname(), $target);
         } finally {
@@ -101,17 +103,6 @@ class File extends \SplFileInfo
         return $target;
     }
 
-    public function getContent(): string
-    {
-        $content = file_get_contents($this->getPathname());
-
-        if (false === $content) {
-            throw new FileException(sprintf('Could not get the content of the file "%s".', $this->getPathname()));
-        }
-
-        return $content;
-    }
-
     protected function getTargetFile(string $directory, string $name = null): self
     {
         if (!is_dir($directory)) {
@@ -122,7 +113,7 @@ class File extends \SplFileInfo
             throw new FileException(sprintf('Unable to write in the "%s" directory.', $directory));
         }
 
-        $target = rtrim($directory, '/\\').\DIRECTORY_SEPARATOR.(null === $name ? $this->getBasename() : $this->getName($name));
+        $target = rtrim($directory, '/\\') . \DIRECTORY_SEPARATOR . (null === $name ? $this->getBasename() : $this->getName($name));
 
         return new self($target, false);
     }
@@ -137,5 +128,16 @@ class File extends \SplFileInfo
         $originalName = false === $pos ? $originalName : substr($originalName, $pos + 1);
 
         return $originalName;
+    }
+
+    public function getContent(): string
+    {
+        $content = file_get_contents($this->getPathname());
+
+        if (false === $content) {
+            throw new FileException(sprintf('Could not get the content of the file "%s".', $this->getPathname()));
+        }
+
+        return $content;
     }
 }

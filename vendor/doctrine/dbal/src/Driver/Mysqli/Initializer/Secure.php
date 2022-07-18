@@ -26,9 +26,9 @@ final class Secure implements Initializer
 
     public function __construct(string $key, string $cert, string $ca, string $capath, string $cipher)
     {
-        $this->key    = $key;
-        $this->cert   = $cert;
-        $this->ca     = $ca;
+        $this->key = $key;
+        $this->cert = $cert;
+        $this->ca = $ca;
         $this->capath = $capath;
         $this->cipher = $cipher;
     }

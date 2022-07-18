@@ -4,31 +4,30 @@ namespace PhpParser\Lexer\TokenEmulator;
 
 abstract class KeywordEmulator extends TokenEmulator
 {
-    abstract function getKeywordString(): string;
-    abstract function getKeywordToken(): int;
-
     public function isEmulationNeeded(string $code): bool
     {
         return strpos(strtolower($code), $this->getKeywordString()) !== false;
     }
 
-    protected function isKeywordContext(array $tokens, int $pos): bool
-    {
-        $previousNonSpaceToken = $this->getPreviousNonSpaceToken($tokens, $pos);
-        return $previousNonSpaceToken === null || $previousNonSpaceToken[0] !== \T_OBJECT_OPERATOR;
-    }
+    abstract function getKeywordString(): string;
 
     public function emulate(string $code, array $tokens): array
     {
         $keywordString = $this->getKeywordString();
         foreach ($tokens as $i => $token) {
             if ($token[0] === T_STRING && strtolower($token[1]) === $keywordString
-                    && $this->isKeywordContext($tokens, $i)) {
+                && $this->isKeywordContext($tokens, $i)) {
                 $tokens[$i][0] = $this->getKeywordToken();
             }
         }
 
         return $tokens;
+    }
+
+    protected function isKeywordContext(array $tokens, int $pos): bool
+    {
+        $previousNonSpaceToken = $this->getPreviousNonSpaceToken($tokens, $pos);
+        return $previousNonSpaceToken === null || $previousNonSpaceToken[0] !== \T_OBJECT_OPERATOR;
     }
 
     /**
@@ -47,6 +46,8 @@ abstract class KeywordEmulator extends TokenEmulator
 
         return null;
     }
+
+    abstract function getKeywordToken(): int;
 
     public function reverseEmulate(string $code, array $tokens): array
     {

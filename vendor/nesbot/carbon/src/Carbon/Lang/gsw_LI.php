@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/gsw.php', [
+return array_replace_recursive(require __DIR__ . '/gsw.php', [
     'meridiem' => ['vorm.', 'nam.'],
     'months' => ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'Auguscht', 'Septämber', 'Oktoober', 'Novämber', 'Dezämber'],
     'first_day_of_week' => 1,

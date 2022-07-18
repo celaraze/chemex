@@ -30,6 +30,25 @@ class InstallationLocationOption extends Option
     /**
      * {@inheritDoc}
      */
+    public function get(InputInterface $input, StyleInterface $io): string
+    {
+        $location = parent::get($input, $io);
+
+        if (!\is_dir($location) || !\is_writable($location)) {
+            $message = 'Invalid installation directory (--%s=%s) option';
+            $message = \sprintf($message, $this->name, $location);
+
+            $io->warning($message);
+
+            throw new \InvalidArgumentException('Installation directory not found or not writable');
+        }
+
+        return $location;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function getDescription(): string
     {
         return 'Installation directory';
@@ -41,24 +60,5 @@ class InstallationLocationOption extends Option
     protected function default(): string
     {
         return \getcwd() ?: '.';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function get(InputInterface $input, StyleInterface $io): string
-    {
-        $location = parent::get($input, $io);
-
-        if (! \is_dir($location) || ! \is_writable($location)) {
-            $message = 'Invalid installation directory (--%s=%s) option';
-            $message = \sprintf($message, $this->name, $location);
-
-            $io->warning($message);
-
-            throw new \InvalidArgumentException('Installation directory not found or not writable');
-        }
-
-        return $location;
     }
 }

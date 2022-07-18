@@ -25,7 +25,7 @@ use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 use Symfony\Component\VarDumper\Dumper\ServerDumper;
 
 // Load the global dump() function
-require_once __DIR__.'/Resources/functions/dump.php';
+require_once __DIR__ . '/Resources/functions/dump.php';
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
@@ -44,20 +44,6 @@ class VarDumper
         }
 
         return (self::$handler)($var);
-    }
-
-    public static function setHandler(callable $callable = null): ?callable
-    {
-        $prevHandler = self::$handler;
-
-        // Prevent replacing the handler with expected format as soon as the env var was set:
-        if (isset($_SERVER['VAR_DUMPER_FORMAT'])) {
-            return $prevHandler;
-        }
-
-        self::$handler = $callable;
-
-        return $prevHandler;
     }
 
     private static function register(): void
@@ -105,8 +91,22 @@ class VarDumper
         $fileLinkFormatter = class_exists(FileLinkFormatter::class) ? new FileLinkFormatter(null, $requestStack ?? null) : null;
 
         return $contextProviders + [
-            'cli' => new CliContextProvider(),
-            'source' => new SourceContextProvider(null, null, $fileLinkFormatter),
-        ];
+                'cli' => new CliContextProvider(),
+                'source' => new SourceContextProvider(null, null, $fileLinkFormatter),
+            ];
+    }
+
+    public static function setHandler(callable $callable = null): ?callable
+    {
+        $prevHandler = self::$handler;
+
+        // Prevent replacing the handler with expected format as soon as the env var was set:
+        if (isset($_SERVER['VAR_DUMPER_FORMAT'])) {
+            return $prevHandler;
+        }
+
+        self::$handler = $callable;
+
+        return $prevHandler;
     }
 }

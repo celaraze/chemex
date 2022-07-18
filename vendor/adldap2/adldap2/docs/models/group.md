@@ -62,7 +62,6 @@ foreach ($group->getMembers() as $member) {
 > query your `AD` server for **every** member contained in the group to retrieve
 > its model. For larger group sets it may be worth paginating them.
 
-
 ### Paginating Group Members
 
 The group you're looking for might contain hundreds / thousands of members.

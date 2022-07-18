@@ -31,20 +31,9 @@ class AuthHeaders implements ParserContract
     protected $prefix = 'bearer';
 
     /**
-     * Attempt to parse the token from some other possible headers.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return null|string
-     */
-    protected function fromAltHeaders(Request $request)
-    {
-        return $request->server->get('HTTP_AUTHORIZATION') ?: $request->server->get('REDIRECT_HTTP_AUTHORIZATION');
-    }
-
-    /**
      * Try to parse the token from the request header.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return null|string
      */
     public function parse(Request $request)
@@ -67,9 +56,20 @@ class AuthHeaders implements ParserContract
     }
 
     /**
+     * Attempt to parse the token from some other possible headers.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return null|string
+     */
+    protected function fromAltHeaders(Request $request)
+    {
+        return $request->server->get('HTTP_AUTHORIZATION') ?: $request->server->get('REDIRECT_HTTP_AUTHORIZATION');
+    }
+
+    /**
      * Set the header name.
      *
-     * @param  string  $headerName
+     * @param string $headerName
      * @return $this
      */
     public function setHeaderName($headerName)
@@ -82,7 +82,7 @@ class AuthHeaders implements ParserContract
     /**
      * Set the header prefix.
      *
-     * @param  string  $headerPrefix
+     * @param string $headerPrefix
      * @return $this
      */
     public function setHeaderPrefix($headerPrefix)

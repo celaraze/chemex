@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class OptimizeClearCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'optimize:clear';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class OptimizeClearCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'optimize:clear';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'optimize:clear';
     /**
      * The console command description.
      *

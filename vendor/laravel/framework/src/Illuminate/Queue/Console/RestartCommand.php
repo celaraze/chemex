@@ -13,13 +13,6 @@ class RestartCommand extends Command
     use InteractsWithTime;
 
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'queue:restart';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -29,7 +22,12 @@ class RestartCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:restart';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'queue:restart';
     /**
      * The console command description.
      *
@@ -47,7 +45,7 @@ class RestartCommand extends Command
     /**
      * Create a new queue restart command.
      *
-     * @param  \Illuminate\Contracts\Cache\Repository  $cache
+     * @param \Illuminate\Contracts\Cache\Repository $cache
      * @return void
      */
     public function __construct(Cache $cache)

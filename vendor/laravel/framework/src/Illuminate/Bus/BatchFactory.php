@@ -17,7 +17,7 @@ class BatchFactory
     /**
      * Create a new batch factory instance.
      *
-     * @param  \Illuminate\Contracts\Queue\Factory  $queue
+     * @param \Illuminate\Contracts\Queue\Factory $queue
      * @return void
      */
     public function __construct(QueueFactory $queue)
@@ -28,28 +28,28 @@ class BatchFactory
     /**
      * Create a new batch instance.
      *
-     * @param  \Illuminate\Bus\BatchRepository  $repository
-     * @param  string  $id
-     * @param  string  $name
-     * @param  int  $totalJobs
-     * @param  int  $pendingJobs
-     * @param  int  $failedJobs
-     * @param  array  $failedJobIds
-     * @param  array  $options
-     * @param  \Carbon\CarbonImmutable  $createdAt
-     * @param  \Carbon\CarbonImmutable|null  $cancelledAt
-     * @param  \Carbon\CarbonImmutable|null  $finishedAt
+     * @param \Illuminate\Bus\BatchRepository $repository
+     * @param string $id
+     * @param string $name
+     * @param int $totalJobs
+     * @param int $pendingJobs
+     * @param int $failedJobs
+     * @param array $failedJobIds
+     * @param array $options
+     * @param \Carbon\CarbonImmutable $createdAt
+     * @param \Carbon\CarbonImmutable|null $cancelledAt
+     * @param \Carbon\CarbonImmutable|null $finishedAt
      * @return \Illuminate\Bus\Batch
      */
-    public function make(BatchRepository $repository,
-                         string $id,
-                         string $name,
-                         int $totalJobs,
-                         int $pendingJobs,
-                         int $failedJobs,
-                         array $failedJobIds,
-                         array $options,
-                         CarbonImmutable $createdAt,
+    public function make(BatchRepository  $repository,
+                         string           $id,
+                         string           $name,
+                         int              $totalJobs,
+                         int              $pendingJobs,
+                         int              $failedJobs,
+                         array            $failedJobIds,
+                         array            $options,
+                         CarbonImmutable  $createdAt,
                          ?CarbonImmutable $cancelledAt,
                          ?CarbonImmutable $finishedAt)
     {

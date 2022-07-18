@@ -562,33 +562,6 @@ class Generator
         $this->container = $container ?: Extension\ContainerBuilder::getDefault();
     }
 
-    /**
-     * @template T of Extension\Extension
-     *
-     * @param class-string<T> $id
-     *
-     * @throws Extension\ExtensionNotFound
-     *
-     * @return T
-     */
-    public function ext(string $id): Extension\Extension
-    {
-        if (!$this->container->has($id)) {
-            throw new Extension\ExtensionNotFound(sprintf(
-                'No Faker extension with id "%s" was loaded.',
-                $id
-            ));
-        }
-
-        $extension = $this->container->get($id);
-
-        if ($extension instanceof Extension\GeneratorAwareExtension) {
-            $extension = $extension->withGenerator($this);
-        }
-
-        return $extension;
-    }
-
     public function addProvider($provider)
     {
         array_unshift($this->providers, $provider);
@@ -610,13 +583,13 @@ class Generator
      * $faker->unique()->randomElement(array(1, 2, 3));
      * </code>
      *
-     * @param bool $reset      If set to true, resets the list of existing values
-     * @param int  $maxRetries Maximum number of retries to find a unique value,
+     * @param bool $reset If set to true, resets the list of existing values
+     * @param int $maxRetries Maximum number of retries to find a unique value,
      *                         After which an OverflowException is thrown.
      *
+     * @return self A proxy class returning only non-existing values
      * @throws \OverflowException When no unique value can be found by iterating $maxRetries times
      *
-     * @return self A proxy class returning only non-existing values
      */
     public function unique($reset = false, $maxRetries = 10000)
     {
@@ -661,26 +634,33 @@ class Generator
      * print_r($values); // [0, 4, 8, 4, 2, 6, 0, 8, 8, 6]
      * </code>
      *
-     * @param ?\Closure $validator  A function returning true for valid values
-     * @param int       $maxRetries Maximum number of retries to find a valid value,
+     * @param ?\Closure $validator A function returning true for valid values
+     * @param int $maxRetries Maximum number of retries to find a valid value,
      *                              After which an OverflowException is thrown.
      *
+     * @return self A proxy class returning only valid values
      * @throws \OverflowException When no valid value can be found by iterating $maxRetries times
      *
-     * @return self A proxy class returning only valid values
      */
     public function valid(?\Closure $validator = null, int $maxRetries = 10000)
     {
         return new ValidGenerator($this, $validator, $maxRetries);
     }
 
-    public function seed($seed = null)
+    /**
+     * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+     *
+     * @param string $string String that needs to bet parsed
+     *
+     * @return string
+     */
+    public function parse($string)
     {
-        if ($seed === null) {
-            mt_srand();
-        } else {
-            mt_srand((int) $seed, MT_RAND_PHP);
-        }
+        $callback = function ($matches) {
+            return $this->format($matches[1]);
+        };
+
+        return preg_replace_callback('/{{\s?(\w+|[\w\\\]+->\w+?)\s?}}/u', $callback, $string);
     }
 
     public function format($format, $arguments = [])
@@ -724,19 +704,30 @@ class Generator
     }
 
     /**
-     * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+     * @template T of Extension\Extension
      *
-     * @param string $string String that needs to bet parsed
+     * @param class-string<T> $id
      *
-     * @return string
+     * @return T
+     * @throws Extension\ExtensionNotFound
+     *
      */
-    public function parse($string)
+    public function ext(string $id): Extension\Extension
     {
-        $callback = function ($matches) {
-            return $this->format($matches[1]);
-        };
+        if (!$this->container->has($id)) {
+            throw new Extension\ExtensionNotFound(sprintf(
+                'No Faker extension with id "%s" was loaded.',
+                $id
+            ));
+        }
 
-        return preg_replace_callback('/{{\s?(\w+|[\w\\\]+->\w+?)\s?}}/u', $callback, $string);
+        $extension = $this->container->get($id);
+
+        if ($extension instanceof Extension\GeneratorAwareExtension) {
+            $extension = $extension->withGenerator($this);
+        }
+
+        return $extension;
     }
 
     /**
@@ -848,7 +839,7 @@ class Generator
      */
     public function numberBetween($int1 = 0, $int2 = 2147483647): int
     {
-        return $this->ext(Extension\NumberExtension::class)->numberBetween((int) $int1, (int) $int2);
+        return $this->ext(Extension\NumberExtension::class)->numberBetween((int)$int1, (int)$int2);
     }
 
     /**
@@ -864,7 +855,7 @@ class Generator
      */
     public function randomDigitNot($except): int
     {
-        return $this->ext(Extension\NumberExtension::class)->randomDigitNot((int) $except);
+        return $this->ext(Extension\NumberExtension::class)->randomDigitNot((int)$except);
     }
 
     /**
@@ -883,9 +874,9 @@ class Generator
     public function randomFloat($nbMaxDecimals = null, $min = 0, $max = null): float
     {
         return $this->ext(Extension\NumberExtension::class)->randomFloat(
-            $nbMaxDecimals !== null ? (int) $nbMaxDecimals : null,
-            (float) $min,
-            $max !== null ? (float) $max : null
+            $nbMaxDecimals !== null ? (int)$nbMaxDecimals : null,
+            (float)$min,
+            $max !== null ? (float)$max : null
         );
     }
 
@@ -895,15 +886,15 @@ class Generator
      * The maximum value returned is mt_getrandmax()
      *
      * @param int|null $nbDigits Defaults to a random number between 1 and 9
-     * @param bool     $strict   Whether the returned number should have exactly $nbDigits
+     * @param bool $strict Whether the returned number should have exactly $nbDigits
      *
      * @example 79907610
      */
     public function randomNumber($nbDigits = null, $strict = false): int
     {
         return $this->ext(Extension\NumberExtension::class)->randomNumber(
-            $nbDigits !== null ? (int) $nbDigits : null,
-            (bool) $strict
+            $nbDigits !== null ? (int)$nbDigits : null,
+            (bool)$strict
         );
     }
 
@@ -911,7 +902,7 @@ class Generator
      * Get a version number in semantic versioning syntax 2.0.0. (https://semver.org/spec/v2.0.0.html)
      *
      * @param bool $preRelease Pre release parts may be randomly included
-     * @param bool $build      Build parts may be randomly included
+     * @param bool $build Build parts may be randomly included
      *
      * @example 1.0.0
      * @example 1.0.0-alpha.1
@@ -920,16 +911,6 @@ class Generator
     public function semver(bool $preRelease = false, bool $build = false): string
     {
         return $this->ext(Extension\VersionExtension::class)->semver($preRelease, $build);
-    }
-
-    /**
-     * @deprecated
-     */
-    protected function callFormatWithMatches($matches)
-    {
-        trigger_deprecation('fakerphp/faker', '1.14', 'Protected method "callFormatWithMatches()" is deprecated and will be removed.');
-
-        return $this->format($matches[1]);
     }
 
     /**
@@ -946,7 +927,7 @@ class Generator
 
     /**
      * @param string $method
-     * @param array  $attributes
+     * @param array $attributes
      */
     public function __call($method, $attributes)
     {
@@ -958,8 +939,27 @@ class Generator
         $this->seed();
     }
 
+    public function seed($seed = null)
+    {
+        if ($seed === null) {
+            mt_srand();
+        } else {
+            mt_srand((int)$seed, MT_RAND_PHP);
+        }
+    }
+
     public function __wakeup()
     {
         $this->formatters = [];
+    }
+
+    /**
+     * @deprecated
+     */
+    protected function callFormatWithMatches($matches)
+    {
+        trigger_deprecation('fakerphp/faker', '1.14', 'Protected method "callFormatWithMatches()" is deprecated and will be removed.');
+
+        return $this->format($matches[1]);
     }
 }

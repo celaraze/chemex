@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Platforms\MySQL;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Comparator as BaseComparator;
 use Doctrine\DBAL\Schema\Table;
-
 use function array_diff_assoc;
 use function array_intersect_key;
 
@@ -40,7 +39,7 @@ class Comparator extends BaseComparator
     private function normalizeColumns(Table $table): Table
     {
         $defaults = array_intersect_key($table->getOptions(), [
-            'charset'   => null,
+            'charset' => null,
             'collation' => null,
         ]);
 
@@ -52,7 +51,7 @@ class Comparator extends BaseComparator
 
         foreach ($table->getColumns() as $column) {
             $options = $column->getPlatformOptions();
-            $diff    = array_diff_assoc($options, $defaults);
+            $diff = array_diff_assoc($options, $defaults);
 
             if ($diff === $options) {
                 continue;

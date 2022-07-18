@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Query;
 
 use Doctrine\DBAL\Exception;
-
 use function implode;
 
 /**
@@ -12,7 +11,7 @@ use function implode;
 class QueryException extends Exception
 {
     /**
-     * @param string   $alias
+     * @param string $alias
      * @param string[] $registeredAliases
      *
      * @return QueryException
@@ -25,7 +24,7 @@ class QueryException extends Exception
     }
 
     /**
-     * @param string   $alias
+     * @param string $alias
      * @param string[] $registeredAliases
      *
      * @return QueryException

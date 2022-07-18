@@ -53,14 +53,6 @@ abstract class AbstractProxy
     }
 
     /**
-     * Has a session started?
-     */
-    public function isActive(): bool
-    {
-        return \PHP_SESSION_ACTIVE === session_status();
-    }
-
-    /**
      * Gets the session ID.
      */
     public function getId(): string
@@ -80,6 +72,14 @@ abstract class AbstractProxy
         }
 
         session_id($id);
+    }
+
+    /**
+     * Has a session started?
+     */
+    public function isActive(): bool
+    {
+        return \PHP_SESSION_ACTIVE === session_status();
     }
 
     /**

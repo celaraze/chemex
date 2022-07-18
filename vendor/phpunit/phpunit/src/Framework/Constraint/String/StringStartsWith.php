@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
+use PHPUnit\Framework\InvalidArgumentException;
 use function strlen;
 use function strpos;
-use PHPUnit\Framework\InvalidArgumentException;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -48,6 +49,6 @@ final class StringStartsWith extends Constraint
      */
     protected function matches($other): bool
     {
-        return strpos((string) $other, $this->prefix) === 0;
+        return strpos((string)$other, $this->prefix) === 0;
     }
 }

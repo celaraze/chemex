@@ -116,9 +116,9 @@ EOT
                     if (!$installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint())) {
                         if ($results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget())) {
                             $provider = reset($results);
-                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is in the lock file as "'.$provider->getPrettyVersion().'" but that does not satisfy your constraint "'.$link->getPrettyConstraint().'".';
+                            $lockErrors[] = '- ' . $set['description'] . ' package "' . $link->getTarget() . '" is in the lock file as "' . $provider->getPrettyVersion() . '" but that does not satisfy your constraint "' . $link->getPrettyConstraint() . '".';
                         } else {
-                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is not present in the lock file.';
+                            $lockErrors[] = '- ' . $set['description'] . ' package "' . $link->getTarget() . '" is not present in the lock file.';
                         }
                         $missingRequirements = true;
                     }
@@ -186,7 +186,7 @@ EOT
             $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
         } elseif ($lockErrors) {
-            $io->write('<info>' . $name . ' is valid but your composer.lock has some '.($checkLock ? 'errors' : 'warnings').'</info>');
+            $io->write('<info>' . $name . ' is valid but your composer.lock has some ' . ($checkLock ? 'errors' : 'warnings') . '</info>');
         } else {
             $io->write('<info>' . $name . ' is valid</info>');
         }

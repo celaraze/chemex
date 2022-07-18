@@ -16,11 +16,6 @@ namespace Symfony\Component\Mime\Encoder;
  */
 final class Base64MimeHeaderEncoder extends Base64Encoder implements MimeHeaderEncoderInterface
 {
-    public function getName(): string
-    {
-        return 'B';
-    }
-
     /**
      * Takes an unencoded string and produces a Base64 encoded string from it.
      *
@@ -39,5 +34,10 @@ final class Base64MimeHeaderEncoder extends Base64Encoder implements MimeHeaderE
         }
 
         return parent::encodeString($string, $charset, $firstLineOffset, $maxLineLength);
+    }
+
+    public function getName(): string
+    {
+        return 'B';
     }
 }

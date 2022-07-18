@@ -46,9 +46,9 @@ class PackageManifest
     /**
      * Create a new package manifest instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  string  $basePath
-     * @param  string  $manifestPath
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param string $basePath
+     * @param string $manifestPath
      * @return void
      */
     public function __construct(Filesystem $files, $basePath, $manifestPath)
@@ -56,7 +56,7 @@ class PackageManifest
         $this->files = $files;
         $this->basePath = $basePath;
         $this->manifestPath = $manifestPath;
-        $this->vendorPath = Env::get('COMPOSER_VENDOR_DIR') ?: $basePath.'/vendor';
+        $this->vendorPath = Env::get('COMPOSER_VENDOR_DIR') ?: $basePath . '/vendor';
     }
 
     /**
@@ -70,25 +70,15 @@ class PackageManifest
     }
 
     /**
-     * Get all of the aliases for all packages.
-     *
-     * @return array
-     */
-    public function aliases()
-    {
-        return $this->config('aliases');
-    }
-
-    /**
      * Get all of the values for all packages for the given configuration name.
      *
-     * @param  string  $key
+     * @param string $key
      * @return array
      */
     public function config($key)
     {
         return collect($this->getManifest())->flatMap(function ($configuration) use ($key) {
-            return (array) ($configuration[$key] ?? []);
+            return (array)($configuration[$key] ?? []);
         })->filter()->all();
     }
 
@@ -99,11 +89,11 @@ class PackageManifest
      */
     protected function getManifest()
     {
-        if (! is_null($this->manifest)) {
+        if (!is_null($this->manifest)) {
             return $this->manifest;
         }
 
-        if (! is_file($this->manifestPath)) {
+        if (!is_file($this->manifestPath)) {
             $this->build();
         }
 
@@ -120,7 +110,7 @@ class PackageManifest
     {
         $packages = [];
 
-        if ($this->files->exists($path = $this->vendorPath.'/composer/installed.json')) {
+        if ($this->files->exists($path = $this->vendorPath . '/composer/installed.json')) {
             $installed = json_decode($this->files->get($path), true);
 
             $packages = $installed['packages'] ?? $installed;
@@ -138,48 +128,58 @@ class PackageManifest
     }
 
     /**
-     * Format the given package name.
-     *
-     * @param  string  $package
-     * @return string
-     */
-    protected function format($package)
-    {
-        return str_replace($this->vendorPath.'/', '', $package);
-    }
-
-    /**
      * Get all of the package names that should be ignored.
      *
      * @return array
      */
     protected function packagesToIgnore()
     {
-        if (! is_file($this->basePath.'/composer.json')) {
+        if (!is_file($this->basePath . '/composer.json')) {
             return [];
         }
 
         return json_decode(file_get_contents(
-            $this->basePath.'/composer.json'
-        ), true)['extra']['laravel']['dont-discover'] ?? [];
+                $this->basePath . '/composer.json'
+            ), true)['extra']['laravel']['dont-discover'] ?? [];
     }
 
     /**
      * Write the given manifest array to disk.
      *
-     * @param  array  $manifest
+     * @param array $manifest
      * @return void
      *
      * @throws \Exception
      */
     protected function write(array $manifest)
     {
-        if (! is_writable($dirname = dirname($this->manifestPath))) {
+        if (!is_writable($dirname = dirname($this->manifestPath))) {
             throw new Exception("The {$dirname} directory must be present and writable.");
         }
 
         $this->files->replace(
-            $this->manifestPath, '<?php return '.var_export($manifest, true).';'
+            $this->manifestPath, '<?php return ' . var_export($manifest, true) . ';'
         );
+    }
+
+    /**
+     * Format the given package name.
+     *
+     * @param string $package
+     * @return string
+     */
+    protected function format($package)
+    {
+        return str_replace($this->vendorPath . '/', '', $package);
+    }
+
+    /**
+     * Get all of the aliases for all packages.
+     *
+     * @return array
+     */
+    public function aliases()
+    {
+        return $this->config('aliases');
     }
 }

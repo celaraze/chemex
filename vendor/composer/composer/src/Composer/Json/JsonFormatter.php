@@ -33,9 +33,9 @@ class JsonFormatter
      * Originally licensed under MIT by Dave Perrett <mail@recursive-design.com>
      *
      *
-     * @param  string $json
-     * @param  bool   $unescapeUnicode Un escape unicode
-     * @param  bool   $unescapeSlashes Un escape slashes
+     * @param string $json
+     * @param bool $unescapeUnicode Un escape unicode
+     * @param bool $unescapeSlashes Un escape slashes
      * @return string
      */
     public static function format(string $json, bool $unescapeUnicode, bool $unescapeSlashes): string
@@ -82,17 +82,17 @@ class JsonFormatter
                             }
 
                             return str_repeat('\\', $l - 1) . mb_convert_encoding(
-                                pack('H*', $match[2]),
-                                'UTF-8',
-                                'UCS-2BE'
-                            );
+                                    pack('H*', $match[2]),
+                                    'UTF-8',
+                                    'UCS-2BE'
+                                );
                         }
 
                         return $match[0];
                     }, $buffer);
                 }
 
-                $result .= $buffer.$char;
+                $result .= $buffer . $char;
                 $buffer = '';
                 continue;
             }

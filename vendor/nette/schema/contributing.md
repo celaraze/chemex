@@ -26,7 +26,8 @@ Contributing
 
 If you'd like to contribute, please take a moment to read [the contributing guide](https://nette.org/en/contributing).
 
-The best way to propose a feature is to discuss your ideas on [Nette forum](https://forum.nette.org) before implementing them.
+The best way to propose a feature is to discuss your ideas on [Nette forum](https://forum.nette.org) before implementing
+them.
 
 Please do not fix whitespace, format code, or make a purely cosmetic patch.
 

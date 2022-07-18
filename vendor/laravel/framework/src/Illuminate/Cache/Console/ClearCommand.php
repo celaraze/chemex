@@ -13,13 +13,6 @@ use Symfony\Component\Console\Input\InputOption;
 class ClearCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'cache:clear';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -29,7 +22,12 @@ class ClearCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'cache:clear';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'cache:clear';
     /**
      * The console command description.
      *
@@ -54,8 +52,8 @@ class ClearCommand extends Command
     /**
      * Create a new cache clear command instance.
      *
-     * @param  \Illuminate\Cache\CacheManager  $cache
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Cache\CacheManager $cache
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(CacheManager $cache, Filesystem $files)
@@ -81,7 +79,7 @@ class ClearCommand extends Command
 
         $this->flushFacades();
 
-        if (! $successful) {
+        if (!$successful) {
             return $this->error('Failed to clear cache. Make sure you have the appropriate permissions.');
         }
 
@@ -93,21 +91,13 @@ class ClearCommand extends Command
     }
 
     /**
-     * Flush the real-time facades stored in the cache directory.
+     * Get the tags passed to the command.
      *
-     * @return void
+     * @return array
      */
-    public function flushFacades()
+    protected function tags()
     {
-        if (! $this->files->exists($storagePath = storage_path('framework/cache'))) {
-            return;
-        }
-
-        foreach ($this->files->files($storagePath) as $file) {
-            if (preg_match('/facade-.*\.php$/', $file)) {
-                $this->files->delete($file);
-            }
-        }
+        return array_filter(explode(',', $this->option('tags') ?? ''));
     }
 
     /**
@@ -123,13 +113,21 @@ class ClearCommand extends Command
     }
 
     /**
-     * Get the tags passed to the command.
+     * Flush the real-time facades stored in the cache directory.
      *
-     * @return array
+     * @return void
      */
-    protected function tags()
+    public function flushFacades()
     {
-        return array_filter(explode(',', $this->option('tags') ?? ''));
+        if (!$this->files->exists($storagePath = storage_path('framework/cache'))) {
+            return;
+        }
+
+        foreach ($this->files->files($storagePath) as $file) {
+            if (preg_match('/facade-.*\.php$/', $file)) {
+                $this->files->delete($file);
+            }
+        }
     }
 
     /**

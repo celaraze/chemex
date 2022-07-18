@@ -62,7 +62,7 @@ trait CompiledUrlMatcherTrait
                 $this->context->setScheme($scheme);
             }
         } elseif ('/' !== $trimmedPathinfo = rtrim($pathinfo, '/') ?: '/') {
-            $pathinfo = $trimmedPathinfo === $pathinfo ? $pathinfo.'/' : $trimmedPathinfo;
+            $pathinfo = $trimmedPathinfo === $pathinfo ? $pathinfo . '/' : $trimmedPathinfo;
             if ($ret = $this->doMatch($pathinfo, $allow, $allowSchemes)) {
                 return $this->redirect($pathinfo, $ret['_route']) + $ret;
             }
@@ -127,18 +127,18 @@ trait CompiledUrlMatcherTrait
             return $ret;
         }
 
-        $matchedPathinfo = $this->matchHost ? $host.'.'.$pathinfo : $pathinfo;
+        $matchedPathinfo = $this->matchHost ? $host . '.' . $pathinfo : $pathinfo;
 
         foreach ($this->regexpList as $offset => $regex) {
             while (preg_match($regex, $matchedPathinfo, $matches)) {
-                foreach ($this->dynamicRoutes[$m = (int) $matches['MARK']] as [$ret, $vars, $requiredMethods, $requiredSchemes, $hasTrailingSlash, $hasTrailingVar, $condition]) {
+                foreach ($this->dynamicRoutes[$m = (int)$matches['MARK']] as [$ret, $vars, $requiredMethods, $requiredSchemes, $hasTrailingSlash, $hasTrailingVar, $condition]) {
                     if (0 === $condition) { // marks the last route in the regexp
                         continue 3;
                     }
 
                     $hasTrailingVar = $trimmedPathinfo !== $pathinfo && $hasTrailingVar;
 
-                    if ($hasTrailingVar && ($hasTrailingSlash || (null === $n = $matches[\count($vars)] ?? null) || '/' !== ($n[-1] ?? '/')) && preg_match($regex, $this->matchHost ? $host.'.'.$trimmedPathinfo : $trimmedPathinfo, $n) && $m === (int) $n['MARK']) {
+                    if ($hasTrailingVar && ($hasTrailingSlash || (null === $n = $matches[\count($vars)] ?? null) || '/' !== ($n[-1] ?? '/')) && preg_match($regex, $this->matchHost ? $host . '.' . $trimmedPathinfo : $trimmedPathinfo, $n) && $m === (int)$n['MARK']) {
                         if ($hasTrailingSlash) {
                             $matches = $n;
                         } else {

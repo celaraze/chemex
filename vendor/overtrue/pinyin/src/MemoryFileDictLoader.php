@@ -56,7 +56,7 @@ class MemoryFileDictLoader implements DictLoaderInterface
             $segment = $path . '/' . sprintf($this->segmentName, $i);
 
             if (file_exists($segment)) {
-                $this->segments[] = (array) include $segment;
+                $this->segments[] = (array)include $segment;
             }
         }
     }
@@ -84,7 +84,7 @@ class MemoryFileDictLoader implements DictLoaderInterface
             $surnames = $this->path . '/surnames';
 
             if (file_exists($surnames)) {
-                $this->surnames = (array) include $surnames;
+                $this->surnames = (array)include $surnames;
             }
         }
 

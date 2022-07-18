@@ -12,13 +12,6 @@ use Symfony\Component\Console\Input\InputOption;
 class PolicyMakeCommand extends GeneratorCommand
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:policy';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -28,7 +21,12 @@ class PolicyMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:policy';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:policy';
     /**
      * The console command description.
      *
@@ -46,7 +44,7 @@ class PolicyMakeCommand extends GeneratorCommand
     /**
      * Build the class with the given name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function buildClass($name)
@@ -63,19 +61,19 @@ class PolicyMakeCommand extends GeneratorCommand
     /**
      * Replace the User model namespace.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function replaceUserNamespace($stub)
     {
         $model = $this->userProviderModel();
 
-        if (! $model) {
+        if (!$model) {
             return $stub;
         }
 
         return str_replace(
-            $this->rootNamespace().'User',
+            $this->rootNamespace() . 'User',
             $model,
             $stub
         );
@@ -94,24 +92,24 @@ class PolicyMakeCommand extends GeneratorCommand
 
         $guard = $this->option('guard') ?: $config->get('auth.defaults.guard');
 
-        if (is_null($guardProvider = $config->get('auth.guards.'.$guard.'.provider'))) {
-            throw new LogicException('The ['.$guard.'] guard is not defined in your "auth" configuration file.');
+        if (is_null($guardProvider = $config->get('auth.guards.' . $guard . '.provider'))) {
+            throw new LogicException('The [' . $guard . '] guard is not defined in your "auth" configuration file.');
         }
 
-        if (! $config->get('auth.providers.'.$guardProvider.'.model')) {
+        if (!$config->get('auth.providers.' . $guardProvider . '.model')) {
             return 'App\\Models\\User';
         }
 
         return $config->get(
-            'auth.providers.'.$guardProvider.'.model'
+            'auth.providers.' . $guardProvider . '.model'
         );
     }
 
     /**
      * Replace the model for the given stub.
      *
-     * @param  string  $stub
-     * @param  string  $model
+     * @param string $stub
+     * @param string $model
      * @return string
      */
     protected function replaceModel($stub, $model)
@@ -143,7 +141,7 @@ class PolicyMakeCommand extends GeneratorCommand
             'DummyUser' => $dummyUser,
             '{{ user }}' => $dummyUser,
             '{{user}}' => $dummyUser,
-            '$user' => '$'.Str::camel($dummyUser),
+            '$user' => '$' . Str::camel($dummyUser),
         ];
 
         $stub = str_replace(
@@ -168,32 +166,32 @@ class PolicyMakeCommand extends GeneratorCommand
     protected function getStub()
     {
         return $this->option('model')
-                    ? $this->resolveStubPath('/stubs/policy.stub')
-                    : $this->resolveStubPath('/stubs/policy.plain.stub');
+            ? $this->resolveStubPath('/stubs/policy.stub')
+            : $this->resolveStubPath('/stubs/policy.plain.stub');
     }
 
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
-                        ? $customPath
-                        : __DIR__.$stub;
+            ? $customPath
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Policies';
+        return $rootNamespace . '\Policies';
     }
 
     /**

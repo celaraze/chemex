@@ -56,6 +56,18 @@ class JsonManipulator
     }
 
     /**
+     * @return void
+     */
+    protected function detectIndenting(): void
+    {
+        if (Preg::isMatch('{^([ \t]+)"}m', $this->contents, $match)) {
+            $this->indent = $match[1];
+        } else {
+            $this->indent = '    ';
+        }
+    }
+
+    /**
      * @return string
      */
     public function getContents(): string
@@ -67,7 +79,7 @@ class JsonManipulator
      * @param string $type
      * @param string $package
      * @param string $constraint
-     * @param bool   $sortPackages
+     * @param bool $sortPackages
      * @return bool
      */
     public function addLink(string $type, string $package, string $constraint, bool $sortPackages = false): bool
@@ -79,8 +91,8 @@ class JsonManipulator
             return $this->addMainKey($type, array($package => $constraint));
         }
 
-        $regex = '{'.self::$DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
-            '(?P<property>'.preg_quote(JsonFile::encode($type)).'\s*:\s*)(?P<value>(?&json))(?P<end>.*)}sx';
+        $regex = '{' . self::$DEFINES . '^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)' .
+            '(?P<property>' . preg_quote(JsonFile::encode($type)) . '\s*:\s*)(?P<value>(?&json))(?P<end>.*)}sx';
         if (!Preg::isMatch($regex, $this->contents, $matches)) {
             return false;
         }
@@ -89,27 +101,27 @@ class JsonManipulator
 
         // try to find existing link
         $packageRegex = str_replace('/', '\\\\?/', preg_quote($package));
-        $regex = '{'.self::$DEFINES.'"(?P<package>'.$packageRegex.')"(\s*:\s*)(?&string)}ix';
+        $regex = '{' . self::$DEFINES . '"(?P<package>' . $packageRegex . ')"(\s*:\s*)(?&string)}ix';
         if (Preg::isMatch($regex, $links, $packageMatches)) {
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint): string {
+            $links = Preg::replaceCallback('{' . self::$DEFINES . '"' . $packageRegex . '"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
             if (Preg::isMatch('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
                 // link missing but non empty links
                 $links = Preg::replace(
-                    '{'.preg_quote($match[1]).'$}',
+                    '{' . preg_quote($match[1]) . '$}',
                     // addcslashes is used to double up backslashes/$ since preg_replace resolves them as back references otherwise, see #1588
-                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $match[1], '\\$'),
+                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($package) . ': ' . JsonFile::encode($constraint) . $match[1], '\\$'),
                     $links
                 );
             } else {
                 // links empty
                 $links = '{' . $this->newline .
-                    $this->indent . $this->indent . JsonFile::encode($package).': '.JsonFile::encode($constraint) . $this->newline .
+                    $this->indent . $this->indent . JsonFile::encode($package) . ': ' . JsonFile::encode($constraint) . $this->newline .
                     $this->indent . '}';
             }
         }
@@ -123,6 +135,81 @@ class JsonManipulator
         $this->contents = $matches['start'] . $matches['property'] . $links . $matches['end'];
 
         return true;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $content
+     * @return bool
+     */
+    public function addMainKey(string $key, $content): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+        $content = $this->format($content);
+
+        // key exists already
+        $regex = '{' . self::$DEFINES . '^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)' .
+            '(?P<key>' . preg_quote(JsonFile::encode($key)) . '\s*:\s*(?&json))(?P<end>.*)}sx';
+        if (isset($decoded[$key]) && Preg::isMatch($regex, $this->contents, $matches)) {
+            // invalid match due to un-regexable content, abort
+            if (!@json_decode('{' . $matches['key'] . '}')) {
+                return false;
+            }
+
+            $this->contents = $matches['start'] . JsonFile::encode($key) . ': ' . $content . $matches['end'];
+
+            return true;
+        }
+
+        // append at the end of the file and keep whitespace
+        if (Preg::isMatch('#[^{\s](\s*)\}$#', $this->contents, $match)) {
+            $this->contents = Preg::replace(
+                '#' . $match[1] . '\}$#',
+                addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key) . ': ' . $content . $this->newline . '}', '\\$'),
+                $this->contents
+            );
+
+            return true;
+        }
+
+        // append at the end of the file
+        $this->contents = Preg::replace(
+            '#\}$#',
+            addcslashes($this->indent . JsonFile::encode($key) . ': ' . $content . $this->newline . '}', '\\$'),
+            $this->contents
+        );
+
+        return true;
+    }
+
+    /**
+     * @param mixed $data
+     * @param int $depth
+     * @return string
+     */
+    public function format($data, int $depth = 0): string
+    {
+        if (is_array($data)) {
+            reset($data);
+
+            if (is_numeric(key($data))) {
+                foreach ($data as $key => $val) {
+                    $data[$key] = $this->format($val, $depth + 1);
+                }
+
+                return '[' . implode(', ', $data) . ']';
+            }
+
+            $out = '{' . $this->newline;
+            $elems = array();
+            foreach ($data as $key => $val) {
+                $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key) . ': ' . $this->format($val, $depth + 1);
+            }
+
+            return $out . implode(',' . $this->newline, $elems) . $this->newline . str_repeat($this->indent, $depth + 1) . '}';
+        }
+
+        return JsonFile::encode($data);
     }
 
     /**
@@ -156,7 +243,7 @@ class JsonManipulator
                 );
             }
 
-            return '5-'.$requirement;
+            return '5-' . $requirement;
         };
 
         uksort($packages, function ($a, $b) use ($prefix): int {
@@ -165,14 +252,126 @@ class JsonManipulator
     }
 
     /**
-     * @param string                     $name
+     * @param string $name
      * @param array<string, mixed>|false $config
-     * @param bool                       $append
+     * @param bool $append
      * @return bool
      */
     public function addRepository(string $name, $config, bool $append = true): bool
     {
         return $this->addSubNode('repositories', $name, $config, $append);
+    }
+
+    /**
+     * @param string $mainNode
+     * @param string $name
+     * @param mixed $value
+     * @param bool $append
+     * @return bool
+     */
+    public function addSubNode(string $mainNode, string $name, $value, bool $append = true): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        $subName = null;
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+            list($name, $subName) = explode('.', $name, 2);
+        }
+
+        // no main node yet
+        if (!isset($decoded[$mainNode])) {
+            if ($subName !== null) {
+                $this->addMainKey($mainNode, array($name => array($subName => $value)));
+            } else {
+                $this->addMainKey($mainNode, array($name => $value));
+            }
+
+            return true;
+        }
+
+        // main node content not match-able
+        $nodeRegex = '{' . self::$DEFINES . '^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?' .
+            preg_quote(JsonFile::encode($mainNode)) . '\s*:\s*)(?P<content>(?&object))(?P<end>.*)}sx';
+
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        $children = $match['content'];
+        // invalid match due to un-regexable content, abort
+        if (!@json_decode($children)) {
+            return false;
+        }
+
+        // child exists
+        $childRegex = '{' . self::$DEFINES . '(?P<start>"' . preg_quote($name) . '"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+        if (Preg::isMatch($childRegex, $children, $matches)) {
+            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
+                if ($subName !== null) {
+                    $curVal = json_decode($matches['content'], true);
+                    if (!is_array($curVal)) {
+                        $curVal = array();
+                    }
+                    $curVal[$subName] = $value;
+                    $value = $curVal;
+                }
+
+                return $matches['start'] . $this->format($value, 1) . $matches['end'];
+            }, $children);
+        } else {
+            Preg::match('#^{ (?P<leadingspace>\s*?) (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $children, $match);
+
+            $whitespace = '';
+            if (!empty($match['trailingspace'])) {
+                $whitespace = $match['trailingspace'];
+            }
+
+            if (!empty($match['content'])) {
+                if ($subName !== null) {
+                    $value = array($subName => $value);
+                }
+
+                // child missing but non empty children
+                if ($append) {
+                    $children = Preg::replace(
+                        '#' . $whitespace . '}$#',
+                        addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name) . ': ' . $this->format($value, 1) . $whitespace . '}', '\\$'),
+                        $children
+                    );
+                } else {
+                    $whitespace = '';
+                    if (!empty($match['leadingspace'])) {
+                        $whitespace = $match['leadingspace'];
+                    }
+
+                    $children = Preg::replace(
+                        '#^{' . $whitespace . '#',
+                        addcslashes('{' . $whitespace . JsonFile::encode($name) . ': ' . $this->format($value, 1) . ',' . $this->newline . $this->indent . $this->indent, '\\$'),
+                        $children
+                    );
+                }
+            } else {
+                if ($subName !== null) {
+                    $value = array($subName => $value);
+                }
+
+                // children present but empty
+                $children = '{' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name) . ': ' . $this->format($value, 1) . $whitespace . '}';
+            }
+        }
+
+        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children): string {
+            return $m['start'] . $children . $m['end'];
+        }, $this->contents);
+
+        return true;
     }
 
     /**
@@ -185,8 +384,114 @@ class JsonManipulator
     }
 
     /**
+     * @param string $mainNode
      * @param string $name
-     * @param mixed  $value
+     * @return bool
+     */
+    public function removeSubNode(string $mainNode, string $name): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        // no node or empty node
+        if (empty($decoded[$mainNode])) {
+            return true;
+        }
+
+        // no node content match-able
+        $nodeRegex = '{' . self::$DEFINES . '^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?' .
+            preg_quote(JsonFile::encode($mainNode)) . '\s*:\s*)(?P<content>(?&object))(?P<end>.*)}sx';
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        $children = $match['content'];
+
+        // invalid match due to un-regexable content, abort
+        if (!@json_decode($children, true)) {
+            return false;
+        }
+
+        $subName = null;
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+            list($name, $subName) = explode('.', $name, 2);
+        }
+
+        // no node to remove
+        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
+            return true;
+        }
+
+        // try and find a match for the subkey
+        $keyRegex = str_replace('/', '\\\\?/', preg_quote($name));
+        if (Preg::isMatch('{"' . $keyRegex . '"\s*:}i', $children)) {
+            // find best match for the value of "name"
+            if (Preg::isMatchAll('{' . self::$DEFINES . '"' . $keyRegex . '"\s*:\s*(?:(?&json))}x', $children, $matches)) {
+                $bestMatch = '';
+                foreach ($matches[0] as $match) {
+                    if (strlen($bestMatch) < strlen($match)) {
+                        $bestMatch = $match;
+                    }
+                }
+                $childrenClean = Preg::replace('{,\s*' . preg_quote($bestMatch) . '}i', '', $children, -1, $count);
+                if (1 !== $count) {
+                    $childrenClean = Preg::replace('{' . preg_quote($bestMatch) . '\s*,?\s*}i', '', $childrenClean, -1, $count);
+                    if (1 !== $count) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            $childrenClean = $children;
+        }
+
+        if (!isset($childrenClean)) {
+            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
+        }
+
+        // no child data left, $name was the only key in
+        unset($match);
+        Preg::match('#^{ \s*? (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $childrenClean, $match);
+        if (empty($match['content'])) {
+            $newline = $this->newline;
+            $indent = $this->indent;
+
+            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline): string {
+                return $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'];
+            }, $this->contents);
+
+            // we have a subname, so we restore the rest of $name
+            if ($subName !== null) {
+                $curVal = json_decode($children, true);
+                unset($curVal[$name][$subName]);
+                $this->addSubNode($mainNode, $name, $curVal[$name]);
+            }
+
+            return true;
+        }
+
+        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
+            if ($subName !== null) {
+                $curVal = json_decode($matches['content'], true);
+                unset($curVal[$name][$subName]);
+                $childrenClean = $this->format($curVal);
+            }
+
+            return $matches['start'] . $childrenClean . $matches['end'];
+        }, $this->contents);
+
+        return true;
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
      * @return bool
      */
     public function addConfigSetting(string $name, $value): bool
@@ -247,269 +552,6 @@ class JsonManipulator
     }
 
     /**
-     * @param string $mainNode
-     * @param string $name
-     * @param mixed  $value
-     * @param bool   $append
-     * @return bool
-     */
-    public function addSubNode(string $mainNode, string $name, $value, bool $append = true): bool
-    {
-        $decoded = JsonFile::parseJson($this->contents);
-
-        $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
-            list($name, $subName) = explode('.', $name, 2);
-        }
-
-        // no main node yet
-        if (!isset($decoded[$mainNode])) {
-            if ($subName !== null) {
-                $this->addMainKey($mainNode, array($name => array($subName => $value)));
-            } else {
-                $this->addMainKey($mainNode, array($name => $value));
-            }
-
-            return true;
-        }
-
-        // main node content not match-able
-        $nodeRegex = '{'.self::$DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
-            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&object))(?P<end>.*)}sx';
-
-        try {
-            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
-                return false;
-            }
-        } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
-                return false;
-            }
-            throw $e;
-        }
-
-        $children = $match['content'];
-        // invalid match due to un-regexable content, abort
-        if (!@json_decode($children)) {
-            return false;
-        }
-
-        // child exists
-        $childRegex = '{'.self::$DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
-        if (Preg::isMatch($childRegex, $children, $matches)) {
-            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
-                if ($subName !== null) {
-                    $curVal = json_decode($matches['content'], true);
-                    if (!is_array($curVal)) {
-                        $curVal = array();
-                    }
-                    $curVal[$subName] = $value;
-                    $value = $curVal;
-                }
-
-                return $matches['start'] . $this->format($value, 1) . $matches['end'];
-            }, $children);
-        } else {
-            Preg::match('#^{ (?P<leadingspace>\s*?) (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $children, $match);
-
-            $whitespace = '';
-            if (!empty($match['trailingspace'])) {
-                $whitespace = $match['trailingspace'];
-            }
-
-            if (!empty($match['content'])) {
-                if ($subName !== null) {
-                    $value = array($subName => $value);
-                }
-
-                // child missing but non empty children
-                if ($append) {
-                    $children = Preg::replace(
-                        '#'.$whitespace.'}$#',
-                        addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $whitespace . '}', '\\$'),
-                        $children
-                    );
-                } else {
-                    $whitespace = '';
-                    if (!empty($match['leadingspace'])) {
-                        $whitespace = $match['leadingspace'];
-                    }
-
-                    $children = Preg::replace(
-                        '#^{'.$whitespace.'#',
-                        addcslashes('{' . $whitespace . JsonFile::encode($name).': '.$this->format($value, 1) . ',' . $this->newline . $this->indent . $this->indent, '\\$'),
-                        $children
-                    );
-                }
-            } else {
-                if ($subName !== null) {
-                    $value = array($subName => $value);
-                }
-
-                // children present but empty
-                $children = '{' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $whitespace . '}';
-            }
-        }
-
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children): string {
-            return $m['start'] . $children . $m['end'];
-        }, $this->contents);
-
-        return true;
-    }
-
-    /**
-     * @param string $mainNode
-     * @param string $name
-     * @return bool
-     */
-    public function removeSubNode(string $mainNode, string $name): bool
-    {
-        $decoded = JsonFile::parseJson($this->contents);
-
-        // no node or empty node
-        if (empty($decoded[$mainNode])) {
-            return true;
-        }
-
-        // no node content match-able
-        $nodeRegex = '{'.self::$DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
-            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&object))(?P<end>.*)}sx';
-        try {
-            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
-                return false;
-            }
-        } catch (\RuntimeException $e) {
-            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
-                return false;
-            }
-            throw $e;
-        }
-
-        $children = $match['content'];
-
-        // invalid match due to un-regexable content, abort
-        if (!@json_decode($children, true)) {
-            return false;
-        }
-
-        $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
-            list($name, $subName) = explode('.', $name, 2);
-        }
-
-        // no node to remove
-        if (!isset($decoded[$mainNode][$name]) || ($subName && !isset($decoded[$mainNode][$name][$subName]))) {
-            return true;
-        }
-
-        // try and find a match for the subkey
-        $keyRegex = str_replace('/', '\\\\?/', preg_quote($name));
-        if (Preg::isMatch('{"'.$keyRegex.'"\s*:}i', $children)) {
-            // find best match for the value of "name"
-            if (Preg::isMatchAll('{'.self::$DEFINES.'"'.$keyRegex.'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
-                $bestMatch = '';
-                foreach ($matches[0] as $match) {
-                    if (strlen($bestMatch) < strlen($match)) {
-                        $bestMatch = $match;
-                    }
-                }
-                $childrenClean = Preg::replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
-                if (1 !== $count) {
-                    $childrenClean = Preg::replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $childrenClean, -1, $count);
-                    if (1 !== $count) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            $childrenClean = $children;
-        }
-
-        if (!isset($childrenClean)) {
-            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
-        }
-
-        // no child data left, $name was the only key in
-        unset($match);
-        Preg::match('#^{ \s*? (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $childrenClean, $match);
-        if (empty($match['content'])) {
-            $newline = $this->newline;
-            $indent = $this->indent;
-
-            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline): string {
-                return $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'];
-            }, $this->contents);
-
-            // we have a subname, so we restore the rest of $name
-            if ($subName !== null) {
-                $curVal = json_decode($children, true);
-                unset($curVal[$name][$subName]);
-                $this->addSubNode($mainNode, $name, $curVal[$name]);
-            }
-
-            return true;
-        }
-
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
-            if ($subName !== null) {
-                $curVal = json_decode($matches['content'], true);
-                unset($curVal[$name][$subName]);
-                $childrenClean = $this->format($curVal);
-            }
-
-            return $matches['start'] . $childrenClean . $matches['end'];
-        }, $this->contents);
-
-        return true;
-    }
-
-    /**
-     * @param string $key
-     * @param mixed  $content
-     * @return bool
-     */
-    public function addMainKey(string $key, $content): bool
-    {
-        $decoded = JsonFile::parseJson($this->contents);
-        $content = $this->format($content);
-
-        // key exists already
-        $regex = '{'.self::$DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
-            '(?P<key>'.preg_quote(JsonFile::encode($key)).'\s*:\s*(?&json))(?P<end>.*)}sx';
-        if (isset($decoded[$key]) && Preg::isMatch($regex, $this->contents, $matches)) {
-            // invalid match due to un-regexable content, abort
-            if (!@json_decode('{'.$matches['key'].'}')) {
-                return false;
-            }
-
-            $this->contents = $matches['start'] . JsonFile::encode($key).': '.$content . $matches['end'];
-
-            return true;
-        }
-
-        // append at the end of the file and keep whitespace
-        if (Preg::isMatch('#[^{\s](\s*)\}$#', $this->contents, $match)) {
-            $this->contents = Preg::replace(
-                '#'.$match[1].'\}$#',
-                addcslashes(',' . $this->newline . $this->indent . JsonFile::encode($key). ': '. $content . $this->newline . '}', '\\$'),
-                $this->contents
-            );
-
-            return true;
-        }
-
-        // append at the end of the file
-        $this->contents = Preg::replace(
-            '#\}$#',
-            addcslashes($this->indent . JsonFile::encode($key). ': '.$content . $this->newline . '}', '\\$'),
-            $this->contents
-        );
-
-        return true;
-    }
-
-    /**
      * @param string $key
      * @return bool
      */
@@ -522,11 +564,11 @@ class JsonManipulator
         }
 
         // key exists already
-        $regex = '{'.self::$DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
-            '(?P<removal>'.preg_quote(JsonFile::encode($key)).'\s*:\s*(?&json))\s*,?\s*(?P<end>.*)}sx';
+        $regex = '{' . self::$DEFINES . '^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)' .
+            '(?P<removal>' . preg_quote(JsonFile::encode($key)) . '\s*:\s*(?&json))\s*,?\s*(?P<end>.*)}sx';
         if (Preg::isMatch($regex, $this->contents, $matches)) {
             // invalid match due to un-regexable content, abort
-            if (!@json_decode('{'.$matches['removal'].'}')) {
+            if (!@json_decode('{' . $matches['removal'] . '}')) {
                 return false;
             }
 
@@ -563,47 +605,5 @@ class JsonManipulator
         }
 
         return true;
-    }
-
-    /**
-     * @param mixed $data
-     * @param int   $depth
-     * @return string
-     */
-    public function format($data, int $depth = 0): string
-    {
-        if (is_array($data)) {
-            reset($data);
-
-            if (is_numeric(key($data))) {
-                foreach ($data as $key => $val) {
-                    $data[$key] = $this->format($val, $depth + 1);
-                }
-
-                return '['.implode(', ', $data).']';
-            }
-
-            $out = '{' . $this->newline;
-            $elems = array();
-            foreach ($data as $key => $val) {
-                $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key). ': '.$this->format($val, $depth + 1);
-            }
-
-            return $out . implode(','.$this->newline, $elems) . $this->newline . str_repeat($this->indent, $depth + 1) . '}';
-        }
-
-        return JsonFile::encode($data);
-    }
-
-    /**
-     * @return void
-     */
-    protected function detectIndenting(): void
-    {
-        if (Preg::isMatch('{^([ \t]+)"}m', $this->contents, $match)) {
-            $this->indent = $match[1];
-        } else {
-            $this->indent = '    ';
-        }
     }
 }

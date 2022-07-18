@@ -12,19 +12,22 @@ class Finally_ extends Node\Stmt
     /**
      * Constructs a finally node.
      *
-     * @param Node\Stmt[] $stmts      Statements
-     * @param array       $attributes Additional attributes
+     * @param Node\Stmt[] $stmts Statements
+     * @param array $attributes Additional attributes
      */
-    public function __construct(array $stmts = [], array $attributes = []) {
+    public function __construct(array $stmts = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->stmts = $stmts;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['stmts'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Finally';
     }
 }

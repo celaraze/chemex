@@ -11,12 +11,12 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
+use AMQPExchange;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\JsonFormatter;
-use PhpAmqpLib\Message\AMQPMessage;
+use Monolog\Logger;
 use PhpAmqpLib\Channel\AMQPChannel;
-use AMQPExchange;
+use PhpAmqpLib\Message\AMQPMessage;
 
 /**
  * @phpstan-import-type Record from \Monolog\Logger
@@ -34,13 +34,13 @@ class AmqpHandler extends AbstractProcessingHandler
     protected $exchangeName;
 
     /**
-     * @param AMQPExchange|AMQPChannel $exchange     AMQPExchange (php AMQP ext) or PHP AMQP lib channel, ready for use
-     * @param string|null              $exchangeName Optional exchange name, for AMQPChannel (PhpAmqpLib) only
+     * @param AMQPExchange|AMQPChannel $exchange AMQPExchange (php AMQP ext) or PHP AMQP lib channel, ready for use
+     * @param string|null $exchangeName Optional exchange name, for AMQPChannel (PhpAmqpLib) only
      */
     public function __construct($exchange, ?string $exchangeName = null, $level = Logger::DEBUG, bool $bubble = true)
     {
         if ($exchange instanceof AMQPChannel) {
-            $this->exchangeName = (string) $exchangeName;
+            $this->exchangeName = (string)$exchangeName;
         } elseif (!$exchange instanceof AMQPExchange) {
             throw new \InvalidArgumentException('PhpAmqpLib\Channel\AMQPChannel or AMQPExchange instance required');
         } elseif ($exchangeName) {
@@ -49,33 +49,6 @@ class AmqpHandler extends AbstractProcessingHandler
         $this->exchange = $exchange;
 
         parent::__construct($level, $bubble);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function write(array $record): void
-    {
-        $data = $record["formatted"];
-        $routingKey = $this->getRoutingKey($record);
-
-        if ($this->exchange instanceof AMQPExchange) {
-            $this->exchange->publish(
-                $data,
-                $routingKey,
-                0,
-                [
-                    'delivery_mode' => 2,
-                    'content_type' => 'application/json',
-                ]
-            );
-        } else {
-            $this->exchange->basic_publish(
-                $this->createAmqpMessage($data),
-                $this->exchangeName,
-                $routingKey
-            );
-        }
     }
 
     /**
@@ -108,6 +81,17 @@ class AmqpHandler extends AbstractProcessingHandler
         $this->exchange->publish_batch();
     }
 
+    private function createAmqpMessage(string $data): AMQPMessage
+    {
+        return new AMQPMessage(
+            $data,
+            [
+                'delivery_mode' => 2,
+                'content_type' => 'application/json',
+            ]
+        );
+    }
+
     /**
      * Gets the routing key for the AMQP exchange
      *
@@ -120,15 +104,31 @@ class AmqpHandler extends AbstractProcessingHandler
         return strtolower($routingKey);
     }
 
-    private function createAmqpMessage(string $data): AMQPMessage
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record): void
     {
-        return new AMQPMessage(
-            $data,
-            [
-                'delivery_mode' => 2,
-                'content_type' => 'application/json',
-            ]
-        );
+        $data = $record["formatted"];
+        $routingKey = $this->getRoutingKey($record);
+
+        if ($this->exchange instanceof AMQPExchange) {
+            $this->exchange->publish(
+                $data,
+                $routingKey,
+                0,
+                [
+                    'delivery_mode' => 2,
+                    'content_type' => 'application/json',
+                ]
+            );
+        } else {
+            $this->exchange->basic_publish(
+                $this->createAmqpMessage($data),
+                $this->exchangeName,
+                $routingKey
+            );
+        }
     }
 
     /**

@@ -11,10 +11,10 @@
 
 namespace Monolog\Handler;
 
-use Aws\Sdk;
 use Aws\DynamoDb\DynamoDbClient;
-use Monolog\Formatter\FormatterInterface;
 use Aws\DynamoDb\Marshaler;
+use Aws\Sdk;
+use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\ScalarFormatter;
 use Monolog\Logger;
 
@@ -84,7 +84,7 @@ class DynamoDbHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @param  mixed[] $record
+     * @param mixed[] $record
      * @return mixed[]
      */
     protected function filterEmptyFields(array $record): array

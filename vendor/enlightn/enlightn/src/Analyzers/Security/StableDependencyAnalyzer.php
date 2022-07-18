@@ -36,7 +36,7 @@ class StableDependencyAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application's dependencies are unstable versions. These may include bug fixes and/or security "
-                ."patches. It is recommended to update to the most stable versions.";
+            . "patches. It is recommended to update to the most stable versions.";
     }
 
     /**

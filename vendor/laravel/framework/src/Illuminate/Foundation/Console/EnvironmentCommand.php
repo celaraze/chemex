@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class EnvironmentCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'env';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class EnvironmentCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'env';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'env';
     /**
      * The console command description.
      *
@@ -40,6 +38,6 @@ class EnvironmentCommand extends Command
      */
     public function handle()
     {
-        $this->line('<info>Current application environment:</info> <comment>'.$this->laravel['env'].'</comment>');
+        $this->line('<info>Current application environment:</info> <comment>' . $this->laravel['env'] . '</comment>');
     }
 }

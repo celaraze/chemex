@@ -425,10 +425,15 @@ class Person extends \Faker\Provider\Person
         'Bc.', 'Ing.', 'MUDr.', 'MVDr.', 'Mgr.', 'JUDr.', 'PhDr.', 'RNDr.', 'doc.', 'Dr.',
     ];
 
+    public static function birthNumberMale()
+    {
+        return static::birthNumber(static::GENDER_MALE);
+    }
+
     /**
      * @param string|null $gender 'male', 'female' or null for any
-     * @param int         $minAge minimal age of "generated person" in years
-     * @param int         $maxAge maximal age of "generated person" in years
+     * @param int $minAge minimal age of "generated person" in years
+     * @param int $maxAge maximal age of "generated person" in years
      *
      * @return string czech birth number
      */
@@ -442,9 +447,9 @@ class Person extends \Faker\Provider\Person
         $endTimestamp = strtotime("-${minAge} year");
         $randTimestamp = self::numberBetween($startTimestamp, $endTimestamp);
 
-        $year = (int) (date('Y', $randTimestamp));
-        $month = (int) (date('n', $randTimestamp));
-        $day = (int) (date('j', $randTimestamp));
+        $year = (int)(date('Y', $randTimestamp));
+        $month = (int)(date('n', $randTimestamp));
+        $day = (int)(date('j', $randTimestamp));
         $suffix = self::numberBetween(0, 999);
 
         // women has +50 to month
@@ -476,17 +481,15 @@ class Person extends \Faker\Provider\Person
         return $birthNumber;
     }
 
-    public static function birthNumberMale()
-    {
-        return static::birthNumber(static::GENDER_MALE);
-    }
-
     public static function birthNumberFemale()
     {
         return static::birthNumber(static::GENDER_FEMALE);
     }
 
-    public function title($gender = null)
+    /**
+     * replaced by specific unisex Czech title
+     */
+    public static function titleFemale()
     {
         return static::titleMale();
     }
@@ -499,10 +502,7 @@ class Person extends \Faker\Provider\Person
         return static::randomElement(static::$title);
     }
 
-    /**
-     * replaced by specific unisex Czech title
-     */
-    public static function titleFemale()
+    public function title($gender = null)
     {
         return static::titleMale();
     }

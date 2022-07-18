@@ -12,15 +12,15 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\RootAliasPackage;
-use Composer\Pcre\Preg;
-use Composer\Repository\RepositoryFactory;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\RootPackage;
+use Composer\Pcre\Preg;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -76,7 +76,7 @@ class RootPackageLoader extends ArrayLoader
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
         } elseif ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
-            throw new \RuntimeException('Your package name '.$err);
+            throw new \RuntimeException('Your package name ' . $err);
         }
         $autoVersioned = false;
         if (!isset($config['version'])) {
@@ -139,7 +139,7 @@ class RootPackageLoader extends ArrayLoader
         foreach (array('require', 'require-dev') as $linkType) {
             if (isset($config[$linkType])) {
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
-                $method = 'get'.ucfirst($linkInfo['method']);
+                $method = 'get' . ucfirst($linkInfo['method']);
                 $links = array();
                 foreach ($realPackage->$method() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
@@ -150,7 +150,7 @@ class RootPackageLoader extends ArrayLoader
 
                 if (isset($links[$config['name']])) {
                     throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
-                                'Did you accidentally name your root package after an external package?', $config['name']));
+                        'Did you accidentally name your root package after an external package?', $config['name']));
                 }
             }
         }
@@ -159,7 +159,7 @@ class RootPackageLoader extends ArrayLoader
             if (isset($config[$linkType])) {
                 foreach ($config[$linkType] as $linkName => $constraint) {
                     if ($err = ValidatingArrayLoader::hasPackageNamingError($linkName, true)) {
-                        throw new \RuntimeException($linkType.'.'.$err);
+                        throw new \RuntimeException($linkType . '.' . $err);
                     }
                 }
             }
@@ -170,7 +170,7 @@ class RootPackageLoader extends ArrayLoader
         $realPackage->setReferences($references);
 
         if (isset($config['prefer-stable'])) {
-            $realPackage->setPreferStable((bool) $config['prefer-stable']);
+            $realPackage->setPreferStable((bool)$config['prefer-stable']);
         }
 
         if (isset($config['config'])) {
@@ -187,7 +187,7 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @param array<string, string>                                                                  $requires
+     * @param array<string, string> $requires
      * @param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      *
      * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
@@ -203,7 +203,7 @@ class RootPackageLoader extends ArrayLoader
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
                 );
             } elseif (strpos($reqVersion, ' as ') !== false) {
-                throw new \UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
+                throw new \UnexpectedValueException('Invalid alias definition in "' . $reqName . '": "' . $reqVersion . '". Aliases should be in the form "exact-version as other-exact-version".');
             }
         }
 
@@ -211,16 +211,16 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @internal
-     *
      * @param array<string, string> $requires
-     * @param string                $minimumStability
-     * @param array<string, int>    $stabilityFlags
+     * @param string $minimumStability
+     * @param array<string, int> $stabilityFlags
      *
      * @return array<string, int>
      *
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @phpstan-return array<string, BasePackage::STABILITY_*>
+     * @internal
+     *
      */
     public static function extractStabilityFlags(array $requires, string $minimumStability, array $stabilityFlags): array
     {
@@ -242,7 +242,7 @@ class RootPackageLoader extends ArrayLoader
             // parse explicit stability flags to the most unstable
             $matched = false;
             foreach ($constraints as $constraint) {
-                if (Preg::isMatch('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
+                if (Preg::isMatch('{^[^@]*?@(' . implode('|', array_keys($stabilities)) . ')$}i', $constraint, $match)) {
                     $name = strtolower($reqName);
                     $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -277,12 +277,12 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @internal
-     *
      * @param array<string, string> $requires
      * @param array<string, string> $references
      *
      * @return array<string, string>
+     * @internal
+     *
      */
     public static function extractReferences(array $requires, array $references): array
     {

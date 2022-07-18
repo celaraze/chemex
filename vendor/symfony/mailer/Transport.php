@@ -56,20 +56,6 @@ final class Transport
 
     private iterable $factories;
 
-    public static function fromDsn(string $dsn, EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): TransportInterface
-    {
-        $factory = new self(iterator_to_array(self::getDefaultFactories($dispatcher, $client, $logger)));
-
-        return $factory->fromString($dsn);
-    }
-
-    public static function fromDsns(array $dsns, EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): TransportInterface
-    {
-        $factory = new self(iterator_to_array(self::getDefaultFactories($dispatcher, $client, $logger)));
-
-        return $factory->fromStrings($dsns);
-    }
-
     /**
      * @param TransportFactoryInterface[] $factories
      */
@@ -78,14 +64,31 @@ final class Transport
         $this->factories = $factories;
     }
 
-    public function fromStrings(array $dsns): Transports
+    public static function fromDsn(string $dsn, EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): TransportInterface
     {
-        $transports = [];
-        foreach ($dsns as $name => $dsn) {
-            $transports[$name] = $this->fromString($dsn);
+        $factory = new self(iterator_to_array(self::getDefaultFactories($dispatcher, $client, $logger)));
+
+        return $factory->fromString($dsn);
+    }
+
+    /**
+     * @return \Traversable<int, TransportFactoryInterface>
+     */
+    public static function getDefaultFactories(EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): \Traversable
+    {
+        foreach (self::FACTORY_CLASSES as $factoryClass) {
+            if (class_exists($factoryClass)) {
+                yield new $factoryClass($dispatcher, $client, $logger);
+            }
         }
 
-        return new Transports($transports);
+        yield new NullTransportFactory($dispatcher, $client, $logger);
+
+        yield new SendmailTransportFactory($dispatcher, $client, $logger);
+
+        yield new EsmtpTransportFactory($dispatcher, $client, $logger);
+
+        yield new NativeTransportFactory($dispatcher, $client, $logger);
     }
 
     public function fromString(string $dsn): TransportInterface
@@ -156,23 +159,20 @@ final class Transport
         throw new UnsupportedSchemeException($dsn);
     }
 
-    /**
-     * @return \Traversable<int, TransportFactoryInterface>
-     */
-    public static function getDefaultFactories(EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): \Traversable
+    public static function fromDsns(array $dsns, EventDispatcherInterface $dispatcher = null, HttpClientInterface $client = null, LoggerInterface $logger = null): TransportInterface
     {
-        foreach (self::FACTORY_CLASSES as $factoryClass) {
-            if (class_exists($factoryClass)) {
-                yield new $factoryClass($dispatcher, $client, $logger);
-            }
+        $factory = new self(iterator_to_array(self::getDefaultFactories($dispatcher, $client, $logger)));
+
+        return $factory->fromStrings($dsns);
+    }
+
+    public function fromStrings(array $dsns): Transports
+    {
+        $transports = [];
+        foreach ($dsns as $name => $dsn) {
+            $transports[$name] = $this->fromString($dsn);
         }
 
-        yield new NullTransportFactory($dispatcher, $client, $logger);
-
-        yield new SendmailTransportFactory($dispatcher, $client, $logger);
-
-        yield new EsmtpTransportFactory($dispatcher, $client, $logger);
-
-        yield new NativeTransportFactory($dispatcher, $client, $logger);
+        return new Transports($transports);
     }
 }

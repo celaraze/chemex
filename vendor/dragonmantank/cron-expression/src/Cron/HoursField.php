@@ -42,7 +42,7 @@ class HoursField extends AbstractField
      */
     public function isSatisfiedBy(DateTimeInterface $date, $value, bool $invert): bool
     {
-        $checkValue = (int) $date->format('H');
+        $checkValue = (int)$date->format('H');
         $retval = $this->isSatisfied($checkValue, $value);
         if ($retval) {
             return $retval;
@@ -50,7 +50,7 @@ class HoursField extends AbstractField
 
         // Are we on the edge of a transition
         $lastTransition = $this->getPastTransition($date);
-        if (($lastTransition !== null) && ($lastTransition["ts"] > ((int) $date->format('U') - 3600))) {
+        if (($lastTransition !== null) && ($lastTransition["ts"] > ((int)$date->format('U') - 3600))) {
             $dtLastOffset = clone $date;
             $this->timezoneSafeModify($dtLastOffset, "-1 hour");
             $lastOffset = $dtLastOffset->getOffset();
@@ -64,7 +64,7 @@ class HoursField extends AbstractField
                 $checkValue -= 1;
                 return $this->isSatisfied($checkValue, $value);
             }
-            if ((! $invert) && ($offsetChange <= -3600)) {
+            if ((!$invert) && ($offsetChange <= -3600)) {
                 $checkValue += 1;
                 return $this->isSatisfied($checkValue, $value);
             }
@@ -75,7 +75,7 @@ class HoursField extends AbstractField
 
     public function getPastTransition(DateTimeInterface $date): ?array
     {
-        $currentTimestamp = (int) $date->format('U');
+        $currentTimestamp = (int)$date->format('U');
         if (
             ($this->transitions === null)
             || ($this->transitionsStart < ($currentTimestamp + 86400))
@@ -118,11 +118,11 @@ class HoursField extends AbstractField
     /**
      * {@inheritdoc}
      *
-     * @param string|null                  $parts
+     * @param string|null $parts
      */
     public function increment(DateTimeInterface &$date, $invert = false, $parts = null): FieldInterface
     {
-        $originalTimestamp = (int) $date->format('U');
+        $originalTimestamp = (int)$date->format('U');
 
         // Change timezone to UTC temporarily. This will
         // allow us to go back or forwards and hour even
@@ -144,7 +144,7 @@ class HoursField extends AbstractField
             $hours = array_merge($hours, $this->getRangeForExpression($part, 23));
         }
 
-        $current_hour = (int) $date->format('H');
+        $current_hour = (int)$date->format('H');
         $position = $invert ? \count($hours) - 1 : 0;
         $countHours = \count($hours);
         if ($countHours > 1) {
@@ -158,13 +158,13 @@ class HoursField extends AbstractField
             }
         }
 
-        $target = (int) $hours[$position];
+        $target = (int)$hours[$position];
         $originalHour = (int)$date->format('H');
 
         $originalDay = (int)$date->format('d');
         $previousOffset = $date->getOffset();
 
-        if (! $invert) {
+        if (!$invert) {
             if ($originalHour >= $target) {
                 $distance = 24 - $originalHour;
                 $date = $this->timezoneSafeModify($date, "+{$distance} hours");

@@ -26,7 +26,7 @@ class DateRangeFilterIterator extends \FilterIterator
 
     /**
      * @param \Iterator<string, \SplFileInfo> $iterator
-     * @param DateComparator[]                $comparators
+     * @param DateComparator[] $comparators
      */
     public function __construct(\Iterator $iterator, array $comparators)
     {

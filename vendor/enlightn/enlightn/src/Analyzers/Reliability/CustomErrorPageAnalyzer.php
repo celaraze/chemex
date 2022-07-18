@@ -12,19 +12,23 @@ class CustomErrorPageAnalyzer extends ReliabilityAnalyzer
     use AnalyzesMiddleware;
 
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = "Your application defines custom error page views.";
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MINOR;
-
     /**
      * The time to fix in minutes.
      *
@@ -33,17 +37,10 @@ class CustomErrorPageAnalyzer extends ReliabilityAnalyzer
     public $timeToFix = 60;
 
     /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
-    /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -60,7 +57,7 @@ class CustomErrorPageAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application does not customize its error pages. This may hamper user experience and also exposes "
-            ."your application to fingerprinting, which means potential attackers can identify Laravel as your framework.";
+            . "your application to fingerprinting, which means potential attackers can identify Laravel as your framework.";
     }
 
     /**
@@ -72,10 +69,10 @@ class CustomErrorPageAnalyzer extends ReliabilityAnalyzer
     public function handle(Filesystem $files)
     {
         $hasCustomErrorPages = collect(config('view.paths'))->contains(function ($viewPath, $_) use ($files) {
-            return $files->exists($viewPath.DIRECTORY_SEPARATOR.'errors'.DIRECTORY_SEPARATOR.'404.blade.php');
+            return $files->exists($viewPath . DIRECTORY_SEPARATOR . 'errors' . DIRECTORY_SEPARATOR . '404.blade.php');
         });
 
-        if (! $hasCustomErrorPages) {
+        if (!$hasCustomErrorPages) {
             $this->markFailed();
         }
     }

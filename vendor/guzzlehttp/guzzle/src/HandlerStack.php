@@ -30,6 +30,14 @@ class HandlerStack
     private $cached;
 
     /**
+     * @param (callable(RequestInterface, array): PromiseInterface)|null $handler Underlying HTTP handler.
+     */
+    public function __construct(callable $handler = null)
+    {
+        $this->handler = $handler;
+    }
+
+    /**
      * Creates a default handler stack that can be used by clients.
      *
      * The returned handler will wrap the provided handler or use the most
@@ -56,11 +64,15 @@ class HandlerStack
     }
 
     /**
-     * @param (callable(RequestInterface, array): PromiseInterface)|null $handler Underlying HTTP handler.
+     * Push a middleware to the top of the stack.
+     *
+     * @param callable(callable): callable $middleware Middleware function
+     * @param string $name Name to register for this middleware.
      */
-    public function __construct(callable $handler = null)
+    public function push(callable $middleware, string $name = ''): void
     {
-        $this->handler = $handler;
+        $this->stack[] = [$middleware, $name];
+        $this->cached = null;
     }
 
     /**
@@ -73,6 +85,29 @@ class HandlerStack
         $handler = $this->resolve();
 
         return $handler($request, $options);
+    }
+
+    /**
+     * Compose the middleware and handler into a single callable function.
+     *
+     * @return callable(RequestInterface, array): PromiseInterface
+     */
+    public function resolve(): callable
+    {
+        if ($this->cached === null) {
+            if (($prev = $this->handler) === null) {
+                throw new \LogicException('No handler has been specified');
+            }
+
+            foreach (\array_reverse($this->stack) as $fn) {
+                /** @var callable(RequestInterface, array): PromiseInterface $prev */
+                $prev = $fn[0]($prev);
+            }
+
+            $this->cached = $prev;
+        }
+
+        return $this->cached;
     }
 
     /**
@@ -106,6 +141,27 @@ class HandlerStack
     }
 
     /**
+     * Provides a debug string for a given callable.
+     *
+     * @param callable|string $fn Function to write as a string.
+     */
+    private function debugCallable($fn): string
+    {
+        if (\is_string($fn)) {
+            return "callable({$fn})";
+        }
+
+        if (\is_array($fn)) {
+            return \is_string($fn[0])
+                ? "callable({$fn[0]}::{$fn[1]})"
+                : "callable(['" . \get_class($fn[0]) . "', '{$fn[1]}'])";
+        }
+
+        /** @var object $fn */
+        return 'callable(' . \spl_object_hash($fn) . ')';
+    }
+
+    /**
      * Set the HTTP handler that actually returns a promise.
      *
      * @param callable(RequestInterface, array): PromiseInterface $handler Accepts a request and array of options and
@@ -122,14 +178,14 @@ class HandlerStack
      */
     public function hasHandler(): bool
     {
-        return $this->handler !== null ;
+        return $this->handler !== null;
     }
 
     /**
      * Unshift a middleware to the bottom of the stack.
      *
      * @param callable(callable): callable $middleware Middleware function
-     * @param string                       $name       Name to register for this middleware.
+     * @param string $name Name to register for this middleware.
      */
     public function unshift(callable $middleware, ?string $name = null): void
     {
@@ -138,94 +194,15 @@ class HandlerStack
     }
 
     /**
-     * Push a middleware to the top of the stack.
-     *
-     * @param callable(callable): callable $middleware Middleware function
-     * @param string                       $name       Name to register for this middleware.
-     */
-    public function push(callable $middleware, string $name = ''): void
-    {
-        $this->stack[] = [$middleware, $name];
-        $this->cached = null;
-    }
-
-    /**
      * Add a middleware before another middleware by name.
      *
-     * @param string                       $findName   Middleware to find
+     * @param string $findName Middleware to find
      * @param callable(callable): callable $middleware Middleware function
-     * @param string                       $withName   Name to register for this middleware.
+     * @param string $withName Name to register for this middleware.
      */
     public function before(string $findName, callable $middleware, string $withName = ''): void
     {
         $this->splice($findName, $withName, $middleware, true);
-    }
-
-    /**
-     * Add a middleware after another middleware by name.
-     *
-     * @param string                       $findName   Middleware to find
-     * @param callable(callable): callable $middleware Middleware function
-     * @param string                       $withName   Name to register for this middleware.
-     */
-    public function after(string $findName, callable $middleware, string $withName = ''): void
-    {
-        $this->splice($findName, $withName, $middleware, false);
-    }
-
-    /**
-     * Remove a middleware by instance or name from the stack.
-     *
-     * @param callable|string $remove Middleware to remove by instance or name.
-     */
-    public function remove($remove): void
-    {
-        if (!is_string($remove) && !is_callable($remove)) {
-            trigger_deprecation('guzzlehttp/guzzle', '7.4', 'Not passing a callable or string to %s::%s() is deprecated and will cause an error in 8.0.', __CLASS__, __FUNCTION__);
-        }
-
-        $this->cached = null;
-        $idx = \is_callable($remove) ? 0 : 1;
-        $this->stack = \array_values(\array_filter(
-            $this->stack,
-            static function ($tuple) use ($idx, $remove) {
-                return $tuple[$idx] !== $remove;
-            }
-        ));
-    }
-
-    /**
-     * Compose the middleware and handler into a single callable function.
-     *
-     * @return callable(RequestInterface, array): PromiseInterface
-     */
-    public function resolve(): callable
-    {
-        if ($this->cached === null) {
-            if (($prev = $this->handler) === null) {
-                throw new \LogicException('No handler has been specified');
-            }
-
-            foreach (\array_reverse($this->stack) as $fn) {
-                /** @var callable(RequestInterface, array): PromiseInterface $prev */
-                $prev = $fn[0]($prev);
-            }
-
-            $this->cached = $prev;
-        }
-
-        return $this->cached;
-    }
-
-    private function findByName(string $name): int
-    {
-        foreach ($this->stack as $k => $v) {
-            if ($v[1] === $name) {
-                return $k;
-            }
-        }
-
-        throw new \InvalidArgumentException("Middleware not found: $name");
     }
 
     /**
@@ -252,24 +229,47 @@ class HandlerStack
         }
     }
 
-    /**
-     * Provides a debug string for a given callable.
-     *
-     * @param callable|string $fn Function to write as a string.
-     */
-    private function debugCallable($fn): string
+    private function findByName(string $name): int
     {
-        if (\is_string($fn)) {
-            return "callable({$fn})";
+        foreach ($this->stack as $k => $v) {
+            if ($v[1] === $name) {
+                return $k;
+            }
         }
 
-        if (\is_array($fn)) {
-            return \is_string($fn[0])
-                ? "callable({$fn[0]}::{$fn[1]})"
-                : "callable(['" . \get_class($fn[0]) . "', '{$fn[1]}'])";
+        throw new \InvalidArgumentException("Middleware not found: $name");
+    }
+
+    /**
+     * Add a middleware after another middleware by name.
+     *
+     * @param string $findName Middleware to find
+     * @param callable(callable): callable $middleware Middleware function
+     * @param string $withName Name to register for this middleware.
+     */
+    public function after(string $findName, callable $middleware, string $withName = ''): void
+    {
+        $this->splice($findName, $withName, $middleware, false);
+    }
+
+    /**
+     * Remove a middleware by instance or name from the stack.
+     *
+     * @param callable|string $remove Middleware to remove by instance or name.
+     */
+    public function remove($remove): void
+    {
+        if (!is_string($remove) && !is_callable($remove)) {
+            trigger_deprecation('guzzlehttp/guzzle', '7.4', 'Not passing a callable or string to %s::%s() is deprecated and will cause an error in 8.0.', __CLASS__, __FUNCTION__);
         }
 
-        /** @var object $fn */
-        return 'callable(' . \spl_object_hash($fn) . ')';
+        $this->cached = null;
+        $idx = \is_callable($remove) ? 0 : 1;
+        $this->stack = \array_values(\array_filter(
+            $this->stack,
+            static function ($tuple) use ($idx, $remove) {
+                return $tuple[$idx] !== $remove;
+            }
+        ));
     }
 }

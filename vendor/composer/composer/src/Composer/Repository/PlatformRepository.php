@@ -78,14 +78,29 @@ class PlatformRepository extends ArrayRepository
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             if (!is_string($version) && false !== $version) { // @phpstan-ignore-line
-                throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
+                throw new \UnexpectedValueException('config.platform.' . $name . ' should be a string or false, but got ' . gettype($version) . ' ' . var_export($version, true));
             }
             if ($name === 'php' && $version === false) {
-                throw new \UnexpectedValueException('config.platform.'.$name.' cannot be set to false as you cannot disable php entirely.');
+                throw new \UnexpectedValueException('config.platform.' . $name . ' cannot be set to false as you cannot disable php entirely.');
             }
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
         parent::__construct($packages);
+    }
+
+    /**
+     * Returns the last seen config.platform.php version if defined
+     *
+     * This is a best effort attempt for internal purposes, retrieve the real
+     * packages from a PlatformRepository instance if you need a version guaranteed to
+     * be correct.
+     *
+     * @return string|null
+     * @internal
+     */
+    public static function getPlatformPhpVersion(): ?string
+    {
+        return self::$lastSeenPlatformPhp;
     }
 
     public function getRepoName(): string
@@ -94,7 +109,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function isPlatformPackageDisabled(string $name): bool
@@ -110,6 +125,16 @@ class PlatformRepository extends ArrayRepository
         return $this->disabledPackages;
     }
 
+    public function search(string $query, int $mode = 0, ?string $type = null): array
+    {
+        // suppress vendor search as there are no vendors to match in platform packages
+        if ($mode === self::SEARCH_VENDOR) {
+            return array();
+        }
+
+        return parent::search($query, $mode, $type);
+    }
+
     protected function initialize(): void
     {
         parent::initialize();
@@ -121,7 +146,7 @@ class PlatformRepository extends ArrayRepository
         foreach ($this->overrides as $override) {
             // Check that it's a platform package.
             if (!self::isPlatformPackage($override['name'])) {
-                throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
+                throw new \InvalidArgumentException('Invalid platform package name in config.platform: ' . $override['name']);
             }
 
             if ($override['version'] !== false) {
@@ -211,12 +236,12 @@ class PlatformRepository extends ArrayRepository
 
                     // librabbitmq version => 0.9.0
                     if (Preg::isMatch('/^librabbitmq version => (?<version>.+)$/im', $info, $librabbitmqMatches)) {
-                        $this->addLibrary($name.'-librabbitmq', $librabbitmqMatches['version'], 'AMQP librabbitmq version');
+                        $this->addLibrary($name . '-librabbitmq', $librabbitmqMatches['version'], 'AMQP librabbitmq version');
                     }
 
                     // AMQP protocol version => 0-9-1
                     if (Preg::isMatch('/^AMQP protocol version => (?<version>.+)$/im', $info, $protocolMatches)) {
-                        $this->addLibrary($name.'-protocol', str_replace('-', '.', $protocolMatches['version']), 'AMQP protocol version');
+                        $this->addLibrary($name . '-protocol', str_replace('-', '.', $protocolMatches['version']), 'AMQP protocol version');
                     }
                     break;
 
@@ -240,20 +265,20 @@ class PlatformRepository extends ArrayRepository
                         $library = strtolower($sslMatches['library']);
                         if ($library === 'openssl') {
                             $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
-                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips' : ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl') : array());
+                            $this->addLibrary($name . '-openssl' . ($isFips ? '-fips' : ''), $parsedVersion, 'curl OpenSSL version (' . $parsedVersion . ')', array(), $isFips ? array('curl-openssl') : array());
                         } else {
-                            $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', array('curl-openssl'));
+                            $this->addLibrary($name . '-' . $library, $sslMatches['version'], 'curl ' . $library . ' version (' . $sslMatches['version'] . ')', array('curl-openssl'));
                         }
                     }
 
                     // libSSH Version => libssh2/1.4.3
                     if (Preg::isMatch('{^libSSH Version => (?<library>[^/]+)/(?<version>.+?)(?:/.*)?$}im', $info, $sshMatches)) {
-                        $this->addLibrary($name.'-'.strtolower($sshMatches['library']), $sshMatches['version'], 'curl '.$sshMatches['library'].' version');
+                        $this->addLibrary($name . '-' . strtolower($sshMatches['library']), $sshMatches['version'], 'curl ' . $sshMatches['library'] . ' version');
                     }
 
                     // ZLib Version => 1.2.8
                     if (Preg::isMatch('{^ZLib Version => (?<version>.+)$}im', $info, $zlibMatches)) {
-                        $this->addLibrary($name.'-zlib', $zlibMatches['version'], 'curl zlib version');
+                        $this->addLibrary($name . '-zlib', $zlibMatches['version'], 'curl zlib version');
                     }
                     break;
 
@@ -262,7 +287,7 @@ class PlatformRepository extends ArrayRepository
 
                     // timelib version => 2018.03
                     if (Preg::isMatch('/^timelib version => (?<version>.+)$/im', $info, $timelibMatches)) {
-                        $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'date timelib version');
+                        $this->addLibrary($name . '-timelib', $timelibMatches['version'], 'date timelib version');
                     }
 
                     // Timezone Database => internal
@@ -271,9 +296,9 @@ class PlatformRepository extends ArrayRepository
                         if (Preg::isMatch('/^"Olson" Timezone Database Version => (?<version>.+?)(\.system)?$/im', $info, $zoneinfoMatches)) {
                             // If the timezonedb is provided by ext/timezonedb, register that version as a replacement
                             if ($external && in_array('timezonedb', $loadedExtensions, true)) {
-                                $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name.'-zoneinfo'));
+                                $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name . '-zoneinfo'));
                             } else {
-                                $this->addLibrary($name.'-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date');
+                                $this->addLibrary($name . '-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date');
                             }
                         }
                     }
@@ -284,7 +309,7 @@ class PlatformRepository extends ArrayRepository
 
                     // libmagic => 537
                     if (Preg::isMatch('/^libmagic => (?<version>.+)$/im', $info, $magicMatches)) {
-                        $this->addLibrary($name.'-libmagic', $magicMatches['version'], 'fileinfo libmagic version');
+                        $this->addLibrary($name . '-libmagic', $magicMatches['version'], 'fileinfo libmagic version');
                     }
                     break;
 
@@ -294,19 +319,19 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^libJPEG Version => (?<version>.+?)(?: compatible)?$/im', $info, $libjpegMatches)) {
-                        $this->addLibrary($name.'-libjpeg', Version::parseLibjpeg($libjpegMatches['version']), 'libjpeg version for gd');
+                        $this->addLibrary($name . '-libjpeg', Version::parseLibjpeg($libjpegMatches['version']), 'libjpeg version for gd');
                     }
 
                     if (Preg::isMatch('/^libPNG Version => (?<version>.+)$/im', $info, $libpngMatches)) {
-                        $this->addLibrary($name.'-libpng', $libpngMatches['version'], 'libpng version for gd');
+                        $this->addLibrary($name . '-libpng', $libpngMatches['version'], 'libpng version for gd');
                     }
 
                     if (Preg::isMatch('/^FreeType Version => (?<version>.+)$/im', $info, $freetypeMatches)) {
-                        $this->addLibrary($name.'-freetype', $freetypeMatches['version'], 'freetype version for gd');
+                        $this->addLibrary($name . '-freetype', $freetypeMatches['version'], 'freetype version for gd');
                     }
 
                     if (Preg::isMatch('/^libXpm Version => (?<versionId>\d+)$/im', $info, $libxpmMatches)) {
-                        $this->addLibrary($name.'-libxpm', Version::convertLibxpmVersionId((int) $libxpmMatches['versionId']), 'libxpm version for gd');
+                        $this->addLibrary($name . '-libxpm', Version::convertLibxpmVersionId((int)$libxpmMatches['versionId']), 'libxpm version for gd');
                     }
 
                     break;
@@ -353,17 +378,17 @@ class PlatformRepository extends ArrayRepository
                     Preg::match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
                     $version = $matches['version'];
                     if (isset($matches['patch'])) {
-                        $version .= '.'.$matches['patch'];
+                        $version .= '.' . $matches['patch'];
                     }
 
-                    $this->addLibrary($name.'-imagemagick', $version, null, array('imagick'));
+                    $this->addLibrary($name . '-imagemagick', $version, null, array('imagick'));
                     break;
 
                 case 'ldap':
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^Vendor Version => (?<versionId>\d+)$/im', $info, $matches) && Preg::isMatch('/^Vendor Name => (?<vendor>.+)$/im', $info, $vendorMatches)) {
-                        $this->addLibrary($name.'-'.strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId((int) $matches['versionId']), $vendorMatches['vendor'].' version of ldap');
+                        $this->addLibrary($name . '-' . strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId((int)$matches['versionId']), $vendorMatches['vendor'] . ' version of ldap');
                     }
                     break;
 
@@ -381,16 +406,16 @@ class PlatformRepository extends ArrayRepository
 
                     // libmbfl version => 1.3.2
                     if (Preg::isMatch('/^libmbfl version => (?<version>.+)$/im', $info, $libmbflMatches)) {
-                        $this->addLibrary($name.'-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
+                        $this->addLibrary($name . '-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
                     }
 
                     if ($this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
-                        $this->addLibrary($name.'-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
+                        $this->addLibrary($name . '-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
 
-                    // Multibyte regex (oniguruma) version => 5.9.5
-                    // oniguruma version => 6.9.0
+                        // Multibyte regex (oniguruma) version => 5.9.5
+                        // oniguruma version => 6.9.0
                     } elseif (Preg::isMatch('/^(?:oniguruma|Multibyte regex \(oniguruma\)) version => (?<version>.+)$/im', $info, $onigurumaMatches)) {
-                        $this->addLibrary($name.'-oniguruma', $onigurumaMatches['version'], 'mbstring oniguruma version');
+                        $this->addLibrary($name . '-oniguruma', $onigurumaMatches['version'], 'mbstring oniguruma version');
                     }
 
                     break;
@@ -400,7 +425,7 @@ class PlatformRepository extends ArrayRepository
 
                     // libmemcached version => 1.0.18
                     if (Preg::isMatch('/^libmemcached version => (?<version>.+)$/im', $info, $matches)) {
-                        $this->addLibrary($name.'-libmemcached', $matches['version'], 'libmemcached version');
+                        $this->addLibrary($name . '-libmemcached', $matches['version'], 'libmemcached version');
                     }
                     break;
 
@@ -408,7 +433,7 @@ class PlatformRepository extends ArrayRepository
                     // OpenSSL 1.1.1g  21 Apr 2020
                     if (Preg::isMatch('{^(?:OpenSSL|LibreSSL)?\s*(?<version>\S+)}i', $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $matches)) {
                         $parsedVersion = Version::parseOpenssl($matches['version'], $isFips);
-                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion, $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), array(), $isFips ? array($name) : array());
+                        $this->addLibrary($name . ($isFips ? '-fips' : ''), $parsedVersion, $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), array(), $isFips ? array($name) : array());
                     }
                     break;
 
@@ -419,7 +444,7 @@ class PlatformRepository extends ArrayRepository
 
                     // PCRE Unicode Version => 12.1.0
                     if (Preg::isMatch('/^PCRE Unicode Version => (?<version>.+)$/im', $info, $pcreUnicodeMatches)) {
-                        $this->addLibrary($name.'-unicode', $pcreUnicodeMatches['version'], 'PCRE Unicode version support');
+                        $this->addLibrary($name . '-unicode', $pcreUnicodeMatches['version'], 'PCRE Unicode version support');
                     }
 
                     break;
@@ -429,7 +454,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^(?:Client API version|Version) => mysqlnd (?<version>.+?) /mi', $info, $matches)) {
-                        $this->addLibrary($name.'-mysqlnd', $matches['version'], 'mysqlnd library version for '.$name);
+                        $this->addLibrary($name . '-mysqlnd', $matches['version'], 'mysqlnd library version for ' . $name);
                     }
                     break;
 
@@ -437,11 +462,11 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^libmongoc bundled version => (?<version>.+)$/im', $info, $libmongocMatches)) {
-                        $this->addLibrary($name.'-libmongoc', $libmongocMatches['version'], 'libmongoc version of mongodb');
+                        $this->addLibrary($name . '-libmongoc', $libmongocMatches['version'], 'libmongoc version of mongodb');
                     }
 
                     if (Preg::isMatch('/^libbson bundled version => (?<version>.+)$/im', $info, $libbsonMatches)) {
-                        $this->addLibrary($name.'-libbson', $libbsonMatches['version'], 'libbson version of mongodb');
+                        $this->addLibrary($name . '-libbson', $libbsonMatches['version'], 'libbson version of mongodb');
                     }
                     break;
 
@@ -450,7 +475,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^PostgreSQL\(libpq\) Version => (?<version>.*)$/im', $info, $matches)) {
-                        $this->addLibrary($name.'-libpq', $matches['version'], 'libpq for '.$name);
+                        $this->addLibrary($name . '-libpq', $matches['version'], 'libpq for ' . $name);
                     }
                     break;
 
@@ -466,7 +491,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^SQLite Library => (?<version>.+)$/im', $info, $matches)) {
-                        $this->addLibrary($name.'-sqlite', $matches['version']);
+                        $this->addLibrary($name . '-sqlite', $matches['version']);
                     }
                     break;
 
@@ -474,7 +499,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^libssh2 version => (?<version>.+)$/im', $info, $matches)) {
-                        $this->addLibrary($name.'-libssh2', $matches['version']);
+                        $this->addLibrary($name . '-libssh2', $matches['version']);
                     }
                     break;
 
@@ -491,13 +516,13 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo('yaml');
 
                     if (Preg::isMatch('/^LibYAML Version => (?<version>.+)$/im', $info, $matches)) {
-                        $this->addLibrary($name.'-libyaml', $matches['version'], 'libyaml version of yaml');
+                        $this->addLibrary($name . '-libyaml', $matches['version'], 'libyaml version of yaml');
                     }
                     break;
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', 'ZipArchive'), null, array('zip'));
+                        $this->addLibrary($name . '-libzip', $this->runtime->getConstant('LIBZIP_VERSION', 'ZipArchive'), null, array('zip'));
                     }
                     break;
 
@@ -505,7 +530,7 @@ class PlatformRepository extends ArrayRepository
                     if ($this->runtime->hasConstant('ZLIB_VERSION')) {
                         $this->addLibrary($name, $this->runtime->getConstant('ZLIB_VERSION'));
 
-                    // Linked Version => 1.2.8
+                        // Linked Version => 1.2.8
                     } elseif (Preg::isMatch('/^Linked Version => (?<version>.+)$/im', $this->runtime->getExtensionInfo($name), $matches)) {
                         $this->addLibrary($name, $matches['version']);
                     }
@@ -533,49 +558,20 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @inheritDoc
+     * Check if a package name is a platform package.
+     *
+     * @param string $name
+     * @return bool
      */
-    public function addPackage(PackageInterface $package): void
+    public static function isPlatformPackage(string $name): bool
     {
-        if (!$package instanceof CompletePackage) {
-            throw new \UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
+        static $cache = array();
+
+        if (isset($cache[$name])) {
+            return $cache[$name];
         }
 
-        // Skip if overridden
-        if (isset($this->overrides[$package->getName()])) {
-            if ($this->overrides[$package->getName()]['version'] === false) {
-                $this->addDisabledPackage($package);
-
-                return;
-            }
-
-            $overrider = $this->findPackage($package->getName(), '*');
-            if ($package->getVersion() === $overrider->getVersion()) {
-                $actualText = 'same as actual';
-            } else {
-                $actualText = 'actual: '.$package->getPrettyVersion();
-            }
-            if ($overrider instanceof CompletePackageInterface) {
-                $overrider->setDescription($overrider->getDescription().', '.$actualText);
-            }
-
-            return;
-        }
-
-        // Skip if PHP is overridden and we are adding a php-* package
-        if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
-            $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
-            if ($package->getVersion() === $overrider->getVersion()) {
-                $actualText = 'same as actual';
-            } else {
-                $actualText = 'actual: '.$package->getPrettyVersion();
-            }
-            $overrider->setDescription($overrider->getDescription().', '.$actualText);
-
-            return;
-        }
-
-        parent::addPackage($package);
+        return $cache[$name] = Preg::isMatch(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name);
     }
 
     /**
@@ -600,11 +596,57 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
+     * @inheritDoc
+     */
+    public function addPackage(PackageInterface $package): void
+    {
+        if (!$package instanceof CompletePackage) {
+            throw new \UnexpectedValueException('Expected CompletePackage but got ' . get_class($package));
+        }
+
+        // Skip if overridden
+        if (isset($this->overrides[$package->getName()])) {
+            if ($this->overrides[$package->getName()]['version'] === false) {
+                $this->addDisabledPackage($package);
+
+                return;
+            }
+
+            $overrider = $this->findPackage($package->getName(), '*');
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: ' . $package->getPrettyVersion();
+            }
+            if ($overrider instanceof CompletePackageInterface) {
+                $overrider->setDescription($overrider->getDescription() . ', ' . $actualText);
+            }
+
+            return;
+        }
+
+        // Skip if PHP is overridden and we are adding a php-* package
+        if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
+            $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
+            if ($package->getVersion() === $overrider->getVersion()) {
+                $actualText = 'same as actual';
+            } else {
+                $actualText = 'actual: ' . $package->getPrettyVersion();
+            }
+            $overrider->setDescription($overrider->getDescription() . ', ' . $actualText);
+
+            return;
+        }
+
+        parent::addPackage($package);
+    }
+
+    /**
      * @return void
      */
     private function addDisabledPackage(CompletePackage $package): void
     {
-        $package->setDescription($package->getDescription().'. <warning>Package disabled via config.platform</warning>');
+        $package->setDescription($package->getDescription() . '. <warning>Package disabled via config.platform</warning>');
         $package->setExtra(array('config.platform' => true));
 
         $this->disabledPackages[$package->getName()] = $package;
@@ -620,7 +662,7 @@ class PlatformRepository extends ArrayRepository
         try {
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $extraDescription = ' (actual version: '.$prettyVersion.')';
+            $extraDescription = ' (actual version: ' . $prettyVersion . ')';
             if (Preg::isMatch('{^(\d+\.\d+\.\d+(?:\.\d+)?)}', $prettyVersion, $match)) {
                 $prettyVersion = $match[1];
             } else {
@@ -631,7 +673,7 @@ class PlatformRepository extends ArrayRepository
 
         $packageName = $this->buildPackageName($name);
         $ext = new CompletePackage($packageName, $version, $prettyVersion);
-        $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
+        $ext->setDescription('The ' . $name . ' PHP extension' . $extraDescription);
 
         if ($name === 'uuid') {
             $ext->setReplaces(array(
@@ -643,7 +685,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param  string $name
+     * @param string $name
      * @return string
      */
     private function buildPackageName(string $name): string
@@ -652,11 +694,11 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param string      $name
+     * @param string $name
      * @param string|null $prettyVersion
      * @param string|null $description
-     * @param string[]    $replaces
-     * @param string[]    $provides
+     * @param string[] $replaces
+     * @param string[] $provides
      *
      * @return void
      */
@@ -672,67 +714,25 @@ class PlatformRepository extends ArrayRepository
         }
 
         if ($description === null) {
-            $description = 'The '.$name.' library';
+            $description = 'The ' . $name . ' library';
         }
 
-        $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
+        $lib = new CompletePackage('lib-' . $name, $version, $prettyVersion);
         $lib->setDescription($description);
 
         $replaceLinks = array();
         foreach ($replaces as $replace) {
             $replace = strtolower($replace);
-            $replaceLinks[$replace] = new Link('lib-'.$name, 'lib-'.$replace, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
+            $replaceLinks[$replace] = new Link('lib-' . $name, 'lib-' . $replace, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
         }
         $provideLinks = array();
         foreach ($provides as $provide) {
             $provide = strtolower($provide);
-            $provideLinks[$provide] = new Link('lib-'.$name, 'lib-'.$provide, new Constraint('=', $version), Link::TYPE_PROVIDE, $lib->getPrettyVersion());
+            $provideLinks[$provide] = new Link('lib-' . $name, 'lib-' . $provide, new Constraint('=', $version), Link::TYPE_PROVIDE, $lib->getPrettyVersion());
         }
         $lib->setReplaces($replaceLinks);
         $lib->setProvides($provideLinks);
 
         $this->addPackage($lib);
-    }
-
-    /**
-     * Check if a package name is a platform package.
-     *
-     * @param  string $name
-     * @return bool
-     */
-    public static function isPlatformPackage(string $name): bool
-    {
-        static $cache = array();
-
-        if (isset($cache[$name])) {
-            return $cache[$name];
-        }
-
-        return $cache[$name] = Preg::isMatch(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name);
-    }
-
-    /**
-     * Returns the last seen config.platform.php version if defined
-     *
-     * This is a best effort attempt for internal purposes, retrieve the real
-     * packages from a PlatformRepository instance if you need a version guaranteed to
-     * be correct.
-     *
-     * @internal
-     * @return string|null
-     */
-    public static function getPlatformPhpVersion(): ?string
-    {
-        return self::$lastSeenPlatformPhp;
-    }
-
-    public function search(string $query, int $mode = 0, ?string $type = null): array
-    {
-        // suppress vendor search as there are no vendors to match in platform packages
-        if ($mode === self::SEARCH_VENDOR) {
-            return array();
-        }
-
-        return parent::search($query, $mode, $type);
     }
 }

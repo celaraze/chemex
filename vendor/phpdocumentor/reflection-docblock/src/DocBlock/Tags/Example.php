@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection\DocBlock\Tags;
 
 use phpDocumentor\Reflection\DocBlock\Tag;
 use Webmozart\Assert\Assert;
-
 use function array_key_exists;
 use function preg_match;
 use function rawurlencode;
@@ -47,24 +46,69 @@ final class Example implements Tag, Factory\StaticMethod
     private $content;
 
     public function __construct(
-        string $filePath,
-        bool $isURI,
-        int $startingLine,
-        int $lineCount,
+        string  $filePath,
+        bool    $isURI,
+        int     $startingLine,
+        int     $lineCount,
         ?string $content
-    ) {
+    )
+    {
         Assert::stringNotEmpty($filePath);
         Assert::greaterThanEq($startingLine, 1);
         Assert::greaterThanEq($lineCount, 0);
 
-        $this->filePath     = $filePath;
+        $this->filePath = $filePath;
         $this->startingLine = $startingLine;
-        $this->lineCount    = $lineCount;
+        $this->lineCount = $lineCount;
         if ($content !== null) {
             $this->content = trim($content);
         }
 
         $this->isURI = $isURI;
+    }
+
+    public static function create(string $body): ?Tag
+    {
+        // File component: File path in quotes or File URI / Source information
+        if (!preg_match('/^\s*(?:(\"[^\"]+\")|(\S+))(?:\s+(.*))?$/sux', $body, $matches)) {
+            return null;
+        }
+
+        $filePath = null;
+        $fileUri = null;
+        if ($matches[1] !== '') {
+            $filePath = $matches[1];
+        } else {
+            $fileUri = $matches[2];
+        }
+
+        $startingLine = 1;
+        $lineCount = 0;
+        $description = null;
+
+        if (array_key_exists(3, $matches)) {
+            $description = $matches[3];
+
+            // Starting line / Number of lines / Description
+            if (preg_match('/^([1-9]\d*)(?:\s+((?1))\s*)?(.*)$/sux', $matches[3], $contentMatches)) {
+                $startingLine = (int)$contentMatches[1];
+                if (isset($contentMatches[2])) {
+                    $lineCount = (int)$contentMatches[2];
+                }
+
+                if (array_key_exists(3, $contentMatches)) {
+                    $description = $contentMatches[3];
+                }
+            }
+        }
+
+        return new static(
+            $filePath ?? ($fileUri ?? ''),
+            $fileUri !== null,
+            $startingLine,
+            $lineCount,
+            $description
+        );
     }
 
     public function getContent(): string
@@ -83,53 +127,17 @@ final class Example implements Tag, Factory\StaticMethod
         return $this->content;
     }
 
+    /**
+     * Returns true if the provided URI is relative or contains a complete scheme (and thus is absolute).
+     */
+    private function isUriRelative(string $uri): bool
+    {
+        return strpos($uri, ':') === false;
+    }
+
     public function getDescription(): ?string
     {
         return $this->content;
-    }
-
-    public static function create(string $body): ?Tag
-    {
-        // File component: File path in quotes or File URI / Source information
-        if (!preg_match('/^\s*(?:(\"[^\"]+\")|(\S+))(?:\s+(.*))?$/sux', $body, $matches)) {
-            return null;
-        }
-
-        $filePath = null;
-        $fileUri  = null;
-        if ($matches[1] !== '') {
-            $filePath = $matches[1];
-        } else {
-            $fileUri = $matches[2];
-        }
-
-        $startingLine = 1;
-        $lineCount    = 0;
-        $description  = null;
-
-        if (array_key_exists(3, $matches)) {
-            $description = $matches[3];
-
-            // Starting line / Number of lines / Description
-            if (preg_match('/^([1-9]\d*)(?:\s+((?1))\s*)?(.*)$/sux', $matches[3], $contentMatches)) {
-                $startingLine = (int) $contentMatches[1];
-                if (isset($contentMatches[2])) {
-                    $lineCount = (int) $contentMatches[2];
-                }
-
-                if (array_key_exists(3, $contentMatches)) {
-                    $description = $contentMatches[3];
-                }
-            }
-        }
-
-        return new static(
-            $filePath ?? ($fileUri ?? ''),
-            $fileUri !== null,
-            $startingLine,
-            $lineCount,
-            $description
-        );
     }
 
     /**
@@ -150,9 +158,9 @@ final class Example implements Tag, Factory\StaticMethod
     {
         $filePath = $this->filePath;
         $isDefaultLine = $this->startingLine === 1 && $this->lineCount === 0;
-        $startingLine = !$isDefaultLine ? (string) $this->startingLine : '';
-        $lineCount = !$isDefaultLine ? (string) $this->lineCount : '';
-        $content = (string) $this->content;
+        $startingLine = !$isDefaultLine ? (string)$this->startingLine : '';
+        $lineCount = !$isDefaultLine ? (string)$this->lineCount : '';
+        $content = (string)$this->content;
 
         return $filePath
             . ($startingLine !== ''
@@ -164,14 +172,6 @@ final class Example implements Tag, Factory\StaticMethod
             . ($content !== ''
                 ? ($filePath !== '' || $startingLine !== '' || $lineCount !== '' ? ' ' : '') . $content
                 : '');
-    }
-
-    /**
-     * Returns true if the provided URI is relative or contains a complete scheme (and thus is absolute).
-     */
-    private function isUriRelative(string $uri): bool
-    {
-        return strpos($uri, ':') === false;
     }
 
     public function getStartingLine(): int

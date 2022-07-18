@@ -15,7 +15,8 @@
 ------
 
 PHPStan focuses on finding errors in your code without actually running it. It catches whole classes of bugs
-even before you write tests for the code. It moves PHP closer to compiled languages in the sense that the correctness of each line of the code
+even before you write tests for the code. It moves PHP closer to compiled languages in the sense that the correctness of
+each line of the code
 can be checked before you run the actual line.
 
 **[Read more about PHPStan in an introductory article »](https://phpstan.org/blog/find-bugs-in-your-code-without-writing-tests)**
@@ -54,11 +55,14 @@ can be checked before you run the actual line.
 <br>
 <a href="https://www.worksome.com/"><img src="https://i.imgur.com/TQKSwOl.png" alt="Worksome" width="283" height="64"></a>
 
-[**You can now sponsor my open-source work on PHPStan through GitHub Sponsors.**](https://github.com/sponsors/ondrejmirtes)
+[**You can now sponsor my open-source work on PHPStan through GitHub
+Sponsors.**](https://github.com/sponsors/ondrejmirtes)
 
-Does GitHub already have your 💳? Do you use PHPStan to find 🐛 before they reach production? [Send a couple of 💸 a month my way too.](https://github.com/sponsors/ondrejmirtes) Thank you!
+Does GitHub already have your 💳? Do you use PHPStan to find 🐛 before they reach
+production? [Send a couple of 💸 a month my way too.](https://github.com/sponsors/ondrejmirtes) Thank you!
 
-One-time donations [through PayPal](https://paypal.me/phpstan) are also accepted. To request an invoice, [contact me](mailto:ondrej@mirtes.cz) through e-mail.
+One-time donations [through PayPal](https://paypal.me/phpstan) are also accepted. To request an
+invoice, [contact me](mailto:ondrej@mirtes.cz) through e-mail.
 
 ## Documentation
 
@@ -66,7 +70,8 @@ All the documentation lives on the [phpstan.org website](https://phpstan.org/):
 
 * [Getting Started & User Guide](https://phpstan.org/user-guide/getting-started)
 * [Config Reference](https://phpstan.org/config-reference)
-* [PHPDocs Basics](https://phpstan.org/writing-php-code/phpdocs-basics) & [PHPDoc Types](https://phpstan.org/writing-php-code/phpdoc-types)
+* [PHPDocs Basics](https://phpstan.org/writing-php-code/phpdocs-basics)
+  & [PHPDoc Types](https://phpstan.org/writing-php-code/phpdoc-types)
 * [Extension Library](https://phpstan.org/user-guide/extension-library)
 * [Developing Extensions](https://phpstan.org/developing-extensions/extension-types)
 
@@ -78,16 +83,21 @@ PHPStan Pro is a paid add-on on top of open-source PHPStan Static Analysis Tool 
 * Continuous analysis (watch mode): scans changed files in the background, refreshes the UI automatically.
 * Interactive fixer: lets you choose the right fix for found errors :blush:
 
-Try it on PHPStan 0.12.45 or later by running it with the `--pro` option. You can create an account either by following the on-screen instructions, or by visiting [account.phpstan.com](https://account.phpstan.com/).
+Try it on PHPStan 0.12.45 or later by running it with the `--pro` option. You can create an account either by following
+the on-screen instructions, or by visiting [account.phpstan.com](https://account.phpstan.com/).
 
-After 30-day free trial period it costs 7 EUR for individuals monthly, 70 EUR for teams (up to 25 members). By paying for PHPStan Pro, you're supporting the development of open-source PHPStan.
+After 30-day free trial period it costs 7 EUR for individuals monthly, 70 EUR for teams (up to 25 members). By paying
+for PHPStan Pro, you're supporting the development of open-source PHPStan.
 
 You can read more about it on [PHPStan's website](https://phpstan.org/blog/introducing-phpstan-pro).
 
 ## Code of Conduct
 
-This project adheres to a [Contributor Code of Conduct](https://github.com/phpstan/phpstan/blob/master/CODE_OF_CONDUCT.md). By participating in this project and its community, you are expected to uphold this code.
+This project adheres to
+a [Contributor Code of Conduct](https://github.com/phpstan/phpstan/blob/master/CODE_OF_CONDUCT.md). By participating in
+this project and its community, you are expected to uphold this code.
 
 ## Contributing
 
-Any contributions are welcome. PHPStan's source code open to pull requests lives at [`phpstan/phpstan-src`](https://github.com/phpstan/phpstan-src).
+Any contributions are welcome. PHPStan's source code open to pull requests lives
+at [`phpstan/phpstan-src`](https://github.com/phpstan/phpstan-src).

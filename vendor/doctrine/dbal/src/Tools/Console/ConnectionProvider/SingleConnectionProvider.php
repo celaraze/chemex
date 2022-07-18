@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Tools\Console\ConnectionNotFound;
 use Doctrine\DBAL\Tools\Console\ConnectionProvider;
-
 use function sprintf;
 
 class SingleConnectionProvider implements ConnectionProvider
@@ -18,7 +17,7 @@ class SingleConnectionProvider implements ConnectionProvider
 
     public function __construct(Connection $connection, string $defaultConnectionName = 'default')
     {
-        $this->connection            = $connection;
+        $this->connection = $connection;
         $this->defaultConnectionName = $defaultConnectionName;
     }
 

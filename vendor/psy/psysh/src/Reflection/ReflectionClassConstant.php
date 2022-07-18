@@ -26,7 +26,7 @@ class ReflectionClassConstant implements \Reflector
      * Construct a ReflectionClassConstant object.
      *
      * @param string|object $class
-     * @param string        $name
+     * @param string $name
      */
     public function __construct($class, string $name)
     {
@@ -39,7 +39,7 @@ class ReflectionClassConstant implements \Reflector
 
         $constants = $class->getConstants();
         if (!\array_key_exists($name, $constants)) {
-            throw new \InvalidArgumentException('Unknown constant: '.$name);
+            throw new \InvalidArgumentException('Unknown constant: ' . $name);
         }
 
         $this->value = $constants[$name];
@@ -49,8 +49,8 @@ class ReflectionClassConstant implements \Reflector
      * Exports a reflection.
      *
      * @param string|object $class
-     * @param string        $name
-     * @param bool          $return pass true to return the export, as opposed to emitting it
+     * @param string $name
+     * @param bool $return pass true to return the export, as opposed to emitting it
      *
      * @return string|null
      */
@@ -65,7 +65,47 @@ class ReflectionClassConstant implements \Reflector
             return $str;
         }
 
-        echo $str."\n";
+        echo $str . "\n";
+    }
+
+    /**
+     * Gets the value of the constant.
+     *
+     * @return mixed
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    /**
+     * Gets the constant name.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get a ReflectionClassConstant instance.
+     *
+     * In PHP >= 7.1, this will return a \ReflectionClassConstant from the
+     * standard reflection library. For older PHP, it will return this polyfill.
+     *
+     * @param string|object $class
+     * @param string $name
+     *
+     * @return ReflectionClassConstant|\ReflectionClassConstant
+     */
+    public static function create($class, string $name)
+    {
+        if (\class_exists(\ReflectionClassConstant::class)) {
+            return new \ReflectionClassConstant($class, $name);
+        }
+
+        return new self($class, $name);
     }
 
     /**
@@ -112,26 +152,6 @@ class ReflectionClassConstant implements \Reflector
     public function getModifiers(): int
     {
         return \ReflectionMethod::IS_PUBLIC;
-    }
-
-    /**
-     * Gets the constant name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * Gets the value of the constant.
-     *
-     * @return mixed
-     */
-    public function getValue()
-    {
-        return $this->value;
     }
 
     /**
@@ -187,16 +207,6 @@ class ReflectionClassConstant implements \Reflector
     }
 
     /**
-     * Get the code start line.
-     *
-     * @throws \RuntimeException
-     */
-    public function getStartLine()
-    {
-        throw new \RuntimeException('Not yet implemented because it\'s unclear what I should do here :)');
-    }
-
-    /**
      * Get the code end line.
      *
      * @throws \RuntimeException
@@ -207,22 +217,12 @@ class ReflectionClassConstant implements \Reflector
     }
 
     /**
-     * Get a ReflectionClassConstant instance.
+     * Get the code start line.
      *
-     * In PHP >= 7.1, this will return a \ReflectionClassConstant from the
-     * standard reflection library. For older PHP, it will return this polyfill.
-     *
-     * @param string|object $class
-     * @param string        $name
-     *
-     * @return ReflectionClassConstant|\ReflectionClassConstant
+     * @throws \RuntimeException
      */
-    public static function create($class, string $name)
+    public function getStartLine()
     {
-        if (\class_exists(\ReflectionClassConstant::class)) {
-            return new \ReflectionClassConstant($class, $name);
-        }
-
-        return new self($class, $name);
+        throw new \RuntimeException('Not yet implemented because it\'s unclear what I should do here :)');
     }
 }

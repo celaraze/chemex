@@ -13,19 +13,19 @@ interface Sheets
      *
      * });
      *
-     * @param  callable  $callback  返回false可中断循环
+     * @param callable $callback 返回false可中断循环
      * @return $this
      */
     public function each(callable $callback);
 
     /**
-     * @param  int|string  $indexOrName
+     * @param int|string $indexOrName
      * @return Sheet|null
      */
     public function index($indexOrName);
 
     /**
-     * @param  int|string  $indexOrName
+     * @param int|string $indexOrName
      * @return $this
      */
     public function reject($indexOrName);

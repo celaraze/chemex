@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\Driver\SQLSrv;
 use Doctrine\DBAL\Driver\AbstractSQLServerDriver;
 use Doctrine\DBAL\Driver\AbstractSQLServerDriver\Exception\PortWithoutHost;
 use Doctrine\DBAL\Driver\SQLSrv\Exception\Error;
-
 use function sqlsrv_configure;
 use function sqlsrv_connect;
 
@@ -51,11 +50,11 @@ final class Driver extends AbstractSQLServerDriver
             $driverOptions['PWD'] = $params['password'];
         }
 
-        if (! isset($driverOptions['ReturnDatesAsStrings'])) {
+        if (!isset($driverOptions['ReturnDatesAsStrings'])) {
             $driverOptions['ReturnDatesAsStrings'] = 1;
         }
 
-        if (! sqlsrv_configure('WarningsReturnAsErrors', 0)) {
+        if (!sqlsrv_configure('WarningsReturnAsErrors', 0)) {
             throw Error::new();
         }
 

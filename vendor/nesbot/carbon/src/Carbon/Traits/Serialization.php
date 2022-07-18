@@ -66,27 +66,17 @@ trait Serialization
     protected $dumpDateProperties;
 
     /**
-     * Return a serialized string of the instance.
-     *
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize($this);
-    }
-
-    /**
      * Create an instance from a serialized string.
      *
      * @param string $value
      *
+     * @return static
      * @throws InvalidFormatException
      *
-     * @return static
      */
     public static function fromSerialized($value)
     {
-        $instance = @unserialize((string) $value);
+        $instance = @unserialize((string)$value);
 
         if (!$instance instanceof static) {
             throw new InvalidFormatException("Invalid serialized value: $value");
@@ -111,10 +101,35 @@ trait Serialization
 
         /** @var \DateTimeInterface $date */
         $date = get_parent_class(static::class) && method_exists(parent::class, '__set_state')
-            ? parent::__set_state((array) $dump)
-            : (object) $dump;
+            ? parent::__set_state((array)$dump)
+            : (object)$dump;
 
         return static::instance($date);
+    }
+
+    /**
+     * @param callable $callback
+     *
+     * @return void
+     * @deprecated To avoid conflict between different third-party libraries, static setters should not be used.
+     *             You should rather transform Carbon object before the serialization.
+     *
+     * JSON serialize all Carbon instances using the given callback.
+     *
+     */
+    public static function serializeUsing($callback)
+    {
+        static::$serializer = $callback;
+    }
+
+    /**
+     * Return a serialized string of the instance.
+     *
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize($this);
     }
 
     /**
@@ -132,6 +147,28 @@ trait Serialization
         }
 
         return $properties;
+    }
+
+    private function getSleepProperties(): array
+    {
+        $properties = $this->dumpProperties;
+
+        // @codeCoverageIgnoreStart
+        if (!\extension_loaded('msgpack')) {
+            return $properties;
+        }
+
+        if (isset($this->constructedObjectId)) {
+            $this->dumpDateProperties = [
+                'date' => $this->format('Y-m-d H:i:s.u'),
+                'timezone' => serialize($this->timezone ?? null),
+            ];
+
+            $properties[] = 'dumpDateProperties';
+        }
+
+        return $properties;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -165,40 +202,6 @@ trait Serialization
     }
 
     /**
-     * Prepare the object for JSON serialization.
-     *
-     * @return array|string
-     */
-    #[ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        $serializer = $this->localSerializer ?? static::$serializer;
-
-        if ($serializer) {
-            return \is_string($serializer)
-                ? $this->rawFormat($serializer)
-                : $serializer($this);
-        }
-
-        return $this->toJSON();
-    }
-
-    /**
-     * @deprecated To avoid conflict between different third-party libraries, static setters should not be used.
-     *             You should rather transform Carbon object before the serialization.
-     *
-     * JSON serialize all Carbon instances using the given callback.
-     *
-     * @param callable $callback
-     *
-     * @return void
-     */
-    public static function serializeUsing($callback)
-    {
-        static::$serializer = $callback;
-    }
-
-    /**
      * Cleanup properties attached to the public scope of DateTime when a dump of the date is requested.
      * foreach ($date as $_) {}
      * serializer($date)
@@ -216,25 +219,22 @@ trait Serialization
         return $this;
     }
 
-    private function getSleepProperties(): array
+    /**
+     * Prepare the object for JSON serialization.
+     *
+     * @return array|string
+     */
+    #[ReturnTypeWillChange]
+    public function jsonSerialize()
     {
-        $properties = $this->dumpProperties;
+        $serializer = $this->localSerializer ?? static::$serializer;
 
-        // @codeCoverageIgnoreStart
-        if (!\extension_loaded('msgpack')) {
-            return $properties;
+        if ($serializer) {
+            return \is_string($serializer)
+                ? $this->rawFormat($serializer)
+                : $serializer($this);
         }
 
-        if (isset($this->constructedObjectId)) {
-            $this->dumpDateProperties = [
-                'date' => $this->format('Y-m-d H:i:s.u'),
-                'timezone' => serialize($this->timezone ?? null),
-            ];
-
-            $properties[] = 'dumpDateProperties';
-        }
-
-        return $properties;
-        // @codeCoverageIgnoreEnd
+        return $this->toJSON();
     }
 }

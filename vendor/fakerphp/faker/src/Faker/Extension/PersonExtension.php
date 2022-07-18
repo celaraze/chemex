@@ -34,9 +34,9 @@ interface PersonExtension extends Extension
     public function lastName(): string;
 
     /**
+     * @param string|null $gender 'male', 'female' or null for any
      * @example 'Mrs.'
      *
-     * @param string|null $gender 'male', 'female' or null for any
      */
     public function title(?string $gender = null): string;
 

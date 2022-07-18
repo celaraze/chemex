@@ -17,7 +17,6 @@ namespace Ramsey\Uuid\Provider\Node;
 use Ramsey\Uuid\Exception\NodeException;
 use Ramsey\Uuid\Provider\NodeProviderInterface;
 use Ramsey\Uuid\Type\Hexadecimal;
-
 use function array_filter;
 use function array_map;
 use function array_walk;
@@ -32,7 +31,6 @@ use function strpos;
 use function strtolower;
 use function strtoupper;
 use function substr;
-
 use const GLOB_NOSORT;
 use const PREG_PATTERN_ORDER;
 
@@ -75,7 +73,7 @@ class SystemNodeProvider implements NodeProviderInterface
         static $node = null;
 
         if ($node !== null) {
-            return (string) $node;
+            return (string)$node;
         }
 
         // First, try a Linux-specific approach.
@@ -87,50 +85,6 @@ class SystemNodeProvider implements NodeProviderInterface
         }
 
         $node = str_replace([':', '-'], '', $node);
-
-        return $node;
-    }
-
-    /**
-     * Returns the network interface configuration for the system
-     *
-     * @codeCoverageIgnore
-     */
-    protected function getIfconfig(): string
-    {
-        $disabledFunctions = strtolower((string) ini_get('disable_functions'));
-
-        if (strpos($disabledFunctions, 'passthru') !== false) {
-            return '';
-        }
-
-        ob_start();
-        switch (strtoupper(substr(constant('PHP_OS'), 0, 3))) {
-            case 'WIN':
-                passthru('ipconfig /all 2>&1');
-
-                break;
-            case 'DAR':
-                passthru('ifconfig 2>&1');
-
-                break;
-            case 'FRE':
-                passthru('netstat -i -f link 2>&1');
-
-                break;
-            case 'LIN':
-            default:
-                passthru('netstat -ie 2>&1');
-
-                break;
-        }
-
-        $ifconfig = (string) ob_get_clean();
-
-        $node = '';
-        if (preg_match_all(self::IFCONFIG_PATTERN, $ifconfig, $matches, PREG_PATTERN_ORDER)) {
-            $node = $matches[1][0] ?? '';
-        }
 
         return $node;
     }
@@ -168,6 +122,50 @@ class SystemNodeProvider implements NodeProviderInterface
             $mac = reset($macs);
         }
 
-        return (string) $mac;
+        return (string)$mac;
+    }
+
+    /**
+     * Returns the network interface configuration for the system
+     *
+     * @codeCoverageIgnore
+     */
+    protected function getIfconfig(): string
+    {
+        $disabledFunctions = strtolower((string)ini_get('disable_functions'));
+
+        if (strpos($disabledFunctions, 'passthru') !== false) {
+            return '';
+        }
+
+        ob_start();
+        switch (strtoupper(substr(constant('PHP_OS'), 0, 3))) {
+            case 'WIN':
+                passthru('ipconfig /all 2>&1');
+
+                break;
+            case 'DAR':
+                passthru('ifconfig 2>&1');
+
+                break;
+            case 'FRE':
+                passthru('netstat -i -f link 2>&1');
+
+                break;
+            case 'LIN':
+            default:
+                passthru('netstat -ie 2>&1');
+
+                break;
+        }
+
+        $ifconfig = (string)ob_get_clean();
+
+        $node = '';
+        if (preg_match_all(self::IFCONFIG_PATTERN, $ifconfig, $matches, PREG_PATTERN_ORDER)) {
+            $node = $matches[1][0] ?? '';
+        }
+
+        return $node;
     }
 }

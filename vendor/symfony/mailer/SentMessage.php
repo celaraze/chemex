@@ -48,6 +48,11 @@ class SentMessage
         }
     }
 
+    public function toIterable(): iterable
+    {
+        return $this->raw->toIterable();
+    }
+
     public function getMessage(): RawMessage
     {
         return $this->raw;
@@ -63,14 +68,14 @@ class SentMessage
         return $this->envelope;
     }
 
-    public function setMessageId(string $id): void
-    {
-        $this->messageId = $id;
-    }
-
     public function getMessageId(): string
     {
         return $this->messageId;
+    }
+
+    public function setMessageId(string $id): void
+    {
+        $this->messageId = $id;
     }
 
     public function getDebug(): string
@@ -86,10 +91,5 @@ class SentMessage
     public function toString(): string
     {
         return $this->raw->toString();
-    }
-
-    public function toIterable(): iterable
-    {
-        return $this->raw->toIterable();
     }
 }

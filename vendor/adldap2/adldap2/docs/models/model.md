@@ -77,7 +77,7 @@ if ($user->save()) {
 
 > **Note**: When a model is saved successfully (whether created or updated), the
 > models attributes are re-synced in the background from your LDAP server.
-> 
+>
 > This allows you to perform other operations during the same
 > request that require an existing model.
 

@@ -22,10 +22,10 @@ use InvalidArgumentException;
  * @method \Illuminate\Routing\RouteRegistrar middleware(array|string|null $middleware)
  * @method \Illuminate\Routing\RouteRegistrar name(string $value)
  * @method \Illuminate\Routing\RouteRegistrar namespace(string|null $value)
- * @method \Illuminate\Routing\RouteRegistrar prefix(string  $prefix)
+ * @method \Illuminate\Routing\RouteRegistrar prefix(string $prefix)
  * @method \Illuminate\Routing\RouteRegistrar scopeBindings()
- * @method \Illuminate\Routing\RouteRegistrar where(array  $where)
- * @method \Illuminate\Routing\RouteRegistrar withoutMiddleware(array|string  $middleware)
+ * @method \Illuminate\Routing\RouteRegistrar where(array $where)
+ * @method \Illuminate\Routing\RouteRegistrar withoutMiddleware(array|string $middleware)
  */
 class RouteRegistrar
 {
@@ -84,7 +84,7 @@ class RouteRegistrar
     /**
      * Create a new route registrar instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
+     * @param \Illuminate\Routing\Router $router
      * @return void
      */
     public function __construct(Router $router)
@@ -93,45 +93,11 @@ class RouteRegistrar
     }
 
     /**
-     * Set the value for a given attribute.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return $this
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function attribute($key, $value)
-    {
-        if (! in_array($key, $this->allowedAttributes)) {
-            throw new InvalidArgumentException("Attribute [{$key}] does not exist.");
-        }
-
-        if ($key === 'middleware') {
-            foreach ($value as $index => $middleware) {
-                $value[$index] = (string) $middleware;
-            }
-        }
-
-        $attributeKey = Arr::get($this->aliases, $key, $key);
-
-        if ($key === 'withoutMiddleware') {
-            $value = array_merge(
-                (array) ($this->attributes[$attributeKey] ?? []), Arr::wrap($value)
-            );
-        }
-
-        $this->attributes[$attributeKey] = $value;
-
-        return $this;
-    }
-
-    /**
      * Route a resource to a controller.
      *
-     * @param  string  $name
-     * @param  string  $controller
-     * @param  array  $options
+     * @param string $name
+     * @param string $controller
+     * @param array $options
      * @return \Illuminate\Routing\PendingResourceRegistration
      */
     public function resource($name, $controller, array $options = [])
@@ -142,9 +108,9 @@ class RouteRegistrar
     /**
      * Route an API resource to a controller.
      *
-     * @param  string  $name
-     * @param  string  $controller
-     * @param  array  $options
+     * @param string $name
+     * @param string $controller
+     * @param array $options
      * @return \Illuminate\Routing\PendingResourceRegistration
      */
     public function apiResource($name, $controller, array $options = [])
@@ -155,7 +121,7 @@ class RouteRegistrar
     /**
      * Create a route group with shared attributes.
      *
-     * @param  \Closure|string  $callback
+     * @param \Closure|string $callback
      * @return void
      */
     public function group($callback)
@@ -166,9 +132,9 @@ class RouteRegistrar
     /**
      * Register a new route with the given verbs.
      *
-     * @param  array|string  $methods
-     * @param  string  $uri
-     * @param  \Closure|array|string|null  $action
+     * @param array|string $methods
+     * @param string $uri
+     * @param \Closure|array|string|null $action
      * @return \Illuminate\Routing\Route
      */
     public function match($methods, $uri, $action = null)
@@ -177,26 +143,9 @@ class RouteRegistrar
     }
 
     /**
-     * Register a new route with the router.
-     *
-     * @param  string  $method
-     * @param  string  $uri
-     * @param  \Closure|array|string|null  $action
-     * @return \Illuminate\Routing\Route
-     */
-    protected function registerRoute($method, $uri, $action = null)
-    {
-        if (! is_array($action)) {
-            $action = array_merge($this->attributes, $action ? ['uses' => $action] : []);
-        }
-
-        return $this->router->{$method}($uri, $this->compileAction($action));
-    }
-
-    /**
      * Compile the action into an array including the attributes.
      *
-     * @param  \Closure|array|string|null  $action
+     * @param \Closure|array|string|null $action
      * @return array
      */
     protected function compileAction($action)
@@ -210,14 +159,14 @@ class RouteRegistrar
         }
 
         if (is_array($action) &&
-            ! Arr::isAssoc($action) &&
+            !Arr::isAssoc($action) &&
             Reflector::isCallable($action)) {
             if (strncmp($action[0], '\\', 1)) {
-                $action[0] = '\\'.$action[0];
+                $action[0] = '\\' . $action[0];
             }
             $action = [
-                'uses' => $action[0].'@'.$action[1],
-                'controller' => $action[0].'@'.$action[1],
+                'uses' => $action[0] . '@' . $action[1],
+                'controller' => $action[0] . '@' . $action[1],
             ];
         }
 
@@ -227,8 +176,8 @@ class RouteRegistrar
     /**
      * Dynamically handle calls into the route registrar.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return \Illuminate\Routing\Route|$this
      *
      * @throws \BadMethodCallException
@@ -250,5 +199,56 @@ class RouteRegistrar
         throw new BadMethodCallException(sprintf(
             'Method %s::%s does not exist.', static::class, $method
         ));
+    }
+
+    /**
+     * Register a new route with the router.
+     *
+     * @param string $method
+     * @param string $uri
+     * @param \Closure|array|string|null $action
+     * @return \Illuminate\Routing\Route
+     */
+    protected function registerRoute($method, $uri, $action = null)
+    {
+        if (!is_array($action)) {
+            $action = array_merge($this->attributes, $action ? ['uses' => $action] : []);
+        }
+
+        return $this->router->{$method}($uri, $this->compileAction($action));
+    }
+
+    /**
+     * Set the value for a given attribute.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function attribute($key, $value)
+    {
+        if (!in_array($key, $this->allowedAttributes)) {
+            throw new InvalidArgumentException("Attribute [{$key}] does not exist.");
+        }
+
+        if ($key === 'middleware') {
+            foreach ($value as $index => $middleware) {
+                $value[$index] = (string)$middleware;
+            }
+        }
+
+        $attributeKey = Arr::get($this->aliases, $key, $key);
+
+        if ($key === 'withoutMiddleware') {
+            $value = array_merge(
+                (array)($this->attributes[$attributeKey] ?? []), Arr::wrap($value)
+            );
+        }
+
+        $this->attributes[$attributeKey] = $value;
+
+        return $this;
     }
 }

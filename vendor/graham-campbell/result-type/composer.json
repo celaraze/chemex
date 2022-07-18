@@ -1,7 +1,15 @@
 {
     "name": "graham-campbell/result-type",
     "description": "An Implementation Of The Result Type",
-    "keywords": ["result", "result-type", "Result", "Result Type", "Result-Type", "Graham Campbell", "GrahamCampbell"],
+    "keywords": [
+        "result",
+        "result-type",
+        "Result",
+        "Result Type",
+        "Result-Type",
+        "Graham Campbell",
+        "GrahamCampbell"
+    ],
     "license": "MIT",
     "authors": [
         {

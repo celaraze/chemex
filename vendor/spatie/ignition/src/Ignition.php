@@ -50,11 +50,6 @@ class Ignition
     /** @var ArrayObject<int, callable(Throwable): mixed> */
     protected ArrayObject $documentationLinkResolvers;
 
-    public static function make(): self
-    {
-        return new self();
-    }
-
     public function __construct()
     {
         $this->flare = Flare::make();
@@ -69,6 +64,21 @@ class Ignition
 
         $this->middleware[] = new AddSolutions($this->solutionProviderRepository);
         $this->middleware[] = new AddDocumentationLinks($this->documentationLinkResolvers);
+    }
+
+    public static function make(): self
+    {
+        return new self();
+    }
+
+    /** @return array<class-string<HasSolutionsForThrowable>> */
+    protected function getDefaultSolutionProviders(): array
+    {
+        return [
+            BadMethodCallSolutionProvider::class,
+            MergeConflictSolutionProvider::class,
+            UndefinedPropertySolutionProvider::class,
+        ];
     }
 
     public function setSolutionTransformerClass(string $solutionTransformerClass): self
@@ -126,13 +136,6 @@ class Ignition
         return $this;
     }
 
-    public function applicationPath(string $applicationPath): self
-    {
-        $this->applicationPath = $applicationPath;
-
-        return $this;
-    }
-
     /**
      * @param string $name
      * @param string $messageLevel
@@ -143,8 +146,9 @@ class Ignition
     public function glow(
         string $name,
         string $messageLevel = MessageLevels::INFO,
-        array $metaData = []
-    ): self {
+        array  $metaData = []
+    ): self
+    {
         $this->flare->glow($name, $messageLevel, $metaData);
 
         return $this;
@@ -168,17 +172,17 @@ class Ignition
         return $this->setTheme('dark');
     }
 
-    /** @deprecated Use `setTheme($theme)` instead */
-    public function theme(string $theme): self
-    {
-        return $this->setTheme($theme);
-    }
-
     public function setTheme(string $theme): self
     {
         $this->ignitionConfig->setOption('theme', $theme);
 
         return $this;
+    }
+
+    /** @deprecated Use `setTheme($theme)` instead */
+    public function theme(string $theme): self
+    {
+        return $this->setTheme($theme);
     }
 
     public function setEditor(string $editor): self
@@ -202,31 +206,6 @@ class Ignition
         return $this;
     }
 
-    /**
-     * @param FlareMiddleware|array<int, FlareMiddleware> $middleware
-     *
-     * @return $this
-     */
-    public function registerMiddleware(array|FlareMiddleware $middleware): self
-    {
-        if (! is_array($middleware)) {
-            $middleware = [$middleware];
-        }
-
-        foreach ($middleware as $singleMiddleware) {
-            $this->middleware = array_merge($this->middleware, $middleware);
-        }
-
-        return $this;
-    }
-
-    public function setContextProviderDetector(ContextProviderDetector $contextProviderDetector): self
-    {
-        $this->contextProviderDetector = $contextProviderDetector;
-
-        return $this;
-    }
-
     public function reset(): self
     {
         $this->flare->reset();
@@ -238,10 +217,10 @@ class Ignition
     {
         error_reporting(-1);
 
-        /** @phpstan-ignore-next-line  */
+        /** @phpstan-ignore-next-line */
         set_error_handler([$this, 'renderError']);
 
-        /** @phpstan-ignore-next-line  */
+        /** @phpstan-ignore-next-line */
         set_exception_handler([$this, 'handleException']);
 
         return $this;
@@ -258,12 +237,13 @@ class Ignition
      * @throws \ErrorException
      */
     public function renderError(
-        int $level,
+        int    $level,
         string $message,
         string $file = '',
-        int $line = 0,
-        array $context = []
-    ): void {
+        int    $line = 0,
+        array  $context = []
+    ): void
+    {
         throw new ErrorException($message, 0, $level, $file, $line);
     }
 
@@ -288,6 +268,62 @@ class Ignition
         return $report;
     }
 
+    protected function setUpFlare(): self
+    {
+        if (!$this->flare->apiTokenSet()) {
+            $this->flare->setApiToken($this->flareApiKey ?? '');
+        }
+
+        $this->flare->setContextProviderDetector($this->contextProviderDetector);
+
+        foreach ($this->middleware as $singleMiddleware) {
+            $this->flare->registerMiddleware($singleMiddleware);
+        }
+
+        if ($this->applicationPath !== '') {
+            $this->flare->applicationPath($this->applicationPath);
+        }
+
+        return $this;
+    }
+
+    public function setContextProviderDetector(ContextProviderDetector $contextProviderDetector): self
+    {
+        $this->contextProviderDetector = $contextProviderDetector;
+
+        return $this;
+    }
+
+    /**
+     * @param FlareMiddleware|array<int, FlareMiddleware> $middleware
+     *
+     * @return $this
+     */
+    public function registerMiddleware(array|FlareMiddleware $middleware): self
+    {
+        if (!is_array($middleware)) {
+            $middleware = [$middleware];
+        }
+
+        foreach ($middleware as $singleMiddleware) {
+            $this->middleware = array_merge($this->middleware, $middleware);
+        }
+
+        return $this;
+    }
+
+    public function applicationPath(string $applicationPath): self
+    {
+        $this->applicationPath = $applicationPath;
+
+        return $this;
+    }
+
+    protected function createReport(Throwable $throwable): Report
+    {
+        return $this->flare->createReport($throwable);
+    }
+
     /**
      * This is the main entrypoint for laravel-ignition. It only renders the exception.
      * Sending the report to Flare is handled in the laravel-ignition log handler.
@@ -307,39 +343,5 @@ class Ignition
         );
 
         (new Renderer())->render(['viewModel' => $viewModel]);
-    }
-
-    protected function setUpFlare(): self
-    {
-        if (! $this->flare->apiTokenSet()) {
-            $this->flare->setApiToken($this->flareApiKey ?? '');
-        }
-
-        $this->flare->setContextProviderDetector($this->contextProviderDetector);
-
-        foreach ($this->middleware as $singleMiddleware) {
-            $this->flare->registerMiddleware($singleMiddleware);
-        }
-
-        if ($this->applicationPath !== '') {
-            $this->flare->applicationPath($this->applicationPath);
-        }
-
-        return $this;
-    }
-
-    /** @return array<class-string<HasSolutionsForThrowable>> */
-    protected function getDefaultSolutionProviders(): array
-    {
-        return [
-            BadMethodCallSolutionProvider::class,
-            MergeConflictSolutionProvider::class,
-            UndefinedPropertySolutionProvider::class,
-        ];
-    }
-
-    protected function createReport(Throwable $throwable): Report
-    {
-        return $this->flare->createReport($throwable);
     }
 }

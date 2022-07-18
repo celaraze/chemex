@@ -11,14 +11,14 @@ use Box\Spout\Common\Exception\EncodingConversionException;
 class EncodingHelper
 {
     /** Definition of the encodings that can have a BOM */
-    const ENCODING_UTF8     = 'UTF-8';
+    const ENCODING_UTF8 = 'UTF-8';
     const ENCODING_UTF16_LE = 'UTF-16LE';
     const ENCODING_UTF16_BE = 'UTF-16BE';
     const ENCODING_UTF32_LE = 'UTF-32LE';
     const ENCODING_UTF32_BE = 'UTF-32BE';
 
     /** Definition of the BOMs for the different encodings */
-    const BOM_UTF8     = "\xEF\xBB\xBF";
+    const BOM_UTF8 = "\xEF\xBB\xBF";
     const BOM_UTF16_LE = "\xFF\xFE";
     const BOM_UTF16_BE = "\xFE\xFF";
     const BOM_UTF32_LE = "\xFF\xFE\x00\x00";
@@ -38,7 +38,7 @@ class EncodingHelper
         $this->globalFunctionsHelper = $globalFunctionsHelper;
 
         $this->supportedEncodingsWithBom = [
-            self::ENCODING_UTF8     => self::BOM_UTF8,
+            self::ENCODING_UTF8 => self::BOM_UTF8,
             self::ENCODING_UTF16_LE => self::BOM_UTF16_LE,
             self::ENCODING_UTF16_BE => self::BOM_UTF16_BE,
             self::ENCODING_UTF32_LE => self::BOM_UTF32_LE,
@@ -95,25 +95,12 @@ class EncodingHelper
      *
      * @param string $string Non UTF-8 string to be converted
      * @param string $sourceEncoding The encoding used to encode the source string
-     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
      * @return string The converted, UTF-8 string
+     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
      */
     public function attemptConversionToUTF8($string, $sourceEncoding)
     {
         return $this->attemptConversion($string, $sourceEncoding, self::ENCODING_UTF8);
-    }
-
-    /**
-     * Attempts to convert a UTF-8 string into the given encoding.
-     *
-     * @param string $string UTF-8 string to be converted
-     * @param string $targetEncoding The encoding the string should be re-encoded into
-     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
-     * @return string The converted string, encoded with the given encoding
-     */
-    public function attemptConversionFromUTF8($string, $targetEncoding)
-    {
-        return $this->attemptConversion($string, self::ENCODING_UTF8, $targetEncoding);
     }
 
     /**
@@ -123,8 +110,8 @@ class EncodingHelper
      * @param string $string string to be converted
      * @param string $sourceEncoding The encoding used to encode the source string
      * @param string $targetEncoding The encoding the string should be re-encoded into
-     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
      * @return string The converted string, encoded with the given encoding
+     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
      */
     protected function attemptConversion($string, $sourceEncoding, $targetEncoding)
     {
@@ -169,5 +156,18 @@ class EncodingHelper
     protected function canUseMbString()
     {
         return $this->globalFunctionsHelper->function_exists('mb_convert_encoding');
+    }
+
+    /**
+     * Attempts to convert a UTF-8 string into the given encoding.
+     *
+     * @param string $string UTF-8 string to be converted
+     * @param string $targetEncoding The encoding the string should be re-encoded into
+     * @return string The converted string, encoded with the given encoding
+     * @throws \Box\Spout\Common\Exception\EncodingConversionException If conversion is not supported or if the conversion failed
+     */
+    public function attemptConversionFromUTF8($string, $targetEncoding)
+    {
+        return $this->attemptConversion($string, self::ENCODING_UTF8, $targetEncoding);
     }
 }

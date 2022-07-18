@@ -38,11 +38,6 @@ class EntityPopulator
         return $this->class->getName();
     }
 
-    public function setColumnFormatters($columnFormatters)
-    {
-        $this->columnFormatters = $columnFormatters;
-    }
-
     /**
      * @return array
      */
@@ -51,22 +46,14 @@ class EntityPopulator
         return $this->columnFormatters;
     }
 
+    public function setColumnFormatters($columnFormatters)
+    {
+        $this->columnFormatters = $columnFormatters;
+    }
+
     public function mergeColumnFormattersWith($columnFormatters)
     {
         $this->columnFormatters = array_merge($this->columnFormatters, $columnFormatters);
-    }
-
-    public function setModifiers(array $modifiers)
-    {
-        $this->modifiers = $modifiers;
-    }
-
-    /**
-     * @return array
-     */
-    public function getModifiers()
-    {
-        return $this->modifiers;
     }
 
     public function mergeModifiersWith(array $modifiers)
@@ -228,15 +215,28 @@ class EntityPopulator
     }
 
     /**
+     * @return array
+     */
+    public function getModifiers()
+    {
+        return $this->modifiers;
+    }
+
+    public function setModifiers(array $modifiers)
+    {
+        $this->modifiers = $modifiers;
+    }
+
+    /**
      * @return int
      */
     private function generateId($obj, $column, ObjectManager $manager)
     {
         $repository = $manager->getRepository(get_class($obj));
         $result = $repository->createQueryBuilder('e')
-                ->select(sprintf('e.%s', $column))
-                ->getQuery()
-                ->execute();
+            ->select(sprintf('e.%s', $column))
+            ->getQuery()
+            ->execute();
         $ids = array_map('current', $result->toArray());
 
         do {

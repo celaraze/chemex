@@ -27,15 +27,16 @@ class Function_ extends Node\Stmt implements FunctionLike
      * Constructs a function node.
      *
      * @param string|Node\Identifier $name Name
-     * @param array  $subNodes   Array of the following optional subnodes:
+     * @param array $subNodes Array of the following optional subnodes:
      *                           'byRef'      => false  : Whether to return by reference
      *                           'params'     => array(): Parameters
      *                           'returnType' => null   : Return type
      *                           'stmts'      => array(): Statements
      *                           'attrGroups' => array(): PHP attribute groups
-     * @param array  $attributes Additional attributes
+     * @param array $attributes Additional attributes
      */
-    public function __construct($name, array $subNodes = [], array $attributes = []) {
+    public function __construct($name, array $subNodes = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->byRef = $subNodes['byRef'] ?? false;
         $this->name = \is_string($name) ? new Node\Identifier($name) : $name;
@@ -46,32 +47,39 @@ class Function_ extends Node\Stmt implements FunctionLike
         $this->attrGroups = $subNodes['attrGroups'] ?? [];
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['attrGroups', 'byRef', 'name', 'params', 'returnType', 'stmts'];
     }
 
-    public function returnsByRef() : bool {
+    public function returnsByRef(): bool
+    {
         return $this->byRef;
     }
 
-    public function getParams() : array {
+    public function getParams(): array
+    {
         return $this->params;
     }
 
-    public function getReturnType() {
+    public function getReturnType()
+    {
         return $this->returnType;
     }
 
-    public function getAttrGroups() : array {
+    public function getAttrGroups(): array
+    {
         return $this->attrGroups;
     }
 
     /** @return Node\Stmt[] */
-    public function getStmts() : array {
+    public function getStmts(): array
+    {
         return $this->stmts;
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Stmt_Function';
     }
 }

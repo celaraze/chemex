@@ -34,18 +34,18 @@ return [
     'ago' => ':time කට පෙර',
     'from_now' => function ($time) {
         if (preg_match('/දින \d/u', $time)) {
-            return $time.' න්';
+            return $time . ' න්';
         }
 
-        return $time.' කින්';
+        return $time . ' කින්';
     },
     'before' => ':time කට පෙර',
     'after' => function ($time) {
         if (preg_match('/දින \d/u', $time)) {
-            return $time.' න්';
+            return $time . ' න්';
         }
 
-        return $time.' කින්';
+        return $time . ' කින්';
     },
     'diff_now' => 'දැන්',
     'diff_today' => 'අද',

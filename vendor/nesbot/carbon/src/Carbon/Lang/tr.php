@@ -106,7 +106,7 @@ return [
 
                 $lastDigit = $number % 10;
 
-                return $number.($suffixes[$lastDigit] ?? $suffixes[$number % 100 - $lastDigit] ?? $suffixes[$number >= 100 ? 100 : -1] ?? '');
+                return $number . ($suffixes[$lastDigit] ?? $suffixes[$number % 100 - $lastDigit] ?? $suffixes[$number >= 100 ? 100 : -1] ?? '');
         }
     },
     'meridiem' => ['ÖÖ', 'ÖS', 'öö', 'ös'],

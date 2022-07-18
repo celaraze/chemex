@@ -35,11 +35,11 @@ class HigherOrderCollectionProxyHelper
             return false;
         }
 
-        if (! $methodType instanceof Type\Constant\ConstantStringType) {
+        if (!$methodType instanceof Type\Constant\ConstantStringType) {
             return false;
         }
 
-        if (! $valueType->canCallMethods()->yes()) {
+        if (!$valueType->canCallMethods()->yes()) {
             return false;
         }
 

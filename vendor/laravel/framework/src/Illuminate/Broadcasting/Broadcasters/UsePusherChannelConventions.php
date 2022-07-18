@@ -9,7 +9,7 @@ trait UsePusherChannelConventions
     /**
      * Return true if the channel is protected by authentication.
      *
-     * @param  string  $channel
+     * @param string $channel
      * @return bool
      */
     public function isGuardedChannel($channel)
@@ -20,7 +20,7 @@ trait UsePusherChannelConventions
     /**
      * Remove prefix from channel name.
      *
-     * @param  string  $channel
+     * @param string $channel
      * @return string
      */
     public function normalizeChannelName($channel)

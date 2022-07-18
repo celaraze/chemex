@@ -4,9 +4,9 @@ namespace Fruitcake\Cors;
 
 use Asm89\Stack\CorsService;
 use Illuminate\Foundation\Application as LaravelApplication;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
-use Illuminate\Foundation\Http\Events\RequestHandled;
 
 class CorsServiceProvider extends BaseServiceProvider
 {
@@ -22,26 +22,6 @@ class CorsServiceProvider extends BaseServiceProvider
         $this->app->singleton(CorsService::class, function ($app) {
             return new CorsService($this->corsOptions(), $app);
         });
-    }
-
-    /**
-     * Register the config for publishing
-     *
-     */
-    public function boot()
-    {
-        if ($this->app instanceof LaravelApplication && $this->app->runningInConsole()) {
-            $this->publishes([$this->configPath() => config_path('cors.php')], 'cors');
-        } elseif ($this->app instanceof LumenApplication) {
-            $this->app->configure('cors');
-        }
-
-        // Add the headers on the Request Handled event as fallback in case of exceptions
-        if (class_exists(RequestHandled::class) && $this->app->bound('events')) {
-            $this->app->make('events')->listen(RequestHandled::class, function (RequestHandled $event) {
-                $this->app->make(HandleCors::class)->onRequestHandled($event);
-            });
-        }
     }
 
     /**
@@ -67,7 +47,7 @@ class CorsServiceProvider extends BaseServiceProvider
             throw new \RuntimeException('CORS config `exposed_headers` should be `false` or an array');
         }
 
-        foreach (['allowed_origins', 'allowed_origins_patterns',  'allowed_headers', 'allowed_methods'] as $key) {
+        foreach (['allowed_origins', 'allowed_origins_patterns', 'allowed_headers', 'allowed_methods'] as $key) {
             if (!is_array($config[$key])) {
                 throw new \RuntimeException('CORS config `' . $key . '` should be an array');
             }
@@ -111,5 +91,25 @@ class CorsServiceProvider extends BaseServiceProvider
         $pattern = str_replace('\*', '.*', $pattern);
 
         return '#^' . $pattern . '\z#u';
+    }
+
+    /**
+     * Register the config for publishing
+     *
+     */
+    public function boot()
+    {
+        if ($this->app instanceof LaravelApplication && $this->app->runningInConsole()) {
+            $this->publishes([$this->configPath() => config_path('cors.php')], 'cors');
+        } elseif ($this->app instanceof LumenApplication) {
+            $this->app->configure('cors');
+        }
+
+        // Add the headers on the Request Handled event as fallback in case of exceptions
+        if (class_exists(RequestHandled::class) && $this->app->bound('events')) {
+            $this->app->make('events')->listen(RequestHandled::class, function (RequestHandled $event) {
+                $this->app->make(HandleCors::class)->onRequestHandled($event);
+            });
+        }
     }
 }

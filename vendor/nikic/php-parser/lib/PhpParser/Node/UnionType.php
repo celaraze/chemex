@@ -11,18 +11,21 @@ class UnionType extends ComplexType
      * Constructs a union type.
      *
      * @param (Identifier|Name)[] $types      Types
-     * @param array               $attributes Additional attributes
+     * @param array $attributes Additional attributes
      */
-    public function __construct(array $types, array $attributes = []) {
+    public function __construct(array $types, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->types = $types;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['types'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'UnionType';
     }
 }

@@ -57,10 +57,10 @@ class CodeCleaner
     /**
      * CodeCleaner constructor.
      *
-     * @param Parser|null        $parser    A PhpParser Parser instance. One will be created if not explicitly supplied
-     * @param Printer|null       $printer   A PhpParser Printer instance. One will be created if not explicitly supplied
+     * @param Parser|null $parser A PhpParser Parser instance. One will be created if not explicitly supplied
+     * @param Printer|null $printer A PhpParser Printer instance. One will be created if not explicitly supplied
      * @param NodeTraverser|null $traverser A PhpParser NodeTraverser instance. One will be created if not explicitly supplied
-     * @param bool               $yolo      run without input validation
+     * @param bool $yolo run without input validation
      */
     public function __construct(Parser $parser = null, Printer $printer = null, NodeTraverser $traverser = null, bool $yolo = false)
     {
@@ -78,16 +78,6 @@ class CodeCleaner
         foreach ($this->getDefaultPasses() as $pass) {
             $this->traverser->addVisitor($pass);
         }
-    }
-
-    /**
-     * Check whether this CodeCleaner is in YOLO mode.
-     *
-     * @return bool
-     */
-    public function yolo(): bool
-    {
-        return $this->yolo;
     }
 
     /**
@@ -253,71 +243,17 @@ class CodeCleaner
     }
 
     /**
-     * Clean the given array of code.
-     *
-     * @throws ParseErrorException if the code is invalid PHP, and cannot be coerced into valid PHP
-     *
-     * @param array $codeLines
-     * @param bool  $requireSemicolons
-     *
-     * @return string|false Cleaned PHP code, False if the input is incomplete
-     */
-    public function clean(array $codeLines, bool $requireSemicolons = false)
-    {
-        $stmts = $this->parse('<?php '.\implode(\PHP_EOL, $codeLines).\PHP_EOL, $requireSemicolons);
-        if ($stmts === false) {
-            return false;
-        }
-
-        // Catch fatal errors before they happen
-        $stmts = $this->traverser->traverse($stmts);
-
-        // Work around https://github.com/nikic/PHP-Parser/issues/399
-        $oldLocale = \setlocale(\LC_NUMERIC, 0);
-        \setlocale(\LC_NUMERIC, 'C');
-
-        $code = $this->printer->prettyPrint($stmts);
-
-        // Now put the locale back
-        \setlocale(\LC_NUMERIC, $oldLocale);
-
-        return $code;
-    }
-
-    /**
-     * Set the current local namespace.
-     *
-     * @param array|null $namespace (default: null)
-     *
-     * @return array|null
-     */
-    public function setNamespace(array $namespace = null)
-    {
-        $this->namespace = $namespace;
-    }
-
-    /**
-     * Get the current local namespace.
-     *
-     * @return array|null
-     */
-    public function getNamespace()
-    {
-        return $this->namespace;
-    }
-
-    /**
      * Lex and parse a block of code.
      *
-     * @see Parser::parse
+     * @param string $code
+     * @param bool $requireSemicolons
      *
+     * @return array|false A set of statements, or false if incomplete
      * @throws ParseErrorException for parse errors that can't be resolved by
      *                             waiting a line to see what comes next
      *
-     * @param string $code
-     * @param bool   $requireSemicolons
+     * @see Parser::parse
      *
-     * @return array|false A set of statements, or false if incomplete
      */
     protected function parse(string $code, bool $requireSemicolons = false)
     {
@@ -346,18 +282,11 @@ class CodeCleaner
 
             try {
                 // Unexpected EOF, try again with an implicit semicolon
-                return $this->parser->parse($code.';');
+                return $this->parser->parse($code . ';');
             } catch (\PhpParser\Error $e) {
                 return false;
             }
         }
-    }
-
-    private function parseErrorIsEOF(\PhpParser\Error $e): bool
-    {
-        $msg = $e->getRawMessage();
-
-        return ($msg === 'Unexpected token EOF') || (\strpos($msg, 'Syntax error, unexpected EOF') !== false);
     }
 
     /**
@@ -368,7 +297,7 @@ class CodeCleaner
      * themselves.
      *
      * @param \PhpParser\Error $e
-     * @param string           $code
+     * @param string $code
      *
      * @return bool
      */
@@ -379,7 +308,7 @@ class CodeCleaner
         }
 
         try {
-            $this->parser->parse($code."';");
+            $this->parser->parse($code . "';");
         } catch (\Throwable $e) {
             return false;
         }
@@ -395,5 +324,76 @@ class CodeCleaner
     private function parseErrorIsTrailingComma(\PhpParser\Error $e, $code): bool
     {
         return ($e->getRawMessage() === 'A trailing comma is not allowed here') && (\substr(\rtrim($code), -1) === ',');
+    }
+
+    private function parseErrorIsEOF(\PhpParser\Error $e): bool
+    {
+        $msg = $e->getRawMessage();
+
+        return ($msg === 'Unexpected token EOF') || (\strpos($msg, 'Syntax error, unexpected EOF') !== false);
+    }
+
+    /**
+     * Check whether this CodeCleaner is in YOLO mode.
+     *
+     * @return bool
+     */
+    public function yolo(): bool
+    {
+        return $this->yolo;
+    }
+
+    /**
+     * Clean the given array of code.
+     *
+     * @param array $codeLines
+     * @param bool $requireSemicolons
+     *
+     * @return string|false Cleaned PHP code, False if the input is incomplete
+     * @throws ParseErrorException if the code is invalid PHP, and cannot be coerced into valid PHP
+     *
+     */
+    public function clean(array $codeLines, bool $requireSemicolons = false)
+    {
+        $stmts = $this->parse('<?php ' . \implode(\PHP_EOL, $codeLines) . \PHP_EOL, $requireSemicolons);
+        if ($stmts === false) {
+            return false;
+        }
+
+        // Catch fatal errors before they happen
+        $stmts = $this->traverser->traverse($stmts);
+
+        // Work around https://github.com/nikic/PHP-Parser/issues/399
+        $oldLocale = \setlocale(\LC_NUMERIC, 0);
+        \setlocale(\LC_NUMERIC, 'C');
+
+        $code = $this->printer->prettyPrint($stmts);
+
+        // Now put the locale back
+        \setlocale(\LC_NUMERIC, $oldLocale);
+
+        return $code;
+    }
+
+    /**
+     * Get the current local namespace.
+     *
+     * @return array|null
+     */
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
+    /**
+     * Set the current local namespace.
+     *
+     * @param array|null $namespace (default: null)
+     *
+     * @return array|null
+     */
+    public function setNamespace(array $namespace = null)
+    {
+        $this->namespace = $namespace;
     }
 }

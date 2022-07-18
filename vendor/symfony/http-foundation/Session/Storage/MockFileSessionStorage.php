@@ -48,6 +48,22 @@ class MockFileSessionStorage extends MockArraySessionStorage
     /**
      * {@inheritdoc}
      */
+    public function regenerate(bool $destroy = false, int $lifetime = null): bool
+    {
+        if (!$this->started) {
+            $this->start();
+        }
+
+        if ($destroy) {
+            $this->destroy();
+        }
+
+        return parent::regenerate($destroy, $lifetime);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function start(): bool
     {
         if ($this->started) {
@@ -66,19 +82,44 @@ class MockFileSessionStorage extends MockArraySessionStorage
     }
 
     /**
-     * {@inheritdoc}
+     * Reads session from storage and loads session.
      */
-    public function regenerate(bool $destroy = false, int $lifetime = null): bool
+    private function read(): void
     {
-        if (!$this->started) {
-            $this->start();
+        set_error_handler(static function () {
+        });
+        try {
+            $data = file_get_contents($this->getFilePath());
+        } finally {
+            restore_error_handler();
         }
 
-        if ($destroy) {
-            $this->destroy();
-        }
+        $this->data = $data ? unserialize($data) : [];
 
-        return parent::regenerate($destroy, $lifetime);
+        $this->loadSession();
+    }
+
+    /**
+     * Calculate path to file.
+     */
+    private function getFilePath(): string
+    {
+        return $this->savePath . '/' . $this->id . '.mocksess';
+    }
+
+    /**
+     * Deletes a session from persistent storage.
+     * Deliberately leaves session data in memory intact.
+     */
+    private function destroy(): void
+    {
+        set_error_handler(static function () {
+        });
+        try {
+            unlink($this->getFilePath());
+        } finally {
+            restore_error_handler();
+        }
     }
 
     /**
@@ -104,7 +145,7 @@ class MockFileSessionStorage extends MockArraySessionStorage
         try {
             if ($data) {
                 $path = $this->getFilePath();
-                $tmp = $path.bin2hex(random_bytes(6));
+                $tmp = $path . bin2hex(random_bytes(6));
                 file_put_contents($tmp, serialize($data));
                 rename($tmp, $path);
             } else {
@@ -117,44 +158,5 @@ class MockFileSessionStorage extends MockArraySessionStorage
         // this is needed when the session object is re-used across multiple requests
         // in functional tests.
         $this->started = false;
-    }
-
-    /**
-     * Deletes a session from persistent storage.
-     * Deliberately leaves session data in memory intact.
-     */
-    private function destroy(): void
-    {
-        set_error_handler(static function () {});
-        try {
-            unlink($this->getFilePath());
-        } finally {
-            restore_error_handler();
-        }
-    }
-
-    /**
-     * Calculate path to file.
-     */
-    private function getFilePath(): string
-    {
-        return $this->savePath.'/'.$this->id.'.mocksess';
-    }
-
-    /**
-     * Reads session from storage and loads session.
-     */
-    private function read(): void
-    {
-        set_error_handler(static function () {});
-        try {
-            $data = file_get_contents($this->getFilePath());
-        } finally {
-            restore_error_handler();
-        }
-
-        $this->data = $data ? unserialize($data) : [];
-
-        $this->loadSession();
     }
 }

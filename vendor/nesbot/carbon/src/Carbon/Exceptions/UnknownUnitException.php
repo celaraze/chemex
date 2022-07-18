@@ -25,8 +25,8 @@ class UnknownUnitException extends UnitException
     /**
      * Constructor.
      *
-     * @param string         $unit
-     * @param int            $code
+     * @param string $unit
+     * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct($unit, $code = 0, Throwable $previous = null)

@@ -12,12 +12,12 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Package\PackageInterface;
-use Composer\IO\IOInterface;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Metapackage installation manager.
@@ -95,7 +95,7 @@ class MetapackageInstaller implements InstallerInterface
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (!$repo->hasPackage($initial)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$initial);
+            throw new \InvalidArgumentException('Package is not installed: ' . $initial);
         }
 
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target));
@@ -112,7 +112,7 @@ class MetapackageInstaller implements InstallerInterface
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {
-            throw new \InvalidArgumentException('Package is not installed: '.$package);
+            throw new \InvalidArgumentException('Package is not installed: ' . $package);
         }
 
         $this->io->writeError("  - " . UninstallOperation::format($package));

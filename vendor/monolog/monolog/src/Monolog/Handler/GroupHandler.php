@@ -32,7 +32,7 @@ class GroupHandler extends Handler implements ProcessableHandlerInterface, Reset
 
     /**
      * @param HandlerInterface[] $handlers Array of Handlers.
-     * @param bool               $bubble   Whether the messages that are handled can bubble up the stack or not
+     * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
      */
     public function __construct(array $handlers, bool $bubble = true)
     {

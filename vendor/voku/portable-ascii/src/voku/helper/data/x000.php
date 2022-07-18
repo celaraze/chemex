@@ -13,4 +13,4 @@
     'U', 'Y', 'Th', 'ss', 'a', 'a', 'a', 'a', // Not "ae" - used in languages other than German
     'a', 'a', 'ae', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'd', 'n', 'o', 'o', 'o', 'o', // Not "oe" - used in languages other than German
     'o', '/', 'o', 'u', 'u', 'u', // Not "ue" - used in languages other than German
-    'u', 'y', 'th', 'y', ];
+    'u', 'y', 'th', 'y',];

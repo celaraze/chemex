@@ -7,7 +7,6 @@ use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\SodiumBase64Polyfill;
 use SplFileObject;
 use Throwable;
-
 use function assert;
 use function is_string;
 
@@ -18,7 +17,7 @@ final class InMemory implements Key
 
     private function __construct(string $contents, string $passphrase)
     {
-        $this->contents   = $contents;
+        $this->contents = $contents;
         $this->passphrase = $passphrase;
     }
 

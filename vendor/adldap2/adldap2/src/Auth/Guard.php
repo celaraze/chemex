@@ -2,16 +2,16 @@
 
 namespace Adldap\Auth;
 
-use Exception;
-use Throwable;
+use Adldap\Auth\Events\Attempting;
+use Adldap\Auth\Events\Binding;
 use Adldap\Auth\Events\Bound;
 use Adldap\Auth\Events\Failed;
 use Adldap\Auth\Events\Passed;
-use Adldap\Auth\Events\Binding;
-use Adldap\Auth\Events\Attempting;
-use Adldap\Events\DispatcherInterface;
-use Adldap\Connections\ConnectionInterface;
 use Adldap\Configuration\DomainConfiguration;
+use Adldap\Connections\ConnectionInterface;
+use Adldap\Events\DispatcherInterface;
+use Exception;
+use Throwable;
 
 /**
  * Class Guard.
@@ -89,78 +89,6 @@ class Guard implements GuardInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function bind($username = null, $password = null)
-    {
-        $this->fireBindingEvent($username, $password);
-
-        try {
-            if (@$this->connection->bind($username, $password) === true) {
-                $this->fireBoundEvent($username, $password);
-            } else {
-                throw new Exception($this->connection->getLastError(), $this->connection->errNo());
-            }
-        } catch (Throwable $e) {
-            $this->fireFailedEvent($username, $password);
-
-            throw (new BindException($e->getMessage(), $e->getCode(), $e))
-                ->setDetailedError($this->connection->getDetailedError());
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function bindAsAdministrator()
-    {
-        $this->bind(
-            $this->configuration->get('username'),
-            $this->configuration->get('password')
-        );
-    }
-
-    /**
-     * Get the event dispatcher instance.
-     *
-     * @return DispatcherInterface
-     */
-    public function getDispatcher()
-    {
-        return $this->events;
-    }
-
-    /**
-     * Sets the event dispatcher instance.
-     *
-     * @param DispatcherInterface $dispatcher
-     *
-     * @return void
-     */
-    public function setDispatcher(DispatcherInterface $dispatcher)
-    {
-        $this->events = $dispatcher;
-    }
-
-    /**
-     * Applies the prefix and suffix to the given username.
-     *
-     * @param string $username
-     *
-     * @throws \Adldap\Configuration\ConfigurationException If account_suffix or account_prefix do not
-     *                                                      exist in the providers domain configuration
-     *
-     * @return string
-     */
-    protected function applyPrefixAndSuffix($username)
-    {
-        $prefix = $this->configuration->get('account_prefix');
-        $suffix = $this->configuration->get('account_suffix');
-
-        return $prefix.$username.$suffix;
-    }
-
-    /**
      * Validates the specified username and password from being empty.
      *
      * @param string $username
@@ -198,32 +126,23 @@ class Guard implements GuardInterface
     }
 
     /**
-     * Fire the passed event.
-     *
-     * @param string $username
-     * @param string $password
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    protected function firePassedEvent($username, $password)
+    public function bind($username = null, $password = null)
     {
-        if (isset($this->events)) {
-            $this->events->fire(new Passed($this->connection, $username, $password));
-        }
-    }
+        $this->fireBindingEvent($username, $password);
 
-    /**
-     * Fire the failed event.
-     *
-     * @param string $username
-     * @param string $password
-     *
-     * @return void
-     */
-    protected function fireFailedEvent($username, $password)
-    {
-        if (isset($this->events)) {
-            $this->events->fire(new Failed($this->connection, $username, $password));
+        try {
+            if (@$this->connection->bind($username, $password) === true) {
+                $this->fireBoundEvent($username, $password);
+            } else {
+                throw new Exception($this->connection->getLastError(), $this->connection->errNo());
+            }
+        } catch (Throwable $e) {
+            $this->fireFailedEvent($username, $password);
+
+            throw (new BindException($e->getMessage(), $e->getCode(), $e))
+                ->setDetailedError($this->connection->getDetailedError());
         }
     }
 
@@ -255,5 +174,86 @@ class Guard implements GuardInterface
         if (isset($this->events)) {
             $this->events->fire(new Bound($this->connection, $username, $password));
         }
+    }
+
+    /**
+     * Fire the failed event.
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return void
+     */
+    protected function fireFailedEvent($username, $password)
+    {
+        if (isset($this->events)) {
+            $this->events->fire(new Failed($this->connection, $username, $password));
+        }
+    }
+
+    /**
+     * Applies the prefix and suffix to the given username.
+     *
+     * @param string $username
+     *
+     * @return string
+     * @throws \Adldap\Configuration\ConfigurationException If account_suffix or account_prefix do not
+     *                                                      exist in the providers domain configuration
+     *
+     */
+    protected function applyPrefixAndSuffix($username)
+    {
+        $prefix = $this->configuration->get('account_prefix');
+        $suffix = $this->configuration->get('account_suffix');
+
+        return $prefix . $username . $suffix;
+    }
+
+    /**
+     * Fire the passed event.
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return void
+     */
+    protected function firePassedEvent($username, $password)
+    {
+        if (isset($this->events)) {
+            $this->events->fire(new Passed($this->connection, $username, $password));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function bindAsAdministrator()
+    {
+        $this->bind(
+            $this->configuration->get('username'),
+            $this->configuration->get('password')
+        );
+    }
+
+    /**
+     * Get the event dispatcher instance.
+     *
+     * @return DispatcherInterface
+     */
+    public function getDispatcher()
+    {
+        return $this->events;
+    }
+
+    /**
+     * Sets the event dispatcher instance.
+     *
+     * @param DispatcherInterface $dispatcher
+     *
+     * @return void
+     */
+    public function setDispatcher(DispatcherInterface $dispatcher)
+    {
+        $this->events = $dispatcher;
     }
 }

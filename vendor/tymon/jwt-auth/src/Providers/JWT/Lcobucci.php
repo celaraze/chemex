@@ -39,24 +39,6 @@ class Lcobucci extends Provider implements JWT
      * \Lcobucci\JWT\Configuration.
      */
     protected $config;
-
-    /**
-     * Create the Lcobucci provider.
-     *
-     * @param  string  $secret
-     * @param  string  $algo
-     * @param  array  $keys
-     * @param  \Lcobucci\JWT\Configuration|null  $config
-     * @return void
-     */
-    public function __construct($secret, $algo, array $keys, $config = null)
-    {
-        parent::__construct($secret, $algo, $keys);
-
-        $this->signer = $this->getSigner();
-        $this->config = $config ?: $this->buildConfig();
-    }
-
     /**
      * Signers that this provider supports.
      *
@@ -75,9 +57,135 @@ class Lcobucci extends Provider implements JWT
     ];
 
     /**
+     * Create the Lcobucci provider.
+     *
+     * @param string $secret
+     * @param string $algo
+     * @param array $keys
+     * @param \Lcobucci\JWT\Configuration|null $config
+     * @return void
+     */
+    public function __construct($secret, $algo, array $keys, $config = null)
+    {
+        parent::__construct($secret, $algo, $keys);
+
+        $this->signer = $this->getSigner();
+        $this->config = $config ?: $this->buildConfig();
+    }
+
+    /**
+     * Get the signer instance.
+     *
+     * @return \Lcobucci\JWT\Signer
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    protected function getSigner()
+    {
+        if (!array_key_exists($this->algo, $this->signers)) {
+            throw new JWTException('The given algorithm could not be found');
+        }
+
+        $signer = $this->signers[$this->algo];
+
+        if (is_subclass_of($signer, Ecdsa::class)) {
+            return $signer::create();
+        }
+
+        return new $signer();
+    }
+
+    /**
+     * Build the configuration.
+     *
+     * @return \Lcobucci\JWT\Configuration
+     */
+    protected function buildConfig(): Configuration
+    {
+        $config = $this->isAsymmetric()
+            ? Configuration::forAsymmetricSigner(
+                $this->signer,
+                $this->getSigningKey(),
+                $this->getVerificationKey()
+            )
+            : Configuration::forSymmetricSigner($this->signer, $this->getSigningKey());
+
+        $config->setValidationConstraints(
+            new SignedWith($this->signer, $this->getVerificationKey())
+        );
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function isAsymmetric()
+    {
+        return is_subclass_of($this->signer, Rsa::class)
+            || is_subclass_of($this->signer, Ecdsa::class);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Lcobucci\JWT\Signer\Key
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    protected function getSigningKey()
+    {
+        if ($this->isAsymmetric()) {
+            if (!$privateKey = $this->getPrivateKey()) {
+                throw new JWTException('Private key is not set.');
+            }
+
+            return $this->getKey($privateKey, $this->getPassphrase() ?? '');
+        }
+
+        if (!$secret = $this->getSecret()) {
+            throw new JWTException('Secret is not set.');
+        }
+
+        return $this->getKey($secret);
+    }
+
+    /**
+     * Get the signing key instance.
+     */
+    protected function getKey(string $contents, string $passphrase = ''): Key
+    {
+        return InMemory::plainText($contents, $passphrase);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return \Lcobucci\JWT\Signer\Key
+     *
+     * @throws \Tymon\JWTAuth\Exceptions\JWTException
+     */
+    protected function getVerificationKey()
+    {
+        if ($this->isAsymmetric()) {
+            if (!$public = $this->getPublicKey()) {
+                throw new JWTException('Public key is not set.');
+            }
+
+            return $this->getKey($public);
+        }
+
+        if (!$secret = $this->getSecret()) {
+            throw new JWTException('Secret is not set.');
+        }
+
+        return $this->getKey($secret);
+    }
+
+    /**
      * Create a JSON Web Token.
      *
-     * @param  array  $payload
+     * @param array $payload
      * @return string
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
@@ -91,48 +199,14 @@ class Lcobucci extends Provider implements JWT
                 ->getToken($this->config->signer(), $this->config->signingKey())
                 ->toString();
         } catch (Exception $e) {
-            throw new JWTException('Could not create token: '.$e->getMessage(), $e->getCode(), $e);
+            throw new JWTException('Could not create token: ' . $e->getMessage(), $e->getCode(), $e);
         }
-    }
-
-    /**
-     * Decode a JSON Web Token.
-     *
-     * @param  string  $token
-     * @return array
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\JWTException
-     */
-    public function decode($token)
-    {
-        try {
-            /** @var \Lcobucci\JWT\Token\Plain */
-            $token = $this->config->parser()->parse($token);
-        } catch (Exception $e) {
-            throw new TokenInvalidException('Could not decode token: '.$e->getMessage(), $e->getCode(), $e);
-        }
-
-        if (! $this->config->validator()->validate($token, ...$this->config->validationConstraints())) {
-            throw new TokenInvalidException('Token Signature could not be verified.');
-        }
-
-        return Collection::wrap($token->claims()->all())
-            ->map(function ($claim) {
-                if ($claim instanceof DateTimeInterface) {
-                    return $claim->getTimestamp();
-                }
-
-                return is_object($claim) && method_exists($claim, 'getValue')
-                    ? $claim->getValue()
-                    : $claim;
-            })
-            ->toArray();
     }
 
     /**
      * Create an instance of the builder with all of the claims applied.
      *
-     * @param  array  $payload
+     * @param array $payload
      * @return \Lcobucci\JWT\Token\Builder
      */
     protected function getBuilderFromClaims(array $payload): Builder
@@ -171,111 +245,36 @@ class Lcobucci extends Provider implements JWT
     }
 
     /**
-     * Build the configuration.
+     * Decode a JSON Web Token.
      *
-     * @return \Lcobucci\JWT\Configuration
-     */
-    protected function buildConfig(): Configuration
-    {
-        $config = $this->isAsymmetric()
-            ? Configuration::forAsymmetricSigner(
-                $this->signer,
-                $this->getSigningKey(),
-                $this->getVerificationKey()
-            )
-            : Configuration::forSymmetricSigner($this->signer, $this->getSigningKey());
-
-        $config->setValidationConstraints(
-            new SignedWith($this->signer, $this->getVerificationKey())
-        );
-
-        return $config;
-    }
-
-    /**
-     * Get the signer instance.
-     *
-     * @return \Lcobucci\JWT\Signer
+     * @param string $token
+     * @return array
      *
      * @throws \Tymon\JWTAuth\Exceptions\JWTException
      */
-    protected function getSigner()
+    public function decode($token)
     {
-        if (! array_key_exists($this->algo, $this->signers)) {
-            throw new JWTException('The given algorithm could not be found');
+        try {
+            /** @var \Lcobucci\JWT\Token\Plain */
+            $token = $this->config->parser()->parse($token);
+        } catch (Exception $e) {
+            throw new TokenInvalidException('Could not decode token: ' . $e->getMessage(), $e->getCode(), $e);
         }
 
-        $signer = $this->signers[$this->algo];
-
-        if (is_subclass_of($signer, Ecdsa::class)) {
-            return $signer::create();
+        if (!$this->config->validator()->validate($token, ...$this->config->validationConstraints())) {
+            throw new TokenInvalidException('Token Signature could not be verified.');
         }
 
-        return new $signer();
-    }
+        return Collection::wrap($token->claims()->all())
+            ->map(function ($claim) {
+                if ($claim instanceof DateTimeInterface) {
+                    return $claim->getTimestamp();
+                }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function isAsymmetric()
-    {
-        return is_subclass_of($this->signer, Rsa::class)
-            || is_subclass_of($this->signer, Ecdsa::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return \Lcobucci\JWT\Signer\Key
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\JWTException
-     */
-    protected function getSigningKey()
-    {
-        if ($this->isAsymmetric()) {
-            if (! $privateKey = $this->getPrivateKey()) {
-                throw new JWTException('Private key is not set.');
-            }
-
-            return $this->getKey($privateKey, $this->getPassphrase() ?? '');
-        }
-
-        if (! $secret = $this->getSecret()) {
-            throw new JWTException('Secret is not set.');
-        }
-
-        return $this->getKey($secret);
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return \Lcobucci\JWT\Signer\Key
-     *
-     * @throws \Tymon\JWTAuth\Exceptions\JWTException
-     */
-    protected function getVerificationKey()
-    {
-        if ($this->isAsymmetric()) {
-            if (! $public = $this->getPublicKey()) {
-                throw new JWTException('Public key is not set.');
-            }
-
-            return $this->getKey($public);
-        }
-
-        if (! $secret = $this->getSecret()) {
-            throw new JWTException('Secret is not set.');
-        }
-
-        return $this->getKey($secret);
-    }
-
-    /**
-     * Get the signing key instance.
-     */
-    protected function getKey(string $contents, string $passphrase = ''): Key
-    {
-        return InMemory::plainText($contents, $passphrase);
+                return is_object($claim) && method_exists($claim, 'getValue')
+                    ? $claim->getValue()
+                    : $claim;
+            })
+            ->toArray();
     }
 }

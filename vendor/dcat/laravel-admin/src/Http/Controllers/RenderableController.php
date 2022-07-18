@@ -22,18 +22,6 @@ class RenderableController
         return $this->render($renderable);
     }
 
-    protected function render(LazyRenderable $renderable)
-    {
-        $asset = Admin::asset();
-
-        return Helper::render($renderable->render())
-            .Admin::html()
-            .$asset->jsToHtml()
-            .$asset->cssToHtml()
-            .$asset->scriptToHtml()
-            .$asset->styleToHtml();
-    }
-
     protected function initTranslation(Request $request)
     {
         if ($path = $request->get('_trans_')) {
@@ -69,5 +57,17 @@ class RenderableController
         Admin::baseJs([], false);
         Admin::baseCss([], false);
         Admin::fonts([]);
+    }
+
+    protected function render(LazyRenderable $renderable)
+    {
+        $asset = Admin::asset();
+
+        return Helper::render($renderable->render())
+            . Admin::html()
+            . $asset->jsToHtml()
+            . $asset->cssToHtml()
+            . $asset->scriptToHtml()
+            . $asset->styleToHtml();
     }
 }

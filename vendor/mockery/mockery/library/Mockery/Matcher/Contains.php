@@ -56,7 +56,7 @@ class Contains extends MatcherAbstract
         $return = '<Contains[';
         $elements = array();
         foreach ($this->_expected as $v) {
-            $elements[] = (string) $v;
+            $elements[] = (string)$v;
         }
         $return .= implode(', ', $elements) . ']>';
         return $return;

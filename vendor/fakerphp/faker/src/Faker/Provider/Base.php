@@ -25,26 +25,6 @@ class Base
     }
 
     /**
-     * Returns a random number between 0 and 9
-     *
-     * @return int
-     */
-    public static function randomDigit()
-    {
-        return mt_rand(0, 9);
-    }
-
-    /**
-     * Returns a random number between 1 and 9
-     *
-     * @return int
-     */
-    public static function randomDigitNotNull()
-    {
-        return mt_rand(1, 9);
-    }
-
-    /**
      * Generates a random digit, which cannot be $except
      *
      * @param int $except
@@ -63,49 +43,33 @@ class Base
     }
 
     /**
-     * Returns a random integer with 0 to $nbDigits digits.
+     * Returns a random number between $int1 and $int2 (any order)
      *
-     * The maximum value returned is mt_getrandmax()
-     *
-     * @param int  $nbDigits Defaults to a random number between 1 and 9
-     * @param bool $strict   Whether the returned number should have exactly $nbDigits
-     *
-     * @example 79907610
+     * @param int $int1 default to 0
+     * @param int $int2 defaults to 32 bit max integer, ie 2147483647
      *
      * @return int
+     * @example 79907610
+     *
      */
-    public static function randomNumber($nbDigits = null, $strict = false)
+    public static function numberBetween($int1 = 0, $int2 = 2147483647)
     {
-        if (!is_bool($strict)) {
-            throw new \InvalidArgumentException('randomNumber() generates numbers of fixed width. To generate numbers between two boundaries, use numberBetween() instead.');
-        }
+        $min = $int1 < $int2 ? $int1 : $int2;
+        $max = $int1 < $int2 ? $int2 : $int1;
 
-        if (null === $nbDigits) {
-            $nbDigits = static::randomDigitNotNull();
-        }
-        $max = 10 ** $nbDigits - 1;
-
-        if ($max > mt_getrandmax()) {
-            throw new \InvalidArgumentException('randomNumber() can only generate numbers up to mt_getrandmax()');
-        }
-
-        if ($strict) {
-            return mt_rand(10 ** ($nbDigits - 1), $max);
-        }
-
-        return mt_rand(0, $max);
+        return mt_rand($min, $max);
     }
 
     /**
      * Return a random float number
      *
-     * @param int       $nbMaxDecimals
+     * @param int $nbMaxDecimals
      * @param float|int $min
      * @param float|int $max
      *
+     * @return float
      * @example 48.8932
      *
-     * @return float
      */
     public static function randomFloat($nbMaxDecimals = null, $min = 0, $max = null)
     {
@@ -131,21 +95,57 @@ class Base
     }
 
     /**
-     * Returns a random number between $int1 and $int2 (any order)
-     *
-     * @param int $int1 default to 0
-     * @param int $int2 defaults to 32 bit max integer, ie 2147483647
-     *
-     * @example 79907610
+     * Returns a random number between 0 and 9
      *
      * @return int
      */
-    public static function numberBetween($int1 = 0, $int2 = 2147483647)
+    public static function randomDigit()
     {
-        $min = $int1 < $int2 ? $int1 : $int2;
-        $max = $int1 < $int2 ? $int2 : $int1;
+        return mt_rand(0, 9);
+    }
 
-        return mt_rand($min, $max);
+    /**
+     * Returns a random integer with 0 to $nbDigits digits.
+     *
+     * The maximum value returned is mt_getrandmax()
+     *
+     * @param int $nbDigits Defaults to a random number between 1 and 9
+     * @param bool $strict Whether the returned number should have exactly $nbDigits
+     *
+     * @return int
+     * @example 79907610
+     *
+     */
+    public static function randomNumber($nbDigits = null, $strict = false)
+    {
+        if (!is_bool($strict)) {
+            throw new \InvalidArgumentException('randomNumber() generates numbers of fixed width. To generate numbers between two boundaries, use numberBetween() instead.');
+        }
+
+        if (null === $nbDigits) {
+            $nbDigits = static::randomDigitNotNull();
+        }
+        $max = 10 ** $nbDigits - 1;
+
+        if ($max > mt_getrandmax()) {
+            throw new \InvalidArgumentException('randomNumber() can only generate numbers up to mt_getrandmax()');
+        }
+
+        if ($strict) {
+            return mt_rand(10 ** ($nbDigits - 1), $max);
+        }
+
+        return mt_rand(0, $max);
+    }
+
+    /**
+     * Returns a random number between 1 and 9
+     *
+     * @return int
+     */
+    public static function randomDigitNotNull()
+    {
+        return mt_rand(1, 9);
     }
 
     /**
@@ -174,72 +174,6 @@ class Base
     public static function randomAscii()
     {
         return chr(mt_rand(33, 126));
-    }
-
-    /**
-     * Returns randomly ordered subsequence of $count elements from a provided array
-     *
-     * @param array $array           Array to take elements from. Defaults to a-c
-     * @param int   $count           Number of elements to take.
-     * @param bool  $allowDuplicates Allow elements to be picked several times. Defaults to false
-     *
-     * @throws \LengthException When requesting more elements than provided
-     *
-     * @return array New array with $count elements from $array
-     */
-    public static function randomElements($array = ['a', 'b', 'c'], $count = 1, $allowDuplicates = false)
-    {
-        $traversables = [];
-
-        if ($array instanceof \Traversable) {
-            foreach ($array as $element) {
-                $traversables[] = $element;
-            }
-        }
-
-        $arr = count($traversables) ? $traversables : $array;
-
-        $allKeys = array_keys($arr);
-        $numKeys = count($allKeys);
-
-        if (!$allowDuplicates && $numKeys < $count) {
-            throw new \LengthException(sprintf('Cannot get %d elements, only %d in array', $count, $numKeys));
-        }
-
-        $highKey = $numKeys - 1;
-        $keys = $elements = [];
-        $numElements = 0;
-
-        while ($numElements < $count) {
-            $num = mt_rand(0, $highKey);
-
-            if (!$allowDuplicates) {
-                if (isset($keys[$num])) {
-                    continue;
-                }
-                $keys[$num] = true;
-            }
-
-            $elements[] = $arr[$allKeys[$num]];
-            ++$numElements;
-        }
-
-        return $elements;
-    }
-
-    /**
-     * Returns a random element from a passed array
-     *
-     * @param array $array
-     */
-    public static function randomElement($array = ['a', 'b', 'c'])
-    {
-        if (!$array || ($array instanceof \Traversable && !count($array))) {
-            return null;
-        }
-        $elements = static::randomElements($array, 1);
-
-        return $elements[0];
     }
 
     /**
@@ -341,7 +275,7 @@ class Base
      *
      * @example $faker->shuffleString('hello, world'); // 'rlo,h eold!lw'
      *
-     * @param string $string   The set to shuffle
+     * @param string $string The set to shuffle
      * @param string $encoding The string encoding (defaults to UTF-8)
      *
      * @return string The shuffled set
@@ -363,6 +297,23 @@ class Base
         return implode('', static::shuffleArray($array));
     }
 
+    /**
+     * Replaces hash signs ('#') and question marks ('?') with random numbers and letters
+     * An asterisk ('*') is replaced with either a random number or a random letter
+     *
+     * @param string $string String that needs to bet parsed
+     *
+     * @return string
+     */
+    public static function bothify($string = '## ??')
+    {
+        $string = self::replaceWildcard($string, '*', static function () {
+            return mt_rand(0, 1) ? '#' : '?';
+        });
+
+        return static::lexify(static::numerify($string));
+    }
+
     private static function replaceWildcard($string, $wildcard = '#', $callback = 'static::randomDigit')
     {
         if (($pos = strpos($string, $wildcard)) === false) {
@@ -376,6 +327,18 @@ class Base
         }
 
         return $string;
+    }
+
+    /**
+     * Replaces all question mark ('?') occurrences with a random letter
+     *
+     * @param string $string String that needs to bet parsed
+     *
+     * @return string
+     */
+    public static function lexify($string = '????')
+    {
+        return self::replaceWildcard($string, '?', 'static::randomLetter');
     }
 
     /**
@@ -401,7 +364,7 @@ class Base
         }
 
         if ($nbReplacements = count($toReplace)) {
-            $maxAtOnce = strlen((string) mt_getrandmax()) - 1;
+            $maxAtOnce = strlen((string)mt_getrandmax()) - 1;
             $numbers = '';
             $i = 0;
 
@@ -418,49 +381,6 @@ class Base
         $string = self::replaceWildcard($string, '%', 'static::randomDigitNotNull');
 
         return $string;
-    }
-
-    /**
-     * Replaces all question mark ('?') occurrences with a random letter
-     *
-     * @param string $string String that needs to bet parsed
-     *
-     * @return string
-     */
-    public static function lexify($string = '????')
-    {
-        return self::replaceWildcard($string, '?', 'static::randomLetter');
-    }
-
-    /**
-     * Replaces hash signs ('#') and question marks ('?') with random numbers and letters
-     * An asterisk ('*') is replaced with either a random number or a random letter
-     *
-     * @param string $string String that needs to bet parsed
-     *
-     * @return string
-     */
-    public static function bothify($string = '## ??')
-    {
-        $string = self::replaceWildcard($string, '*', static function () {
-            return mt_rand(0, 1) ? '#' : '?';
-        });
-
-        return static::lexify(static::numerify($string));
-    }
-
-    /**
-     * Replaces * signs with random numbers and letters and special characters
-     *
-     * @example $faker->asciify(''********'); // "s5'G!uC3"
-     *
-     * @param string $string String that needs to bet parsed
-     *
-     * @return string
-     */
-    public static function asciify($string = '****')
-    {
-        return preg_replace_callback('/\*/u', 'static::randomAscii', $string);
     }
 
     /**
@@ -520,8 +440,8 @@ class Base
         // All A-F inside of [] become ABCDEF
         $regex = preg_replace_callback('/\[([^\]]+)\]/', static function ($matches) {
             return '[' . preg_replace_callback('/(\w|\d)\-(\w|\d)/', static function ($range) {
-                return implode('', range($range[1], $range[2]));
-            }, $matches[1]) . ']';
+                    return implode('', range($range[1], $range[2]));
+                }, $matches[1]) . ']';
         }, $regex);
         // All [ABC] become B (or A or C)
         $regex = preg_replace_callback('/\[([^\]]+)\]/', static function ($matches) {
@@ -551,6 +471,86 @@ class Base
 
         // phew
         return $regex;
+    }
+
+    /**
+     * Returns a random element from a passed array
+     *
+     * @param array $array
+     */
+    public static function randomElement($array = ['a', 'b', 'c'])
+    {
+        if (!$array || ($array instanceof \Traversable && !count($array))) {
+            return null;
+        }
+        $elements = static::randomElements($array, 1);
+
+        return $elements[0];
+    }
+
+    /**
+     * Returns randomly ordered subsequence of $count elements from a provided array
+     *
+     * @param array $array Array to take elements from. Defaults to a-c
+     * @param int $count Number of elements to take.
+     * @param bool $allowDuplicates Allow elements to be picked several times. Defaults to false
+     *
+     * @return array New array with $count elements from $array
+     * @throws \LengthException When requesting more elements than provided
+     *
+     */
+    public static function randomElements($array = ['a', 'b', 'c'], $count = 1, $allowDuplicates = false)
+    {
+        $traversables = [];
+
+        if ($array instanceof \Traversable) {
+            foreach ($array as $element) {
+                $traversables[] = $element;
+            }
+        }
+
+        $arr = count($traversables) ? $traversables : $array;
+
+        $allKeys = array_keys($arr);
+        $numKeys = count($allKeys);
+
+        if (!$allowDuplicates && $numKeys < $count) {
+            throw new \LengthException(sprintf('Cannot get %d elements, only %d in array', $count, $numKeys));
+        }
+
+        $highKey = $numKeys - 1;
+        $keys = $elements = [];
+        $numElements = 0;
+
+        while ($numElements < $count) {
+            $num = mt_rand(0, $highKey);
+
+            if (!$allowDuplicates) {
+                if (isset($keys[$num])) {
+                    continue;
+                }
+                $keys[$num] = true;
+            }
+
+            $elements[] = $arr[$allKeys[$num]];
+            ++$numElements;
+        }
+
+        return $elements;
+    }
+
+    /**
+     * Replaces * signs with random numbers and letters and special characters
+     *
+     * @example $faker->asciify(''********'); // "s5'G!uC3"
+     *
+     * @param string $string String that needs to bet parsed
+     *
+     * @return string
+     */
+    public static function asciify($string = '****')
+    {
+        return preg_replace_callback('/\*/u', 'static::randomAscii', $string);
     }
 
     /**
@@ -613,13 +613,13 @@ class Base
      * $faker->unique()->randomElement(array(1, 2, 3));
      * </code>
      *
-     * @param bool $reset      If set to true, resets the list of existing values
-     * @param int  $maxRetries Maximum number of retries to find a unique value,
+     * @param bool $reset If set to true, resets the list of existing values
+     * @param int $maxRetries Maximum number of retries to find a unique value,
      *                         After which an OverflowException is thrown.
      *
+     * @return UniqueGenerator A proxy class returning only non-existing values
      * @throws \OverflowException When no unique value can be found by iterating $maxRetries times
      *
-     * @return UniqueGenerator A proxy class returning only non-existing values
      */
     public function unique($reset = false, $maxRetries = 10000)
     {
@@ -646,13 +646,13 @@ class Base
      * print_r($values); // [0, 4, 8, 4, 2, 6, 0, 8, 8, 6]
      * </code>
      *
-     * @param Closure $validator  A function returning true for valid values
-     * @param int     $maxRetries Maximum number of retries to find a unique value,
+     * @param Closure $validator A function returning true for valid values
+     * @param int $maxRetries Maximum number of retries to find a unique value,
      *                            After which an OverflowException is thrown.
      *
+     * @return ValidGenerator A proxy class returning only valid values
      * @throws \OverflowException When no valid value can be found by iterating $maxRetries times
      *
-     * @return ValidGenerator A proxy class returning only valid values
      */
     public function valid($validator = null, $maxRetries = 10000)
     {

@@ -26,8 +26,8 @@ class ControllerCreator
     /**
      * ControllerCreator constructor.
      *
-     * @param  string  $name
-     * @param  null  $files
+     * @param string $name
+     * @param null $files
      */
     public function __construct($name, $files = null)
     {
@@ -39,7 +39,7 @@ class ControllerCreator
     /**
      * Create a controller.
      *
-     * @param  string  $model
+     * @param string $model
      * @return string
      *
      * @throws \Exception
@@ -49,7 +49,7 @@ class ControllerCreator
         $path = $this->getPath($this->name);
         $dir = dirname($path);
 
-        if (! is_dir($dir)) {
+        if (!is_dir($dir)) {
             $this->files->makeDirectory($dir, 0755, true);
         }
 
@@ -61,7 +61,7 @@ class ControllerCreator
 
         $slug = str_replace('Controller', '', class_basename($this->name));
 
-        $model = $model ?: 'App\Admin\Repositories\\'.$slug;
+        $model = $model ?: 'App\Admin\Repositories\\' . $slug;
 
         $this->files->put($path, $this->replace($stub, $this->name, $model, $slug));
         $this->files->chmod($path, 0777);
@@ -70,9 +70,30 @@ class ControllerCreator
     }
 
     /**
-     * @param  string  $stub
-     * @param  string  $name
-     * @param  string  $model
+     * Get file path from giving controller name.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function getPath($name)
+    {
+        return Helper::guessClassFileName($name);
+    }
+
+    /**
+     * Get stub file path.
+     *
+     * @return string
+     */
+    public function getStub()
+    {
+        return __DIR__ . '/stubs/controller.stub';
+    }
+
+    /**
+     * @param string $stub
+     * @param string $name
+     * @param string $model
      * @return string
      */
     protected function replace($stub, $name, $model, $slug)
@@ -103,48 +124,27 @@ class ControllerCreator
     }
 
     /**
-     * Get controller namespace from giving name.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function getNamespace($name)
-    {
-        return trim(implode('\\', array_slice(explode('\\', $name), 0, -1)), '\\');
-    }
-
-    /**
      * Replace the class name for the given stub.
      *
-     * @param  string  $stub
-     * @param  string  $name
+     * @param string $stub
+     * @param string $name
      * @return string
      */
     protected function replaceClass($stub, $name)
     {
-        $class = str_replace($this->getNamespace($name).'\\', '', $name);
+        $class = str_replace($this->getNamespace($name) . '\\', '', $name);
 
         return str_replace(['DummyClass', 'DummyNamespace'], [$class, $this->getNamespace($name)], $stub);
     }
 
     /**
-     * Get file path from giving controller name.
+     * Get controller namespace from giving name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
-    public function getPath($name)
+    protected function getNamespace($name)
     {
-        return Helper::guessClassFileName($name);
-    }
-
-    /**
-     * Get stub file path.
-     *
-     * @return string
-     */
-    public function getStub()
-    {
-        return __DIR__.'/stubs/controller.stub';
+        return trim(implode('\\', array_slice(explode('\\', $name), 0, -1)), '\\');
     }
 }

@@ -129,8 +129,8 @@ class Model
     /**
      * Create a new grid model instance.
      *
-     * @param  Repository|\Illuminate\Database\Eloquent\Model  $repository
-     * @param  Request  $request
+     * @param Repository|\Illuminate\Database\Eloquent\Model $repository
+     * @param Request $request
      */
     public function __construct(Request $request, $repository = null)
     {
@@ -143,14 +143,6 @@ class Model
     }
 
     /**
-     * @return void
-     */
-    protected function initQueries()
-    {
-        $this->queries = new Collection();
-    }
-
-    /**
      * @return Repository|null
      */
     public function repository()
@@ -159,20 +151,11 @@ class Model
     }
 
     /**
-     * @return Collection
-     */
-    public function getQueries()
-    {
-        return $this->queries = $this->queries->unique();
-    }
-
-    /**
-     * @param  Collection  $query
      * @return void
      */
-    public function setQueries(Collection $query)
+    protected function initQueries()
     {
-        $this->queries = $query;
+        $this->queries = new Collection();
     }
 
     /**
@@ -183,196 +166,6 @@ class Model
         $this->buildData();
 
         return $this->paginator;
-    }
-
-    /**
-     * 是否使用 simplePaginate方法进行分页.
-     *
-     * @param  bool  $value
-     * @return $this
-     */
-    public function simple(bool $value = true)
-    {
-        $this->simple = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPaginateMethod()
-    {
-        return $this->simple ? 'simplePaginate' : 'paginate';
-    }
-
-    /**
-     * @param  int  $total
-     * @param  Collection|array  $data
-     * @return LengthAwarePaginator|Paginator
-     */
-    public function makePaginator($total, $data, string $url = null)
-    {
-        if ($this->simple) {
-            $paginator = new Paginator($data, $this->getPerPage(), $this->getCurrentPage());
-        } else {
-            $paginator = new LengthAwarePaginator(
-                $data,
-                $total,
-                $this->getPerPage(), // 传入每页显示行数
-                $this->getCurrentPage() // 传入当前页码
-            );
-        }
-
-        return $paginator->setPath(
-            $url ?: url()->current()
-        );
-    }
-
-    /**
-     * Get primary key name of model.
-     *
-     * @return string|array
-     */
-    public function getKeyName()
-    {
-        return $this->grid->getKeyName();
-    }
-
-    /**
-     * Enable or disable pagination.
-     *
-     * @param  bool  $use
-     *
-     * @reutrn $this;
-     */
-    public function usePaginate($use = true)
-    {
-        $this->usePaginate = $use;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function allowPagination()
-    {
-        return $this->usePaginate;
-    }
-
-    /**
-     * Get the query string variable used to store the per-page.
-     *
-     * @return string
-     */
-    public function getPerPageName()
-    {
-        return $this->grid->makeName($this->perPageName);
-    }
-
-    /**
-     * @param  int  $perPage
-     */
-    public function setPerPage(int $perPage)
-    {
-        $this->perPage = $perPage;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPageName()
-    {
-        return $this->grid->makeName($this->pageName);
-    }
-
-    /**
-     * @param  string  $name
-     * @return $this
-     */
-    public function setPageName($name)
-    {
-        $this->pageName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the query string variable used to store the sort.
-     *
-     * @return string
-     */
-    public function getSortName()
-    {
-        return $this->grid->makeName($this->sortName);
-    }
-
-    /**
-     * @param  string  $name
-     * @return $this
-     */
-    public function setSortName($name)
-    {
-        $this->sortName = $name;
-
-        return $this;
-    }
-
-    /**
-     * Set parent grid instance.
-     *
-     * @param  Grid  $grid
-     * @return $this
-     */
-    public function setGrid(Grid $grid)
-    {
-        $this->grid = $grid;
-
-        return $this;
-    }
-
-    /**
-     * Get parent gird instance.
-     *
-     * @return Grid
-     */
-    public function grid()
-    {
-        return $this->grid;
-    }
-
-    /**
-     * Get filter of Grid.
-     *
-     * @return Filter
-     */
-    public function filter()
-    {
-        return $this->grid->filter();
-    }
-
-    /**
-     * Get constraints.
-     *
-     * @return array|bool
-     */
-    public function getConstraints()
-    {
-        return $this->constraints;
-    }
-
-    /**
-     * @param  array  $constraints
-     * @return $this
-     */
-    public function setConstraints(array $constraints)
-    {
-        $this->constraints = $constraints;
-
-        return $this;
     }
 
     /**
@@ -390,7 +183,7 @@ class Model
     }
 
     /**
-     * @param  Collection|callable|array|AbstractPaginator  $data
+     * @param Collection|callable|array|AbstractPaginator $data
      * @return $this
      */
     public function setData($data)
@@ -422,18 +215,56 @@ class Model
     }
 
     /**
-     * Add conditions to grid model.
-     *
-     * @param  array  $conditions
-     * @return $this
+     * @param AbstractPaginator $paginator
+     * @return void
      */
-    public function addConditions(array $conditions)
+    protected function setPaginator(AbstractPaginator $paginator)
     {
-        foreach ($conditions as $condition) {
-            call_user_func_array([$this, key($condition)], current($condition));
+        $this->paginator = $paginator;
+
+        if ($this->simple) {
+            if (method_exists($paginator, 'withQueryString')) {
+                $paginator->withQueryString();
+            } else {
+                $paginator->appends(request()->all());
+            }
         }
 
+        $paginator->setPageName($this->getPageName());
+    }
+
+    /**
+     * @return string
+     */
+    public function getPageName()
+    {
+        return $this->grid->makeName($this->pageName);
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function setPageName($name)
+    {
+        $this->pageName = $name;
+
         return $this;
+    }
+
+    /**
+     * @param Collection $collection
+     * @return Collection
+     */
+    protected function stdObjToArray(Collection $collection)
+    {
+        return $collection->transform(function ($item) {
+            if ($item instanceof \stdClass) {
+                return (array)$item;
+            }
+
+            return $item;
+        });
     }
 
     /**
@@ -467,61 +298,47 @@ class Model
     }
 
     /**
-     * @param  AbstractPaginator  $paginator
-     * @return void
-     */
-    protected function setPaginator(AbstractPaginator $paginator)
-    {
-        $this->paginator = $paginator;
-
-        if ($this->simple) {
-            if (method_exists($paginator, 'withQueryString')) {
-                $paginator->withQueryString();
-            } else {
-                $paginator->appends(request()->all());
-            }
-        }
-
-        $paginator->setPageName($this->getPageName());
-    }
-
-    /**
-     * @param  Collection  $collection
-     * @return Collection
-     */
-    protected function stdObjToArray(Collection $collection)
-    {
-        return $collection->transform(function ($item) {
-            if ($item instanceof \stdClass) {
-                return (array) $item;
-            }
-
-            return $item;
-        });
-    }
-
-    /**
-     * Get current page.
+     * 是否使用 simplePaginate方法进行分页.
      *
-     * @return int|null
+     * @param bool $value
+     * @return $this
      */
-    public function getCurrentPage()
+    public function simple(bool $value = true)
     {
-        if (! $this->usePaginate) {
-            return;
-        }
-
-        return $this->currentPage ?: ($this->currentPage = ($this->request->get($this->getPageName()) ?: 1));
-    }
-
-    /**
-     * @param  int  $currentPage
-     */
-    public function setCurrentPage(int $currentPage)
-    {
-        $this->currentPage = $currentPage;
+        $this->simple = $value;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaginateMethod()
+    {
+        return $this->simple ? 'simplePaginate' : 'paginate';
+    }
+
+    /**
+     * @param int $total
+     * @param Collection|array $data
+     * @return LengthAwarePaginator|Paginator
+     */
+    public function makePaginator($total, $data, string $url = null)
+    {
+        if ($this->simple) {
+            $paginator = new Paginator($data, $this->getPerPage(), $this->getCurrentPage());
+        } else {
+            $paginator = new LengthAwarePaginator(
+                $data,
+                $total,
+                $this->getPerPage(), // 传入每页显示行数
+                $this->getCurrentPage() // 传入当前页码
+            );
+        }
+
+        return $paginator->setPath(
+            $url ?: url()->current()
+        );
     }
 
     /**
@@ -531,31 +348,155 @@ class Model
      */
     public function getPerPage()
     {
-        if (! $this->usePaginate) {
+        if (!$this->usePaginate) {
             return;
         }
 
         $perPage = $this->request->get($this->getPerPageName()) ?: $this->perPage;
         if ($perPage) {
-            return (int) $perPage;
+            return (int)$perPage;
         }
 
         return null;
     }
 
     /**
-     * Find query by method name.
-     *
-     * @param $method
-     * @return Collection
+     * @param int $perPage
      */
-    public function findQueryByMethod($method)
+    public function setPerPage(int $perPage)
     {
-        return $this->queries->where('method', $method);
+        $this->perPage = $perPage;
+
+        return $this;
     }
 
     /**
-     * @param  string|callable  $method
+     * Get the query string variable used to store the per-page.
+     *
+     * @return string
+     */
+    public function getPerPageName()
+    {
+        return $this->grid->makeName($this->perPageName);
+    }
+
+    /**
+     * Get current page.
+     *
+     * @return int|null
+     */
+    public function getCurrentPage()
+    {
+        if (!$this->usePaginate) {
+            return;
+        }
+
+        return $this->currentPage ?: ($this->currentPage = ($this->request->get($this->getPageName()) ?: 1));
+    }
+
+    /**
+     * @param int $currentPage
+     */
+    public function setCurrentPage(int $currentPage)
+    {
+        $this->currentPage = $currentPage;
+
+        return $this;
+    }
+
+    /**
+     * Get primary key name of model.
+     *
+     * @return string|array
+     */
+    public function getKeyName()
+    {
+        return $this->grid->getKeyName();
+    }
+
+    /**
+     * Enable or disable pagination.
+     *
+     * @param bool $use
+     *
+     * @reutrn $this;
+     */
+    public function usePaginate($use = true)
+    {
+        $this->usePaginate = $use;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function allowPagination()
+    {
+        return $this->usePaginate;
+    }
+
+    /**
+     * Set parent grid instance.
+     *
+     * @param Grid $grid
+     * @return $this
+     */
+    public function setGrid(Grid $grid)
+    {
+        $this->grid = $grid;
+
+        return $this;
+    }
+
+    /**
+     * Get parent gird instance.
+     *
+     * @return Grid
+     */
+    public function grid()
+    {
+        return $this->grid;
+    }
+
+    /**
+     * Get constraints.
+     *
+     * @return array|bool
+     */
+    public function getConstraints()
+    {
+        return $this->constraints;
+    }
+
+    /**
+     * @param array $constraints
+     * @return $this
+     */
+    public function setConstraints(array $constraints)
+    {
+        $this->constraints = $constraints;
+
+        return $this;
+    }
+
+    /**
+     * Add conditions to grid model.
+     *
+     * @param array $conditions
+     * @return $this
+     */
+    public function addConditions(array $conditions)
+    {
+        foreach ($conditions as $condition) {
+            call_user_func_array([$this, key($condition)], current($condition));
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string|callable $method
      * @return $this
      */
     public function filterQueryBy($method)
@@ -579,6 +520,16 @@ class Model
     }
 
     /**
+     * Get filter of Grid.
+     *
+     * @return Filter
+     */
+    public function filter()
+    {
+        return $this->grid->filter();
+    }
+
+    /**
      * Get the grid sort.
      *
      * @return array exp: ['name', 'desc']
@@ -597,18 +548,24 @@ class Model
     }
 
     /**
-     * @param  string|array  $method
-     * @return void
+     * Get the query string variable used to store the sort.
+     *
+     * @return string
      */
-    public function rejectQuery($method)
+    public function getSortName()
     {
-        $this->queries = $this->queries->reject(function ($query) use ($method) {
-            if (is_callable($method)) {
-                return call_user_func($method, $query);
-            }
+        return $this->grid->makeName($this->sortName);
+    }
 
-            return in_array($query['method'], (array) $method, true);
-        });
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function setSortName($name)
+    {
+        $this->sortName = $name;
+
+        return $this;
     }
 
     /**
@@ -622,8 +579,23 @@ class Model
     }
 
     /**
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string|array $method
+     * @return void
+     */
+    public function rejectQuery($method)
+    {
+        $this->queries = $this->queries->reject(function ($query) use ($method) {
+            if (is_callable($method)) {
+                return call_user_func($method, $query);
+            }
+
+            return in_array($query['method'], (array)$method, true);
+        });
+    }
+
+    /**
+     * @param string $method
+     * @param array $arguments
      * @return $this
      */
     public function __call($method, $arguments)
@@ -632,14 +604,14 @@ class Model
     }
 
     /**
-     * @param  string  $method
-     * @param  array  $arguments
+     * @param string $method
+     * @param array $arguments
      * @return $this
      */
     public function addQuery(string $method, array $arguments = [])
     {
         $this->queries->push([
-            'method'    => $method,
+            'method' => $method,
             'arguments' => $arguments,
         ]);
 
@@ -654,21 +626,32 @@ class Model
             ->merge($this->findQueryByMethod('oldest'));
     }
 
+    /**
+     * Find query by method name.
+     *
+     * @param $method
+     * @return Collection
+     */
+    public function findQueryByMethod($method)
+    {
+        return $this->queries->where('method', $method);
+    }
+
     public function getSortDescMethods()
     {
         return ['orderByDesc', 'latest'];
     }
 
     /**
-     * @param  Builder  $query
-     * @param  bool  $fetch
-     * @param  string[]  $columns
+     * @param Builder $query
+     * @param bool $fetch
+     * @param string[] $columns
      * @return Builder|Paginator|Collection
      */
     public function apply($query, bool $fetch = false, $columns = null)
     {
         $this->getQueries()->unique()->each(function ($value) use (&$query, $fetch, $columns) {
-            if (! $fetch && in_array($value['method'], ['paginate', 'simplePaginate', 'get'], true)) {
+            if (!$fetch && in_array($value['method'], ['paginate', 'simplePaginate', 'get'], true)) {
                 return;
             }
 
@@ -687,9 +670,26 @@ class Model
     }
 
     /**
+     * @return Collection
+     */
+    public function getQueries()
+    {
+        return $this->queries = $this->queries->unique();
+    }
+
+    /**
+     * @param Collection $query
+     * @return void
+     */
+    public function setQueries(Collection $query)
+    {
+        $this->queries = $query;
+    }
+
+    /**
      * Set the relationships that should be eager loaded.
      *
-     * @param  mixed  $relations
+     * @param mixed $relations
      * @return $this|Model
      */
     public function with($relations)
@@ -718,7 +718,7 @@ class Model
             $this->eagerLoads[] = $relations;
         }
 
-        return $this->addQuery('with', (array) $relations);
+        return $this->addQuery('with', (array)$relations);
     }
 
     /**

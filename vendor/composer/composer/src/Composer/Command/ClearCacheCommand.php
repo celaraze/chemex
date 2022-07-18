@@ -38,8 +38,7 @@ cache directory.
 
 Read more at https://getcomposer.org/doc/03-cli.md#clear-cache-clearcache-cc
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

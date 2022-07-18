@@ -3,7 +3,7 @@
 namespace Illuminate\Support\Facades;
 
 /**
- * @method static \Illuminate\Cache\RateLimiter for(string $name, \Closure $callback)
+ * @method static \Illuminate\Cache\RateLimiter for (string $name, \Closure $callback)
  * @method static \Closure limiter(string $name)
  * @method static bool tooManyAttempts($key, $maxAttempts)
  * @method static int hit($key, $decaySeconds = 60)

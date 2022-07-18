@@ -44,9 +44,9 @@ final class InlineParserContext
 
     public function __construct(Cursor $contents, AbstractBlock $container, ReferenceMapInterface $referenceMap)
     {
-        $this->referenceMap   = $referenceMap;
-        $this->container      = $container;
-        $this->cursor         = $contents;
+        $this->referenceMap = $referenceMap;
+        $this->container = $container;
+        $this->cursor = $contents;
         $this->delimiterStack = new DelimiterStack();
     }
 

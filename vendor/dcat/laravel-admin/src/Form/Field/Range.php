@@ -22,15 +22,6 @@ class Range extends Field
         $this->label = $this->formatLabel($arguments);
     }
 
-    protected function prepareInputValue($value)
-    {
-        if ($value === '') {
-            $value = null;
-        }
-
-        return $value;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -46,12 +37,21 @@ class Range extends Field
             $column = implode('.', $column);
 
             if ($this->column['start'] === $column) {
-                $result[$column.'start.'.$rule] = $message;
+                $result[$column . 'start.' . $rule] = $message;
             } else {
                 $result[$key] = $message;
             }
         }
 
         return $result;
+    }
+
+    protected function prepareInputValue($value)
+    {
+        if ($value === '') {
+            $value = null;
+        }
+
+        return $value;
     }
 }

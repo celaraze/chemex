@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Runner;
 
 use function preg_match;
@@ -27,16 +28,27 @@ final class ResultCacheExtension implements AfterIncompleteTestHook, AfterLastTe
         $this->cache = $cache;
     }
 
-    public function flush(): void
-    {
-        $this->cache->persist();
-    }
-
     public function executeAfterSuccessfulTest(string $test, float $time): void
     {
         $testName = $this->getTestName($test);
 
         $this->cache->setTime($testName, round($time, 3));
+    }
+
+    /**
+     * @param string $test A long description format of the current test
+     *
+     * @return string The test name without TestSuiteClassName:: and @dataprovider details
+     */
+    private function getTestName(string $test): string
+    {
+        $matches = [];
+
+        if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $test, $matches)) {
+            $test = $matches['name'] . ($matches['dataname'] ?? '');
+        }
+
+        return $test;
     }
 
     public function executeAfterIncompleteTest(string $test, string $message, float $time): void
@@ -92,19 +104,8 @@ final class ResultCacheExtension implements AfterIncompleteTestHook, AfterLastTe
         $this->flush();
     }
 
-    /**
-     * @param string $test A long description format of the current test
-     *
-     * @return string The test name without TestSuiteClassName:: and @dataprovider details
-     */
-    private function getTestName(string $test): string
+    public function flush(): void
     {
-        $matches = [];
-
-        if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $test, $matches)) {
-            $test = $matches['name'] . ($matches['dataname'] ?? '');
-        }
-
-        return $test;
+        $this->cache->persist();
     }
 }

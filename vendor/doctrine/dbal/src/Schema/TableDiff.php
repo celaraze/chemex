@@ -98,13 +98,13 @@ class TableDiff
     /**
      * Constructs an TableDiff object.
      *
-     * @param string       $tableName
-     * @param Column[]     $addedColumns
+     * @param string $tableName
+     * @param Column[] $addedColumns
      * @param ColumnDiff[] $changedColumns
-     * @param Column[]     $removedColumns
-     * @param Index[]      $addedIndexes
-     * @param Index[]      $changedIndexes
-     * @param Index[]      $removedIndexes
+     * @param Column[] $removedColumns
+     * @param Index[] $addedIndexes
+     * @param Index[] $changedIndexes
+     * @param Index[] $removedIndexes
      */
     public function __construct(
         $tableName,
@@ -115,15 +115,16 @@ class TableDiff
         $changedIndexes = [],
         $removedIndexes = [],
         ?Table $fromTable = null
-    ) {
-        $this->name           = $tableName;
-        $this->addedColumns   = $addedColumns;
+    )
+    {
+        $this->name = $tableName;
+        $this->addedColumns = $addedColumns;
         $this->changedColumns = $changedColumns;
         $this->removedColumns = $removedColumns;
-        $this->addedIndexes   = $addedIndexes;
+        $this->addedIndexes = $addedIndexes;
         $this->changedIndexes = $changedIndexes;
         $this->removedIndexes = $removedIndexes;
-        $this->fromTable      = $fromTable;
+        $this->fromTable = $fromTable;
     }
 
     /**

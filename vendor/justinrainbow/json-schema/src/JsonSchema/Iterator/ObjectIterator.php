@@ -47,54 +47,6 @@ class ObjectIterator implements \Iterator, \Countable
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function next()
-    {
-        $this->initialize();
-        $this->position++;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function key()
-    {
-        $this->initialize();
-
-        return $this->position;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function valid()
-    {
-        $this->initialize();
-
-        return isset($this->data[$this->position]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function rewind()
-    {
-        $this->initialize();
-        $this->position = 0;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count()
-    {
-        $this->initialize();
-
-        return count($this->data);
-    }
-
-    /**
      * Initializer
      */
     private function initialize()
@@ -145,5 +97,53 @@ class ObjectIterator implements \Iterator, \Countable
         }
 
         return is_object($item) ? get_object_vars($item) : $item;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function next()
+    {
+        $this->initialize();
+        $this->position++;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function key()
+    {
+        $this->initialize();
+
+        return $this->position;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function valid()
+    {
+        $this->initialize();
+
+        return isset($this->data[$this->position]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rewind()
+    {
+        $this->initialize();
+        $this->position = 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count()
+    {
+        $this->initialize();
+
+        return count($this->data);
     }
 }

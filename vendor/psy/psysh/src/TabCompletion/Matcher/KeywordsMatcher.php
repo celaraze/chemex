@@ -22,7 +22,7 @@ class KeywordsMatcher extends AbstractMatcher
 {
     protected $keywords = [
         'array', 'clone', 'declare', 'die', 'echo', 'empty', 'eval', 'exit', 'include',
-        'include_once', 'isset', 'list', 'print',  'require', 'require_once', 'unset',
+        'include_once', 'isset', 'list', 'print', 'require', 'require_once', 'unset',
     ];
 
     protected $mandatoryStartKeywords = [

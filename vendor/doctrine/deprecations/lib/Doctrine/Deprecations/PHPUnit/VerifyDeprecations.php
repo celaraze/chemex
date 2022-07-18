@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Deprecations\PHPUnit;
 
 use Doctrine\Deprecations\Deprecation;
-
 use function sprintf;
 
 trait VerifyDeprecations

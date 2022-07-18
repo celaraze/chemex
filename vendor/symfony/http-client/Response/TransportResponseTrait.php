@@ -47,101 +47,6 @@ trait TransportResponseTrait
     private ?LoggerInterface $logger = null;
 
     /**
-     * {@inheritdoc}
-     */
-    public function getStatusCode(): int
-    {
-        if ($this->initializer) {
-            self::initialize($this);
-        }
-
-        return $this->info['http_code'];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getHeaders(bool $throw = true): array
-    {
-        if ($this->initializer) {
-            self::initialize($this);
-        }
-
-        if ($throw) {
-            $this->checkStatusCode();
-        }
-
-        return $this->headers;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function cancel(): void
-    {
-        $this->info['canceled'] = true;
-        $this->info['error'] = 'Response has been canceled.';
-        $this->close();
-    }
-
-    /**
-     * Closes the response and all its network handles.
-     */
-    protected function close(): void
-    {
-        $this->canary->cancel();
-        $this->inflate = null;
-    }
-
-    /**
-     * Adds pending responses to the activity list.
-     */
-    abstract protected static function schedule(self $response, array &$runningResponses): void;
-
-    /**
-     * Performs all pending non-blocking operations.
-     */
-    abstract protected static function perform(ClientState $multi, array &$responses): void;
-
-    /**
-     * Waits for network activity.
-     */
-    abstract protected static function select(ClientState $multi, float $timeout): int;
-
-    private static function addResponseHeaders(array $responseHeaders, array &$info, array &$headers, string &$debug = ''): void
-    {
-        foreach ($responseHeaders as $h) {
-            if (11 <= \strlen($h) && '/' === $h[4] && preg_match('#^HTTP/\d+(?:\.\d+)? (\d\d\d)(?: |$)#', $h, $m)) {
-                if ($headers) {
-                    $debug .= "< \r\n";
-                    $headers = [];
-                }
-                $info['http_code'] = (int) $m[1];
-            } elseif (2 === \count($m = explode(':', $h, 2))) {
-                $headers[strtolower($m[0])][] = ltrim($m[1]);
-            }
-
-            $debug .= "< {$h}\r\n";
-            $info['response_headers'][] = $h;
-        }
-
-        $debug .= "< \r\n";
-    }
-
-    /**
-     * Ensures the request is always sent and that the response code was checked.
-     */
-    private function doDestruct(): void
-    {
-        $this->shouldBuffer = true;
-
-        if ($this->initializer && null === $this->info['error']) {
-            self::initialize($this);
-            $this->checkStatusCode();
-        }
-    }
-
-    /**
      * Implements an event loop based on a buffer activity queue.
      *
      * @param iterable<array-key, self> $responses
@@ -159,7 +64,7 @@ trait TransportResponseTrait
         $lastActivity = microtime(true);
         $elapsedTimeout = 0;
 
-        if ($fromLastTimeout = 0.0 === $timeout && '-0' === (string) $timeout) {
+        if ($fromLastTimeout = 0.0 === $timeout && '-0' === (string)$timeout) {
             $timeout = null;
         } elseif ($fromLastTimeout = 0 > $timeout) {
             $timeout = -$timeout;
@@ -309,6 +214,101 @@ trait TransportResponseTrait
             }
 
             $elapsedTimeout = microtime(true) - $lastActivity;
+        }
+    }
+
+    /**
+     * Adds pending responses to the activity list.
+     */
+    abstract protected static function schedule(self $response, array &$runningResponses): void;
+
+    /**
+     * Performs all pending non-blocking operations.
+     */
+    abstract protected static function perform(ClientState $multi, array &$responses): void;
+
+    /**
+     * Closes the response and all its network handles.
+     */
+    protected function close(): void
+    {
+        $this->canary->cancel();
+        $this->inflate = null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function cancel(): void
+    {
+        $this->info['canceled'] = true;
+        $this->info['error'] = 'Response has been canceled.';
+        $this->close();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHeaders(bool $throw = true): array
+    {
+        if ($this->initializer) {
+            self::initialize($this);
+        }
+
+        if ($throw) {
+            $this->checkStatusCode();
+        }
+
+        return $this->headers;
+    }
+
+    /**
+     * Waits for network activity.
+     */
+    abstract protected static function select(ClientState $multi, float $timeout): int;
+
+    private static function addResponseHeaders(array $responseHeaders, array &$info, array &$headers, string &$debug = ''): void
+    {
+        foreach ($responseHeaders as $h) {
+            if (11 <= \strlen($h) && '/' === $h[4] && preg_match('#^HTTP/\d+(?:\.\d+)? (\d\d\d)(?: |$)#', $h, $m)) {
+                if ($headers) {
+                    $debug .= "< \r\n";
+                    $headers = [];
+                }
+                $info['http_code'] = (int)$m[1];
+            } elseif (2 === \count($m = explode(':', $h, 2))) {
+                $headers[strtolower($m[0])][] = ltrim($m[1]);
+            }
+
+            $debug .= "< {$h}\r\n";
+            $info['response_headers'][] = $h;
+        }
+
+        $debug .= "< \r\n";
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getStatusCode(): int
+    {
+        if ($this->initializer) {
+            self::initialize($this);
+        }
+
+        return $this->info['http_code'];
+    }
+
+    /**
+     * Ensures the request is always sent and that the response code was checked.
+     */
+    private function doDestruct(): void
+    {
+        $this->shouldBuffer = true;
+
+        if ($this->initializer && null === $this->info['error']) {
+            self::initialize($this);
+            $this->checkStatusCode();
         }
     }
 }

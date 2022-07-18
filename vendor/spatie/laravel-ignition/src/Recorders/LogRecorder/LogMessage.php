@@ -23,10 +23,11 @@ class LogMessage
      */
     public function __construct(
         ?string $message,
-        string $level,
-        array $context = [],
-        ?float $microtime = null
-    ) {
+        string  $level,
+        array   $context = [],
+        ?float  $microtime = null
+    )
+    {
         $this->message = $message;
         $this->level = $level;
         $this->context = $context;

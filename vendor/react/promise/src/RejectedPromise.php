@@ -18,21 +18,6 @@ class RejectedPromise implements ExtendedPromiseInterface, CancellablePromiseInt
         $this->reason = $reason;
     }
 
-    public function then(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
-    {
-        if (null === $onRejected) {
-            return $this;
-        }
-
-        try {
-            return resolve($onRejected($this->reason));
-        } catch (\Throwable $exception) {
-            return new RejectedPromise($exception);
-        } catch (\Exception $exception) {
-            return new RejectedPromise($exception);
-        }
-    }
-
     public function done(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
     {
         if (null === $onRejected) {
@@ -57,6 +42,21 @@ class RejectedPromise implements ExtendedPromiseInterface, CancellablePromiseInt
         }
 
         return $this->then(null, $onRejected);
+    }
+
+    public function then(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
+    {
+        if (null === $onRejected) {
+            return $this;
+        }
+
+        try {
+            return resolve($onRejected($this->reason));
+        } catch (\Throwable $exception) {
+            return new RejectedPromise($exception);
+        } catch (\Exception $exception) {
+            return new RejectedPromise($exception);
+        }
     }
 
     public function always(callable $onFulfilledOrRejected)

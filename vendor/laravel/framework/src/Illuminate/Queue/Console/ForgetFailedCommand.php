@@ -9,13 +9,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ForgetFailedCommand extends Command
 {
     /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:forget {id : The ID of the failed job}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -25,7 +18,12 @@ class ForgetFailedCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:forget';
-
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:forget {id : The ID of the failed job}';
     /**
      * The console command description.
      *

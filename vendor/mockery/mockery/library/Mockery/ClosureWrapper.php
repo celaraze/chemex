@@ -21,8 +21,6 @@
 
 namespace Mockery;
 
-use Mockery\Matcher\Closure;
-
 /**
  * @internal
  */

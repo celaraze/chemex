@@ -1,5 +1,5 @@
 <body
-        class="dcat-admin-body sidebar-mini layout-fixed {{ $configData['body_class']}} {{ $configData['sidebar_class'] }}
+    class="dcat-admin-body sidebar-mini layout-fixed {{ $configData['body_class']}} {{ $configData['sidebar_class'] }}
         {{ $configData['navbar_class'] === 'fixed-top' ? 'navbar-fixed-top' : '' }} ">
 
 <script>
@@ -46,8 +46,8 @@
             </ul>
         </div>
         <div
-                class="iframe-tab-container {{mosi_iframeTabBodyClass(config('admin.layout')['body_class'])}}"
-                id="iframe-tab-container">
+            class="iframe-tab-container {{mosi_iframeTabBodyClass(config('admin.layout')['body_class'])}}"
+            id="iframe-tab-container">
             <div class="swiper-container">
                 <ul class="nav nav-pills mb-3 swiper-wrapper" id="iframe-tab" role="tablist"></ul>
             </div>
@@ -61,7 +61,7 @@
 </div>
 <div id="footer-template" style="display: none">
     <div
-            style="text-align:center;width: 100%;position: absolute;bottom: 0;height: 45px;line-height: 45px;background: #efefef">
+        style="text-align:center;width: 100%;position: absolute;bottom: 0;height: 45px;line-height: 45px;background: #efefef">
         <span class="text-center d-block d-md-inline-block mt-25">
                 &copy;
                 @if(isset(config('iframe_tab')['footer_setting'])&&config('iframe_tab')['footer_setting']['copyright']!='')

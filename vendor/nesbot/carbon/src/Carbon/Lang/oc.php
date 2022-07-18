@@ -13,6 +13,7 @@
  * Authors:
  * - Quentí
  */
+
 // @codeCoverageIgnoreStart
 use Symfony\Component\Translation\PluralizationRules;
 
@@ -85,14 +86,14 @@ return [
     'weekdays_short' => ['dg', 'dl', 'dm', 'dc', 'dj', 'dv', 'ds'],
     'weekdays_min' => ['dg', 'dl', 'dm', 'dc', 'dj', 'dv', 'ds'],
     'ordinal' => function ($number, string $period = '') {
-        $ordinal = [1 => 'èr', 2 => 'nd'][(int) $number] ?? 'en';
+        $ordinal = [1 => 'èr', 2 => 'nd'][(int)$number] ?? 'en';
 
         // feminine for year, week, hour, minute, second
         if (preg_match('/^[yYwWhHgGis]$/', $period)) {
             $ordinal .= 'a';
         }
 
-        return $number.$ordinal;
+        return $number . $ordinal;
     },
     'first_day_of_week' => 1,
     'day_of_first_week_of_year' => 4,

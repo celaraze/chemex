@@ -29,7 +29,7 @@ class HasMany extends Component
     /**
      * 浏览器包含组件的断言
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -40,25 +40,9 @@ class HasMany extends Component
     }
 
     /**
-     * 读取组件的元素快捷方式.
-     *
-     * @return array
-     */
-    public function elements()
-    {
-        return [
-            '@container' => '.has-many-'.$this->relation,
-            '@add' => ".{$this->relation}-add",
-            '@remove' => ".{$this->relation}-remove",
-            '@forms' => ".has-many-{$this->relation}-forms",
-            '@group' => ".has-many-{$this->relation}-forms .has-many-{$this->relation}-form",
-        ];
-    }
-
-    /**
      * 点击添加按钮.
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return int
      */
     public function add(Browser $browser)
@@ -83,7 +67,7 @@ JS
     /**
      * 获取最后一组新增的表单索引.
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return int|null
      */
     public function getLastFormGroupIndex(Browser $browser)
@@ -99,20 +83,10 @@ JS
     }
 
     /**
-     * @param  Browser  $browser
-     * @param  \Closure  $callback
-     * @return Browser
-     */
-    public function withLastFormGroup(Browser $browser, \Closure $callback = null)
-    {
-        return $this->withFormGroup($browser, $this->getLastFormGroupIndex($browser), $callback);
-    }
-
-    /**
      * 检测表单组.
      *
-     * @param  Browser  $browser
-     * @param  \Closure  $callback
+     * @param Browser $browser
+     * @param \Closure $callback
      * @return Browser
      */
     public function withFormGroup(Browser $browser, $index, ?\Closure $callback = null)
@@ -127,8 +101,8 @@ JS
     }
 
     /**
-     * @param  Browser  $browser
-     * @param  int  $index
+     * @param Browser $browser
+     * @param int $index
      * @return string
      */
     protected function formatGroupSelector(Browser $browser, $index)
@@ -137,10 +111,31 @@ JS
     }
 
     /**
+     * @param Browser $browser
+     * @param \Closure $callback
+     * @return Browser
+     */
+    public function withLastFormGroup(Browser $browser, \Closure $callback = null)
+    {
+        return $this->withFormGroup($browser, $this->getLastFormGroupIndex($browser), $callback);
+    }
+
+    /**
+     * 移除最后一个表单.
+     *
+     * @param Browser $browser
+     * @return Browser
+     */
+    public function removeLast(Browser $browser)
+    {
+        return $this->remove($browser, $this->getLastFormGroupIndex($browser));
+    }
+
+    /**
      * 移除表单.
      *
-     * @param  Browser  $browser
-     * @param  int  $index
+     * @param Browser $browser
+     * @param int $index
      * @return Browser
      */
     public function remove(Browser $browser, $index)
@@ -157,22 +152,27 @@ JS
     }
 
     /**
-     * 移除最后一个表单.
+     * 读取组件的元素快捷方式.
      *
-     * @param  Browser  $browser
-     * @return Browser
+     * @return array
      */
-    public function removeLast(Browser $browser)
+    public function elements()
     {
-        return $this->remove($browser, $this->getLastFormGroupIndex($browser));
+        return [
+            '@container' => '.has-many-' . $this->relation,
+            '@add' => ".{$this->relation}-add",
+            '@remove' => ".{$this->relation}-remove",
+            '@forms' => ".has-many-{$this->relation}-forms",
+            '@group' => ".has-many-{$this->relation}-forms .has-many-{$this->relation}-form",
+        ];
     }
 
     /**
      * 获取hasMany内表单字段值.
      *
-     * @param  Browser  $browser
-     * @param  string  $field
-     * @param  string  $value
+     * @param Browser $browser
+     * @param string $field
+     * @param string $value
      * @return string|null
      */
     public function assertFormGroupInputValue(Browser $browser, $field, $value, $id = null)
@@ -181,33 +181,16 @@ JS
                 <<<JS
 return $('{$this->getFieldSelector($browser, $field, $id)}').val();
 JS
-        )[0] ?? null;
+            )[0] ?? null;
 
         PHPUnit::assertEquals($input, $value);
-    }
-
-    /**
-     * 填充字段数据.
-     *
-     * @param  \Laravel\Dusk\Browser  $browser
-     * @param $field
-     * @param $value
-     * @param  null  $id
-     */
-    public function fillFieldValue(Browser $browser, $field, $value, $id = null)
-    {
-        $browser->script(
-            <<<JS
-$('{$this->getFieldSelector($browser, $field, $id)}').val('$value');
-JS
-        );
     }
 
     /**
      * 获取元素选择器.
      *
      * @param $field
-     * @param  null  $id
+     * @param null $id
      * @return array|string
      */
     public function getFieldSelector(Browser $browser, $field, $id = null)
@@ -216,6 +199,23 @@ JS
             (new NestedForm($this->relation, $id))
                 ->text($field)
                 ->getElementClassSelector()
+        );
+    }
+
+    /**
+     * 填充字段数据.
+     *
+     * @param \Laravel\Dusk\Browser $browser
+     * @param $field
+     * @param $value
+     * @param null $id
+     */
+    public function fillFieldValue(Browser $browser, $field, $value, $id = null)
+    {
+        $browser->script(
+            <<<JS
+$('{$this->getFieldSelector($browser, $field, $id)}').val('$value');
+JS
         );
     }
 }

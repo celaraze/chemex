@@ -12,13 +12,13 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
 use Composer\Util\Hg as HgUtils;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
-use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
@@ -33,6 +33,39 @@ class HgDriver extends VcsDriver
     protected $rootIdentifier;
     /** @var string */
     protected $repoDir;
+
+    /**
+     * @inheritDoc
+     */
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
+    {
+        if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]+@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
+            return true;
+        }
+
+        // local filesystem
+        if (Filesystem::isLocalPath($url)) {
+            $url = Filesystem::getPlatformPath($url);
+            if (!is_dir($url)) {
+                return false;
+            }
+
+            $process = new ProcessExecutor($io);
+            // check whether there is a hg repo in that path
+            if ($process->execute('hg summary', $output, $url) === 0) {
+                return true;
+            }
+        }
+
+        if (!$deep) {
+            return false;
+        }
+
+        $process = new ProcessExecutor($io);
+        $exit = $process->execute(sprintf('hg identify -- %s', ProcessExecutor::escape($url)), $ignored);
+
+        return $exit === 0;
+    }
 
     /**
      * @inheritDoc
@@ -53,7 +86,7 @@ class HgDriver extends VcsDriver
             $fs->ensureDirectoryExists($cacheDir);
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.$cacheDir.'" directory is not writable by the current user.');
+                throw new \RuntimeException('Can not clone ' . $this->url . ' to access package information. The "' . $cacheDir . '" directory is not writable by the current user.');
             }
 
             // Ensure we are allowed to use this URL by config
@@ -64,7 +97,7 @@ class HgDriver extends VcsDriver
             // update the repo if it is a valid hg repository
             if (is_dir($this->repoDir) && 0 === $this->process->execute('hg summary', $output, $this->repoDir)) {
                 if (0 !== $this->process->execute('hg pull', $output, $this->repoDir)) {
-                    $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
+                    $this->io->writeError('<error>Failed to update ' . $this->url . ', package information from this repository may be outdated (' . $this->process->getErrorOutput() . ')</error>');
                 }
             } else {
                 // clean up directory and do a fresh clone into it
@@ -81,80 +114,6 @@ class HgDriver extends VcsDriver
 
         $this->getTags();
         $this->getBranches();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getRootIdentifier(): string
-    {
-        if (null === $this->rootIdentifier) {
-            $this->process->execute(sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
-            $output = $this->process->splitLines($output);
-            $this->rootIdentifier = $output[0];
-        }
-
-        return $this->rootIdentifier;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getUrl(): string
-    {
-        return $this->url;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSource(string $identifier): array
-    {
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDist(string $identifier): ?array
-    {
-        return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFileContent(string $file, string $identifier): ?string
-    {
-        if (isset($identifier[0]) && $identifier[0] === '-') {
-            throw new \RuntimeException('Invalid hg identifier detected. Identifier must not start with a -, given: ' . $identifier);
-        }
-
-        $resource = sprintf('hg cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
-        $this->process->execute($resource, $content, $this->repoDir);
-
-        if (!trim($content)) {
-            return null;
-        }
-
-        return $content;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getChangeDate(string $identifier): ?\DateTimeImmutable
-    {
-        $this->process->execute(
-            sprintf(
-                'hg log --template "{date|rfc3339date}" -r %s',
-                ProcessExecutor::escape($identifier)
-            ),
-            $output,
-            $this->repoDir
-        );
-
-        return new \DateTimeImmutable(trim($output), new \DateTimeZone('UTC'));
     }
 
     /**
@@ -212,33 +171,74 @@ class HgDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
+    public function getRootIdentifier(): string
     {
-        if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]+@)?bitbucket.org|https://(?:.*?)\.kilnhg.com)#i', $url)) {
-            return true;
+        if (null === $this->rootIdentifier) {
+            $this->process->execute(sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
+            $output = $this->process->splitLines($output);
+            $this->rootIdentifier = $output[0];
         }
 
-        // local filesystem
-        if (Filesystem::isLocalPath($url)) {
-            $url = Filesystem::getPlatformPath($url);
-            if (!is_dir($url)) {
-                return false;
-            }
+        return $this->rootIdentifier;
+    }
 
-            $process = new ProcessExecutor($io);
-            // check whether there is a hg repo in that path
-            if ($process->execute('hg summary', $output, $url) === 0) {
-                return true;
-            }
+    /**
+     * @inheritDoc
+     */
+    public function getSource(string $identifier): array
+    {
+        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDist(string $identifier): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFileContent(string $file, string $identifier): ?string
+    {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid hg identifier detected. Identifier must not start with a -, given: ' . $identifier);
         }
 
-        if (!$deep) {
-            return false;
+        $resource = sprintf('hg cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $this->process->execute($resource, $content, $this->repoDir);
+
+        if (!trim($content)) {
+            return null;
         }
 
-        $process = new ProcessExecutor($io);
-        $exit = $process->execute(sprintf('hg identify -- %s', ProcessExecutor::escape($url)), $ignored);
+        return $content;
+    }
 
-        return $exit === 0;
+    /**
+     * @inheritDoc
+     */
+    public function getChangeDate(string $identifier): ?\DateTimeImmutable
+    {
+        $this->process->execute(
+            sprintf(
+                'hg log --template "{date|rfc3339date}" -r %s',
+                ProcessExecutor::escape($identifier)
+            ),
+            $output,
+            $this->repoDir
+        );
+
+        return new \DateTimeImmutable(trim($output), new \DateTimeZone('UTC'));
     }
 }

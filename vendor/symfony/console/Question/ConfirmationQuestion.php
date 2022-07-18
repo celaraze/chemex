@@ -21,8 +21,8 @@ class ConfirmationQuestion extends Question
     private string $trueAnswerRegex;
 
     /**
-     * @param string $question        The question to ask to the user
-     * @param bool   $default         The default answer to return, true or false
+     * @param string $question The question to ask to the user
+     * @param bool $default The default answer to return, true or false
      * @param string $trueAnswerRegex A regex to match the "yes" answer
      */
     public function __construct(string $question, bool $default = true, string $trueAnswerRegex = '/^y/i')
@@ -46,7 +46,7 @@ class ConfirmationQuestion extends Question
                 return $answer;
             }
 
-            $answerIsTrue = (bool) preg_match($regex, $answer);
+            $answerIsTrue = (bool)preg_match($regex, $answer);
             if (false === $default) {
                 return $answer && $answerIsTrue;
             }

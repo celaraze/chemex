@@ -11,6 +11,18 @@ class LooseTypeCheck implements TypeCheckInterface
             (is_array($value) && (count($value) == 0 || self::isAssociativeArray($value)));
     }
 
+    /**
+     * Check if the provided array is associative or not
+     *
+     * @param array $arr
+     *
+     * @return bool
+     */
+    private static function isAssociativeArray($arr)
+    {
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
     public static function isArray($value)
     {
         return
@@ -52,17 +64,5 @@ class LooseTypeCheck implements TypeCheckInterface
         }
 
         return count($value);
-    }
-
-    /**
-     * Check if the provided array is associative or not
-     *
-     * @param array $arr
-     *
-     * @return bool
-     */
-    private static function isAssociativeArray($arr)
-    {
-        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 }

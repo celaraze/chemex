@@ -52,7 +52,7 @@ abstract class AbstractExporter implements ExporterInterface
     /**
      * Create a new exporter instance.
      *
-     * @param  array  $titles
+     * @param array $titles
      */
     public function __construct($titles = [])
     {
@@ -64,7 +64,7 @@ abstract class AbstractExporter implements ExporterInterface
     /**
      * Set the headings of excel sheet.
      *
-     * @param  array|false  $titles
+     * @param array|false $titles
      * @return $this|array
      */
     public function titles($titles = null)
@@ -100,9 +100,19 @@ abstract class AbstractExporter implements ExporterInterface
     }
 
     /**
+     * Create a new exporter instance.
+     *
+     * @param \Closure|array $closure
+     */
+    public static function make($builder = null)
+    {
+        return new static($builder);
+    }
+
+    /**
      * Set filename.
      *
-     * @param  string|\Closure  $filename
+     * @param string|\Closure $filename
      * @return $this
      */
     public function filename($filename)
@@ -115,7 +125,7 @@ abstract class AbstractExporter implements ExporterInterface
     /**
      * Set export data callback function.
      *
-     * @param  \Closure  $builder
+     * @param \Closure $builder
      * @return $this
      */
     public function rows(\Closure $builder)
@@ -131,6 +141,17 @@ abstract class AbstractExporter implements ExporterInterface
     public function xlsx()
     {
         return $this->extension('xlsx');
+    }
+
+    /**
+     * @param string $ext e.g. csv/xlsx/ods
+     * @return $this
+     */
+    public function extension(string $ext)
+    {
+        $this->extension = $ext;
+
+        return $this;
     }
 
     /**
@@ -150,20 +171,9 @@ abstract class AbstractExporter implements ExporterInterface
     }
 
     /**
-     * @param  string  $ext  e.g. csv/xlsx/ods
-     * @return $this
-     */
-    public function extension(string $ext)
-    {
-        $this->extension = $ext;
-
-        return $this;
-    }
-
-    /**
      * Set grid for exporter.
      *
-     * @param  Grid  $grid
+     * @param Grid $grid
      * @return $this
      */
     public function setGrid(Grid $grid)
@@ -179,14 +189,14 @@ abstract class AbstractExporter implements ExporterInterface
      */
     public function getFilename()
     {
-        return $this->filename ?: (admin_trans_label().'-'.date('Ymd-His').'-'.Str::random(6));
+        return $this->filename ?: (admin_trans_label() . '-' . date('Ymd-His') . '-' . Str::random(6));
     }
 
     /**
      * Get data with export query.
      *
-     * @param  int  $page
-     * @param  int  $perPage
+     * @param int $page
+     * @param int $perPage
      * @return array|\Illuminate\Support\Collection|mixed
      */
     public function buildData(?int $page = null, ?int $perPage = null)
@@ -215,9 +225,35 @@ abstract class AbstractExporter implements ExporterInterface
     }
 
     /**
+     * @return Grid\Model
+     */
+    protected function getGridModel()
+    {
+        $model = $this->grid->model();
+
+        if (empty($this->modelQueries)) {
+            $model->rejectQuery(['forPage']);
+
+            $this->modelQueries = clone $model->getQueries();
+        }
+
+        $model->setQueries($this->modelQueries);
+
+        return $model;
+    }
+
+    /**
+     * @return int
+     */
+    protected function getChunkSize()
+    {
+        return $this->parent->option('chunk_size') ?: 5000;
+    }
+
+    /**
      * 格式化待导出数据.
      *
-     * @param  Collection  $data
+     * @param Collection $data
      * @return array
      */
     protected function normalize(Collection $data)
@@ -237,25 +273,7 @@ abstract class AbstractExporter implements ExporterInterface
     }
 
     /**
-     * @return Grid\Model
-     */
-    protected function getGridModel()
-    {
-        $model = $this->grid->model();
-
-        if (empty($this->modelQueries)) {
-            $model->rejectQuery(['forPage']);
-
-            $this->modelQueries = clone $model->getQueries();
-        }
-
-        $model->setQueries($this->modelQueries);
-
-        return $model;
-    }
-
-    /**
-     * @param  Collection  $data
+     * @param Collection $data
      * @return array
      */
     protected function callBuilder(Collection &$data)
@@ -268,17 +286,9 @@ abstract class AbstractExporter implements ExporterInterface
     }
 
     /**
-     * @return int
-     */
-    protected function getChunkSize()
-    {
-        return $this->parent->option('chunk_size') ?: 5000;
-    }
-
-    /**
      * Export data with scope.
      *
-     * @param  string  $scope
+     * @param string $scope
      * @return $this
      */
     public function withScope($scope)
@@ -313,15 +323,5 @@ abstract class AbstractExporter implements ExporterInterface
         $this->parent->{$method}(...$arguments);
 
         return $this;
-    }
-
-    /**
-     * Create a new exporter instance.
-     *
-     * @param  \Closure|array  $closure
-     */
-    public static function make($builder = null)
-    {
-        return new static($builder);
     }
 }

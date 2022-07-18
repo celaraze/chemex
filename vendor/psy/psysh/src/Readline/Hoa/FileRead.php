@@ -50,11 +50,105 @@ class FileRead extends File implements StreamIn
         string $streamName,
         string $mode = parent::MODE_READ,
         string $context = null,
-        bool $wait = false
-    ) {
+        bool   $wait = false
+    )
+    {
         parent::__construct($streamName, $mode, $context, $wait);
 
         return;
+    }
+
+    /**
+     * Test for end-of-file.
+     */
+    public function eof(): bool
+    {
+        return \feof($this->getStream());
+    }
+
+    /**
+     * Alias of $this->read().
+     */
+    public function readString(int $length)
+    {
+        return $this->read($length);
+    }
+
+    /**
+     * Read n characters.
+     */
+    public function read(int $length)
+    {
+        if (0 > $length) {
+            throw new FileException('Length must be greater than 0, given %d.', 2, $length);
+        }
+
+        return \fread($this->getStream(), $length);
+    }
+
+    /**
+     * Read a character.
+     */
+    public function readCharacter()
+    {
+        return \fgetc($this->getStream());
+    }
+
+    /**
+     * Read a boolean.
+     */
+    public function readBoolean()
+    {
+        return (bool)$this->read(1);
+    }
+
+    /**
+     * Read an integer.
+     */
+    public function readInteger(int $length = 1)
+    {
+        return (int)$this->read($length);
+    }
+
+    /**
+     * Read a float.
+     */
+    public function readFloat(int $length = 1)
+    {
+        return (float)$this->read($length);
+    }
+
+    /**
+     * Read an array.
+     * Alias of the $this->scanf() method.
+     */
+    public function readArray(string $format = null)
+    {
+        return $this->scanf($format);
+    }
+
+    /**
+     * Parse input from a stream according to a format.
+     */
+    public function scanf(string $format): array
+    {
+        return \fscanf($this->getStream(), $format);
+    }
+
+    /**
+     * Read a line.
+     */
+    public function readLine()
+    {
+        return \fgets($this->getStream());
+    }
+
+    /**
+     * Read all, i.e. read as much as possible.
+     */
+    public function readAll(int $offset = 0)
+    {
+        return \stream_get_contents($this->getStream(), -1, $offset);
     }
 
     /**
@@ -80,98 +174,5 @@ class FileRead extends File implements StreamIn
         $out = parent::_open($streamName, $context);
 
         return $out;
-    }
-
-    /**
-     * Test for end-of-file.
-     */
-    public function eof(): bool
-    {
-        return \feof($this->getStream());
-    }
-
-    /**
-     * Read n characters.
-     */
-    public function read(int $length)
-    {
-        if (0 > $length) {
-            throw new FileException('Length must be greater than 0, given %d.', 2, $length);
-        }
-
-        return \fread($this->getStream(), $length);
-    }
-
-    /**
-     * Alias of $this->read().
-     */
-    public function readString(int $length)
-    {
-        return $this->read($length);
-    }
-
-    /**
-     * Read a character.
-     */
-    public function readCharacter()
-    {
-        return \fgetc($this->getStream());
-    }
-
-    /**
-     * Read a boolean.
-     */
-    public function readBoolean()
-    {
-        return (bool) $this->read(1);
-    }
-
-    /**
-     * Read an integer.
-     */
-    public function readInteger(int $length = 1)
-    {
-        return (int) $this->read($length);
-    }
-
-    /**
-     * Read a float.
-     */
-    public function readFloat(int $length = 1)
-    {
-        return (float) $this->read($length);
-    }
-
-    /**
-     * Read an array.
-     * Alias of the $this->scanf() method.
-     */
-    public function readArray(string $format = null)
-    {
-        return $this->scanf($format);
-    }
-
-    /**
-     * Read a line.
-     */
-    public function readLine()
-    {
-        return \fgets($this->getStream());
-    }
-
-    /**
-     * Read all, i.e. read as much as possible.
-     */
-    public function readAll(int $offset = 0)
-    {
-        return \stream_get_contents($this->getStream(), -1, $offset);
-    }
-
-    /**
-     * Parse input from a stream according to a format.
-     */
-    public function scanf(string $format): array
-    {
-        return \fscanf($this->getStream(), $format);
     }
 }

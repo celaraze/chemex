@@ -52,7 +52,7 @@ final class NativeResponse implements ResponseInterface, StreamableInterface
     public function __construct(NativeClientState $multi, $context, string $url, array $options, array &$info, callable $resolver, ?callable $onProgress, ?LoggerInterface $logger)
     {
         $this->multi = $multi;
-        $this->id = $id = (int) $context;
+        $this->id = $id = (int)$context;
         $this->context = $context;
         $this->url = $url;
         $this->logger = $logger;
@@ -86,136 +86,6 @@ final class NativeResponse implements ResponseInterface, StreamableInterface
             }
             unset($multi->openHandles[$id], $multi->handlesActivity[$id]);
         });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getInfo(string $type = null): mixed
-    {
-        if (!$info = $this->finalInfo) {
-            $info = $this->info;
-            $info['url'] = implode('', $info['url']);
-            unset($info['size_body'], $info['request_header']);
-
-            if (null === $this->buffer) {
-                $this->finalInfo = $info;
-            }
-        }
-
-        return null !== $type ? $info[$type] ?? null : $info;
-    }
-
-    public function __destruct()
-    {
-        try {
-            $this->doDestruct();
-        } finally {
-            // Clear the DNS cache when all requests completed
-            if (0 >= --$this->multi->responseCount) {
-                $this->multi->responseCount = 0;
-                $this->multi->dnsCache = [];
-            }
-        }
-    }
-
-    private function open(): void
-    {
-        $url = $this->url;
-
-        set_error_handler(function ($type, $msg) use (&$url) {
-            if (\E_NOTICE !== $type || 'fopen(): Content-type not specified assuming application/x-www-form-urlencoded' !== $msg) {
-                throw new TransportException($msg);
-            }
-
-            $this->logger?->info(sprintf('%s for "%s".', $msg, $url ?? $this->url));
-        });
-
-        try {
-            $this->info['start_time'] = microtime(true);
-
-            [$resolver, $url] = ($this->resolver)($this->multi);
-
-            while (true) {
-                $context = stream_context_get_options($this->context);
-
-                if ($proxy = $context['http']['proxy'] ?? null) {
-                    $this->info['debug'] .= "* Establish HTTP proxy tunnel to {$proxy}\n";
-                    $this->info['request_header'] = $url;
-                } else {
-                    $this->info['debug'] .= "*   Trying {$this->info['primary_ip']}...\n";
-                    $this->info['request_header'] = $this->info['url']['path'].$this->info['url']['query'];
-                }
-
-                $this->info['request_header'] = sprintf("> %s %s HTTP/%s \r\n", $context['http']['method'], $this->info['request_header'], $context['http']['protocol_version']);
-                $this->info['request_header'] .= implode("\r\n", $context['http']['header'])."\r\n\r\n";
-
-                if (\array_key_exists('peer_name', $context['ssl']) && null === $context['ssl']['peer_name']) {
-                    unset($context['ssl']['peer_name']);
-                    $this->context = stream_context_create([], ['options' => $context] + stream_context_get_params($this->context));
-                }
-
-                // Send request and follow redirects when needed
-                $this->handle = $h = fopen($url, 'r', false, $this->context);
-                self::addResponseHeaders(stream_get_meta_data($h)['wrapper_data'], $this->info, $this->headers, $this->info['debug']);
-                $url = $resolver($this->multi, $this->headers['location'][0] ?? null, $this->context);
-
-                if (null === $url) {
-                    break;
-                }
-
-                $this->logger?->info(sprintf('Redirecting: "%s %s"', $this->info['http_code'], $url ?? $this->url));
-            }
-        } catch (\Throwable $e) {
-            $this->close();
-            $this->multi->handlesActivity[$this->id][] = null;
-            $this->multi->handlesActivity[$this->id][] = $e;
-
-            return;
-        } finally {
-            $this->info['pretransfer_time'] = $this->info['total_time'] = microtime(true) - $this->info['start_time'];
-            restore_error_handler();
-        }
-
-        if (isset($context['ssl']['capture_peer_cert_chain']) && isset(($context = stream_context_get_options($this->context))['ssl']['peer_certificate_chain'])) {
-            $this->info['peer_certificate_chain'] = $context['ssl']['peer_certificate_chain'];
-        }
-
-        stream_set_blocking($h, false);
-        $this->context = $this->resolver = null;
-
-        // Create dechunk buffers
-        if (isset($this->headers['content-length'])) {
-            $this->remaining = (int) $this->headers['content-length'][0];
-        } elseif ('chunked' === ($this->headers['transfer-encoding'][0] ?? null)) {
-            stream_filter_append($this->buffer, 'dechunk', \STREAM_FILTER_WRITE);
-            $this->remaining = -1;
-        } else {
-            $this->remaining = -2;
-        }
-
-        $this->multi->handlesActivity[$this->id] = [new FirstChunk()];
-
-        if ('HEAD' === $context['http']['method'] || \in_array($this->info['http_code'], [204, 304], true)) {
-            $this->multi->handlesActivity[$this->id][] = null;
-            $this->multi->handlesActivity[$this->id][] = null;
-
-            return;
-        }
-
-        $host = parse_url($this->info['redirect_url'] ?? $this->url, \PHP_URL_HOST);
-        $this->multi->lastTimeout = null;
-        $this->multi->openHandles[$this->id] = [&$this->pauseExpiry, $h, $this->buffer, $this->onProgress, &$this->remaining, &$this->info, $host];
-        $this->multi->hosts[$host] = 1 + ($this->multi->hosts[$host] ?? 0);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    private function close(): void
-    {
-        $this->canary->cancel();
-        $this->handle = $this->buffer = $this->inflate = $this->onProgress = null;
     }
 
     /**
@@ -259,7 +129,7 @@ final class NativeResponse implements ResponseInterface, StreamableInterface
 
             // Read incoming buffer and write it to the dechunk one
             try {
-                if ($remaining && '' !== $data = (string) fread($h, 0 > $remaining ? 16372 : $remaining)) {
+                if ($remaining && '' !== $data = (string)fread($h, 0 > $remaining ? 16372 : $remaining)) {
                     fwrite($buffer, $data);
                     $hasActivity = true;
                     $multi->sleep = false;
@@ -347,6 +217,105 @@ final class NativeResponse implements ResponseInterface, StreamableInterface
         }
     }
 
+    private function open(): void
+    {
+        $url = $this->url;
+
+        set_error_handler(function ($type, $msg) use (&$url) {
+            if (\E_NOTICE !== $type || 'fopen(): Content-type not specified assuming application/x-www-form-urlencoded' !== $msg) {
+                throw new TransportException($msg);
+            }
+
+            $this->logger?->info(sprintf('%s for "%s".', $msg, $url ?? $this->url));
+        });
+
+        try {
+            $this->info['start_time'] = microtime(true);
+
+            [$resolver, $url] = ($this->resolver)($this->multi);
+
+            while (true) {
+                $context = stream_context_get_options($this->context);
+
+                if ($proxy = $context['http']['proxy'] ?? null) {
+                    $this->info['debug'] .= "* Establish HTTP proxy tunnel to {$proxy}\n";
+                    $this->info['request_header'] = $url;
+                } else {
+                    $this->info['debug'] .= "*   Trying {$this->info['primary_ip']}...\n";
+                    $this->info['request_header'] = $this->info['url']['path'] . $this->info['url']['query'];
+                }
+
+                $this->info['request_header'] = sprintf("> %s %s HTTP/%s \r\n", $context['http']['method'], $this->info['request_header'], $context['http']['protocol_version']);
+                $this->info['request_header'] .= implode("\r\n", $context['http']['header']) . "\r\n\r\n";
+
+                if (\array_key_exists('peer_name', $context['ssl']) && null === $context['ssl']['peer_name']) {
+                    unset($context['ssl']['peer_name']);
+                    $this->context = stream_context_create([], ['options' => $context] + stream_context_get_params($this->context));
+                }
+
+                // Send request and follow redirects when needed
+                $this->handle = $h = fopen($url, 'r', false, $this->context);
+                self::addResponseHeaders(stream_get_meta_data($h)['wrapper_data'], $this->info, $this->headers, $this->info['debug']);
+                $url = $resolver($this->multi, $this->headers['location'][0] ?? null, $this->context);
+
+                if (null === $url) {
+                    break;
+                }
+
+                $this->logger?->info(sprintf('Redirecting: "%s %s"', $this->info['http_code'], $url ?? $this->url));
+            }
+        } catch (\Throwable $e) {
+            $this->close();
+            $this->multi->handlesActivity[$this->id][] = null;
+            $this->multi->handlesActivity[$this->id][] = $e;
+
+            return;
+        } finally {
+            $this->info['pretransfer_time'] = $this->info['total_time'] = microtime(true) - $this->info['start_time'];
+            restore_error_handler();
+        }
+
+        if (isset($context['ssl']['capture_peer_cert_chain']) && isset(($context = stream_context_get_options($this->context))['ssl']['peer_certificate_chain'])) {
+            $this->info['peer_certificate_chain'] = $context['ssl']['peer_certificate_chain'];
+        }
+
+        stream_set_blocking($h, false);
+        $this->context = $this->resolver = null;
+
+        // Create dechunk buffers
+        if (isset($this->headers['content-length'])) {
+            $this->remaining = (int)$this->headers['content-length'][0];
+        } elseif ('chunked' === ($this->headers['transfer-encoding'][0] ?? null)) {
+            stream_filter_append($this->buffer, 'dechunk', \STREAM_FILTER_WRITE);
+            $this->remaining = -1;
+        } else {
+            $this->remaining = -2;
+        }
+
+        $this->multi->handlesActivity[$this->id] = [new FirstChunk()];
+
+        if ('HEAD' === $context['http']['method'] || \in_array($this->info['http_code'], [204, 304], true)) {
+            $this->multi->handlesActivity[$this->id][] = null;
+            $this->multi->handlesActivity[$this->id][] = null;
+
+            return;
+        }
+
+        $host = parse_url($this->info['redirect_url'] ?? $this->url, \PHP_URL_HOST);
+        $this->multi->lastTimeout = null;
+        $this->multi->openHandles[$this->id] = [&$this->pauseExpiry, $h, $this->buffer, $this->onProgress, &$this->remaining, &$this->info, $host];
+        $this->multi->hosts[$host] = 1 + ($this->multi->hosts[$host] ?? 0);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    private function close(): void
+    {
+        $this->canary->cancel();
+        $this->handle = $this->buffer = $this->inflate = $this->onProgress = null;
+    }
+
     /**
      * {@inheritdoc}
      *
@@ -375,11 +344,42 @@ final class NativeResponse implements ResponseInterface, StreamableInterface
         }
 
         if (!$handles) {
-            usleep((int) (1E6 * $timeout));
+            usleep((int)(1E6 * $timeout));
 
             return 0;
         }
 
-        return stream_select($handles, $_, $_, (int) $timeout, (int) (1E6 * ($timeout - (int) $timeout)));
+        return stream_select($handles, $_, $_, (int)$timeout, (int)(1E6 * ($timeout - (int)$timeout)));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(string $type = null): mixed
+    {
+        if (!$info = $this->finalInfo) {
+            $info = $this->info;
+            $info['url'] = implode('', $info['url']);
+            unset($info['size_body'], $info['request_header']);
+
+            if (null === $this->buffer) {
+                $this->finalInfo = $info;
+            }
+        }
+
+        return null !== $type ? $info[$type] ?? null : $info;
+    }
+
+    public function __destruct()
+    {
+        try {
+            $this->doDestruct();
+        } finally {
+            // Clear the DNS cache when all requests completed
+            if (0 >= --$this->multi->responseCount) {
+                $this->multi->responseCount = 0;
+                $this->multi->dnsCache = [];
+            }
+        }
     }
 }

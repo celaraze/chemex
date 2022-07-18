@@ -31,7 +31,7 @@ final class AttributesInlineParser implements InlineParserInterface
     public function parse(InlineParserContext $inlineContext): bool
     {
         $cursor = $inlineContext->getCursor();
-        $char   = (string) $cursor->peek(-1);
+        $char = (string)$cursor->peek(-1);
 
         $attributes = AttributesHelper::parseAttributes($cursor);
         if ($attributes === []) {

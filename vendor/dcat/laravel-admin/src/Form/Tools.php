@@ -38,7 +38,7 @@ class Tools implements Renderable
     /**
      * Create a new Tools instance.
      *
-     * @param  Builder  $builder
+     * @param Builder $builder
      */
     public function __construct(Builder $builder)
     {
@@ -50,7 +50,7 @@ class Tools implements Renderable
     /**
      * Append a tools.
      *
-     * @param  string|\Closure|Renderable|Htmlable|AbstractTool  $tool
+     * @param string|\Closure|Renderable|Htmlable|AbstractTool $tool
      * @return $this
      */
     public function append($tool)
@@ -63,9 +63,30 @@ class Tools implements Renderable
     }
 
     /**
+     * @param mixed $tool
+     * @return void
+     */
+    protected function prepareTool($tool)
+    {
+        if ($tool instanceof AbstractTool) {
+            $tool->setForm($this->form->form());
+        }
+    }
+
+    /**
+     * Get parent form of tool.
+     *
+     * @return Builder
+     */
+    public function form()
+    {
+        return $this->form;
+    }
+
+    /**
      * Prepend a tool.
      *
-     * @param  string|\Closure|Renderable|Htmlable|AbstractTool  $tool
+     * @param string|\Closure|Renderable|Htmlable|AbstractTool $tool
      * @return $this
      */
     public function prepend($tool)
@@ -78,24 +99,65 @@ class Tools implements Renderable
     }
 
     /**
-     * @param  mixed  $tool
-     * @return void
-     */
-    protected function prepareTool($tool)
-    {
-        if ($tool instanceof AbstractTool) {
-            $tool->setForm($this->form->form());
-        }
-    }
-
-    /**
      * Disable `list` tool.
      *
      * @return $this
      */
     public function disableList(bool $disable = true)
     {
-        $this->tools['list'] = ! $disable;
+        $this->tools['list'] = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * Render tools.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $output = $this->renderCustomTools($this->prepends);
+
+        foreach ($this->tools as $tool => $enable) {
+            if ($enable) {
+                $renderMethod = 'render' . ucfirst($tool);
+
+                $output .= $this->$renderMethod();
+            }
+        }
+
+        return $output . $this->renderCustomTools($this->appends);
+    }
+
+    /**
+     * Render custom tools.
+     *
+     * @param Collection $tools
+     * @return mixed
+     */
+    protected function renderCustomTools($tools)
+    {
+        if ($this->form->isCreating()) {
+            $this->disableView();
+            $this->disableDelete();
+        }
+
+        if (empty($tools)) {
+            return '';
+        }
+
+        return $tools->map([Helper::class, 'render'])->implode(' ');
+    }
+
+    /**
+     * Disable `view` tool.
+     *
+     * @return $this
+     */
+    public function disableView(bool $disable = true)
+    {
+        $this->tools['view'] = !$disable;
 
         return $this;
     }
@@ -107,65 +169,9 @@ class Tools implements Renderable
      */
     public function disableDelete(bool $disable = true)
     {
-        $this->tools['delete'] = ! $disable;
+        $this->tools['delete'] = !$disable;
 
         return $this;
-    }
-
-    /**
-     * Disable `view` tool.
-     *
-     * @return $this
-     */
-    public function disableView(bool $disable = true)
-    {
-        $this->tools['view'] = ! $disable;
-
-        return $this;
-    }
-
-    /**
-     * Get request path for resource list.
-     *
-     * @return string
-     */
-    protected function getListPath()
-    {
-        return $this->form->resource();
-    }
-
-    /**
-     * Get request path for edit.
-     *
-     * @return string
-     */
-    protected function getDeletePath()
-    {
-        return $this->getViewPath();
-    }
-
-    /**
-     * Get request path for delete.
-     *
-     * @return string
-     */
-    protected function getViewPath()
-    {
-        if ($key = $this->form->getResourceId()) {
-            return $this->getListPath().'/'.$key;
-        }
-
-        return $this->getListPath();
-    }
-
-    /**
-     * Get parent form of tool.
-     *
-     * @return Builder
-     */
-    public function form()
-    {
-        return $this->form;
     }
 
     /**
@@ -182,6 +188,16 @@ class Tools implements Renderable
     <a href="{$this->getListPath()}" class="btn btn-sm btn-primary "><i class="feather icon-list"></i><span class="d-none d-sm-inline">&nbsp;$text</span></a>
 </div>
 EOT;
+    }
+
+    /**
+     * Get request path for resource list.
+     *
+     * @return string
+     */
+    protected function getListPath()
+    {
+        return $this->form->resource();
     }
 
     /**
@@ -203,6 +219,20 @@ HTML;
     }
 
     /**
+     * Get request path for delete.
+     *
+     * @return string
+     */
+    protected function getViewPath()
+    {
+        if ($key = $this->form->getResourceId()) {
+            return $this->getListPath() . '/' . $key;
+        }
+
+        return $this->getListPath();
+    }
+
+    /**
      * Render `delete` tool.
      *
      * @return string
@@ -221,42 +251,12 @@ HTML;
     }
 
     /**
-     * Render custom tools.
-     *
-     * @param  Collection  $tools
-     * @return mixed
-     */
-    protected function renderCustomTools($tools)
-    {
-        if ($this->form->isCreating()) {
-            $this->disableView();
-            $this->disableDelete();
-        }
-
-        if (empty($tools)) {
-            return '';
-        }
-
-        return $tools->map([Helper::class, 'render'])->implode(' ');
-    }
-
-    /**
-     * Render tools.
+     * Get request path for edit.
      *
      * @return string
      */
-    public function render()
+    protected function getDeletePath()
     {
-        $output = $this->renderCustomTools($this->prepends);
-
-        foreach ($this->tools as $tool => $enable) {
-            if ($enable) {
-                $renderMethod = 'render'.ucfirst($tool);
-
-                $output .= $this->$renderMethod();
-            }
-        }
-
-        return $output.$this->renderCustomTools($this->appends);
+        return $this->getViewPath();
     }
 }

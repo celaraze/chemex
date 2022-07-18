@@ -18,24 +18,24 @@ let theme = null;
 let distPath = mix.inProduction() ? 'resources/dist' : 'resources/pre-dist';
 
 function mixAssetsDir(query, cb) {
-  (glob.sync('resources/assets/' + query) || []).forEach(f => {
-    f = f.replace(/[\\\/]+/g, '/');
-    cb(f, f.replace('resources/assets', distPath));
-  });
+    (glob.sync('resources/assets/' + query) || []).forEach(f => {
+        f = f.replace(/[\\\/]+/g, '/');
+        cb(f, f.replace('resources/assets', distPath));
+    });
 }
 
 function themeCss(path) {
-  let sf = theme ? '-'+theme : '';
+    let sf = theme ? '-' + theme : '';
 
-  return `${distPath}/${path}${sf}.css`
+    return `${distPath}/${path}${sf}.css`
 }
 
 function dcatPath(path) {
-  return 'resources/assets/dcat/' + path;
+    return 'resources/assets/dcat/' + path;
 }
 
 function dcatDistPath(path) {
-  return distPath + '/dcat/' + path;
+    return distPath + '/dcat/' + path;
 }
 
 

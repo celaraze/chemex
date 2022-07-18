@@ -59,16 +59,16 @@ class QueueTimeoutAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "The queue timeout value must be at least several seconds shorter than the retry after "
-                ."configuration value. Your {$this->connectionName} queue connection's retry after value "
-                ."is set at {$this->retryAfter} seconds while your timeout value is set at {$this->timeout} "
-                ."seconds. This can cause problems such as your jobs may be processed twice or the queue "
-                ."worker may crash.";
+            . "configuration value. Your {$this->connectionName} queue connection's retry after value "
+            . "is set at {$this->retryAfter} seconds while your timeout value is set at {$this->timeout} "
+            . "seconds. This can cause problems such as your jobs may be processed twice or the queue "
+            . "worker may crash.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
@@ -76,7 +76,7 @@ class QueueTimeoutAnalyzer extends ReliabilityAnalyzer
         $connections = collect($config->get('queue.connections', []))
             ->filter(function ($conf, $queue) {
                 // skip sqs and sync drivers as they don't have retry after values
-                return ! in_array($conf['driver'], ['sqs', 'sync']);
+                return !in_array($conf['driver'], ['sqs', 'sync']);
             })->map(function ($conf, $queue) {
                 return $this->getTimeoutAndRetryAfter($conf);
             })->filter(function ($conf) {
@@ -97,7 +97,7 @@ class QueueTimeoutAnalyzer extends ReliabilityAnalyzer
     /**
      * Get the timeout and retry after values for the configuration.
      *
-     * @param  array  $config
+     * @param array $config
      * @return array
      */
     public function getTimeoutAndRetryAfter(array $config)
@@ -109,9 +109,9 @@ class QueueTimeoutAnalyzer extends ReliabilityAnalyzer
         // Timeout is as defined in the horizon config (if app uses Horizon) with fallback to default
         // queue worker timeout of 60 seconds.
         $timeout = array_reduce(array_merge(
-            data_get(config('horizon.defaults', []), '*.timeout'),
-            data_get(config('horizon.environments', []), '*.*.timeout')
-        ), 'max') ?? 60;
+                data_get(config('horizon.defaults', []), '*.timeout'),
+                data_get(config('horizon.environments', []), '*.*.timeout')
+            ), 'max') ?? 60;
 
         return ['timeout' => $timeout, 'retry_after' => ($config['retry_after'] ?? 60)];
     }

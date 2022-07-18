@@ -30,22 +30,10 @@ class Factory
      * @var UriRetriever
      */
     protected $uriRetriever;
-
-    /**
-     * @var int
-     */
-    private $checkMode = Constraint::CHECK_MODE_NORMAL;
-
-    /**
-     * @var TypeCheck\TypeCheckInterface[]
-     */
-    private $typeCheck = array();
-
     /**
      * @var int Validation context
      */
     protected $errorContext = Validator::ERROR_DOCUMENT_VALIDATION;
-
     /**
      * @var array
      */
@@ -62,22 +50,30 @@ class Factory
         'schema' => 'JsonSchema\Constraints\SchemaConstraint',
         'validator' => 'JsonSchema\Validator'
     );
-
+    /**
+     * @var int
+     */
+    private $checkMode = Constraint::CHECK_MODE_NORMAL;
+    /**
+     * @var TypeCheck\TypeCheckInterface[]
+     */
+    private $typeCheck = array();
     /**
      * @var array<ConstraintInterface>
      */
     private $instanceCache = array();
 
     /**
-     * @param SchemaStorage         $schemaStorage
+     * @param SchemaStorage $schemaStorage
      * @param UriRetrieverInterface $uriRetriever
-     * @param int                   $checkMode
+     * @param int $checkMode
      */
     public function __construct(
         SchemaStorageInterface $schemaStorage = null,
-        UriRetrieverInterface $uriRetriever = null,
-        $checkMode = Constraint::CHECK_MODE_NORMAL
-    ) {
+        UriRetrieverInterface  $uriRetriever = null,
+                               $checkMode = Constraint::CHECK_MODE_NORMAL
+    )
+    {
         // set provided config options
         $this->setConfig($checkMode);
 
@@ -181,9 +177,9 @@ class Factory
      *
      * @param string $constraintName
      *
+     * @return ConstraintInterface|ObjectConstraint
      * @throws InvalidArgumentException if is not possible create the constraint instance
      *
-     * @return ConstraintInterface|ObjectConstraint
      */
     public function createInstanceFor($constraintName)
     {

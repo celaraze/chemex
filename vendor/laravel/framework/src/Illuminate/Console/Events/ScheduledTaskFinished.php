@@ -23,8 +23,8 @@ class ScheduledTaskFinished
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Console\Scheduling\Event  $task
-     * @param  float  $runtime
+     * @param \Illuminate\Console\Scheduling\Event $task
+     * @param float $runtime
      * @return void
      */
     public function __construct(Event $task, $runtime)

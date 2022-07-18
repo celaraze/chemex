@@ -10,13 +10,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ForgetCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'cache:forget {key : The key to remove} {store? : The store to remove the key from}';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -26,7 +19,12 @@ class ForgetCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'cache:forget';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'cache:forget {key : The key to remove} {store? : The store to remove the key from}';
     /**
      * The console command description.
      *
@@ -44,7 +42,7 @@ class ForgetCommand extends Command
     /**
      * Create a new cache clear command instance.
      *
-     * @param  \Illuminate\Cache\CacheManager  $cache
+     * @param \Illuminate\Cache\CacheManager $cache
      * @return void
      */
     public function __construct(CacheManager $cache)
@@ -65,6 +63,6 @@ class ForgetCommand extends Command
             $this->argument('key')
         );
 
-        $this->info('The ['.$this->argument('key').'] key has been removed from the cache.');
+        $this->info('The [' . $this->argument('key') . '] key has been removed from the cache.');
     }
 }

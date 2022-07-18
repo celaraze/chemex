@@ -65,6 +65,11 @@ class EsmtpTransport extends SmtpTransport
         $stream->setPort($port);
     }
 
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
     /**
      * @return $this
      */
@@ -75,9 +80,9 @@ class EsmtpTransport extends SmtpTransport
         return $this;
     }
 
-    public function getUsername(): string
+    public function getPassword(): string
     {
-        return $this->username;
+        return $this->password;
     }
 
     /**
@@ -90,11 +95,6 @@ class EsmtpTransport extends SmtpTransport
         return $this;
     }
 
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
     public function addAuthenticator(AuthenticatorInterface $authenticator): void
     {
         $this->authenticators[] = $authenticator;
@@ -103,11 +103,6 @@ class EsmtpTransport extends SmtpTransport
     public function executeCommand(string $command, array $codes): string
     {
         return [250] === $codes && str_starts_with($command, 'HELO ') ? $this->doEhloCommand() : parent::executeCommand($command, $codes);
-    }
-
-    final protected function getCapabilities(): array
-    {
-        return $this->capabilities;
     }
 
     private function doEhloCommand(): string
@@ -203,5 +198,10 @@ class EsmtpTransport extends SmtpTransport
         }
 
         throw new TransportException($message);
+    }
+
+    final protected function getCapabilities(): array
+    {
+        return $this->capabilities;
     }
 }

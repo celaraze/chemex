@@ -61,7 +61,7 @@ class XmlReaderCaster
             ];
         }
 
-        $props = Caster::PREFIX_VIRTUAL.'parserProperties';
+        $props = Caster::PREFIX_VIRTUAL . 'parserProperties';
         $info = [
             'localName' => $reader->localName,
             'prefix' => $reader->prefix,

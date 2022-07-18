@@ -52,13 +52,6 @@ class Backtrace
         return $this;
     }
 
-    public function withObject(): self
-    {
-        $this->withObject = true;
-
-        return $this;
-    }
-
     public function applicationPath(string $applicationPath): self
     {
         $this->applicationPath = $applicationPath;
@@ -87,16 +80,6 @@ class Backtrace
         return $this;
     }
 
-    /**
-     * @return \Spatie\Backtrace\Frame[]
-     */
-    public function frames(): array
-    {
-        $rawFrames = $this->getRawFrames();
-
-        return $this->toFrameObjects($rawFrames);
-    }
-
     public function firstApplicationFrameIndex(): ?int
     {
         foreach ($this->frames() as $index => $frame) {
@@ -108,6 +91,16 @@ class Backtrace
         return null;
     }
 
+    /**
+     * @return \Spatie\Backtrace\Frame[]
+     */
+    public function frames(): array
+    {
+        $rawFrames = $this->getRawFrames();
+
+        return $this->toFrameObjects($rawFrames);
+    }
+
     protected function getRawFrames(): array
     {
         if ($this->throwable) {
@@ -116,7 +109,7 @@ class Backtrace
 
         $options = null;
 
-        if (! $this->withArguments) {
+        if (!$this->withArguments) {
             $options = $options | DEBUG_BACKTRACE_IGNORE_ARGS;
         }
 
@@ -131,6 +124,13 @@ class Backtrace
         }
 
         return debug_backtrace($options, $limit);
+    }
+
+    public function withObject(): self
+    {
+        $this->withObject = true;
+
+        return $this;
     }
 
     /**
@@ -178,7 +178,7 @@ class Backtrace
     {
         $relativeFile = str_replace('\\', DIRECTORY_SEPARATOR, $frameFilename);
 
-        if (! empty($this->applicationPath)) {
+        if (!empty($this->applicationPath)) {
             $relativeFile = array_reverse(explode($this->applicationPath ?? '', $frameFilename, 2))[0];
         }
 

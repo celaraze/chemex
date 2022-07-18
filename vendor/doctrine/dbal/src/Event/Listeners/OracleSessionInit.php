@@ -6,12 +6,10 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\DBAL\Event\ConnectionEventArgs;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Exception;
-
 use function array_change_key_case;
 use function array_merge;
 use function count;
 use function implode;
-
 use const CASE_UPPER;
 
 /**

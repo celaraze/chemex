@@ -30,6 +30,15 @@ class GenericModelPropertyType extends ModelPropertyType
         $this->type = $type;
     }
 
+    /**
+     * @param mixed[] $properties
+     * @return Type
+     */
+    public static function __set_state(array $properties): Type
+    {
+        return new self($properties['type']);
+    }
+
     public function getReferencedClasses(): array
     {
         return $this->getGenericType()->getReferencedClasses();
@@ -38,27 +47,6 @@ class GenericModelPropertyType extends ModelPropertyType
     public function getGenericType(): Type
     {
         return $this->type;
-    }
-
-    public function isSuperTypeOf(Type $type): TrinaryLogic
-    {
-        if ($type instanceof ConstantStringType) {
-            return $this->getGenericType()->hasProperty($type->getValue());
-        }
-
-        if ($type instanceof self) {
-            return TrinaryLogic::createYes();
-        }
-
-        if ($type instanceof parent) {
-            return TrinaryLogic::createMaybe();
-        }
-
-        if ($type instanceof CompoundType) {
-            return $type->isSubTypeOf($this);
-        }
-
-        return TrinaryLogic::createNo();
     }
 
     public function traverse(callable $cb): Type
@@ -94,11 +82,32 @@ class GenericModelPropertyType extends ModelPropertyType
             return TemplateTypeMap::createEmpty();
         }
 
-        if (! $this->getGenericType()->isSuperTypeOf($typeToInfer)->no()) {
+        if (!$this->getGenericType()->isSuperTypeOf($typeToInfer)->no()) {
             return $this->getGenericType()->inferTemplateTypes($typeToInfer);
         }
 
         return TemplateTypeMap::createEmpty();
+    }
+
+    public function isSuperTypeOf(Type $type): TrinaryLogic
+    {
+        if ($type instanceof ConstantStringType) {
+            return $this->getGenericType()->hasProperty($type->getValue());
+        }
+
+        if ($type instanceof self) {
+            return TrinaryLogic::createYes();
+        }
+
+        if ($type instanceof parent) {
+            return TrinaryLogic::createMaybe();
+        }
+
+        if ($type instanceof CompoundType) {
+            return $type->isSubTypeOf($this);
+        }
+
+        return TrinaryLogic::createNo();
     }
 
     public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
@@ -106,14 +115,5 @@ class GenericModelPropertyType extends ModelPropertyType
         $variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 
         return $this->getGenericType()->getReferencedTemplateTypes($variance);
-    }
-
-    /**
-     * @param  mixed[]  $properties
-     * @return Type
-     */
-    public static function __set_state(array $properties): Type
-    {
-        return new self($properties['type']);
     }
 }

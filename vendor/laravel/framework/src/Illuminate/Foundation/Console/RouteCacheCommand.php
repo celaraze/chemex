@@ -12,13 +12,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class RouteCacheCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'route:cache';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -28,7 +21,12 @@ class RouteCacheCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'route:cache';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'route:cache';
     /**
      * The console command description.
      *
@@ -46,7 +44,7 @@ class RouteCacheCommand extends Command
     /**
      * Create a new route command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -102,7 +100,7 @@ class RouteCacheCommand extends Command
      */
     protected function getFreshApplication()
     {
-        return tap(require $this->laravel->bootstrapPath().'/app.php', function ($app) {
+        return tap(require $this->laravel->bootstrapPath() . '/app.php', function ($app) {
             $app->make(ConsoleKernelContract::class)->bootstrap();
         });
     }
@@ -110,12 +108,12 @@ class RouteCacheCommand extends Command
     /**
      * Build the route cache file.
      *
-     * @param  \Illuminate\Routing\RouteCollection  $routes
+     * @param \Illuminate\Routing\RouteCollection $routes
      * @return string
      */
     protected function buildRouteCacheFile(RouteCollection $routes)
     {
-        $stub = $this->files->get(__DIR__.'/stubs/routes.stub');
+        $stub = $this->files->get(__DIR__ . '/stubs/routes.stub');
 
         return str_replace('{{routes}}', var_export($routes->compile(), true), $stub);
     }

@@ -43,28 +43,12 @@ class ClassAliasAutoloader
     protected $excludedAliases;
 
     /**
-     * Register a new alias loader instance.
-     *
-     * @param  \Psy\Shell  $shell
-     * @param  string  $classMapPath
-     * @param  array  $includedAliases
-     * @param  array  $excludedAliases
-     * @return static
-     */
-    public static function register(Shell $shell, $classMapPath, array $includedAliases = [], array $excludedAliases = [])
-    {
-        return tap(new static($shell, $classMapPath, $includedAliases, $excludedAliases), function ($loader) {
-            spl_autoload_register([$loader, 'aliasClass']);
-        });
-    }
-
-    /**
      * Create a new alias loader instance.
      *
-     * @param  \Psy\Shell  $shell
-     * @param  string  $classMapPath
-     * @param  array  $includedAliases
-     * @param  array  $excludedAliases
+     * @param \Psy\Shell $shell
+     * @param string $classMapPath
+     * @param array $includedAliases
+     * @param array $excludedAliases
      * @return void
      */
     public function __construct(Shell $shell, $classMapPath, array $includedAliases = [], array $excludedAliases = [])
@@ -77,22 +61,69 @@ class ClassAliasAutoloader
         $classes = require $classMapPath;
 
         foreach ($classes as $class => $path) {
-            if (! $this->isAliasable($class, $path)) {
+            if (!$this->isAliasable($class, $path)) {
                 continue;
             }
 
             $name = class_basename($class);
 
-            if (! isset($this->classes[$name])) {
+            if (!isset($this->classes[$name])) {
                 $this->classes[$name] = $class;
             }
         }
     }
 
     /**
+     * Whether a class may be aliased.
+     *
+     * @param string $class
+     * @param string $path
+     */
+    public function isAliasable($class, $path)
+    {
+        if (!Str::contains($class, '\\')) {
+            return false;
+        }
+
+        if (!$this->includedAliases->filter(function ($alias) use ($class) {
+            return Str::startsWith($class, $alias);
+        })->isEmpty()) {
+            return true;
+        }
+
+        if (Str::startsWith($path, $this->vendorPath)) {
+            return false;
+        }
+
+        if (!$this->excludedAliases->filter(function ($alias) use ($class) {
+            return Str::startsWith($class, $alias);
+        })->isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Register a new alias loader instance.
+     *
+     * @param \Psy\Shell $shell
+     * @param string $classMapPath
+     * @param array $includedAliases
+     * @param array $excludedAliases
+     * @return static
+     */
+    public static function register(Shell $shell, $classMapPath, array $includedAliases = [], array $excludedAliases = [])
+    {
+        return tap(new static($shell, $classMapPath, $includedAliases, $excludedAliases), function ($loader) {
+            spl_autoload_register([$loader, 'aliasClass']);
+        });
+    }
+
+    /**
      * Find the closest class by name.
      *
-     * @param  string  $class
+     * @param string $class
      * @return void
      */
     public function aliasClass($class)
@@ -111,16 +142,6 @@ class ClassAliasAutoloader
     }
 
     /**
-     * Unregister the alias loader instance.
-     *
-     * @return void
-     */
-    public function unregister()
-    {
-        spl_autoload_unregister([$this, 'aliasClass']);
-    }
-
-    /**
      * Handle the destruction of the instance.
      *
      * @return void
@@ -131,33 +152,12 @@ class ClassAliasAutoloader
     }
 
     /**
-     * Whether a class may be aliased.
+     * Unregister the alias loader instance.
      *
-     * @param  string  $class
-     * @param  string  $path
+     * @return void
      */
-    public function isAliasable($class, $path)
+    public function unregister()
     {
-        if (! Str::contains($class, '\\')) {
-            return false;
-        }
-
-        if (! $this->includedAliases->filter(function ($alias) use ($class) {
-            return Str::startsWith($class, $alias);
-        })->isEmpty()) {
-            return true;
-        }
-
-        if (Str::startsWith($path, $this->vendorPath)) {
-            return false;
-        }
-
-        if (! $this->excludedAliases->filter(function ($alias) use ($class) {
-            return Str::startsWith($class, $alias);
-        })->isEmpty()) {
-            return false;
-        }
-
-        return true;
+        spl_autoload_unregister([$this, 'aliasClass']);
     }
 }

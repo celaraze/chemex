@@ -14,7 +14,7 @@ final class Query
      * PHP style arrays into an associative array (e.g., `foo[a]=1&foo[b]=2`
      * will be parsed into `['foo[a]' => '1', 'foo[b]' => '2'])`.
      *
-     * @param string   $str         Query string to parse
+     * @param string $str Query string to parse
      * @param int|bool $urlEncoding How the query string is encoded
      */
     public static function parse(string $str, $urlEncoding = true): array
@@ -27,7 +27,7 @@ final class Query
 
         if ($urlEncoding === true) {
             $decoder = function ($value) {
-                return rawurldecode(str_replace('+', ' ', (string) $value));
+                return rawurldecode(str_replace('+', ' ', (string)$value));
             };
         } elseif ($urlEncoding === PHP_QUERY_RFC3986) {
             $decoder = 'rawurldecode';
@@ -63,7 +63,7 @@ final class Query
      * string. This function does not modify the provided keys when an array is
      * encountered (like `http_build_query()` would).
      *
-     * @param array     $params   Query string parameters.
+     * @param array $params Query string parameters.
      * @param int|false $encoding Set to false to not encode, PHP_QUERY_RFC3986
      *                            to encode using RFC3986, or PHP_QUERY_RFC1738
      *                            to encode using RFC1738.
@@ -88,26 +88,26 @@ final class Query
 
         $qs = '';
         foreach ($params as $k => $v) {
-            $k = $encoder((string) $k);
+            $k = $encoder((string)$k);
             if (!is_array($v)) {
                 $qs .= $k;
-                $v = is_bool($v) ? (int) $v : $v;
+                $v = is_bool($v) ? (int)$v : $v;
                 if ($v !== null) {
-                    $qs .= '=' . $encoder((string) $v);
+                    $qs .= '=' . $encoder((string)$v);
                 }
                 $qs .= '&';
             } else {
                 foreach ($v as $vv) {
                     $qs .= $k;
-                    $vv = is_bool($vv) ? (int) $vv : $vv;
+                    $vv = is_bool($vv) ? (int)$vv : $vv;
                     if ($vv !== null) {
-                        $qs .= '=' . $encoder((string) $vv);
+                        $qs .= '=' . $encoder((string)$vv);
                     }
                     $qs .= '&';
                 }
             }
         }
 
-        return $qs ? (string) substr($qs, 0, -1) : '';
+        return $qs ? (string)substr($qs, 0, -1) : '';
     }
 }

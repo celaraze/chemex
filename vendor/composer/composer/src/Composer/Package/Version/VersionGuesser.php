@@ -13,9 +13,9 @@
 namespace Composer\Package\Version;
 
 use Composer\Config;
+use Composer\IO\NullIO;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\HgDriver;
-use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
@@ -50,8 +50,8 @@ class VersionGuesser
     private $versionParser;
 
     /**
-     * @param Config              $config
-     * @param ProcessExecutor     $process
+     * @param Config $config
+     * @param ProcessExecutor $process
      * @param SemverVersionParser $versionParser
      */
     public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
@@ -63,7 +63,7 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path Path to guess into
+     * @param string $path Path to guess into
      *
      * @return array|null
      * @phpstan-return Version|null
@@ -98,33 +98,8 @@ class VersionGuesser
     }
 
     /**
-     * @param array $versionData
-     *
-     * @phpstan-param Version $versionData
-     *
-     * @return array
-     * @phpstan-return Version
-     */
-    private function postprocess(array $versionData): array
-    {
-        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['pretty_version']) {
-            unset($versionData['feature_version'], $versionData['feature_pretty_version']);
-        }
-
-        if ('-dev' === substr($versionData['version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['version'])) {
-            $versionData['pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['version']);
-        }
-
-        if (!empty($versionData['feature_version']) && '-dev' === substr($versionData['feature_version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['feature_version'])) {
-            $versionData['feature_pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['feature_version']);
-        }
-
-        return $versionData;
-    }
-
-    /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
+     * @param string $path
      *
      * @return array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
      */
@@ -195,7 +170,7 @@ class VersionGuesser
         }
 
         if (!$commit) {
-            $command = 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($this->process);
+            $command = 'git log --pretty="%H" -n1 HEAD' . GitUtil::getNoShowSignatureFlag($this->process);
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
             }
@@ -209,70 +184,27 @@ class VersionGuesser
     }
 
     /**
-     * @param string $path
+     * @param array<string, mixed> $packageConfig
+     * @param string|null $branchName
      *
-     * @return array{version: string, pretty_version: string}|null
+     * @return bool
      */
-    private function versionFromGitTags(string $path): ?array
+    private function isFeatureBranch(array $packageConfig, ?string $branchName): bool
     {
-        // try to fetch current version from git tags
-        if (0 === $this->process->execute('git describe --exact-match --tags', $output, $path)) {
-            try {
-                $version = $this->versionParser->normalize(trim($output));
-
-                return array('version' => $version, 'pretty_version' => trim($output));
-            } catch (\Exception $e) {
-            }
+        $nonFeatureBranches = '';
+        if (!empty($packageConfig['non-feature-branches'])) {
+            $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
         }
 
-        return null;
+        return !Preg::isMatch('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
     }
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
-     *
-     * @return array{version: string|null, commit: ''|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}|null
-     */
-    private function guessHgVersion(array $packageConfig, string $path): ?array
-    {
-        // try to fetch current version from hg branch
-        if (0 === $this->process->execute('hg branch', $output, $path)) {
-            $branch = trim($output);
-            $version = $this->versionParser->normalizeBranch($branch);
-            $isFeatureBranch = 0 === strpos($version, 'dev-');
-
-            if (VersionParser::DEFAULT_BRANCH_ALIAS === $version) {
-                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
-            }
-
-            if (!$isFeatureBranch) {
-                return array('version' => $version, 'commit' => null, 'pretty_version' => $version);
-            }
-
-            // re-use the HgDriver to fetch branches (this properly includes bookmarks)
-            $io = new NullIO();
-            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
-            $branches = array_map('strval', array_keys($driver->getBranches()));
-
-            // try to find the best (nearest) version branch to assume this feature's version
-            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
-            $result['commit'] = '';
-            $result['feature_version'] = $version;
-            $result['feature_pretty_version'] = $version;
-
-            return $result;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array<string, mixed>     $packageConfig
-     * @param string|null              $version
-     * @param string[]                 $branches
-     * @param string                   $scmCmdline
-     * @param string                   $path
+     * @param string|null $version
+     * @param string[] $branches
+     * @param string $scmCmdline
+     * @param string $path
      *
      * @phpstan-param non-empty-string $scmCmdline
      *
@@ -352,19 +284,87 @@ class VersionGuesser
     }
 
     /**
-     * @param array<string, mixed> $packageConfig
-     * @param string|null          $branchName
+     * @param string $path
      *
-     * @return bool
+     * @return array{version: string, pretty_version: string}|null
      */
-    private function isFeatureBranch(array $packageConfig, ?string $branchName): bool
+    private function versionFromGitTags(string $path): ?array
     {
-        $nonFeatureBranches = '';
-        if (!empty($packageConfig['non-feature-branches'])) {
-            $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
+        // try to fetch current version from git tags
+        if (0 === $this->process->execute('git describe --exact-match --tags', $output, $path)) {
+            try {
+                $version = $this->versionParser->normalize(trim($output));
+
+                return array('version' => $version, 'pretty_version' => trim($output));
+            } catch (\Exception $e) {
+            }
         }
 
-        return !Preg::isMatch('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
+        return null;
+    }
+
+    /**
+     * @param array $versionData
+     *
+     * @phpstan-param Version $versionData
+     *
+     * @return array
+     * @phpstan-return Version
+     */
+    private function postprocess(array $versionData): array
+    {
+        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['pretty_version']) {
+            unset($versionData['feature_version'], $versionData['feature_pretty_version']);
+        }
+
+        if ('-dev' === substr($versionData['version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['version'])) {
+            $versionData['pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['version']);
+        }
+
+        if (!empty($versionData['feature_version']) && '-dev' === substr($versionData['feature_version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['feature_version'])) {
+            $versionData['feature_pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['feature_version']);
+        }
+
+        return $versionData;
+    }
+
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string $path
+     *
+     * @return array{version: string|null, commit: ''|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}|null
+     */
+    private function guessHgVersion(array $packageConfig, string $path): ?array
+    {
+        // try to fetch current version from hg branch
+        if (0 === $this->process->execute('hg branch', $output, $path)) {
+            $branch = trim($output);
+            $version = $this->versionParser->normalizeBranch($branch);
+            $isFeatureBranch = 0 === strpos($version, 'dev-');
+
+            if (VersionParser::DEFAULT_BRANCH_ALIAS === $version) {
+                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-' . $branch);
+            }
+
+            if (!$isFeatureBranch) {
+                return array('version' => $version, 'commit' => null, 'pretty_version' => $version);
+            }
+
+            // re-use the HgDriver to fetch branches (this properly includes bookmarks)
+            $io = new NullIO();
+            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
+            $branches = array_map('strval', array_keys($driver->getBranches()));
+
+            // try to find the best (nearest) version branch to assume this feature's version
+            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
+            $result['commit'] = '';
+            $result['feature_version'] = $version;
+            $result['feature_pretty_version'] = $version;
+
+            return $result;
+        }
+
+        return null;
     }
 
     /**
@@ -398,7 +398,7 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
+     * @param string $path
      *
      * @return array{version: string, commit: '', pretty_version: string}|null
      */

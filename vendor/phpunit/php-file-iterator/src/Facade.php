@@ -7,9 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\FileIterator;
 
-use const DIRECTORY_SEPARATOR;
 use function array_unique;
 use function count;
 use function dirname;
@@ -18,6 +18,7 @@ use function is_file;
 use function is_string;
 use function realpath;
 use function sort;
+use const DIRECTORY_SEPARATOR;
 
 class Facade
 {
@@ -56,7 +57,7 @@ class Facade
         if ($commonPath) {
             return [
                 'commonPath' => $this->getCommonPath($files),
-                'files'      => $files,
+                'files' => $files,
             ];
         }
 
@@ -86,8 +87,8 @@ class Facade
         }
 
         $common = '';
-        $done   = false;
-        $j      = 0;
+        $done = false;
+        $j = 0;
         $count--;
 
         while (!$done) {

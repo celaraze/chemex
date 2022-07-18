@@ -49,9 +49,20 @@ class LicenseAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application has a total of {$this->blacklistedPackages->count()} package(s) that you may not be legally "
-            ."allowed to use. By default, we assume the MIT, Apache-2.0, ISC, BSD Clause 2 & 3 and LGPL licenses to be "
-            ."legally valid for use for proprietary or commercial applications. However, you are free to change this "
-            ."in the Enlightn config. Unsafe packages include {$this->formatBlacklistedPackages()}";
+            . "allowed to use. By default, we assume the MIT, Apache-2.0, ISC, BSD Clause 2 & 3 and LGPL licenses to be "
+            . "legally valid for use for proprietary or commercial applications. However, you are free to change this "
+            . "in the Enlightn config. Unsafe packages include {$this->formatBlacklistedPackages()}";
+    }
+
+    /**
+     * @return string
+     */
+    public function formatBlacklistedPackages()
+    {
+        return $this->allPackages->intersectByKeys($this->blacklistedPackages)
+            ->map(function ($licenses, $package) {
+                return '[' . $package . ': ' . implode(', ', $licenses) . ']';
+            })->join(', ', ' and ');
     }
 
     /**
@@ -76,22 +87,11 @@ class LicenseAnalyzer extends SecurityAnalyzer
         })->filter(function ($licenses, $package) use ($whitelistedLicenses, $commercialPackages) {
             // Get all packages that have any licenses that are not whitelisted
             return empty(array_intersect($licenses, $whitelistedLicenses))
-                && ! in_array($package, $commercialPackages);
+                && !in_array($package, $commercialPackages);
         });
 
         if ($this->blacklistedPackages->count() > 0) {
             $this->markFailed();
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function formatBlacklistedPackages()
-    {
-        return $this->allPackages->intersectByKeys($this->blacklistedPackages)
-            ->map(function ($licenses, $package) {
-                return '['.$package.': '.implode(', ', $licenses).']';
-            })->join(', ', ' and ');
     }
 }

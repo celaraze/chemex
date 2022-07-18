@@ -47,7 +47,7 @@ final class BlockQuoteParser extends AbstractBlockContinueParser
 
     public function tryContinue(Cursor $cursor, BlockContinueParserInterface $activeBlockParser): ?BlockContinue
     {
-        if (! $cursor->isIndented() && $cursor->getNextNonSpaceCharacter() === '>') {
+        if (!$cursor->isIndented() && $cursor->getNextNonSpaceCharacter() === '>') {
             $cursor->advanceToNextNonSpaceOrTab();
             $cursor->advanceBy(1);
             $cursor->advanceBySpaceOrTab();

@@ -10,7 +10,6 @@ use Doctrine\DBAL\Driver\Mysqli\Exception\StatementError;
 use Doctrine\DBAL\Driver\Result as ResultInterface;
 use mysqli_sql_exception;
 use mysqli_stmt;
-
 use function array_column;
 use function array_combine;
 use function array_fill;
@@ -41,9 +40,9 @@ final class Result implements ResultInterface
     private $boundValues = [];
 
     /**
+     * @throws Exception
      * @internal The result can be only instantiated by its driver connection or statement.
      *
-     * @throws Exception
      */
     public function __construct(mysqli_stmt $statement)
     {
@@ -82,9 +81,28 @@ final class Result implements ResultInterface
         // The following is necessary as PHP cannot handle references to properties properly
         $refs = &$this->boundValues;
 
-        if (! $this->statement->bind_result(...$refs)) {
+        if (!$this->statement->bind_result(...$refs)) {
             throw StatementError::new($this->statement);
         }
+    }
+
+    public function free(): void
+    {
+        $this->statement->free_result();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function fetchAssociative()
+    {
+        $values = $this->fetchNumeric();
+
+        if ($values === false) {
+            return false;
+        }
+
+        return array_combine($this->columnNames, $values);
     }
 
     /**
@@ -113,20 +131,6 @@ final class Result implements ResultInterface
         }
 
         return $values;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function fetchAssociative()
-    {
-        $values = $this->fetchNumeric();
-
-        if ($values === false) {
-            return false;
-        }
-
-        return array_combine($this->columnNames, $values);
     }
 
     /**
@@ -173,10 +177,5 @@ final class Result implements ResultInterface
     public function columnCount(): int
     {
         return $this->statement->field_count;
-    }
-
-    public function free(): void
-    {
-        $this->statement->free_result();
     }
 }

@@ -11,8 +11,8 @@
 
 namespace Prophecy\Promise;
 
-use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  * Return promise.
@@ -36,7 +36,7 @@ class ReturnPromise implements PromiseInterface
     /**
      * Returns saved values one by one until last one, then continuously returns last value.
      *
-     * @param array          $args
+     * @param array $args
      * @param ObjectProphecy $object
      * @param MethodProphecy $method
      *

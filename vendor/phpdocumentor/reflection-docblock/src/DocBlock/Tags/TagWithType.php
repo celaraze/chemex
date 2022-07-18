@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace phpDocumentor\Reflection\DocBlock\Tags;
 
 use phpDocumentor\Reflection\Type;
-
 use function in_array;
 use function strlen;
 use function substr;
@@ -26,19 +25,11 @@ abstract class TagWithType extends BaseTag
     protected $type;
 
     /**
-     * Returns the type section of the variable.
-     */
-    public function getType(): ?Type
-    {
-        return $this->type;
-    }
-
-    /**
      * @return string[]
      */
     protected static function extractTypeFromBody(string $body): array
     {
-        $type         = '';
+        $type = '';
         $nestingLevel = 0;
         for ($i = 0, $iMax = strlen($body); $i < $iMax; $i++) {
             $character = $body[$i];
@@ -62,5 +53,13 @@ abstract class TagWithType extends BaseTag
         $description = trim(substr($body, strlen($type)));
 
         return [$type, $description];
+    }
+
+    /**
+     * Returns the type section of the variable.
+     */
+    public function getType(): ?Type
+    {
+        return $this->type;
     }
 }

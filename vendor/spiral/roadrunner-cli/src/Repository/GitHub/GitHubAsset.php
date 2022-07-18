@@ -50,14 +50,14 @@ final class GitHubAsset extends Asset
     public static function fromApiResponse(HttpClientInterface $client, array $asset): self
     {
         // Validate name
-        if (! isset($asset['name']) || ! \is_string($asset['name'])) {
+        if (!isset($asset['name']) || !\is_string($asset['name'])) {
             throw new \InvalidArgumentException(
                 'Passed array must contain "name" value of type string'
             );
         }
 
         // Validate uri
-        if (! isset($asset['browser_download_url']) || ! \is_string($asset['browser_download_url'])) {
+        if (!isset($asset['browser_download_url']) || !\is_string($asset['browser_download_url'])) {
             throw new \InvalidArgumentException(
                 'Passed array must contain "browser_download_url" key of type string'
             );

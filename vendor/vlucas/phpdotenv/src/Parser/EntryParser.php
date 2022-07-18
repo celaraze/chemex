@@ -82,6 +82,23 @@ final class EntryParser
     }
 
     /**
+     * Generate a friendly error message.
+     *
+     * @param string $cause
+     * @param string $subject
+     *
+     * @return string
+     */
+    private static function getErrorMessage(string $cause, string $subject)
+    {
+        return \sprintf(
+            'Encountered %s at [%s].',
+            $cause,
+            \strtok($subject, "\n")
+        );
+    }
+
+    /**
      * Parse the given variable name.
      *
      * That is, strip the optional quotes and leading "export" from the
@@ -177,7 +194,7 @@ final class EntryParser
     /**
      * Process the given token.
      *
-     * @param int    $state
+     * @param int $state
      * @param string $token
      *
      * @return \GrahamCampbell\ResultType\Result<array{string,bool,int},string>
@@ -249,7 +266,7 @@ final class EntryParser
                     $first = Str::substr($token, 0, 1);
                     if (\in_array($first, ['f', 'n', 'r', 't', 'v'], true)) {
                         /** @var \GrahamCampbell\ResultType\Result<array{string,bool,int},string> */
-                        return Success::create([\stripcslashes('\\'.$first).Str::substr($token, 1), false, self::DOUBLE_QUOTED_STATE]);
+                        return Success::create([\stripcslashes('\\' . $first) . Str::substr($token, 1), false, self::DOUBLE_QUOTED_STATE]);
                     } else {
                         /** @var \GrahamCampbell\ResultType\Result<array{string,bool,int},string> */
                         return Error::create('an unexpected escape sequence');
@@ -272,22 +289,5 @@ final class EntryParser
             default:
                 throw new \Error('Parser entered invalid state.');
         }
-    }
-
-    /**
-     * Generate a friendly error message.
-     *
-     * @param string $cause
-     * @param string $subject
-     *
-     * @return string
-     */
-    private static function getErrorMessage(string $cause, string $subject)
-    {
-        return \sprintf(
-            'Encountered %s at [%s].',
-            $cause,
-            \strtok($subject, "\n")
-        );
     }
 }

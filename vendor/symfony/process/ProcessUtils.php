@@ -33,7 +33,7 @@ class ProcessUtils
      * Validates and normalizes a Process input.
      *
      * @param string $caller The name of method call that validates the input
-     * @param mixed  $input  The input to validate
+     * @param mixed $input The input to validate
      *
      * @throws InvalidArgumentException In case the input is not valid
      */
@@ -47,7 +47,7 @@ class ProcessUtils
                 return $input;
             }
             if (is_scalar($input)) {
-                return (string) $input;
+                return (string)$input;
             }
             if ($input instanceof Process) {
                 return $input->getIterator($input::ITER_SKIP_ERR);

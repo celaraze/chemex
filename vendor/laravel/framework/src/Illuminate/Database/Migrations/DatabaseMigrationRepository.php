@@ -30,8 +30,8 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     /**
      * Create a new database migration repository instance.
      *
-     * @param  \Illuminate\Database\ConnectionResolverInterface  $resolver
-     * @param  string  $table
+     * @param \Illuminate\Database\ConnectionResolverInterface $resolver
+     * @param string $table
      * @return void
      */
     public function __construct(Resolver $resolver, $table)
@@ -48,15 +48,35 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     public function getRan()
     {
         return $this->table()
-                ->orderBy('batch', 'asc')
-                ->orderBy('migration', 'asc')
-                ->pluck('migration')->all();
+            ->orderBy('batch', 'asc')
+            ->orderBy('migration', 'asc')
+            ->pluck('migration')->all();
+    }
+
+    /**
+     * Get a query builder for the migration table.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function table()
+    {
+        return $this->getConnection()->table($this->table)->useWritePdo();
+    }
+
+    /**
+     * Resolve the database connection instance.
+     *
+     * @return \Illuminate\Database\Connection
+     */
+    public function getConnection()
+    {
+        return $this->resolver->connection($this->connection);
     }
 
     /**
      * Get the list of migrations.
      *
-     * @param  int  $steps
+     * @param int $steps
      * @return array
      */
     public function getMigrations($steps)
@@ -64,8 +84,8 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
         $query = $this->table()->where('batch', '>=', '1');
 
         return $query->orderBy('batch', 'desc')
-                     ->orderBy('migration', 'desc')
-                     ->take($steps)->get()->all();
+            ->orderBy('migration', 'desc')
+            ->take($steps)->get()->all();
     }
 
     /**
@@ -81,6 +101,16 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     }
 
     /**
+     * Get the last migration batch number.
+     *
+     * @return int
+     */
+    public function getLastBatchNumber()
+    {
+        return $this->table()->max('batch');
+    }
+
+    /**
      * Get the completed migrations with their batch numbers.
      *
      * @return array
@@ -88,16 +118,16 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     public function getMigrationBatches()
     {
         return $this->table()
-                ->orderBy('batch', 'asc')
-                ->orderBy('migration', 'asc')
-                ->pluck('batch', 'migration')->all();
+            ->orderBy('batch', 'asc')
+            ->orderBy('migration', 'asc')
+            ->pluck('batch', 'migration')->all();
     }
 
     /**
      * Log that a migration was run.
      *
-     * @param  string  $file
-     * @param  int  $batch
+     * @param string $file
+     * @param int $batch
      * @return void
      */
     public function log($file, $batch)
@@ -110,7 +140,7 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     /**
      * Remove a migration from the log.
      *
-     * @param  object  $migration
+     * @param object $migration
      * @return void
      */
     public function delete($migration)
@@ -126,16 +156,6 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     public function getNextBatchNumber()
     {
         return $this->getLastBatchNumber() + 1;
-    }
-
-    /**
-     * Get the last migration batch number.
-     *
-     * @return int
-     */
-    public function getLastBatchNumber()
-    {
-        return $this->table()->max('batch');
     }
 
     /**
@@ -182,16 +202,6 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     }
 
     /**
-     * Get a query builder for the migration table.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    protected function table()
-    {
-        return $this->getConnection()->table($this->table)->useWritePdo();
-    }
-
-    /**
      * Get the connection resolver instance.
      *
      * @return \Illuminate\Database\ConnectionResolverInterface
@@ -202,19 +212,9 @@ class DatabaseMigrationRepository implements MigrationRepositoryInterface
     }
 
     /**
-     * Resolve the database connection instance.
-     *
-     * @return \Illuminate\Database\Connection
-     */
-    public function getConnection()
-    {
-        return $this->resolver->connection($this->connection);
-    }
-
-    /**
      * Set the information source to gather data.
      *
-     * @param  string  $name
+     * @param string $name
      * @return void
      */
     public function setSource($name)

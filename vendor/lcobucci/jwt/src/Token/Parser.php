@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use Lcobucci\JWT\Decoder;
 use Lcobucci\JWT\Parser as ParserInterface;
 use Lcobucci\JWT\Token as TokenInterface;
-
 use function array_key_exists;
 use function count;
 use function explode;
@@ -69,7 +68,7 @@ final class Parser implements ParserInterface
     {
         $header = $this->decoder->jsonDecode($this->decoder->base64UrlDecode($data));
 
-        if (! is_array($header)) {
+        if (!is_array($header)) {
             throw InvalidTokenStructure::arrayExpected('headers');
         }
 
@@ -77,7 +76,7 @@ final class Parser implements ParserInterface
             throw UnsupportedHeaderFound::encryption();
         }
 
-        if (! array_key_exists('typ', $header)) {
+        if (!array_key_exists('typ', $header)) {
             $header['typ'] = 'JWT';
         }
 
@@ -95,16 +94,16 @@ final class Parser implements ParserInterface
     {
         $claims = $this->decoder->jsonDecode($this->decoder->base64UrlDecode($data));
 
-        if (! is_array($claims)) {
+        if (!is_array($claims)) {
             throw InvalidTokenStructure::arrayExpected('claims');
         }
 
         if (array_key_exists(RegisteredClaims::AUDIENCE, $claims)) {
-            $claims[RegisteredClaims::AUDIENCE] = (array) $claims[RegisteredClaims::AUDIENCE];
+            $claims[RegisteredClaims::AUDIENCE] = (array)$claims[RegisteredClaims::AUDIENCE];
         }
 
         foreach (RegisteredClaims::DATE_CLAIMS as $claim) {
-            if (! array_key_exists($claim, $claims)) {
+            if (!array_key_exists($claim, $claims)) {
                 continue;
             }
 
@@ -121,11 +120,11 @@ final class Parser implements ParserInterface
      */
     private function convertDate($timestamp): DateTimeImmutable
     {
-        if (! is_numeric($timestamp)) {
+        if (!is_numeric($timestamp)) {
             throw InvalidTokenStructure::dateIsNotParseable($timestamp);
         }
 
-        $normalizedTimestamp = number_format((float) $timestamp, self::MICROSECOND_PRECISION, '.', '');
+        $normalizedTimestamp = number_format((float)$timestamp, self::MICROSECOND_PRECISION, '.', '');
 
         $date = DateTimeImmutable::createFromFormat('U.u', $normalizedTimestamp);
 
@@ -143,7 +142,7 @@ final class Parser implements ParserInterface
      */
     private function parseSignature(array $header, string $data): Signature
     {
-        if ($data === '' || ! array_key_exists('alg', $header) || $header['alg'] === 'none') {
+        if ($data === '' || !array_key_exists('alg', $header) || $header['alg'] === 'none') {
             return Signature::fromEmptyData();
         }
 

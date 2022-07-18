@@ -144,103 +144,11 @@ class GetBinaryCommand extends Command
             '<info><href=https://roadrunner.dev>https://roadrunner.dev</></info>',
 
             // 2)
-            'To run the application, use the following command: '.
+            'To run the application, use the following command: ' .
             '<comment>$ ' . $file->getFilename() . ' serve</comment>',
         ]);
 
         return 0;
-    }
-
-    /**
-     * @param string $target
-     * @param ReleaseInterface $release
-     * @param AssetInterface $asset
-     * @param StyleInterface $io
-     * @param OutputInterface $out
-     * @return \SplFileInfo|null
-     * @throws \Throwable
-     */
-    private function installBinary(
-        string $target,
-        ReleaseInterface $release,
-        AssetInterface $asset,
-        StyleInterface $io,
-        OutputInterface $out
-    ): ?\SplFileInfo {
-        $extractor = $this->assetToArchive($asset, $out)
-            ->extract([
-                'rr.exe' => $target . '/rr.exe',
-                'rr'     => $target . '/rr',
-            ])
-        ;
-
-        $file = null;
-        while ($extractor->valid()) {
-            $file = $extractor->current();
-
-            if (! $this->checkExisting($file, $io)) {
-                $extractor->send(false);
-                continue;
-            }
-
-            // Success
-            $path = $file->getRealPath() ?: $file->getPathname();
-            $message = 'RoadRunner (<comment>%s</comment>) has been installed into <info>%s</info>';
-            $message = \sprintf($message, $release->getVersion(), $path);
-            $out->writeln($message);
-
-            $extractor->next();
-
-            if (! $file->isExecutable()) {
-                @chmod($file->getRealPath(), 0755);
-            }
-        }
-
-        return $file;
-    }
-
-    /**
-     * @param string $to
-     * @param ReleaseInterface $from
-     * @param InputInterface $in
-     * @param StyleInterface $io
-     * @return bool
-     */
-    private function installConfig(string $to, ReleaseInterface $from, InputInterface $in, StyleInterface $io): bool
-    {
-        $to .= '/.rr.yaml';
-
-        if (\is_file($to) || \is_file(\getcwd().'/.rr.yaml')) {
-            return false;
-        }
-
-        if (! $io->confirm('Do you want create default ".rr.yaml" configuration file?', true)) {
-            return false;
-        }
-
-        \file_put_contents($to, $from->getConfig());
-
-        return true;
-    }
-
-    /**
-     * @param \SplFileInfo $bin
-     * @param StyleInterface $io
-     * @return bool
-     */
-    private function checkExisting(\SplFileInfo $bin, StyleInterface $io): bool
-    {
-        if (\is_file($bin->getPathname())) {
-            $io->warning('RoadRunner binary file already exists!');
-
-            if (! $io->confirm('Do you want overwrite it?', false)) {
-                $io->note('Skipping RoadRunner installation...');
-
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -252,10 +160,11 @@ class GetBinaryCommand extends Command
      */
     private function findAsset(
         RepositoryInterface $repo,
-        ReleasesCollection $releases,
-        InputInterface $in,
-        StyleInterface $io
-    ): array {
+        ReleasesCollection  $releases,
+        InputInterface      $in,
+        StyleInterface      $io
+    ): array
+    {
         $osOption = $this->os->get($in, $io);
         $archOption = $this->arch->get($in, $io);
         $stabilityOption = $this->stability->get($in, $io);
@@ -263,8 +172,7 @@ class GetBinaryCommand extends Command
         /** @var ReleaseInterface[] $filtered */
         $filtered = $releases
             ->minimumStability($stabilityOption)
-            ->withAssets()
-        ;
+            ->withAssets();
 
         foreach ($filtered as $release) {
             $asset = $release->getAssets()
@@ -272,8 +180,7 @@ class GetBinaryCommand extends Command
                 ->exceptDebPackages()
                 ->whereArchitecture($archOption)
                 ->whereOperatingSystem($osOption)
-                ->first()
-            ;
+                ->first();
 
             if ($asset === null) {
                 $io->warning(\vsprintf('%s %s does not contain available assembly (further search in progress)', [
@@ -298,6 +205,54 @@ class GetBinaryCommand extends Command
         ]);
 
         throw new \UnexpectedValueException($message);
+    }
+
+    /**
+     * @param string $target
+     * @param ReleaseInterface $release
+     * @param AssetInterface $asset
+     * @param StyleInterface $io
+     * @param OutputInterface $out
+     * @return \SplFileInfo|null
+     * @throws \Throwable
+     */
+    private function installBinary(
+        string           $target,
+        ReleaseInterface $release,
+        AssetInterface   $asset,
+        StyleInterface   $io,
+        OutputInterface  $out
+    ): ?\SplFileInfo
+    {
+        $extractor = $this->assetToArchive($asset, $out)
+            ->extract([
+                'rr.exe' => $target . '/rr.exe',
+                'rr' => $target . '/rr',
+            ]);
+
+        $file = null;
+        while ($extractor->valid()) {
+            $file = $extractor->current();
+
+            if (!$this->checkExisting($file, $io)) {
+                $extractor->send(false);
+                continue;
+            }
+
+            // Success
+            $path = $file->getRealPath() ?: $file->getPathname();
+            $message = 'RoadRunner (<comment>%s</comment>) has been installed into <info>%s</info>';
+            $message = \sprintf($message, $release->getVersion(), $path);
+            $out->writeln($message);
+
+            $extractor->next();
+
+            if (!$file->isExecutable()) {
+                @chmod($file->getRealPath(), 0755);
+            }
+        }
+
+        return $file;
     }
 
     /**
@@ -335,5 +290,49 @@ class GetBinaryCommand extends Command
         } finally {
             $progress->clear();
         }
+    }
+
+    /**
+     * @param \SplFileInfo $bin
+     * @param StyleInterface $io
+     * @return bool
+     */
+    private function checkExisting(\SplFileInfo $bin, StyleInterface $io): bool
+    {
+        if (\is_file($bin->getPathname())) {
+            $io->warning('RoadRunner binary file already exists!');
+
+            if (!$io->confirm('Do you want overwrite it?', false)) {
+                $io->note('Skipping RoadRunner installation...');
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $to
+     * @param ReleaseInterface $from
+     * @param InputInterface $in
+     * @param StyleInterface $io
+     * @return bool
+     */
+    private function installConfig(string $to, ReleaseInterface $from, InputInterface $in, StyleInterface $io): bool
+    {
+        $to .= '/.rr.yaml';
+
+        if (\is_file($to) || \is_file(\getcwd() . '/.rr.yaml')) {
+            return false;
+        }
+
+        if (!$io->confirm('Do you want create default ".rr.yaml" configuration file?', true)) {
+            return false;
+        }
+
+        \file_put_contents($to, $from->getConfig());
+
+        return true;
     }
 }

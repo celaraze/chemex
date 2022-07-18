@@ -6,7 +6,7 @@
 ## Creating
 
 > **Note**: If you need to create users with passwords, SSL or TLS **must** be enabled on your configured connection.
-> 
+>
 > The password you enter for the user **must** also obey your LDAP servers password requirements,
 > otherwise you will receive a "Server is unwilling to perform" LDAP exception upon saving.
 

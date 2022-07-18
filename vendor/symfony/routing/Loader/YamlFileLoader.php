@@ -58,7 +58,7 @@ class YamlFileLoader extends FileLoader
         try {
             $parsedConfig = $this->yamlParser->parseFile($path, Yaml::PARSE_CONSTANT);
         } catch (ParseException $e) {
-            throw new \InvalidArgumentException(sprintf('The file "%s" does not contain valid YAML: ', $path).$e->getMessage(), 0, $e);
+            throw new \InvalidArgumentException(sprintf('The file "%s" does not contain valid YAML: ', $path) . $e->getMessage(), 0, $e);
         }
 
         $collection = new RouteCollection();
@@ -76,12 +76,12 @@ class YamlFileLoader extends FileLoader
 
         foreach ($parsedConfig as $name => $config) {
             if (str_starts_with($name, 'when@')) {
-                if (!$this->env || 'when@'.$this->env !== $name) {
+                if (!$this->env || 'when@' . $this->env !== $name) {
                     continue;
                 }
 
                 foreach ($config as $name => $config) {
-                    $this->validate($config, $name.'" when "@'.$this->env, $path);
+                    $this->validate($config, $name . '" when "@' . $this->env, $path);
 
                     if (isset($config['resource'])) {
                         $this->parseImport($collection, $config, $path, $file);
@@ -106,68 +106,59 @@ class YamlFileLoader extends FileLoader
     }
 
     /**
-     * {@inheritdoc}
+     * @throws \InvalidArgumentException If one of the provided config keys is not supported,
+     *                                   something is missing or the combination is nonsense
      */
-    public function supports(mixed $resource, string $type = null): bool
+    protected function validate(mixed $config, string $name, string $path)
     {
-        return \is_string($resource) && \in_array(pathinfo($resource, \PATHINFO_EXTENSION), ['yml', 'yaml'], true) && (!$type || 'yaml' === $type);
-    }
-
-    /**
-     * Parses a route and adds it to the RouteCollection.
-     */
-    protected function parseRoute(RouteCollection $collection, string $name, array $config, string $path)
-    {
+        if (!\is_array($config)) {
+            throw new \InvalidArgumentException(sprintf('The definition of "%s" in "%s" must be a YAML array.', $name, $path));
+        }
         if (isset($config['alias'])) {
-            $alias = $collection->addAlias($name, $config['alias']);
-            $deprecation = $config['deprecated'] ?? null;
-            if (null !== $deprecation) {
-                $alias->setDeprecated(
-                    $deprecation['package'],
-                    $deprecation['version'],
-                    $deprecation['message'] ?? ''
-                );
-            }
+            $this->validateAlias($config, $name, $path);
 
             return;
         }
+        if ($extraKeys = array_diff(array_keys($config), self::AVAILABLE_KEYS)) {
+            throw new \InvalidArgumentException(sprintf('The routing file "%s" contains unsupported keys for "%s": "%s". Expected one of: "%s".', $path, $name, implode('", "', $extraKeys), implode('", "', self::AVAILABLE_KEYS)));
+        }
+        if (isset($config['resource']) && isset($config['path'])) {
+            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "resource" key and the "path" key for "%s". Choose between an import and a route definition.', $path, $name));
+        }
+        if (!isset($config['resource']) && isset($config['type'])) {
+            throw new \InvalidArgumentException(sprintf('The "type" key for the route definition "%s" in "%s" is unsupported. It is only available for imports in combination with the "resource" key.', $name, $path));
+        }
+        if (!isset($config['resource']) && !isset($config['path'])) {
+            throw new \InvalidArgumentException(sprintf('You must define a "path" for the route "%s" in file "%s".', $name, $path));
+        }
+        if (isset($config['controller']) && isset($config['defaults']['_controller'])) {
+            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "controller" key and the defaults key "_controller" for "%s".', $path, $name));
+        }
+        if (isset($config['stateless']) && isset($config['defaults']['_stateless'])) {
+            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "stateless" key and the defaults key "_stateless" for "%s".', $path, $name));
+        }
+    }
 
-        $defaults = $config['defaults'] ?? [];
-        $requirements = $config['requirements'] ?? [];
-        $options = $config['options'] ?? [];
-
-        foreach ($requirements as $placeholder => $requirement) {
-            if (\is_int($placeholder)) {
-                throw new \InvalidArgumentException(sprintf('A placeholder name must be a string (%d given). Did you forget to specify the placeholder key for the requirement "%s" of route "%s" in "%s"?', $placeholder, $requirement, $name, $path));
+    /**
+     * @throws \InvalidArgumentException If one of the provided config keys is not supported,
+     *                                   something is missing or the combination is nonsense
+     */
+    private function validateAlias(array $config, string $name, string $path): void
+    {
+        foreach ($config as $key => $value) {
+            if (!\in_array($key, ['alias', 'deprecated'], true)) {
+                throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify other keys than "alias" and "deprecated" for "%s".', $path, $name));
             }
-        }
 
-        if (isset($config['controller'])) {
-            $defaults['_controller'] = $config['controller'];
-        }
-        if (isset($config['locale'])) {
-            $defaults['_locale'] = $config['locale'];
-        }
-        if (isset($config['format'])) {
-            $defaults['_format'] = $config['format'];
-        }
-        if (isset($config['utf8'])) {
-            $options['utf8'] = $config['utf8'];
-        }
-        if (isset($config['stateless'])) {
-            $defaults['_stateless'] = $config['stateless'];
-        }
+            if ('deprecated' === $key) {
+                if (!isset($value['package'])) {
+                    throw new \InvalidArgumentException(sprintf('The routing file "%s" must specify the attribute "package" of the "deprecated" option for "%s".', $path, $name));
+                }
 
-        $routes = $this->createLocalizedRoute($collection, $name, $config['path']);
-        $routes->addDefaults($defaults);
-        $routes->addRequirements($requirements);
-        $routes->addOptions($options);
-        $routes->setSchemes($config['schemes'] ?? []);
-        $routes->setMethods($config['methods'] ?? []);
-        $routes->setCondition($config['condition'] ?? null);
-
-        if (isset($config['host'])) {
-            $this->addHost($routes, $config['host']);
+                if (!isset($value['version'])) {
+                    throw new \InvalidArgumentException(sprintf('The routing file "%s" must specify the attribute "version" of the "deprecated" option for "%s".', $path, $name));
+                }
+            }
         }
     }
 
@@ -241,59 +232,68 @@ class YamlFileLoader extends FileLoader
     }
 
     /**
-     * @throws \InvalidArgumentException If one of the provided config keys is not supported,
-     *                                   something is missing or the combination is nonsense
+     * Parses a route and adds it to the RouteCollection.
      */
-    protected function validate(mixed $config, string $name, string $path)
+    protected function parseRoute(RouteCollection $collection, string $name, array $config, string $path)
     {
-        if (!\is_array($config)) {
-            throw new \InvalidArgumentException(sprintf('The definition of "%s" in "%s" must be a YAML array.', $name, $path));
-        }
         if (isset($config['alias'])) {
-            $this->validateAlias($config, $name, $path);
+            $alias = $collection->addAlias($name, $config['alias']);
+            $deprecation = $config['deprecated'] ?? null;
+            if (null !== $deprecation) {
+                $alias->setDeprecated(
+                    $deprecation['package'],
+                    $deprecation['version'],
+                    $deprecation['message'] ?? ''
+                );
+            }
 
             return;
         }
-        if ($extraKeys = array_diff(array_keys($config), self::AVAILABLE_KEYS)) {
-            throw new \InvalidArgumentException(sprintf('The routing file "%s" contains unsupported keys for "%s": "%s". Expected one of: "%s".', $path, $name, implode('", "', $extraKeys), implode('", "', self::AVAILABLE_KEYS)));
+
+        $defaults = $config['defaults'] ?? [];
+        $requirements = $config['requirements'] ?? [];
+        $options = $config['options'] ?? [];
+
+        foreach ($requirements as $placeholder => $requirement) {
+            if (\is_int($placeholder)) {
+                throw new \InvalidArgumentException(sprintf('A placeholder name must be a string (%d given). Did you forget to specify the placeholder key for the requirement "%s" of route "%s" in "%s"?', $placeholder, $requirement, $name, $path));
+            }
         }
-        if (isset($config['resource']) && isset($config['path'])) {
-            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "resource" key and the "path" key for "%s". Choose between an import and a route definition.', $path, $name));
+
+        if (isset($config['controller'])) {
+            $defaults['_controller'] = $config['controller'];
         }
-        if (!isset($config['resource']) && isset($config['type'])) {
-            throw new \InvalidArgumentException(sprintf('The "type" key for the route definition "%s" in "%s" is unsupported. It is only available for imports in combination with the "resource" key.', $name, $path));
+        if (isset($config['locale'])) {
+            $defaults['_locale'] = $config['locale'];
         }
-        if (!isset($config['resource']) && !isset($config['path'])) {
-            throw new \InvalidArgumentException(sprintf('You must define a "path" for the route "%s" in file "%s".', $name, $path));
+        if (isset($config['format'])) {
+            $defaults['_format'] = $config['format'];
         }
-        if (isset($config['controller']) && isset($config['defaults']['_controller'])) {
-            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "controller" key and the defaults key "_controller" for "%s".', $path, $name));
+        if (isset($config['utf8'])) {
+            $options['utf8'] = $config['utf8'];
         }
-        if (isset($config['stateless']) && isset($config['defaults']['_stateless'])) {
-            throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify both the "stateless" key and the defaults key "_stateless" for "%s".', $path, $name));
+        if (isset($config['stateless'])) {
+            $defaults['_stateless'] = $config['stateless'];
+        }
+
+        $routes = $this->createLocalizedRoute($collection, $name, $config['path']);
+        $routes->addDefaults($defaults);
+        $routes->addRequirements($requirements);
+        $routes->addOptions($options);
+        $routes->setSchemes($config['schemes'] ?? []);
+        $routes->setMethods($config['methods'] ?? []);
+        $routes->setCondition($config['condition'] ?? null);
+
+        if (isset($config['host'])) {
+            $this->addHost($routes, $config['host']);
         }
     }
 
     /**
-     * @throws \InvalidArgumentException If one of the provided config keys is not supported,
-     *                                   something is missing or the combination is nonsense
+     * {@inheritdoc}
      */
-    private function validateAlias(array $config, string $name, string $path): void
+    public function supports(mixed $resource, string $type = null): bool
     {
-        foreach ($config as $key => $value) {
-            if (!\in_array($key, ['alias', 'deprecated'], true)) {
-                throw new \InvalidArgumentException(sprintf('The routing file "%s" must not specify other keys than "alias" and "deprecated" for "%s".', $path, $name));
-            }
-
-            if ('deprecated' === $key) {
-                if (!isset($value['package'])) {
-                    throw new \InvalidArgumentException(sprintf('The routing file "%s" must specify the attribute "package" of the "deprecated" option for "%s".', $path, $name));
-                }
-
-                if (!isset($value['version'])) {
-                    throw new \InvalidArgumentException(sprintf('The routing file "%s" must specify the attribute "version" of the "deprecated" option for "%s".', $path, $name));
-                }
-            }
-        }
+        return \is_string($resource) && \in_array(pathinfo($resource, \PATHINFO_EXTENSION), ['yml', 'yaml'], true) && (!$type || 'yaml' === $type);
     }
 }

@@ -26,9 +26,9 @@ use League\Config\Exception\InvalidConfigurationException;
 
 final class TableOfContentsBuilder implements ConfigurationAwareInterface
 {
-    public const POSITION_TOP             = 'top';
+    public const POSITION_TOP = 'top';
     public const POSITION_BEFORE_HEADINGS = 'before-headings';
-    public const POSITION_PLACEHOLDER     = 'placeholder';
+    public const POSITION_PLACEHOLDER = 'placeholder';
 
     /** @psalm-readonly-allow-private-mutation */
     private ConfigurationInterface $config;
@@ -38,11 +38,11 @@ final class TableOfContentsBuilder implements ConfigurationAwareInterface
         $document = $event->getDocument();
 
         $generator = new TableOfContentsGenerator(
-            (string) $this->config->get('table_of_contents/style'),
-            (string) $this->config->get('table_of_contents/normalize'),
-            (int) $this->config->get('table_of_contents/min_heading_level'),
-            (int) $this->config->get('table_of_contents/max_heading_level'),
-            (string) $this->config->get('heading_permalink/fragment_prefix'),
+            (string)$this->config->get('table_of_contents/style'),
+            (string)$this->config->get('table_of_contents/normalize'),
+            (int)$this->config->get('table_of_contents/min_heading_level'),
+            (int)$this->config->get('table_of_contents/max_heading_level'),
+            (string)$this->config->get('heading_permalink/fragment_prefix'),
         );
 
         $toc = $generator->generate($document);
@@ -73,7 +73,7 @@ final class TableOfContentsBuilder implements ConfigurationAwareInterface
     private function insertBeforeFirstLinkedHeading(Document $document, TableOfContents $toc): void
     {
         foreach ($document->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $node) {
-            if (! $node instanceof Heading) {
+            if (!$node instanceof Heading) {
                 continue;
             }
 
@@ -91,7 +91,7 @@ final class TableOfContentsBuilder implements ConfigurationAwareInterface
     {
         foreach ($document->iterator(NodeIterator::FLAG_BLOCKS_ONLY) as $node) {
             // Add the block once we find a placeholder
-            if (! $node instanceof TableOfContentsPlaceholder) {
+            if (!$node instanceof TableOfContentsPlaceholder) {
                 continue;
             }
 

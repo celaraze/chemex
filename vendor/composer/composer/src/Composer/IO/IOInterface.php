@@ -66,9 +66,9 @@ interface IOInterface extends LoggerInterface
     /**
      * Writes a message to the output.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -77,9 +77,9 @@ interface IOInterface extends LoggerInterface
     /**
      * Writes a message to the error output.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -88,9 +88,9 @@ interface IOInterface extends LoggerInterface
     /**
      * Writes a message to the output, without formatting it.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -99,9 +99,9 @@ interface IOInterface extends LoggerInterface
     /**
      * Writes a message to the error output, without formatting it.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -110,10 +110,10 @@ interface IOInterface extends LoggerInterface
     /**
      * Overwrites a previous message to the output.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $size      The size of line
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $size The size of line
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -122,10 +122,10 @@ interface IOInterface extends LoggerInterface
     /**
      * Overwrites a previous message to the error output.
      *
-     * @param string|string[] $messages  The message as an array of lines or a single string
-     * @param bool            $newline   Whether to add a newline or not
-     * @param int             $size      The size of line
-     * @param int             $verbosity Verbosity level from the VERBOSITY_* constants
+     * @param string|string[] $messages The message as an array of lines or a single string
+     * @param bool $newline Whether to add a newline or not
+     * @param int $size The size of line
+     * @param int $verbosity Verbosity level from the VERBOSITY_* constants
      *
      * @return void
      */
@@ -135,10 +135,10 @@ interface IOInterface extends LoggerInterface
      * Asks a question to the user.
      *
      * @param string $question The question to ask
-     * @param string|bool|int|float|null $default  The default answer if none is given by the user
+     * @param string|bool|int|float|null $default The default answer if none is given by the user
      *
-     * @throws \RuntimeException If there is no data to read in the input stream
      * @return mixed       The user answer
+     * @throws \RuntimeException If there is no data to read in the input stream
      */
     public function ask(string $question, $default = null);
 
@@ -148,7 +148,7 @@ interface IOInterface extends LoggerInterface
      * The question will be asked until the user answers by nothing, yes, or no.
      *
      * @param string $question The question to ask
-     * @param bool   $default  The default answer if the user enters nothing
+     * @param bool $default The default answer if the user enters nothing
      *
      * @return bool true if the user has confirmed, false otherwise
      */
@@ -161,13 +161,13 @@ interface IOInterface extends LoggerInterface
      * validated data when the data is valid and throw an exception
      * otherwise.
      *
-     * @param string   $question  The question to ask
+     * @param string $question The question to ask
      * @param callable $validator A PHP callback
-     * @param null|int $attempts  Max number of times to ask before giving up (default of null means infinite)
-     * @param mixed    $default   The default answer if none is given by the user
+     * @param null|int $attempts Max number of times to ask before giving up (default of null means infinite)
+     * @param mixed $default The default answer if none is given by the user
      *
-     * @throws \Exception When any of the validators return an error
      * @return mixed
+     * @throws \Exception When any of the validators return an error
      */
     public function askAndValidate(string $question, callable $validator, ?int $attempts = null, $default = null);
 
@@ -183,15 +183,15 @@ interface IOInterface extends LoggerInterface
     /**
      * Asks the user to select a value.
      *
-     * @param string      $question     The question to ask
-     * @param string[]    $choices      List of choices to pick from
-     * @param bool|string $default      The default answer if the user enters nothing
-     * @param bool|int    $attempts     Max number of times to ask before giving up (false by default, which means infinite)
-     * @param string      $errorMessage Message which will be shown if invalid value from choice list would be picked
-     * @param bool        $multiselect  Select more than one value separated by comma
+     * @param string $question The question to ask
+     * @param string[] $choices List of choices to pick from
+     * @param bool|string $default The default answer if the user enters nothing
+     * @param bool|int $attempts Max number of times to ask before giving up (false by default, which means infinite)
+     * @param string $errorMessage Message which will be shown if invalid value from choice list would be picked
+     * @param bool $multiselect Select more than one value separated by comma
      *
-     * @throws \InvalidArgumentException
      * @return int|string|string[]|bool     The selected value or values (the key of the choices array)
+     * @throws \InvalidArgumentException
      */
     public function select(string $question, array $choices, $default, $attempts = false, string $errorMessage = 'Value "%s" is invalid', bool $multiselect = false);
 
@@ -223,9 +223,9 @@ interface IOInterface extends LoggerInterface
     /**
      * Set the authentication information for the repository.
      *
-     * @param string      $repositoryName The unique name of repository
-     * @param string      $username       The username
-     * @param null|string $password       The password
+     * @param string $repositoryName The unique name of repository
+     * @param string $username The username
+     * @param null|string $password The password
      *
      * @return void
      */

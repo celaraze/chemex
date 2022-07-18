@@ -13,8 +13,8 @@
 namespace Composer\Script;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\EventDispatcher\Event as BaseEvent;
+use Composer\IO\IOInterface;
 
 /**
  * The script event class
@@ -105,7 +105,7 @@ class Event extends BaseEvent
     /**
      * Set the originating event.
      *
-     * @param  BaseEvent $event
+     * @param BaseEvent $event
      * @return $this
      */
     public function setOriginatingEvent(BaseEvent $event): self
@@ -118,7 +118,7 @@ class Event extends BaseEvent
     /**
      * Returns the upper-most event in chain.
      *
-     * @param  BaseEvent $event
+     * @param BaseEvent $event
      * @return BaseEvent
      */
     private function calculateOriginatingEvent(BaseEvent $event): BaseEvent

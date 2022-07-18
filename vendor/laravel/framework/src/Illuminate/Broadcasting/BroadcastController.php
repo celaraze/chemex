@@ -12,7 +12,7 @@ class BroadcastController extends Controller
     /**
      * Authenticate the request for channel access.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function authenticate(Request $request)
@@ -29,7 +29,7 @@ class BroadcastController extends Controller
      *
      * See: https://pusher.com/docs/channels/server_api/authenticating-users/#user-authentication.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function authenticateUser(Request $request)
@@ -39,6 +39,6 @@ class BroadcastController extends Controller
         }
 
         return Broadcast::resolveAuthenticatedUser($request)
-                    ?? throw new AccessDeniedHttpException;
+            ?? throw new AccessDeniedHttpException;
     }
 }

@@ -72,7 +72,7 @@ class PdoCaster
             }
 
             try {
-                $attr[$k] = 'ERRMODE' === $k ? $errmode : $c->getAttribute(\constant('PDO::ATTR_'.$k));
+                $attr[$k] = 'ERRMODE' === $k ? $errmode : $c->getAttribute(\constant('PDO::ATTR_' . $k));
                 if ($v && isset($v[$attr[$k]])) {
                     $attr[$k] = new ConstStub($v[$attr[$k]], $attr[$k]);
                 }
@@ -88,19 +88,19 @@ class PdoCaster
 
         $prefix = Caster::PREFIX_VIRTUAL;
         $a += [
-            $prefix.'inTransaction' => method_exists($c, 'inTransaction'),
-            $prefix.'errorInfo' => $c->errorInfo(),
-            $prefix.'attributes' => new EnumStub($attr),
+            $prefix . 'inTransaction' => method_exists($c, 'inTransaction'),
+            $prefix . 'errorInfo' => $c->errorInfo(),
+            $prefix . 'attributes' => new EnumStub($attr),
         ];
 
-        if ($a[$prefix.'inTransaction']) {
-            $a[$prefix.'inTransaction'] = $c->inTransaction();
+        if ($a[$prefix . 'inTransaction']) {
+            $a[$prefix . 'inTransaction'] = $c->inTransaction();
         } else {
-            unset($a[$prefix.'inTransaction']);
+            unset($a[$prefix . 'inTransaction']);
         }
 
-        if (!isset($a[$prefix.'errorInfo'][1], $a[$prefix.'errorInfo'][2])) {
-            unset($a[$prefix.'errorInfo']);
+        if (!isset($a[$prefix . 'errorInfo'][1], $a[$prefix . 'errorInfo'][2])) {
+            unset($a[$prefix . 'errorInfo']);
         }
 
         $c->setAttribute(\PDO::ATTR_ERRMODE, $errmode);
@@ -111,10 +111,10 @@ class PdoCaster
     public static function castPdoStatement(\PDOStatement $c, array $a, Stub $stub, bool $isNested)
     {
         $prefix = Caster::PREFIX_VIRTUAL;
-        $a[$prefix.'errorInfo'] = $c->errorInfo();
+        $a[$prefix . 'errorInfo'] = $c->errorInfo();
 
-        if (!isset($a[$prefix.'errorInfo'][1], $a[$prefix.'errorInfo'][2])) {
-            unset($a[$prefix.'errorInfo']);
+        if (!isset($a[$prefix . 'errorInfo'][1], $a[$prefix . 'errorInfo'][2])) {
+            unset($a[$prefix . 'errorInfo']);
         }
 
         return $a;

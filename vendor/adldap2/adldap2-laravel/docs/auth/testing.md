@@ -1,6 +1,7 @@
 # Testing
 
-To test that your configured LDAP connection is being authenticated against, you can utilize the `Adldap\Laravel\Facades\Resolver` facade.
+To test that your configured LDAP connection is being authenticated against, you can utilize
+the `Adldap\Laravel\Facades\Resolver` facade.
 
 Using the facade, you can mock certain methods to return mock LDAP users
 and pass or deny authentication to test different scenarios.

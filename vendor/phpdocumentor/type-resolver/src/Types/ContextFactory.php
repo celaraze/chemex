@@ -23,7 +23,6 @@ use ReflectionProperty;
 use Reflector;
 use RuntimeException;
 use UnexpectedValueException;
-
 use function define;
 use function defined;
 use function file_exists;
@@ -35,7 +34,6 @@ use function strrpos;
 use function substr;
 use function token_get_all;
 use function trim;
-
 use const T_AS;
 use const T_CLASS;
 use const T_CURLY_OPEN;
@@ -105,45 +103,12 @@ final class ContextFactory
         throw new UnexpectedValueException('Unhandled \Reflector instance given:  ' . get_class($reflector));
     }
 
-    private function createFromReflectionParameter(ReflectionParameter $parameter): Context
-    {
-        $class = $parameter->getDeclaringClass();
-        if (!$class) {
-            throw new InvalidArgumentException('Unable to get class of ' . $parameter->getName());
-        }
-
-        return $this->createFromReflectionClass($class);
-    }
-
-    private function createFromReflectionMethod(ReflectionMethod $method): Context
-    {
-        $class = $method->getDeclaringClass();
-
-        return $this->createFromReflectionClass($class);
-    }
-
-    private function createFromReflectionProperty(ReflectionProperty $property): Context
-    {
-        $class = $property->getDeclaringClass();
-
-        return $this->createFromReflectionClass($class);
-    }
-
-    private function createFromReflectionClassConstant(ReflectionClassConstant $constant): Context
-    {
-        //phpcs:ignore SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable
-        /** @phpstan-var ReflectionClass<object> $class */
-        $class = $constant->getDeclaringClass();
-
-        return $this->createFromReflectionClass($class);
-    }
-
     /**
      * @phpstan-param ReflectionClass<object> $class
      */
     private function createFromReflectionClass(ReflectionClass $class): Context
     {
-        $fileName  = $class->getFileName();
+        $fileName = $class->getFileName();
         $namespace = $class->getNamespaceName();
 
         if (is_string($fileName) && file_exists($fileName)) {
@@ -161,18 +126,18 @@ final class ContextFactory
     /**
      * Build a Context for a namespace in the provided file contents.
      *
-     * @see Context for more information on Contexts.
-     *
-     * @param string $namespace    It does not matter if a `\` precedes the namespace name,
+     * @param string $namespace It does not matter if a `\` precedes the namespace name,
      * this method first normalizes.
      * @param string $fileContents The file's contents to retrieve the aliases from with the given namespace.
+     * @see Context for more information on Contexts.
+     *
      */
     public function createForNamespace(string $namespace, string $fileContents): Context
     {
-        $namespace        = trim($namespace, '\\');
-        $useStatements    = [];
+        $namespace = trim($namespace, '\\');
+        $useStatements = [];
         $currentNamespace = '';
-        $tokens           = new ArrayIterator(token_get_all($fileContents));
+        $tokens = new ArrayIterator(token_get_all($fileContents));
 
         while ($tokens->valid()) {
             $currentToken = $tokens->current();
@@ -184,7 +149,7 @@ final class ContextFactory
                     // Fast-forward the iterator through the class so that any
                     // T_USE tokens found within are skipped - these are not
                     // valid namespace use statements so should be ignored.
-                    $braceLevel      = 0;
+                    $braceLevel = 0;
                     $firstBraceFound = false;
                     while ($tokens->valid() && ($braceLevel > 0 || !$firstBraceFound)) {
                         $currentToken = $tokens->current();
@@ -242,31 +207,6 @@ final class ContextFactory
     }
 
     /**
-     * Deduce the names of all imports when we are at the T_USE token.
-     *
-     * @param ArrayIterator<int, string|array{0:int,1:string,2:int}> $tokens
-     *
-     * @return string[]
-     * @psalm-return array<string, string>
-     */
-    private function parseUseStatement(ArrayIterator $tokens): array
-    {
-        $uses = [];
-
-        while ($tokens->valid()) {
-            $this->skipToNextStringOrNamespaceSeparator($tokens);
-
-            $uses += $this->extractUseStatements($tokens);
-            $currentToken = $tokens->current();
-            if ($currentToken[0] === self::T_LITERAL_END_OF_USE) {
-                return $uses;
-            }
-        }
-
-        return $uses;
-    }
-
-    /**
      * Fast-forwards the iterator as longs as we don't encounter a T_STRING or T_NS_SEPARATOR token.
      *
      * @param ArrayIterator<int, string|array{0:int,1:string,2:int}> $tokens
@@ -292,6 +232,31 @@ final class ContextFactory
     }
 
     /**
+     * Deduce the names of all imports when we are at the T_USE token.
+     *
+     * @param ArrayIterator<int, string|array{0:int,1:string,2:int}> $tokens
+     *
+     * @return string[]
+     * @psalm-return array<string, string>
+     */
+    private function parseUseStatement(ArrayIterator $tokens): array
+    {
+        $uses = [];
+
+        while ($tokens->valid()) {
+            $this->skipToNextStringOrNamespaceSeparator($tokens);
+
+            $uses += $this->extractUseStatements($tokens);
+            $currentToken = $tokens->current();
+            if ($currentToken[0] === self::T_LITERAL_END_OF_USE) {
+                return $uses;
+            }
+        }
+
+        return $uses;
+    }
+
+    /**
      * Deduce the namespace name and alias of an import when we are at the T_USE token or have not reached the end of
      * a USE statement yet. This will return a key/value array of the alias => namespace.
      *
@@ -305,34 +270,34 @@ final class ContextFactory
     private function extractUseStatements(ArrayIterator $tokens): array
     {
         $extractedUseStatements = [];
-        $groupedNs              = '';
-        $currentNs              = '';
-        $currentAlias           = '';
-        $state                  = 'start';
+        $groupedNs = '';
+        $currentNs = '';
+        $currentAlias = '';
+        $state = 'start';
 
         while ($tokens->valid()) {
             $currentToken = $tokens->current();
-            $tokenId      = is_string($currentToken) ? $currentToken : $currentToken[0];
-            $tokenValue   = is_string($currentToken) ? null : $currentToken[1];
+            $tokenId = is_string($currentToken) ? $currentToken : $currentToken[0];
+            $tokenValue = is_string($currentToken) ? null : $currentToken[1];
             switch ($state) {
                 case 'start':
                     switch ($tokenId) {
                         case T_STRING:
                         case T_NS_SEPARATOR:
-                            $currentNs   .= (string) $tokenValue;
-                            $currentAlias =  $tokenValue;
+                            $currentNs .= (string)$tokenValue;
+                            $currentAlias = $tokenValue;
                             break;
                         case T_NAME_QUALIFIED:
                         case T_NAME_FULLY_QUALIFIED:
-                            $currentNs   .= (string) $tokenValue;
+                            $currentNs .= (string)$tokenValue;
                             $currentAlias = substr(
-                                (string) $tokenValue,
-                                (int) (strrpos((string) $tokenValue, '\\')) + 1
+                                (string)$tokenValue,
+                                (int)(strrpos((string)$tokenValue, '\\')) + 1
                             );
                             break;
                         case T_CURLY_OPEN:
                         case '{':
-                            $state     = 'grouped';
+                            $state = 'grouped';
                             $groupedNs = $currentNs;
                             break;
                         case T_AS:
@@ -365,17 +330,17 @@ final class ContextFactory
                     switch ($tokenId) {
                         case T_STRING:
                         case T_NS_SEPARATOR:
-                            $currentNs   .= (string) $tokenValue;
+                            $currentNs .= (string)$tokenValue;
                             $currentAlias = $tokenValue;
                             break;
                         case T_AS:
                             $state = 'grouped-alias';
                             break;
                         case self::T_LITERAL_USE_SEPARATOR:
-                            $state                                          = 'grouped';
-                            $extractedUseStatements[(string) $currentAlias] = $currentNs;
-                            $currentNs                                      = $groupedNs;
-                            $currentAlias                                   = '';
+                            $state = 'grouped';
+                            $extractedUseStatements[(string)$currentAlias] = $currentNs;
+                            $currentNs = $groupedNs;
+                            $currentAlias = '';
                             break;
                         case self::T_LITERAL_END_OF_USE:
                             $state = 'end';
@@ -391,10 +356,10 @@ final class ContextFactory
                             $currentAlias = $tokenValue;
                             break;
                         case self::T_LITERAL_USE_SEPARATOR:
-                            $state                                          = 'grouped';
-                            $extractedUseStatements[(string) $currentAlias] = $currentNs;
-                            $currentNs                                      = $groupedNs;
-                            $currentAlias                                   = '';
+                            $state = 'grouped';
+                            $extractedUseStatements[(string)$currentAlias] = $currentNs;
+                            $currentNs = $groupedNs;
+                            $currentAlias = '';
                             break;
                         case self::T_LITERAL_END_OF_USE:
                             $state = 'end';
@@ -412,9 +377,42 @@ final class ContextFactory
         }
 
         if ($groupedNs !== $currentNs) {
-            $extractedUseStatements[(string) $currentAlias] = $currentNs;
+            $extractedUseStatements[(string)$currentAlias] = $currentNs;
         }
 
         return $extractedUseStatements;
+    }
+
+    private function createFromReflectionParameter(ReflectionParameter $parameter): Context
+    {
+        $class = $parameter->getDeclaringClass();
+        if (!$class) {
+            throw new InvalidArgumentException('Unable to get class of ' . $parameter->getName());
+        }
+
+        return $this->createFromReflectionClass($class);
+    }
+
+    private function createFromReflectionMethod(ReflectionMethod $method): Context
+    {
+        $class = $method->getDeclaringClass();
+
+        return $this->createFromReflectionClass($class);
+    }
+
+    private function createFromReflectionProperty(ReflectionProperty $property): Context
+    {
+        $class = $property->getDeclaringClass();
+
+        return $this->createFromReflectionClass($class);
+    }
+
+    private function createFromReflectionClassConstant(ReflectionClassConstant $constant): Context
+    {
+        //phpcs:ignore SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable
+        /** @phpstan-var ReflectionClass<object> $class */
+        $class = $constant->getDeclaringClass();
+
+        return $this->createFromReflectionClass($class);
     }
 }

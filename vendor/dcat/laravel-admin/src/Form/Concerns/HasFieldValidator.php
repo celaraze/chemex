@@ -50,8 +50,8 @@ trait HasFieldValidator
     /**
      * Set the update validation rules for the field.
      *
-     * @param  array|callable|string  $rules
-     * @param  array  $messages
+     * @param array|callable|string $rules
+     * @param array $messages
      * @return $this
      */
     public function updateRules($rules = null, $messages = [])
@@ -66,10 +66,44 @@ trait HasFieldValidator
     }
 
     /**
+     * @param string|array|\Closure $input
+     * @param string|array $original
+     * @return array|\Closure
+     */
+    protected function mergeRules($input, $original)
+    {
+        if ($input instanceof \Closure) {
+            $rules = $input;
+        } else {
+            if (!empty($original)) {
+                $original = $this->formatRules($original);
+            }
+            $rules = array_merge($original, $this->formatRules($input));
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Format validation rules.
+     *
+     * @param array|string $rules
+     * @return array
+     */
+    protected function formatRules($rules)
+    {
+        if (is_string($rules)) {
+            $rules = array_filter(explode('|', $rules));
+        }
+
+        return array_filter((array)$rules);
+    }
+
+    /**
      * Set the creation validation rules for the field.
      *
-     * @param  array|callable|string  $rules
-     * @param  array  $messages
+     * @param array|callable|string $rules
+     * @param array $messages
      * @return $this
      */
     public function creationRules($rules = null, $messages = [])
@@ -86,8 +120,8 @@ trait HasFieldValidator
     /**
      * Get or set rules.
      *
-     * @param  null  $rules
-     * @param  array  $messages
+     * @param null $rules
+     * @param array $messages
      * @return $this
      */
     public function rules($rules = null, $messages = [])
@@ -134,11 +168,11 @@ trait HasFieldValidator
             $rules = array_filter(explode('|', $rules));
         }
 
-        if (! $this->form) {
+        if (!$this->form) {
             return $rules;
         }
 
-        if (method_exists($this->form, 'key') || ! $id = $this->form->getKey()) {
+        if (method_exists($this->form, 'key') || !$id = $this->form->getKey()) {
             return $rules;
         }
 
@@ -154,70 +188,12 @@ trait HasFieldValidator
     }
 
     /**
-     * Format validation rules.
-     *
-     * @param  array|string  $rules
-     * @return array
-     */
-    protected function formatRules($rules)
-    {
-        if (is_string($rules)) {
-            $rules = array_filter(explode('|', $rules));
-        }
-
-        return array_filter((array) $rules);
-    }
-
-    /**
-     * @param  string|array|\Closure  $input
-     * @param  string|array  $original
-     * @return array|\Closure
-     */
-    protected function mergeRules($input, $original)
-    {
-        if ($input instanceof \Closure) {
-            $rules = $input;
-        } else {
-            if (! empty($original)) {
-                $original = $this->formatRules($original);
-            }
-            $rules = array_merge($original, $this->formatRules($input));
-        }
-
-        return $rules;
-    }
-
-    /**
-     * @param  string  $rule
+     * @param string $rule
      * @return $this
      */
     public function removeUpdateRule($rule)
     {
         $this->deleteRuleByKeyword($this->updateRules, $rule);
-
-        return $this;
-    }
-
-    /**
-     * @param  string  $rule
-     * @return $this
-     */
-    public function removeCreationRule($rule)
-    {
-        $this->deleteRuleByKeyword($this->creationRules, $rule);
-
-        return $this;
-    }
-
-    /**
-     * Remove a specific rule by keyword.
-     *
-     * @param  string  $rule
-     * @return $this
-     */
-    public function removeRule($rule)
-    {
-        $this->deleteRuleByKeyword($this->rules, $rule);
 
         return $this;
     }
@@ -235,7 +211,7 @@ trait HasFieldValidator
             return;
         }
 
-        if (! is_string($rules)) {
+        if (!is_string($rules)) {
             return;
         }
 
@@ -245,61 +221,36 @@ trait HasFieldValidator
     }
 
     /**
-     * @param  string  $rule
+     * @param string $rule
+     * @return $this
+     */
+    public function removeCreationRule($rule)
+    {
+        $this->deleteRuleByKeyword($this->creationRules, $rule);
+
+        return $this;
+    }
+
+    /**
+     * Remove a specific rule by keyword.
+     *
+     * @param string $rule
+     * @return $this
+     */
+    public function removeRule($rule)
+    {
+        $this->deleteRuleByKeyword($this->rules, $rule);
+
+        return $this;
+    }
+
+    /**
+     * @param string $rule
      * @return bool
      */
     public function hasUpdateRule($rule)
     {
         return $this->isRuleExists($this->updateRules, $rule);
-    }
-
-    /**
-     * @param  string  $rule
-     * @return bool
-     */
-    public function hasCreationRule($rule)
-    {
-        return $this->isRuleExists($this->creationRules, $rule);
-    }
-
-    /**
-     * @param  string  $rule
-     * @return bool
-     */
-    public function hasRule($rule)
-    {
-        return $this->isRuleExists($this->getRules(), $rule);
-    }
-
-    /**
-     * @param  string  $rule
-     * @return bool|mixed
-     */
-    protected function getRule($rule)
-    {
-        $rules = $this->getRules();
-
-        if (is_array($rules)) {
-            foreach ($rules as $r) {
-                if ($this->isRuleExists($r, $rule)) {
-                    return $r;
-                }
-            }
-
-            return false;
-        }
-
-        if (! is_string($rules)) {
-            return false;
-        }
-
-        foreach (explode('|', $rules) as $r) {
-            if ($this->isRuleExists($r, $rule)) {
-                return $r;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -319,7 +270,7 @@ trait HasFieldValidator
             return false;
         }
 
-        if (! is_string($rules)) {
+        if (!is_string($rules)) {
             return false;
         }
 
@@ -327,13 +278,31 @@ trait HasFieldValidator
 
         $pattern = "/{$rule}[^\|]?(\||$)/";
 
-        return (bool) preg_match($pattern, $rules);
+        return (bool)preg_match($pattern, $rules);
+    }
+
+    /**
+     * @param string $rule
+     * @return bool
+     */
+    public function hasCreationRule($rule)
+    {
+        return $this->isRuleExists($this->creationRules, $rule);
+    }
+
+    /**
+     * @param string $rule
+     * @return bool
+     */
+    public function hasRule($rule)
+    {
+        return $this->isRuleExists($this->getRules(), $rule);
     }
 
     /**
      * Set field validator.
      *
-     * @param  callable  $validator
+     * @param callable $validator
      * @return $this
      */
     public function validator(callable $validator)
@@ -346,7 +315,7 @@ trait HasFieldValidator
     /**
      * Get validator for this field.
      *
-     * @param  array  $input
+     * @param array $input
      * @return bool|Validator
      */
     public function getValidator(array $input)
@@ -357,12 +326,12 @@ trait HasFieldValidator
 
         $rules = $attributes = [];
 
-        if (! $fieldRules = $this->getRules()) {
+        if (!$fieldRules = $this->getRules()) {
             return false;
         }
 
         if (is_string($this->column)) {
-            if (! Arr::has($input, $this->column)) {
+            if (!Arr::has($input, $this->column)) {
                 return false;
             }
 
@@ -374,10 +343,10 @@ trait HasFieldValidator
 
         if (is_array($this->column)) {
             foreach ($this->column as $key => $column) {
-                if (! Arr::has($input, $column)) {
+                if (!Arr::has($input, $column)) {
                     continue;
                 }
-                $k = $column.$key;
+                $k = $column . $key;
                 Arr::set($input, $k, Arr::get($input, $column));
                 $rules[$k] = $fieldRules;
                 $attributes[$k] = "{$this->label}[$column]";
@@ -385,20 +354,6 @@ trait HasFieldValidator
         }
 
         return Validator::make($input, $rules, $this->getValidationMessages(), $attributes);
-    }
-
-    /**
-     * Set validation messages for column.
-     *
-     * @param  string  $key
-     * @param  array  $messages
-     * @return $this
-     */
-    public function setValidationMessages($key, array $messages)
-    {
-        $this->validationMessages[$key] = $messages;
-
-        return $this;
     }
 
     /**
@@ -426,14 +381,14 @@ trait HasFieldValidator
             }
 
             if (is_string($this->column)) {
-                $k = $this->column.'.'.$k;
+                $k = $this->column . '.' . $k;
 
                 $result[$k] = $v;
                 continue;
             }
 
             foreach ($this->column as $column) {
-                $result[$column.'.'.$k] = $v;
+                $result[$column . '.' . $k] = $v;
             }
         }
 
@@ -441,12 +396,26 @@ trait HasFieldValidator
     }
 
     /**
+     * Set validation messages for column.
+     *
+     * @param string $key
+     * @param array $messages
+     * @return $this
+     */
+    public function setValidationMessages($key, array $messages)
+    {
+        $this->validationMessages[$key] = $messages;
+
+        return $this;
+    }
+
+    /**
      * Set error messages for individual form field.
      *
      * @see http://1000hz.github.io/bootstrap-validator/
      *
-     * @param  string  $error
-     * @param  string  $key
+     * @param string $error
+     * @param string $key
      * @return $this
      */
     public function setClientValidationError(string $error, string $key = null)
@@ -457,11 +426,42 @@ trait HasFieldValidator
     }
 
     /**
-     * @param  MessageBag  $messageBag
+     * @param MessageBag $messageBag
      * @return MessageBag
      */
     public function formatValidatorMessages($messageBag)
     {
         return $messageBag;
+    }
+
+    /**
+     * @param string $rule
+     * @return bool|mixed
+     */
+    protected function getRule($rule)
+    {
+        $rules = $this->getRules();
+
+        if (is_array($rules)) {
+            foreach ($rules as $r) {
+                if ($this->isRuleExists($r, $rule)) {
+                    return $r;
+                }
+            }
+
+            return false;
+        }
+
+        if (!is_string($rules)) {
+            return false;
+        }
+
+        foreach (explode('|', $rules) as $r) {
+            if ($this->isRuleExists($r, $rule)) {
+                return $r;
+            }
+        }
+
+        return false;
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Spatie\LaravelIgnition\Support\Composer;
 
-use function app_path;
-use function base_path;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use function app_path;
+use function base_path;
 
 class ComposerClassMap
 {
@@ -32,19 +32,6 @@ class ComposerClassMap
         $classes = $this->composer->getClassMap();
 
         return array_merge($classes, $this->listClassesInPsrMaps());
-    }
-
-    public function searchClassMap(string $missingClass): ?string
-    {
-        foreach ($this->composer->getClassMap() as $fqcn => $file) {
-            $basename = basename($file, '.php');
-
-            if ($basename === $missingClass) {
-                return $fqcn;
-            }
-        }
-
-        return null;
     }
 
     /** @return array<string, mixed> */
@@ -81,6 +68,32 @@ class ComposerClassMap
         return $classes;
     }
 
+    protected function getFullyQualifiedClassNameFromFile(string $rootNamespace, SplFileInfo $file): string
+    {
+        $class = trim(str_replace($this->basePath, '', (string)$file->getRealPath()), DIRECTORY_SEPARATOR);
+
+        $class = str_replace(
+            [DIRECTORY_SEPARATOR, 'App\\'],
+            ['\\', app()->getNamespace()],
+            ucfirst(Str::replaceLast('.php', '', $class))
+        );
+
+        return $rootNamespace . $class;
+    }
+
+    public function searchClassMap(string $missingClass): ?string
+    {
+        foreach ($this->composer->getClassMap() as $fqcn => $file) {
+            $basename = basename($file, '.php');
+
+            if ($basename === $missingClass) {
+                return $fqcn;
+            }
+        }
+
+        return null;
+    }
+
     public function searchPsrMaps(string $missingClass): ?string
     {
         $prefixes = array_merge(
@@ -110,18 +123,5 @@ class ComposerClassMap
         }
 
         return null;
-    }
-
-    protected function getFullyQualifiedClassNameFromFile(string $rootNamespace, SplFileInfo $file): string
-    {
-        $class = trim(str_replace($this->basePath, '', (string)$file->getRealPath()), DIRECTORY_SEPARATOR);
-
-        $class = str_replace(
-            [DIRECTORY_SEPARATOR, 'App\\'],
-            ['\\', app()->getNamespace()],
-            ucfirst(Str::replaceLast('.php', '', $class))
-        );
-
-        return $rootNamespace . $class;
     }
 }

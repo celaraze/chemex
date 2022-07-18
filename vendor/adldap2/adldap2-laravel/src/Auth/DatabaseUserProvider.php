@@ -42,7 +42,7 @@ class DatabaseUserProvider extends UserProvider
      * Constructor.
      *
      * @param HasherContract $hasher
-     * @param string         $model
+     * @param string $model
      */
     public function __construct(HasherContract $hasher, $model)
     {
@@ -53,7 +53,7 @@ class DatabaseUserProvider extends UserProvider
      * Forward missing method calls to the underlying Eloquent provider.
      *
      * @param string $method
-     * @param mixed  $parameters
+     * @param mixed $parameters
      *
      * @return mixed
      */
@@ -96,7 +96,7 @@ class DatabaseUserProvider extends UserProvider
         try {
             $user = Resolver::byCredentials($credentials);
         } catch (BindException $e) {
-            if (! $this->isFallingBack()) {
+            if (!$this->isFallingBack()) {
                 throw $e;
             }
         }
@@ -108,6 +108,16 @@ class DatabaseUserProvider extends UserProvider
         if ($this->isFallingBack()) {
             return $this->eloquent->retrieveByCredentials($credentials);
         }
+    }
+
+    /**
+     * Determines if login fallback is enabled.
+     *
+     * @return bool
+     */
+    protected function isFallingBack()
+    {
+        return Config::get('ldap_auth.login_fallback', false);
     }
 
     /**
@@ -141,12 +151,12 @@ class DatabaseUserProvider extends UserProvider
         if (
             $model->exists
             && $this->isFallingBack()
-            && ! $this->user instanceof User
+            && !$this->user instanceof User
         ) {
             return $this->eloquent->validateCredentials($model, $credentials);
         }
 
-        if (! Resolver::authenticate($this->user, $credentials)) {
+        if (!Resolver::authenticate($this->user, $credentials)) {
             return false;
         }
 
@@ -155,7 +165,7 @@ class DatabaseUserProvider extends UserProvider
         // Here we will perform authorization on the LDAP user. If all
         // validation rules pass, we will allow the authentication
         // attempt. Otherwise, it is automatically rejected.
-        if (! $this->passesValidation($this->user, $model)) {
+        if (!$this->passesValidation($this->user, $model)) {
             Event::dispatch(new AuthenticationRejected($this->user, $model));
 
             return false;
@@ -174,15 +184,5 @@ class DatabaseUserProvider extends UserProvider
         Event::dispatch(new AuthenticationSuccessful($this->user, $model));
 
         return true;
-    }
-
-    /**
-     * Determines if login fallback is enabled.
-     *
-     * @return bool
-     */
-    protected function isFallingBack()
-    {
-        return Config::get('ldap_auth.login_fallback', false);
     }
 }

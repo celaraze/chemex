@@ -423,6 +423,14 @@ class Style
     }
 
     /**
+     * @return string
+     */
+    public function getBackgroundColor()
+    {
+        return $this->backgroundColor;
+    }
+
+    /**
      * Sets the background color
      * @param string $color ARGB color (@see Color)
      * @return Style
@@ -437,19 +445,19 @@ class Style
     }
 
     /**
-     * @return string
-     */
-    public function getBackgroundColor()
-    {
-        return $this->backgroundColor;
-    }
-
-    /**
      * @return bool Whether the background color should be applied
      */
     public function shouldApplyBackgroundColor()
     {
         return $this->hasSetBackgroundColor;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFormat()
+    {
+        return $this->format;
     }
 
     /**
@@ -467,14 +475,6 @@ class Style
     }
 
     /**
-     * @return string
-     */
-    public function getFormat()
-    {
-        return $this->format;
-    }
-
-    /**
      * @return bool Whether format should be applied
      */
     public function shouldApplyFormat()
@@ -485,24 +485,24 @@ class Style
     /**
      * @return bool
      */
-    public function isRegistered() : bool
+    public function isRegistered(): bool
     {
         return $this->isRegistered;
     }
 
-    public function markAsRegistered(?int $id) : void
+    public function markAsRegistered(?int $id): void
     {
         $this->setId($id);
         $this->isRegistered = true;
     }
 
-    public function unmarkAsRegistered() : void
+    public function unmarkAsRegistered(): void
     {
         $this->setId(0);
         $this->isRegistered = false;
     }
 
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this->isEmpty;
     }

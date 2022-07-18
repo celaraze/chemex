@@ -14,13 +14,13 @@ use League\Flysystem\FilesystemInterface;
 interface Excel
 {
     /**
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function option(\Closure $callback);
 
     /**
-     * @param  array|\Closure|false  $headings
+     * @param array|\Closure|false $headings
      * @return $this
      */
     public function headings($headings);
@@ -31,7 +31,7 @@ interface Excel
     public function getHeadings();
 
     /**
-     * @param  string  $type
+     * @param string $type
      * @return $this
      */
     public function type(string $type);
@@ -42,7 +42,7 @@ interface Excel
     public function getType();
 
     /**
-     * @param  FilesystemInterface|LaravelFilesystem|string  $filesystem
+     * @param FilesystemInterface|LaravelFilesystem|string $filesystem
      * @return $this
      */
     public function disk($filesystem);

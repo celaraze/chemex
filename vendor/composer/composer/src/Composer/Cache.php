@@ -43,10 +43,10 @@ class Cache
 
     /**
      * @param IOInterface $io
-     * @param string      $cacheDir   location of the cache
-     * @param string      $allowlist  List of characters that are allowed in path names (used in a regex character class)
-     * @param Filesystem  $filesystem optional filesystem instance
-     * @param bool        $readOnly   whether the cache is in readOnly mode
+     * @param string $cacheDir location of the cache
+     * @param string $allowlist List of characters that are allowed in path names (used in a regex character class)
+     * @param Filesystem $filesystem optional filesystem instance
+     * @param bool $readOnly whether the cache is in readOnly mode
      */
     public function __construct(IOInterface $io, string $cacheDir, string $allowlist = 'a-z0-9.', Filesystem $filesystem = null, bool $readOnly = false)
     {
@@ -54,7 +54,7 @@ class Cache
         $this->root = rtrim($cacheDir, '/\\') . '/';
         $this->allowlist = $allowlist;
         $this->filesystem = $filesystem ?: new Filesystem();
-        $this->readOnly = (bool) $readOnly;
+        $this->readOnly = (bool)$readOnly;
 
         if (!self::isUsable($cacheDir)) {
             $this->enabled = false;
@@ -62,13 +62,13 @@ class Cache
     }
 
     /**
-     * @param bool $readOnly
+     * @param string $path
      *
-     * @return void
+     * @return bool
      */
-    public function setReadOnly(bool $readOnly)
+    public static function isUsable(string $path)
     {
-        $this->readOnly = (bool) $readOnly;
+        return !Preg::isMatch('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $path);
     }
 
     /**
@@ -80,13 +80,40 @@ class Cache
     }
 
     /**
-     * @param string $path
+     * @param bool $readOnly
      *
-     * @return bool
+     * @return void
      */
-    public static function isUsable(string $path)
+    public function setReadOnly(bool $readOnly)
     {
-        return !Preg::isMatch('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $path);
+        $this->readOnly = (bool)$readOnly;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRoot()
+    {
+        return $this->root;
+    }
+
+    /**
+     * @param string $file
+     *
+     * @return string|false
+     */
+    public function read(string $file)
+    {
+        if ($this->isEnabled()) {
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
+            if (file_exists($this->root . $file)) {
+                $this->io->writeError('Reading ' . $this->root . $file . ' from cache', true, IOInterface::DEBUG);
+
+                return file_get_contents($this->root . $file);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -110,33 +137,6 @@ class Cache
     }
 
     /**
-     * @return string
-     */
-    public function getRoot()
-    {
-        return $this->root;
-    }
-
-    /**
-     * @param string $file
-     *
-     * @return string|false
-     */
-    public function read(string $file)
-    {
-        if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
-            if (file_exists($this->root . $file)) {
-                $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
-
-                return file_get_contents($this->root . $file);
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param string $file
      * @param string $contents
      *
@@ -145,15 +145,15 @@ class Cache
     public function write(string $file, string $contents)
     {
         if ($this->isEnabled() && !$this->readOnly) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
 
-            $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
+            $this->io->writeError('Writing ' . $this->root . $file . ' into cache', true, IOInterface::DEBUG);
 
             $tempFileName = $this->root . $file . uniqid('.', true) . '.tmp';
             try {
                 return file_put_contents($tempFileName, $contents) !== false && rename($tempFileName, $this->root . $file);
             } catch (\ErrorException $e) {
-                $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
+                $this->io->writeError('<warning>Failed to write into cache: ' . $e->getMessage() . '</warning>', true, IOInterface::DEBUG);
                 if (Preg::isMatch('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
                     unlink($tempFileName);
@@ -189,13 +189,13 @@ class Cache
     public function copyFrom(string $file, string $source)
     {
         if ($this->isEnabled() && !$this->readOnly) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
             if (!file_exists($source)) {
-                $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');
+                $this->io->writeError('<error>' . $source . ' does not exist, can not write into cache</error>');
             } elseif ($this->io->isDebug()) {
-                $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
+                $this->io->writeError('Writing ' . $this->root . $file . ' into cache from ' . $source);
             }
 
             return copy($source, $this->root . $file);
@@ -215,17 +215,17 @@ class Cache
     public function copyTo(string $file, string $target)
     {
         if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 try {
-                    touch($this->root . $file, (int) filemtime($this->root . $file), time());
+                    touch($this->root . $file, (int)filemtime($this->root . $file), time());
                 } catch (\ErrorException $e) {
                     // fallback in case the above failed due to incorrect ownership
                     // see https://github.com/composer/composer/issues/4070
                     Silencer::call('touch', $this->root . $file);
                 }
 
-                $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
+                $this->io->writeError('Reading ' . $this->root . $file . ' from cache', true, IOInterface::DEBUG);
 
                 return copy($this->root . $file, $target);
             }
@@ -259,7 +259,7 @@ class Cache
     public function remove(string $file)
     {
         if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return $this->filesystem->unlink($this->root . $file);
             }
@@ -290,7 +290,7 @@ class Cache
     public function getAge(string $file)
     {
         if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             if (file_exists($this->root . $file) && ($mtime = filemtime($this->root . $file)) !== false) {
                 return abs(time() - $mtime);
             }
@@ -309,9 +309,9 @@ class Cache
     {
         if ($this->isEnabled()) {
             $expire = new \DateTime();
-            $expire->modify('-'.$ttl.' seconds');
+            $expire->modify('-' . $ttl . ' seconds');
 
-            $finder = $this->getFinder()->date('until '.$expire->format('Y-m-d H:i:s'));
+            $finder = $this->getFinder()->date('until ' . $expire->format('Y-m-d H:i:s'));
             foreach ($finder as $file) {
                 $this->filesystem->unlink($file->getPathname());
             }
@@ -336,6 +336,14 @@ class Cache
     }
 
     /**
+     * @return Finder
+     */
+    protected function getFinder()
+    {
+        return Finder::create()->in($this->root)->files();
+    }
+
+    /**
      * @param string $file
      *
      * @return string|false
@@ -343,7 +351,7 @@ class Cache
     public function sha1(string $file)
     {
         if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return sha1_file($this->root . $file);
             }
@@ -360,20 +368,12 @@ class Cache
     public function sha256(string $file)
     {
         if ($this->isEnabled()) {
-            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            $file = Preg::replace('{[^' . $this->allowlist . ']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return hash_file('sha256', $this->root . $file);
             }
         }
 
         return false;
-    }
-
-    /**
-     * @return Finder
-     */
-    protected function getFinder()
-    {
-        return Finder::create()->in($this->root)->files();
     }
 }

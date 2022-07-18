@@ -32,7 +32,7 @@ final class EscapableParser implements InlineParserInterface
 
     public function parse(InlineParserContext $inlineContext): bool
     {
-        $cursor   = $inlineContext->getCursor();
+        $cursor = $inlineContext->getCursor();
         $nextChar = $cursor->peek();
 
         if ($nextChar === "\n") {

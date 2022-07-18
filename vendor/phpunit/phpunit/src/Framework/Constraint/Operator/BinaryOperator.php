@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 use function array_map;
@@ -37,18 +38,9 @@ abstract class BinaryOperator extends Operator
      */
     public function setConstraints(array $constraints): void
     {
-        $this->constraints = array_map(function ($constraint): Constraint
-        {
+        $this->constraints = array_map(function ($constraint): Constraint {
             return $this->checkConstraint($constraint);
         }, array_values($constraints));
-    }
-
-    /**
-     * Returns the number of operands (constraints).
-     */
-    final public function arity(): int
-    {
-        return count($this->constraints);
     }
 
     /**
@@ -74,36 +66,6 @@ abstract class BinaryOperator extends Operator
     }
 
     /**
-     * Counts the number of constraint elements.
-     */
-    public function count(): int
-    {
-        $count = 0;
-
-        foreach ($this->constraints as $constraint) {
-            $count += count($constraint);
-        }
-
-        return $count;
-    }
-
-    /**
-     * Returns the nested constraints.
-     */
-    final protected function constraints(): array
-    {
-        return $this->constraints;
-    }
-
-    /**
-     * Returns true if the $constraint needs to be wrapped with braces.
-     */
-    final protected function constraintNeedsParentheses(Constraint $constraint): bool
-    {
-        return $this->arity() > 1 && parent::constraintNeedsParentheses($constraint);
-    }
-
-    /**
      * Reduces the sub-expression starting at $this by skipping degenerate
      * sub-expression and returns first descendant constraint that starts
      * a non-reducible sub-expression.
@@ -120,10 +82,18 @@ abstract class BinaryOperator extends Operator
     }
 
     /**
+     * Returns the number of operands (constraints).
+     */
+    final public function arity(): int
+    {
+        return count($this->constraints);
+    }
+
+    /**
      * Returns string representation of given operand in context of this operator.
      *
      * @param Constraint $constraint operand constraint
-     * @param int        $position   position of $constraint in this expression
+     * @param int $position position of $constraint in this expression
      */
     private function constraintToString(Constraint $constraint, int $position): string
     {
@@ -144,5 +114,35 @@ abstract class BinaryOperator extends Operator
         }
 
         return $prefix . $string;
+    }
+
+    /**
+     * Returns true if the $constraint needs to be wrapped with braces.
+     */
+    final protected function constraintNeedsParentheses(Constraint $constraint): bool
+    {
+        return $this->arity() > 1 && parent::constraintNeedsParentheses($constraint);
+    }
+
+    /**
+     * Counts the number of constraint elements.
+     */
+    public function count(): int
+    {
+        $count = 0;
+
+        foreach ($this->constraints as $constraint) {
+            $count += count($constraint);
+        }
+
+        return $count;
+    }
+
+    /**
+     * Returns the nested constraints.
+     */
+    final protected function constraints(): array
+    {
+        return $this->constraints;
     }
 }

@@ -106,7 +106,7 @@ class PoFileLoader extends FileLoader
                 $item['ids']['plural'] = substr($line, 14, -1);
             } elseif (str_starts_with($line, 'msgstr[')) {
                 $size = strpos($line, ']');
-                $item['translated'][(int) substr($line, 7, 1)] = substr($line, $size + 3, -1);
+                $item['translated'][(int)substr($line, 7, 1)] = substr($line, $size + 3, -1);
             }
         }
         // save last item
@@ -129,10 +129,10 @@ class PoFileLoader extends FileLoader
         if (!empty($item['ids']['singular'])) {
             $id = stripcslashes($item['ids']['singular']);
             if (isset($item['ids']['plural'])) {
-                $id .= '|'.stripcslashes($item['ids']['plural']);
+                $id .= '|' . stripcslashes($item['ids']['plural']);
             }
 
-            $translated = (array) $item['translated'];
+            $translated = (array)$item['translated'];
             // PO are by definition indexed so sort by index.
             ksort($translated);
             // Make sure every index is filled.

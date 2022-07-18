@@ -2,29 +2,31 @@
 
 <title>CodeMirror: Common Lisp mode</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="../../doc/docs.css">
+<link href="../../doc/docs.css" rel=stylesheet>
 
-<link rel="stylesheet" href="../../lib/codemirror.css">
+<link href="../../lib/codemirror.css" rel="stylesheet">
 <script src="../../lib/codemirror.js"></script>
 <script src="commonlisp.js"></script>
-<style>.CodeMirror {background: #f8f8f8;}</style>
+<style>.CodeMirror {
+    background: #f8f8f8;
+}</style>
 <div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
 
-  <ul>
-    <li><a href="../../index.html">Home</a>
-    <li><a href="../../doc/manual.html">Manual</a>
-    <li><a href="https://github.com/codemirror/codemirror">Code</a>
-  </ul>
-  <ul>
-    <li><a href="../index.html">Language modes</a>
-    <li><a class=active href="#">Common Lisp</a>
-  </ul>
+    <ul>
+        <li><a href="../../index.html">Home</a>
+        <li><a href="../../doc/manual.html">Manual</a>
+        <li><a href="https://github.com/codemirror/codemirror">Code</a>
+    </ul>
+    <ul>
+        <li><a href="../index.html">Language modes</a>
+        <li><a class=active href="#">Common Lisp</a>
+    </ul>
 </div>
 
 <article>
-<h2>Common Lisp mode</h2>
-<form><textarea id="code" name="code">(in-package :cl-postgres)
+    <h2>Common Lisp mode</h2>
+    <form><textarea id="code" name="code">(in-package :cl-postgres)
 
 ;; These are used to synthesize reader and writer names for integer
 ;; reading/writing functions when the amount of bytes and the
@@ -169,9 +171,9 @@ when UTF-8 support is enabled."
         (warn "Ignoring the error which happened while trying to close PostgreSQL socket: ~A" error)))))
 </textarea></form>
     <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {lineNumbers: true});
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {lineNumbers: true});
     </script>
 
     <p><strong>MIME types defined:</strong> <code>text/x-common-lisp</code>.</p>
 
-  </article>
+</article>

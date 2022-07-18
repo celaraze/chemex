@@ -52,6 +52,27 @@ class AmpBody implements RequestBody, InputStream
         }
     }
 
+    public static function rewind(RequestBody $body): RequestBody
+    {
+        if (!$body instanceof self) {
+            return $body;
+        }
+
+        $body->uploaded = null;
+
+        if ($body->body instanceof ResourceInputStream) {
+            fseek($body->body->getResource(), $body->offset);
+
+            return new $body($body->body, $body->info, $body->onProgress);
+        }
+
+        if (\is_string($body->body)) {
+            $body->offset = 0;
+        }
+
+        return $body;
+    }
+
     public function createBodyStream(): InputStream
     {
         if (null !== $this->uploaded) {
@@ -93,27 +114,6 @@ class AmpBody implements RequestBody, InputStream
         });
 
         return $chunk;
-    }
-
-    public static function rewind(RequestBody $body): RequestBody
-    {
-        if (!$body instanceof self) {
-            return $body;
-        }
-
-        $body->uploaded = null;
-
-        if ($body->body instanceof ResourceInputStream) {
-            fseek($body->body->getResource(), $body->offset);
-
-            return new $body($body->body, $body->info, $body->onProgress);
-        }
-
-        if (\is_string($body->body)) {
-            $body->offset = 0;
-        }
-
-        return $body;
     }
 
     private function doRead(): Promise

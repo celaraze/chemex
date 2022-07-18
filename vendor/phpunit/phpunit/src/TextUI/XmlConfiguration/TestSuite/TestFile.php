@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 use PHPUnit\Util\VersionComparisonOperator;
@@ -34,8 +35,8 @@ final class TestFile
 
     public function __construct(string $path, string $phpVersion, VersionComparisonOperator $phpVersionOperator)
     {
-        $this->path               = $path;
-        $this->phpVersion         = $phpVersion;
+        $this->path = $path;
+        $this->phpVersion = $phpVersion;
         $this->phpVersionOperator = $phpVersionOperator;
     }
 

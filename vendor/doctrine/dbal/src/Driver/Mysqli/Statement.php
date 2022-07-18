@@ -12,7 +12,6 @@ use Doctrine\DBAL\Driver\Statement as StatementInterface;
 use Doctrine\DBAL\ParameterType;
 use mysqli_sql_exception;
 use mysqli_stmt;
-
 use function array_fill;
 use function assert;
 use function count;
@@ -59,8 +58,8 @@ final class Statement implements StatementInterface
     {
         $this->stmt = $stmt;
 
-        $paramCount        = $this->stmt->param_count;
-        $this->types       = str_repeat('s', $paramCount);
+        $paramCount = $this->stmt->param_count;
+        $this->types = str_repeat('s', $paramCount);
         $this->boundValues = array_fill(1, $paramCount, null);
     }
 
@@ -71,12 +70,12 @@ final class Statement implements StatementInterface
     {
         assert(is_int($param));
 
-        if (! isset(self::$paramTypeMap[$type])) {
+        if (!isset(self::$paramTypeMap[$type])) {
             throw UnknownParameterType::new($type);
         }
 
         $this->boundValues[$param] =& $variable;
-        $this->types[$param - 1]   = self::$paramTypeMap[$type];
+        $this->types[$param - 1] = self::$paramTypeMap[$type];
 
         return true;
     }
@@ -88,13 +87,13 @@ final class Statement implements StatementInterface
     {
         assert(is_int($param));
 
-        if (! isset(self::$paramTypeMap[$type])) {
+        if (!isset(self::$paramTypeMap[$type])) {
             throw UnknownParameterType::new($type);
         }
 
-        $this->values[$param]      = $value;
+        $this->values[$param] = $value;
         $this->boundValues[$param] =& $this->values[$param];
-        $this->types[$param - 1]   = self::$paramTypeMap[$type];
+        $this->types[$param - 1] = self::$paramTypeMap[$type];
 
         return true;
     }
@@ -105,7 +104,7 @@ final class Statement implements StatementInterface
     public function execute($params = null): ResultInterface
     {
         if ($params !== null && count($params) > 0) {
-            if (! $this->bindUntypedValues($params)) {
+            if (!$this->bindUntypedValues($params)) {
                 throw StatementError::new($this->stmt);
             }
         } elseif (count($this->boundValues) > 0) {
@@ -118,11 +117,21 @@ final class Statement implements StatementInterface
             throw StatementError::upcast($e);
         }
 
-        if (! $result) {
+        if (!$result) {
             throw StatementError::new($this->stmt);
         }
 
         return new Result($this->stmt);
+    }
+
+    /**
+     * Binds a array of values to bound parameters.
+     *
+     * @param mixed[] $values
+     */
+    private function bindUntypedValues(array $values): bool
+    {
+        return $this->stmt->bind_param(str_repeat('s', count($values)), ...$values);
     }
 
     /**
@@ -133,12 +142,12 @@ final class Statement implements StatementInterface
     private function bindTypedParameters(): void
     {
         $streams = $values = [];
-        $types   = $this->types;
+        $types = $this->types;
 
         foreach ($this->boundValues as $parameter => $value) {
             assert(is_int($parameter));
 
-            if (! isset($types[$parameter - 1])) {
+            if (!isset($types[$parameter - 1])) {
                 $types[$parameter - 1] = self::$paramTypeMap[ParameterType::STRING];
             }
 
@@ -149,7 +158,7 @@ final class Statement implements StatementInterface
                     }
 
                     $streams[$parameter] = $value;
-                    $values[$parameter]  = null;
+                    $values[$parameter] = null;
                     continue;
                 }
 
@@ -159,7 +168,7 @@ final class Statement implements StatementInterface
             $values[$parameter] = $value;
         }
 
-        if (! $this->stmt->bind_param($types, ...$values)) {
+        if (!$this->stmt->bind_param($types, ...$values)) {
             throw StatementError::new($this->stmt);
         }
 
@@ -176,27 +185,17 @@ final class Statement implements StatementInterface
     private function sendLongData(array $streams): void
     {
         foreach ($streams as $paramNr => $stream) {
-            while (! feof($stream)) {
+            while (!feof($stream)) {
                 $chunk = fread($stream, 8192);
 
                 if ($chunk === false) {
                     throw FailedReadingStreamOffset::new($paramNr);
                 }
 
-                if (! $this->stmt->send_long_data($paramNr - 1, $chunk)) {
+                if (!$this->stmt->send_long_data($paramNr - 1, $chunk)) {
                     throw StatementError::new($this->stmt);
                 }
             }
         }
-    }
-
-    /**
-     * Binds a array of values to bound parameters.
-     *
-     * @param mixed[] $values
-     */
-    private function bindUntypedValues(array $values): bool
-    {
-        return $this->stmt->bind_param(str_repeat('s', count($values)), ...$values);
     }
 }

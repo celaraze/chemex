@@ -50,7 +50,7 @@ class BaselineCommand extends Command
     public function handle()
     {
         $this->setColors();
-        $this->line(require __DIR__.DIRECTORY_SEPARATOR.'logo.php');
+        $this->line(require __DIR__ . DIRECTORY_SEPARATOR . 'logo.php');
         $this->output->newLine();
         $this->line('Please wait while Enlightn scans your code base...');
         $this->output->newLine();
@@ -78,66 +78,6 @@ class BaselineCommand extends Command
     }
 
     /**
-     * Parse the result of each analyzer.
-     *
-     * @param array $info
-     * @return void
-     */
-    public function parseAnalyzerResult(array $info)
-    {
-        if ($info['status'] === 'failed' && empty($info['traces'])) {
-            $this->dont_report[] = $info['class'];
-        }
-
-        if (empty($info['traces'])) {
-            return;
-        }
-
-        collect($info['traces'])->each(function (Trace $trace) use ($info) {
-            if (is_null($trace->details)) {
-                if (! in_array($info['class'], $this->dont_report)) {
-                    $this->dont_report[] = $info['class'];
-                }
-            } else {
-                if (! isset($this->ignore_errors[$info['class']])) {
-                    $this->ignore_errors[$info['class']] = [];
-                }
-
-                $this->ignore_errors[$info['class']][] = [
-                    'path' => Str::contains($trace->path, base_path()) ?
-                        trim(Str::after($trace->path, base_path()), '/') : $trace->path,
-                    'details' => $trace->details,
-                ];
-            }
-        });
-
-        $this->progressbar->advance();
-    }
-
-    /**
-     * Update the config file for new baseline.
-     *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
-    protected function updateConfig()
-    {
-        if (! file_exists(config_path('enlightn.php'))) {
-            if (Enlightn::isPro()) {
-                $this->call('vendor:publish', ['--tag' => 'enlightnpro']);
-            } else {
-                $this->call('vendor:publish', ['--tag' => 'enlightn']);
-            }
-        }
-
-        (new ConfigManipulator)->replace(config_path('enlightn.php'), [
-            'dont_report' => $this->dont_report,
-            'ignore_errors' => $this->ignore_errors,
-        ]);
-
-        $this->info("Successfully updated config/enlightn.php with new baseline values.");
-    }
-
-    /**
      * Set the console colors for Enlightn's logo.
      *
      * @return void
@@ -156,5 +96,65 @@ class BaselineCommand extends Command
         ])->each(function ($color, $tag) {
             $this->output->getFormatter()->setStyle($tag, new OutputFormatterStyle($color));
         });
+    }
+
+    /**
+     * Update the config file for new baseline.
+     *
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    protected function updateConfig()
+    {
+        if (!file_exists(config_path('enlightn.php'))) {
+            if (Enlightn::isPro()) {
+                $this->call('vendor:publish', ['--tag' => 'enlightnpro']);
+            } else {
+                $this->call('vendor:publish', ['--tag' => 'enlightn']);
+            }
+        }
+
+        (new ConfigManipulator)->replace(config_path('enlightn.php'), [
+            'dont_report' => $this->dont_report,
+            'ignore_errors' => $this->ignore_errors,
+        ]);
+
+        $this->info("Successfully updated config/enlightn.php with new baseline values.");
+    }
+
+    /**
+     * Parse the result of each analyzer.
+     *
+     * @param array $info
+     * @return void
+     */
+    public function parseAnalyzerResult(array $info)
+    {
+        if ($info['status'] === 'failed' && empty($info['traces'])) {
+            $this->dont_report[] = $info['class'];
+        }
+
+        if (empty($info['traces'])) {
+            return;
+        }
+
+        collect($info['traces'])->each(function (Trace $trace) use ($info) {
+            if (is_null($trace->details)) {
+                if (!in_array($info['class'], $this->dont_report)) {
+                    $this->dont_report[] = $info['class'];
+                }
+            } else {
+                if (!isset($this->ignore_errors[$info['class']])) {
+                    $this->ignore_errors[$info['class']] = [];
+                }
+
+                $this->ignore_errors[$info['class']][] = [
+                    'path' => Str::contains($trace->path, base_path()) ?
+                        trim(Str::after($trace->path, base_path()), '/') : $trace->path,
+                    'details' => $trace->details,
+                ];
+            }
+        });
+
+        $this->progressbar->advance();
     }
 }

@@ -114,9 +114,9 @@ class MoFileLoader extends FileLoader
             if (!empty($item['ids']['singular'])) {
                 $id = $item['ids']['singular'];
                 if (isset($item['ids']['plural'])) {
-                    $id .= '|'.$item['ids']['plural'];
+                    $id .= '|' . $item['ids']['plural'];
                 }
-                $messages[$id] = stripcslashes(implode('|', (array) $item['translated']));
+                $messages[$id] = stripcslashes(implode('|', (array)$item['translated']));
             }
         }
 
@@ -135,6 +135,6 @@ class MoFileLoader extends FileLoader
         $result = unpack($isBigEndian ? 'N1' : 'V1', fread($stream, 4));
         $result = current($result);
 
-        return (int) substr($result, -8);
+        return (int)substr($result, -8);
     }
 }

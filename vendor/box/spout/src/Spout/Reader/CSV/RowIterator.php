@@ -67,7 +67,8 @@ class RowIterator implements IteratorInterface
         EncodingHelper $encodingHelper,
         InternalEntityFactory $entityFactory,
         GlobalFunctionsHelper $globalFunctionsHelper
-    ) {
+    )
+    {
         $this->filePointer = $filePointer;
         $this->fieldDelimiter = $optionsManager->getOption(Options::FIELD_DELIMITER);
         $this->fieldEnclosure = $optionsManager->getOption(Options::FIELD_ENCLOSURE);
@@ -109,17 +110,6 @@ class RowIterator implements IteratorInterface
     }
 
     /**
-     * Checks if current position is valid
-     * @see http://php.net/manual/en/iterator.valid.php
-     *
-     * @return bool
-     */
-    public function valid()
-    {
-        return ($this->filePointer && !$this->hasReachedEndOfFile);
-    }
-
-    /**
      * Move forward to next element. Reads data for the next unprocessed row.
      * @see http://php.net/manual/en/iterator.next.php
      *
@@ -136,8 +126,8 @@ class RowIterator implements IteratorInterface
     }
 
     /**
-     * @throws \Box\Spout\Common\Exception\EncodingConversionException If unable to convert data to UTF-8
      * @return void
+     * @throws \Box\Spout\Common\Exception\EncodingConversionException If unable to convert data to UTF-8
      */
     protected function readDataForNextRow()
     {
@@ -158,28 +148,12 @@ class RowIterator implements IteratorInterface
     }
 
     /**
-     * @param array|bool $currentRowData
-     * @return bool Whether the data for the current row can be returned or if we need to keep reading
-     */
-    protected function shouldReadNextRow($currentRowData)
-    {
-        $hasSuccessfullyFetchedRowData = ($currentRowData !== false);
-        $hasNowReachedEndOfFile = $this->globalFunctionsHelper->feof($this->filePointer);
-        $isEmptyLine = $this->isEmptyLine($currentRowData);
-
-        return (
-            (!$hasSuccessfullyFetchedRowData && !$hasNowReachedEndOfFile) ||
-            (!$this->shouldPreserveEmptyRows && $isEmptyLine)
-        );
-    }
-
-    /**
      * Returns the next row, converted if necessary to UTF-8.
      * As fgetcsv() does not manage correctly encoding for non UTF-8 data,
      * we remove manually whitespace with ltrim or rtrim (depending on the order of the bytes)
      *
-     * @throws \Box\Spout\Common\Exception\EncodingConversionException If unable to convert data to UTF-8
      * @return array|false The row for the current file pointer, encoded in UTF-8 or FALSE if nothing to read
+     * @throws \Box\Spout\Common\Exception\EncodingConversionException If unable to convert data to UTF-8
      */
     protected function getNextUTF8EncodedRow()
     {
@@ -210,12 +184,39 @@ class RowIterator implements IteratorInterface
     }
 
     /**
+     * @param array|bool $currentRowData
+     * @return bool Whether the data for the current row can be returned or if we need to keep reading
+     */
+    protected function shouldReadNextRow($currentRowData)
+    {
+        $hasSuccessfullyFetchedRowData = ($currentRowData !== false);
+        $hasNowReachedEndOfFile = $this->globalFunctionsHelper->feof($this->filePointer);
+        $isEmptyLine = $this->isEmptyLine($currentRowData);
+
+        return (
+            (!$hasSuccessfullyFetchedRowData && !$hasNowReachedEndOfFile) ||
+            (!$this->shouldPreserveEmptyRows && $isEmptyLine)
+        );
+    }
+
+    /**
      * @param array|bool $lineData Array containing the cells value for the line
      * @return bool Whether the given line is empty
      */
     protected function isEmptyLine($lineData)
     {
         return (\is_array($lineData) && \count($lineData) === 1 && $lineData[0] === null);
+    }
+
+    /**
+     * Checks if current position is valid
+     * @see http://php.net/manual/en/iterator.valid.php
+     *
+     * @return bool
+     */
+    public function valid()
+    {
+        return ($this->filePointer && !$this->hasReachedEndOfFile);
     }
 
     /**

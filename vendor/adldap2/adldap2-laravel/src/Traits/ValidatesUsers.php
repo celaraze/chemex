@@ -12,7 +12,7 @@ trait ValidatesUsers
     /**
      * Determines if the model passes validation.
      *
-     * @param User  $user
+     * @param User $user
      * @param Model $model
      *
      * @return bool
@@ -27,7 +27,7 @@ trait ValidatesUsers
     /**
      * Returns an array of constructed rules.
      *
-     * @param User       $user
+     * @param User $user
      * @param Model|null $model
      *
      * @return array

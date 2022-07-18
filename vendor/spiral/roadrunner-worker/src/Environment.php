@@ -39,28 +39,23 @@ class Environment implements EnvironmentInterface
     }
 
     /**
+     * @return self
+     */
+    public static function fromGlobals(): self
+    {
+        /** @var array<string, string> $env */
+        $env = \array_merge($_ENV, $_SERVER);
+
+        return new self($env);
+    }
+
+    /**
      * {@inheritDoc}
      */
     #[ExpectedValues(valuesFromClass: Mode::class)]
     public function getMode(): string
     {
         return $this->get('RR_MODE', '');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getRelayAddress(): string
-    {
-        return $this->get('RR_RELAY', 'pipes');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getRPCAddress(): string
-    {
-        return $this->get('RR_RPC', 'tcp://127.0.0.1:6001');
     }
 
     /**
@@ -79,13 +74,18 @@ class Environment implements EnvironmentInterface
     }
 
     /**
-     * @return self
+     * {@inheritDoc}
      */
-    public static function fromGlobals(): self
+    public function getRelayAddress(): string
     {
-        /** @var array<string, string> $env */
-        $env = \array_merge($_ENV, $_SERVER);
+        return $this->get('RR_RELAY', 'pipes');
+    }
 
-        return new self($env);
+    /**
+     * {@inheritDoc}
+     */
+    public function getRPCAddress(): string
+    {
+        return $this->get('RR_RPC', 'tcp://127.0.0.1:6001');
     }
 }

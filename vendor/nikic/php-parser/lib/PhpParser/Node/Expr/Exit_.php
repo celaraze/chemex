@@ -16,19 +16,22 @@ class Exit_ extends Expr
     /**
      * Constructs an exit() node.
      *
-     * @param null|Expr $expr       Expression
-     * @param array                    $attributes Additional attributes
+     * @param null|Expr $expr Expression
+     * @param array $attributes Additional attributes
      */
-    public function __construct(Expr $expr = null, array $attributes = []) {
+    public function __construct(Expr $expr = null, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->expr = $expr;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['expr'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Expr_Exit';
     }
 }

@@ -24,7 +24,7 @@ class EmbedStartParser implements BlockStartParserInterface
 {
     public function tryStart(Cursor $cursor, MarkdownParserStateInterface $parserState): ?BlockStart
     {
-        if ($cursor->isIndented() || $parserState->getParagraphContent() !== null || ! ($parserState->getLastMatchedBlockParser()->getBlock() instanceof Document)) {
+        if ($cursor->isIndented() || $parserState->getParagraphContent() !== null || !($parserState->getLastMatchedBlockParser()->getBlock() instanceof Document)) {
             return BlockStart::none();
         }
 
@@ -32,7 +32,7 @@ class EmbedStartParser implements BlockStartParserInterface
         $cursor->advanceToNextNonSpaceOrTab();
 
         // The line must begin with "https://"
-        if (! str_starts_with($cursor->getRemainder(), 'https://')) {
+        if (!str_starts_with($cursor->getRemainder(), 'https://')) {
             return BlockStart::none();
         }
 
@@ -45,7 +45,7 @@ class EmbedStartParser implements BlockStartParserInterface
         $cursor->advanceToNextNonSpaceOrTab();
 
         // We must be at the end of the line; otherwise, this link was not by itself
-        if (! $cursor->isAtEnd()) {
+        if (!$cursor->isAtEnd()) {
             return BlockStart::none();
         }
 

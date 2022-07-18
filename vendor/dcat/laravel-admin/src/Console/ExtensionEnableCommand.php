@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class ExtensionEnableCommand extends Command
 {
-    protected $signature = 'admin:ext-enable 
+    protected $signature = 'admin:ext-enable
     {name : The name of the extension. Eg: author-name/extension-name}';
 
     protected $description = 'Enable an existing extension';
@@ -18,7 +18,7 @@ class ExtensionEnableCommand extends Command
 
         $name = $this->argument('name');
 
-        if (! $extensionManager->has($name)) {
+        if (!$extensionManager->has($name)) {
             return $this->error(sprintf('Unable to find a registered extension called "%s"', $name));
         }
 

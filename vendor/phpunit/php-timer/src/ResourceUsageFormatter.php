@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Timer;
 
 use function is_float;
@@ -24,15 +25,6 @@ final class ResourceUsageFormatter
         'MB' => 1048576,
         'KB' => 1024,
     ];
-
-    public function resourceUsage(Duration $duration): string
-    {
-        return sprintf(
-            'Time: %s, Memory: %s',
-            $duration->asString(),
-            $this->bytesToString(memory_get_peak_usage(true))
-        );
-    }
 
     /**
      * @throws TimeSinceStartOfRequestNotAvailableException
@@ -55,6 +47,15 @@ final class ResourceUsageFormatter
             Duration::fromMicroseconds(
                 (1000000 * (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']))
             )
+        );
+    }
+
+    public function resourceUsage(Duration $duration): string
+    {
+        return sprintf(
+            'Time: %s, Memory: %s',
+            $duration->asString(),
+            $this->bytesToString(memory_get_peak_usage(true))
         );
     }
 

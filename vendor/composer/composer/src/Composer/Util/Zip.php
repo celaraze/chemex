@@ -59,11 +59,11 @@ class Zip
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @param  \ZipArchive       $zip
-     * @param  string            $filename
+     * @param \ZipArchive $zip
+     * @param string $filename
+     * @return int
      * @throws \RuntimeException
      *
-     * @return int
      */
     private static function locateFile(\ZipArchive $zip, string $filename): int
     {
@@ -86,21 +86,21 @@ class Zip
             if ($dirname === '.') {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: ' . implode(',', array_keys($topLevelPaths)));
                 }
                 continue;
             }
 
             // handle archives which do not have a TOC record for the directory itself
             if (false === strpos($dirname, '\\') && false === strpos($dirname, '/')) {
-                $topLevelPaths[$dirname.'/'] = true;
+                $topLevelPaths[$dirname . '/'] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: ' . implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
 
-        if ($topLevelPaths && false !== ($index = $zip->locateName(key($topLevelPaths).$filename)) && $zip->getFromIndex($index) !== false) {
+        if ($topLevelPaths && false !== ($index = $zip->locateName(key($topLevelPaths) . $filename)) && $zip->getFromIndex($index) !== false) {
             return $index;
         }
 

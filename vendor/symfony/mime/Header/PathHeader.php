@@ -45,18 +45,18 @@ final class PathHeader extends AbstractHeader
         return $this->getAddress();
     }
 
-    public function setAddress(Address $address)
-    {
-        $this->address = $address;
-    }
-
     public function getAddress(): Address
     {
         return $this->address;
     }
 
+    public function setAddress(Address $address)
+    {
+        $this->address = $address;
+    }
+
     public function getBodyAsString(): string
     {
-        return '<'.$this->address->toString().'>';
+        return '<' . $this->address->toString() . '>';
     }
 }

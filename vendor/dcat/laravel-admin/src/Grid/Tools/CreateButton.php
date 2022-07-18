@@ -21,6 +21,27 @@ class CreateButton implements Renderable
         $this->mode = $grid->option('create_mode');
     }
 
+    public function render()
+    {
+        return $this->grid->tools()->format(
+            "{$this->renderCreateButton()}{$this->renderDialogCreateButton()}"
+        );
+    }
+
+    protected function renderCreateButton()
+    {
+        if ($this->mode && $this->mode !== Grid::CREATE_MODE_DEFAULT) {
+            return;
+        }
+
+        $new = trans('admin.new');
+        $url = $this->grid->getCreateUrl();
+
+        return "<a href='{$url}' class='btn btn-primary'>
+    <i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp;&nbsp;{$new}</span>
+</a>";
+    }
+
     protected function renderDialogCreateButton()
     {
         if ($this->mode !== Grid::CREATE_MODE_DIALOG) {
@@ -39,26 +60,5 @@ class CreateButton implements Renderable
             ->dimensions($width, $height);
 
         return "<button data-url='$url' class='btn btn-primary {$class}'><i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp; $new</span></button>";
-    }
-
-    protected function renderCreateButton()
-    {
-        if ($this->mode && $this->mode !== Grid::CREATE_MODE_DEFAULT) {
-            return;
-        }
-
-        $new = trans('admin.new');
-        $url = $this->grid->getCreateUrl();
-
-        return "<a href='{$url}' class='btn btn-primary'>
-    <i class='feather icon-plus'></i><span class='d-none d-sm-inline'>&nbsp;&nbsp;{$new}</span>
-</a>";
-    }
-
-    public function render()
-    {
-        return $this->grid->tools()->format(
-            "{$this->renderCreateButton()}{$this->renderDialogCreateButton()}"
-        );
     }
 }

@@ -42,7 +42,7 @@ final class MatchAllWithOffsetsResult
     public function __construct($count, array $matches)
     {
         $this->matches = $matches;
-        $this->matched = (bool) $count;
+        $this->matched = (bool)$count;
         $this->count = $count;
     }
 }

@@ -82,7 +82,7 @@ class AmpListener implements EventListener
         $host = $stream->getRemoteAddress()->getHost();
 
         if (str_contains($host, ':')) {
-            $host = '['.$host.']';
+            $host = '[' . $host . ']';
         }
 
         $this->info['primary_ip'] = $host;
@@ -113,17 +113,17 @@ class AmpListener implements EventListener
         $requestUri = $uri->getPath() ?: '/';
 
         if ('' !== $query = $uri->getQuery()) {
-            $requestUri .= '?'.$query;
+            $requestUri .= '?' . $query;
         }
 
         if ('CONNECT' === $method = $request->getMethod()) {
-            $requestUri = $uri->getHost().': '.($uri->getPort() ?? ('https' === $uri->getScheme() ? 443 : 80));
+            $requestUri = $uri->getHost() . ': ' . ($uri->getPort() ?? ('https' === $uri->getScheme() ? 443 : 80));
         }
 
         $this->info['debug'] .= sprintf("> %s %s HTTP/%s \r\n", $method, $requestUri, $request->getProtocolVersions()[0]);
 
         foreach ($request->getRawHeaders() as [$name, $value]) {
-            $this->info['debug'] .= $name.': '.$value."\r\n";
+            $this->info['debug'] .= $name . ': ' . $value . "\r\n";
         }
         $this->info['debug'] .= "\r\n";
 

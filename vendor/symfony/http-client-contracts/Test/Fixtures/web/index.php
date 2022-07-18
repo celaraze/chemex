@@ -18,7 +18,7 @@ foreach ($_SERVER as $k => $v) {
             if (!str_starts_with($k, 'HTTP_')) {
                 continue 2;
             }
-            // no break
+        // no break
         case 'SERVER_NAME':
         case 'SERVER_PROTOCOL':
         case 'REQUEST_URI':
@@ -36,7 +36,7 @@ switch ($vars['REQUEST_URI']) {
         exit;
 
     case '/head':
-        header('Content-Length: '.strlen($json), true);
+        header('Content-Length: ' . strlen($json), true);
         break;
 
     case '/':
@@ -113,7 +113,7 @@ switch ($vars['REQUEST_URI']) {
     case '/post':
         $output = json_encode($_POST + ['REQUEST_METHOD' => $vars['REQUEST_METHOD']], \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
         header('Content-Type: application/json', true);
-        header('Content-Length: '.strlen($output));
+        header('Content-Length: ' . strlen($output));
         echo $output;
         exit;
 

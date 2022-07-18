@@ -89,8 +89,8 @@ class FileFinder implements \IteratorAggregate
     public function __construct()
     {
         $this->_flags = IteratorFileSystem::KEY_AS_PATHNAME
-                        | IteratorFileSystem::CURRENT_AS_FILEINFO
-                        | IteratorFileSystem::SKIP_DOTS;
+            | IteratorFileSystem::CURRENT_AS_FILEINFO
+            | IteratorFileSystem::SKIP_DOTS;
         $this->_first = \RecursiveIteratorIterator::SELF_FIRST;
 
         return;
@@ -230,7 +230,7 @@ class FileFinder implements \IteratorAggregate
             return $this;
         }
 
-        $number = (float) ($matches[2]);
+        $number = (float)($matches[2]);
         $unit = $matches[3] ?? 'b';
         $operator = $matches[1];
 
@@ -358,6 +358,28 @@ class FileFinder implements \IteratorAggregate
     }
 
     /**
+     * Include files that have been changed from a certain date.
+     * Example:
+     *     $this->changed('since 13 days');.
+     */
+    public function changed(string $date): self
+    {
+        $time = $this->formatDate($date, $operator);
+
+        if (-1 === $operator) {
+            $this->_filters[] = function (\SplFileInfo $current) use ($time) {
+                return $current->getCTime() >= $time;
+            };
+        } else {
+            $this->_filters[] = function (\SplFileInfo $current) use ($time) {
+                return $current->getCTime() < $time;
+            };
+        }
+
+        return $this;
+    }
+
+    /**
      * Format date.
      * Date can have the following syntax:
      *     date
@@ -386,28 +408,6 @@ class FileFinder implements \IteratorAggregate
         }
 
         return $time;
-    }
-
-    /**
-     * Include files that have been changed from a certain date.
-     * Example:
-     *     $this->changed('since 13 days');.
-     */
-    public function changed(string $date): self
-    {
-        $time = $this->formatDate($date, $operator);
-
-        if (-1 === $operator) {
-            $this->_filters[] = function (\SplFileInfo $current) use ($time) {
-                return $current->getCTime() >= $time;
-            };
-        } else {
-            $this->_filters[] = function (\SplFileInfo $current) use ($time) {
-                return $current->getCTime() < $time;
-            };
-        }
-
-        return $this;
     }
 
     /**
@@ -582,30 +582,11 @@ class FileFinder implements \IteratorAggregate
     }
 
     /**
-     * Set SplFileInfo classname.
+     * Get types.
      */
-    public function setSplFileInfo(string $splFileInfo): string
+    public function getTypes(): array
     {
-        $old = $this->_splFileInfo;
-        $this->_splFileInfo = $splFileInfo;
-
-        return $old;
-    }
-
-    /**
-     * Get SplFileInfo classname.
-     */
-    public function getSplFileInfo(): string
-    {
-        return $this->_splFileInfo;
-    }
-
-    /**
-     * Get all paths.
-     */
-    protected function getPaths(): array
-    {
-        return $this->_paths;
+        return $this->_types;
     }
 
     /**
@@ -617,27 +598,30 @@ class FileFinder implements \IteratorAggregate
     }
 
     /**
-     * Get types.
+     * Get SplFileInfo classname.
      */
-    public function getTypes(): array
+    public function getSplFileInfo(): string
     {
-        return $this->_types;
+        return $this->_splFileInfo;
     }
 
     /**
-     * Get filters.
+     * Set SplFileInfo classname.
      */
-    protected function getFilters(): array
+    public function setSplFileInfo(string $splFileInfo): string
     {
-        return $this->_filters;
+        $old = $this->_splFileInfo;
+        $this->_splFileInfo = $splFileInfo;
+
+        return $old;
     }
 
     /**
-     * Get sorts.
+     * Get all paths.
      */
-    protected function getSorts(): array
+    protected function getPaths(): array
     {
-        return $this->_sorts;
+        return $this->_paths;
     }
 
     /**
@@ -654,5 +638,21 @@ class FileFinder implements \IteratorAggregate
     public function getFirst(): int
     {
         return $this->_first;
+    }
+
+    /**
+     * Get filters.
+     */
+    protected function getFilters(): array
+    {
+        return $this->_filters;
+    }
+
+    /**
+     * Get sorts.
+     */
+    protected function getSorts(): array
+    {
+        return $this->_sorts;
     }
 }

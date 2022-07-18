@@ -26,7 +26,7 @@ final class NodeWalkerEvent
 
     public function __construct(Node $node, bool $isEntering = true)
     {
-        $this->node       = $node;
+        $this->node = $node;
         $this->isEntering = $isEntering;
     }
 

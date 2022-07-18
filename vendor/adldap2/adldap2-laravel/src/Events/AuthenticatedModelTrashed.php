@@ -24,7 +24,7 @@ class AuthenticatedModelTrashed
     /**
      * Constructor.
      *
-     * @param User            $user
+     * @param User $user
      * @param Authenticatable $model
      */
     public function __construct(User $user, Authenticatable $model)

@@ -24,7 +24,7 @@ final class MetadataHeader extends UnstructuredHeader
     {
         $this->key = $key;
 
-        parent::__construct('X-Metadata-'.$key, $value);
+        parent::__construct('X-Metadata-' . $key, $value);
     }
 
     public function getKey(): string

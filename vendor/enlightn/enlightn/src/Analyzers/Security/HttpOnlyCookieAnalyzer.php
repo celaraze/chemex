@@ -37,8 +37,8 @@ class HttpOnlyCookieAnalyzer extends SecurityAnalyzer
     /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -55,19 +55,19 @@ class HttpOnlyCookieAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your app session cookies are insecure as the HttpOnly option is disabled in your "
-            ."session configuration. This exposes your application to possible XSS (cross-site "
-            ."scripting) attacks.";
+            . "session configuration. This exposes your application to possible XSS (cross-site "
+            . "scripting) attacks.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
     {
-        if (! $config->get('session.http_only', false)) {
+        if (!$config->get('session.http_only', false)) {
             $this->recordError('session', 'http_only');
         }
     }

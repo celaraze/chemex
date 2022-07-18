@@ -30,14 +30,12 @@ Install the latest version with:
 $ composer require composer/pcre
 ```
 
-
 Requirements
 ------------
 
 * PHP 7.4.0 is required for 3.x versions
 * PHP 7.2.0 is required for 2.x versions
 * PHP 5.3.2 is required for 1.x versions
-
 
 Basic usage
 -----------
@@ -84,7 +82,8 @@ if (Preg::isMatch('{fo+}', $string, $matches)) // bool
 if (Preg::isMatchAll('{fo+}', $string, $matches)) // bool
 ```
 
-If you would prefer a slightly more verbose usage, replacing by-ref arguments by result objects, you can use the `Regex` class:
+If you would prefer a slightly more verbose usage, replacing by-ref arguments by result objects, you can use the `Regex`
+class:
 
 ```php
 use Composer\Pcre\Regex;
@@ -110,8 +109,10 @@ $newString = Regex::replaceCallbackArray(['{fo+}' => fn ($match) => strtoupper($
 Note that `preg_grep` and `preg_split` are only callable via the `Preg` class as they do not have
 complex return types warranting a specific result object.
 
-See the [MatchResult](src/MatchResult.php), [MatchWithOffsetsResult](src/MatchWithOffsetsResult.php), [MatchAllResult](src/MatchAllResult.php),
-[MatchAllWithOffsetsResult](src/MatchAllWithOffsetsResult.php), and [ReplaceResult](src/ReplaceResult.php) class sources for more details.
+See the [MatchResult](src/MatchResult.php), [MatchWithOffsetsResult](src/MatchWithOffsetsResult.php)
+, [MatchAllResult](src/MatchAllResult.php),
+[MatchAllWithOffsetsResult](src/MatchAllWithOffsetsResult.php), and [ReplaceResult](src/ReplaceResult.php) class sources
+for more details.
 
 Restrictions / Limitations
 --------------------------

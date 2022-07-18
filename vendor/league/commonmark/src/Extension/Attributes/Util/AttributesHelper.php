@@ -44,7 +44,7 @@ final class AttributesHelper
         }
 
         $attributes = [];
-        while ($attribute = \trim((string) $cursor->match(self::REGEX))) {
+        while ($attribute = \trim((string)$cursor->match(self::REGEX))) {
             if ($attribute[0] === '#') {
                 $attributes['id'] = \substr($attribute, 1);
 
@@ -60,7 +60,7 @@ final class AttributesHelper
             [$name, $value] = \explode('=', $attribute, 2);
 
             $first = $value[0];
-            $last  = \substr($value, -1);
+            $last = \substr($value, -1);
             if (($first === '"' && $last === '"') || ($first === "'" && $last === "'") && \strlen($value) > 1) {
                 $value = \substr($value, 1, -1);
             }
@@ -87,7 +87,7 @@ final class AttributesHelper
         }
 
         if (isset($attributes['class'])) {
-            $attributes['class'] = \implode(' ', (array) $attributes['class']);
+            $attributes['class'] = \implode(' ', (array)$attributes['class']);
         }
 
         return $attributes;
@@ -108,7 +108,7 @@ final class AttributesHelper
             }
 
             /** @var array<string, mixed> $arg */
-            $arg = (array) $arg;
+            $arg = (array)$arg;
             if (isset($arg['class'])) {
                 if (\is_string($arg['class'])) {
                     $arg['class'] = \array_filter(\explode(' ', \trim($arg['class'])));

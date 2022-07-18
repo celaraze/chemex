@@ -15,15 +15,15 @@ class LivewireComponentParser
 
     protected ReflectionClass $reflectionClass;
 
-    public static function create(string $componentAlias): self
-    {
-        return new self($componentAlias);
-    }
-
     public function __construct(protected string $componentAlias)
     {
         $this->componentClass = app(LivewireManager::class)->getClass($this->componentAlias);
         $this->reflectionClass = new ReflectionClass($this->componentClass);
+    }
+
+    public static function create(string $componentAlias): self
+    {
+        return new self($componentAlias);
     }
 
     public function getComponentClass(): string
@@ -58,19 +58,6 @@ class LivewireComponentParser
         );
     }
 
-    public function getMethodNamesLike(string $similar): Collection
-    {
-        $methods = collect($this->reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC))
-            ->reject(function (ReflectionMethod $reflectionMethod) {
-                return $reflectionMethod->class !== $this->reflectionClass->name;
-            })
-            ->map(function (ReflectionMethod $reflectionMethod) {
-                return $reflectionMethod->name;
-            });
-
-        return $this->filterItemsBySimilarity($methods, $similar);
-    }
-
     protected function filterItemsBySimilarity(Collection $items, string $similar): Collection
     {
         return $items
@@ -87,5 +74,18 @@ class LivewireComponentParser
                 return $item['value'];
             })
             ->values();
+    }
+
+    public function getMethodNamesLike(string $similar): Collection
+    {
+        $methods = collect($this->reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC))
+            ->reject(function (ReflectionMethod $reflectionMethod) {
+                return $reflectionMethod->class !== $this->reflectionClass->name;
+            })
+            ->map(function (ReflectionMethod $reflectionMethod) {
+                return $reflectionMethod->name;
+            });
+
+        return $this->filterItemsBySimilarity($methods, $similar);
     }
 }

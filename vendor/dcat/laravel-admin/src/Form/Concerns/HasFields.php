@@ -22,23 +22,9 @@ trait HasFields
     private $fields;
 
     /**
-     * Get fields of this builder.
-     *
-     * @return Collection
-     */
-    public function fields()
-    {
-        if (! $this->fields) {
-            $this->resetFields();
-        }
-
-        return $this->fields;
-    }
-
-    /**
      * Get specify field.
      *
-     * @param  string|Field  $name
+     * @param string|Field $name
      * @return Field|null
      */
     public function field($name)
@@ -57,6 +43,30 @@ trait HasFields
     }
 
     /**
+     * Get fields of this builder.
+     *
+     * @return Collection
+     */
+    public function fields()
+    {
+        if (!$this->fields) {
+            $this->resetFields();
+        }
+
+        return $this->fields;
+    }
+
+    /**
+     * Reset Fields.
+     *
+     * @return void
+     */
+    public function resetFields()
+    {
+        $this->fields = new Collection();
+    }
+
+    /**
      * Remove Field.
      *
      * @param $column
@@ -72,22 +82,12 @@ trait HasFields
     /**
      * Push Field.
      *
-     * @param  Field  $field
+     * @param Field $field
      * @return Collection
      */
     public function pushField(Field $field)
     {
         $this->fields()->push($field);
-    }
-
-    /**
-     * Reset Fields.
-     *
-     * @return void
-     */
-    public function resetFields()
-    {
-        $this->fields = new Collection();
     }
 
     /**
@@ -104,7 +104,7 @@ trait HasFields
     /**
      * Set Fields.
      *
-     * @param  Collection  $fields
+     * @param Collection $fields
      * @return void
      */
     public function setFields(Collection $fields)

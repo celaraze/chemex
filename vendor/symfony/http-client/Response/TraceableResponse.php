@@ -44,14 +44,55 @@ class TraceableResponse implements ResponseInterface, StreamableInterface
         $this->event = $event;
     }
 
+    /**
+     * @internal
+     */
+    public static function stream(HttpClientInterface $client, iterable $responses, ?float $timeout): \Generator
+    {
+        $wrappedResponses = [];
+        $traceableMap = new \SplObjectStorage();
+
+        foreach ($responses as $r) {
+            if (!$r instanceof self) {
+                throw new \TypeError(sprintf('"%s::stream()" expects parameter 1 to be an iterable of TraceableResponse objects, "%s" given.', TraceableHttpClient::class, get_debug_type($r)));
+            }
+
+            $traceableMap[$r->response] = $r;
+            $wrappedResponses[] = $r->response;
+            if ($r->event && !$r->event->isStarted()) {
+                $r->event->start();
+            }
+        }
+
+        foreach ($client->stream($wrappedResponses, $timeout) as $r => $chunk) {
+            if ($traceableMap[$r]->event && $traceableMap[$r]->event->isStarted()) {
+                try {
+                    if ($chunk->isTimeout() || !$chunk->isLast()) {
+                        $traceableMap[$r]->event->lap();
+                    } else {
+                        $traceableMap[$r]->event->stop();
+                    }
+                } catch (TransportExceptionInterface $e) {
+                    $traceableMap[$r]->event->stop();
+                    if ($chunk instanceof ErrorChunk) {
+                        $chunk->didThrow(false);
+                    } else {
+                        $chunk = new ErrorChunk($chunk->getOffset(), $e);
+                    }
+                }
+            }
+            yield $traceableMap[$r] => $chunk;
+        }
+    }
+
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
@@ -61,28 +102,6 @@ class TraceableResponse implements ResponseInterface, StreamableInterface
         } finally {
             if ($this->event?->isStarted()) {
                 $this->event->stop();
-            }
-        }
-    }
-
-    public function getStatusCode(): int
-    {
-        try {
-            return $this->response->getStatusCode();
-        } finally {
-            if ($this->event?->isStarted()) {
-                $this->event->lap();
-            }
-        }
-    }
-
-    public function getHeaders(bool $throw = true): array
-    {
-        try {
-            return $this->response->getHeaders($throw);
-        } finally {
-            if ($this->event?->isStarted()) {
-                $this->event->lap();
             }
         }
     }
@@ -101,6 +120,32 @@ class TraceableResponse implements ResponseInterface, StreamableInterface
             }
             if ($throw) {
                 $this->checkStatusCode($this->response->getStatusCode());
+            }
+        }
+    }
+
+    private function checkStatusCode(int $code): void
+    {
+        if (500 <= $code) {
+            throw new ServerException($this);
+        }
+
+        if (400 <= $code) {
+            throw new ClientException($this);
+        }
+
+        if (300 <= $code) {
+            throw new RedirectionException($this);
+        }
+    }
+
+    public function getStatusCode(): int
+    {
+        try {
+            return $this->response->getStatusCode();
+        } finally {
+            if ($this->event?->isStarted()) {
+                $this->event->lap();
             }
         }
     }
@@ -161,59 +206,14 @@ class TraceableResponse implements ResponseInterface, StreamableInterface
         return StreamWrapper::createResource($this->response, $this->client);
     }
 
-    /**
-     * @internal
-     */
-    public static function stream(HttpClientInterface $client, iterable $responses, ?float $timeout): \Generator
+    public function getHeaders(bool $throw = true): array
     {
-        $wrappedResponses = [];
-        $traceableMap = new \SplObjectStorage();
-
-        foreach ($responses as $r) {
-            if (!$r instanceof self) {
-                throw new \TypeError(sprintf('"%s::stream()" expects parameter 1 to be an iterable of TraceableResponse objects, "%s" given.', TraceableHttpClient::class, get_debug_type($r)));
+        try {
+            return $this->response->getHeaders($throw);
+        } finally {
+            if ($this->event?->isStarted()) {
+                $this->event->lap();
             }
-
-            $traceableMap[$r->response] = $r;
-            $wrappedResponses[] = $r->response;
-            if ($r->event && !$r->event->isStarted()) {
-                $r->event->start();
-            }
-        }
-
-        foreach ($client->stream($wrappedResponses, $timeout) as $r => $chunk) {
-            if ($traceableMap[$r]->event && $traceableMap[$r]->event->isStarted()) {
-                try {
-                    if ($chunk->isTimeout() || !$chunk->isLast()) {
-                        $traceableMap[$r]->event->lap();
-                    } else {
-                        $traceableMap[$r]->event->stop();
-                    }
-                } catch (TransportExceptionInterface $e) {
-                    $traceableMap[$r]->event->stop();
-                    if ($chunk instanceof ErrorChunk) {
-                        $chunk->didThrow(false);
-                    } else {
-                        $chunk = new ErrorChunk($chunk->getOffset(), $e);
-                    }
-                }
-            }
-            yield $traceableMap[$r] => $chunk;
-        }
-    }
-
-    private function checkStatusCode(int $code): void
-    {
-        if (500 <= $code) {
-            throw new ServerException($this);
-        }
-
-        if (400 <= $code) {
-            throw new ClientException($this);
-        }
-
-        if (300 <= $code) {
-            throw new RedirectionException($this);
         }
     }
 }

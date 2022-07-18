@@ -12,8 +12,8 @@
 
 namespace Composer\Package;
 
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -52,9 +52,9 @@ class AliasPackage extends BasePackage
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param BasePackage $aliasOf       The package this package is an alias of
-     * @param string      $version       The version the alias must report
-     * @param string      $prettyVersion The alias's non-normalized version
+     * @param BasePackage $aliasOf The package this package is an alias of
+     * @param string $version The version the alias must report
+     * @param string $prettyVersion The alias's non-normalized version
      */
     public function __construct(BasePackage $aliasOf, string $version, string $prettyVersion)
     {
@@ -73,6 +73,53 @@ class AliasPackage extends BasePackage
     }
 
     /**
+     * @param Link[] $links
+     * @param Link::TYPE_* $linkType
+     *
+     * @return Link[]
+     */
+    protected function replaceSelfVersionDependencies(array $links, $linkType): array
+    {
+        // for self.version requirements, we use the original package's branch name instead, to avoid leaking the magic dev-master-alias to users
+        $prettyVersion = $this->prettyVersion;
+        if ($prettyVersion === VersionParser::DEFAULT_BRANCH_ALIAS) {
+            $prettyVersion = $this->aliasOf->getPrettyVersion();
+        }
+
+        if (\in_array($linkType, array(Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE), true)) {
+            $newLinks = array();
+            foreach ($links as $link) {
+                // link is self.version, but must be replacing also the replaced version
+                if ('self.version' === $link->getPrettyConstraint()) {
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
+                    $constraint->setPrettyString($prettyVersion);
+                }
+            }
+            $links = array_merge($links, $newLinks);
+        } else {
+            foreach ($links as $index => $link) {
+                if ('self.version' === $link->getPrettyConstraint()) {
+                    if ($linkType === Link::TYPE_REQUIRE) {
+                        $this->hasSelfVersionRequires = true;
+                    }
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
+                    $constraint->setPrettyString($prettyVersion);
+                }
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrettyVersion(): string
+    {
+        return $this->prettyVersion;
+    }
+
+    /**
      * @return BasePackage
      */
     public function getAliasOf()
@@ -83,25 +130,9 @@ class AliasPackage extends BasePackage
     /**
      * @inheritDoc
      */
-    public function getVersion(): string
-    {
-        return $this->version;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getStability(): string
     {
         return $this->stability;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getPrettyVersion(): string
-    {
-        return $this->prettyVersion;
     }
 
     /**
@@ -156,18 +187,8 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * Stores whether this is an alias created by an aliasing in the requirements of the root package or not
-     *
-     * Use by the policy for sorting manually aliased packages first, see #576
-     */
-    public function setRootPackageAlias(bool $value): void
-    {
-        $this->rootPackageAlias = $value;
-    }
-
-    /**
-     * @see setRootPackageAlias
      * @return bool
+     * @see setRootPackageAlias
      */
     public function isRootPackageAlias(): bool
     {
@@ -175,42 +196,13 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * @param Link[]       $links
-     * @param Link::TYPE_* $linkType
+     * Stores whether this is an alias created by an aliasing in the requirements of the root package or not
      *
-     * @return Link[]
+     * Use by the policy for sorting manually aliased packages first, see #576
      */
-    protected function replaceSelfVersionDependencies(array $links, $linkType): array
+    public function setRootPackageAlias(bool $value): void
     {
-        // for self.version requirements, we use the original package's branch name instead, to avoid leaking the magic dev-master-alias to users
-        $prettyVersion = $this->prettyVersion;
-        if ($prettyVersion === VersionParser::DEFAULT_BRANCH_ALIAS) {
-            $prettyVersion = $this->aliasOf->getPrettyVersion();
-        }
-
-        if (\in_array($linkType, array(Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE), true)) {
-            $newLinks = array();
-            foreach ($links as $link) {
-                // link is self.version, but must be replacing also the replaced version
-                if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
-                    $constraint->setPrettyString($prettyVersion);
-                }
-            }
-            $links = array_merge($links, $newLinks);
-        } else {
-            foreach ($links as $index => $link) {
-                if ('self.version' === $link->getPrettyConstraint()) {
-                    if ($linkType === Link::TYPE_REQUIRE) {
-                        $this->hasSelfVersionRequires = true;
-                    }
-                    $links[$index] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
-                    $constraint->setPrettyString($prettyVersion);
-                }
-            }
-        }
-
-        return $links;
+        $this->rootPackageAlias = $value;
     }
 
     /**
@@ -223,7 +215,15 @@ class AliasPackage extends BasePackage
 
     public function __toString(): string
     {
-        return parent::__toString().' ('.($this->rootPackageAlias ? 'root ' : ''). 'alias of '.$this->aliasOf->getVersion().')';
+        return parent::__toString() . ' (' . ($this->rootPackageAlias ? 'root ' : '') . 'alias of ' . $this->aliasOf->getVersion() . ')';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 
     /***************************************

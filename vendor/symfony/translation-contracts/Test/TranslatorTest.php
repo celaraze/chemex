@@ -32,24 +32,6 @@ class TranslatorTest extends TestCase
 {
     private $defaultLocale;
 
-    protected function setUp(): void
-    {
-        $this->defaultLocale = \Locale::getDefault();
-        \Locale::setDefault('en');
-    }
-
-    protected function tearDown(): void
-    {
-        \Locale::setDefault($this->defaultLocale);
-    }
-
-    public function getTranslator(): TranslatorInterface
-    {
-        return new class() implements TranslatorInterface {
-            use TranslatorTrait;
-        };
-    }
-
     /**
      * @dataProvider getTransTests
      */
@@ -58,6 +40,13 @@ class TranslatorTest extends TestCase
         $translator = $this->getTranslator();
 
         $this->assertEquals($expected, $translator->trans($id, $parameters));
+    }
+
+    public function getTranslator(): TranslatorInterface
+    {
+        return new class() implements TranslatorInterface {
+            use TranslatorTrait;
+        };
     }
 
     /**
@@ -143,7 +132,7 @@ class TranslatorTest extends TestCase
     {
         $translator = $this->getTranslator();
 
-        $this->assertEquals($expected, $translator->trans($interval.' foo|[1,Inf[ bar', ['%count%' => $number]));
+        $this->assertEquals($expected, $translator->trans($interval . ' foo|[1,Inf[ bar', ['%count%' => $number]));
     }
 
     public function getInternal()
@@ -301,6 +290,43 @@ class TranslatorTest extends TestCase
         $this->validateMatrix($nplural, $matrix, false);
     }
 
+    protected function generateTestData($langCodes)
+    {
+        $translator = new class() {
+            use TranslatorTrait {
+                getPluralizationRule as public;
+            }
+        };
+
+        $matrix = [];
+        foreach ($langCodes as $langCode) {
+            for ($count = 0; $count < 200; ++$count) {
+                $plural = $translator->getPluralizationRule($count, $langCode);
+                $matrix[$langCode][$count] = $plural;
+            }
+        }
+
+        return $matrix;
+    }
+
+    /**
+     * We validate only on the plural coverage. Thus the real rules is not tested.
+     *
+     * @param string $nplural Plural expected
+     * @param array $matrix Containing langcodes and their plural index values
+     */
+    protected function validateMatrix(string $nplural, array $matrix, bool $expectSuccess = true)
+    {
+        foreach ($matrix as $langCode => $data) {
+            $indexes = array_flip($data);
+            if ($expectSuccess) {
+                $this->assertEquals($nplural, \count($indexes), "Langcode '$langCode' has '$nplural' plural forms.");
+            } else {
+                $this->assertNotEquals((int)$nplural, \count($indexes), "Langcode '$langCode' has '$nplural' plural forms.");
+            }
+        }
+    }
+
     /**
      * @dataProvider successLangcodes
      */
@@ -345,40 +371,14 @@ class TranslatorTest extends TestCase
         ];
     }
 
-    /**
-     * We validate only on the plural coverage. Thus the real rules is not tested.
-     *
-     * @param string $nplural Plural expected
-     * @param array  $matrix  Containing langcodes and their plural index values
-     */
-    protected function validateMatrix(string $nplural, array $matrix, bool $expectSuccess = true)
+    protected function setUp(): void
     {
-        foreach ($matrix as $langCode => $data) {
-            $indexes = array_flip($data);
-            if ($expectSuccess) {
-                $this->assertEquals($nplural, \count($indexes), "Langcode '$langCode' has '$nplural' plural forms.");
-            } else {
-                $this->assertNotEquals((int) $nplural, \count($indexes), "Langcode '$langCode' has '$nplural' plural forms.");
-            }
-        }
+        $this->defaultLocale = \Locale::getDefault();
+        \Locale::setDefault('en');
     }
 
-    protected function generateTestData($langCodes)
+    protected function tearDown(): void
     {
-        $translator = new class() {
-            use TranslatorTrait {
-                getPluralizationRule as public;
-            }
-        };
-
-        $matrix = [];
-        foreach ($langCodes as $langCode) {
-            for ($count = 0; $count < 200; ++$count) {
-                $plural = $translator->getPluralizationRule($count, $langCode);
-                $matrix[$langCode][$count] = $plural;
-            }
-        }
-
-        return $matrix;
+        \Locale::setDefault($this->defaultLocale);
     }
 }

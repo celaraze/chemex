@@ -26,49 +26,6 @@ class UserController extends AdminController
     }
 
     /**
-     * Edit interface.
-     *
-     * @param $id
-     * @return Content
-     */
-    public function edit($id, Content $content)
-    {
-        $content->header('Edit user');
-        $content->description('description');
-
-        $content->body($this->form()->edit($id));
-
-        return $content;
-    }
-
-    /**
-     * Create interface.
-     *
-     * @return Content
-     */
-    public function create(Content $content)
-    {
-        $content->header('Create user');
-
-        return $content->body($this->form());
-    }
-
-    /**
-     * Show interface.
-     *
-     * @param  mixed  $id
-     * @param  Content  $content
-     * @return Content
-     */
-    public function show($id, Content $content)
-    {
-        return $content
-            ->header('User')
-            ->description('Detail')
-            ->body($this->detail($id));
-    }
-
-    /**
      * Make a grid builder.
      *
      * @return Grid
@@ -97,11 +54,11 @@ class UserController extends AdminController
         $grid->column('profile.end_at', '结束时间');
 
         $grid->column('column1_not_in_table')->display(function () {
-            return 'full name:'.$this->full_name;
+            return 'full name:' . $this->full_name;
         });
 
         $grid->column('column2_not_in_table')->display(function () {
-            return $this->email.'#'.$this->profile['color'];
+            return $this->email . '#' . $this->profile['color'];
         });
 
         $grid->tags()->display(function ($tags) {
@@ -136,25 +93,19 @@ class UserController extends AdminController
     }
 
     /**
-     * Make a show builder.
+     * Edit interface.
      *
-     * @param  mixed  $id
-     * @return Show
+     * @param $id
+     * @return Content
      */
-    protected function detail($id)
+    public function edit($id, Content $content)
     {
-        return Show::make($id, new User(), function (Show $show) {
-            $show->id('ID');
-            $show->username();
-            $show->email;
+        $content->header('Edit user');
+        $content->description('description');
 
-            $show->divider();
+        $content->body($this->form()->edit($id));
 
-            $show->full_name();
-            $show->field('profile.postcode');
-
-            $show->tags->json();
-        });
+        return $content;
     }
 
     /**
@@ -192,7 +143,7 @@ class UserController extends AdminController
         $form->datetime('profile.end_at');
 
         $form->multipleSelect('tags', 'Tags')->options(Tag::all()->pluck('name', 'id'))->customFormat(function ($value) {
-            if (! $value) {
+            if (!$value) {
                 return [];
             }
 
@@ -205,5 +156,54 @@ class UserController extends AdminController
         $form->html('<a html-field>html...</a>');
 
         return $form;
+    }
+
+    /**
+     * Create interface.
+     *
+     * @return Content
+     */
+    public function create(Content $content)
+    {
+        $content->header('Create user');
+
+        return $content->body($this->form());
+    }
+
+    /**
+     * Show interface.
+     *
+     * @param mixed $id
+     * @param Content $content
+     * @return Content
+     */
+    public function show($id, Content $content)
+    {
+        return $content
+            ->header('User')
+            ->description('Detail')
+            ->body($this->detail($id));
+    }
+
+    /**
+     * Make a show builder.
+     *
+     * @param mixed $id
+     * @return Show
+     */
+    protected function detail($id)
+    {
+        return Show::make($id, new User(), function (Show $show) {
+            $show->id('ID');
+            $show->username();
+            $show->email;
+
+            $show->divider();
+
+            $show->full_name();
+            $show->field('profile.postcode');
+
+            $show->tags->json();
+        });
     }
 }

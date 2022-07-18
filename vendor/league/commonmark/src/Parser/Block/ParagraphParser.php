@@ -29,7 +29,7 @@ final class ParagraphParser extends AbstractBlockContinueParser implements Block
 
     public function __construct()
     {
-        $this->block           = new Paragraph();
+        $this->block = new Paragraph();
         $this->referenceParser = new ReferenceParser();
     }
 

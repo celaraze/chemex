@@ -42,6 +42,37 @@ final class BlockStart
     }
 
     /**
+     * Signal that we cannot parse whatever is here
+     *
+     * @return null
+     */
+    public static function none(): ?self
+    {
+        return null;
+    }
+
+    /**
+     * Signal that we'd like to register the given parser(s) so they can parse the current block
+     */
+    public static function of(BlockContinueParserInterface ...$blockParsers): self
+    {
+        return new self(...$blockParsers);
+    }
+
+    /**
+     * Signal that the block parsing process should be aborted (no other block starts should be checked)
+     *
+     * @internal
+     */
+    public static function abort(): self
+    {
+        $ret = new self();
+        $ret->isAborting = true;
+
+        return $ret;
+    }
+
+    /**
      * @return BlockContinueParserInterface[]
      */
     public function getBlockParsers(): iterable
@@ -89,36 +120,5 @@ final class BlockStart
         $this->replaceActiveBlockParser = true;
 
         return $this;
-    }
-
-    /**
-     * Signal that we cannot parse whatever is here
-     *
-     * @return null
-     */
-    public static function none(): ?self
-    {
-        return null;
-    }
-
-    /**
-     * Signal that we'd like to register the given parser(s) so they can parse the current block
-     */
-    public static function of(BlockContinueParserInterface ...$blockParsers): self
-    {
-        return new self(...$blockParsers);
-    }
-
-    /**
-     * Signal that the block parsing process should be aborted (no other block starts should be checked)
-     *
-     * @internal
-     */
-    public static function abort(): self
-    {
-        $ret             = new self();
-        $ret->isAborting = true;
-
-        return $ret;
     }
 }

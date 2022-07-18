@@ -14,11 +14,11 @@
 
 </div>
 
-`Easy Excel`是一个基于 <a href="https://github.com/box/spout" target="_blank">box/spout</a> 封装的Excel读写工具，可以帮助开发者更快速更轻松地读写Excel文件，
+`Easy Excel`是一个基于 <a href="https://github.com/box/spout" target="_blank">box/spout</a>
+封装的Excel读写工具，可以帮助开发者更快速更轻松地读写Excel文件，
 并且无论读取多大的文件只需占用极少的内存。
 
 > 由于`box/spout`只支持读写`xlsx`、`csv`、`ods`等类型文件，所以本项目目前也仅支持读写这三种类型的文件。
-
 
 ## 文档
 
@@ -32,7 +32,6 @@
 - box/spout >= 3.0
 - league/flysystem >= 1.0
 
-
 ## 安装
 
 ```bash
@@ -43,8 +42,8 @@ composer require dcat/easy-excel
 
 #### 导出
 
-
 下载
+
 ```php
 use Dcat\EasyExcel\Excel;
 
@@ -66,6 +65,7 @@ Excel::export($array)->headings($headings)->download('users.ods');
 ```
 
 保存
+
 ```php
 use Dcat\EasyExcel\Excel;
 use League\Flysystem\Adapter\Local;
@@ -86,6 +86,7 @@ Excel::export($array)->disk($filesystem)->store('users.xlsx');
 ```
 
 获取文件内容
+
 ```php
 use Dcat\EasyExcel\Excel;
 
@@ -97,12 +98,13 @@ $csvContents = Excel::csv($array)->raw();
 
 $odsContents = Excel::ods($array)->raw();
 ```
+
 更多导出功能请参考[文档](https://jqhph.github.io/easy-excel/docs/master/export.html)。
 
 #### 导入
 
-
 读取所有表格数据
+
 ```php
 use Dcat\EasyExcel\Excel;
 use League\Flysystem\Adapter\Local;
@@ -126,6 +128,7 @@ print_r($allSheets); // ['Sheet1' => [['id' => 1, 'name' => 'Brakus', 'email' =>
 ```
 
 遍历表格
+
 ```php
 use Dcat\EasyExcel\Excel;
 use Dcat\EasyExcel\Contracts\Sheet as SheetInterface;
@@ -153,6 +156,7 @@ Excel::import('/tmp/users.xlsx')->each(function (SheetInterface $sheet) {
 ```
 
 获取指定表格内容
+
 ```php
 use Dcat\EasyExcel\Excel;
 use Dcat\EasyExcel\Support\SheetCollection;
@@ -180,6 +184,6 @@ Excel::import('/tmp/users.xlsx')
 
 更多导入功能请参考[文档](https://jqhph.github.io/easy-excel/docs/master/import.html)。
 
-
 ## License
+
 [The MIT License (MIT)](LICENSE).

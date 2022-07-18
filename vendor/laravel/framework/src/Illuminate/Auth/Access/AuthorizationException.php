@@ -17,9 +17,9 @@ class AuthorizationException extends Exception
     /**
      * Create a new authorization exception instance.
      *
-     * @param  string|null  $message
-     * @param  mixed  $code
-     * @param  \Throwable|null  $previous
+     * @param string|null $message
+     * @param mixed $code
+     * @param \Throwable|null $previous
      * @return void
      */
     public function __construct($message = null, $code = null, Throwable $previous = null)
@@ -42,7 +42,7 @@ class AuthorizationException extends Exception
     /**
      * Set the response from the gate.
      *
-     * @param  \Illuminate\Auth\Access\Response  $response
+     * @param \Illuminate\Auth\Access\Response $response
      * @return $this
      */
     public function setResponse($response)

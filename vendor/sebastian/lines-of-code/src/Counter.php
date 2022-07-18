@@ -7,15 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\LinesOfCode;
 
-use function substr_count;
 use PhpParser\Error;
 use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
+use function substr_count;
 
 final class Counter
 {
@@ -49,11 +50,16 @@ final class Counter
         } catch (Error $error) {
             throw new RuntimeException(
                 $error->getMessage(),
-                (int) $error->getCode(),
+                (int)$error->getCode(),
                 $error
             );
         }
         // @codeCoverageIgnoreEnd
+    }
+
+    private function parser(): Parser
+    {
+        return (new ParserFactory)->create(ParserFactory::PREFER_PHP7, new Lexer);
     }
 
     /**
@@ -64,7 +70,7 @@ final class Counter
     public function countInAbstractSyntaxTree(int $linesOfCode, array $nodes): LinesOfCode
     {
         $traverser = new NodeTraverser;
-        $visitor   = new LineCountingVisitor($linesOfCode);
+        $visitor = new LineCountingVisitor($linesOfCode);
 
         $traverser->addVisitor($visitor);
 
@@ -75,17 +81,12 @@ final class Counter
         } catch (Error $error) {
             throw new RuntimeException(
                 $error->getMessage(),
-                (int) $error->getCode(),
+                (int)$error->getCode(),
                 $error
             );
         }
         // @codeCoverageIgnoreEnd
 
         return $visitor->result();
-    }
-
-    private function parser(): Parser
-    {
-        return (new ParserFactory)->create(ParserFactory::PREFER_PHP7, new Lexer);
     }
 }

@@ -12,14 +12,15 @@ class ExceptionFound implements Reason
     public function __construct(\Exception $exception)
     {
         $this->exception = $exception;
-        
+
     }
-    public function code() : int
+
+    public function code(): int
     {
         return 999;
     }
 
-    public function description() : string
+    public function description(): string
     {
         return $this->exception->getMessage();
     }

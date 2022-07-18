@@ -28,13 +28,21 @@ class SchemaIndexDefinitionEventArgs extends SchemaEventArgs
 
     /**
      * @param mixed[] $tableIndex
-     * @param string  $table
+     * @param string $table
      */
     public function __construct(array $tableIndex, $table, Connection $connection)
     {
         $this->tableIndex = $tableIndex;
-        $this->table      = $table;
+        $this->table = $table;
         $this->connection = $connection;
+    }
+
+    /**
+     * @return Index|null
+     */
+    public function getIndex()
+    {
+        return $this->index;
     }
 
     /**
@@ -47,14 +55,6 @@ class SchemaIndexDefinitionEventArgs extends SchemaEventArgs
         $this->index = $index;
 
         return $this;
-    }
-
-    /**
-     * @return Index|null
-     */
-    public function getIndex()
-    {
-        return $this->index;
     }
 
     /**

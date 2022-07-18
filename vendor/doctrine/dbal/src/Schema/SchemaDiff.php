@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Schema;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function array_merge;
 
 /**
@@ -67,16 +66,16 @@ class SchemaDiff
     /**
      * Constructs an SchemaDiff object.
      *
-     * @param Table[]     $newTables
+     * @param Table[] $newTables
      * @param TableDiff[] $changedTables
-     * @param Table[]     $removedTables
+     * @param Table[] $removedTables
      */
     public function __construct($newTables = [], $changedTables = [], $removedTables = [], ?Schema $fromSchema = null)
     {
-        $this->newTables     = $newTables;
+        $this->newTables = $newTables;
         $this->changedTables = $changedTables;
         $this->removedTables = $removedTables;
-        $this->fromSchema    = $fromSchema;
+        $this->fromSchema = $fromSchema;
     }
 
     /**
@@ -93,14 +92,6 @@ class SchemaDiff
     public function toSaveSql(AbstractPlatform $platform)
     {
         return $this->_toSql($platform, true);
-    }
-
-    /**
-     * @return string[]
-     */
-    public function toSql(AbstractPlatform $platform)
-    {
-        return $this->_toSql($platform, false);
     }
 
     /**
@@ -147,7 +138,7 @@ class SchemaDiff
                 $platform->getCreateTableSQL($table, AbstractPlatform::CREATE_INDEXES)
             );
 
-            if (! $platform->supportsForeignKeyConstraints()) {
+            if (!$platform->supportsForeignKeyConstraints()) {
                 continue;
             }
 
@@ -169,5 +160,13 @@ class SchemaDiff
         }
 
         return $sql;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function toSql(AbstractPlatform $platform)
+    {
+        return $this->_toSql($platform, false);
     }
 }

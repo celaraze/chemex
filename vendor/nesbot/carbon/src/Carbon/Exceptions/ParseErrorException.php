@@ -40,9 +40,9 @@ class ParseErrorException extends BaseInvalidArgumentException implements Invali
     /**
      * Constructor.
      *
-     * @param string         $expected
-     * @param string         $actual
-     * @param int            $code
+     * @param string $expected
+     * @param string $actual
+     * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct($expected, $actual, $help = '', $code = 0, Throwable $previous = null)

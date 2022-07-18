@@ -14,10 +14,10 @@ namespace Composer\Package\Loader;
 
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
-use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
-use Composer\Package\RootPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\RootAliasPackage;
+use Composer\Package\RootPackage;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -33,7 +33,7 @@ class JsonLoader
     }
 
     /**
-     * @param  string|JsonFile                      $json A filename, json string or JsonFile instance to load the package from
+     * @param string|JsonFile $json A filename, json string or JsonFile instance to load the package from
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      */
     public function load($json): BasePackage

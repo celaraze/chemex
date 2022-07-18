@@ -8,7 +8,6 @@ use Doctrine\DBAL\Driver\PDO\Exception;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use PDO;
 use PDOException;
-
 use function array_merge;
 
 final class Driver extends AbstractSQLiteDriver
@@ -16,8 +15,8 @@ final class Driver extends AbstractSQLiteDriver
     /** @var mixed[] */
     private $userDefinedFunctions = [
         'sqrt' => ['callback' => [SqlitePlatform::class, 'udfSqrt'], 'numArgs' => 1],
-        'mod'  => ['callback' => [SqlitePlatform::class, 'udfMod'], 'numArgs' => 2],
-        'locate'  => ['callback' => [SqlitePlatform::class, 'udfLocate'], 'numArgs' => -1],
+        'mod' => ['callback' => [SqlitePlatform::class, 'udfMod'], 'numArgs' => 2],
+        'locate' => ['callback' => [SqlitePlatform::class, 'udfLocate'], 'numArgs' => -1],
     ];
 
     /**

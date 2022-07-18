@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject;
 
 use function class_exists;
@@ -32,7 +33,7 @@ final class MockTrait implements MockType
     public function __construct(string $classCode, string $mockName)
     {
         $this->classCode = $classCode;
-        $this->mockName  = $mockName;
+        $this->mockName = $mockName;
     }
 
     /**

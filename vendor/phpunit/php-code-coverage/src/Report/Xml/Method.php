@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
 use DOMElement;
@@ -26,6 +27,11 @@ final class Method
         $this->contextNode = $context;
 
         $this->setName($name);
+    }
+
+    private function setName(string $name): void
+    {
+        $this->contextNode->setAttribute('name', $name);
     }
 
     public function setSignature(string $signature): void
@@ -52,10 +58,5 @@ final class Method
     public function setCrap(string $crap): void
     {
         $this->contextNode->setAttribute('crap', $crap);
-    }
-
-    private function setName(string $name): void
-    {
-        $this->contextNode->setAttribute('name', $name);
     }
 }

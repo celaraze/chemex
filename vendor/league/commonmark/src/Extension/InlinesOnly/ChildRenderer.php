@@ -26,7 +26,7 @@ final class ChildRenderer implements NodeRendererInterface
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): string
     {
         $out = $childRenderer->renderNodes($node->children());
-        if (! $node instanceof Document) {
+        if (!$node instanceof Document) {
             $out .= $childRenderer->getBlockSeparator();
         }
 

@@ -12,16 +12,6 @@ use Illuminate\Support\Facades\Storage;
 trait HasUploadedFile
 {
     /**
-     * 获取文件上传管理.
-     *
-     * @return WebUploader
-     */
-    public function uploader()
-    {
-        return app('admin.web-uploader');
-    }
-
-    /**
      * 获取上传文件.
      *
      * @return \Symfony\Component\HttpFoundation\File\UploadedFile|void
@@ -32,14 +22,13 @@ trait HasUploadedFile
     }
 
     /**
-     * 获取文件管理仓库.
+     * 获取文件上传管理.
      *
-     * @param  string|null  $disk
-     * @return \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter
+     * @return WebUploader
      */
-    public function disk(string $disk = null)
+    public function uploader()
     {
-        return Storage::disk($disk ?: config('admin.upload.disk'));
+        return app('admin.web-uploader');
     }
 
     /**
@@ -53,23 +42,9 @@ trait HasUploadedFile
     }
 
     /**
-     * 删除文件.
-     *
-     * @param  \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter  $disk
-     * @param  string|null  $path
-     * @return bool
-     */
-    public function deleteFile($disk = null, $path = null)
-    {
-        $disk = $disk ?: $this->disk();
-
-        return $disk->delete($path ?: request()->key);
-    }
-
-    /**
      * 删除文件并响应返回值.
      *
-     * @param  \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter  $disk
+     * @param \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter $disk
      * @param string|null
      * @return \Illuminate\Http\JsonResponse
      */
@@ -81,26 +56,61 @@ trait HasUploadedFile
     }
 
     /**
+     * 删除文件.
+     *
+     * @param \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter $disk
+     * @param string|null $path
+     * @return bool
+     */
+    public function deleteFile($disk = null, $path = null)
+    {
+        $disk = $disk ?: $this->disk();
+
+        return $disk->delete($path ?: request()->key);
+    }
+
+    /**
+     * 获取文件管理仓库.
+     *
+     * @param string|null $disk
+     * @return \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter
+     */
+    public function disk(string $disk = null)
+    {
+        return Storage::disk($disk ?: config('admin.upload.disk'));
+    }
+
+    /**
+     * 文件删除成功.
+     *
+     * @return mixed
+     */
+    public function responseDeleted()
+    {
+        return Admin::json();
+    }
+
+    /**
      * 响应上传成功信息.
      *
-     * @param  string  $path  文件完整路径
-     * @param  string  $url
+     * @param string $path 文件完整路径
+     * @param string $url
      * @return mixed
      */
     public function responseUploaded(string $path, string $url)
     {
         return Admin::json([
-            'id'   => $path,
+            'id' => $path,
             'name' => Helper::basename($path),
             'path' => Helper::basename($path),
-            'url'  => $url,
+            'url' => $url,
         ]);
     }
 
     /**
      * 响应验证失败信息.
      *
-     * @param  mixed  $message
+     * @param mixed $message
      * @return mixed
      */
     public function responseValidationMessage($message)
@@ -121,19 +131,9 @@ trait HasUploadedFile
     }
 
     /**
-     * 文件删除成功.
-     *
-     * @return mixed
-     */
-    public function responseDeleted()
-    {
-        return Admin::json();
-    }
-
-    /**
      * 文件删除失败.
      *
-     * @param  string  $message
+     * @param string $message
      * @return \Illuminate\Http\JsonResponse
      */
     public function responseDeleteFailed($message = '')

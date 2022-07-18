@@ -38,6 +38,37 @@ trait CommonResponseTrait
     /**
      * {@inheritdoc}
      */
+    public function toArray(bool $throw = true): array
+    {
+        if ('' === $content = $this->getContent($throw)) {
+            throw new JsonException('Response body is empty.');
+        }
+
+        if (null !== $this->jsonData) {
+            return $this->jsonData;
+        }
+
+        try {
+            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new JsonException($e->getMessage() . sprintf(' for "%s".', $this->getInfo('url')), $e->getCode());
+        }
+
+        if (!\is_array($content)) {
+            throw new JsonException(sprintf('JSON content was expected to decode to an array, "%s" returned for "%s".', get_debug_type($content), $this->getInfo('url')));
+        }
+
+        if (null !== $this->content) {
+            // Option "buffer" is true
+            return $this->jsonData = $content;
+        }
+
+        return $content;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getContent(bool $throw = true): string
     {
         if ($this->initializer) {
@@ -75,69 +106,6 @@ trait CommonResponseTrait
         return stream_get_contents($this->content);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function toArray(bool $throw = true): array
-    {
-        if ('' === $content = $this->getContent($throw)) {
-            throw new JsonException('Response body is empty.');
-        }
-
-        if (null !== $this->jsonData) {
-            return $this->jsonData;
-        }
-
-        try {
-            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new JsonException($e->getMessage().sprintf(' for "%s".', $this->getInfo('url')), $e->getCode());
-        }
-
-        if (!\is_array($content)) {
-            throw new JsonException(sprintf('JSON content was expected to decode to an array, "%s" returned for "%s".', get_debug_type($content), $this->getInfo('url')));
-        }
-
-        if (null !== $this->content) {
-            // Option "buffer" is true
-            return $this->jsonData = $content;
-        }
-
-        return $content;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function toStream(bool $throw = true)
-    {
-        if ($throw) {
-            // Ensure headers arrived
-            $this->getHeaders($throw);
-        }
-
-        $stream = StreamWrapper::createResource($this);
-        stream_get_meta_data($stream)['wrapper_data']
-            ->bindHandles($this->handle, $this->content);
-
-        return $stream;
-    }
-
-    public function __sleep(): array
-    {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
-    }
-
-    public function __wakeup()
-    {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
-    }
-
-    /**
-     * Closes the response and all its network handles.
-     */
-    abstract protected function close(): void;
-
     private static function initialize(self $response): void
     {
         if (null !== $response->getInfo('error')) {
@@ -162,6 +130,11 @@ trait CommonResponseTrait
         $response->initializer = null;
     }
 
+    /**
+     * Closes the response and all its network handles.
+     */
+    abstract protected function close(): void;
+
     private function checkStatusCode()
     {
         $code = $this->getInfo('http_code');
@@ -177,5 +150,32 @@ trait CommonResponseTrait
         if (300 <= $code) {
             throw new RedirectionException($this);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toStream(bool $throw = true)
+    {
+        if ($throw) {
+            // Ensure headers arrived
+            $this->getHeaders($throw);
+        }
+
+        $stream = StreamWrapper::createResource($this);
+        stream_get_meta_data($stream)['wrapper_data']
+            ->bindHandles($this->handle, $this->content);
+
+        return $stream;
+    }
+
+    public function __sleep(): array
+    {
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
+    }
+
+    public function __wakeup()
+    {
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 }

@@ -27,14 +27,6 @@ final class EmailAttachmentCount extends Constraint
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return sprintf('has sent "%d" attachment(s)', $this->expectedValue);
-    }
-
-    /**
      * @param RawMessage $message
      *
      * {@inheritdoc}
@@ -55,6 +47,14 @@ final class EmailAttachmentCount extends Constraint
      */
     protected function failureDescription($message): string
     {
-        return 'the Email '.$this->toString();
+        return 'the Email ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return sprintf('has sent "%d" attachment(s)', $this->expectedValue);
     }
 }

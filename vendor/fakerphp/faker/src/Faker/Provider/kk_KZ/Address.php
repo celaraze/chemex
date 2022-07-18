@@ -93,13 +93,13 @@ class Address extends \Faker\Provider\Address
         return static::randomElement(static::$region);
     }
 
-    public function city()
-    {
-        return static::randomElement(static::$city);
-    }
-
     public static function street()
     {
         return static::randomElement(static::$street);
+    }
+
+    public function city()
+    {
+        return static::randomElement(static::$city);
     }
 }

@@ -13,30 +13,6 @@ class KeyValue extends Field
     protected $keyLabel;
     protected $valueLabel;
 
-    public function setKeyLabel(?string $label)
-    {
-        $this->keyLabel = $label;
-
-        return $this;
-    }
-
-    public function setValueLabel(?string $label)
-    {
-        $this->valueLabel = $label;
-
-        return $this;
-    }
-
-    public function getKeyLabel()
-    {
-        return $this->keyLabel ?: __('Key');
-    }
-
-    public function getValueLabel()
-    {
-        return $this->valueLabel ?: __('Value');
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -60,17 +36,17 @@ class KeyValue extends Field
             return $this->validator->call($this, $input);
         }
 
-        if (! is_string($this->column)) {
+        if (!is_string($this->column)) {
             return false;
         }
 
         $rules = $attributes = [];
 
-        if (! $fieldRules = $this->getRules()) {
+        if (!$fieldRules = $this->getRules()) {
             return false;
         }
 
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -84,11 +60,48 @@ class KeyValue extends Field
         return validator($input, $rules, $this->getValidationMessages(), $attributes);
     }
 
+    public function getKeyLabel()
+    {
+        return $this->keyLabel ?: __('Key');
+    }
+
+    public function setKeyLabel(?string $label)
+    {
+        $this->keyLabel = $label;
+
+        return $this;
+    }
+
+    public function getValueLabel()
+    {
+        return $this->valueLabel ?: __('Value');
+    }
+
+    public function setValueLabel(?string $label)
+    {
+        $this->valueLabel = $label;
+
+        return $this;
+    }
+
     protected function prepareValidatorInput(array $input)
     {
-        Arr::forget($input, $this->column.'.'.static::DEFAULT_FLAG_NAME);
+        Arr::forget($input, $this->column . '.' . static::DEFAULT_FLAG_NAME);
 
         return $input;
+    }
+
+    public function render()
+    {
+        $value = $this->value();
+
+        $this->addVariables([
+            'count' => $value ? count($value) : 0,
+            'keyLabel' => $this->getKeyLabel(),
+            'valueLabel' => $this->getValueLabel(),
+        ]);
+
+        return parent::render();
     }
 
     protected function prepareInputValue($value)
@@ -100,18 +113,5 @@ class KeyValue extends Field
         }
 
         return array_combine($value['keys'], $value['values']);
-    }
-
-    public function render()
-    {
-        $value = $this->value();
-
-        $this->addVariables([
-            'count'      => $value ? count($value) : 0,
-            'keyLabel'   => $this->getKeyLabel(),
-            'valueLabel' => $this->getValueLabel(),
-        ]);
-
-        return parent::render();
     }
 }

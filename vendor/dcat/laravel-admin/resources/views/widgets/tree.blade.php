@@ -1,4 +1,6 @@
-<div  {!! $attributes !!}><div class="da-tree"></div></div>
+<div {!! $attributes !!}>
+    <div class="da-tree"></div>
+</div>
 
 <script require="@jstree">
     var opts = {!! admin_javascript_json($options) !!}, $tree = $('#{{$id}}').find('.da-tree');

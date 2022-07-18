@@ -33,7 +33,7 @@ class TinkerCaster
     /**
      * Get an array representing the properties of an application.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      * @return array
      */
     public static function castApplication($app)
@@ -44,8 +44,8 @@ class TinkerCaster
             try {
                 $val = $app->$property();
 
-                if (! is_null($val)) {
-                    $results[Caster::PREFIX_VIRTUAL.$property] = $val;
+                if (!is_null($val)) {
+                    $results[Caster::PREFIX_VIRTUAL . $property] = $val;
                 }
             } catch (Exception $e) {
                 //
@@ -58,46 +58,46 @@ class TinkerCaster
     /**
      * Get an array representing the properties of a collection.
      *
-     * @param  \Illuminate\Support\Collection  $collection
+     * @param \Illuminate\Support\Collection $collection
      * @return array
      */
     public static function castCollection($collection)
     {
         return [
-            Caster::PREFIX_VIRTUAL.'all' => $collection->all(),
+            Caster::PREFIX_VIRTUAL . 'all' => $collection->all(),
         ];
     }
 
     /**
      * Get an array representing the properties of an html string.
      *
-     * @param  \Illuminate\Support\HtmlString  $htmlString
+     * @param \Illuminate\Support\HtmlString $htmlString
      * @return array
      */
     public static function castHtmlString($htmlString)
     {
         return [
-            Caster::PREFIX_VIRTUAL.'html' => $htmlString->toHtml(),
+            Caster::PREFIX_VIRTUAL . 'html' => $htmlString->toHtml(),
         ];
     }
 
     /**
      * Get an array representing the properties of a fluent string.
      *
-     * @param  \Illuminate\Support\Stringable  $stringable
+     * @param \Illuminate\Support\Stringable $stringable
      * @return array
      */
     public static function castStringable($stringable)
     {
         return [
-            Caster::PREFIX_VIRTUAL.'value' => (string) $stringable,
+            Caster::PREFIX_VIRTUAL . 'value' => (string)$stringable,
         ];
     }
 
     /**
      * Get an array representing the properties of a model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      * @return array
      */
     public static function castModel($model)
@@ -133,7 +133,7 @@ class TinkerCaster
                 $prefix = Caster::PREFIX_PROTECTED;
             }
 
-            $results[$prefix.$key] = $value;
+            $results[$prefix . $key] = $value;
         }
 
         return $results;

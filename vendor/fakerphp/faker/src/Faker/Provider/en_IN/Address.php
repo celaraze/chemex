@@ -125,6 +125,22 @@ class Address extends \Faker\Provider\Address
         '{{buildingNumber}}, {{societyName}}, {{locality}}',
     ];
 
+    /**
+     * @example 'Delhi'
+     */
+    public static function state()
+    {
+        return static::randomElement(static::$state);
+    }
+
+    /**
+     * @example 'DL'
+     */
+    public static function stateAbbr()
+    {
+        return static::randomElement(static::$stateAbbr);
+    }
+
     public function societySuffix()
     {
         return static::randomElement(static::$societySuffix);
@@ -168,21 +184,5 @@ class Address extends \Faker\Provider\Address
     public function areaSuffix()
     {
         return static::randomElement(static::$areaSuffix);
-    }
-
-    /**
-     * @example 'Delhi'
-     */
-    public static function state()
-    {
-        return static::randomElement(static::$state);
-    }
-
-    /**
-     * @example 'DL'
-     */
-    public static function stateAbbr()
-    {
-        return static::randomElement(static::$stateAbbr);
     }
 }

@@ -7,7 +7,7 @@ interface CompilerInterface
     /**
      * Get the path to the compiled version of a view.
      *
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     public function getCompiledPath($path);
@@ -15,7 +15,7 @@ interface CompilerInterface
     /**
      * Determine if the given view is expired.
      *
-     * @param  string  $path
+     * @param string $path
      * @return bool
      */
     public function isExpired($path);
@@ -23,7 +23,7 @@ interface CompilerInterface
     /**
      * Compile the view at the given path.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     public function compile($path);

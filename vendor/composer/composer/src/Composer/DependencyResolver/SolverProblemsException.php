@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
+use Composer\Util\IniHelper;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -38,7 +38,7 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
+        parent::__construct('Failed resolving dependencies with ' . count($problems) . ' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
     }
 
     /**
@@ -54,7 +54,7 @@ class SolverProblemsException extends \RuntimeException
 
         $problems = array();
         foreach ($this->problems as $problem) {
-            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool)."\n";
+            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool) . "\n";
 
             $missingExtensions = array_merge($missingExtensions, $this->getExtensionProblems($problem->getReasons()));
 
@@ -64,7 +64,7 @@ class SolverProblemsException extends \RuntimeException
         $i = 1;
         $text = "\n";
         foreach (array_unique($problems) as $problem) {
-            $text .= "  Problem ".($i++).$problem;
+            $text .= "  Problem " . ($i++) . $problem;
         }
 
         $hints = array();
@@ -98,11 +98,22 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
-     * @return Problem[]
+     * @param Rule[][] $reasonSets
+     * @return string[]
      */
-    public function getProblems(): array
+    private function getExtensionProblems(array $reasonSets): array
     {
-        return $this->problems;
+        $missingExtensions = array();
+        foreach ($reasonSets as $reasonSet) {
+            foreach ($reasonSet as $rule) {
+                $required = $rule->getRequiredPackage();
+                if (null !== $required && 0 === strpos($required, 'ext-')) {
+                    $missingExtensions[$required] = 1;
+                }
+            }
+        }
+
+        return array_keys($missingExtensions);
     }
 
     /**
@@ -130,21 +141,10 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
-     * @param Rule[][] $reasonSets
-     * @return string[]
+     * @return Problem[]
      */
-    private function getExtensionProblems(array $reasonSets): array
+    public function getProblems(): array
     {
-        $missingExtensions = array();
-        foreach ($reasonSets as $reasonSet) {
-            foreach ($reasonSet as $rule) {
-                $required = $rule->getRequiredPackage();
-                if (null !== $required && 0 === strpos($required, 'ext-')) {
-                    $missingExtensions[$required] = 1;
-                }
-            }
-        }
-
-        return array_keys($missingExtensions);
+        return $this->problems;
     }
 }

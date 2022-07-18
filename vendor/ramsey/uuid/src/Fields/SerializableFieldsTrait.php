@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace Ramsey\Uuid\Fields;
 
 use ValueError;
-
 use function base64_decode;
 use function sprintf;
 use function strlen;
@@ -28,16 +27,6 @@ use function strlen;
 trait SerializableFieldsTrait
 {
     /**
-     * @param string $bytes The bytes that comprise the fields
-     */
-    abstract public function __construct(string $bytes);
-
-    /**
-     * Returns the bytes that comprise the fields
-     */
-    abstract public function getBytes(): string;
-
-    /**
      * Returns a string representation of object
      */
     public function serialize(): string
@@ -46,11 +35,30 @@ trait SerializableFieldsTrait
     }
 
     /**
+     * Returns the bytes that comprise the fields
+     */
+    abstract public function getBytes(): string;
+
+    /**
      * @return array{bytes: string}
      */
     public function __serialize(): array
     {
         return ['bytes' => $this->getBytes()];
+    }
+
+    /**
+     * @param array{bytes: string} $data
+     */
+    public function __unserialize(array $data): void
+    {
+        // @codeCoverageIgnoreStart
+        if (!isset($data['bytes'])) {
+            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
+        }
+        // @codeCoverageIgnoreEnd
+
+        $this->unserialize($data['bytes']);
     }
 
     /**
@@ -71,16 +79,7 @@ trait SerializableFieldsTrait
     }
 
     /**
-     * @param array{bytes: string} $data
+     * @param string $bytes The bytes that comprise the fields
      */
-    public function __unserialize(array $data): void
-    {
-        // @codeCoverageIgnoreStart
-        if (!isset($data['bytes'])) {
-            throw new ValueError(sprintf('%s(): Argument #1 ($data) is invalid', __METHOD__));
-        }
-        // @codeCoverageIgnoreEnd
-
-        $this->unserialize($data['bytes']);
-    }
+    abstract public function __construct(string $bytes);
 }

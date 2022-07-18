@@ -1,10 +1,44 @@
 <style>
-    .autocomplete-suggestions { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; border: 1px solid #999; background: #FFF; cursor: default; overflow: auto; -webkit-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64); -moz-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64); box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64); }
-    .autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
-    .autocomplete-no-suggestion { padding: 2px 5px;}
-    .autocomplete-selected { background: #F0F0F0; }
-    .autocomplete-suggestions strong { font-weight: bold; color: #000; }
-    .autocomplete-group { padding: 2px 5px; font-weight: bold; font-size: 16px; color: #000; display: block; border-bottom: 1px solid #000; }
+    .autocomplete-suggestions {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        border: 1px solid #999;
+        background: #FFF;
+        cursor: default;
+        overflow: auto;
+        -webkit-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+        -moz-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+        box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+    }
+
+    .autocomplete-suggestion {
+        padding: 2px 5px;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .autocomplete-no-suggestion {
+        padding: 2px 5px;
+    }
+
+    .autocomplete-selected {
+        background: #F0F0F0;
+    }
+
+    .autocomplete-suggestions strong {
+        font-weight: bold;
+        color: #000;
+    }
+
+    .autocomplete-group {
+        padding: 2px 5px;
+        font-weight: bold;
+        font-size: 16px;
+        color: #000;
+        display: block;
+        border-bottom: 1px solid #000;
+    }
 </style>
 
 @include('admin::form.input')
@@ -15,7 +49,7 @@
 
     @if(isset($ajax))
 
-    configs = $.extend(configs, {
+        configs = $.extend(configs, {
 
         serviceUrl: '{{ $ajax['url'] }}',
         groupBy: '{{ $ajax['groupField'] }}',
@@ -39,7 +73,7 @@
         }
     });
     @else
-    configs = $.extend(configs, {
+        configs = $.extend(configs, {
         lookup: {!! $options !!}
     });
     @endif
@@ -57,20 +91,20 @@
 
             for (var field of fields) {
                 for (var data of formData) {
-                    if (!data.value.length){
+                    if (!data.value.length) {
                         continue;
                     }
                     if (data.name === field) {
                         p[field] = data.value
                     }
                     if (data.name === field + '[]') {
-                        if(!Array.isArray(p[field])){
+                        if (!Array.isArray(p[field])) {
                             p[field] = []
                         }
                         p[field].push(data.value);
                     }
                 }
-                if (!p.hasOwnProperty(field)){
+                if (!p.hasOwnProperty(field)) {
                     return false;
                 }
             }
@@ -85,7 +119,7 @@
             '[name="' + field + '"]',
             '[name="' + field + '[]"]'
         ];
-        $.map(_selectors, function(_selector){
+        $.map(_selectors, function (_selector) {
             $this.closest('form').off('change.depends', _selector)
                 .on('change.depends', _selector, function () {
                     $this.val('');

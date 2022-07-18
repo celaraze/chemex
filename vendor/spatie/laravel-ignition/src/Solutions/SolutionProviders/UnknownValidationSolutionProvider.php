@@ -19,11 +19,20 @@ class UnknownValidationSolutionProvider implements HasSolutionsForThrowable
 
     public function canSolve(Throwable $throwable): bool
     {
-        if (! $throwable instanceof BadMethodCallException) {
+        if (!$throwable instanceof BadMethodCallException) {
             return false;
         }
 
-        return ! is_null($this->getMethodFromExceptionMessage($throwable->getMessage()));
+        return !is_null($this->getMethodFromExceptionMessage($throwable->getMessage()));
+    }
+
+    protected function getMethodFromExceptionMessage(string $message): ?string
+    {
+        if (!preg_match(self::REGEX, $message, $matches)) {
+            return null;
+        }
+
+        return $matches['method'];
     }
 
     public function getSolutions(Throwable $throwable): array
@@ -53,26 +62,17 @@ class UnknownValidationSolutionProvider implements HasSolutionsForThrowable
         return "Did you mean `{$rule}` ?";
     }
 
-    protected function getMethodFromExceptionMessage(string $message): ?string
-    {
-        if (! preg_match(self::REGEX, $message, $matches)) {
-            return null;
-        }
-
-        return $matches['method'];
-    }
-
     protected function getAvailableMethods(): Collection
     {
         $class = new ReflectionClass(Validator::class);
 
         $extensions = Collection::make((app('validator')->make([], []))->extensions)
             ->keys()
-            ->map(fn (string $extension) => 'validate'.Str::studly($extension));
+            ->map(fn(string $extension) => 'validate' . Str::studly($extension));
 
         return Collection::make($class->getMethods())
-            ->filter(fn (ReflectionMethod $method) => preg_match('/(validate(?!(Attribute|UsingCustomRule))[A-Z][a-zA-Z]+)/', $method->name))
-            ->map(fn (ReflectionMethod $method) => $method->name)
+            ->filter(fn(ReflectionMethod $method) => preg_match('/(validate(?!(Attribute|UsingCustomRule))[A-Z][a-zA-Z]+)/', $method->name))
+            ->map(fn(ReflectionMethod $method) => $method->name)
             ->merge($extensions);
     }
 }

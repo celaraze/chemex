@@ -12,34 +12,12 @@ use Psr\Http\Message\UriInterface;
 final class Utils
 {
     /**
-     * Remove the items given by the keys, case insensitively from the data.
-     *
-     * @param string[] $keys
-     */
-    public static function caselessRemove(array $keys, array $data): array
-    {
-        $result = [];
-
-        foreach ($keys as &$key) {
-            $key = strtolower($key);
-        }
-
-        foreach ($data as $k => $v) {
-            if (!is_string($k) || !in_array(strtolower($k), $keys)) {
-                $result[$k] = $v;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * Copy the contents of a stream into another stream until the given number
      * of bytes have been read.
      *
      * @param StreamInterface $source Stream to read from
-     * @param StreamInterface $dest   Stream to write to
-     * @param int             $maxLen Maximum number of bytes to read. Pass -1
+     * @param StreamInterface $dest Stream to write to
+     * @param int $maxLen Maximum number of bytes to read. Pass -1
      *                                to read the entire stream.
      *
      * @throws \RuntimeException on error.
@@ -73,7 +51,7 @@ final class Utils
      * bytes have been read.
      *
      * @param StreamInterface $stream Stream to read
-     * @param int             $maxLen Maximum number of bytes to read. Pass -1
+     * @param int $maxLen Maximum number of bytes to read. Pass -1
      *                                to read the entire stream.
      *
      * @throws \RuntimeException on error.
@@ -112,9 +90,9 @@ final class Utils
      * This method reads the entire stream to calculate a rolling hash, based
      * on PHP's `hash_init` functions.
      *
-     * @param StreamInterface $stream    Stream to calculate the hash for
-     * @param string          $algo      Hash algorithm (e.g. md5, crc32, etc)
-     * @param bool            $rawOutput Whether or not to use raw output
+     * @param StreamInterface $stream Stream to calculate the hash for
+     * @param string $algo Hash algorithm (e.g. md5, crc32, etc)
+     * @param bool $rawOutput Whether or not to use raw output
      *
      * @throws \RuntimeException on error.
      */
@@ -153,7 +131,7 @@ final class Utils
      * - version: (string) Set the protocol version.
      *
      * @param RequestInterface $request Request to clone and modify.
-     * @param array            $changes Changes to apply.
+     * @param array $changes Changes to apply.
      */
     public static function modifyRequest(RequestInterface $request, array $changes): RequestInterface
     {
@@ -203,10 +181,10 @@ final class Utils
                 $changes['version'] ?? $request->getProtocolVersion(),
                 $request->getServerParams()
             ))
-            ->withParsedBody($request->getParsedBody())
-            ->withQueryParams($request->getQueryParams())
-            ->withCookieParams($request->getCookieParams())
-            ->withUploadedFiles($request->getUploadedFiles());
+                ->withParsedBody($request->getParsedBody())
+                ->withQueryParams($request->getQueryParams())
+                ->withCookieParams($request->getCookieParams())
+                ->withUploadedFiles($request->getUploadedFiles());
 
             foreach ($request->getAttributes() as $key => $value) {
                 $new = $new->withAttribute($key, $value);
@@ -225,10 +203,32 @@ final class Utils
     }
 
     /**
+     * Remove the items given by the keys, case insensitively from the data.
+     *
+     * @param string[] $keys
+     */
+    public static function caselessRemove(array $keys, array $data): array
+    {
+        $result = [];
+
+        foreach ($keys as &$key) {
+            $key = strtolower($key);
+        }
+
+        foreach ($data as $k => $v) {
+            if (!is_string($k) || !in_array(strtolower($k), $keys)) {
+                $result[$k] = $v;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Read a line from the stream up to the maximum allowed buffer length.
      *
-     * @param StreamInterface $stream    Stream to read from
-     * @param int|null        $maxLength Maximum buffer length
+     * @param StreamInterface $stream Stream to read from
+     * @param int|null $maxLength Maximum buffer length
      */
     public static function readLine(StreamInterface $stream, ?int $maxLength = null): string
     {
@@ -279,7 +279,7 @@ final class Utils
      *   buffered and used in subsequent reads.
      *
      * @param resource|string|int|float|bool|StreamInterface|callable|\Iterator|null $resource Entity body data
-     * @param array{size?: int, metadata?: array}                                    $options  Additional options
+     * @param array{size?: int, metadata?: array} $options Additional options
      *
      * @throws \InvalidArgumentException if the $resource arg is not valid.
      */
@@ -288,7 +288,7 @@ final class Utils
         if (is_scalar($resource)) {
             $stream = self::tryFopen('php://temp', 'r+');
             if ($resource !== '') {
-                fwrite($stream, (string) $resource);
+                fwrite($stream, (string)$resource);
                 fseek($stream, 0);
             }
             return new Stream($stream, $options);
@@ -323,7 +323,7 @@ final class Utils
                         return $result;
                     }, $options);
                 } elseif (method_exists($resource, '__toString')) {
-                    return self::streamFor((string) $resource, $options);
+                    return self::streamFor((string)$resource, $options);
                 }
                 break;
             case 'NULL':
@@ -344,7 +344,7 @@ final class Utils
      * error handler that checks for errors and throws an exception instead.
      *
      * @param string $filename File to open
-     * @param string $mode     Mode used to open the file
+     * @param string $mode Mode used to open the file
      *
      * @return resource
      *

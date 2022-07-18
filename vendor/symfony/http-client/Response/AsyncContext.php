@@ -54,6 +54,38 @@ final class AsyncContext
     }
 
     /**
+     * Returns the current info of the response.
+     */
+    public function getInfo(string $type = null): mixed
+    {
+        if (null !== $type) {
+            return $this->info[$type] ?? $this->response->getInfo($type);
+        }
+
+        return $this->info + $this->response->getInfo();
+    }
+
+    /**
+     * Attaches an info to the response.
+     *
+     * @return $this
+     */
+    public function setInfo(string $type, mixed $value): static
+    {
+        if ('canceled' === $type && $value !== $this->info['canceled']) {
+            throw new \LogicException('You cannot set the "canceled" info directly.');
+        }
+
+        if (null === $value) {
+            unset($this->info[$type]);
+        } else {
+            $this->info[$type] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * Returns the headers without consuming the response.
      */
     public function getHeaders(): array
@@ -109,38 +141,6 @@ final class AsyncContext
         $this->response->cancel();
 
         return new LastChunk();
-    }
-
-    /**
-     * Returns the current info of the response.
-     */
-    public function getInfo(string $type = null): mixed
-    {
-        if (null !== $type) {
-            return $this->info[$type] ?? $this->response->getInfo($type);
-        }
-
-        return $this->info + $this->response->getInfo();
-    }
-
-    /**
-     * Attaches an info to the response.
-     *
-     * @return $this
-     */
-    public function setInfo(string $type, mixed $value): static
-    {
-        if ('canceled' === $type && $value !== $this->info['canceled']) {
-            throw new \LogicException('You cannot set the "canceled" info directly.');
-        }
-
-        if (null === $value) {
-            unset($this->info[$type]);
-        } else {
-            $this->info[$type] = $value;
-        }
-
-        return $this;
     }
 
     /**

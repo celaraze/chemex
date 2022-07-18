@@ -46,10 +46,10 @@ class Selector
     }
 
     /**
-     * @param  string  $column
-     * @param  string|array  $label
-     * @param  array|\Closure  $options
-     * @param  null|\Closure  $query
+     * @param string $column
+     * @param string|array $label
+     * @param array|\Closure $options
+     * @param null|\Closure $query
      * @return $this
      */
     public function select(string $column, $label, $options = [], ?\Closure $query = null)
@@ -58,23 +58,11 @@ class Selector
     }
 
     /**
-     * @param  string  $column
-     * @param  string|array  $label
-     * @param  array  $options
-     * @param  null|\Closure  $query
-     * @return $this
-     */
-    public function selectOne(string $column, $label, $options = [], ?\Closure $query = null)
-    {
-        return $this->addSelector($column, $label, $options, $query, 'one');
-    }
-
-    /**
-     * @param  string  $column
-     * @param  string  $label
-     * @param  array  $options
-     * @param  null  $query
-     * @param  string  $type
+     * @param string $column
+     * @param string $label
+     * @param array $options
+     * @param null $query
+     * @param string $type
      * @return $this
      */
     protected function addSelector(string $column, $label, $options = [], ?\Closure $query = null, $type = 'many')
@@ -99,17 +87,21 @@ class Selector
     }
 
     /**
-     * @return string
+     * @param string $column
+     * @param string|array $label
+     * @param array $options
+     * @param null|\Closure $query
+     * @return $this
      */
-    public function getQueryName()
+    public function selectOne(string $column, $label, $options = [], ?\Closure $query = null)
     {
-        return $this->grid->makeName($this->queryNameSuffix);
+        return $this->addSelector($column, $label, $options, $query, 'one');
     }
 
     /**
      * Get all selectors.
      *
-     * @param  bool  $formatKey
+     * @param bool $formatKey
      * @return array|Collection
      */
     public function all(bool $formatKey = false)
@@ -123,44 +115,15 @@ class Selector
         return $this->selectors;
     }
 
-    /**
-     * @return array
-     */
-    public function parseSelected()
-    {
-        if (! is_null($this->selected)) {
-            return $this->selected;
-        }
-
-        $selected = $this->request->get($this->getQueryName(), []);
-        if (! is_array($selected)) {
-            return [];
-        }
-
-        $selected = array_filter($selected, function ($value) {
-            return ! is_null($value);
-        });
-
-        foreach ($selected as &$value) {
-            $value = explode(',', $value);
-
-            foreach ($value as &$v) {
-                $v = (string) $v;
-            }
-        }
-
-        return $this->selected = $selected;
-    }
-
     public function formatKey($column)
     {
         return str_replace('.', '_', $column);
     }
 
     /**
-     * @param  string  $column
-     * @param  mixed  $value
-     * @param  bool  $add
+     * @param string $column
+     * @param mixed $value
+     * @param bool $add
      * @return string
      */
     public function url($column, $value = null, $add = false)
@@ -181,8 +144,8 @@ class Selector
             return $this->request->fullUrlWithQuery($query);
         }
 
-        if (in_array((string) $value, $options, true)) {
-            Helper::deleteByValue($options, (string) $value, true);
+        if (in_array((string)$value, $options, true)) {
+            Helper::deleteByValue($options, (string)$value, true);
         } else {
             if ($add) {
                 $options = [];
@@ -190,7 +153,7 @@ class Selector
             array_push($options, $value);
         }
 
-        if (! empty($options)) {
+        if (!empty($options)) {
             Arr::set($query, $queryName, implode(',', $options));
         } else {
             Arr::forget($query, $queryName);
@@ -200,12 +163,49 @@ class Selector
     }
 
     /**
+     * @return array
+     */
+    public function parseSelected()
+    {
+        if (!is_null($this->selected)) {
+            return $this->selected;
+        }
+
+        $selected = $this->request->get($this->getQueryName(), []);
+        if (!is_array($selected)) {
+            return [];
+        }
+
+        $selected = array_filter($selected, function ($value) {
+            return !is_null($value);
+        });
+
+        foreach ($selected as &$value) {
+            $value = explode(',', $value);
+
+            foreach ($value as &$v) {
+                $v = (string)$v;
+            }
+        }
+
+        return $this->selected = $selected;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQueryName()
+    {
+        return $this->grid->makeName($this->queryNameSuffix);
+    }
+
+    /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function render()
     {
         return view('admin::grid.selector', [
-            'self'     => $this,
+            'self' => $this,
             'selected' => $this->parseSelected(),
         ]);
     }

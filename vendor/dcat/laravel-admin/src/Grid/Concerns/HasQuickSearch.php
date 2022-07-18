@@ -54,6 +54,20 @@ trait HasQuickSearch
         });
     }
 
+    protected function addQuickSearchScript()
+    {
+        if ($this->isAsyncRequest()) {
+            $url = Helper::fullUrlWithoutQuery([
+                '_pjax',
+                $this->quickSearch->getQueryName(),
+                static::ASYNC_NAME,
+                $this->model()->getPageName(),
+            ]);
+
+            Admin::script("$('.quick-search-form').attr('action', '{$url}');", true);
+        }
+    }
+
     /**
      * @return bool
      */
@@ -75,7 +89,7 @@ trait HasQuickSearch
      */
     public function renderQuickSearch()
     {
-        if (! $this->quickSearch) {
+        if (!$this->quickSearch) {
             return '';
         }
 
@@ -89,7 +103,7 @@ trait HasQuickSearch
      */
     public function applyQuickSearch()
     {
-        if (! $this->quickSearch) {
+        if (!$this->quickSearch) {
             return;
         }
 
@@ -120,7 +134,7 @@ trait HasQuickSearch
 
         if (is_array($this->search)) {
             $this->model()->where(function ($q) use ($query) {
-                $keyword = '%'.$query.'%';
+                $keyword = '%' . $query . '%';
 
                 foreach ($this->search as $column) {
                     $this->addWhereLikeBinding($q, $column, true, $keyword);
@@ -132,14 +146,30 @@ trait HasQuickSearch
     }
 
     /**
+     * Add where like binding to model query.
+     *
+     * @param mixed $query
+     * @param string $column
+     * @param bool $or
+     * @param string $pattern
+     */
+    protected function addWhereLikeBinding($query, ?string $column, ?bool $or, ?string $pattern)
+    {
+        $likeOperator = 'like';
+        $method = $or ? 'orWhere' : 'where';
+
+        Helper::withQueryCondition($query, $column, $method, [$likeOperator, $pattern]);
+    }
+
+    /**
      * Add where bindings.
      *
-     * @param  string  $query
+     * @param string $query
      */
     protected function addWhereBindings($query)
     {
         $queries = preg_split('/\s(?=([^"]*"[^"]*")*[^"]*$)/', trim($query));
-        if (! $queries = $this->parseQueryBindings($queries)) {
+        if (!$queries = $this->parseQueryBindings($queries)) {
             $this->addWhereBasicBinding($this->model(), $this->getKeyName(), false, '=', '___');
 
             return;
@@ -148,7 +178,7 @@ trait HasQuickSearch
         $this->model()->where(function ($q) use ($queries) {
             foreach ($queries as [$column, $condition, $or]) {
                 if (preg_match('/(?<not>!?)\((?<values>.+)\)/', $condition, $match) !== 0) {
-                    $this->addWhereInBinding($q, $column, $or, (bool) $match['not'], $match['values']);
+                    $this->addWhereInBinding($q, $column, $or, (bool)$match['not'], $match['values']);
                     continue;
                 }
 
@@ -188,7 +218,7 @@ trait HasQuickSearch
     /**
      * Parse quick query bindings.
      *
-     * @param  array  $queries
+     * @param array $queries
      * @return array
      */
     protected function parseQueryBindings(array $queries)
@@ -216,7 +246,7 @@ trait HasQuickSearch
 
             $column = $columnMap[$column] ?? null;
 
-            if (! $column) {
+            if (!$column) {
                 return;
             }
 
@@ -225,86 +255,13 @@ trait HasQuickSearch
     }
 
     /**
-     * Add where like binding to model query.
-     *
-     * @param  mixed  $query
-     * @param  string  $column
-     * @param  bool  $or
-     * @param  string  $pattern
-     */
-    protected function addWhereLikeBinding($query, ?string $column, ?bool $or, ?string $pattern)
-    {
-        $likeOperator = 'like';
-        $method = $or ? 'orWhere' : 'where';
-
-        Helper::withQueryCondition($query, $column, $method, [$likeOperator, $pattern]);
-    }
-
-    /**
-     * Add where date time function binding to model query.
-     *
-     * @param  mixed  $query
-     * @param  string  $column
-     * @param  bool  $or
-     * @param  string  $function
-     * @param  string  $value
-     */
-    protected function addWhereDatetimeBinding($query, ?string $column, ?bool $or, ?string $function, ?string $value)
-    {
-        $method = ($or ? 'orWhere' : 'where').ucfirst($function);
-
-        Helper::withQueryCondition($query, $column, $method, [$value]);
-    }
-
-    /**
-     * Add where in binding to the model query.
-     *
-     * @param  mixed  $query
-     * @param  string  $column
-     * @param  bool  $or
-     * @param  bool  $not
-     * @param  string  $values
-     */
-    protected function addWhereInBinding($query, ?string $column, ?bool $or, ?bool $not, ?string $values)
-    {
-        $values = explode(',', $values);
-
-        foreach ($values as $key => $value) {
-            if ($value === 'NULL') {
-                $values[$key] = null;
-            }
-        }
-
-        $where = $or ? 'orWhere' : 'where';
-        $method = $where.($not ? 'NotIn' : 'In');
-
-        Helper::withQueryCondition($query, $column, $method, [$values]);
-    }
-
-    /**
-     * Add where between binding to the model query.
-     *
-     * @param  mixed  $query
-     * @param  string  $column
-     * @param  bool  $or
-     * @param  string  $start
-     * @param  string  $end
-     */
-    protected function addWhereBetweenBinding($query, ?string $column, ?bool $or, ?string $start, ?string $end)
-    {
-        $method = $or ? 'orWhereBetween' : 'whereBetween';
-
-        Helper::withQueryCondition($query, $column, $method, [[$start, $end]]);
-    }
-
-    /**
      * Add where basic binding to the model query.
      *
-     * @param  mixed  $query
-     * @param  string  $column
-     * @param  bool  $or
-     * @param  string  $operator
-     * @param  string  $value
+     * @param mixed $query
+     * @param string $column
+     * @param bool $or
+     * @param string $operator
+     * @param string $value
      */
     protected function addWhereBasicBinding($query, ?string $column, ?bool $or, ?string $operator, ?string $value)
     {
@@ -326,17 +283,60 @@ trait HasQuickSearch
         Helper::withQueryCondition($query, $column, $method, [$operator, $value]);
     }
 
-    protected function addQuickSearchScript()
+    /**
+     * Add where in binding to the model query.
+     *
+     * @param mixed $query
+     * @param string $column
+     * @param bool $or
+     * @param bool $not
+     * @param string $values
+     */
+    protected function addWhereInBinding($query, ?string $column, ?bool $or, ?bool $not, ?string $values)
     {
-        if ($this->isAsyncRequest()) {
-            $url = Helper::fullUrlWithoutQuery([
-                '_pjax',
-                $this->quickSearch->getQueryName(),
-                static::ASYNC_NAME,
-                $this->model()->getPageName(),
-            ]);
+        $values = explode(',', $values);
 
-            Admin::script("$('.quick-search-form').attr('action', '{$url}');", true);
+        foreach ($values as $key => $value) {
+            if ($value === 'NULL') {
+                $values[$key] = null;
+            }
         }
+
+        $where = $or ? 'orWhere' : 'where';
+        $method = $where . ($not ? 'NotIn' : 'In');
+
+        Helper::withQueryCondition($query, $column, $method, [$values]);
+    }
+
+    /**
+     * Add where between binding to the model query.
+     *
+     * @param mixed $query
+     * @param string $column
+     * @param bool $or
+     * @param string $start
+     * @param string $end
+     */
+    protected function addWhereBetweenBinding($query, ?string $column, ?bool $or, ?string $start, ?string $end)
+    {
+        $method = $or ? 'orWhereBetween' : 'whereBetween';
+
+        Helper::withQueryCondition($query, $column, $method, [[$start, $end]]);
+    }
+
+    /**
+     * Add where date time function binding to model query.
+     *
+     * @param mixed $query
+     * @param string $column
+     * @param bool $or
+     * @param string $function
+     * @param string $value
+     */
+    protected function addWhereDatetimeBinding($query, ?string $column, ?bool $or, ?string $function, ?string $value)
+    {
+        $method = ($or ? 'orWhere' : 'where') . ucfirst($function);
+
+        Helper::withQueryCondition($query, $column, $method, [$value]);
     }
 }

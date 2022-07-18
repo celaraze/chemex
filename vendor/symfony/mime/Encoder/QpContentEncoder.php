@@ -26,11 +26,6 @@ final class QpContentEncoder implements ContentEncoderInterface
         yield $this->encodeString(stream_get_contents($stream), 'utf-8', 0, $maxLineLength);
     }
 
-    public function getName(): string
-    {
-        return 'quoted-printable';
-    }
-
     public function encodeString(string $string, ?string $charset = 'utf-8', int $firstLineOffset = 0, int $maxLineLength = 0): string
     {
         return $this->standardize(quoted_printable_encode($string));
@@ -51,5 +46,10 @@ final class QpContentEncoder implements ContentEncoderInterface
             0x20 => substr_replace($string, '=20', -1),
             default => $string,
         };
+    }
+
+    public function getName(): string
+    {
+        return 'quoted-printable';
     }
 }

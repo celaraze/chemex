@@ -7,17 +7,18 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Html;
 
-use const DIRECTORY_SEPARATOR;
-use function copy;
-use function date;
-use function dirname;
-use function substr;
 use SebastianBergmann\CodeCoverage\CodeCoverage;
 use SebastianBergmann\CodeCoverage\InvalidArgumentException;
 use SebastianBergmann\CodeCoverage\Node\Directory as DirectoryNode;
 use SebastianBergmann\CodeCoverage\Util\Filesystem;
+use function copy;
+use function date;
+use function dirname;
+use function substr;
+use const DIRECTORY_SEPARATOR;
 
 final class Facade
 {
@@ -49,17 +50,17 @@ final class Facade
             );
         }
 
-        $this->generator      = $generator;
+        $this->generator = $generator;
         $this->highLowerBound = $highLowerBound;
-        $this->lowUpperBound  = $lowUpperBound;
-        $this->templatePath   = __DIR__ . '/Renderer/Template/';
+        $this->lowUpperBound = $lowUpperBound;
+        $this->templatePath = __DIR__ . '/Renderer/Template/';
     }
 
     public function process(CodeCoverage $coverage, string $target): void
     {
         $target = $this->directory($target);
         $report = $coverage->getReport();
-        $date   = date('D M j G:i:s T Y');
+        $date = date('D M j G:i:s T Y');
 
         $dashboard = new Dashboard(
             $this->templatePath,
@@ -111,6 +112,17 @@ final class Facade
         $this->copyFiles($target);
     }
 
+    private function directory(string $directory): string
+    {
+        if (substr($directory, -1, 1) != DIRECTORY_SEPARATOR) {
+            $directory .= DIRECTORY_SEPARATOR;
+        }
+
+        Filesystem::createDirectory($directory);
+
+        return $directory;
+    }
+
     private function copyFiles(string $target): void
     {
         $dir = $this->directory($target . '_css');
@@ -132,16 +144,5 @@ final class Facade
         copy($this->templatePath . 'js/jquery.min.js', $dir . 'jquery.min.js');
         copy($this->templatePath . 'js/nv.d3.min.js', $dir . 'nv.d3.min.js');
         copy($this->templatePath . 'js/file.js', $dir . 'file.js');
-    }
-
-    private function directory(string $directory): string
-    {
-        if (substr($directory, -1, 1) != DIRECTORY_SEPARATOR) {
-            $directory .= DIRECTORY_SEPARATOR;
-        }
-
-        Filesystem::createDirectory($directory);
-
-        return $directory;
     }
 }

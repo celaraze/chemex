@@ -23,21 +23,6 @@ final class ReleasesCollection extends Collection
      * @param string ...$constraints
      * @return $this
      */
-    public function satisfies(string ...$constraints): self
-    {
-        $result = $this;
-
-        foreach ($this->constraints($constraints) as $constraint) {
-            $result = $result->filter(static fn(ReleaseInterface $r): bool => $r->satisfies($constraint));
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param string ...$constraints
-     * @return $this
-     */
     public function notSatisfies(string ...$constraints): self
     {
         $result = $this;
@@ -71,11 +56,26 @@ final class ReleasesCollection extends Collection
     }
 
     /**
+     * @param string ...$constraints
+     * @return $this
+     */
+    public function satisfies(string ...$constraints): self
+    {
+        $result = $this;
+
+        foreach ($this->constraints($constraints) as $constraint) {
+            $result = $result->filter(static fn(ReleaseInterface $r): bool => $r->satisfies($constraint));
+        }
+
+        return $result;
+    }
+
+    /**
      * @return $this
      */
     public function withAssets(): self
     {
-        return $this->filter(static fn(ReleaseInterface $r): bool => ! $r->getAssets()
+        return $this->filter(static fn(ReleaseInterface $r): bool => !$r->getAssets()
             ->empty()
         );
     }

@@ -21,8 +21,8 @@ class UpdatedBatchJobCounts
     /**
      * Create a new batch job counts object.
      *
-     * @param  int  $pendingJobs
-     * @param  int  $failedJobs
+     * @param int $pendingJobs
+     * @param int $failedJobs
      * @return void
      */
     public function __construct(int $pendingJobs = 0, int $failedJobs = 0)

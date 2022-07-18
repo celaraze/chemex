@@ -36,9 +36,22 @@ abstract class Presenter
     protected $width = null;
 
     /**
+     * Collect assets.
+     */
+    public static function requireAssets()
+    {
+        if (static::$js) {
+            Admin::js(static::$js);
+        }
+        if (static::$css) {
+            Admin::css(static::$css);
+        }
+    }
+
+    /**
      * Set parent filter.
      *
-     * @param  AbstractFilter  $filter
+     * @param AbstractFilter $filter
      */
     public function setParent(AbstractFilter $filter)
     {
@@ -50,7 +63,7 @@ abstract class Presenter
     }
 
     /**
-     * @param  int  $width
+     * @param int $width
      * @return $this
      */
     public function width($width)
@@ -77,7 +90,7 @@ abstract class Presenter
      */
     public function view(): string
     {
-        return $this->view ?: 'admin::filter.'.strtolower(class_basename(static::class));
+        return $this->view ?: 'admin::filter.' . strtolower(class_basename(static::class));
     }
 
     /**
@@ -107,18 +120,5 @@ abstract class Presenter
         }
 
         return $value;
-    }
-
-    /**
-     * Collect assets.
-     */
-    public static function requireAssets()
-    {
-        if (static::$js) {
-            Admin::js(static::$js);
-        }
-        if (static::$css) {
-            Admin::css(static::$css);
-        }
     }
 }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Filter;
 
 /**
@@ -37,10 +38,10 @@ final class Directory
 
     public function __construct(string $path, string $prefix, string $suffix, string $group)
     {
-        $this->path   = $path;
+        $this->path = $path;
         $this->prefix = $prefix;
         $this->suffix = $suffix;
-        $this->group  = $group;
+        $this->group = $group;
     }
 
     public function path(): string

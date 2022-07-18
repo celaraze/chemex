@@ -8,33 +8,29 @@ use Throwable;
 class DatabaseStatusAnalyzer extends ReliabilityAnalyzer
 {
     /**
+     * Determine whether the analyzer should be run in CI mode.
+     *
+     * @var bool
+     */
+    public static $runInCI = false;
+    /**
      * The title describing the analyzer.
      *
      * @var string|null
      */
     public $title = "Database is accessible.";
-
     /**
      * The severity of the analyzer.
      *
      * @var string|null
      */
     public $severity = self::SEVERITY_MAJOR;
-
     /**
      * The time to fix in minutes.
      *
      * @var int|null
      */
     public $timeToFix = 5;
-
-    /**
-     * Determine whether the analyzer should be run in CI mode.
-     *
-     * @var bool
-     */
-    public static $runInCI = false;
-
     /**
      * The connections that are not accessible.
      *
@@ -49,7 +45,7 @@ class DatabaseStatusAnalyzer extends ReliabilityAnalyzer
      */
     public function errorMessage()
     {
-        return "Your application's database connection(s) is/are not accessible: ".$this->failedConnections;
+        return "Your application's database connection(s) is/are not accessible: " . $this->failedConnections;
     }
 
     /**
@@ -60,7 +56,7 @@ class DatabaseStatusAnalyzer extends ReliabilityAnalyzer
     public function handle()
     {
         $databaseConnectionsToCheck = config('enlightn.database_connections', [
-           config('database.default'),
+            config('database.default'),
         ]);
 
         $this->failedConnections = collect($databaseConnectionsToCheck)->filter()->reject(function ($connection) {
@@ -73,7 +69,7 @@ class DatabaseStatusAnalyzer extends ReliabilityAnalyzer
             }
         })->join(', ', ' and ');
 
-        if (! empty($this->failedConnections)) {
+        if (!empty($this->failedConnections)) {
             $this->markFailed();
         }
     }

@@ -63,22 +63,23 @@
         </div>
 
         <?php if ($logger) { ?>
-        <div class="tab <?= !$logger->getLogs() ? 'disabled' : ''; ?>">
-            <h3 class="tab-title">
-                Logs
-                <?php if ($logger->countErrors()) { ?><span class="badge status-error"><?= $logger->countErrors(); ?></span><?php } ?>
-            </h3>
+            <div class="tab <?= !$logger->getLogs() ? 'disabled' : ''; ?>">
+                <h3 class="tab-title">
+                    Logs
+                    <?php if ($logger->countErrors()) { ?><span
+                        class="badge status-error"><?= $logger->countErrors(); ?></span><?php } ?>
+                </h3>
 
-            <div class="tab-content">
-                <?php if ($logger->getLogs()) { ?>
-                    <?= $this->include('views/logs.html.php', ['logs' => $logger->getLogs()]); ?>
-                <?php } else { ?>
-                    <div class="empty">
-                        <p>No log messages</p>
-                    </div>
-                <?php } ?>
+                <div class="tab-content">
+                    <?php if ($logger->getLogs()) { ?>
+                        <?= $this->include('views/logs.html.php', ['logs' => $logger->getLogs()]); ?>
+                    <?php } else { ?>
+                        <div class="empty">
+                            <p>No log messages</p>
+                        </div>
+                    <?php } ?>
+                </div>
             </div>
-        </div>
         <?php } ?>
 
         <div class="tab">
@@ -104,13 +105,13 @@
         </div>
 
         <?php if ($currentContent) { ?>
-        <div class="tab">
-            <h3 class="tab-title">Output content</h3>
+            <div class="tab">
+                <h3 class="tab-title">Output content</h3>
 
-            <div class="tab-content">
-                <?= $currentContent; ?>
+                <div class="tab-content">
+                    <?= $currentContent; ?>
+                </div>
             </div>
-        </div>
         <?php } ?>
     </div>
 </div>

@@ -38,9 +38,9 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
     private string $charset = '';
 
     /**
-     * @param callable|resource|string|null $output  A line dumper callable, an opened stream or an output path, defaults to static::$defaultOutput
-     * @param string|null                   $charset The default character encoding to use for non-UTF8 strings
-     * @param int                           $flags   A bit field of static::DUMP_* constants to fine tune dumps representation
+     * @param callable|resource|string|null $output A line dumper callable, an opened stream or an output path, defaults to static::$defaultOutput
+     * @param string|null $charset The default character encoding to use for non-UTF8 strings
+     * @param int $flags A bit field of static::DUMP_* constants to fine tune dumps representation
      */
     public function __construct($output = null, string $charset = null, int $flags = 0)
     {
@@ -50,6 +50,23 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
         if (!$output && \is_string(static::$defaultOutput)) {
             static::$defaultOutput = $this->outputStream;
         }
+    }
+
+    /**
+     * Sets the default character encoding to use for non-UTF8 strings.
+     *
+     * @return string The previous charset
+     */
+    public function setCharset(string $charset): string
+    {
+        $prev = $this->charset;
+
+        $charset = strtoupper($charset);
+        $charset = null === $charset || 'UTF-8' === $charset || 'UTF8' === $charset ? 'CP1252' : $charset;
+
+        $this->charset = $charset;
+
+        return $prev;
     }
 
     /**
@@ -73,23 +90,6 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
             $this->outputStream = $output;
             $this->lineDumper = $this->echoLine(...);
         }
-
-        return $prev;
-    }
-
-    /**
-     * Sets the default character encoding to use for non-UTF8 strings.
-     *
-     * @return string The previous charset
-     */
-    public function setCharset(string $charset): string
-    {
-        $prev = $this->charset;
-
-        $charset = strtoupper($charset);
-        $charset = null === $charset || 'UTF-8' === $charset || 'UTF8' === $charset ? 'CP1252' : $charset;
-
-        $this->charset = $charset;
 
         return $prev;
     }
@@ -168,7 +168,7 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
     protected function echoLine(string $line, int $depth, string $indentPad)
     {
         if (-1 !== $depth) {
-            fwrite($this->outputStream, str_repeat($indentPad, $depth).$line."\n");
+            fwrite($this->outputStream, str_repeat($indentPad, $depth) . $line . "\n");
         }
     }
 

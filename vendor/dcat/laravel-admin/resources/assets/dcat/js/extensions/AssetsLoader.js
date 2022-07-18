@@ -1,4 +1,3 @@
-
 export default class AssetsLoader {
     constructor(Dcat) {
         let _this = this;
@@ -20,7 +19,7 @@ export default class AssetsLoader {
     load(urls, callback, args) {
         let _this = this;
         if (urls.length < 1) {
-            (! callback) || callback(args);
+            (!callback) || callback(args);
 
             _this.fire();
             return;

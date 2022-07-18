@@ -21,16 +21,11 @@ trait LazyWidget
         return $this;
     }
 
-    public function translation()
-    {
-        return empty($this->translation) ? Admin::translator()->getPath() : $this->translation;
-    }
-
     public function getUrl()
     {
         $data = array_merge($this->payload, [
             'renderable' => $this->getRenderableName(),
-            '_trans_'    => $this->translation(),
+            '_trans_' => $this->translation(),
         ]);
 
         return route(admin_api_route_name('render'), $data);
@@ -39,5 +34,10 @@ trait LazyWidget
     protected function getRenderableName()
     {
         return str_replace('\\', '_', static::class);
+    }
+
+    public function translation()
+    {
+        return empty($this->translation) ? Admin::translator()->getPath() : $this->translation;
     }
 }

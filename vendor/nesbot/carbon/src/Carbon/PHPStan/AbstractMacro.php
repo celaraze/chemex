@@ -67,7 +67,7 @@ abstract class AbstractMacro implements BuiltinMethodReflection
      * @param string $className
      * @phpstan-param class-string $className
      *
-     * @param string   $methodName
+     * @param string $methodName
      * @param callable $macro
      */
     public function __construct(string $className, string $methodName, $macro)
@@ -88,6 +88,14 @@ abstract class AbstractMacro implements BuiltinMethodReflection
                 $this->static = true;
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
     }
 
     /**
@@ -149,25 +157,9 @@ abstract class AbstractMacro implements BuiltinMethodReflection
     /**
      * {@inheritdoc}
      */
-    public function getDocComment(): ?string
-    {
-        return $this->reflectionFunction->getDocComment() ?: null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getName(): string
     {
         return $this->methodName;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getParameters(): array
-    {
-        return $this->parameters;
     }
 
     /**
@@ -187,6 +179,14 @@ abstract class AbstractMacro implements BuiltinMethodReflection
             $this->reflectionFunction->isDeprecated() ||
             preg_match('/@deprecated/i', $this->getDocComment() ?: '')
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDocComment(): ?string
+    {
+        return $this->reflectionFunction->getDocComment() ?: null;
     }
 
     /**

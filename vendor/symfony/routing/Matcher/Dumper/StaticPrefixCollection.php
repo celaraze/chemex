@@ -45,6 +45,11 @@ class StaticPrefixCollection
         $this->prefix = $prefix;
     }
 
+    public static function handleError(int $type, string $msg)
+    {
+        return str_contains($msg, 'Compilation failed: lookbehind assertion is not fixed length');
+    }
+
     public function getPrefix(): string
     {
         return $this->prefix;
@@ -122,22 +127,6 @@ class StaticPrefixCollection
     }
 
     /**
-     * Linearizes back a set of nested routes into a collection.
-     */
-    public function populateCollection(RouteCollection $routes): RouteCollection
-    {
-        foreach ($this->items as $route) {
-            if ($route instanceof self) {
-                $route->populateCollection($routes);
-            } else {
-                $routes->add(...$route);
-            }
-        }
-
-        return $routes;
-    }
-
-    /**
      * Gets the full and static common prefixes between two route patterns.
      *
      * The static prefix stops at last at the first opening bracket.
@@ -173,7 +162,7 @@ class StaticPrefixCollection
                         break;
                     }
                     $subPattern = substr($prefix, $i, $j - $i);
-                    if ($prefix !== $anotherPrefix && !preg_match('/^\(\[[^\]]++\]\+\+\)$/', $subPattern) && !preg_match('{(?<!'.$subPattern.')}', '')) {
+                    if ($prefix !== $anotherPrefix && !preg_match('/^\(\[[^\]]++\]\+\+\)$/', $subPattern) && !preg_match('{(?<!' . $subPattern . ')}', '')) {
                         // sub-patterns of variable length are not considered as common prefixes because their greediness would break in-order matching
                         break;
                     }
@@ -186,7 +175,7 @@ class StaticPrefixCollection
         } finally {
             restore_error_handler();
         }
-        if ($i < $end && 0b10 === (\ord($prefix[$i]) >> 6) && preg_match('//u', $prefix.' '.$anotherPrefix)) {
+        if ($i < $end && 0b10 === (\ord($prefix[$i]) >> 6) && preg_match('//u', $prefix . ' ' . $anotherPrefix)) {
             do {
                 // Prevent cutting in the middle of an UTF-8 characters
                 --$i;
@@ -196,8 +185,19 @@ class StaticPrefixCollection
         return [substr($prefix, 0, $i), substr($prefix, 0, $staticLength ?? $i)];
     }
 
-    public static function handleError(int $type, string $msg)
+    /**
+     * Linearizes back a set of nested routes into a collection.
+     */
+    public function populateCollection(RouteCollection $routes): RouteCollection
     {
-        return str_contains($msg, 'Compilation failed: lookbehind assertion is not fixed length');
+        foreach ($this->items as $route) {
+            if ($route instanceof self) {
+                $route->populateCollection($routes);
+            } else {
+                $routes->add(...$route);
+            }
+        }
+
+        return $routes;
     }
 }

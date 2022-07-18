@@ -38,7 +38,7 @@ class VersionManager
     {
         $name = $this->manager->getName($extension);
 
-        if (! $this->hasVersionFile($name)) {
+        if (!$this->hasVersionFile($name)) {
             return false;
         }
 
@@ -66,15 +66,83 @@ class VersionManager
         return true;
     }
 
-    public function listNewVersions($extension)
+    protected function hasVersionFile($name)
     {
-        $name = $this->manager->getName($extension);
+        $versionFile = $this->getVersionFile($name);
 
-        if (! $this->hasVersionFile($name)) {
-            return [];
+        return $versionFile && is_file($versionFile);
+    }
+
+    protected function getVersionFile($name)
+    {
+        return $this->manager->path($name, 'version.php');
+    }
+
+    protected function getLatestFileVersion($name)
+    {
+        $versionInfo = $this->getFileVersions($name);
+        if (!$versionInfo) {
+            return static::NO_VERSION_VALUE;
         }
 
-        return $this->getNewFileVersions($name, $this->getDatabaseVersion($name));
+        return trim(key(array_slice($versionInfo, -1, 1)));
+    }
+
+    public function getFileVersions($name)
+    {
+        $name = $this->manager->getName($name);
+
+        if ($this->fileVersions !== null && array_key_exists($name, $this->fileVersions)) {
+            return $this->fileVersions[$name];
+        }
+
+        $versionInfo = (array)$this->parseVersionFile($this->getVersionFile($name));
+
+        if ($versionInfo) {
+            uksort($versionInfo, function ($a, $b) {
+                return version_compare($a, $b);
+            });
+        }
+
+        return $this->fileVersions[$name] = $versionInfo;
+    }
+
+    protected function parseVersionFile($file)
+    {
+        if ($file && is_file($file)) {
+            return include $file;
+        }
+    }
+
+    protected function getDatabaseVersion($name)
+    {
+        if ($this->databaseVersions === null) {
+            $this->databaseVersions = Extension::query()->pluck('version', 'name');
+        }
+
+        if (!isset($this->databaseVersions[$name])) {
+            $this->databaseVersions[$name] =
+                Extension::query()
+                    ->where('name', $name)
+                    ->value('version');
+        }
+
+        return $this->databaseVersions[$name] ?? static::NO_VERSION_VALUE;
+    }
+
+    public function getNewFileVersions($name, $version = null)
+    {
+        $name = $this->manager->getName($name);
+
+        if ($version === null) {
+            $version = static::NO_VERSION_VALUE;
+        }
+
+        $versions = $this->getFileVersions($name);
+
+        $position = array_search($version, array_keys($versions));
+
+        return array_slice($versions, ++$position);
     }
 
     protected function applyExtensionUpdate($name, $version, $details)
@@ -89,7 +157,7 @@ class VersionManager
             $this->applyDatabaseScript($name, $version, $script);
         }
 
-        if (! $this->hasDatabaseHistory($name, $version)) {
+        if (!$this->hasDatabaseHistory($name, $version)) {
             foreach ($comments as $comment) {
                 $this->applyDatabaseComment($name, $version, $comment);
 
@@ -100,11 +168,142 @@ class VersionManager
         $this->setDatabaseVersion($name, $version);
     }
 
+    protected function extractScriptsAndComments($details): array
+    {
+        $details = (array)$details;
+
+        $fileNamePattern = "/^[a-z0-9\_\-\.\/\\\]+\.php$/i";
+
+        $comments = array_values(array_filter($details, function ($detail) use ($fileNamePattern) {
+            return !preg_match($fileNamePattern, $detail);
+        }));
+
+        $scripts = array_values(array_filter($details, function ($detail) use ($fileNamePattern) {
+            return preg_match($fileNamePattern, $detail);
+        }));
+
+        return [$comments, $scripts];
+    }
+
+    protected function hasDatabaseHistory($name, $version, $script = null)
+    {
+        $historyInfo = $this->getDatabaseHistory($name);
+        if (!$historyInfo) {
+            return false;
+        }
+
+        foreach ($historyInfo as $history) {
+            if ($history->version != $version) {
+                continue;
+            }
+
+            if ($history->type == static::HISTORY_TYPE_COMMENT && !$script) {
+                return true;
+            }
+
+            if ($history->type == static::HISTORY_TYPE_SCRIPT && $history->detail == $script) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getDatabaseHistory($name)
+    {
+        if ($this->databaseHistory !== null && array_key_exists($name, $this->databaseHistory)) {
+            return $this->databaseHistory[$name];
+        }
+
+        $historyInfo = ExtensionHistory::query()
+            ->where('name', $name)
+            ->orderBy('id')
+            ->get()
+            ->all();
+
+        return $this->databaseHistory[$name] = $historyInfo;
+    }
+
+    protected function applyDatabaseScript($name, $version, $script)
+    {
+        $updateFile = $this->manager->path($name, 'updates/' . $script);
+
+        if (!is_file($updateFile)) {
+            $this->note(sprintf('- <error>v%s:  Migration file "%s" not found</error>', $version, $script));
+
+            return;
+        }
+
+        $this->updater->setUp($this->resolveUpdater($name, $updateFile), function () use ($name, $version, $script) {
+            ExtensionHistory::query()->create([
+                'name' => $name,
+                'type' => static::HISTORY_TYPE_SCRIPT,
+                'version' => $version,
+                'detail' => $script,
+            ]);
+        });
+
+        $this->note(sprintf('- <info>v%s:  Migrated</info> %s', $version, $script));
+    }
+
+    protected function resolveUpdater($name, $updateFile)
+    {
+        $updater = $this->updater->resolve($updateFile);
+
+        if (method_exists($updater, 'setExtension')) {
+            $updater->setExtension($this->manager->get($name));
+        }
+
+        return $updater;
+    }
+
+    protected function applyDatabaseComment($name, $version, $comment)
+    {
+        ExtensionHistory::query()->create([
+            'name' => $name,
+            'type' => static::HISTORY_TYPE_COMMENT,
+            'version' => $version,
+            'detail' => $comment,
+        ]);
+    }
+
+    protected function setDatabaseVersion($name, $version = null)
+    {
+        $currentVersion = $this->getDatabaseVersion($name);
+
+        if ($version && !$currentVersion) {
+            Extension::query()->create([
+                'name' => $name,
+                'version' => $version,
+            ]);
+        } elseif ($version && $currentVersion) {
+            Extension::query()->where('name', $name)->update([
+                'version' => $version,
+                'updated_at' => new Carbon,
+            ]);
+        } elseif ($currentVersion) {
+            Extension::query()->where('name', $name)->delete();
+        }
+
+        $this->databaseVersions[$name] = $version;
+    }
+
+    public function listNewVersions($extension)
+    {
+        $name = $this->manager->getName($extension);
+
+        if (!$this->hasVersionFile($name)) {
+            return [];
+        }
+
+        return $this->getNewFileVersions($name, $this->getDatabaseVersion($name));
+    }
+
     public function remove($extension, $stopOnVersion = null, $stopCurrentVersion = false)
     {
         $name = $this->manager->getName($extension);
 
-        if (! $this->hasVersionFile($name)) {
+        if (!$this->hasVersionFile($name)) {
             return false;
         }
 
@@ -163,6 +362,37 @@ class VersionManager
         return true;
     }
 
+    protected function removeDatabaseComment($name, $version)
+    {
+        ExtensionHistory::query()
+            ->where('name', $name)
+            ->where('type', static::HISTORY_TYPE_COMMENT)
+            ->where('version', $version)
+            ->delete();
+    }
+
+    protected function removeDatabaseScript($name, $version, $script)
+    {
+        $updateFile = $this->manager->path($name, 'updates/' . $script);
+
+        $this->updater->packDown($this->resolveUpdater($name, $updateFile), function () use ($name, $version, $script) {
+            ExtensionHistory::query()
+                ->where('name', $name)
+                ->where('type', static::HISTORY_TYPE_SCRIPT)
+                ->where('version', $version)
+                ->where('detail', $script)
+                ->delete();
+        });
+    }
+
+    protected function getLastHistory($name)
+    {
+        return ExtensionHistory::query()
+            ->where('name', $name)
+            ->orderByDesc('id')
+            ->first();
+    }
+
     public function purge($name)
     {
         $name = $this->manager->getName($name);
@@ -180,236 +410,6 @@ class VersionManager
         }
 
         return $countHistory + $countVersions;
-    }
-
-    protected function getLatestFileVersion($name)
-    {
-        $versionInfo = $this->getFileVersions($name);
-        if (! $versionInfo) {
-            return static::NO_VERSION_VALUE;
-        }
-
-        return trim(key(array_slice($versionInfo, -1, 1)));
-    }
-
-    public function getNewFileVersions($name, $version = null)
-    {
-        $name = $this->manager->getName($name);
-
-        if ($version === null) {
-            $version = static::NO_VERSION_VALUE;
-        }
-
-        $versions = $this->getFileVersions($name);
-
-        $position = array_search($version, array_keys($versions));
-
-        return array_slice($versions, ++$position);
-    }
-
-    public function getFileVersions($name)
-    {
-        $name = $this->manager->getName($name);
-
-        if ($this->fileVersions !== null && array_key_exists($name, $this->fileVersions)) {
-            return $this->fileVersions[$name];
-        }
-
-        $versionInfo = (array) $this->parseVersionFile($this->getVersionFile($name));
-
-        if ($versionInfo) {
-            uksort($versionInfo, function ($a, $b) {
-                return version_compare($a, $b);
-            });
-        }
-
-        return $this->fileVersions[$name] = $versionInfo;
-    }
-
-    protected function parseVersionFile($file)
-    {
-        if ($file && is_file($file)) {
-            return include $file;
-        }
-    }
-
-    protected function getVersionFile($name)
-    {
-        return $this->manager->path($name, 'version.php');
-    }
-
-    protected function hasVersionFile($name)
-    {
-        $versionFile = $this->getVersionFile($name);
-
-        return $versionFile && is_file($versionFile);
-    }
-
-    protected function getDatabaseVersion($name)
-    {
-        if ($this->databaseVersions === null) {
-            $this->databaseVersions = Extension::query()->pluck('version', 'name');
-        }
-
-        if (! isset($this->databaseVersions[$name])) {
-            $this->databaseVersions[$name] =
-                Extension::query()
-                ->where('name', $name)
-                ->value('version');
-        }
-
-        return $this->databaseVersions[$name] ?? static::NO_VERSION_VALUE;
-    }
-
-    protected function setDatabaseVersion($name, $version = null)
-    {
-        $currentVersion = $this->getDatabaseVersion($name);
-
-        if ($version && ! $currentVersion) {
-            Extension::query()->create([
-                'name'    => $name,
-                'version' => $version,
-            ]);
-        } elseif ($version && $currentVersion) {
-            Extension::query()->where('name', $name)->update([
-                'version'    => $version,
-                'updated_at' => new Carbon,
-            ]);
-        } elseif ($currentVersion) {
-            Extension::query()->where('name', $name)->delete();
-        }
-
-        $this->databaseVersions[$name] = $version;
-    }
-
-    protected function applyDatabaseComment($name, $version, $comment)
-    {
-        ExtensionHistory::query()->create([
-            'name'    => $name,
-            'type'    => static::HISTORY_TYPE_COMMENT,
-            'version' => $version,
-            'detail'  => $comment,
-        ]);
-    }
-
-    protected function removeDatabaseComment($name, $version)
-    {
-        ExtensionHistory::query()
-            ->where('name', $name)
-            ->where('type', static::HISTORY_TYPE_COMMENT)
-            ->where('version', $version)
-            ->delete();
-    }
-
-    protected function applyDatabaseScript($name, $version, $script)
-    {
-        $updateFile = $this->manager->path($name, 'updates/'.$script);
-
-        if (! is_file($updateFile)) {
-            $this->note(sprintf('- <error>v%s:  Migration file "%s" not found</error>', $version, $script));
-
-            return;
-        }
-
-        $this->updater->setUp($this->resolveUpdater($name, $updateFile), function () use ($name, $version, $script) {
-            ExtensionHistory::query()->create([
-                'name'    => $name,
-                'type'    => static::HISTORY_TYPE_SCRIPT,
-                'version' => $version,
-                'detail'  => $script,
-            ]);
-        });
-
-        $this->note(sprintf('- <info>v%s:  Migrated</info> %s', $version, $script));
-    }
-
-    protected function resolveUpdater($name, $updateFile)
-    {
-        $updater = $this->updater->resolve($updateFile);
-
-        if (method_exists($updater, 'setExtension')) {
-            $updater->setExtension($this->manager->get($name));
-        }
-
-        return $updater;
-    }
-
-    protected function removeDatabaseScript($name, $version, $script)
-    {
-        $updateFile = $this->manager->path($name, 'updates/'.$script);
-
-        $this->updater->packDown($this->resolveUpdater($name, $updateFile), function () use ($name, $version, $script) {
-            ExtensionHistory::query()
-                ->where('name', $name)
-                ->where('type', static::HISTORY_TYPE_SCRIPT)
-                ->where('version', $version)
-                ->where('detail', $script)
-                ->delete();
-        });
-    }
-
-    protected function getDatabaseHistory($name)
-    {
-        if ($this->databaseHistory !== null && array_key_exists($name, $this->databaseHistory)) {
-            return $this->databaseHistory[$name];
-        }
-
-        $historyInfo = ExtensionHistory::query()
-            ->where('name', $name)
-            ->orderBy('id')
-            ->get()
-            ->all();
-
-        return $this->databaseHistory[$name] = $historyInfo;
-    }
-
-    protected function getLastHistory($name)
-    {
-        return ExtensionHistory::query()
-            ->where('name', $name)
-            ->orderByDesc('id')
-            ->first();
-    }
-
-    protected function hasDatabaseHistory($name, $version, $script = null)
-    {
-        $historyInfo = $this->getDatabaseHistory($name);
-        if (! $historyInfo) {
-            return false;
-        }
-
-        foreach ($historyInfo as $history) {
-            if ($history->version != $version) {
-                continue;
-            }
-
-            if ($history->type == static::HISTORY_TYPE_COMMENT && ! $script) {
-                return true;
-            }
-
-            if ($history->type == static::HISTORY_TYPE_SCRIPT && $history->detail == $script) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function extractScriptsAndComments($details): array
-    {
-        $details = (array) $details;
-
-        $fileNamePattern = "/^[a-z0-9\_\-\.\/\\\]+\.php$/i";
-
-        $comments = array_values(array_filter($details, function ($detail) use ($fileNamePattern) {
-            return ! preg_match($fileNamePattern, $detail);
-        }));
-
-        $scripts = array_values(array_filter($details, function ($detail) use ($fileNamePattern) {
-            return preg_match($fileNamePattern, $detail);
-        }));
-
-        return [$comments, $scripts];
     }
 
     public function getCurrentVersion($extension): string

@@ -23,8 +23,8 @@ class MessageSending
     /**
      * Create a new event instance.
      *
-     * @param  \Symfony\Component\Mime\Email  $message
-     * @param  array  $data
+     * @param \Symfony\Component\Mime\Email $message
+     * @param array $data
      * @return void
      */
     public function __construct(Email $message, array $data = [])

@@ -16,24 +16,21 @@ use Spiral\RoadRunner\EnvironmentInterface;
 class RPC implements RPCInterface
 {
     /**
+     * @var positive-int
+     */
+    private static int $seq = 1;
+    /**
      * @var RelayInterface
      */
     private RelayInterface $relay;
-
     /**
      * @var CodecInterface
      */
     private CodecInterface $codec;
-
     /**
      * @var string|null
      */
     private ?string $service = null;
-
-    /**
-     * @var positive-int
-     */
-    private static int $seq = 1;
 
     /**
      * @param RelayInterface $relay
@@ -43,6 +40,45 @@ class RPC implements RPCInterface
     {
         $this->relay = $relay;
         $this->codec = $codec ?? new JsonCodec();
+    }
+
+    /**
+     * @param CodecInterface|null $codec
+     * @return RPCInterface
+     *
+     * @psalm-suppress UndefinedClass
+     */
+    public static function fromGlobals(CodecInterface $codec = null): RPCInterface
+    {
+        /** @var EnvironmentInterface $env */
+        $env = Environment::fromGlobals();
+        return self::fromEnvironment($env, $codec);
+    }
+
+    /**
+     * @param EnvironmentInterface $env
+     * @param CodecInterface|null $codec
+     * @return RPCInterface
+     *
+     * @psalm-suppress UndefinedClass
+     */
+    public static function fromEnvironment(EnvironmentInterface $env, CodecInterface $codec = null): RPCInterface
+    {
+        /** @var string $address */
+        $address = $env->getRPCAddress();
+        return self::create($address, $codec);
+    }
+
+    /**
+     * @param string $connection
+     * @param CodecInterface|null $codec
+     * @return RPCInterface
+     */
+    public static function create(string $connection, CodecInterface $codec = null): RPCInterface
+    {
+        $relay = Relay::create($connection);
+
+        return new self($relay, $codec);
     }
 
     /**
@@ -95,42 +131,18 @@ class RPC implements RPCInterface
     }
 
     /**
-     * @param string $connection
-     * @param CodecInterface|null $codec
-     * @return RPCInterface
+     * @param string $method
+     * @param mixed $payload
+     * @return Frame
      */
-    public static function create(string $connection, CodecInterface $codec = null): RPCInterface
+    private function packFrame(string $method, $payload): Frame
     {
-        $relay = Relay::create($connection);
+        if ($this->service !== null) {
+            $method = $this->service . '.' . \ucfirst($method);
+        }
 
-        return new self($relay, $codec);
-    }
-
-    /**
-     * @param EnvironmentInterface $env
-     * @param CodecInterface|null $codec
-     * @return RPCInterface
-     *
-     * @psalm-suppress UndefinedClass
-     */
-    public static function fromEnvironment(EnvironmentInterface $env, CodecInterface $codec = null): RPCInterface
-    {
-        /** @var string $address */
-        $address = $env->getRPCAddress();
-        return self::create($address, $codec);
-    }
-
-    /**
-     * @param CodecInterface|null $codec
-     * @return RPCInterface
-     *
-     * @psalm-suppress UndefinedClass
-     */
-    public static function fromGlobals(CodecInterface $codec = null): RPCInterface
-    {
-        /** @var EnvironmentInterface $env */
-        $env = Environment::fromGlobals();
-        return self::fromEnvironment($env, $codec);
+        $body = $method . $this->codec->encode($payload);
+        return new Frame($body, [self::$seq, \strlen($method)], $this->codec->getIndex());
     }
 
     /**
@@ -152,20 +164,5 @@ class RPC implements RPCInterface
         }
 
         return $this->codec->decode($body, $options);
-    }
-
-    /**
-     * @param string $method
-     * @param mixed $payload
-     * @return Frame
-     */
-    private function packFrame(string $method, $payload): Frame
-    {
-        if ($this->service !== null) {
-            $method = $this->service . '.' . \ucfirst($method);
-        }
-
-        $body = $method . $this->codec->encode($payload);
-        return new Frame($body, [self::$seq, \strlen($method)], $this->codec->getIndex());
     }
 }

@@ -47,14 +47,6 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setScripts(array $scripts): void
-    {
-        $this->scripts = $scripts;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getScripts(): array
     {
         return $this->scripts;
@@ -63,9 +55,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setRepositories(array $repositories): void
+    public function setScripts(array $scripts): void
     {
-        $this->repositories = $repositories;
+        $this->scripts = $scripts;
     }
 
     /**
@@ -79,9 +71,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setLicense(array $license): void
+    public function setRepositories(array $repositories): void
     {
-        $this->license = $license;
+        $this->repositories = $repositories;
     }
 
     /**
@@ -95,9 +87,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setKeywords(array $keywords): void
+    public function setLicense(array $license): void
     {
-        $this->keywords = $keywords;
+        $this->license = $license;
     }
 
     /**
@@ -111,9 +103,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setAuthors(array $authors): void
+    public function setKeywords(array $keywords): void
     {
-        $this->authors = $authors;
+        $this->keywords = $keywords;
     }
 
     /**
@@ -127,9 +119,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setDescription(?string $description): void
+    public function setAuthors(array $authors): void
     {
-        $this->description = $description;
+        $this->authors = $authors;
     }
 
     /**
@@ -143,9 +135,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setHomepage(?string $homepage): void
+    public function setDescription(?string $description): void
     {
-        $this->homepage = $homepage;
+        $this->description = $description;
     }
 
     /**
@@ -159,9 +151,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setSupport(array $support): void
+    public function setHomepage(?string $homepage): void
     {
-        $this->support = $support;
+        $this->homepage = $homepage;
     }
 
     /**
@@ -175,9 +167,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setFunding(array $funding): void
+    public function setSupport(array $support): void
     {
-        $this->funding = $funding;
+        $this->support = $support;
     }
 
     /**
@@ -191,9 +183,17 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
+    public function setFunding(array $funding): void
+    {
+        $this->funding = $funding;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function isAbandoned(): bool
     {
-        return (bool) $this->abandoned;
+        return (bool)$this->abandoned;
     }
 
     /**
@@ -215,14 +215,6 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setArchiveName(?string $name): void
-    {
-        $this->archiveName = $name;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getArchiveName(): ?string
     {
         return $this->archiveName;
@@ -231,9 +223,9 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setArchiveExcludes(array $excludes): void
+    public function setArchiveName(?string $name): void
     {
-        $this->archiveExcludes = $excludes;
+        $this->archiveName = $name;
     }
 
     /**
@@ -242,5 +234,13 @@ class CompletePackage extends Package implements CompletePackageInterface
     public function getArchiveExcludes(): array
     {
         return $this->archiveExcludes;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setArchiveExcludes(array $excludes): void
+    {
+        $this->archiveExcludes = $excludes;
     }
 }

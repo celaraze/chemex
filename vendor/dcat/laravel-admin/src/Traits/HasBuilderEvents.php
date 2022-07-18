@@ -11,9 +11,22 @@ trait HasBuilderEvents
         static::addBuilderListeners('builder:resolving', $callback, $once);
     }
 
-    protected function callResolving(...$params)
+    protected static function addBuilderListeners($key, $callback, $once)
     {
-        $this->fireBuilderEvent('builder:resolving', ...$params);
+        $context = Admin::context();
+
+        $key = static::formatEventKey($key);
+
+        $listeners = $context->get($key) ?: [];
+
+        $listeners[] = [$callback, $once];
+
+        $context[$key] = $listeners;
+    }
+
+    protected static function formatEventKey($key)
+    {
+        return static::class . ':' . $key;
     }
 
     public static function composing(callable $callback, bool $once = false)
@@ -21,9 +34,9 @@ trait HasBuilderEvents
         static::addBuilderListeners('builder:composing', $callback, $once);
     }
 
-    protected function callComposing(...$params)
+    protected function callResolving(...$params)
     {
-        $this->fireBuilderEvent('builder:composing', ...$params);
+        $this->fireBuilderEvent('builder:resolving', ...$params);
     }
 
     protected function fireBuilderEvent($key, ...$params)
@@ -47,21 +60,8 @@ trait HasBuilderEvents
         $context[$key] = $listeners;
     }
 
-    protected static function addBuilderListeners($key, $callback, $once)
+    protected function callComposing(...$params)
     {
-        $context = Admin::context();
-
-        $key = static::formatEventKey($key);
-
-        $listeners = $context->get($key) ?: [];
-
-        $listeners[] = [$callback, $once];
-
-        $context[$key] = $listeners;
-    }
-
-    protected static function formatEventKey($key)
-    {
-        return static::class.':'.$key;
+        $this->fireBuilderEvent('builder:composing', ...$params);
     }
 }

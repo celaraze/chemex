@@ -47,9 +47,9 @@ class Import extends Command
     /**
      * Execute the console command.
      *
+     * @return void
      * @throws \Adldap\Models\ModelNotFoundException
      *
-     * @return void
      */
     public function handle()
     {
@@ -73,7 +73,7 @@ class Import extends Command
         }
 
         if (
-            ! $this->input->isInteractive() ||
+            !$this->input->isInteractive() ||
             $this->confirm('Would you like these users to be imported / synchronized?', $default = true)
         ) {
             $imported = $this->import($users);
@@ -82,6 +82,65 @@ class Import extends Command
         } else {
             $this->info('Okay, no users were imported / synchronized.');
         }
+    }
+
+    /**
+     * Retrieves users to be imported.
+     *
+     * @return array
+     * @throws \Adldap\Models\ModelNotFoundException
+     *
+     */
+    public function getUsers(): array
+    {
+        /** @var \Adldap\Query\Builder $query */
+        $query = Resolver::query();
+
+        if ($filter = $this->option('filter')) {
+            // If the filter option was given, we'll
+            // insert it into our search query.
+            $query->rawFilter($filter);
+        }
+
+        if ($user = $this->argument('user')) {
+            $users = [$query->findOrFail($user)];
+        } else {
+            // Retrieve all users. We'll paginate our search in case we
+            // hit the 1000 record hard limit of active directory.
+            $users = $query->paginate()->getResults();
+        }
+
+        // We need to filter our results to make sure they are
+        // only users. In some cases, Contact models may be
+        // returned due the possibility of them
+        // existing in the same scope.
+        return array_filter($users, function ($user) {
+            return $user instanceof User;
+        });
+    }
+
+    /**
+     * Displays the given users in a table.
+     *
+     * @param array $users
+     *
+     * @return void
+     */
+    public function display(array $users = [])
+    {
+        $headers = ['Name', 'Account Name', 'UPN'];
+
+        $data = [];
+
+        array_map(function (User $user) use (&$data) {
+            $data[] = [
+                'name' => $user->getCommonName(),
+                'account_name' => $user->getAccountName(),
+                'upn' => $user->getUserPrincipalName(),
+            ];
+        }, $users);
+
+        $this->table($headers, $data);
     }
 
     /**
@@ -136,100 +195,48 @@ class Import extends Command
     }
 
     /**
-     * Displays the given users in a table.
+     * Set and create a new instance of the eloquent model to use.
      *
-     * @param array $users
-     *
-     * @return void
+     * @return Model
      */
-    public function display(array $users = [])
+    protected function model(): Model
     {
-        $headers = ['Name', 'Account Name', 'UPN'];
-
-        $data = [];
-
-        array_map(function (User $user) use (&$data) {
-            $data[] = [
-                'name'         => $user->getCommonName(),
-                'account_name' => $user->getAccountName(),
-                'upn'          => $user->getUserPrincipalName(),
-            ];
-        }, $users);
-
-        $this->table($headers, $data);
-    }
-
-    /**
-     * Returns true / false if the current import is being logged.
-     *
-     * @return bool
-     */
-    public function isLogging(): bool
-    {
-        return ! $this->option('no-log');
-    }
-
-    /**
-     * Returns true / false if users are being deleted
-     * if their account is disabled in LDAP.
-     *
-     * @return bool
-     */
-    public function isDeleting(): bool
-    {
-        return $this->option('delete') == 'true';
-    }
-
-    /**
-     * Returns true / false if users are being restored
-     * if their account is enabled in LDAP.
-     *
-     * @return bool
-     */
-    public function isRestoring(): bool
-    {
-        return $this->option('restore') == 'true';
-    }
-
-    /**
-     * Retrieves users to be imported.
-     *
-     * @throws \Adldap\Models\ModelNotFoundException
-     *
-     * @return array
-     */
-    public function getUsers(): array
-    {
-        /** @var \Adldap\Query\Builder $query */
-        $query = Resolver::query();
-
-        if ($filter = $this->option('filter')) {
-            // If the filter option was given, we'll
-            // insert it into our search query.
-            $query->rawFilter($filter);
+        if (!$this->model) {
+            $this->model = $this->option('model') ?? Config::get('ldap_auth.model') ?: $this->determineModel();
         }
 
-        if ($user = $this->argument('user')) {
-            $users = [$query->findOrFail($user)];
-        } else {
-            // Retrieve all users. We'll paginate our search in case we
-            // hit the 1000 record hard limit of active directory.
-            $users = $query->paginate()->getResults();
-        }
+        return new $this->model();
+    }
 
-        // We need to filter our results to make sure they are
-        // only users. In some cases, Contact models may be
-        // returned due the possibility of them
-        // existing in the same scope.
-        return array_filter($users, function ($user) {
-            return $user instanceof User;
+    /**
+     * Retrieves the model by checking the configured LDAP authentication providers.
+     *
+     * @return string
+     * @throws UnexpectedValueException
+     *
+     */
+    protected function determineModel()
+    {
+        // Retrieve all of the configured authentication providers that
+        // use the LDAP driver and have a configured model.
+        $providers = Arr::where(Config::get('auth.providers'), function ($value, $key) {
+            return $value['driver'] == 'ldap' && array_key_exists('model', $value);
         });
+
+        // Pull the first driver and return a new model instance.
+        if ($ldap = reset($providers)) {
+            return $ldap['model'];
+        }
+
+        throw new UnexpectedValueException(
+            'Unable to retrieve LDAP authentication driver. Did you forget to configure it?'
+        );
     }
 
     /**
      * Saves the specified user with its model.
      *
-     * @param User  $user
+     * @param User $user
      * @param Model $model
      *
      * @return bool
@@ -251,9 +258,84 @@ class Import extends Command
     }
 
     /**
+     * Returns true / false if the current import is being logged.
+     *
+     * @return bool
+     */
+    public function isLogging(): bool
+    {
+        return !$this->option('no-log');
+    }
+
+    /**
+     * Returns true / false if users are being deleted
+     * if their account is disabled in LDAP.
+     *
+     * @return bool
+     */
+    public function isDeleting(): bool
+    {
+        return $this->option('delete') == 'true';
+    }
+
+    /**
+     * Soft deletes the specified model if their LDAP account is disabled.
+     *
+     * @param User $user
+     * @param Model $model
+     *
+     * @return void
+     * @throws Exception
+     *
+     */
+    protected function delete(User $user, Model $model)
+    {
+        if (
+            $this->isUsingSoftDeletes($model) &&
+            !$model->trashed() &&
+            $user->isDisabled()
+        ) {
+            // If deleting is enabled, the model supports soft deletes, the model
+            // isn't already deleted, and the LDAP user is disabled, we'll
+            // go ahead and delete the users model.
+            $model->delete();
+
+            if ($this->isLogging()) {
+                $type = get_class($user->getSchema());
+
+                logger()->info("Soft-deleted user {$user->getCommonName()}. Their {$type} user account is disabled.");
+            }
+        }
+    }
+
+    /**
+     * Returns true / false if the model is using soft deletes
+     * by checking if the model contains a `trashed` method.
+     *
+     * @param Model $model
+     *
+     * @return bool
+     */
+    protected function isUsingSoftDeletes(Model $model): bool
+    {
+        return method_exists($model, 'trashed');
+    }
+
+    /**
+     * Returns true / false if users are being restored
+     * if their account is enabled in LDAP.
+     *
+     * @return bool
+     */
+    public function isRestoring(): bool
+    {
+        return $this->option('restore') == 'true';
+    }
+
+    /**
      * Restores soft-deleted models if their LDAP account is enabled.
      *
-     * @param User  $user
+     * @param User $user
      * @param Model $model
      *
      * @return void
@@ -276,87 +358,5 @@ class Import extends Command
                 logger()->info("Restored user {$user->getCommonName()}. Their {$type} user account has been re-enabled.");
             }
         }
-    }
-
-    /**
-     * Soft deletes the specified model if their LDAP account is disabled.
-     *
-     * @param User  $user
-     * @param Model $model
-     *
-     * @throws Exception
-     *
-     * @return void
-     */
-    protected function delete(User $user, Model $model)
-    {
-        if (
-            $this->isUsingSoftDeletes($model) &&
-            ! $model->trashed() &&
-            $user->isDisabled()
-        ) {
-            // If deleting is enabled, the model supports soft deletes, the model
-            // isn't already deleted, and the LDAP user is disabled, we'll
-            // go ahead and delete the users model.
-            $model->delete();
-
-            if ($this->isLogging()) {
-                $type = get_class($user->getSchema());
-
-                logger()->info("Soft-deleted user {$user->getCommonName()}. Their {$type} user account is disabled.");
-            }
-        }
-    }
-
-    /**
-     * Set and create a new instance of the eloquent model to use.
-     *
-     * @return Model
-     */
-    protected function model(): Model
-    {
-        if (! $this->model) {
-            $this->model = $this->option('model') ?? Config::get('ldap_auth.model') ?: $this->determineModel();
-        }
-
-        return new $this->model();
-    }
-
-    /**
-     * Retrieves the model by checking the configured LDAP authentication providers.
-     *
-     * @throws UnexpectedValueException
-     *
-     * @return string
-     */
-    protected function determineModel()
-    {
-        // Retrieve all of the configured authentication providers that
-        // use the LDAP driver and have a configured model.
-        $providers = Arr::where(Config::get('auth.providers'), function ($value, $key) {
-            return $value['driver'] == 'ldap' && array_key_exists('model', $value);
-        });
-
-        // Pull the first driver and return a new model instance.
-        if ($ldap = reset($providers)) {
-            return $ldap['model'];
-        }
-
-        throw new UnexpectedValueException(
-            'Unable to retrieve LDAP authentication driver. Did you forget to configure it?'
-        );
-    }
-
-    /**
-     * Returns true / false if the model is using soft deletes
-     * by checking if the model contains a `trashed` method.
-     *
-     * @param Model $model
-     *
-     * @return bool
-     */
-    protected function isUsingSoftDeletes(Model $model): bool
-    {
-        return method_exists($model, 'trashed');
     }
 }

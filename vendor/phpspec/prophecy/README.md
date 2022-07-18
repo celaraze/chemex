@@ -226,7 +226,7 @@ actually is.
 
 You see, even if method arguments used during method prophecy creation look
 like simple method arguments, in reality they are not. They are argument token
-wildcards.  As a matter of fact, `->setName('everzet')` looks like a simple call just
+wildcards. As a matter of fact, `->setName('everzet')` looks like a simple call just
 because Prophecy automatically transforms it under the hood into:
 
 ```php
@@ -256,7 +256,8 @@ That's why Prophecy comes bundled with a bunch of other tokens:
 - `CallbackToken` or `Argument::that(callback)` - checks that the argument matches a custom callback
 - `AnyValueToken` or `Argument::any()` - matches any argument
 - `AnyValuesToken` or `Argument::cetera()` - matches any arguments to the rest of the signature
-- `StringContainsToken` or `Argument::containingString($value)` - checks that the argument contains a specific string value
+- `StringContainsToken` or `Argument::containingString($value)` - checks that the argument contains a specific string
+  value
 - `InArrayToken` or `Argument::in($array)` - checks if value is in array
 - `NotInArrayToken` or `Argument::notIn($array)` - checks if value is not in array
 
@@ -403,9 +404,11 @@ $em->flush()->shouldHaveBeenCalled();
 
 Such manipulation with doubles is called spying. And with Prophecy it just works.
 
-
 ## FAQ
 
 ### Can I call the original methods on a prophesized class?
 
-Prophecy does not support calling the original methods on a phrophesized class. If you find yourself needing to mock some methods of a class while calling the original version of other methods, it's likely a sign that your class violates the [single-responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle) and should be refactored.
+Prophecy does not support calling the original methods on a phrophesized class. If you find yourself needing to mock
+some methods of a class while calling the original version of other methods, it's likely a sign that your class violates
+the [single-responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle) and should be
+refactored.

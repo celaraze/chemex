@@ -309,11 +309,6 @@ class Address extends \Faker\Provider\Address
         return '';
     }
 
-    public function streetName()
-    {
-        return static::randomElement(static::$street);
-    }
-
     public static function postcode()
     {
         return static::toUpper(static::bothify(static::randomElement(static::$postcode)));
@@ -334,6 +329,16 @@ class Address extends \Faker\Provider\Address
         return static::randomElement(static::$cityPrefix);
     }
 
+    public static function streetPrefix()
+    {
+        return static::randomElement(static::$streetPrefix);
+    }
+
+    public function streetName()
+    {
+        return static::randomElement(static::$street);
+    }
+
     public function city()
     {
         return static::randomElement(static::$city);
@@ -343,9 +348,9 @@ class Address extends \Faker\Provider\Address
      * Get city and region together
      * We need it because city and region must comply each other in Ukraine
      *
+     * @return string
      * @example 'Закарпатська область, місто Ужгород'
      *
-     * @return string
      */
     public function cityAndRegion()
     {
@@ -355,10 +360,5 @@ class Address extends \Faker\Provider\Address
         $format = "$region {{regionSuffix}}, {{cityPrefix}} $city";
 
         return $this->generator->parse($format);
-    }
-
-    public static function streetPrefix()
-    {
-        return static::randomElement(static::$streetPrefix);
     }
 }

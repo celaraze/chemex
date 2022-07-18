@@ -25,6 +25,11 @@ final class Canary
         $this->canceller = $canceller;
     }
 
+    public function __destruct()
+    {
+        $this->cancel();
+    }
+
     public function cancel()
     {
         if (isset($this->canceller)) {
@@ -32,10 +37,5 @@ final class Canary
             unset($this->canceller);
             $canceller();
         }
-    }
-
-    public function __destruct()
-    {
-        $this->cancel();
     }
 }

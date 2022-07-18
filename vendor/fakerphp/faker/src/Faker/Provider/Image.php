@@ -23,64 +23,13 @@ class Image extends Base
     ];
 
     /**
-     * Generate the URL that will return a random image
-     *
-     * Set randomize to false to remove the random GET parameter at the end of the url.
-     *
-     * @example 'http://via.placeholder.com/640x480.png/CCCCCC?text=well+hi+there'
-     *
-     * @param int         $width
-     * @param int         $height
-     * @param string|null $category
-     * @param bool        $randomize
-     * @param string|null $word
-     * @param bool        $gray
-     *
-     * @return string
-     */
-    public static function imageUrl(
-        $width = 640,
-        $height = 480,
-        $category = null,
-        $randomize = true,
-        $word = null,
-        $gray = false
-    ) {
-        $size = sprintf('%dx%d.png', $width, $height);
-
-        $imageParts = [];
-
-        if ($category !== null) {
-            $imageParts[] = $category;
-        }
-
-        if ($word !== null) {
-            $imageParts[] = $word;
-        }
-
-        if ($randomize === true) {
-            $imageParts[] = Lorem::word();
-        }
-
-        $backgroundColor = $gray === true ? 'CCCCCC' : str_replace('#', '', Color::safeHexColor());
-
-        return sprintf(
-            '%s/%s/%s%s',
-            self::BASE_URL,
-            $size,
-            $backgroundColor,
-            count($imageParts) > 0 ? '?text=' . urlencode(implode(' ', $imageParts)) : ''
-        );
-    }
-
-    /**
      * Download a remote random image to disk and return its location
      *
      * Requires curl, or allow_url_fopen to be on in php.ini.
      *
+     * @return bool|string
      * @example '/path/to/dir/13b73edae8443990be1aa8f1a483bc27.png'
      *
-     * @return bool|string
      */
     public static function image(
         $dir = null,
@@ -91,7 +40,8 @@ class Image extends Base
         $randomize = true,
         $word = null,
         $gray = false
-    ) {
+    )
+    {
         $dir = null === $dir ? sys_get_temp_dir() : $dir; // GNU/Linux / OS X / Windows compatible
         // Validate directory path
         if (!is_dir($dir) || !is_writable($dir)) {
@@ -135,5 +85,57 @@ class Image extends Base
         }
 
         return $fullPath ? $filepath : $filename;
+    }
+
+    /**
+     * Generate the URL that will return a random image
+     *
+     * Set randomize to false to remove the random GET parameter at the end of the url.
+     *
+     * @param int $width
+     * @param int $height
+     * @param string|null $category
+     * @param bool $randomize
+     * @param string|null $word
+     * @param bool $gray
+     *
+     * @return string
+     * @example 'http://via.placeholder.com/640x480.png/CCCCCC?text=well+hi+there'
+     *
+     */
+    public static function imageUrl(
+        $width = 640,
+        $height = 480,
+        $category = null,
+        $randomize = true,
+        $word = null,
+        $gray = false
+    )
+    {
+        $size = sprintf('%dx%d.png', $width, $height);
+
+        $imageParts = [];
+
+        if ($category !== null) {
+            $imageParts[] = $category;
+        }
+
+        if ($word !== null) {
+            $imageParts[] = $word;
+        }
+
+        if ($randomize === true) {
+            $imageParts[] = Lorem::word();
+        }
+
+        $backgroundColor = $gray === true ? 'CCCCCC' : str_replace('#', '', Color::safeHexColor());
+
+        return sprintf(
+            '%s/%s/%s%s',
+            self::BASE_URL,
+            $size,
+            $backgroundColor,
+            count($imageParts) > 0 ? '?text=' . urlencode(implode(' ', $imageParts)) : ''
+        );
     }
 }

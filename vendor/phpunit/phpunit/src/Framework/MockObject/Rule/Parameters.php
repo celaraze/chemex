@@ -7,17 +7,18 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Rule;
 
-use function count;
-use function get_class;
-use function sprintf;
 use Exception;
 use PHPUnit\Framework\Constraint\Constraint;
 use PHPUnit\Framework\Constraint\IsAnything;
 use PHPUnit\Framework\Constraint\IsEqual;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\Invocation as BaseInvocation;
+use function count;
+use function get_class;
+use function sprintf;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -55,27 +56,12 @@ final class Parameters implements ParametersRule
         }
     }
 
-    public function toString(): string
-    {
-        $text = 'with parameter';
-
-        foreach ($this->parameters as $index => $parameter) {
-            if ($index > 0) {
-                $text .= ' and';
-            }
-
-            $text .= ' ' . $index . ' ' . $parameter->toString();
-        }
-
-        return $text;
-    }
-
     /**
      * @throws Exception
      */
     public function apply(BaseInvocation $invocation): void
     {
-        $this->invocation                  = $invocation;
+        $this->invocation = $invocation;
         $this->parameterVerificationResult = null;
 
         try {
@@ -85,19 +71,6 @@ final class Parameters implements ParametersRule
 
             throw $this->parameterVerificationResult;
         }
-    }
-
-    /**
-     * Checks if the invocation $invocation matches the current rules. If it
-     * does the rule will get the invoked() method called which should check
-     * if an expectation is met.
-     *
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws ExpectationFailedException
-     */
-    public function verify(): void
-    {
-        $this->doVerify();
     }
 
     /**
@@ -155,6 +128,34 @@ final class Parameters implements ParametersRule
             throw $this->parameterVerificationResult;
         }
 
-        return (bool) $this->parameterVerificationResult;
+        return (bool)$this->parameterVerificationResult;
+    }
+
+    public function toString(): string
+    {
+        $text = 'with parameter';
+
+        foreach ($this->parameters as $index => $parameter) {
+            if ($index > 0) {
+                $text .= ' and';
+            }
+
+            $text .= ' ' . $index . ' ' . $parameter->toString();
+        }
+
+        return $text;
+    }
+
+    /**
+     * Checks if the invocation $invocation matches the current rules. If it
+     * does the rule will get the invoked() method called which should check
+     * if an expectation is met.
+     *
+     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws ExpectationFailedException
+     */
+    public function verify(): void
+    {
+        $this->doVerify();
     }
 }

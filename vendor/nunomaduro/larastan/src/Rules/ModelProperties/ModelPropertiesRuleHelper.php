@@ -27,10 +27,10 @@ use PHPStan\Type\UnionType;
 class ModelPropertiesRuleHelper
 {
     /**
-     * @param  MethodReflection  $methodReflection
-     * @param  Scope  $scope
-     * @param  Node\Arg[]  $args
-     * @param  ClassReflection|null  $modelReflection
+     * @param MethodReflection $methodReflection
+     * @param Scope $scope
+     * @param Node\Arg[] $args
+     * @param ClassReflection|null $modelReflection
      * @return string[]
      */
     public function check(MethodReflection $methodReflection, Scope $scope, array $args, ?ClassReflection $modelReflection = null): array
@@ -55,17 +55,17 @@ class ModelPropertiesRuleHelper
             return [];
         }
 
-        if ($modelReflection->getName() === Model::class || ! $modelReflection->isSubclassOf(Model::class)) {
+        if ($modelReflection->getName() === Model::class || !$modelReflection->isSubclassOf(Model::class)) {
             return [];
         }
 
-        if (! array_key_exists($parameterIndex, $args)) {
+        if (!array_key_exists($parameterIndex, $args)) {
             return [];
         }
 
         $argValue = $args[$parameterIndex]->value;
 
-        if (! $argValue instanceof Node\Expr) {
+        if (!$argValue instanceof Node\Expr) {
             return [];
         }
 
@@ -87,7 +87,7 @@ class ModelPropertiesRuleHelper
             foreach ($valueTypes as $valueType) {
                 // It could be something like `DB::raw`
                 // We only want to analyze strings
-                if (! $valueType instanceof ConstantStringType) {
+                if (!$valueType instanceof ConstantStringType) {
                     continue;
                 }
 
@@ -96,7 +96,7 @@ class ModelPropertiesRuleHelper
                     continue;
                 }
 
-                if (! $modelReflection->hasProperty($valueType->getValue())) {
+                if (!$modelReflection->hasProperty($valueType->getValue())) {
                     $error = sprintf('Property \'%s\' does not exist in %s model.', $valueType->getValue(), $modelReflection->getName());
 
                     if ($methodReflection->getDeclaringClass()->getName() === BelongsToMany::class) {
@@ -110,7 +110,7 @@ class ModelPropertiesRuleHelper
             return $errors;
         }
 
-        if (! $argType instanceof ConstantStringType) {
+        if (!$argType instanceof ConstantStringType) {
             return [];
         }
 
@@ -119,7 +119,7 @@ class ModelPropertiesRuleHelper
             return [];
         }
 
-        if (! $modelReflection->hasProperty($argType->getValue())) {
+        if (!$modelReflection->hasProperty($argType->getValue())) {
             $error = sprintf('Property \'%s\' does not exist in %s model.', $argType->getValue(), $modelReflection->getName());
 
             if ($methodReflection->getDeclaringClass()->getName() === BelongsToMany::class) {
@@ -133,18 +133,19 @@ class ModelPropertiesRuleHelper
     }
 
     /**
-     * @param  MethodReflection  $methodReflection
-     * @param  Scope  $scope
-     * @param  Node\Arg[]  $args
-     * @param  ClassReflection|null  $modelReflection
+     * @param MethodReflection $methodReflection
+     * @param Scope $scope
+     * @param Node\Arg[] $args
+     * @param ClassReflection|null $modelReflection
      * @return array<int, int|Type>
      */
     public function hasModelPropertyParameter(
         MethodReflection $methodReflection,
-        Scope $scope,
-        array $args,
+        Scope            $scope,
+        array            $args,
         ?ClassReflection $modelReflection = null
-    ): array {
+    ): array
+    {
         $parameters = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants())->getParameters();
 
         foreach ($parameters as $index => $parameter) {

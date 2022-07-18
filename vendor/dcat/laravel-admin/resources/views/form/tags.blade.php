@@ -6,25 +6,28 @@
 
         @include('admin::form.error')
 
-        <select class="form-control {{$class}}" style="width: 100%;" name="{{$name}}[]" multiple="multiple" data-placeholder="{{ $placeholder }}" {!! $attributes !!} >
+        <select class="form-control {{$class}}" style="width: 100%;" name="{{$name}}[]" multiple="multiple"
+                data-placeholder="{{ $placeholder }}" {!! $attributes !!} >
             @foreach($options as $key => $option)
-                <option value="{{ $keyAsValue ? $key : $option}}" {{ in_array($option, $value) ? 'selected' : '' }}>{{$option}}</option>
+                <option
+                    value="{{ $keyAsValue ? $key : $option}}" {{ in_array($option, $value) ? 'selected' : '' }}>{{$option}}</option>
             @endforeach
         </select>
-        <input type="hidden" name="{{$name}}[]" />
+        <input type="hidden" name="{{$name}}[]"/>
 
         @include('admin::form.help-block')
 
     </div>
 </div>
 
-<script init="{!! $selector !!}" require="@select2?lang={{ config('app.locale') === 'en' ? '' : str_replace('_', '-', config('app.locale')) }}">
+<script init="{!! $selector !!}"
+        require="@select2?lang={{ config('app.locale') === 'en' ? '' : str_replace('_', '-', config('app.locale')) }}">
     var options = {
         tags: true,
-        createTag: function(params) {
+        createTag: function (params) {
             if (/[,;，； ]/.test(params.term)) {
                 var str = params.term.trim().replace(/[,;，；]*$/, '');
-                return { id: str, text: str }
+                return {id: str, text: str}
             } else {
                 return null;
             }
@@ -32,7 +35,7 @@
     };
 
     @if(isset($ajax))
-    options = $.extend(options, {
+        options = $.extend(options, {
         ajax: {
             url: "{!! $ajax['url'] !!}",
             dataType: 'json',

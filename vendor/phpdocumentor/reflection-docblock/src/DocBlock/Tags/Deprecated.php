@@ -17,7 +17,6 @@ use phpDocumentor\Reflection\DocBlock\Description;
 use phpDocumentor\Reflection\DocBlock\DescriptionFactory;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use Webmozart\Assert\Assert;
-
 use function preg_match;
 
 /**
@@ -25,9 +24,6 @@ use function preg_match;
  */
 final class Deprecated extends BaseTag implements Factory\StaticMethod
 {
-    /** @var string */
-    protected $name = 'deprecated';
-
     /**
      * PCRE regular expression matching a version vector.
      * Assumes the "x" modifier.
@@ -43,7 +39,8 @@ final class Deprecated extends BaseTag implements Factory\StaticMethod
         # around the actual version vector.
         [^\s\:]+\:\s*\$[^\$]+\$
     )';
-
+    /** @var string */
+    protected $name = 'deprecated';
     /** @var string|null The version vector. */
     private $version;
 
@@ -51,7 +48,7 @@ final class Deprecated extends BaseTag implements Factory\StaticMethod
     {
         Assert::nullOrNotEmpty($version);
 
-        $this->version     = $version;
+        $this->version = $version;
         $this->description = $description;
     }
 
@@ -59,10 +56,11 @@ final class Deprecated extends BaseTag implements Factory\StaticMethod
      * @return static
      */
     public static function create(
-        ?string $body,
+        ?string             $body,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         if (empty($body)) {
             return new static();
         }
@@ -102,7 +100,7 @@ final class Deprecated extends BaseTag implements Factory\StaticMethod
             $description = '';
         }
 
-        $version = (string) $this->version;
+        $version = (string)$this->version;
 
         return $version . ($description !== '' ? ($version !== '' ? ' ' : '') . $description : '');
     }

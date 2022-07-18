@@ -92,20 +92,20 @@ class TestHandler extends AbstractProcessingHandler
     /**
      * @return void
      */
-    public function clear()
-    {
-        $this->records = [];
-        $this->recordsByLevel = [];
-    }
-
-    /**
-     * @return void
-     */
     public function reset()
     {
         if (!$this->skipReset) {
             $this->clear();
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function clear()
+    {
+        $this->records = [];
+        $this->recordsByLevel = [];
     }
 
     /**
@@ -128,7 +128,7 @@ class TestHandler extends AbstractProcessingHandler
 
     /**
      * @param string|array $record Either a message string or an array containing message and optionally context keys that will be checked against all records
-     * @param string|int   $level  Logging level value or name
+     * @param string|int $level Logging level value or name
      *
      * @phpstan-param array{message: string, context?: mixed[]}|string $record
      * @phpstan-param Level|LevelName|LogLevel::*                      $level
@@ -149,6 +149,30 @@ class TestHandler extends AbstractProcessingHandler
 
             return true;
         }, $level);
+    }
+
+    /**
+     * @param string|int $level Logging level value or name
+     * @return bool
+     *
+     * @psalm-param callable(Record, int): mixed $predicate
+     * @phpstan-param Level|LevelName|LogLevel::* $level
+     */
+    public function hasRecordThatPasses(callable $predicate, $level)
+    {
+        $level = Logger::toMonologLevel($level);
+
+        if (!isset($this->recordsByLevel[$level])) {
+            return false;
+        }
+
+        foreach ($this->recordsByLevel[$level] as $i => $rec) {
+            if ($predicate($rec, $i)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -176,41 +200,8 @@ class TestHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @param  string|int $level Logging level value or name
-     * @return bool
-     *
-     * @psalm-param callable(Record, int): mixed $predicate
-     * @phpstan-param Level|LevelName|LogLevel::* $level
-     */
-    public function hasRecordThatPasses(callable $predicate, $level)
-    {
-        $level = Logger::toMonologLevel($level);
-
-        if (!isset($this->recordsByLevel[$level])) {
-            return false;
-        }
-
-        foreach ($this->recordsByLevel[$level] as $i => $rec) {
-            if ($predicate($rec, $i)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function write(array $record): void
-    {
-        $this->recordsByLevel[$record['level']][] = $record;
-        $this->records[] = $record;
-    }
-
-    /**
-     * @param  string  $method
-     * @param  mixed[] $args
+     * @param string $method
+     * @param mixed[] $args
      * @return bool
      */
     public function __call($method, $args)
@@ -227,5 +218,14 @@ class TestHandler extends AbstractProcessingHandler
         }
 
         throw new \BadMethodCallException('Call to undefined method ' . get_class($this) . '::' . $method . '()');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record): void
+    {
+        $this->recordsByLevel[$record['level']][] = $record;
+        $this->records[] = $record;
     }
 }

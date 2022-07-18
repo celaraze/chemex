@@ -66,7 +66,7 @@ trait MakesHttpRequests
     /**
      * Define additional headers to be sent with the request.
      *
-     * @param  array  $headers
+     * @param array $headers
      * @return $this
      */
     public function withHeaders(array $headers)
@@ -77,10 +77,22 @@ trait MakesHttpRequests
     }
 
     /**
+     * Add an authorization token for the request.
+     *
+     * @param string $token
+     * @param string $type
+     * @return $this
+     */
+    public function withToken(string $token, string $type = 'Bearer')
+    {
+        return $this->withHeader('Authorization', $type . ' ' . $token);
+    }
+
+    /**
      * Add a header to be sent with the request.
      *
-     * @param  string  $name
-     * @param  string  $value
+     * @param string $name
+     * @param string $value
      * @return $this
      */
     public function withHeader(string $name, string $value)
@@ -88,18 +100,6 @@ trait MakesHttpRequests
         $this->defaultHeaders[$name] = $value;
 
         return $this;
-    }
-
-    /**
-     * Add an authorization token for the request.
-     *
-     * @param  string  $token
-     * @param  string  $type
-     * @return $this
-     */
-    public function withToken(string $token, string $type = 'Bearer')
-    {
-        return $this->withHeader('Authorization', $type.' '.$token);
     }
 
     /**
@@ -129,7 +129,7 @@ trait MakesHttpRequests
     /**
      * Define a set of server variables to be sent with the requests.
      *
-     * @param  array  $server
+     * @param array $server
      * @return $this
      */
     public function withServerVariables(array $server)
@@ -142,7 +142,7 @@ trait MakesHttpRequests
     /**
      * Disable middleware for the test.
      *
-     * @param  string|array|null  $middleware
+     * @param string|array|null $middleware
      * @return $this
      */
     public function withoutMiddleware($middleware = null)
@@ -153,9 +153,8 @@ trait MakesHttpRequests
             return $this;
         }
 
-        foreach ((array) $middleware as $abstract) {
-            $this->app->instance($abstract, new class
-            {
+        foreach ((array)$middleware as $abstract) {
+            $this->app->instance($abstract, new class {
                 public function handle($request, $next)
                 {
                     return $next($request);
@@ -169,7 +168,7 @@ trait MakesHttpRequests
     /**
      * Enable the given middleware for the test.
      *
-     * @param  string|array|null  $middleware
+     * @param string|array|null $middleware
      * @return $this
      */
     public function withMiddleware($middleware = null)
@@ -180,7 +179,7 @@ trait MakesHttpRequests
             return $this;
         }
 
-        foreach ((array) $middleware as $abstract) {
+        foreach ((array)$middleware as $abstract) {
             unset($this->app[$abstract]);
         }
 
@@ -190,7 +189,7 @@ trait MakesHttpRequests
     /**
      * Define additional cookies to be sent with the request.
      *
-     * @param  array  $cookies
+     * @param array $cookies
      * @return $this
      */
     public function withCookies(array $cookies)
@@ -203,8 +202,8 @@ trait MakesHttpRequests
     /**
      * Add a cookie to be sent with the request.
      *
-     * @param  string  $name
-     * @param  string  $value
+     * @param string $name
+     * @param string $value
      * @return $this
      */
     public function withCookie(string $name, string $value)
@@ -217,7 +216,7 @@ trait MakesHttpRequests
     /**
      * Define additional cookies will not be encrypted before sending with the request.
      *
-     * @param  array  $cookies
+     * @param array $cookies
      * @return $this
      */
     public function withUnencryptedCookies(array $cookies)
@@ -230,8 +229,8 @@ trait MakesHttpRequests
     /**
      * Add a cookie will not be encrypted before sending with the request.
      *
-     * @param  string  $name
-     * @param  string  $value
+     * @param string $name
+     * @param string $value
      * @return $this
      */
     public function withUnencryptedCookie(string $name, string $value)
@@ -280,7 +279,7 @@ trait MakesHttpRequests
     /**
      * Set the referer header and previous URL session value in order to simulate a previous request.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function from(string $url)
@@ -293,8 +292,8 @@ trait MakesHttpRequests
     /**
      * Visit the given URI with a GET request.
      *
-     * @param  string  $uri
-     * @param  array  $headers
+     * @param string $uri
+     * @param array $headers
      * @return \Illuminate\Testing\TestResponse
      */
     public function get($uri, array $headers = [])
@@ -306,221 +305,61 @@ trait MakesHttpRequests
     }
 
     /**
-     * Visit the given URI with a GET request, expecting a JSON response.
+     * Transform headers array to array of $_SERVER vars with HTTP_* format.
      *
-     * @param  string  $uri
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
+     * @param array $headers
+     * @return array
      */
-    public function getJson($uri, array $headers = [])
+    protected function transformHeadersToServerVars(array $headers)
     {
-        return $this->json('GET', $uri, [], $headers);
+        return collect(array_merge($this->defaultHeaders, $headers))->mapWithKeys(function ($value, $name) {
+            $name = strtr(strtoupper($name), '-', '_');
+
+            return [$this->formatServerHeaderKey($name) => $value];
+        })->all();
     }
 
     /**
-     * Visit the given URI with a POST request.
+     * Format the header name for the server array.
      *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
+     * @param string $name
+     * @return string
      */
-    public function post($uri, array $data = [], array $headers = [])
+    protected function formatServerHeaderKey($name)
     {
-        $server = $this->transformHeadersToServerVars($headers);
-        $cookies = $this->prepareCookiesForRequest();
+        if (!str_starts_with($name, 'HTTP_') && $name !== 'CONTENT_TYPE' && $name !== 'REMOTE_ADDR') {
+            return 'HTTP_' . $name;
+        }
 
-        return $this->call('POST', $uri, $data, $cookies, [], $server);
+        return $name;
     }
 
     /**
-     * Visit the given URI with a POST request, expecting a JSON response.
+     * If enabled, encrypt cookie values for request.
      *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
+     * @return array
      */
-    public function postJson($uri, array $data = [], array $headers = [])
+    protected function prepareCookiesForRequest()
     {
-        return $this->json('POST', $uri, $data, $headers);
-    }
+        if (!$this->encryptCookies) {
+            return array_merge($this->defaultCookies, $this->unencryptedCookies);
+        }
 
-    /**
-     * Visit the given URI with a PUT request.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function put($uri, array $data = [], array $headers = [])
-    {
-        $server = $this->transformHeadersToServerVars($headers);
-        $cookies = $this->prepareCookiesForRequest();
-
-        return $this->call('PUT', $uri, $data, $cookies, [], $server);
-    }
-
-    /**
-     * Visit the given URI with a PUT request, expecting a JSON response.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function putJson($uri, array $data = [], array $headers = [])
-    {
-        return $this->json('PUT', $uri, $data, $headers);
-    }
-
-    /**
-     * Visit the given URI with a PATCH request.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function patch($uri, array $data = [], array $headers = [])
-    {
-        $server = $this->transformHeadersToServerVars($headers);
-        $cookies = $this->prepareCookiesForRequest();
-
-        return $this->call('PATCH', $uri, $data, $cookies, [], $server);
-    }
-
-    /**
-     * Visit the given URI with a PATCH request, expecting a JSON response.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function patchJson($uri, array $data = [], array $headers = [])
-    {
-        return $this->json('PATCH', $uri, $data, $headers);
-    }
-
-    /**
-     * Visit the given URI with a DELETE request.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function delete($uri, array $data = [], array $headers = [])
-    {
-        $server = $this->transformHeadersToServerVars($headers);
-        $cookies = $this->prepareCookiesForRequest();
-
-        return $this->call('DELETE', $uri, $data, $cookies, [], $server);
-    }
-
-    /**
-     * Visit the given URI with a DELETE request, expecting a JSON response.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function deleteJson($uri, array $data = [], array $headers = [])
-    {
-        return $this->json('DELETE', $uri, $data, $headers);
-    }
-
-    /**
-     * Visit the given URI with an OPTIONS request.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function options($uri, array $data = [], array $headers = [])
-    {
-        $server = $this->transformHeadersToServerVars($headers);
-
-        $cookies = $this->prepareCookiesForRequest();
-
-        return $this->call('OPTIONS', $uri, $data, $cookies, [], $server);
-    }
-
-    /**
-     * Visit the given URI with an OPTIONS request, expecting a JSON response.
-     *
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function optionsJson($uri, array $data = [], array $headers = [])
-    {
-        return $this->json('OPTIONS', $uri, $data, $headers);
-    }
-
-    /**
-     * Visit the given URI with a HEAD request.
-     *
-     * @param  string  $uri
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function head($uri, array $headers = [])
-    {
-        $server = $this->transformHeadersToServerVars($headers);
-
-        $cookies = $this->prepareCookiesForRequest();
-
-        return $this->call('HEAD', $uri, [], $cookies, [], $server);
-    }
-
-    /**
-     * Call the given URI with a JSON request.
-     *
-     * @param  string  $method
-     * @param  string  $uri
-     * @param  array  $data
-     * @param  array  $headers
-     * @return \Illuminate\Testing\TestResponse
-     */
-    public function json($method, $uri, array $data = [], array $headers = [])
-    {
-        $files = $this->extractFilesFromDataArray($data);
-
-        $content = json_encode($data);
-
-        $headers = array_merge([
-            'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
-            'CONTENT_TYPE' => 'application/json',
-            'Accept' => 'application/json',
-        ], $headers);
-
-        return $this->call(
-            $method,
-            $uri,
-            [],
-            $this->prepareCookiesForJsonRequest(),
-            $files,
-            $this->transformHeadersToServerVars($headers),
-            $content
-        );
+        return collect($this->defaultCookies)->map(function ($value, $key) {
+            return encrypt(CookieValuePrefix::create($key, app('encrypter')->getKey()) . $value, false);
+        })->merge($this->unencryptedCookies)->all();
     }
 
     /**
      * Call the given URI and return the Response.
      *
-     * @param  string  $method
-     * @param  string  $uri
-     * @param  array  $parameters
-     * @param  array  $cookies
-     * @param  array  $files
-     * @param  array  $server
-     * @param  string|null  $content
+     * @param string $method
+     * @param string $uri
+     * @param array $parameters
+     * @param array $cookies
+     * @param array $files
+     * @param array $server
+     * @param string|null $content
      * @return \Illuminate\Testing\TestResponse
      */
     public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
@@ -548,54 +387,9 @@ trait MakesHttpRequests
     }
 
     /**
-     * Turn the given URI into a fully qualified URL.
-     *
-     * @param  string  $uri
-     * @return string
-     */
-    protected function prepareUrlForRequest($uri)
-    {
-        if (str_starts_with($uri, '/')) {
-            $uri = substr($uri, 1);
-        }
-
-        return trim(url($uri), '/');
-    }
-
-    /**
-     * Transform headers array to array of $_SERVER vars with HTTP_* format.
-     *
-     * @param  array  $headers
-     * @return array
-     */
-    protected function transformHeadersToServerVars(array $headers)
-    {
-        return collect(array_merge($this->defaultHeaders, $headers))->mapWithKeys(function ($value, $name) {
-            $name = strtr(strtoupper($name), '-', '_');
-
-            return [$this->formatServerHeaderKey($name) => $value];
-        })->all();
-    }
-
-    /**
-     * Format the header name for the server array.
-     *
-     * @param  string  $name
-     * @return string
-     */
-    protected function formatServerHeaderKey($name)
-    {
-        if (! str_starts_with($name, 'HTTP_') && $name !== 'CONTENT_TYPE' && $name !== 'REMOTE_ADDR') {
-            return 'HTTP_'.$name;
-        }
-
-        return $name;
-    }
-
-    /**
      * Extract the file uploads from the given data array.
      *
-     * @param  array  $data
+     * @param array $data
      * @return array
      */
     protected function extractFilesFromDataArray(&$data)
@@ -620,35 +414,24 @@ trait MakesHttpRequests
     }
 
     /**
-     * If enabled, encrypt cookie values for request.
+     * Turn the given URI into a fully qualified URL.
      *
-     * @return array
+     * @param string $uri
+     * @return string
      */
-    protected function prepareCookiesForRequest()
+    protected function prepareUrlForRequest($uri)
     {
-        if (! $this->encryptCookies) {
-            return array_merge($this->defaultCookies, $this->unencryptedCookies);
+        if (str_starts_with($uri, '/')) {
+            $uri = substr($uri, 1);
         }
 
-        return collect($this->defaultCookies)->map(function ($value, $key) {
-            return encrypt(CookieValuePrefix::create($key, app('encrypter')->getKey()).$value, false);
-        })->merge($this->unencryptedCookies)->all();
-    }
-
-    /**
-     * If enabled, add cookies for JSON requests.
-     *
-     * @return array
-     */
-    protected function prepareCookiesForJsonRequest()
-    {
-        return $this->withCredentials ? $this->prepareCookiesForRequest() : [];
+        return trim(url($uri), '/');
     }
 
     /**
      * Follow a redirect chain until a non-redirect is received.
      *
-     * @param  \Illuminate\Http\Response  $response
+     * @param \Illuminate\Http\Response $response
      * @return \Illuminate\Http\Response|\Illuminate\Testing\TestResponse
      */
     protected function followRedirects($response)
@@ -665,7 +448,7 @@ trait MakesHttpRequests
     /**
      * Create the test response instance from the given response.
      *
-     * @param  \Illuminate\Http\Response  $response
+     * @param \Illuminate\Http\Response $response
      * @return \Illuminate\Testing\TestResponse
      */
     protected function createTestResponse($response)
@@ -677,5 +460,221 @@ trait MakesHttpRequests
                     : new LoggedExceptionCollection
             );
         });
+    }
+
+    /**
+     * Visit the given URI with a GET request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function getJson($uri, array $headers = [])
+    {
+        return $this->json('GET', $uri, [], $headers);
+    }
+
+    /**
+     * Call the given URI with a JSON request.
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function json($method, $uri, array $data = [], array $headers = [])
+    {
+        $files = $this->extractFilesFromDataArray($data);
+
+        $content = json_encode($data);
+
+        $headers = array_merge([
+            'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
+            'CONTENT_TYPE' => 'application/json',
+            'Accept' => 'application/json',
+        ], $headers);
+
+        return $this->call(
+            $method,
+            $uri,
+            [],
+            $this->prepareCookiesForJsonRequest(),
+            $files,
+            $this->transformHeadersToServerVars($headers),
+            $content
+        );
+    }
+
+    /**
+     * If enabled, add cookies for JSON requests.
+     *
+     * @return array
+     */
+    protected function prepareCookiesForJsonRequest()
+    {
+        return $this->withCredentials ? $this->prepareCookiesForRequest() : [];
+    }
+
+    /**
+     * Visit the given URI with a POST request.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function post($uri, array $data = [], array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('POST', $uri, $data, $cookies, [], $server);
+    }
+
+    /**
+     * Visit the given URI with a POST request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function postJson($uri, array $data = [], array $headers = [])
+    {
+        return $this->json('POST', $uri, $data, $headers);
+    }
+
+    /**
+     * Visit the given URI with a PUT request.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function put($uri, array $data = [], array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('PUT', $uri, $data, $cookies, [], $server);
+    }
+
+    /**
+     * Visit the given URI with a PUT request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function putJson($uri, array $data = [], array $headers = [])
+    {
+        return $this->json('PUT', $uri, $data, $headers);
+    }
+
+    /**
+     * Visit the given URI with a PATCH request.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function patch($uri, array $data = [], array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('PATCH', $uri, $data, $cookies, [], $server);
+    }
+
+    /**
+     * Visit the given URI with a PATCH request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function patchJson($uri, array $data = [], array $headers = [])
+    {
+        return $this->json('PATCH', $uri, $data, $headers);
+    }
+
+    /**
+     * Visit the given URI with a DELETE request.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function delete($uri, array $data = [], array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('DELETE', $uri, $data, $cookies, [], $server);
+    }
+
+    /**
+     * Visit the given URI with a DELETE request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function deleteJson($uri, array $data = [], array $headers = [])
+    {
+        return $this->json('DELETE', $uri, $data, $headers);
+    }
+
+    /**
+     * Visit the given URI with an OPTIONS request.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function options($uri, array $data = [], array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('OPTIONS', $uri, $data, $cookies, [], $server);
+    }
+
+    /**
+     * Visit the given URI with an OPTIONS request, expecting a JSON response.
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function optionsJson($uri, array $data = [], array $headers = [])
+    {
+        return $this->json('OPTIONS', $uri, $data, $headers);
+    }
+
+    /**
+     * Visit the given URI with a HEAD request.
+     *
+     * @param string $uri
+     * @param array $headers
+     * @return \Illuminate\Testing\TestResponse
+     */
+    public function head($uri, array $headers = [])
+    {
+        $server = $this->transformHeadersToServerVars($headers);
+
+        $cookies = $this->prepareCookiesForRequest();
+
+        return $this->call('HEAD', $uri, [], $cookies, [], $server);
     }
 }

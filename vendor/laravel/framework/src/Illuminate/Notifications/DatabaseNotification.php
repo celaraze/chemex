@@ -8,19 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class DatabaseNotification extends Model
 {
     /**
-     * The "type" of the primary key ID.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
      * Indicates if the IDs are auto-incrementing.
      *
      * @var bool
      */
     public $incrementing = false;
-
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
     /**
      * The table associated with the model.
      *
@@ -74,7 +72,7 @@ class DatabaseNotification extends Model
      */
     public function markAsUnread()
     {
-        if (! is_null($this->read_at)) {
+        if (!is_null($this->read_at)) {
             $this->forceFill(['read_at' => null])->save();
         }
     }
@@ -102,7 +100,7 @@ class DatabaseNotification extends Model
     /**
      * Scope a query to only include read notifications.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeRead(Builder $query)
@@ -113,7 +111,7 @@ class DatabaseNotification extends Model
     /**
      * Scope a query to only include unread notifications.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeUnread(Builder $query)
@@ -124,7 +122,7 @@ class DatabaseNotification extends Model
     /**
      * Create a new database notification collection instance.
      *
-     * @param  array  $models
+     * @param array $models
      * @return \Illuminate\Notifications\DatabaseNotificationCollection
      */
     public function newCollection(array $models = [])

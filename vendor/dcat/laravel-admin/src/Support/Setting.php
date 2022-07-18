@@ -11,58 +11,27 @@ use Illuminate\Support\Fluent;
 class Setting extends Fluent
 {
     /**
-     * 获取配置，并转化为数组.
-     *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return array
+     * @return static
      */
-    public function getArray($key, $default = [])
+    public static function fromDatabase()
     {
-        $value = $this->get($key, $default);
+        $values = [];
 
-        if (! $value) {
-            return [];
+        try {
+            $values = Model::pluck('value', 'slug')->toArray();
+        } catch (QueryException $e) {
+            Admin::reportException($e);
         }
 
-        return is_array($value) ? $value : (json_decode($value, true) ?: []);
-    }
-
-    /**
-     * 获取配置.
-     *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return mixed
-     */
-    public function get($key, $default = null)
-    {
-        return Arr::get($this->attributes, $key, $default);
-    }
-
-    /**
-     * 设置配置信息.
-     *
-     * @param  array  $data
-     * @return $this
-     */
-    public function set($key, $value = null)
-    {
-        $data = is_array($key) ? $key : [$key => $value];
-
-        foreach ($data as $key => $value) {
-            Arr::set($this->attributes, $key, $value);
-        }
-
-        return $this;
+        return new static($values);
     }
 
     /**
      * 追加数据.
      *
-     * @param  mixed  $key
-     * @param  mixed  $value
-     * @param  mixed  $k
+     * @param mixed $key
+     * @param mixed $value
+     * @param mixed $k
      * @return $this
      */
     public function add($key, $value, $k = null)
@@ -79,10 +48,57 @@ class Setting extends Fluent
     }
 
     /**
+     * 获取配置，并转化为数组.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return array
+     */
+    public function getArray($key, $default = [])
+    {
+        $value = $this->get($key, $default);
+
+        if (!$value) {
+            return [];
+        }
+
+        return is_array($value) ? $value : (json_decode($value, true) ?: []);
+    }
+
+    /**
+     * 获取配置.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        return Arr::get($this->attributes, $key, $default);
+    }
+
+    /**
+     * 设置配置信息.
+     *
+     * @param array $data
+     * @return $this
+     */
+    public function set($key, $value = null)
+    {
+        $data = is_array($key) ? $key : [$key => $value];
+
+        foreach ($data as $key => $value) {
+            Arr::set($this->attributes, $key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
      * 批量追加数据.
      *
-     * @param  string  $key
-     * @param  array  $value
+     * @param string $key
+     * @param array $value
      * @return $this
      */
     public function addMany($key, array $value)
@@ -95,7 +111,7 @@ class Setting extends Fluent
     /**
      * 保存配置到数据库.
      *
-     * @param  array  $data
+     * @param array $data
      * @return $this
      */
     public function save(array $data = [])
@@ -114,27 +130,11 @@ class Setting extends Fluent
                 ->first() ?: new Model();
 
             $model->fill([
-                'slug'  => $key,
-                'value' => (string) $value,
+                'slug' => $key,
+                'value' => (string)$value,
             ])->save();
         }
 
         return $this;
-    }
-
-    /**
-     * @return static
-     */
-    public static function fromDatabase()
-    {
-        $values = [];
-
-        try {
-            $values = Model::pluck('value', 'slug')->toArray();
-        } catch (QueryException $e) {
-            Admin::reportException($e);
-        }
-
-        return new static($values);
     }
 }

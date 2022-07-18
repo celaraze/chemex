@@ -48,6 +48,27 @@ class StyleRegistry
     }
 
     /**
+     * Serializes the style for future comparison with other styles.
+     * The ID is excluded from the comparison, as we only care about
+     * actual style properties.
+     *
+     * @param Style $style
+     * @return string The serialized style
+     */
+    public function serialize(Style $style)
+    {
+        // In order to be able to properly compare style, set static ID value and reset registration
+        $currentId = $style->getId();
+        $style->unmarkAsRegistered();
+
+        $serializedStyle = \serialize($style);
+
+        $style->markAsRegistered($currentId);
+
+        return $serializedStyle;
+    }
+
+    /**
      * Returns whether the serialized style has already been registered.
      *
      * @param string $serializedStyle The serialized style
@@ -87,26 +108,5 @@ class StyleRegistry
     public function getStyleFromStyleId($styleId)
     {
         return $this->styleIdToStyleMappingTable[$styleId];
-    }
-
-    /**
-     * Serializes the style for future comparison with other styles.
-     * The ID is excluded from the comparison, as we only care about
-     * actual style properties.
-     *
-     * @param Style $style
-     * @return string The serialized style
-     */
-    public function serialize(Style $style)
-    {
-        // In order to be able to properly compare style, set static ID value and reset registration
-        $currentId = $style->getId();
-        $style->unmarkAsRegistered();
-
-        $serializedStyle = \serialize($style);
-
-        $style->markAsRegistered($currentId);
-
-        return $serializedStyle;
     }
 }

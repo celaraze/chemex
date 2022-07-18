@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
 use PHPUnit\Framework\Assert;
@@ -30,14 +31,6 @@ final class Reflection
     /**
      * @psalm-return list<ReflectionMethod>
      */
-    public function methodsInTestClass(ReflectionClass $class): array
-    {
-        return $this->filterMethods($class, null);
-    }
-
-    /**
-     * @psalm-return list<ReflectionMethod>
-     */
     private function filterMethods(ReflectionClass $class, ?int $filter): array
     {
         $methods = [];
@@ -55,5 +48,13 @@ final class Reflection
         }
 
         return $methods;
+    }
+
+    /**
+     * @psalm-return list<ReflectionMethod>
+     */
+    public function methodsInTestClass(ReflectionClass $class): array
+    {
+        return $this->filterMethods($class, null);
     }
 }

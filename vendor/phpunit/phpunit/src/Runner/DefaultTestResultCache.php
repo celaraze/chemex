@@ -7,10 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Runner;
 
-use const DIRECTORY_SEPARATOR;
-use const LOCK_EX;
+use PHPUnit\Util\Filesystem;
 use function assert;
 use function dirname;
 use function file_get_contents;
@@ -21,7 +21,8 @@ use function is_dir;
 use function is_file;
 use function json_decode;
 use function json_encode;
-use PHPUnit\Util\Filesystem;
+use const DIRECTORY_SEPARATOR;
+use const LOCK_EX;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -125,7 +126,7 @@ final class DefaultTestResultCache implements TestResultCache
         assert(isset($data['times']) && is_array($data['times']));
 
         $this->defects = $data['defects'];
-        $this->times   = $data['times'];
+        $this->times = $data['times'];
     }
 
     /**
@@ -148,7 +149,7 @@ final class DefaultTestResultCache implements TestResultCache
                 [
                     'version' => self::VERSION,
                     'defects' => $this->defects,
-                    'times'   => $this->times,
+                    'times' => $this->times,
                 ]
             ),
             LOCK_EX

@@ -22,66 +22,26 @@ class Helper
      * @var array
      */
     public static $fileTypes = [
-        'image'      => 'png|jpg|jpeg|tmp|gif',
-        'word'       => 'doc|docx',
-        'excel'      => 'xls|xlsx|csv',
+        'image' => 'png|jpg|jpeg|tmp|gif',
+        'word' => 'doc|docx',
+        'excel' => 'xls|xlsx|csv',
         'powerpoint' => 'ppt|pptx',
-        'pdf'        => 'pdf',
-        'code'       => 'php|js|java|python|ruby|go|c|cpp|sql|m|h|json|html|aspx',
-        'archive'    => 'zip|tar\.gz|rar|rpm',
-        'txt'        => 'txt|pac|log|md',
-        'audio'      => 'mp3|wav|flac|3pg|aa|aac|ape|au|m4a|mpc|ogg',
-        'video'      => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg',
+        'pdf' => 'pdf',
+        'code' => 'php|js|java|python|ruby|go|c|cpp|sql|m|h|json|html|aspx',
+        'archive' => 'zip|tar\.gz|rar|rpm',
+        'txt' => 'txt|pac|log|md',
+        'audio' => 'mp3|wav|flac|3pg|aa|aac|ape|au|m4a|mpc|ogg',
+        'video' => 'mkv|rmvb|flv|mp4|avi|wmv|rm|asf|mpeg',
     ];
 
     protected static $controllerNames = [];
 
     /**
-     * 把给定的值转化为数组.
-     *
-     * @param $value
-     * @param  bool  $filter
-     * @return array
-     */
-    public static function array($value, bool $filter = true): array
-    {
-        if ($value === null || $value === '' || $value === []) {
-            return [];
-        }
-
-        if ($value instanceof \Closure) {
-            $value = $value();
-        }
-
-        if (is_array($value)) {
-        } elseif ($value instanceof Jsonable) {
-            $value = json_decode($value->toJson(), true);
-        } elseif ($value instanceof Arrayable) {
-            $value = $value->toArray();
-        } elseif (is_string($value)) {
-            $array = null;
-
-            try {
-                $array = json_decode($value, true);
-            } catch (\Throwable $e) {
-            }
-
-            $value = is_array($array) ? $array : explode(',', $value);
-        } else {
-            $value = (array) $value;
-        }
-
-        return $filter ? array_filter($value, function ($v) {
-            return $v !== '' && $v !== null;
-        }) : $value;
-    }
-
-    /**
      * 把给定的值转化为字符串.
      *
-     * @param  string|Grid|\Closure|Renderable|Htmlable  $value
-     * @param  array  $params
-     * @param  object  $newThis
+     * @param string|Grid|\Closure|Renderable|Htmlable $value
+     * @param array $params
+     * @param object $newThis
      * @return string
      */
     public static function render($value, $params = [], $newThis = null): string
@@ -93,18 +53,18 @@ class Helper
         if ($value instanceof \Closure) {
             $newThis && ($value = $value->bindTo($newThis));
 
-            $value = $value(...(array) $params);
+            $value = $value(...(array)$params);
         }
 
         if ($value instanceof Renderable) {
-            return (string) $value->render();
+            return (string)$value->render();
         }
 
         if ($value instanceof Htmlable) {
-            return (string) $value->toHtml();
+            return (string)$value->toHtml();
         }
 
-        return (string) $value;
+        return (string)$value;
     }
 
     /**
@@ -116,13 +76,13 @@ class Helper
     {
         $router = app('router');
 
-        if (! $router->current()) {
+        if (!$router->current()) {
             return 'undefined';
         }
 
         $actionName = $router->current()->getActionName();
 
-        if (! isset(static::$controllerNames[$actionName])) {
+        if (!isset(static::$controllerNames[$actionName])) {
             $controller = class_basename(explode('@', $actionName)[0]);
 
             static::$controllerNames[$actionName] = str_replace('Controller', '', $controller);
@@ -132,14 +92,14 @@ class Helper
     }
 
     /**
-     * @param  array  $attributes
+     * @param array $attributes
      * @return string
      */
     public static function buildHtmlAttributes($attributes)
     {
         $html = '';
 
-        foreach ((array) $attributes as $key => &$value) {
+        foreach ((array)$attributes as $key => &$value) {
             if (is_array($value)) {
                 $value = implode(' ', $value);
             }
@@ -151,7 +111,7 @@ class Helper
             $element = '';
 
             if ($value !== null) {
-                $element = $key.'="'.htmlentities($value, ENT_QUOTES, 'UTF-8').'" ';
+                $element = $key . '="' . htmlentities($value, ENT_QUOTES, 'UTF-8') . '" ';
             }
 
             $html .= $element;
@@ -161,13 +121,13 @@ class Helper
     }
 
     /**
-     * @param  string  $url
-     * @param  array  $query
+     * @param string $url
+     * @param array $query
      * @return string
      */
     public static function urlWithQuery(?string $url, array $query = [])
     {
-        if (! $url || ! $query) {
+        if (!$url || !$query) {
             return $url;
         }
 
@@ -177,17 +137,26 @@ class Helper
 
         parse_str($array[1] ?? '', $originalQuery);
 
-        return $url.'?'.http_build_query(array_merge($originalQuery, $query));
+        return $url . '?' . http_build_query(array_merge($originalQuery, $query));
     }
 
     /**
-     * @param  string  $url
-     * @param  string|array|Arrayable  $keys
+     * @param Arrayable|array|string $keys
+     * @return string
+     */
+    public static function fullUrlWithoutQuery($keys)
+    {
+        return static::urlWithoutQuery(request()->fullUrl(), $keys);
+    }
+
+    /**
+     * @param string $url
+     * @param string|array|Arrayable $keys
      * @return string
      */
     public static function urlWithoutQuery($url, $keys)
     {
-        if (! Str::contains($url, '?') || ! $keys) {
+        if (!Str::contains($url, '?') || !$keys) {
             return $url;
         }
 
@@ -195,7 +164,7 @@ class Helper
             $keys = $keys->toArray();
         }
 
-        $keys = (array) $keys;
+        $keys = (array)$keys;
 
         $urlInfo = parse_url($url);
 
@@ -206,22 +175,13 @@ class Helper
         $baseUrl = explode('?', $url)[0];
 
         return $query
-            ? $baseUrl.'?'.http_build_query($query)
+            ? $baseUrl . '?' . http_build_query($query)
             : $baseUrl;
     }
 
     /**
-     * @param  Arrayable|array|string  $keys
-     * @return string
-     */
-    public static function fullUrlWithoutQuery($keys)
-    {
-        return static::urlWithoutQuery(request()->fullUrl(), $keys);
-    }
-
-    /**
-     * @param  string  $url
-     * @param  string|array  $keys
+     * @param string $url
+     * @param string|array $keys
      * @return bool
      */
     public static function urlHasQuery(string $url, $keys)
@@ -234,7 +194,7 @@ class Helper
 
         parse_str($value[1], $query);
 
-        foreach ((array) $keys as $key) {
+        foreach ((array)$keys as $key) {
             if (Arr::has($query, $key)) {
                 return true;
             }
@@ -246,15 +206,15 @@ class Helper
     /**
      * 匹配请求路径.
      *
+     * @param string $path
+     * @param null|string $current
+     * @return bool
      * @example
      *      Helper::matchRequestPath(admin_base_path('auth/user'))
      *      Helper::matchRequestPath(admin_base_path('auth/user*'))
      *      Helper::matchRequestPath(admin_base_path('auth/user/* /edit'))
      *      Helper::matchRequestPath('GET,POST:auth/user')
      *
-     * @param  string  $path
-     * @param  null|string  $current
-     * @return bool
      */
     public static function matchRequestPath($path, ?string $current = null)
     {
@@ -266,7 +226,7 @@ class Helper
 
             $methods = array_map('strtoupper', explode(',', $methods));
 
-            if (! empty($methods) && ! in_array($request->method(), $methods)) {
+            if (!empty($methods) && !in_array($request->method(), $methods)) {
                 return false;
             }
         }
@@ -276,7 +236,7 @@ class Helper
             return true;
         }
 
-        if (! Str::contains($path, '*')) {
+        if (!Str::contains($path, '*')) {
             return $path === $current;
         }
 
@@ -288,11 +248,11 @@ class Helper
     /**
      * 生成层级数据.
      *
-     * @param  array  $nodes
-     * @param  int  $parentId
-     * @param  string|null  $primaryKeyName
-     * @param  string|null  $parentKeyName
-     * @param  string|null  $childrenKeyName
+     * @param array $nodes
+     * @param int $parentId
+     * @param string|null $primaryKeyName
+     * @param string|null $parentKeyName
+     * @param string|null $childrenKeyName
      * @return array
      */
     public static function buildNestedArray(
@@ -301,17 +261,18 @@ class Helper
         ?string $primaryKeyName = null,
         ?string $parentKeyName = null,
         ?string $childrenKeyName = null
-    ) {
+    )
+    {
         $branch = [];
         $primaryKeyName = $primaryKeyName ?: 'id';
         $parentKeyName = $parentKeyName ?: 'parent_id';
         $childrenKeyName = $childrenKeyName ?: 'children';
 
-        $parentId = is_numeric($parentId) ? (int) $parentId : $parentId;
+        $parentId = is_numeric($parentId) ? (int)$parentId : $parentId;
 
         foreach ($nodes as $node) {
             $pk = $node[$parentKeyName];
-            $pk = is_numeric($pk) ? (int) $pk : $pk;
+            $pk = is_numeric($pk) ? (int)$pk : $pk;
 
             if ($pk === $parentId) {
                 $children = static::buildNestedArray(
@@ -333,22 +294,17 @@ class Helper
     }
 
     /**
-     * @param  string  $name
-     * @param  string  $symbol
-     * @return mixed
+     * @param array $array
+     * @return string
      */
-    public static function slug(string $name, string $symbol = '-')
+    public static function exportArrayPhp(array $array)
     {
-        $text = preg_replace_callback('/([A-Z])/', function ($text) use ($symbol) {
-            return $symbol.strtolower($text[1]);
-        }, $name);
-
-        return str_replace('_', $symbol, ltrim($text, $symbol));
+        return "<?php \nreturn " . static::exportArray($array) . ";\n";
     }
 
     /**
-     * @param  array  $array
-     * @param  int  $level
+     * @param array $array
+     * @param int $level
      * @return string
      */
     public static function exportArray(array &$array, $level = 1)
@@ -362,7 +318,7 @@ class Helper
             if (is_array($v)) {
                 $pre = is_string($k) ? "'$k' => " : "$k => ";
 
-                $txt .= str_repeat(' ', $level * 4).$pre.static::exportArray($v, $level + 1).",\n";
+                $txt .= str_repeat(' ', $level * 4) . $pre . static::exportArray($v, $level + 1) . ",\n";
 
                 continue;
             }
@@ -381,31 +337,22 @@ class Helper
 
             $pre = is_string($k) ? "'$k' => " : "$k => ";
 
-            $txt .= str_repeat(' ', $level * 4)."{$pre}{$t},\n";
+            $txt .= str_repeat(' ', $level * 4) . "{$pre}{$t},\n";
         }
 
-        return $txt.str_repeat(' ', ($level - 1) * 4).$end;
-    }
-
-    /**
-     * @param  array  $array
-     * @return string
-     */
-    public static function exportArrayPhp(array $array)
-    {
-        return "<?php \nreturn ".static::exportArray($array).";\n";
+        return $txt . str_repeat(' ', ($level - 1) * 4) . $end;
     }
 
     /**
      * 删除数组中的元素.
      *
-     * @param  array  $array
-     * @param  mixed  $value
-     * @param  bool  $strict
+     * @param array $array
+     * @param mixed $value
+     * @param bool $strict
      */
     public static function deleteByValue(&$array, $value, bool $strict = false)
     {
-        $value = (array) $value;
+        $value = (array)$value;
 
         foreach ($array as $index => $item) {
             if (in_array($item, $value, $strict)) {
@@ -415,15 +362,15 @@ class Helper
     }
 
     /**
-     * @param  array  $array
-     * @param  mixed  $value
+     * @param array $array
+     * @param mixed $value
      */
     public static function deleteContains(&$array, $value)
     {
-        $value = (array) $value;
+        $value = (array)$value;
 
         foreach ($array as $index => $item) {
-            foreach ($value as  $v) {
+            foreach ($value as $v) {
                 if (Str::contains($item, $v)) {
                     unset($array[$index]);
                 }
@@ -432,15 +379,27 @@ class Helper
     }
 
     /**
+     * 颜色转暗.
+     *
+     * @param string $color
+     * @param int $amt
+     * @return string
+     */
+    public static function colorDarken(string $color, int $amt)
+    {
+        return static::colorLighten($color, -$amt);
+    }
+
+    /**
      * 颜色转亮.
      *
-     * @param  string  $color
-     * @param  int  $amt
+     * @param string $color
+     * @param int $amt
      * @return string
      */
     public static function colorLighten(string $color, int $amt)
     {
-        if (! $amt) {
+        if (!$amt) {
             return $color;
         }
 
@@ -454,46 +413,12 @@ class Helper
 
         [$red, $blue, $green] = static::colorToRBG($color, $amt);
 
-        return ($hasPrefix ? '#' : '').dechex($green + ($blue << 8) + ($red << 16));
+        return ($hasPrefix ? '#' : '') . dechex($green + ($blue << 8) + ($red << 16));
     }
 
     /**
-     * 颜色转暗.
-     *
-     * @param  string  $color
-     * @param  int  $amt
-     * @return string
-     */
-    public static function colorDarken(string $color, int $amt)
-    {
-        return static::colorLighten($color, -$amt);
-    }
-
-    /**
-     * 颜色透明度.
-     *
-     * @param  string  $color
-     * @param  float|string  $alpha
-     * @return string
-     */
-    public static function colorAlpha(string $color, $alpha)
-    {
-        if ($alpha >= 1) {
-            return $color;
-        }
-
-        if (mb_strpos($color, '#') === 0) {
-            $color = mb_substr($color, 1);
-        }
-
-        [$red, $blue, $green] = static::colorToRBG($color);
-
-        return "rgba($red, $blue, $green, $alpha)";
-    }
-
-    /**
-     * @param  string  $color
-     * @param  int  $amt
+     * @param string $color
+     * @param int $amt
      * @return array
      */
     public static function colorToRBG(string $color, int $amt = 0)
@@ -519,9 +444,31 @@ class Helper
     }
 
     /**
+     * 颜色透明度.
+     *
+     * @param string $color
+     * @param float|string $alpha
+     * @return string
+     */
+    public static function colorAlpha(string $color, $alpha)
+    {
+        if ($alpha >= 1) {
+            return $color;
+        }
+
+        if (mb_strpos($color, '#') === 0) {
+            $color = mb_substr($color, 1);
+        }
+
+        [$red, $blue, $green] = static::colorToRBG($color);
+
+        return "rgba($red, $blue, $green, $alpha)";
+    }
+
+    /**
      * 验证扩展包名称.
      *
-     * @param  string  $name
+     * @param string $name
      * @return int
      */
     public static function validateExtensionName($name)
@@ -532,7 +479,7 @@ class Helper
     /**
      * Get file icon.
      *
-     * @param  string  $file
+     * @param string $file
      * @return string
      */
     public static function getFileIcon($file = '')
@@ -551,7 +498,7 @@ class Helper
     /**
      * 判断是否是ajax请求.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return bool
      */
     public static function isAjaxRequest(?Request $request = null)
@@ -559,7 +506,7 @@ class Helper
         /* @var Request $request */
         $request = $request ?: request();
 
-        return $request->ajax() && ! $request->pjax();
+        return $request->ajax() && !$request->pjax();
     }
 
     /**
@@ -569,7 +516,7 @@ class Helper
      */
     public static function isIEBrowser()
     {
-        return (bool) preg_match('/Mozilla\/5\.0 \(Windows NT 10\.0; WOW64; Trident\/7\.0; rv:[0-9\.]*\) like Gecko/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
+        return (bool)preg_match('/Mozilla\/5\.0 \(Windows NT 10\.0; WOW64; Trident\/7\.0; rv:[0-9\.]*\) like Gecko/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
     }
 
     /**
@@ -583,12 +530,12 @@ class Helper
     }
 
     /**
-     * @param  string  $url
+     * @param string $url
      * @return void
      */
     public static function setPreviousUrl($url)
     {
-        session()->flash('admin.prev.url', static::urlWithoutQuery((string) $url, '_pjax'));
+        session()->flash('admin.prev.url', static::urlWithoutQuery((string)$url, '_pjax'));
     }
 
     /**
@@ -596,14 +543,14 @@ class Helper
      */
     public static function getPreviousUrl()
     {
-        return (string) (session()->get('admin.prev.url') ? url(session()->get('admin.prev.url')) : url()->previous());
+        return (string)(session()->get('admin.prev.url') ? url(session()->get('admin.prev.url')) : url()->previous());
     }
 
     /**
-     * @param  mixed  $command
-     * @param  int  $timeout
-     * @param  null  $input
-     * @param  null  $cwd
+     * @param mixed $command
+     * @param int $timeout
+     * @param null $input
+     * @param null $cwd
      * @return Process
      */
     public static function process($command, $timeout = 100, $input = null, $cwd = null)
@@ -634,39 +581,39 @@ class Helper
             return false;
         }
 
-        if (! is_scalar($value1) || ! is_scalar($value2)) {
+        if (!is_scalar($value1) || !is_scalar($value2)) {
             return $value1 === $value2;
         }
 
-        return (string) $value1 === (string) $value2;
+        return (string)$value1 === (string)$value2;
     }
 
     /**
      * 判断给定的数组是是否包含给定元素.
      *
-     * @param  mixed  $value
-     * @param  array  $array
+     * @param mixed $value
+     * @param array $array
      * @return bool
      */
     public static function inArray($value, array $array)
     {
         $array = array_map(function ($v) {
             if (is_scalar($v) || $v === null) {
-                $v = (string) $v;
+                $v = (string)$v;
             }
 
             return $v;
         }, $array);
 
-        return in_array((string) $value, $array, true);
+        return in_array((string)$value, $array, true);
     }
 
     /**
      * Limit the number of characters in a string.
      *
-     * @param  string  $value
-     * @param  int  $limit
-     * @param  string  $end
+     * @param string $value
+     * @param int $limit
+     * @param string $end
      * @return string
      */
     public static function strLimit($value, $limit = 100, $end = '...')
@@ -675,13 +622,13 @@ class Helper
             return $value;
         }
 
-        return rtrim(mb_substr($value, 0, $limit, 'UTF-8')).$end;
+        return rtrim(mb_substr($value, 0, $limit, 'UTF-8')) . $end;
     }
 
     /**
      * 获取类名或对象的文件路径.
      *
-     * @param  string|object  $class
+     * @param string|object $class
      * @return string
      *
      * @throws \ReflectionException
@@ -704,7 +651,7 @@ class Helper
         $composer = Composer::parse(base_path('composer.json'));
 
         $map = collect($composer->autoload['psr-4'] ?? [])->mapWithKeys(function ($path, $namespace) {
-            $namespace = trim($namespace, '\\').'\\';
+            $namespace = trim($namespace, '\\') . '\\';
 
             return [$namespace => [$namespace, $path]];
         })->sortBy(function ($_, $namespace) {
@@ -724,19 +671,33 @@ class Helper
         }
 
         if (empty($values)) {
-            $values = [$prefix.'\\', self::slug($prefix).'/'];
+            $values = [$prefix . '\\', self::slug($prefix) . '/'];
         }
 
         [$namespace, $path] = $values;
 
-        return base_path(str_replace([$namespace, '\\'], [$path, '/'], $class)).'.php';
+        return base_path(str_replace([$namespace, '\\'], [$path, '/'], $class)) . '.php';
+    }
+
+    /**
+     * @param string $name
+     * @param string $symbol
+     * @return mixed
+     */
+    public static function slug(string $name, string $symbol = '-')
+    {
+        $text = preg_replace_callback('/([A-Z])/', function ($text) use ($symbol) {
+            return $symbol . strtolower($text[1]);
+        }, $name);
+
+        return str_replace('_', $symbol, ltrim($text, $symbol));
     }
 
     /**
      * Is input data is has-one relation.
      *
-     * @param  Collection  $fields
-     * @param  array  $input
+     * @param Collection $fields
+     * @param array $input
      */
     public static function prepareHasOneRelation(Collection $fields, array &$input)
     {
@@ -777,15 +738,15 @@ class Helper
     /**
      * 设置查询条件.
      *
-     * @param  mixed  $model
-     * @param  string  $column
-     * @param  string  $query
+     * @param mixed $model
+     * @param string $column
+     * @param string $query
      * @param mixed array $params
      * @return void
      */
     public static function withQueryCondition($model, ?string $column, string $query, array $params)
     {
-        if (! Str::contains($column, '.')) {
+        if (!Str::contains($column, '.')) {
             $model->$query($column, ...$params);
 
             return;
@@ -802,10 +763,10 @@ class Helper
     /**
      * 设置关联关系查询条件.
      *
-     * @param  mixed  $model
-     * @param  string  $column
-     * @param  string  $query
-     * @param  mixed  ...$params
+     * @param mixed $model
+     * @param string $column
+     * @param string $query
+     * @param mixed ...$params
      * @return void
      */
     public static function withRelationQuery($model, ?string $column, string $query, array $params)
@@ -826,7 +787,7 @@ class Helper
     /**
      * Html转义.
      *
-     * @param  array|string  $item
+     * @param array|string $item
      * @return mixed
      */
     public static function htmlEntityEncode($item)
@@ -848,12 +809,12 @@ class Helper
     /**
      * 格式化表单元素 name 属性.
      *
-     * @param  string|array  $name
+     * @param string|array $name
      * @return mixed|string
      */
     public static function formatElementName($name)
     {
-        if (! $name) {
+        if (!$name) {
             return $name;
         }
 
@@ -884,9 +845,9 @@ class Helper
      *
      * If no key is given to the method, the entire array will be replaced.
      *
-     * @param  array|\ArrayAccess  $array
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param array|\ArrayAccess $array
+     * @param string $key
+     * @param mixed $value
      * @return array
      */
     public static function arraySet(&$array, $key, $value)
@@ -901,7 +862,7 @@ class Helper
         while (count($keys) > 1) {
             $key = array_shift($keys);
 
-            if (! isset($array[$key]) || (! is_array($array[$key]) && ! $array[$key] instanceof \ArrayAccess)) {
+            if (!isset($array[$key]) || (!is_array($array[$key]) && !$array[$key] instanceof \ArrayAccess)) {
                 $array[$key] = [];
             }
 
@@ -926,7 +887,7 @@ class Helper
     /**
      * 把下划线风格字段名转化为驼峰风格.
      *
-     * @param  array  $array
+     * @param array $array
      * @return array
      */
     public static function camelArray(array &$array)
@@ -945,12 +906,12 @@ class Helper
     /**
      * 获取文件名称.
      *
-     * @param  string  $name
+     * @param string $name
      * @return array|mixed
      */
     public static function basename($name)
     {
-        if (! $name) {
+        if (!$name) {
             return $name;
         }
 
@@ -958,8 +919,8 @@ class Helper
     }
 
     /**
-     * @param  string|int  $key
-     * @param  array|object  $arrayOrObject
+     * @param string|int $key
+     * @param array|object $arrayOrObject
      * @return bool
      */
     public static function keyExists($key, $arrayOrObject)
@@ -972,22 +933,62 @@ class Helper
     }
 
     /**
+     * 把给定的值转化为数组.
+     *
+     * @param $value
+     * @param bool $filter
+     * @return array
+     */
+    public static function array($value, bool $filter = true): array
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return [];
+        }
+
+        if ($value instanceof \Closure) {
+            $value = $value();
+        }
+
+        if (is_array($value)) {
+        } elseif ($value instanceof Jsonable) {
+            $value = json_decode($value->toJson(), true);
+        } elseif ($value instanceof Arrayable) {
+            $value = $value->toArray();
+        } elseif (is_string($value)) {
+            $array = null;
+
+            try {
+                $array = json_decode($value, true);
+            } catch (\Throwable $e) {
+            }
+
+            $value = is_array($array) ? $array : explode(',', $value);
+        } else {
+            $value = (array)$value;
+        }
+
+        return $filter ? array_filter($value, function ($v) {
+            return $v !== '' && $v !== null;
+        }) : $value;
+    }
+
+    /**
      * 跳转.
      *
-     * @param  string  $to
-     * @param  int  $statusCode
-     * @param  Request  $request
+     * @param string $to
+     * @param int $statusCode
+     * @param Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public static function redirect($to, int $statusCode = 302, $request = null)
     {
         $request = $request ?: request();
 
-        if (! URL::isValidUrl($to)) {
+        if (!URL::isValidUrl($to)) {
             $to = admin_base_path($to);
         }
 
-        if ($request->ajax() && ! $request->pjax()) {
+        if ($request->ajax() && !$request->pjax()) {
             return response()->json(['redirect' => $to], $statusCode);
         }
 

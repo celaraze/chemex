@@ -31,9 +31,9 @@ class PassableByReferencePass extends CodeCleanerPass
     const EXCEPTION_MESSAGE = 'Only variables can be passed by reference';
 
     /**
+     * @param Node $node
      * @throws FatalErrorException if non-variables are passed by reference
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {
@@ -44,7 +44,7 @@ class PassableByReferencePass extends CodeCleanerPass
                 return;
             }
 
-            $name = (string) $node->name;
+            $name = (string)$node->name;
 
             if ($name === 'array_multisort') {
                 return $this->validateArrayMultisort($node);
@@ -68,6 +68,35 @@ class PassableByReferencePass extends CodeCleanerPass
         }
     }
 
+    /**
+     * Because array_multisort has a problematic signature...
+     *
+     * The argument order is all sorts of wonky, and whether something is passed
+     * by reference or not depends on the values of the two arguments before it.
+     * We'll do a good faith attempt at validating this, but err on the side of
+     * permissive.
+     *
+     * This is why you don't design languages where core code and extensions can
+     * implement APIs that wouldn't be possible in userland code.
+     *
+     * @param Node $node
+     * @throws FatalErrorException for clearly invalid arguments
+     *
+     */
+    private function validateArrayMultisort(Node $node)
+    {
+        $nonPassable = 2; // start with 2 because the first one has to be passable by reference
+        foreach ($node->args as $arg) {
+            if ($this->isPassableByReference($arg)) {
+                $nonPassable = 0;
+            } elseif (++$nonPassable > 2) {
+                // There can be *at most* two non-passable-by-reference args in a row. This is about
+                // as close as we can get to validating the arguments for this function :-/
+                throw new FatalErrorException(self::EXCEPTION_MESSAGE, 0, \E_ERROR, null, $node->getLine());
+            }
+        }
+    }
+
     private function isPassableByReference(Node $arg): bool
     {
         // Unpacked arrays can be passed by reference
@@ -84,34 +113,5 @@ class PassableByReferencePass extends CodeCleanerPass
             $arg->value instanceof MethodCall ||
             $arg->value instanceof StaticCall ||
             $arg->value instanceof ArrayDimFetch;
-    }
-
-    /**
-     * Because array_multisort has a problematic signature...
-     *
-     * The argument order is all sorts of wonky, and whether something is passed
-     * by reference or not depends on the values of the two arguments before it.
-     * We'll do a good faith attempt at validating this, but err on the side of
-     * permissive.
-     *
-     * This is why you don't design languages where core code and extensions can
-     * implement APIs that wouldn't be possible in userland code.
-     *
-     * @throws FatalErrorException for clearly invalid arguments
-     *
-     * @param Node $node
-     */
-    private function validateArrayMultisort(Node $node)
-    {
-        $nonPassable = 2; // start with 2 because the first one has to be passable by reference
-        foreach ($node->args as $arg) {
-            if ($this->isPassableByReference($arg)) {
-                $nonPassable = 0;
-            } elseif (++$nonPassable > 2) {
-                // There can be *at most* two non-passable-by-reference args in a row. This is about
-                // as close as we can get to validating the arguments for this function :-/
-                throw new FatalErrorException(self::EXCEPTION_MESSAGE, 0, \E_ERROR, null, $node->getLine());
-            }
-        }
     }
 }

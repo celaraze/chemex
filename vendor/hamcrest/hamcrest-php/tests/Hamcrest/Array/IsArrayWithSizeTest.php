@@ -1,15 +1,11 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 use Hamcrest\AbstractMatcherTest;
 
 class IsArrayWithSizeTest extends AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return IsArrayWithSize::arrayWithSize(equalTo(2));
-    }
 
     public function testMatchesWhenSizeIsCorrect()
     {
@@ -33,5 +29,10 @@ class IsArrayWithSizeTest extends AbstractMatcherTest
     {
         $this->assertDescription('an array with size <3>', arrayWithSize(equalTo(3)));
         $this->assertDescription('an empty array', emptyArray());
+    }
+
+    protected function createMatcher()
+    {
+        return IsArrayWithSize::arrayWithSize(equalTo(2));
     }
 }

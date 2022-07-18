@@ -16,13 +16,13 @@
  * - yasinn
  */
 return [
-    'year' => '{1}'.'بىر يىل'.'|:count '.'يىل',
-    'month' => '{1}'.'بىر ئاي'.'|:count '.'ئاي',
-    'week' => '{1}'.'بىر ھەپتە'.'|:count '.'ھەپتە',
-    'day' => '{1}'.'بىر كۈن'.'|:count '.'كۈن',
-    'hour' => '{1}'.'بىر سائەت'.'|:count '.'سائەت',
-    'minute' => '{1}'.'بىر مىنۇت'.'|:count '.'مىنۇت',
-    'second' => '{1}'.'نەچچە سېكونت'.'|:count '.'سېكونت',
+    'year' => '{1}' . 'بىر يىل' . '|:count ' . 'يىل',
+    'month' => '{1}' . 'بىر ئاي' . '|:count ' . 'ئاي',
+    'week' => '{1}' . 'بىر ھەپتە' . '|:count ' . 'ھەپتە',
+    'day' => '{1}' . 'بىر كۈن' . '|:count ' . 'كۈن',
+    'hour' => '{1}' . 'بىر سائەت' . '|:count ' . 'سائەت',
+    'minute' => '{1}' . 'بىر مىنۇت' . '|:count ' . 'مىنۇت',
+    'second' => '{1}' . 'نەچچە سېكونت' . '|:count ' . 'سېكونت',
     'ago' => ':time بۇرۇن',
     'from_now' => ':time كېيىن',
     'diff_today' => 'بۈگۈن',
@@ -51,10 +51,10 @@ return [
             case 'd':
             case 'D':
             case 'DDD':
-                return $number.'-كۈنى';
+                return $number . '-كۈنى';
             case 'w':
             case 'W':
-                return $number.'-ھەپتە';
+                return $number . '-ھەپتە';
             default:
                 return $number;
         }

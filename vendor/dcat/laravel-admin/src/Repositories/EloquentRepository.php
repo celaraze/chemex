@@ -52,7 +52,7 @@ class EloquentRepository extends Repository implements TreeRepository
     /**
      * EloquentRepository constructor.
      *
-     * @param  EloquentModel|array|string  $modelOrRelations  $modelOrRelations
+     * @param EloquentModel|array|string $modelOrRelations $modelOrRelations
      */
     public function __construct($modelOrRelations = [])
     {
@@ -62,7 +62,7 @@ class EloquentRepository extends Repository implements TreeRepository
     /**
      * 初始化模型.
      *
-     * @param  EloquentModel|Builder|array|string  $modelOrRelations
+     * @param EloquentModel|Builder|array|string $modelOrRelations
      */
     protected function initModel($modelOrRelations)
     {
@@ -90,6 +90,31 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
+     * 获取model对象.
+     *
+     * @return EloquentModel
+     */
+    public function model()
+    {
+        return $this->model ?: ($this->model = $this->createModel());
+    }
+
+    /**
+     * @param array $data
+     * @return EloquentModel
+     */
+    public function createModel(array $data = [])
+    {
+        $model = new $this->eloquentClass();
+
+        if ($data) {
+            $model->setRawAttributes($data);
+        }
+
+        return $model;
+    }
+
+    /**
      * @return string
      */
     public function getCreatedAtColumn()
@@ -106,316 +131,9 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
-     * 获取列表页面查询的字段.
-     *
-     * @return array
-     */
-    public function getGridColumns()
-    {
-        return ['*'];
-    }
-
-    /**
-     * 获取表单页面查询的字段.
-     *
-     * @return array
-     */
-    public function getFormColumns()
-    {
-        return ['*'];
-    }
-
-    /**
-     * 获取详情页面查询的字段.
-     *
-     * @return array
-     */
-    public function getDetailColumns()
-    {
-        return ['*'];
-    }
-
-    /**
-     * 设置关联关系.
-     *
-     * @param  mixed  $relations
-     * @return $this
-     */
-    public function setRelations($relations)
-    {
-        $this->relations = (array) $relations;
-
-        return $this;
-    }
-
-    /**
-     * 查询Grid表格数据.
-     *
-     * @param  Grid\Model  $model
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Collection|array
-     */
-    public function get(Grid\Model $model)
-    {
-        $this->setSort($model);
-        $this->setPaginate($model);
-
-        $query = $this->newQuery();
-
-        if ($this->relations) {
-            $query->with($this->relations);
-        }
-
-        return $model->apply($query, true, $this->getGridColumns());
-    }
-
-    /**
-     * 设置表格数据排序.
-     *
-     * @param  Grid\Model  $model
-     * @return void
-     */
-    protected function setSort(Grid\Model $model)
-    {
-        [$column, $type, $cast] = $model->getSort();
-
-        if (empty($column) || empty($type)) {
-            $orders = $model->getSortQueries();
-
-            $model->resetOrderBy();
-
-            $orders->each(function ($orderBy) use ($model) {
-                $column = $orderBy['arguments'][0];
-                $type = in_array($orderBy['method'], $model->getSortDescMethods(), true) ? 'desc' : ($orderBy['arguments'][1] ?? 'asc');
-                $cast = null;
-
-                $this->addOrderBy($model, $column, $type, $cast);
-            });
-
-            return;
-        }
-
-        $model->resetOrderBy();
-
-        $this->addOrderBy($model, $column, $type, $cast);
-    }
-
-    /**
-     * @param  Grid\Model  $model
-     * @param  string  $column
-     * @param  string  $type
-     * @param  string  $cast
-     *
-     * @throws \Exception
-     */
-    protected function addOrderBy(Grid\Model $model, $column, $type, $cast)
-    {
-        $explodedCols = explode('.', $column);
-        $isRelation = empty($explodedCols[1]) ? false : method_exists($this->model(), $explodedCols[0]);
-
-        if (count($explodedCols) > 1 && $isRelation) {
-            $this->setRelationSort($model, $column, $type, $cast);
-
-            return;
-        }
-
-        $this->setOrderBy(
-            $model,
-            str_replace('.', '->', $column),
-            $type,
-            $cast);
-    }
-
-    /**
-     * @param  Grid\Model  $model
-     * @param $column
-     * @param $type
-     * @param $cast
-     */
-    protected function setOrderBy(Grid\Model $model, $column, $type, $cast)
-    {
-        $isJsonColumn = Str::contains($column, '->');
-
-        if ($isJsonColumn) {
-            $explodedCols = explode('->', $column);
-            // json字段排序
-            $col = $this->wrapMySqlColumn(array_shift($explodedCols));
-            $parts = implode('.', $explodedCols);
-            $column = "JSON_UNQUOTE(JSON_EXTRACT({$col}, '$.{$parts}'))";
-        }
-
-        if (! empty($cast)) {
-            $column = $this->wrapMySqlColumn($column);
-
-            $model->addQuery(
-                'orderByRaw',
-                ["CAST({$column} AS {$cast}) {$type}"]
-            );
-
-            return;
-        }
-
-        if ($isJsonColumn) {
-            $model->addQuery('orderByRaw', ["{$column} {$type}"]);
-        } else {
-            $model->addQuery('orderBy', [$column, $type]);
-        }
-    }
-
-    /**
-     * @param  string  $column
-     * @return string
-     */
-    protected function wrapMySqlColumn($column)
-    {
-        if (Str::contains($column, '`')) {
-            return $column;
-        }
-
-        $columns = explode('.', $column);
-
-        foreach ($columns as &$column) {
-            if (! Str::contains($column, '`')) {
-                $column = "`{$column}`";
-            }
-        }
-
-        return implode('.', $columns);
-    }
-
-    /**
-     * 设置关联数据排序.
-     *
-     * @param  Grid\Model  $model
-     * @param  string  $column
-     * @param  string  $type
-     * @param  string  $cast
-     *
-     * @throws \Exception
-     */
-    protected function setRelationSort(Grid\Model $model, $column, $type, $cast)
-    {
-        [$relationName, $relationColumn] = explode('.', $column, 2);
-
-        $relation = $this->model()->$relationName();
-
-        $model->addQuery('select', [$this->model()->getTable().'.*']);
-
-        $model->addQuery('join', $this->joinParameters($relation));
-
-        $this->setOrderBy(
-            $model,
-            $relation->getRelated()->getTable().'.'.str_replace('.', '->', $relationColumn),
-            $type,
-            $cast
-        );
-    }
-
-    /**
-     * 关联模型 join 连接查询.
-     *
-     * @param  Relation  $relation
-     * @return array
-     *
-     * @throws \Exception
-     */
-    protected function joinParameters(Relation $relation)
-    {
-        $relatedTable = $relation->getRelated()->getTable();
-
-        if ($relation instanceof BelongsTo) {
-            $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
-
-            return [
-                $relatedTable,
-                $relation->{$foreignKeyMethod}(),
-                '=',
-                $relatedTable.'.'.$relation->getRelated()->getKeyName(),
-            ];
-        }
-
-        if ($relation instanceof HasOne) {
-            return [
-                $relatedTable,
-                $relation->getQualifiedParentKeyName(),
-                '=',
-                $relation->getQualifiedForeignKeyName(),
-            ];
-        }
-
-        throw new AdminException('Related sortable only support `HasOne` and `BelongsTo` relation.');
-    }
-
-    /**
-     * 设置分页参数.
-     *
-     * @param  Grid\Model  $model
-     * @return void
-     */
-    protected function setPaginate(Grid\Model $model)
-    {
-        $paginateMethod = $model->getPaginateMethod();
-
-        $paginate = $model->findQueryByMethod($paginateMethod)->first();
-
-        $model->rejectQuery(['paginate', 'simplePaginate']);
-
-        if (! $model->allowPagination()) {
-            $model->addQuery('get', [$this->getGridColumns()]);
-        } else {
-            $model->addQuery($paginateMethod, $this->resolvePerPage($model, $paginate));
-        }
-    }
-
-    /**
-     * 获取分页参数.
-     *
-     * @param  Grid\Model  $model
-     * @param  array|null  $paginate
-     * @return array
-     */
-    protected function resolvePerPage(Grid\Model $model, $paginate)
-    {
-        if ($paginate && is_array($paginate)) {
-            if ($perPage = request()->input($model->getPerPageName())) {
-                $paginate['arguments'][0] = (int) $perPage;
-            }
-
-            return $paginate['arguments'];
-        }
-
-        return [
-            $model->getPerPage(),
-            $this->getGridColumns(),
-            $model->getPageName(),
-            $model->getCurrentPage(),
-        ];
-    }
-
-    /**
-     * 查询编辑页面数据.
-     *
-     * @param  Form  $form
-     * @return array|\Illuminate\Contracts\Support\Arrayable
-     */
-    public function edit(Form $form)
-    {
-        $query = $this->newQuery();
-
-        if ($this->isSoftDeletes) {
-            $query->withTrashed();
-        }
-
-        $this->model = $query
-            ->with($this->getRelations())
-            ->findOrFail($form->getKey(), $this->getFormColumns());
-
-        return $this->model;
-    }
-
-    /**
      * 查询详情页面数据.
      *
-     * @param  Show  $show
+     * @param Show $show
      * @return array|\Illuminate\Contracts\Support\Arrayable
      */
     public function detail(Show $show)
@@ -434,9 +152,63 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
+     * @return Builder
+     */
+    protected function newQuery()
+    {
+        if ($this->queryBuilder) {
+            return clone $this->queryBuilder;
+        }
+
+        return $this->model()->newQuery();
+    }
+
+    /**
+     * @param array $relations
+     * @return $this
+     */
+    public static function with($relations = [])
+    {
+        return (new static())->setRelations($relations);
+    }
+
+    /**
+     * 获取模型的所有关联关系.
+     *
+     * @return array
+     */
+    public function getRelations()
+    {
+        return $this->relations;
+    }
+
+    /**
+     * 设置关联关系.
+     *
+     * @param mixed $relations
+     * @return $this
+     */
+    public function setRelations($relations)
+    {
+        $this->relations = (array)$relations;
+
+        return $this;
+    }
+
+    /**
+     * 获取详情页面查询的字段.
+     *
+     * @return array
+     */
+    public function getDetailColumns()
+    {
+        return ['*'];
+    }
+
+    /**
      * 新增记录.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return mixed
      */
     public function store(Form $form)
@@ -467,9 +239,459 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
+     * 获取模型关联关系的表单数据.
+     *
+     * @param EloquentModel $model
+     * @param array $inputs
+     * @return array
+     */
+    protected function getRelationInputs($model, $inputs = [])
+    {
+        $map = [];
+        $relations = [];
+
+        foreach ($inputs as $column => $value) {
+            $relationColumn = null;
+
+            if (method_exists($model, $column)) {
+                $relationColumn = $column;
+            } elseif (method_exists($model, $camelColumn = Str::camel($column))) {
+                $relationColumn = $camelColumn;
+            }
+
+            if (!$relationColumn) {
+                continue;
+            }
+
+            $relation = call_user_func([$model, $relationColumn]);
+
+            if ($relation instanceof Relations\Relation) {
+                $relations[$column] = $value;
+
+                $map[$column] = $relationColumn;
+            }
+        }
+
+        return [&$relations, $map];
+    }
+
+    /**
+     * 更新关联关系数据.
+     *
+     * @param Form $form
+     * @param EloquentModel $model
+     * @param array $relationsData
+     * @param array $relationKeyMap
+     *
+     * @throws \Exception
+     */
+    protected function updateRelation(Form $form, EloquentModel $model, array $relationsData, array $relationKeyMap)
+    {
+        foreach ($relationsData as $name => $values) {
+            $relationName = $relationKeyMap[$name] ?? $name;
+
+            if (!method_exists($model, $relationName)) {
+                continue;
+            }
+
+            $relation = $model->$relationName();
+
+            $oneToOneRelation = $relation instanceof Relations\HasOne
+                || $relation instanceof Relations\MorphOne
+                || $relation instanceof Relations\BelongsTo;
+
+            $prepared = $oneToOneRelation ? $form->prepareUpdate([$name => $values]) : [$name => $values];
+
+            if (empty($prepared)) {
+                continue;
+            }
+
+            switch (true) {
+                case $relation instanceof Relations\BelongsToMany:
+                case $relation instanceof Relations\MorphToMany:
+                    if (isset($prepared[$name])) {
+                        $relation->sync($prepared[$name]);
+                    }
+                    break;
+                case $relation instanceof Relations\HasOne:
+
+                    $related = $model->$relationName;
+
+                    // if related is empty
+                    if (is_null($related)) {
+                        $related = $relation->getRelated();
+                        $qualifiedParentKeyName = $relation->getQualifiedParentKeyName();
+                        $localKey = Arr::last(explode('.', $qualifiedParentKeyName));
+                        $related->{$relation->getForeignKeyName()} = $model->{$localKey};
+                    }
+
+                    foreach ($prepared[$name] as $column => $value) {
+                        $related->setAttribute($column, $value);
+                    }
+
+                    $related->save();
+                    break;
+                case $relation instanceof Relations\BelongsTo:
+                case $relation instanceof Relations\MorphTo:
+
+                    $parent = $model->$relationName;
+
+                    // if related is empty
+                    if (is_null($parent)) {
+                        $parent = $relation->getRelated();
+                    }
+
+                    foreach ($prepared[$name] as $column => $value) {
+                        $parent->setAttribute($column, $value);
+                    }
+
+                    $parent->save();
+
+                    // When in creating, associate two models
+                    $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
+                    if (!$model->{$relation->{$foreignKeyMethod}()}) {
+                        $model->{$relation->{$foreignKeyMethod}()} = $parent->getKey();
+
+                        $model->save();
+                    }
+
+                    break;
+                case $relation instanceof Relations\MorphOne:
+                    $related = $model->$relationName;
+                    if (is_null($related)) {
+                        $related = $relation->make();
+                    }
+                    foreach ($prepared[$name] as $column => $value) {
+                        $related->setAttribute($column, $value);
+                    }
+                    $related->save();
+                    break;
+                case $relation instanceof Relations\HasMany:
+                case $relation instanceof Relations\MorphMany:
+
+                    foreach ($prepared[$name] as $related) {
+                        /** @var Relations\Relation $relation */
+                        $relation = $model->$relationName();
+
+                        $keyName = $relation->getRelated()->getKeyName();
+
+                        $instance = $relation->findOrNew(Arr::get($related, $keyName));
+
+                        if (Arr::get($related, Form::REMOVE_FLAG_NAME) == 1) {
+                            $instance->delete();
+
+                            continue;
+                        }
+
+                        Arr::forget($related, Form::REMOVE_FLAG_NAME);
+
+                        $key = Arr::get($related, $relation->getModel()->getKeyName());
+                        if ($key === null || $key === '') {
+                            Arr::forget($related, $relation->getModel()->getKeyName());
+                        }
+
+                        $instance->fill($related);
+
+                        $instance->save();
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 查询Grid表格数据.
+     *
+     * @param Grid\Model $model
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Collection|array
+     */
+    public function get(Grid\Model $model)
+    {
+        $this->setSort($model);
+        $this->setPaginate($model);
+
+        $query = $this->newQuery();
+
+        if ($this->relations) {
+            $query->with($this->relations);
+        }
+
+        return $model->apply($query, true, $this->getGridColumns());
+    }
+
+    /**
+     * 设置表格数据排序.
+     *
+     * @param Grid\Model $model
+     * @return void
+     */
+    protected function setSort(Grid\Model $model)
+    {
+        [$column, $type, $cast] = $model->getSort();
+
+        if (empty($column) || empty($type)) {
+            $orders = $model->getSortQueries();
+
+            $model->resetOrderBy();
+
+            $orders->each(function ($orderBy) use ($model) {
+                $column = $orderBy['arguments'][0];
+                $type = in_array($orderBy['method'], $model->getSortDescMethods(), true) ? 'desc' : ($orderBy['arguments'][1] ?? 'asc');
+                $cast = null;
+
+                $this->addOrderBy($model, $column, $type, $cast);
+            });
+
+            return;
+        }
+
+        $model->resetOrderBy();
+
+        $this->addOrderBy($model, $column, $type, $cast);
+    }
+
+    /**
+     * @param Grid\Model $model
+     * @param string $column
+     * @param string $type
+     * @param string $cast
+     *
+     * @throws \Exception
+     */
+    protected function addOrderBy(Grid\Model $model, $column, $type, $cast)
+    {
+        $explodedCols = explode('.', $column);
+        $isRelation = empty($explodedCols[1]) ? false : method_exists($this->model(), $explodedCols[0]);
+
+        if (count($explodedCols) > 1 && $isRelation) {
+            $this->setRelationSort($model, $column, $type, $cast);
+
+            return;
+        }
+
+        $this->setOrderBy(
+            $model,
+            str_replace('.', '->', $column),
+            $type,
+            $cast);
+    }
+
+    /**
+     * 设置关联数据排序.
+     *
+     * @param Grid\Model $model
+     * @param string $column
+     * @param string $type
+     * @param string $cast
+     *
+     * @throws \Exception
+     */
+    protected function setRelationSort(Grid\Model $model, $column, $type, $cast)
+    {
+        [$relationName, $relationColumn] = explode('.', $column, 2);
+
+        $relation = $this->model()->$relationName();
+
+        $model->addQuery('select', [$this->model()->getTable() . '.*']);
+
+        $model->addQuery('join', $this->joinParameters($relation));
+
+        $this->setOrderBy(
+            $model,
+            $relation->getRelated()->getTable() . '.' . str_replace('.', '->', $relationColumn),
+            $type,
+            $cast
+        );
+    }
+
+    /**
+     * 关联模型 join 连接查询.
+     *
+     * @param Relation $relation
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function joinParameters(Relation $relation)
+    {
+        $relatedTable = $relation->getRelated()->getTable();
+
+        if ($relation instanceof BelongsTo) {
+            $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
+
+            return [
+                $relatedTable,
+                $relation->{$foreignKeyMethod}(),
+                '=',
+                $relatedTable . '.' . $relation->getRelated()->getKeyName(),
+            ];
+        }
+
+        if ($relation instanceof HasOne) {
+            return [
+                $relatedTable,
+                $relation->getQualifiedParentKeyName(),
+                '=',
+                $relation->getQualifiedForeignKeyName(),
+            ];
+        }
+
+        throw new AdminException('Related sortable only support `HasOne` and `BelongsTo` relation.');
+    }
+
+    /**
+     * @param Grid\Model $model
+     * @param $column
+     * @param $type
+     * @param $cast
+     */
+    protected function setOrderBy(Grid\Model $model, $column, $type, $cast)
+    {
+        $isJsonColumn = Str::contains($column, '->');
+
+        if ($isJsonColumn) {
+            $explodedCols = explode('->', $column);
+            // json字段排序
+            $col = $this->wrapMySqlColumn(array_shift($explodedCols));
+            $parts = implode('.', $explodedCols);
+            $column = "JSON_UNQUOTE(JSON_EXTRACT({$col}, '$.{$parts}'))";
+        }
+
+        if (!empty($cast)) {
+            $column = $this->wrapMySqlColumn($column);
+
+            $model->addQuery(
+                'orderByRaw',
+                ["CAST({$column} AS {$cast}) {$type}"]
+            );
+
+            return;
+        }
+
+        if ($isJsonColumn) {
+            $model->addQuery('orderByRaw', ["{$column} {$type}"]);
+        } else {
+            $model->addQuery('orderBy', [$column, $type]);
+        }
+    }
+
+    /**
+     * @param string $column
+     * @return string
+     */
+    protected function wrapMySqlColumn($column)
+    {
+        if (Str::contains($column, '`')) {
+            return $column;
+        }
+
+        $columns = explode('.', $column);
+
+        foreach ($columns as &$column) {
+            if (!Str::contains($column, '`')) {
+                $column = "`{$column}`";
+            }
+        }
+
+        return implode('.', $columns);
+    }
+
+    /**
+     * 设置分页参数.
+     *
+     * @param Grid\Model $model
+     * @return void
+     */
+    protected function setPaginate(Grid\Model $model)
+    {
+        $paginateMethod = $model->getPaginateMethod();
+
+        $paginate = $model->findQueryByMethod($paginateMethod)->first();
+
+        $model->rejectQuery(['paginate', 'simplePaginate']);
+
+        if (!$model->allowPagination()) {
+            $model->addQuery('get', [$this->getGridColumns()]);
+        } else {
+            $model->addQuery($paginateMethod, $this->resolvePerPage($model, $paginate));
+        }
+    }
+
+    /**
+     * 获取列表页面查询的字段.
+     *
+     * @return array
+     */
+    public function getGridColumns()
+    {
+        return ['*'];
+    }
+
+    /**
+     * 获取分页参数.
+     *
+     * @param Grid\Model $model
+     * @param array|null $paginate
+     * @return array
+     */
+    protected function resolvePerPage(Grid\Model $model, $paginate)
+    {
+        if ($paginate && is_array($paginate)) {
+            if ($perPage = request()->input($model->getPerPageName())) {
+                $paginate['arguments'][0] = (int)$perPage;
+            }
+
+            return $paginate['arguments'];
+        }
+
+        return [
+            $model->getPerPage(),
+            $this->getGridColumns(),
+            $model->getPageName(),
+            $model->getCurrentPage(),
+        ];
+    }
+
+    /**
+     * 删除数据.
+     *
+     * @param Form $form
+     * @param array $originalData
+     * @return bool
+     */
+    public function delete(Form $form, array $originalData)
+    {
+        $models = $this->collection->keyBy($this->getKeyName());
+
+        collect(explode(',', $form->getKey()))->filter()->each(function ($id) use ($form, $models) {
+            $model = $models->get($id);
+
+            if (!$model) {
+                return;
+            }
+
+            $data = $model->toArray();
+
+            if ($this->isSoftDeletes && $model->trashed()) {
+                $form->deleteFiles($data, true);
+                $model->forceDelete();
+
+                return;
+            } elseif (!$this->isSoftDeletes) {
+                $form->deleteFiles($data);
+            }
+
+            $model->delete();
+        });
+
+        return true;
+    }
+
+    /**
      * 查询更新前的行数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return array|\Illuminate\Contracts\Support\Arrayable
      */
     public function updating(Form $form)
@@ -478,9 +700,40 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
+     * 查询编辑页面数据.
+     *
+     * @param Form $form
+     * @return array|\Illuminate\Contracts\Support\Arrayable
+     */
+    public function edit(Form $form)
+    {
+        $query = $this->newQuery();
+
+        if ($this->isSoftDeletes) {
+            $query->withTrashed();
+        }
+
+        $this->model = $query
+            ->with($this->getRelations())
+            ->findOrFail($form->getKey(), $this->getFormColumns());
+
+        return $this->model;
+    }
+
+    /**
+     * 获取表单页面查询的字段.
+     *
+     * @return array
+     */
+    public function getFormColumns()
+    {
+        return ['*'];
+    }
+
+    /**
      * 更新数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return bool
      */
     public function update(Form $form)
@@ -488,7 +741,7 @@ class EloquentRepository extends Repository implements TreeRepository
         /* @var EloquentModel $builder */
         $model = $this->model();
 
-        if (! $model->getKey()) {
+        if (!$model->getKey()) {
             $model->exists = true;
 
             $model->setAttribute($model->getKeyName(), $form->getKey());
@@ -527,7 +780,7 @@ class EloquentRepository extends Repository implements TreeRepository
     {
         $model = $this->model();
 
-        if (! $model instanceof Sortable) {
+        if (!$model instanceof Sortable) {
             throw new RuntimeException(
                 sprintf(
                     'The model "%s" must be a type of %s.',
@@ -549,7 +802,7 @@ class EloquentRepository extends Repository implements TreeRepository
     {
         $model = $this->model();
 
-        if (! $model instanceof Sortable) {
+        if (!$model instanceof Sortable) {
             throw new RuntimeException(
                 sprintf(
                     'The model "%s" must be a type of %s.',
@@ -563,44 +816,9 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
-     * 删除数据.
-     *
-     * @param  Form  $form
-     * @param  array  $originalData
-     * @return bool
-     */
-    public function delete(Form $form, array $originalData)
-    {
-        $models = $this->collection->keyBy($this->getKeyName());
-
-        collect(explode(',', $form->getKey()))->filter()->each(function ($id) use ($form, $models) {
-            $model = $models->get($id);
-
-            if (! $model) {
-                return;
-            }
-
-            $data = $model->toArray();
-
-            if ($this->isSoftDeletes && $model->trashed()) {
-                $form->deleteFiles($data, true);
-                $model->forceDelete();
-
-                return;
-            } elseif (! $this->isSoftDeletes) {
-                $form->deleteFiles($data);
-            }
-
-            $model->delete();
-        });
-
-        return true;
-    }
-
-    /**
      * 查询删除前的行数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return array
      */
     public function deleting(Form $form)
@@ -668,25 +886,12 @@ class EloquentRepository extends Repository implements TreeRepository
     /**
      * 保存层级数据排序.
      *
-     * @param  array  $tree
-     * @param  int  $parentId
+     * @param array $tree
+     * @param int $parentId
      */
     public function saveOrder($tree = [], $parentId = 0)
     {
         $this->model()->saveOrder($tree, $parentId);
-    }
-
-    /**
-     * 设置数据查询回调.
-     *
-     * @param  \Closure|null  $query
-     * @return $this
-     */
-    public function withQuery($queryCallback)
-    {
-        $this->model()->withQuery($queryCallback);
-
-        return $this;
     }
 
     /**
@@ -706,220 +911,15 @@ class EloquentRepository extends Repository implements TreeRepository
     }
 
     /**
-     * @return Builder
-     */
-    protected function newQuery()
-    {
-        if ($this->queryBuilder) {
-            return clone $this->queryBuilder;
-        }
-
-        return $this->model()->newQuery();
-    }
-
-    /**
-     * 获取model对象.
+     * 设置数据查询回调.
      *
-     * @return EloquentModel
-     */
-    public function model()
-    {
-        return $this->model ?: ($this->model = $this->createModel());
-    }
-
-    /**
-     * @param  array  $data
-     * @return EloquentModel
-     */
-    public function createModel(array $data = [])
-    {
-        $model = new $this->eloquentClass();
-
-        if ($data) {
-            $model->setRawAttributes($data);
-        }
-
-        return $model;
-    }
-
-    /**
-     * @param  array  $relations
+     * @param \Closure|null $query
      * @return $this
      */
-    public static function with($relations = [])
+    public function withQuery($queryCallback)
     {
-        return (new static())->setRelations($relations);
-    }
+        $this->model()->withQuery($queryCallback);
 
-    /**
-     * 获取模型的所有关联关系.
-     *
-     * @return array
-     */
-    public function getRelations()
-    {
-        return $this->relations;
-    }
-
-    /**
-     * 获取模型关联关系的表单数据.
-     *
-     * @param  EloquentModel  $model
-     * @param  array  $inputs
-     * @return array
-     */
-    protected function getRelationInputs($model, $inputs = [])
-    {
-        $map = [];
-        $relations = [];
-
-        foreach ($inputs as $column => $value) {
-            $relationColumn = null;
-
-            if (method_exists($model, $column)) {
-                $relationColumn = $column;
-            } elseif (method_exists($model, $camelColumn = Str::camel($column))) {
-                $relationColumn = $camelColumn;
-            }
-
-            if (! $relationColumn) {
-                continue;
-            }
-
-            $relation = call_user_func([$model, $relationColumn]);
-
-            if ($relation instanceof Relations\Relation) {
-                $relations[$column] = $value;
-
-                $map[$column] = $relationColumn;
-            }
-        }
-
-        return [&$relations, $map];
-    }
-
-    /**
-     * 更新关联关系数据.
-     *
-     * @param  Form  $form
-     * @param  EloquentModel  $model
-     * @param  array  $relationsData
-     * @param  array  $relationKeyMap
-     *
-     * @throws \Exception
-     */
-    protected function updateRelation(Form $form, EloquentModel $model, array $relationsData, array $relationKeyMap)
-    {
-        foreach ($relationsData as $name => $values) {
-            $relationName = $relationKeyMap[$name] ?? $name;
-
-            if (! method_exists($model, $relationName)) {
-                continue;
-            }
-
-            $relation = $model->$relationName();
-
-            $oneToOneRelation = $relation instanceof Relations\HasOne
-                || $relation instanceof Relations\MorphOne
-                || $relation instanceof Relations\BelongsTo;
-
-            $prepared = $oneToOneRelation ? $form->prepareUpdate([$name => $values]) : [$name => $values];
-
-            if (empty($prepared)) {
-                continue;
-            }
-
-            switch (true) {
-                case $relation instanceof Relations\BelongsToMany:
-                case $relation instanceof Relations\MorphToMany:
-                    if (isset($prepared[$name])) {
-                        $relation->sync($prepared[$name]);
-                    }
-                    break;
-                case $relation instanceof Relations\HasOne:
-
-                    $related = $model->$relationName;
-
-                    // if related is empty
-                    if (is_null($related)) {
-                        $related = $relation->getRelated();
-                        $qualifiedParentKeyName = $relation->getQualifiedParentKeyName();
-                        $localKey = Arr::last(explode('.', $qualifiedParentKeyName));
-                        $related->{$relation->getForeignKeyName()} = $model->{$localKey};
-                    }
-
-                    foreach ($prepared[$name] as $column => $value) {
-                        $related->setAttribute($column, $value);
-                    }
-
-                    $related->save();
-                    break;
-                case $relation instanceof Relations\BelongsTo:
-                case $relation instanceof Relations\MorphTo:
-
-                    $parent = $model->$relationName;
-
-                    // if related is empty
-                    if (is_null($parent)) {
-                        $parent = $relation->getRelated();
-                    }
-
-                    foreach ($prepared[$name] as $column => $value) {
-                        $parent->setAttribute($column, $value);
-                    }
-
-                    $parent->save();
-
-                    // When in creating, associate two models
-                    $foreignKeyMethod = version_compare(app()->version(), '5.8.0', '<') ? 'getForeignKey' : 'getForeignKeyName';
-                    if (! $model->{$relation->{$foreignKeyMethod}()}) {
-                        $model->{$relation->{$foreignKeyMethod}()} = $parent->getKey();
-
-                        $model->save();
-                    }
-
-                    break;
-                case $relation instanceof Relations\MorphOne:
-                    $related = $model->$relationName;
-                    if (is_null($related)) {
-                        $related = $relation->make();
-                    }
-                    foreach ($prepared[$name] as $column => $value) {
-                        $related->setAttribute($column, $value);
-                    }
-                    $related->save();
-                    break;
-                case $relation instanceof Relations\HasMany:
-                case $relation instanceof Relations\MorphMany:
-
-                    foreach ($prepared[$name] as $related) {
-                        /** @var Relations\Relation $relation */
-                        $relation = $model->$relationName();
-
-                        $keyName = $relation->getRelated()->getKeyName();
-
-                        $instance = $relation->findOrNew(Arr::get($related, $keyName));
-
-                        if (Arr::get($related, Form::REMOVE_FLAG_NAME) == 1) {
-                            $instance->delete();
-
-                            continue;
-                        }
-
-                        Arr::forget($related, Form::REMOVE_FLAG_NAME);
-
-                        $key = Arr::get($related, $relation->getModel()->getKeyName());
-                        if ($key === null || $key === '') {
-                            Arr::forget($related, $relation->getModel()->getKeyName());
-                        }
-
-                        $instance->fill($related);
-
-                        $instance->save();
-                    }
-
-                    break;
-            }
-        }
+        return $this;
     }
 }

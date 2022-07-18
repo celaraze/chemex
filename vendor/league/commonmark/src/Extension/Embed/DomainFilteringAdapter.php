@@ -25,17 +25,7 @@ class DomainFilteringAdapter implements EmbedAdapterInterface
     public function __construct(EmbedAdapterInterface $decorated, array $allowedDomains)
     {
         $this->decorated = $decorated;
-        $this->regex     = self::createRegex($allowedDomains);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function updateEmbeds(array $embeds): void
-    {
-        $this->decorated->updateEmbeds(\array_values(\array_filter($embeds, function (Embed $embed): bool {
-            return \preg_match($this->regex, $embed->getUrl()) === 1;
-        })));
+        $this->regex = self::createRegex($allowedDomains);
     }
 
     /**
@@ -46,5 +36,15 @@ class DomainFilteringAdapter implements EmbedAdapterInterface
         $allowedDomains = \array_map('preg_quote', $allowedDomains);
 
         return '/^(?:https?:\/\/)?(?:[^.]+\.)*(' . \implode('|', $allowedDomains) . ')/';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function updateEmbeds(array $embeds): void
+    {
+        $this->decorated->updateEmbeds(\array_values(\array_filter($embeds, function (Embed $embed): bool {
+            return \preg_match($this->regex, $embed->getUrl()) === 1;
+        })));
     }
 }

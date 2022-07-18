@@ -15,6 +15,7 @@
     .web-uploader .dnd-area.webuploader-dnd-over {
         border: 3px dashed #999 !important;
     }
+
     .web-uploader .dnd-area.webuploader-dnd-over .placeholder {
         border: none;
     }
@@ -46,8 +47,9 @@
                 <div class="btns">
                     <div class="add-file-button"></div>
                     @if($showUploadBtn)
-                    &nbsp;
-                    <div class="upload-btn btn btn-primary"><i class="feather icon-upload"></i> &nbsp;{{trans('admin.upload')}}</div>
+                        &nbsp;
+                        <div class="upload-btn btn btn-primary"><i class="feather icon-upload"></i>
+                            &nbsp;{{trans('admin.upload')}}</div>
                     @endif
                 </div>
             </div>
@@ -99,12 +101,12 @@
 
         function resize() {
             setTimeout(function () {
-                if (! uploader) return;
+                if (!uploader) return;
 
                 uploader.refreshButton();
                 resize();
 
-                if (! newPage) {
+                if (!newPage) {
                     newPage = 1;
                     $(document).one('pjax:complete', function () {
                         uploader = null;
@@ -112,6 +114,7 @@
                 }
             }, 250);
         }
+
         resize();
     }
 </script>

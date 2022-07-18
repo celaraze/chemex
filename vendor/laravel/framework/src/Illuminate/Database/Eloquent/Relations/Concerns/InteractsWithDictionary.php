@@ -10,7 +10,7 @@ trait InteractsWithDictionary
     /**
      * Get a dictionary key attribute - casting it to a string if necessary.
      *
-     * @param  mixed  $attribute
+     * @param mixed $attribute
      * @return mixed
      *
      * @throws \Doctrine\Instantiator\Exception\InvalidArgumentException

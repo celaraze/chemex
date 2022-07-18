@@ -49,6 +49,37 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     protected $_mode = null;
 
     /**
+     * Clear all files status cache.
+     */
+    public static function clearAllStatisticCaches()
+    {
+        \clearstatcache();
+    }
+
+    /**
+     * Change the current umask.
+     */
+    public static function umask(int $umask = null): int
+    {
+        if (null === $umask) {
+            return \umask();
+        }
+
+        return \umask($umask);
+    }
+
+    /**
+     * Check if the system is case sensitive or not.
+     */
+    public static function isCaseSensitive(): bool
+    {
+        return !(
+            \file_exists(\mb_strtolower(__FILE__)) &&
+            \file_exists(\mb_strtoupper(__FILE__))
+        );
+    }
+
+    /**
      * Get filename component of path.
      */
     public function getBasename(): string
@@ -125,14 +156,6 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     }
 
     /**
-     * Get file permissions.
-     */
-    public function getPermissions(): int
-    {
-        return \fileperms($this->getStreamName());
-    }
-
-    /**
      * Get file permissions as a string.
      * Result sould be interpreted like this:
      *     * s: socket;
@@ -167,23 +190,31 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
         }
 
         $out .=
-            (($p & 0x0100) ? 'r' : '-').
-            (($p & 0x0080) ? 'w' : '-').
+            (($p & 0x0100) ? 'r' : '-') .
+            (($p & 0x0080) ? 'w' : '-') .
             (($p & 0x0040) ?
-            (($p & 0x0800) ? 's' : 'x') :
-            (($p & 0x0800) ? 'S' : '-')).
-            (($p & 0x0020) ? 'r' : '-').
-            (($p & 0x0010) ? 'w' : '-').
+                (($p & 0x0800) ? 's' : 'x') :
+                (($p & 0x0800) ? 'S' : '-')) .
+            (($p & 0x0020) ? 'r' : '-') .
+            (($p & 0x0010) ? 'w' : '-') .
             (($p & 0x0008) ?
-            (($p & 0x0400) ? 's' : 'x') :
-            (($p & 0x0400) ? 'S' : '-')).
-            (($p & 0x0004) ? 'r' : '-').
-            (($p & 0x0002) ? 'w' : '-').
+                (($p & 0x0400) ? 's' : 'x') :
+                (($p & 0x0400) ? 'S' : '-')) .
+            (($p & 0x0004) ? 'r' : '-') .
+            (($p & 0x0002) ? 'w' : '-') .
             (($p & 0x0001) ?
-            (($p & 0x0200) ? 't' : 'x') :
-            (($p & 0x0200) ? 'T' : '-'));
+                (($p & 0x0200) ? 't' : 'x') :
+                (($p & 0x0200) ? 'T' : '-'));
 
         return $out;
+    }
+
+    /**
+     * Get file permissions.
+     */
+    public function getPermissions(): int
+    {
+        return \fileperms($this->getStreamName());
     }
 
     /**
@@ -216,14 +247,6 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     public function clearStatisticCache()
     {
         \clearstatcache(true, $this->getStreamName());
-    }
-
-    /**
-     * Clear all files status cache.
-     */
-    public static function clearAllStatisticCaches()
-    {
-        \clearstatcache();
     }
 
     /**
@@ -267,9 +290,10 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
      */
     public function move(
         string $name,
-        bool $force = StreamTouchable::DO_NOT_OVERWRITE,
-        bool $mkdir = StreamTouchable::DO_NOT_MAKE_DIRECTORY
-    ): bool {
+        bool   $force = StreamTouchable::DO_NOT_OVERWRITE,
+        bool   $mkdir = StreamTouchable::DO_NOT_MAKE_DIRECTORY
+    ): bool
+    {
         $from = $this->getStreamName();
 
         if ($force === StreamTouchable::DO_NOT_OVERWRITE &&
@@ -328,18 +352,6 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     public function changeOwner($user): bool
     {
         return \chown($this->getStreamName(), $user);
-    }
-
-    /**
-     * Change the current umask.
-     */
-    public static function umask(int $umask = null): int
-    {
-        if (null === $umask) {
-            return \umask();
-        }
-
-        return \umask($umask);
     }
 
     /**
@@ -407,6 +419,14 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     }
 
     /**
+     * Get the open mode.
+     */
+    public function getMode()
+    {
+        return $this->_mode;
+    }
+
+    /**
      * Set the open mode.
      */
     protected function setMode(string $mode)
@@ -418,30 +438,11 @@ abstract class FileGeneric extends Stream implements StreamPathable, StreamStata
     }
 
     /**
-     * Get the open mode.
-     */
-    public function getMode()
-    {
-        return $this->_mode;
-    }
-
-    /**
      * Get inode.
      */
     public function getINode(): int
     {
         return \fileinode($this->getStreamName());
-    }
-
-    /**
-     * Check if the system is case sensitive or not.
-     */
-    public static function isCaseSensitive(): bool
-    {
-        return !(
-            \file_exists(\mb_strtolower(__FILE__)) &&
-            \file_exists(\mb_strtoupper(__FILE__))
-        );
     }
 
     /**

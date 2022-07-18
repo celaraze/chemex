@@ -20,6 +20,8 @@ interface StorageAttributes extends JsonSerializable, ArrayAccess
     public const TYPE_FILE = 'file';
     public const TYPE_DIRECTORY = 'dir';
 
+    public static function fromArray(array $attributes): StorageAttributes;
+
     public function path(): string;
 
     public function type(): string;
@@ -27,8 +29,6 @@ interface StorageAttributes extends JsonSerializable, ArrayAccess
     public function visibility(): ?string;
 
     public function lastModified(): ?int;
-
-    public static function fromArray(array $attributes): StorageAttributes;
 
     public function isFile(): bool;
 

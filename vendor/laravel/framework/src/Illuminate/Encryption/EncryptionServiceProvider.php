@@ -34,25 +34,9 @@ class EncryptionServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Serializable Closure signing for security.
-     *
-     * @return void
-     */
-    protected function registerSerializableClosureSecurityKey()
-    {
-        $config = $this->app->make('config')->get('app');
-
-        if (! class_exists(SerializableClosure::class) || empty($config['key'])) {
-            return;
-        }
-
-        SerializableClosure::setSecretKey($this->parseKey($config));
-    }
-
-    /**
      * Parse the encryption key.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function parseKey(array $config)
@@ -67,7 +51,7 @@ class EncryptionServiceProvider extends ServiceProvider
     /**
      * Extract the encryption key from the given configuration.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      *
      * @throws \Illuminate\Encryption\MissingAppKeyException
@@ -79,5 +63,21 @@ class EncryptionServiceProvider extends ServiceProvider
                 throw new MissingAppKeyException;
             }
         });
+    }
+
+    /**
+     * Configure Serializable Closure signing for security.
+     *
+     * @return void
+     */
+    protected function registerSerializableClosureSecurityKey()
+    {
+        $config = $this->app->make('config')->get('app');
+
+        if (!class_exists(SerializableClosure::class) || empty($config['key'])) {
+            return;
+        }
+
+        SerializableClosure::setSecretKey($this->parseKey($config));
     }
 }

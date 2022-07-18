@@ -11,13 +11,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 interface Importer extends Excel
 {
     /**
-     * @param  string|UploadedFile  $filePath
+     * @param string|UploadedFile $filePath
      * @return $this
      */
     public function file($filePath);
 
     /**
-     * @param  int|\Closure  $lineNumberOrCallback
+     * @param int|\Closure $lineNumberOrCallback
      * @return mixed
      */
     public function headingRow($lineNumberOrCallback);
@@ -34,7 +34,7 @@ interface Importer extends Excel
     /**
      * 根据名称或序号获取sheet.
      *
-     * @param  int|string  $indexOrName
+     * @param int|string $indexOrName
      * @return Sheet
      *
      * @throws FileNotFoundException
@@ -44,7 +44,7 @@ interface Importer extends Excel
     public function sheet($indexOrName): Sheet;
 
     /**
-     * @param  callable  $callback
+     * @param callable $callback
      * @return $this
      *
      * @throws FileNotFoundException

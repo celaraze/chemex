@@ -16,7 +16,6 @@ namespace Ramsey\Uuid\Rfc4122;
 
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Validator\ValidatorInterface;
-
 use function preg_match;
 use function str_replace;
 
@@ -28,7 +27,7 @@ use function str_replace;
 final class Validator implements ValidatorInterface
 {
     private const VALID_PATTERN = '\A[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-'
-        . '[1-5]{1}[0-9A-Fa-f]{3}-[ABab89]{1}[0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\z';
+    . '[1-5]{1}[0-9A-Fa-f]{3}-[ABab89]{1}[0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\z';
 
     /**
      * @psalm-return non-empty-string

@@ -50,8 +50,8 @@ final class Message
      *
      * Will return `null` if the response is not printable.
      *
-     * @param MessageInterface $message    The message to get the body summary
-     * @param int              $truncateAt The maximum allowed size of the summary
+     * @param MessageInterface $message The message to get the body summary
+     * @param int $truncateAt The maximum allowed size of the summary
      */
     public static function bodySummary(MessageInterface $message, int $truncateAt = 120): ?string
     {
@@ -100,6 +100,32 @@ final class Message
         if ($body->tell()) {
             $body->rewind();
         }
+    }
+
+    /**
+     * Parses a request message string into a request object.
+     *
+     * @param string $message Request message string.
+     */
+    public static function parseRequest(string $message): RequestInterface
+    {
+        $data = self::parseMessage($message);
+        $matches = [];
+        if (!preg_match('/^[\S]+\s+([a-zA-Z]+:\/\/|\/).*/', $data['start-line'], $matches)) {
+            throw new \InvalidArgumentException('Invalid request string');
+        }
+        $parts = explode(' ', $data['start-line'], 3);
+        $version = isset($parts[2]) ? explode('/', $parts[2])[1] : '1.1';
+
+        $request = new Request(
+            $parts[0],
+            $matches[1] === '/' ? self::parseRequestUri($parts[1], $data['headers']) : $parts[1],
+            $data['headers'],
+            $data['body'],
+            $version
+        );
+
+        return $matches[1] === '/' ? $request : $request->withRequestTarget($parts[1]);
     }
 
     /**
@@ -169,14 +195,14 @@ final class Message
     /**
      * Constructs a URI for an HTTP request message.
      *
-     * @param string $path    Path from the start-line
-     * @param array  $headers Array of headers (each value an array).
+     * @param string $path Path from the start-line
+     * @param array $headers Array of headers (each value an array).
      */
     public static function parseRequestUri(string $path, array $headers): string
     {
         $hostKey = array_filter(array_keys($headers), function ($k) {
             // Numeric array keys are converted to int by PHP.
-            $k = (string) $k;
+            $k = (string)$k;
 
             return strtolower($k) === 'host';
         });
@@ -190,32 +216,6 @@ final class Message
         $scheme = substr($host, -4) === ':443' ? 'https' : 'http';
 
         return $scheme . '://' . $host . '/' . ltrim($path, '/');
-    }
-
-    /**
-     * Parses a request message string into a request object.
-     *
-     * @param string $message Request message string.
-     */
-    public static function parseRequest(string $message): RequestInterface
-    {
-        $data = self::parseMessage($message);
-        $matches = [];
-        if (!preg_match('/^[\S]+\s+([a-zA-Z]+:\/\/|\/).*/', $data['start-line'], $matches)) {
-            throw new \InvalidArgumentException('Invalid request string');
-        }
-        $parts = explode(' ', $data['start-line'], 3);
-        $version = isset($parts[2]) ? explode('/', $parts[2])[1] : '1.1';
-
-        $request = new Request(
-            $parts[0],
-            $matches[1] === '/' ? self::parseRequestUri($parts[1], $data['headers']) : $parts[1],
-            $data['headers'],
-            $data['body'],
-            $version
-        );
-
-        return $matches[1] === '/' ? $request : $request->withRequestTarget($parts[1]);
     }
 
     /**
@@ -235,7 +235,7 @@ final class Message
         $parts = explode(' ', $data['start-line'], 3);
 
         return new Response(
-            (int) $parts[1],
+            (int)$parts[1],
             $data['headers'],
             $data['body'],
             explode('/', $parts[0])[1],

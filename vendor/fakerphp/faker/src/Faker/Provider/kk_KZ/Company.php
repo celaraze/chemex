@@ -24,16 +24,6 @@ class Company extends \Faker\Provider\Company
         'Мотор', 'Қаз', 'Тех', 'Сантех', 'Алматы', 'Астана', 'Электро',
     ];
 
-    /**
-     * @example 'ЖШС АлматыТелеком'
-     */
-    public function company()
-    {
-        $format = static::randomElement(static::$companyNameFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function companyPrefix()
     {
         return static::randomElement(static::$companyPrefixes);
@@ -65,10 +55,20 @@ class Company extends \Faker\Provider\Company
         }
 
         $dateAsString = $registrationDate->format('ym');
-        $legalEntityType = (string) self::numberBetween(4, 6);
-        $legalEntityAdditionalType = (string) self::numberBetween(0, 3);
-        $randomDigits = (string) static::numerify('######');
+        $legalEntityType = (string)self::numberBetween(4, 6);
+        $legalEntityAdditionalType = (string)self::numberBetween(0, 3);
+        $randomDigits = (string)static::numerify('######');
 
         return $dateAsString . $legalEntityType . $legalEntityAdditionalType . $randomDigits;
+    }
+
+    /**
+     * @example 'ЖШС АлматыТелеком'
+     */
+    public function company()
+    {
+        $format = static::randomElement(static::$companyNameFormats);
+
+        return $this->generator->parse($format);
     }
 }

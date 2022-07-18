@@ -25,9 +25,32 @@ class Silencer
     private static $stack = array();
 
     /**
+     * Calls a specified function while silencing warnings and below.
+     *
+     * @param callable $callable Function to execute.
+     * @param mixed $parameters Function to execute.
+     * @return mixed      Return value of the callback.
+     * @throws \Exception Any exceptions from the callback are rethrown.
+     */
+    public static function call(callable $callable, ...$parameters)
+    {
+        try {
+            self::suppress();
+            $result = $callable(...$parameters);
+            self::restore();
+
+            return $result;
+        } catch (\Exception $e) {
+            // Use a finally block for this when requirements are raised to PHP 5.5
+            self::restore();
+            throw $e;
+        }
+    }
+
+    /**
      * Suppresses given mask or errors.
      *
-     * @param  int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
+     * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
      * @return int      The old error reporting level.
      */
     public static function suppress(?int $mask = null): int
@@ -51,29 +74,6 @@ class Silencer
     {
         if (!empty(self::$stack)) {
             error_reporting(array_pop(self::$stack));
-        }
-    }
-
-    /**
-     * Calls a specified function while silencing warnings and below.
-     *
-     * @param  callable   $callable Function to execute.
-     * @param  mixed      $parameters Function to execute.
-     * @throws \Exception Any exceptions from the callback are rethrown.
-     * @return mixed      Return value of the callback.
-     */
-    public static function call(callable $callable, ...$parameters)
-    {
-        try {
-            self::suppress();
-            $result = $callable(...$parameters);
-            self::restore();
-
-            return $result;
-        } catch (\Exception $e) {
-            // Use a finally block for this when requirements are raised to PHP 5.5
-            self::restore();
-            throw $e;
         }
     }
 }

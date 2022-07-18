@@ -11,7 +11,6 @@ use Doctrine\Deprecations\Deprecation;
 use PDO;
 use PDOException;
 use PDOStatement;
-
 use function array_slice;
 use function func_get_args;
 use function func_num_args;
@@ -54,13 +53,29 @@ final class Statement implements StatementInterface
     }
 
     /**
+     * Converts DBAL parameter type to PDO parameter type
+     *
+     * @param int $type Parameter type
+     *
+     * @throws ExceptionInterface
+     */
+    private function convertParamType(int $type): int
+    {
+        if (!isset(self::PARAM_TYPE_MAP[$type])) {
+            throw UnknownParameterType::new($type);
+        }
+
+        return self::PARAM_TYPE_MAP[$type];
+    }
+
+    /**
      * {@inheritDoc}
      *
-     * @param mixed    $param
-     * @param mixed    $variable
-     * @param int      $type
+     * @param mixed $param
+     * @param mixed $variable
+     * @param int $type
      * @param int|null $length
-     * @param mixed    $driverOptions The usage of the argument is deprecated.
+     * @param mixed $driverOptions The usage of the argument is deprecated.
      */
     public function bindParam(
         $param,
@@ -68,7 +83,8 @@ final class Statement implements StatementInterface
         $type = ParameterType::STRING,
         $length = null,
         $driverOptions = null
-    ): bool {
+    ): bool
+    {
         if (func_num_args() > 4) {
             Deprecation::triggerIfCalledFromOutside(
                 'doctrine/dbal',
@@ -104,21 +120,5 @@ final class Statement implements StatementInterface
         }
 
         return new Result($this->stmt);
-    }
-
-    /**
-     * Converts DBAL parameter type to PDO parameter type
-     *
-     * @param int $type Parameter type
-     *
-     * @throws ExceptionInterface
-     */
-    private function convertParamType(int $type): int
-    {
-        if (! isset(self::PARAM_TYPE_MAP[$type])) {
-            throw UnknownParameterType::new($type);
-        }
-
-        return self::PARAM_TYPE_MAP[$type];
     }
 }

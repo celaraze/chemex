@@ -21,7 +21,7 @@ class Populator
      * Add an order for the generation of $number records for $entity.
      *
      * @param mixed $entity A Propel ActiveRecord classname, or a \Faker\ORM\Propel\EntityPopulator instance
-     * @param int   $number The number of entities to populate
+     * @param int $number The number of entities to populate
      */
     public function addEntity($entity, $number, $customColumnFormatters = [], $customModifiers = [])
     {

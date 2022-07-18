@@ -13,14 +13,14 @@
 namespace Composer\Command;
 
 use Composer\Package\CompletePackageInterface;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;
-use Composer\Repository\RepositoryFactory;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -84,16 +84,38 @@ EOT
 
             if (!$packageExists) {
                 $return = 1;
-                $io->writeError('<warning>Package '.$packageName.' not found</warning>');
+                $io->writeError('<warning>Package ' . $packageName . ' not found</warning>');
             }
 
             if (!$handled) {
                 $return = 1;
-                $io->writeError('<warning>'.($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL').' for '.$packageName.'</warning>');
+                $io->writeError('<warning>' . ($input->getOption('homepage') ? 'Invalid or missing homepage' : 'Invalid or missing repository URL') . ' for ' . $packageName . '</warning>');
             }
         }
 
         return $return;
+    }
+
+    /**
+     * Initializes repositories
+     *
+     * Returns an array of repos in order they should be checked in
+     *
+     * @return RepositoryInterface[]
+     */
+    private function initializeRepos(): array
+    {
+        $composer = $this->tryComposer();
+
+        if ($composer) {
+            return array_merge(
+                array(new RootPackageRepository($composer->getPackage())), // root package
+                array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
+                $composer->getRepositoryManager()->getRepositories() // remotes
+            );
+        }
+
+        return RepositoryFactory::defaultReposWithDefaultManager($this->getIO());
     }
 
     /**
@@ -149,27 +171,5 @@ EOT
         } else {
             $this->getIO()->writeError('No suitable browser opening command found, open yourself: ' . $url);
         }
-    }
-
-    /**
-     * Initializes repositories
-     *
-     * Returns an array of repos in order they should be checked in
-     *
-     * @return RepositoryInterface[]
-     */
-    private function initializeRepos(): array
-    {
-        $composer = $this->tryComposer();
-
-        if ($composer) {
-            return array_merge(
-                array(new RootPackageRepository($composer->getPackage())), // root package
-                array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
-                $composer->getRepositoryManager()->getRepositories() // remotes
-            );
-        }
-
-        return RepositoryFactory::defaultReposWithDefaultManager($this->getIO());
     }
 }

@@ -12,6 +12,14 @@ class OrganizationalUnit extends Entry
     use Concerns\HasDescription;
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getCreatableDn()
+    {
+        return $this->getDnBuilder()->addOU($this->getOu());
+    }
+
+    /**
      * Retrieves the organization units OU attribute.
      *
      * @return string
@@ -19,13 +27,5 @@ class OrganizationalUnit extends Entry
     public function getOu()
     {
         return $this->getFirstAttribute($this->schema->organizationalUnitShort());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getCreatableDn()
-    {
-        return $this->getDnBuilder()->addOU($this->getOu());
     }
 }

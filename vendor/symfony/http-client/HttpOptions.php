@@ -37,7 +37,7 @@ class HttpOptions
         $this->options['auth_basic'] = $user;
 
         if ('' !== $password) {
-            $this->options['auth_basic'] .= ':'.$password;
+            $this->options['auth_basic'] .= ':' . $password;
         }
 
         return $this;

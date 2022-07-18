@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Exception;
 
 use Doctrine\DBAL\Exception;
-
 use function sprintf;
 
 /**
@@ -16,7 +15,7 @@ class InvalidLockMode extends Exception
         return new self(
             sprintf(
                 'Lock mode %d is invalid. The valid values are LockMode::NONE, LockMode::OPTIMISTIC'
-                    . ', LockMode::PESSIMISTIC_READ and LockMode::PESSIMISTIC_WRITE',
+                . ', LockMode::PESSIMISTIC_READ and LockMode::PESSIMISTIC_WRITE',
                 $lockMode
             )
         );

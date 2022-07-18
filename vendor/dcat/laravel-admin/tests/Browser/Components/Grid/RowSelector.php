@@ -23,7 +23,7 @@ class RowSelector extends Component
     /**
      * 浏览器包含组件的断言
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -48,13 +48,13 @@ class RowSelector extends Component
     /**
      * 选中.
      *
-     * @param  Browser  $browser
-     * @param  string|array  $value
+     * @param Browser $browser
+     * @param string|array $value
      * @return Browser
      */
     public function choose(Browser $browser, $value)
     {
-        foreach ((array) $value as $v) {
+        foreach ((array)$value as $v) {
             $browser->script(
                 <<<JS
 setTimeout(function () {
@@ -70,7 +70,7 @@ JS
     /**
      * 选中所有.
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return Browser
      */
     public function selectAll(Browser $browser)

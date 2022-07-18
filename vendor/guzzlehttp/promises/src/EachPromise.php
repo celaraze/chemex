@@ -49,7 +49,7 @@ class EachPromise implements PromisorInterface
      *   creating a capped pool of promises. There is no limit by default.
      *
      * @param mixed $iterable Promises or values to iterate.
-     * @param array $config   Configuration options
+     * @param array $config Configuration options
      */
     public function __construct($iterable, array $config = [])
     {
@@ -130,11 +130,22 @@ class EachPromise implements PromisorInterface
         $this->aggregate->then($clearFn, $clearFn);
     }
 
+    private function checkIfFinished()
+    {
+        if (!$this->pending && !$this->iterable->valid()) {
+            // Resolve the promise if there's nothing left to do.
+            $this->aggregate->resolve(null);
+            return true;
+        }
+
+        return false;
+    }
+
     private function refillPending()
     {
         if (!$this->concurrency) {
             // Add all pending promises.
-            while ($this->addPending() && $this->advanceIterator());
+            while ($this->addPending() && $this->advanceIterator()) ;
             return;
         }
 
@@ -155,7 +166,7 @@ class EachPromise implements PromisorInterface
         // next value to yield until promise callbacks are called.
         while (--$concurrency
             && $this->advanceIterator()
-            && $this->addPending());
+            && $this->addPending()) ;
     }
 
     private function addPending()
@@ -199,6 +210,24 @@ class EachPromise implements PromisorInterface
         return true;
     }
 
+    private function step($idx)
+    {
+        // If the promise was already resolved, then ignore this step.
+        if (Is::settled($this->aggregate)) {
+            return;
+        }
+
+        unset($this->pending[$idx]);
+
+        // Only refill pending promises if we are not locked, preventing the
+        // EachPromise to recursively invoke the provided iterator, which
+        // cause a fatal error: "Cannot resume an already running generator"
+        if ($this->advanceIterator() && !$this->checkIfFinished()) {
+            // Add more pending promises if possible.
+            $this->refillPending();
+        }
+    }
+
     private function advanceIterator()
     {
         // Place a lock on the iterator so that we ensure to not recurse,
@@ -222,34 +251,5 @@ class EachPromise implements PromisorInterface
             $this->mutex = false;
             return false;
         }
-    }
-
-    private function step($idx)
-    {
-        // If the promise was already resolved, then ignore this step.
-        if (Is::settled($this->aggregate)) {
-            return;
-        }
-
-        unset($this->pending[$idx]);
-
-        // Only refill pending promises if we are not locked, preventing the
-        // EachPromise to recursively invoke the provided iterator, which
-        // cause a fatal error: "Cannot resume an already running generator"
-        if ($this->advanceIterator() && !$this->checkIfFinished()) {
-            // Add more pending promises if possible.
-            $this->refillPending();
-        }
-    }
-
-    private function checkIfFinished()
-    {
-        if (!$this->pending && !$this->iterable->valid()) {
-            // Resolve the promise if there's nothing left to do.
-            $this->aggregate->resolve(null);
-            return true;
-        }
-
-        return false;
     }
 }

@@ -55,13 +55,6 @@ class Company extends \Faker\Provider\Company
         'Ювелір', 'Юрист',
     ];
 
-    public function companyUrl()
-    {
-        $format = static::randomElement(static::$urlFormats);
-
-        return $this->generator->parse($format);
-    }
-
     public static function companyPrefix()
     {
         return static::randomElement(static::$companyPrefix);
@@ -70,5 +63,12 @@ class Company extends \Faker\Provider\Company
     public static function companyName()
     {
         return static::randomElement(static::$companyName);
+    }
+
+    public function companyUrl()
+    {
+        $format = static::randomElement(static::$urlFormats);
+
+        return $this->generator->parse($format);
     }
 }

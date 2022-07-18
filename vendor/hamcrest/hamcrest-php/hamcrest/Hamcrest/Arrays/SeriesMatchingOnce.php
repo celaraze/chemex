@@ -1,4 +1,5 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 /*
@@ -28,20 +29,6 @@ class SeriesMatchingOnce
         return $this->_isNotSurplus($item) && $this->_isMatched($item);
     }
 
-    public function isFinished()
-    {
-        if (!empty($this->_elementMatchers)) {
-            $nextMatcher = current($this->_elementMatchers);
-            $this->_mismatchDescription->appendText('No item matched: ')->appendDescriptionOf($nextMatcher);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    // -- Private Methods
-
     private function _isNotSurplus($item)
     {
         if (empty($this->_elementMatchers)) {
@@ -52,6 +39,8 @@ class SeriesMatchingOnce
 
         return true;
     }
+
+    // -- Private Methods
 
     private function _isMatched($item)
     {
@@ -71,5 +60,17 @@ class SeriesMatchingOnce
     {
         $this->_mismatchDescription->appendText('item with key ' . $this->_nextMatchKey . ': ');
         $matcher->describeMismatch($item, $this->_mismatchDescription);
+    }
+
+    public function isFinished()
+    {
+        if (!empty($this->_elementMatchers)) {
+            $nextMatcher = current($this->_elementMatchers);
+            $this->_mismatchDescription->appendText('No item matched: ')->appendDescriptionOf($nextMatcher);
+
+            return false;
+        }
+
+        return true;
     }
 }

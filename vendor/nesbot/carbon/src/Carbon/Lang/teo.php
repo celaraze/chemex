@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/ta.php', [
+return array_replace_recursive(require __DIR__ . '/ta.php', [
     'meridiem' => ['Taparachu', 'Ebongi'],
     'weekdays' => ['Nakaejuma', 'Nakaebarasa', 'Nakaare', 'Nakauni', 'Nakaung’on', 'Nakakany', 'Nakasabiti'],
     'weekdays_short' => ['Jum', 'Bar', 'Aar', 'Uni', 'Ung', 'Kan', 'Sab'],

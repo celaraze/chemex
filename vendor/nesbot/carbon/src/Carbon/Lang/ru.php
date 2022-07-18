@@ -69,16 +69,16 @@ return [
     's' => ':count сек.',
     'a_second' => '{1}несколько секунд|:count секунду|:count секунды|:count секунд',
     'ago' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' назад';
+        return $transformDiff($time) . ' назад';
     },
     'from_now' => function ($time) use ($transformDiff) {
-        return 'через '.$transformDiff($time);
+        return 'через ' . $transformDiff($time);
     },
     'after' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' после';
+        return $transformDiff($time) . ' после';
     },
     'before' => function ($time) use ($transformDiff) {
-        return $transformDiff($time).' до';
+        return $transformDiff($time) . ' до';
     },
     'diff_now' => 'только что',
     'diff_today' => 'Сегодня,',
@@ -152,12 +152,12 @@ return [
             case 'M':
             case 'd':
             case 'DDD':
-                return $number.'-й';
+                return $number . '-й';
             case 'D':
-                return $number.'-го';
+                return $number . '-го';
             case 'w':
             case 'W':
-                return $number.'-я';
+                return $number . '-я';
             default:
                 return $number;
         }

@@ -16,7 +16,9 @@
         "psr/log": "Allows logging deprecations via PSR-3 logger implementation"
     },
     "autoload": {
-        "psr-4": {"Doctrine\\Deprecations\\": "lib/Doctrine/Deprecations"}
+        "psr-4": {
+            "Doctrine\\Deprecations\\": "lib/Doctrine/Deprecations"
+        }
     },
     "autoload-dev": {
         "psr-4": {

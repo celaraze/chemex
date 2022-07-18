@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\DBAL\Driver\OCI8\Exception;
 
 use Doctrine\DBAL\Driver\AbstractException;
-
 use function assert;
 use function oci_error;
 

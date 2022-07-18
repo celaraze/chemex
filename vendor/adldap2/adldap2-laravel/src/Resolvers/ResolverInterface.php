@@ -55,7 +55,7 @@ interface ResolverInterface
     /**
      * Authenticates the user against the current provider.
      *
-     * @param User  $user        The LDAP users model
+     * @param User $user The LDAP users model
      * @param array $credentials The LDAP users credentials
      *
      * @return bool

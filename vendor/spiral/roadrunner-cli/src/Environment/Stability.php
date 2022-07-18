@@ -46,10 +46,10 @@ final class Stability
      */
     private const WEIGHT = [
         self::STABILITY_STABLE => 4,
-        self::STABILITY_RC     => 3,
-        self::STABILITY_BETA   => 2,
-        self::STABILITY_ALPHA  => 1,
-        self::STABILITY_DEV    => 0,
+        self::STABILITY_RC => 3,
+        self::STABILITY_BETA => 2,
+        self::STABILITY_ALPHA => 1,
+        self::STABILITY_DEV => 0,
     ];
 
     /**
@@ -59,6 +59,15 @@ final class Stability
     public static function toInt(string $type): int
     {
         return self::WEIGHT[$type] ?? 0;
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     */
+    public static function isValid(string $value): bool
+    {
+        return \in_array($value, self::all(), true);
     }
 
     /**
@@ -74,14 +83,5 @@ final class Stability
 
         /** @psalm-var array<string, StabilityType> $values */
         return $values;
-    }
-
-    /**
-     * @param string $value
-     * @return bool
-     */
-    public static function isValid(string $value): bool
-    {
-        return \in_array($value, self::all(), true);
     }
 }

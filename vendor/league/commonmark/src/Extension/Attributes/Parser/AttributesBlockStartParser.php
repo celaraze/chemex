@@ -25,7 +25,7 @@ final class AttributesBlockStartParser implements BlockStartParserInterface
     public function tryStart(Cursor $cursor, MarkdownParserStateInterface $parserState): ?BlockStart
     {
         $originalPosition = $cursor->getPosition();
-        $attributes       = AttributesHelper::parseAttributes($cursor);
+        $attributes = AttributesHelper::parseAttributes($cursor);
 
         if ($attributes === [] && $originalPosition === $cursor->getPosition()) {
             return BlockStart::none();

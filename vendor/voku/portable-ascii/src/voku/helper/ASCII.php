@@ -270,6 +270,68 @@ final class ASCII
     }
 
     /**
+     * @psalm-pure
+     *
+     * @return void
+     */
+    private static function prepareAsciiAndExtrasMaps()
+    {
+        if (self::$ASCII_MAPS_AND_EXTRAS === null) {
+            self::prepareAsciiMaps();
+            self::prepareAsciiExtras();
+
+            /** @psalm-suppress PossiblyNullArgument - we use the prepare* methods here, so we don't get NULL here */
+            self::$ASCII_MAPS_AND_EXTRAS = \array_merge_recursive(
+                self::$ASCII_MAPS ?? [],
+                self::$ASCII_EXTRAS ?? []
+            );
+        }
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return void
+     */
+    private static function prepareAsciiMaps()
+    {
+        if (self::$ASCII_MAPS === null) {
+            self::$ASCII_MAPS = self::getData('ascii_by_languages');
+        }
+    }
+
+    /**
+     * Get data from "/data/*.php".
+     *
+     * @noinspection ReturnTypeCanBeDeclaredInspection
+     *
+     * @param string $file
+     *
+     * @psalm-pure
+     *
+     * @return array<mixed>
+     */
+    private static function getData(string $file)
+    {
+        /** @noinspection PhpIncludeInspection */
+        /** @noinspection UsingInclusionReturnValueInspection */
+        /** @psalm-suppress UnresolvableInclude */
+        return include __DIR__ . '/data/' . $file . '.php';
+    }
+
+    /**
+     * @psalm-pure
+     *
+     * @return void
+     */
+    private static function prepareAsciiExtras()
+    {
+        if (self::$ASCII_EXTRAS === null) {
+            self::$ASCII_EXTRAS = self::getData('ascii_extras_by_languages');
+        }
+    }
+
+    /**
      * Returns an replacement array for ASCII methods with a mix of multiple languages.
      *
      * EXAMPLE: <code>
@@ -319,108 +381,6 @@ final class ASCII
     }
 
     /**
-     * Returns an replacement array for ASCII methods with one language.
-     *
-     * For example, German will map 'ä' to 'ae', while other languages
-     * will simply return e.g. 'a'.
-     *
-     * EXAMPLE: <code>
-     * $array = ASCII::charsArrayWithOneLanguage('ru');
-     * $tmpKey = \array_search('yo', $array['replace']);
-     * echo $array['orig'][$tmpKey]; // 'ё'
-     * </code>
-     *
-     * @psalm-suppress InvalidNullableReturnType - we use the prepare* methods here, so we don't get NULL here
-     *
-     * @param string $language              [optional] <p>Language of the source string e.g.: en, de_at, or de-ch.
-     *                                      (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
-     * @param bool   $replace_extra_symbols [optional] <p>Add some more replacements e.g. "£" with " pound ".</p>
-     * @param bool   $asOrigReplaceArray    [optional] <p>TRUE === return {orig: string[], replace: string[]}
-     *                                      array</p>
-     *
-     * @psalm-pure
-     *
-     * @return array
-     *               <p>An array of replacements.</p>
-     *
-     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
-     * @phpstan-return array{orig: string[], replace: string[]}|array<string, string>
-     */
-    public static function charsArrayWithOneLanguage(
-        string $language = self::ENGLISH_LANGUAGE_CODE,
-        bool $replace_extra_symbols = false,
-        bool $asOrigReplaceArray = true
-    ): array {
-        $language = self::get_language($language);
-
-        // init
-        /** @var array<string, array<string, array<string, string>|array{orig: string[], replace: string[]}>> */
-        static $CHARS_ARRAY = [];
-        $cacheKey = '' . $replace_extra_symbols . '-' . $asOrigReplaceArray;
-
-        // check static cache
-        if (isset($CHARS_ARRAY[$cacheKey][$language])) {
-            return $CHARS_ARRAY[$cacheKey][$language];
-        }
-
-        if ($replace_extra_symbols) {
-            self::prepareAsciiAndExtrasMaps();
-
-            /** @noinspection DuplicatedCode */
-            if (isset(self::$ASCII_MAPS_AND_EXTRAS[$language])) {
-                $tmpArray = self::$ASCII_MAPS_AND_EXTRAS[$language];
-
-                if ($asOrigReplaceArray) {
-                    $CHARS_ARRAY[$cacheKey][$language] = [
-                        'orig'    => \array_keys($tmpArray),
-                        'replace' => \array_values($tmpArray),
-                    ];
-                } else {
-                    $CHARS_ARRAY[$cacheKey][$language] = $tmpArray;
-                }
-            } else {
-                /** @noinspection NestedPositiveIfStatementsInspection */
-                if ($asOrigReplaceArray) {
-                    $CHARS_ARRAY[$cacheKey][$language] = [
-                        'orig'    => [],
-                        'replace' => [],
-                    ];
-                } else {
-                    $CHARS_ARRAY[$cacheKey][$language] = [];
-                }
-            }
-        } else {
-            self::prepareAsciiMaps();
-
-            /** @noinspection DuplicatedCode */
-            if (isset(self::$ASCII_MAPS[$language])) {
-                $tmpArray = self::$ASCII_MAPS[$language];
-
-                if ($asOrigReplaceArray) {
-                    $CHARS_ARRAY[$cacheKey][$language] = [
-                        'orig'    => \array_keys($tmpArray),
-                        'replace' => \array_values($tmpArray),
-                    ];
-                } else {
-                    $CHARS_ARRAY[$cacheKey][$language] = $tmpArray;
-                }
-            } else {
-                /** @noinspection NestedPositiveIfStatementsInspection */
-                if ($asOrigReplaceArray) {
-                    $CHARS_ARRAY[$cacheKey][$language] = [
-                        'orig'    => [],
-                        'replace' => [],
-                    ];
-                } else {
-                    $CHARS_ARRAY[$cacheKey][$language] = [];
-                }
-            }
-        }
-
-        return $CHARS_ARRAY[$cacheKey][$language] ?? ['orig' => [], 'replace' => []];
-    }
-
-    /**
      * Returns an replacement array for ASCII methods with multiple languages.
      *
      * EXAMPLE: <code>
@@ -430,7 +390,7 @@ final class ASCII
      * </code>
      *
      * @param bool $replace_extra_symbols [optional] <p>Add some more replacements e.g. "£" with " pound ".</p>
-     * @param bool $asOrigReplaceArray    [optional] <p>TRUE === return {orig: string[], replace: string[]}
+     * @param bool $asOrigReplaceArray [optional] <p>TRUE === return {orig: string[], replace: string[]}
      *                                    array</p>
      *
      * @psalm-pure
@@ -443,7 +403,8 @@ final class ASCII
     public static function charsArrayWithSingleLanguageValues(
         bool $replace_extra_symbols = false,
         bool $asOrigReplaceArray = true
-    ): array {
+    ): array
+    {
         // init
         /** @var array<string, array<string, string>|array{orig: string[], replace: string[]}> */
         static $CHARS_ARRAY = [];
@@ -476,262 +437,12 @@ final class ASCII
 
         if ($asOrigReplaceArray) {
             $CHARS_ARRAY[$cacheKey] = [
-                'orig'    => \array_keys($CHARS_ARRAY[$cacheKey]),
+                'orig' => \array_keys($CHARS_ARRAY[$cacheKey]),
                 'replace' => \array_values($CHARS_ARRAY[$cacheKey]),
             ];
         }
 
         return $CHARS_ARRAY[$cacheKey];
-    }
-
-    /**
-     * Accepts a string and removes all non-UTF-8 characters from it + extras if needed.
-     *
-     * @param string $str                         <p>The string to be sanitized.</p>
-     * @param bool   $normalize_whitespace        [optional] <p>Set to true, if you need to normalize the
-     *                                            whitespace.</p>
-     * @param bool   $normalize_msword            [optional] <p>Set to true, if you need to normalize MS Word chars
-     *                                            e.g.: "…"
-     *                                            => "..."</p>
-     * @param bool   $keep_non_breaking_space     [optional] <p>Set to true, to keep non-breaking-spaces, in
-     *                                            combination with
-     *                                            $normalize_whitespace</p>
-     * @param bool   $remove_invisible_characters [optional] <p>Set to false, if you not want to remove invisible
-     *                                            characters e.g.: "\0"</p>
-     *
-     * @psalm-pure
-     *
-     * @return string
-     *                <p>A clean UTF-8 string.</p>
-     */
-    public static function clean(
-        string $str,
-        bool $normalize_whitespace = true,
-        bool $keep_non_breaking_space = false,
-        bool $normalize_msword = true,
-        bool $remove_invisible_characters = true
-    ): string {
-        // http://stackoverflow.com/questions/1401317/remove-non-utf8-characters-from-string
-        // caused connection reset problem on larger strings
-
-        $regex = '/
-          (
-            (?: [\x00-\x7F]               # single-byte sequences   0xxxxxxx
-            |   [\xC0-\xDF][\x80-\xBF]    # double-byte sequences   110xxxxx 10xxxxxx
-            |   [\xE0-\xEF][\x80-\xBF]{2} # triple-byte sequences   1110xxxx 10xxxxxx * 2
-            |   [\xF0-\xF7][\x80-\xBF]{3} # quadruple-byte sequence 11110xxx 10xxxxxx * 3
-            ){1,100}                      # ...one or more times
-          )
-        | ( [\x80-\xBF] )                 # invalid byte in range 10000000 - 10111111
-        | ( [\xC0-\xFF] )                 # invalid byte in range 11000000 - 11111111
-        /x';
-        $str = (string) \preg_replace($regex, '$1', $str);
-
-        if ($normalize_whitespace) {
-            $str = self::normalize_whitespace($str, $keep_non_breaking_space);
-        }
-
-        if ($normalize_msword) {
-            $str = self::normalize_msword($str);
-        }
-
-        if ($remove_invisible_characters) {
-            $str = self::remove_invisible_characters($str);
-        }
-
-        return $str;
-    }
-
-    /**
-     * Checks if a string is 7 bit ASCII.
-     *
-     * EXAMPLE: <code>
-     * ASCII::is_ascii('白'); // false
-     * </code>
-     *
-     * @param string $str <p>The string to check.</p>
-     *
-     * @psalm-pure
-     *
-     * @return bool
-     *              <p>
-     *              <strong>true</strong> if it is ASCII<br>
-     *              <strong>false</strong> otherwise
-     *              </p>
-     */
-    public static function is_ascii(string $str): bool
-    {
-        if ($str === '') {
-            return true;
-        }
-
-        return !\preg_match('/' . self::$REGEX_ASCII . '/', $str);
-    }
-
-    /**
-     * Returns a string with smart quotes, ellipsis characters, and dashes from
-     * Windows-1252 (commonly used in Word documents) replaced by their ASCII
-     * equivalents.
-     *
-     * EXAMPLE: <code>
-     * ASCII::normalize_msword('„Abcdef…”'); // '"Abcdef..."'
-     * </code>
-     *
-     * @param string $str <p>The string to be normalized.</p>
-     *
-     * @psalm-pure
-     *
-     * @return string
-     *                <p>A string with normalized characters for commonly used chars in Word documents.</p>
-     */
-    public static function normalize_msword(string $str): string
-    {
-        if ($str === '') {
-            return '';
-        }
-
-        /** @var array{orig: string[], replace: string[]} */
-        static $MSWORD_CACHE = ['orig' => [], 'replace' => []];
-
-        if (empty($MSWORD_CACHE['orig'])) {
-            self::prepareAsciiMaps();
-
-            /** @var array<string, string> */
-            $map = self::$ASCII_MAPS[self::EXTRA_MSWORD_CHARS_LANGUAGE_CODE] ?? [];
-
-            $MSWORD_CACHE = [
-                'orig'    => \array_keys($map),
-                'replace' => \array_values($map),
-            ];
-        }
-
-        return \str_replace($MSWORD_CACHE['orig'], $MSWORD_CACHE['replace'], $str);
-    }
-
-    /**
-     * Normalize the whitespace.
-     *
-     * EXAMPLE: <code>
-     * ASCII::normalize_whitespace("abc-\xc2\xa0-öäü-\xe2\x80\xaf-\xE2\x80\xAC", true); // "abc-\xc2\xa0-öäü- -"
-     * </code>
-     *
-     * @param string $str                          <p>The string to be normalized.</p>
-     * @param bool   $keepNonBreakingSpace         [optional] <p>Set to true, to keep non-breaking-spaces.</p>
-     * @param bool   $keepBidiUnicodeControls      [optional] <p>Set to true, to keep non-printable (for the web)
-     *                                             bidirectional text chars.</p>
-     * @param bool   $normalize_control_characters [optional] <p>Set to true, to convert e.g. LINE-, PARAGRAPH-SEPARATOR with "\n" and LINE TABULATION with "\t".</p>
-     *
-     * @psalm-pure
-     *
-     * @return string
-     *                <p>A string with normalized whitespace.</p>
-     */
-    public static function normalize_whitespace(
-        string $str,
-        bool $keepNonBreakingSpace = false,
-        bool $keepBidiUnicodeControls = false,
-        bool $normalize_control_characters = false
-    ): string {
-        if ($str === '') {
-            return '';
-        }
-
-        /** @var array<int,array<string,string>> */
-        static $WHITESPACE_CACHE = [];
-        $cacheKey = (int) $keepNonBreakingSpace;
-
-        if ($normalize_control_characters) {
-            $str = \str_replace(
-                [
-                    "\x0d\x0c",     // 'END OF LINE'
-                    "\xe2\x80\xa8", // 'LINE SEPARATOR'
-                    "\xe2\x80\xa9", // 'PARAGRAPH SEPARATOR'
-                    "\x0c",         // 'FORM FEED' // "\f"
-                    "\x0b",         // 'VERTICAL TAB' // "\v"
-                ],
-                [
-                    "\n",
-                    "\n",
-                    "\n",
-                    "\n",
-                    "\t",
-                ],
-                $str
-            );
-        }
-
-        if (!isset($WHITESPACE_CACHE[$cacheKey])) {
-            self::prepareAsciiMaps();
-
-            $WHITESPACE_CACHE[$cacheKey] = self::$ASCII_MAPS[self::EXTRA_WHITESPACE_CHARS_LANGUAGE_CODE] ?? [];
-
-            if ($keepNonBreakingSpace) {
-                unset($WHITESPACE_CACHE[$cacheKey]["\xc2\xa0"]);
-            }
-
-            $WHITESPACE_CACHE[$cacheKey] = array_keys($WHITESPACE_CACHE[$cacheKey]);
-        }
-
-        if (!$keepBidiUnicodeControls) {
-            /** @var array<int,string>|null */
-            static $BIDI_UNICODE_CONTROLS_CACHE = null;
-
-            if ($BIDI_UNICODE_CONTROLS_CACHE === null) {
-                $BIDI_UNICODE_CONTROLS_CACHE = self::$BIDI_UNI_CODE_CONTROLS_TABLE;
-            }
-
-            $str = \str_replace($BIDI_UNICODE_CONTROLS_CACHE, '', $str);
-        }
-
-        return \str_replace($WHITESPACE_CACHE[$cacheKey], ' ', $str);
-    }
-
-    /**
-     * Remove invisible characters from a string.
-     *
-     * e.g.: This prevents sandwiching null characters between ascii characters, like Java\0script.
-     *
-     * copy&past from https://github.com/bcit-ci/CodeIgniter/blob/develop/system/core/Common.php
-     *
-     * @param string $str
-     * @param bool   $url_encoded
-     * @param string $replacement
-     * @param bool   $keep_basic_control_characters
-     *
-     * @psalm-pure
-     *
-     * @return string
-     */
-    public static function remove_invisible_characters(
-        string $str,
-        bool $url_encoded = false,
-        string $replacement = '',
-        bool $keep_basic_control_characters = true
-    ): string {
-        // init
-        $non_displayables = [];
-
-        // every control character except:
-        // - newline (dec 10),
-        // - carriage return (dec 13),
-        // - horizontal tab (dec 09)
-        if ($url_encoded) {
-            $non_displayables[] = '/%0[0-8bcefBCEF]/'; // url encoded 00-08, 11, 12, 14, 15
-            $non_displayables[] = '/%1[0-9a-fA-F]/'; // url encoded 16-31
-        }
-
-        if ($keep_basic_control_characters) {
-            $non_displayables[] = '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S'; // 00-08, 11, 12, 14-31, 127
-        } else {
-            $str = self::normalize_whitespace($str, false, false, true);
-            $non_displayables[] = '/[^\P{C}\s]/u';
-        }
-
-        do {
-            $str = (string) \preg_replace($non_displayables, $replacement, $str, -1, $count);
-        } while ($count !== 0);
-
-        return $str;
     }
 
     /**
@@ -761,237 +472,47 @@ final class ASCII
     }
 
     /**
-     * Returns an ASCII version of the string. A set of non-ASCII characters are
-     * replaced with their closest ASCII counterparts, and the rest are removed
-     * by default. The language or locale of the source string can be supplied
-     * for language-specific transliteration in any of the following formats:
-     * en, en_GB, or en-GB. For example, passing "de" results in "äöü" mapping
-     * to "aeoeue" rather than "aou" as in other languages.
+     * WARNING: This method will return broken characters and is only for special cases.
      *
-     * EXAMPLE: <code>
-     * ASCII::to_ascii('�Düsseldorf�', 'en'); // Dusseldorf
-     * </code>
+     * Convert a UTF-8 encoded string to a single-byte string suitable for
+     * functions that need the same string length after the conversion.
      *
-     * @param string    $str                       <p>The input string.</p>
-     * @param string    $language                  [optional] <p>Language of the source string.
-     *                                             (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
-     * @param bool      $remove_unsupported_chars  [optional] <p>Whether or not to remove the
-     *                                             unsupported characters.</p>
-     * @param bool      $replace_extra_symbols     [optional]  <p>Add some more replacements e.g. "£" with " pound
-     *                                             ".</p>
-     * @param bool      $use_transliterate         [optional]  <p>Use ASCII::to_transliterate() for unknown chars.</p>
-     * @param bool|null $replace_single_chars_only [optional]  <p>Single char replacement is better for the
-     *                                             performance, but some languages need to replace more then one char
-     *                                             at the same time. | NULL === auto-setting, depended on the
-     *                                             language</p>
+     * The function simply uses (and updates) a tailored dynamic encoding
+     * (in/out map parameter) where non-ascii characters are remapped to
+     * the range [128-255] in order of appearance.
      *
-     * @psalm-pure
+     * Thus, it supports up to 128 different multibyte code points max over
+     * the whole set of strings sharing this encoding.
+     *
+     * Source: https://github.com/KEINOS/mb_levenshtein
+     *
+     * @param string $str <p>UTF-8 string to be converted to extended ASCII.</p>
+     * @param array $map <p>Internal-Map of code points to ASCII characters.</p>
      *
      * @return string
-     *                <p>A string that contains only ASCII characters.</p>
+     *                <p>Mapped borken string.</p>
      *
-     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
+     * @phpstan-param array<string, string> $map
      */
-    public static function to_ascii(
-        string $str,
-        string $language = self::ENGLISH_LANGUAGE_CODE,
-        bool $remove_unsupported_chars = true,
-        bool $replace_extra_symbols = false,
-        bool $use_transliterate = false,
-        bool $replace_single_chars_only = null
-    ): string {
-        if ($str === '') {
-            return '';
+    private static function to_ascii_remap_intern(string $str, array &$map): string
+    {
+        // find all utf-8 characters
+        $matches = [];
+        if (!\preg_match_all('/[\xC0-\xF7][\x80-\xBF]+/', $str, $matches)) {
+            return $str; // plain ascii string
         }
 
-        /** @phpstan-var ASCII::*_LANGUAGE_CODE - hack for phpstan */
-        $language = self::get_language($language);
-
-        static $EXTRA_SYMBOLS_CACHE = null;
-
-        /** @var array<string,array<string,string>> */
-        static $REPLACE_HELPER_CACHE = [];
-        $cacheKey = $language . '-' . $replace_extra_symbols;
-
-        if (!isset($REPLACE_HELPER_CACHE[$cacheKey])) {
-            $langAll = self::charsArrayWithSingleLanguageValues($replace_extra_symbols, false);
-
-            $langSpecific = self::charsArrayWithOneLanguage($language, $replace_extra_symbols, false);
-
-            if ($langSpecific === []) {
-                $REPLACE_HELPER_CACHE[$cacheKey] = $langAll;
-            } else {
-                $REPLACE_HELPER_CACHE[$cacheKey] = \array_merge([], $langAll, $langSpecific);
+        // update the encoding map with the characters not already met
+        $mapCount = \count($map);
+        foreach ($matches[0] as $mbc) {
+            if (!isset($map[$mbc])) {
+                $map[$mbc] = \chr(128 + $mapCount);
+                ++$mapCount;
             }
         }
 
-        if (
-            $replace_extra_symbols
-            &&
-            $EXTRA_SYMBOLS_CACHE === null
-        ) {
-            $EXTRA_SYMBOLS_CACHE = [];
-            foreach (self::$ASCII_EXTRAS ?? [] as $extrasDataTmp) {
-                foreach ($extrasDataTmp as $extrasDataKeyTmp => $extrasDataValueTmp) {
-                    $EXTRA_SYMBOLS_CACHE[$extrasDataKeyTmp] = $extrasDataKeyTmp;
-                }
-            }
-            $EXTRA_SYMBOLS_CACHE = \implode('', $EXTRA_SYMBOLS_CACHE);
-        }
-
-        $charDone = [];
-        if (\preg_match_all('/' . self::$REGEX_ASCII . ($replace_extra_symbols ? '|[' . $EXTRA_SYMBOLS_CACHE . ']' : '') . '/u', $str, $matches)) {
-            if (!$replace_single_chars_only) {
-                if (self::$LANGUAGE_MAX_KEY === null) {
-                    self::$LANGUAGE_MAX_KEY = self::getData('ascii_language_max_key');
-                }
-
-                $maxKeyLength = self::$LANGUAGE_MAX_KEY[$language] ?? 0;
-
-                if ($maxKeyLength >= 5) {
-                    foreach ($matches[0] as $keyTmp => $char) {
-                        if (isset($matches[0][$keyTmp + 4])) {
-                            $fiveChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2] . $matches[0][$keyTmp + 3] . $matches[0][$keyTmp + 4];
-                        } else {
-                            $fiveChars = null;
-                        }
-                        if (
-                            $fiveChars
-                            &&
-                            !isset($charDone[$fiveChars])
-                            &&
-                            isset($REPLACE_HELPER_CACHE[$cacheKey][$fiveChars])
-                            &&
-                            \strpos($str, $fiveChars) !== false
-                        ) {
-                            // DEBUG
-                            //\var_dump($str, $fiveChars, $REPLACE_HELPER_CACHE[$cacheKey][$fiveChars]);
-
-                            $charDone[$fiveChars] = true;
-                            $str = \str_replace($fiveChars, $REPLACE_HELPER_CACHE[$cacheKey][$fiveChars], $str);
-
-                            // DEBUG
-                            //\var_dump($str, "\n");
-                        }
-                    }
-                }
-
-                if ($maxKeyLength >= 4) {
-                    foreach ($matches[0] as $keyTmp => $char) {
-                        if (isset($matches[0][$keyTmp + 3])) {
-                            $fourChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2] . $matches[0][$keyTmp + 3];
-                        } else {
-                            $fourChars = null;
-                        }
-                        if (
-                            $fourChars
-                            &&
-                            !isset($charDone[$fourChars])
-                            &&
-                            isset($REPLACE_HELPER_CACHE[$cacheKey][$fourChars])
-                            &&
-                            \strpos($str, $fourChars) !== false
-                        ) {
-                            // DEBUG
-                            //\var_dump($str, $fourChars, $REPLACE_HELPER_CACHE[$cacheKey][$fourChars]);
-
-                            $charDone[$fourChars] = true;
-                            $str = \str_replace($fourChars, $REPLACE_HELPER_CACHE[$cacheKey][$fourChars], $str);
-
-                            // DEBUG
-                            //\var_dump($str, "\n");
-                        }
-                    }
-                }
-
-                foreach ($matches[0] as $keyTmp => $char) {
-                    if (isset($matches[0][$keyTmp + 2])) {
-                        $threeChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2];
-                    } else {
-                        $threeChars = null;
-                    }
-                    if (
-                        $threeChars
-                        &&
-                        !isset($charDone[$threeChars])
-                        &&
-                        isset($REPLACE_HELPER_CACHE[$cacheKey][$threeChars])
-                        &&
-                        \strpos($str, $threeChars) !== false
-                    ) {
-                        // DEBUG
-                        //\var_dump($str, $threeChars, $REPLACE_HELPER_CACHE[$cacheKey][$threeChars]);
-
-                        $charDone[$threeChars] = true;
-                        $str = \str_replace($threeChars, $REPLACE_HELPER_CACHE[$cacheKey][$threeChars], $str);
-
-                        // DEBUG
-                        //\var_dump($str, "\n");
-                    }
-                }
-
-                foreach ($matches[0] as $keyTmp => $char) {
-                    if (isset($matches[0][$keyTmp + 1])) {
-                        $twoChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1];
-                    } else {
-                        $twoChars = null;
-                    }
-                    if (
-                        $twoChars
-                        &&
-                        !isset($charDone[$twoChars])
-                        &&
-                        isset($REPLACE_HELPER_CACHE[$cacheKey][$twoChars])
-                        &&
-                        \strpos($str, $twoChars) !== false
-                    ) {
-                        // DEBUG
-                        //\var_dump($str, $twoChars, $REPLACE_HELPER_CACHE[$cacheKey][$twoChars]);
-
-                        $charDone[$twoChars] = true;
-                        $str = \str_replace($twoChars, $REPLACE_HELPER_CACHE[$cacheKey][$twoChars], $str);
-
-                        // DEBUG
-                        //\var_dump($str, "\n");
-                    }
-                }
-            }
-
-            foreach ($matches[0] as $char) {
-                if (
-                    !isset($charDone[$char])
-                    &&
-                    isset($REPLACE_HELPER_CACHE[$cacheKey][$char])
-                    &&
-                    \strpos($str, $char) !== false
-                ) {
-                    // DEBUG
-                    //\var_dump($str, $char, $REPLACE_HELPER_CACHE[$cacheKey][$char]);
-
-                    $charDone[$char] = true;
-                    $str = \str_replace($char, $REPLACE_HELPER_CACHE[$cacheKey][$char], $str);
-
-                    // DEBUG
-                    //\var_dump($str, "\n");
-                }
-            }
-        }
-
-        /** @psalm-suppress PossiblyNullOperand - we use the prepare* methods here, so we don't get NULL here */
-        if (!isset(self::$ASCII_MAPS[$language])) {
-            $use_transliterate = true;
-        }
-
-        if ($use_transliterate) {
-            $str = self::to_transliterate($str, null, false);
-        }
-
-        if ($remove_unsupported_chars) {
-            $str = (string) \str_replace(["\n\r", "\n", "\r", "\t"], ' ', $str);
-            $str = (string) \preg_replace('/' . self::$REGEX_ASCII . '/', '', $str);
-        }
-
-        return $str;
+        // finally, remap non-ascii characters
+        return \strtr($str, $map);
     }
 
     /**
@@ -1002,7 +523,7 @@ final class ASCII
      * </code>
      *
      * @param string $str
-     * @param bool   $use_transliterate <p>ASCII::to_transliterate() is used by default - unsafe characters are
+     * @param bool $use_transliterate <p>ASCII::to_transliterate() is used by default - unsafe characters are
      *                                  simply replaced with hyphen otherwise.</p>
      * @param string $fallback_char
      *
@@ -1013,16 +534,17 @@ final class ASCII
      */
     public static function to_filename(
         string $str,
-        bool $use_transliterate = true,
+        bool   $use_transliterate = true,
         string $fallback_char = '-'
-    ): string {
+    ): string
+    {
         if ($use_transliterate) {
             $str = self::to_transliterate($str, $fallback_char);
         }
 
         $fallback_char_escaped = \preg_quote($fallback_char, '/');
 
-        $str = (string) \preg_replace(
+        $str = (string)\preg_replace(
             [
                 '/[^' . $fallback_char_escaped . '.\\-a-zA-Z\d\\s]/', // 1) remove un-needed chars
                 '/\s+/u',                                             // 2) convert spaces to $fallback_char
@@ -1040,84 +562,6 @@ final class ASCII
     }
 
     /**
-     * Converts the string into an URL slug. This includes replacing non-ASCII
-     * characters with their closest ASCII equivalents, removing remaining
-     * non-ASCII and non-alphanumeric characters, and replacing whitespace with
-     * $separator. The separator defaults to a single dash, and the string
-     * is also converted to lowercase. The language of the source string can
-     * also be supplied for language-specific transliteration.
-     *
-     * @param string                $str
-     * @param string                $separator             [optional] <p>The string used to replace whitespace.</p>
-     * @param string                $language              [optional] <p>Language of the source string.
-     *                                                     (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
-     * @param array<string, string> $replacements          [optional] <p>A map of replaceable strings.</p>
-     * @param bool                  $replace_extra_symbols [optional]  <p>Add some more replacements e.g. "£" with "
-     *                                                     pound ".</p>
-     * @param bool                  $use_str_to_lower      [optional] <p>Use "string to lower" for the input.</p>
-     * @param bool                  $use_transliterate     [optional]  <p>Use ASCII::to_transliterate() for unknown
-     *                                                     chars.</p>
-     * @psalm-pure
-     *
-     * @return string
-     *                <p>A string that has been converted to an URL slug.</p>
-     *
-     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
-     */
-    public static function to_slugify(
-        string $str,
-        string $separator = '-',
-        string $language = self::ENGLISH_LANGUAGE_CODE,
-        array $replacements = [],
-        bool $replace_extra_symbols = false,
-        bool $use_str_to_lower = true,
-        bool $use_transliterate = false
-    ): string {
-        if ($str === '') {
-            return '';
-        }
-
-        foreach ($replacements as $from => $to) {
-            $str = \str_replace($from, $to, $str);
-        }
-
-        $str = self::to_ascii(
-            $str,
-            $language,
-            false,
-            $replace_extra_symbols,
-            $use_transliterate
-        );
-
-        $str = \str_replace('@', $separator, $str);
-
-        $str = (string) \preg_replace(
-            '/[^a-zA-Z\\d\\s\\-_' . \preg_quote($separator, '/') . ']/',
-            '',
-            $str
-        );
-
-        if ($use_str_to_lower) {
-            $str = \strtolower($str);
-        }
-
-        $str = (string) \preg_replace('/^[\'\\s]+|[\'\\s]+$/', '', $str);
-        $str = (string) \preg_replace('/\\B([A-Z])/', '-\1', $str);
-        $str = (string) \preg_replace('/[\\-_\\s]+/', $separator, $str);
-
-        $l = \strlen($separator);
-        if ($l && \strpos($str, $separator) === 0) {
-            $str = (string) \substr($str, $l);
-        }
-
-        if (\substr($str, -$l) === $separator) {
-            $str = (string) \substr($str, 0, \strlen($str) - $l);
-        }
-
-        return $str;
-    }
-
-    /**
      * Returns an ASCII version of the string. A set of non-ASCII characters are
      * replaced with their closest ASCII counterparts, and the rest are removed
      * unless instructed otherwise.
@@ -1126,10 +570,10 @@ final class ASCII
      * ASCII::to_transliterate('déjà σσς iıii'); // 'deja sss iiii'
      * </code>
      *
-     * @param string      $str     <p>The input string.</p>
+     * @param string $str <p>The input string.</p>
      * @param string|null $unknown [optional] <p>Character use if character unknown. (default is '?')
      *                             But you can also use NULL to keep the unknown chars.</p>
-     * @param bool        $strict  [optional] <p>Use "transliterator_transliterate()" from PHP-Intl
+     * @param bool $strict [optional] <p>Use "transliterator_transliterate()" from PHP-Intl
      *
      * @psalm-pure
      *
@@ -1140,9 +584,10 @@ final class ASCII
      */
     public static function to_transliterate(
         string $str,
-        $unknown = '?',
-        bool $strict = false
-    ): string {
+               $unknown = '?',
+        bool   $strict = false
+    ): string
+    {
         /** @var array<int,string>|null */
         static $UTF8_TO_TRANSLIT = null;
 
@@ -1334,47 +779,593 @@ final class ASCII
     }
 
     /**
-     * WARNING: This method will return broken characters and is only for special cases.
+     * Checks if a string is 7 bit ASCII.
      *
-     * Convert a UTF-8 encoded string to a single-byte string suitable for
-     * functions that need the same string length after the conversion.
+     * EXAMPLE: <code>
+     * ASCII::is_ascii('白'); // false
+     * </code>
      *
-     * The function simply uses (and updates) a tailored dynamic encoding
-     * (in/out map parameter) where non-ascii characters are remapped to
-     * the range [128-255] in order of appearance.
+     * @param string $str <p>The string to check.</p>
      *
-     * Thus, it supports up to 128 different multibyte code points max over
-     * the whole set of strings sharing this encoding.
+     * @psalm-pure
      *
-     * Source: https://github.com/KEINOS/mb_levenshtein
-     *
-     * @param string $str <p>UTF-8 string to be converted to extended ASCII.</p>
-     * @param array  $map <p>Internal-Map of code points to ASCII characters.</p>
-     *
-     * @return string
-     *                <p>Mapped borken string.</p>
-     *
-     * @phpstan-param array<string, string> $map
+     * @return bool
+     *              <p>
+     *              <strong>true</strong> if it is ASCII<br>
+     *              <strong>false</strong> otherwise
+     *              </p>
      */
-    private static function to_ascii_remap_intern(string $str, array &$map): string
+    public static function is_ascii(string $str): bool
     {
-        // find all utf-8 characters
-        $matches = [];
-        if (!\preg_match_all('/[\xC0-\xF7][\x80-\xBF]+/', $str, $matches)) {
-            return $str; // plain ascii string
+        if ($str === '') {
+            return true;
         }
 
-        // update the encoding map with the characters not already met
-        $mapCount = \count($map);
-        foreach ($matches[0] as $mbc) {
-            if (!isset($map[$mbc])) {
-                $map[$mbc] = \chr(128 + $mapCount);
-                ++$mapCount;
+        return !\preg_match('/' . self::$REGEX_ASCII . '/', $str);
+    }
+
+    /**
+     * Accepts a string and removes all non-UTF-8 characters from it + extras if needed.
+     *
+     * @param string $str <p>The string to be sanitized.</p>
+     * @param bool $normalize_whitespace [optional] <p>Set to true, if you need to normalize the
+     *                                            whitespace.</p>
+     * @param bool $normalize_msword [optional] <p>Set to true, if you need to normalize MS Word chars
+     *                                            e.g.: "…"
+     *                                            => "..."</p>
+     * @param bool $keep_non_breaking_space [optional] <p>Set to true, to keep non-breaking-spaces, in
+     *                                            combination with
+     *                                            $normalize_whitespace</p>
+     * @param bool $remove_invisible_characters [optional] <p>Set to false, if you not want to remove invisible
+     *                                            characters e.g.: "\0"</p>
+     *
+     * @psalm-pure
+     *
+     * @return string
+     *                <p>A clean UTF-8 string.</p>
+     */
+    public static function clean(
+        string $str,
+        bool   $normalize_whitespace = true,
+        bool   $keep_non_breaking_space = false,
+        bool   $normalize_msword = true,
+        bool   $remove_invisible_characters = true
+    ): string
+    {
+        // http://stackoverflow.com/questions/1401317/remove-non-utf8-characters-from-string
+        // caused connection reset problem on larger strings
+
+        $regex = '/
+          (
+            (?: [\x00-\x7F]               # single-byte sequences   0xxxxxxx
+            |   [\xC0-\xDF][\x80-\xBF]    # double-byte sequences   110xxxxx 10xxxxxx
+            |   [\xE0-\xEF][\x80-\xBF]{2} # triple-byte sequences   1110xxxx 10xxxxxx * 2
+            |   [\xF0-\xF7][\x80-\xBF]{3} # quadruple-byte sequence 11110xxx 10xxxxxx * 3
+            ){1,100}                      # ...one or more times
+          )
+        | ( [\x80-\xBF] )                 # invalid byte in range 10000000 - 10111111
+        | ( [\xC0-\xFF] )                 # invalid byte in range 11000000 - 11111111
+        /x';
+        $str = (string)\preg_replace($regex, '$1', $str);
+
+        if ($normalize_whitespace) {
+            $str = self::normalize_whitespace($str, $keep_non_breaking_space);
+        }
+
+        if ($normalize_msword) {
+            $str = self::normalize_msword($str);
+        }
+
+        if ($remove_invisible_characters) {
+            $str = self::remove_invisible_characters($str);
+        }
+
+        return $str;
+    }
+
+    /**
+     * Normalize the whitespace.
+     *
+     * EXAMPLE: <code>
+     * ASCII::normalize_whitespace("abc-\xc2\xa0-öäü-\xe2\x80\xaf-\xE2\x80\xAC", true); // "abc-\xc2\xa0-öäü- -"
+     * </code>
+     *
+     * @param string $str <p>The string to be normalized.</p>
+     * @param bool $keepNonBreakingSpace [optional] <p>Set to true, to keep non-breaking-spaces.</p>
+     * @param bool $keepBidiUnicodeControls [optional] <p>Set to true, to keep non-printable (for the web)
+     *                                             bidirectional text chars.</p>
+     * @param bool $normalize_control_characters [optional] <p>Set to true, to convert e.g. LINE-, PARAGRAPH-SEPARATOR with "\n" and LINE TABULATION with "\t".</p>
+     *
+     * @psalm-pure
+     *
+     * @return string
+     *                <p>A string with normalized whitespace.</p>
+     */
+    public static function normalize_whitespace(
+        string $str,
+        bool   $keepNonBreakingSpace = false,
+        bool   $keepBidiUnicodeControls = false,
+        bool   $normalize_control_characters = false
+    ): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        /** @var array<int,array<string,string>> */
+        static $WHITESPACE_CACHE = [];
+        $cacheKey = (int)$keepNonBreakingSpace;
+
+        if ($normalize_control_characters) {
+            $str = \str_replace(
+                [
+                    "\x0d\x0c",     // 'END OF LINE'
+                    "\xe2\x80\xa8", // 'LINE SEPARATOR'
+                    "\xe2\x80\xa9", // 'PARAGRAPH SEPARATOR'
+                    "\x0c",         // 'FORM FEED' // "\f"
+                    "\x0b",         // 'VERTICAL TAB' // "\v"
+                ],
+                [
+                    "\n",
+                    "\n",
+                    "\n",
+                    "\n",
+                    "\t",
+                ],
+                $str
+            );
+        }
+
+        if (!isset($WHITESPACE_CACHE[$cacheKey])) {
+            self::prepareAsciiMaps();
+
+            $WHITESPACE_CACHE[$cacheKey] = self::$ASCII_MAPS[self::EXTRA_WHITESPACE_CHARS_LANGUAGE_CODE] ?? [];
+
+            if ($keepNonBreakingSpace) {
+                unset($WHITESPACE_CACHE[$cacheKey]["\xc2\xa0"]);
+            }
+
+            $WHITESPACE_CACHE[$cacheKey] = array_keys($WHITESPACE_CACHE[$cacheKey]);
+        }
+
+        if (!$keepBidiUnicodeControls) {
+            /** @var array<int,string>|null */
+            static $BIDI_UNICODE_CONTROLS_CACHE = null;
+
+            if ($BIDI_UNICODE_CONTROLS_CACHE === null) {
+                $BIDI_UNICODE_CONTROLS_CACHE = self::$BIDI_UNI_CODE_CONTROLS_TABLE;
+            }
+
+            $str = \str_replace($BIDI_UNICODE_CONTROLS_CACHE, '', $str);
+        }
+
+        return \str_replace($WHITESPACE_CACHE[$cacheKey], ' ', $str);
+    }
+
+    /**
+     * Returns a string with smart quotes, ellipsis characters, and dashes from
+     * Windows-1252 (commonly used in Word documents) replaced by their ASCII
+     * equivalents.
+     *
+     * EXAMPLE: <code>
+     * ASCII::normalize_msword('„Abcdef…”'); // '"Abcdef..."'
+     * </code>
+     *
+     * @param string $str <p>The string to be normalized.</p>
+     *
+     * @psalm-pure
+     *
+     * @return string
+     *                <p>A string with normalized characters for commonly used chars in Word documents.</p>
+     */
+    public static function normalize_msword(string $str): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        /** @var array{orig: string[], replace: string[]} */
+        static $MSWORD_CACHE = ['orig' => [], 'replace' => []];
+
+        if (empty($MSWORD_CACHE['orig'])) {
+            self::prepareAsciiMaps();
+
+            /** @var array<string, string> */
+            $map = self::$ASCII_MAPS[self::EXTRA_MSWORD_CHARS_LANGUAGE_CODE] ?? [];
+
+            $MSWORD_CACHE = [
+                'orig' => \array_keys($map),
+                'replace' => \array_values($map),
+            ];
+        }
+
+        return \str_replace($MSWORD_CACHE['orig'], $MSWORD_CACHE['replace'], $str);
+    }
+
+    /**
+     * Remove invisible characters from a string.
+     *
+     * e.g.: This prevents sandwiching null characters between ascii characters, like Java\0script.
+     *
+     * copy&past from https://github.com/bcit-ci/CodeIgniter/blob/develop/system/core/Common.php
+     *
+     * @param string $str
+     * @param bool $url_encoded
+     * @param string $replacement
+     * @param bool $keep_basic_control_characters
+     *
+     * @psalm-pure
+     *
+     * @return string
+     */
+    public static function remove_invisible_characters(
+        string $str,
+        bool   $url_encoded = false,
+        string $replacement = '',
+        bool   $keep_basic_control_characters = true
+    ): string
+    {
+        // init
+        $non_displayables = [];
+
+        // every control character except:
+        // - newline (dec 10),
+        // - carriage return (dec 13),
+        // - horizontal tab (dec 09)
+        if ($url_encoded) {
+            $non_displayables[] = '/%0[0-8bcefBCEF]/'; // url encoded 00-08, 11, 12, 14, 15
+            $non_displayables[] = '/%1[0-9a-fA-F]/'; // url encoded 16-31
+        }
+
+        if ($keep_basic_control_characters) {
+            $non_displayables[] = '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+/S'; // 00-08, 11, 12, 14-31, 127
+        } else {
+            $str = self::normalize_whitespace($str, false, false, true);
+            $non_displayables[] = '/[^\P{C}\s]/u';
+        }
+
+        do {
+            $str = (string)\preg_replace($non_displayables, $replacement, $str, -1, $count);
+        } while ($count !== 0);
+
+        return $str;
+    }
+
+    /**
+     * Get data from "/data/*.php".
+     *
+     * @param string $file
+     *
+     * @psalm-pure
+     *
+     * @return array<mixed>
+     */
+    private static function getDataIfExists(string $file): array
+    {
+        $file = __DIR__ . '/data/' . $file . '.php';
+        /** @psalm-suppress ImpureFunctionCall */
+        if (\is_file($file)) {
+            /** @noinspection PhpIncludeInspection */
+            /** @noinspection UsingInclusionReturnValueInspection */
+            /** @psalm-suppress UnresolvableInclude */
+            return include $file;
+        }
+
+        return [];
+    }
+
+    /**
+     * Converts the string into an URL slug. This includes replacing non-ASCII
+     * characters with their closest ASCII equivalents, removing remaining
+     * non-ASCII and non-alphanumeric characters, and replacing whitespace with
+     * $separator. The separator defaults to a single dash, and the string
+     * is also converted to lowercase. The language of the source string can
+     * also be supplied for language-specific transliteration.
+     *
+     * @param string $str
+     * @param string $separator [optional] <p>The string used to replace whitespace.</p>
+     * @param string $language [optional] <p>Language of the source string.
+     *                                                     (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
+     * @param array<string, string> $replacements [optional] <p>A map of replaceable strings.</p>
+     * @param bool $replace_extra_symbols [optional]  <p>Add some more replacements e.g. "£" with "
+     *                                                     pound ".</p>
+     * @param bool $use_str_to_lower [optional] <p>Use "string to lower" for the input.</p>
+     * @param bool $use_transliterate [optional]  <p>Use ASCII::to_transliterate() for unknown
+     *                                                     chars.</p>
+     * @psalm-pure
+     *
+     * @return string
+     *                <p>A string that has been converted to an URL slug.</p>
+     *
+     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
+     */
+    public static function to_slugify(
+        string $str,
+        string $separator = '-',
+        string $language = self::ENGLISH_LANGUAGE_CODE,
+        array  $replacements = [],
+        bool   $replace_extra_symbols = false,
+        bool   $use_str_to_lower = true,
+        bool   $use_transliterate = false
+    ): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        foreach ($replacements as $from => $to) {
+            $str = \str_replace($from, $to, $str);
+        }
+
+        $str = self::to_ascii(
+            $str,
+            $language,
+            false,
+            $replace_extra_symbols,
+            $use_transliterate
+        );
+
+        $str = \str_replace('@', $separator, $str);
+
+        $str = (string)\preg_replace(
+            '/[^a-zA-Z\\d\\s\\-_' . \preg_quote($separator, '/') . ']/',
+            '',
+            $str
+        );
+
+        if ($use_str_to_lower) {
+            $str = \strtolower($str);
+        }
+
+        $str = (string)\preg_replace('/^[\'\\s]+|[\'\\s]+$/', '', $str);
+        $str = (string)\preg_replace('/\\B([A-Z])/', '-\1', $str);
+        $str = (string)\preg_replace('/[\\-_\\s]+/', $separator, $str);
+
+        $l = \strlen($separator);
+        if ($l && \strpos($str, $separator) === 0) {
+            $str = (string)\substr($str, $l);
+        }
+
+        if (\substr($str, -$l) === $separator) {
+            $str = (string)\substr($str, 0, \strlen($str) - $l);
+        }
+
+        return $str;
+    }
+
+    /**
+     * Returns an ASCII version of the string. A set of non-ASCII characters are
+     * replaced with their closest ASCII counterparts, and the rest are removed
+     * by default. The language or locale of the source string can be supplied
+     * for language-specific transliteration in any of the following formats:
+     * en, en_GB, or en-GB. For example, passing "de" results in "äöü" mapping
+     * to "aeoeue" rather than "aou" as in other languages.
+     *
+     * EXAMPLE: <code>
+     * ASCII::to_ascii('�Düsseldorf�', 'en'); // Dusseldorf
+     * </code>
+     *
+     * @param string $str <p>The input string.</p>
+     * @param string $language [optional] <p>Language of the source string.
+     *                                             (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
+     * @param bool $remove_unsupported_chars [optional] <p>Whether or not to remove the
+     *                                             unsupported characters.</p>
+     * @param bool $replace_extra_symbols [optional]  <p>Add some more replacements e.g. "£" with " pound
+     *                                             ".</p>
+     * @param bool $use_transliterate [optional]  <p>Use ASCII::to_transliterate() for unknown chars.</p>
+     * @param bool|null $replace_single_chars_only [optional]  <p>Single char replacement is better for the
+     *                                             performance, but some languages need to replace more then one char
+     *                                             at the same time. | NULL === auto-setting, depended on the
+     *                                             language</p>
+     *
+     * @psalm-pure
+     *
+     * @return string
+     *                <p>A string that contains only ASCII characters.</p>
+     *
+     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
+     */
+    public static function to_ascii(
+        string $str,
+        string $language = self::ENGLISH_LANGUAGE_CODE,
+        bool   $remove_unsupported_chars = true,
+        bool   $replace_extra_symbols = false,
+        bool   $use_transliterate = false,
+        bool   $replace_single_chars_only = null
+    ): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        /** @phpstan-var ASCII::*_LANGUAGE_CODE - hack for phpstan */
+        $language = self::get_language($language);
+
+        static $EXTRA_SYMBOLS_CACHE = null;
+
+        /** @var array<string,array<string,string>> */
+        static $REPLACE_HELPER_CACHE = [];
+        $cacheKey = $language . '-' . $replace_extra_symbols;
+
+        if (!isset($REPLACE_HELPER_CACHE[$cacheKey])) {
+            $langAll = self::charsArrayWithSingleLanguageValues($replace_extra_symbols, false);
+
+            $langSpecific = self::charsArrayWithOneLanguage($language, $replace_extra_symbols, false);
+
+            if ($langSpecific === []) {
+                $REPLACE_HELPER_CACHE[$cacheKey] = $langAll;
+            } else {
+                $REPLACE_HELPER_CACHE[$cacheKey] = \array_merge([], $langAll, $langSpecific);
             }
         }
 
-        // finally, remap non-ascii characters
-        return \strtr($str, $map);
+        if (
+            $replace_extra_symbols
+            &&
+            $EXTRA_SYMBOLS_CACHE === null
+        ) {
+            $EXTRA_SYMBOLS_CACHE = [];
+            foreach (self::$ASCII_EXTRAS ?? [] as $extrasDataTmp) {
+                foreach ($extrasDataTmp as $extrasDataKeyTmp => $extrasDataValueTmp) {
+                    $EXTRA_SYMBOLS_CACHE[$extrasDataKeyTmp] = $extrasDataKeyTmp;
+                }
+            }
+            $EXTRA_SYMBOLS_CACHE = \implode('', $EXTRA_SYMBOLS_CACHE);
+        }
+
+        $charDone = [];
+        if (\preg_match_all('/' . self::$REGEX_ASCII . ($replace_extra_symbols ? '|[' . $EXTRA_SYMBOLS_CACHE . ']' : '') . '/u', $str, $matches)) {
+            if (!$replace_single_chars_only) {
+                if (self::$LANGUAGE_MAX_KEY === null) {
+                    self::$LANGUAGE_MAX_KEY = self::getData('ascii_language_max_key');
+                }
+
+                $maxKeyLength = self::$LANGUAGE_MAX_KEY[$language] ?? 0;
+
+                if ($maxKeyLength >= 5) {
+                    foreach ($matches[0] as $keyTmp => $char) {
+                        if (isset($matches[0][$keyTmp + 4])) {
+                            $fiveChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2] . $matches[0][$keyTmp + 3] . $matches[0][$keyTmp + 4];
+                        } else {
+                            $fiveChars = null;
+                        }
+                        if (
+                            $fiveChars
+                            &&
+                            !isset($charDone[$fiveChars])
+                            &&
+                            isset($REPLACE_HELPER_CACHE[$cacheKey][$fiveChars])
+                            &&
+                            \strpos($str, $fiveChars) !== false
+                        ) {
+                            // DEBUG
+                            //\var_dump($str, $fiveChars, $REPLACE_HELPER_CACHE[$cacheKey][$fiveChars]);
+
+                            $charDone[$fiveChars] = true;
+                            $str = \str_replace($fiveChars, $REPLACE_HELPER_CACHE[$cacheKey][$fiveChars], $str);
+
+                            // DEBUG
+                            //\var_dump($str, "\n");
+                        }
+                    }
+                }
+
+                if ($maxKeyLength >= 4) {
+                    foreach ($matches[0] as $keyTmp => $char) {
+                        if (isset($matches[0][$keyTmp + 3])) {
+                            $fourChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2] . $matches[0][$keyTmp + 3];
+                        } else {
+                            $fourChars = null;
+                        }
+                        if (
+                            $fourChars
+                            &&
+                            !isset($charDone[$fourChars])
+                            &&
+                            isset($REPLACE_HELPER_CACHE[$cacheKey][$fourChars])
+                            &&
+                            \strpos($str, $fourChars) !== false
+                        ) {
+                            // DEBUG
+                            //\var_dump($str, $fourChars, $REPLACE_HELPER_CACHE[$cacheKey][$fourChars]);
+
+                            $charDone[$fourChars] = true;
+                            $str = \str_replace($fourChars, $REPLACE_HELPER_CACHE[$cacheKey][$fourChars], $str);
+
+                            // DEBUG
+                            //\var_dump($str, "\n");
+                        }
+                    }
+                }
+
+                foreach ($matches[0] as $keyTmp => $char) {
+                    if (isset($matches[0][$keyTmp + 2])) {
+                        $threeChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1] . $matches[0][$keyTmp + 2];
+                    } else {
+                        $threeChars = null;
+                    }
+                    if (
+                        $threeChars
+                        &&
+                        !isset($charDone[$threeChars])
+                        &&
+                        isset($REPLACE_HELPER_CACHE[$cacheKey][$threeChars])
+                        &&
+                        \strpos($str, $threeChars) !== false
+                    ) {
+                        // DEBUG
+                        //\var_dump($str, $threeChars, $REPLACE_HELPER_CACHE[$cacheKey][$threeChars]);
+
+                        $charDone[$threeChars] = true;
+                        $str = \str_replace($threeChars, $REPLACE_HELPER_CACHE[$cacheKey][$threeChars], $str);
+
+                        // DEBUG
+                        //\var_dump($str, "\n");
+                    }
+                }
+
+                foreach ($matches[0] as $keyTmp => $char) {
+                    if (isset($matches[0][$keyTmp + 1])) {
+                        $twoChars = $matches[0][$keyTmp + 0] . $matches[0][$keyTmp + 1];
+                    } else {
+                        $twoChars = null;
+                    }
+                    if (
+                        $twoChars
+                        &&
+                        !isset($charDone[$twoChars])
+                        &&
+                        isset($REPLACE_HELPER_CACHE[$cacheKey][$twoChars])
+                        &&
+                        \strpos($str, $twoChars) !== false
+                    ) {
+                        // DEBUG
+                        //\var_dump($str, $twoChars, $REPLACE_HELPER_CACHE[$cacheKey][$twoChars]);
+
+                        $charDone[$twoChars] = true;
+                        $str = \str_replace($twoChars, $REPLACE_HELPER_CACHE[$cacheKey][$twoChars], $str);
+
+                        // DEBUG
+                        //\var_dump($str, "\n");
+                    }
+                }
+            }
+
+            foreach ($matches[0] as $char) {
+                if (
+                    !isset($charDone[$char])
+                    &&
+                    isset($REPLACE_HELPER_CACHE[$cacheKey][$char])
+                    &&
+                    \strpos($str, $char) !== false
+                ) {
+                    // DEBUG
+                    //\var_dump($str, $char, $REPLACE_HELPER_CACHE[$cacheKey][$char]);
+
+                    $charDone[$char] = true;
+                    $str = \str_replace($char, $REPLACE_HELPER_CACHE[$cacheKey][$char], $str);
+
+                    // DEBUG
+                    //\var_dump($str, "\n");
+                }
+            }
+        }
+
+        /** @psalm-suppress PossiblyNullOperand - we use the prepare* methods here, so we don't get NULL here */
+        if (!isset(self::$ASCII_MAPS[$language])) {
+            $use_transliterate = true;
+        }
+
+        if ($use_transliterate) {
+            $str = self::to_transliterate($str, null, false);
+        }
+
+        if ($remove_unsupported_chars) {
+            $str = (string)\str_replace(["\n\r", "\n", "\r", "\t"], ' ', $str);
+            $str = (string)\preg_replace('/' . self::$REGEX_ASCII . '/', '', $str);
+        }
+
+        return $str;
     }
 
     /**
@@ -1411,91 +1402,109 @@ final class ASCII
 
         $regex = '/(?<first>[a-z]+)_\g{first}/';
 
-        return (string) \preg_replace($regex, '$1', $language);
+        return (string)\preg_replace($regex, '$1', $language);
     }
 
     /**
-     * Get data from "/data/*.php".
+     * Returns an replacement array for ASCII methods with one language.
      *
-     * @noinspection ReturnTypeCanBeDeclaredInspection
+     * For example, German will map 'ä' to 'ae', while other languages
+     * will simply return e.g. 'a'.
      *
-     * @param string $file
+     * EXAMPLE: <code>
+     * $array = ASCII::charsArrayWithOneLanguage('ru');
+     * $tmpKey = \array_search('yo', $array['replace']);
+     * echo $array['orig'][$tmpKey]; // 'ё'
+     * </code>
+     *
+     * @psalm-suppress InvalidNullableReturnType - we use the prepare* methods here, so we don't get NULL here
+     *
+     * @param string $language [optional] <p>Language of the source string e.g.: en, de_at, or de-ch.
+     *                                      (default is 'en') | ASCII::*_LANGUAGE_CODE</p>
+     * @param bool $replace_extra_symbols [optional] <p>Add some more replacements e.g. "£" with " pound ".</p>
+     * @param bool $asOrigReplaceArray [optional] <p>TRUE === return {orig: string[], replace: string[]}
+     *                                      array</p>
      *
      * @psalm-pure
      *
-     * @return array<mixed>
+     * @return array
+     *               <p>An array of replacements.</p>
+     *
+     * @phpstan-param ASCII::*_LANGUAGE_CODE $language
+     * @phpstan-return array{orig: string[], replace: string[]}|array<string, string>
      */
-    private static function getData(string $file)
+    public static function charsArrayWithOneLanguage(
+        string $language = self::ENGLISH_LANGUAGE_CODE,
+        bool   $replace_extra_symbols = false,
+        bool   $asOrigReplaceArray = true
+    ): array
     {
-        /** @noinspection PhpIncludeInspection */
-        /** @noinspection UsingInclusionReturnValueInspection */
-        /** @psalm-suppress UnresolvableInclude */
-        return include __DIR__ . '/data/' . $file . '.php';
-    }
+        $language = self::get_language($language);
 
-    /**
-     * Get data from "/data/*.php".
-     *
-     * @param string $file
-     *
-     * @psalm-pure
-     *
-     * @return array<mixed>
-     */
-    private static function getDataIfExists(string $file): array
-    {
-        $file = __DIR__ . '/data/' . $file . '.php';
-        /** @psalm-suppress ImpureFunctionCall */
-        if (\is_file($file)) {
-            /** @noinspection PhpIncludeInspection */
-            /** @noinspection UsingInclusionReturnValueInspection */
-            /** @psalm-suppress UnresolvableInclude */
-            return include $file;
+        // init
+        /** @var array<string, array<string, array<string, string>|array{orig: string[], replace: string[]}>> */
+        static $CHARS_ARRAY = [];
+        $cacheKey = '' . $replace_extra_symbols . '-' . $asOrigReplaceArray;
+
+        // check static cache
+        if (isset($CHARS_ARRAY[$cacheKey][$language])) {
+            return $CHARS_ARRAY[$cacheKey][$language];
         }
 
-        return [];
-    }
+        if ($replace_extra_symbols) {
+            self::prepareAsciiAndExtrasMaps();
 
-    /**
-     * @psalm-pure
-     *
-     * @return void
-     */
-    private static function prepareAsciiAndExtrasMaps()
-    {
-        if (self::$ASCII_MAPS_AND_EXTRAS === null) {
+            /** @noinspection DuplicatedCode */
+            if (isset(self::$ASCII_MAPS_AND_EXTRAS[$language])) {
+                $tmpArray = self::$ASCII_MAPS_AND_EXTRAS[$language];
+
+                if ($asOrigReplaceArray) {
+                    $CHARS_ARRAY[$cacheKey][$language] = [
+                        'orig' => \array_keys($tmpArray),
+                        'replace' => \array_values($tmpArray),
+                    ];
+                } else {
+                    $CHARS_ARRAY[$cacheKey][$language] = $tmpArray;
+                }
+            } else {
+                /** @noinspection NestedPositiveIfStatementsInspection */
+                if ($asOrigReplaceArray) {
+                    $CHARS_ARRAY[$cacheKey][$language] = [
+                        'orig' => [],
+                        'replace' => [],
+                    ];
+                } else {
+                    $CHARS_ARRAY[$cacheKey][$language] = [];
+                }
+            }
+        } else {
             self::prepareAsciiMaps();
-            self::prepareAsciiExtras();
 
-            /** @psalm-suppress PossiblyNullArgument - we use the prepare* methods here, so we don't get NULL here */
-            self::$ASCII_MAPS_AND_EXTRAS = \array_merge_recursive(
-                self::$ASCII_MAPS ?? [],
-                self::$ASCII_EXTRAS ?? []
-            );
-        }
-    }
+            /** @noinspection DuplicatedCode */
+            if (isset(self::$ASCII_MAPS[$language])) {
+                $tmpArray = self::$ASCII_MAPS[$language];
 
-    /**
-     * @psalm-pure
-     *
-     * @return void
-     */
-    private static function prepareAsciiMaps()
-    {
-        if (self::$ASCII_MAPS === null) {
-            self::$ASCII_MAPS = self::getData('ascii_by_languages');
+                if ($asOrigReplaceArray) {
+                    $CHARS_ARRAY[$cacheKey][$language] = [
+                        'orig' => \array_keys($tmpArray),
+                        'replace' => \array_values($tmpArray),
+                    ];
+                } else {
+                    $CHARS_ARRAY[$cacheKey][$language] = $tmpArray;
+                }
+            } else {
+                /** @noinspection NestedPositiveIfStatementsInspection */
+                if ($asOrigReplaceArray) {
+                    $CHARS_ARRAY[$cacheKey][$language] = [
+                        'orig' => [],
+                        'replace' => [],
+                    ];
+                } else {
+                    $CHARS_ARRAY[$cacheKey][$language] = [];
+                }
+            }
         }
-    }
 
-    /**
-     * @psalm-pure
-     *
-     * @return void
-     */
-    private static function prepareAsciiExtras()
-    {
-        if (self::$ASCII_EXTRAS === null) {
-            self::$ASCII_EXTRAS = self::getData('ascii_extras_by_languages');
-        }
+        return $CHARS_ARRAY[$cacheKey][$language] ?? ['orig' => [], 'replace' => []];
     }
 }

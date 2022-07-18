@@ -25,12 +25,33 @@ class OutputFormatter implements WrappableOutputFormatterInterface
     private array $styles = [];
     private OutputFormatterStyleStack $styleStack;
 
-    public function __clone()
+    /**
+     * Initializes console output formatter.
+     *
+     * @param OutputFormatterStyleInterface[] $styles Array of "name => FormatterStyle" instances
+     */
+    public function __construct(bool $decorated = false, array $styles = [])
     {
-        $this->styleStack = clone $this->styleStack;
-        foreach ($this->styles as $key => $value) {
-            $this->styles[$key] = clone $value;
+        $this->decorated = $decorated;
+
+        $this->setStyle('error', new OutputFormatterStyle('white', 'red'));
+        $this->setStyle('info', new OutputFormatterStyle('green'));
+        $this->setStyle('comment', new OutputFormatterStyle('yellow'));
+        $this->setStyle('question', new OutputFormatterStyle('black', 'cyan'));
+
+        foreach ($styles as $name => $style) {
+            $this->setStyle($name, $style);
         }
+
+        $this->styleStack = new OutputFormatterStyleStack();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setStyle(string $name, OutputFormatterStyleInterface $style)
+    {
+        $this->styles[strtolower($name)] = $style;
     }
 
     /**
@@ -60,57 +81,12 @@ class OutputFormatter implements WrappableOutputFormatterInterface
         return $text;
     }
 
-    /**
-     * Initializes console output formatter.
-     *
-     * @param OutputFormatterStyleInterface[] $styles Array of "name => FormatterStyle" instances
-     */
-    public function __construct(bool $decorated = false, array $styles = [])
+    public function __clone()
     {
-        $this->decorated = $decorated;
-
-        $this->setStyle('error', new OutputFormatterStyle('white', 'red'));
-        $this->setStyle('info', new OutputFormatterStyle('green'));
-        $this->setStyle('comment', new OutputFormatterStyle('yellow'));
-        $this->setStyle('question', new OutputFormatterStyle('black', 'cyan'));
-
-        foreach ($styles as $name => $style) {
-            $this->setStyle($name, $style);
+        $this->styleStack = clone $this->styleStack;
+        foreach ($this->styles as $key => $value) {
+            $this->styles[$key] = clone $value;
         }
-
-        $this->styleStack = new OutputFormatterStyleStack();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setDecorated(bool $decorated)
-    {
-        $this->decorated = $decorated;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isDecorated(): bool
-    {
-        return $this->decorated;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setStyle(string $name, OutputFormatterStyleInterface $style)
-    {
-        $this->styles[strtolower($name)] = $style;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function hasStyle(string $name): bool
-    {
-        return isset($this->styles[strtolower($name)]);
     }
 
     /**
@@ -123,6 +99,14 @@ class OutputFormatter implements WrappableOutputFormatterInterface
         }
 
         return $this->styles[strtolower($name)];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasStyle(string $name): bool
+    {
+        return isset($this->styles[strtolower($name)]);
     }
 
     /**
@@ -184,9 +168,70 @@ class OutputFormatter implements WrappableOutputFormatterInterface
         return strtr($output, ["\0" => '\\', '\\<' => '<', '\\>' => '>']);
     }
 
-    public function getStyleStack(): OutputFormatterStyleStack
+    /**
+     * Applies current style from stack to text, if must be applied.
+     */
+    private function applyCurrentStyle(string $text, string $current, int $width, int &$currentLineLength): string
     {
-        return $this->styleStack;
+        if ('' === $text) {
+            return '';
+        }
+
+        if (!$width) {
+            return $this->isDecorated() ? $this->styleStack->getCurrent()->apply($text) : $text;
+        }
+
+        if (!$currentLineLength && '' !== $current) {
+            $text = ltrim($text);
+        }
+
+        if ($currentLineLength) {
+            $prefix = substr($text, 0, $i = $width - $currentLineLength) . "\n";
+            $text = substr($text, $i);
+        } else {
+            $prefix = '';
+        }
+
+        preg_match('~(\\n)$~', $text, $matches);
+        $text = $prefix . preg_replace('~([^\\n]{' . $width . '})\\ *~', "\$1\n", $text);
+        $text = rtrim($text, "\n") . ($matches[1] ?? '');
+
+        if (!$currentLineLength && '' !== $current && !str_ends_with($current, "\n")) {
+            $text = "\n" . $text;
+        }
+
+        $lines = explode("\n", $text);
+
+        foreach ($lines as $line) {
+            $currentLineLength += \strlen($line);
+            if ($width <= $currentLineLength) {
+                $currentLineLength = 0;
+            }
+        }
+
+        if ($this->isDecorated()) {
+            foreach ($lines as $i => $line) {
+                $lines[$i] = $this->styleStack->getCurrent()->apply($line);
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isDecorated(): bool
+    {
+        return $this->decorated;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setDecorated(bool $decorated)
+    {
+        $this->decorated = $decorated;
     }
 
     /**
@@ -228,53 +273,8 @@ class OutputFormatter implements WrappableOutputFormatterInterface
         return $style;
     }
 
-    /**
-     * Applies current style from stack to text, if must be applied.
-     */
-    private function applyCurrentStyle(string $text, string $current, int $width, int &$currentLineLength): string
+    public function getStyleStack(): OutputFormatterStyleStack
     {
-        if ('' === $text) {
-            return '';
-        }
-
-        if (!$width) {
-            return $this->isDecorated() ? $this->styleStack->getCurrent()->apply($text) : $text;
-        }
-
-        if (!$currentLineLength && '' !== $current) {
-            $text = ltrim($text);
-        }
-
-        if ($currentLineLength) {
-            $prefix = substr($text, 0, $i = $width - $currentLineLength)."\n";
-            $text = substr($text, $i);
-        } else {
-            $prefix = '';
-        }
-
-        preg_match('~(\\n)$~', $text, $matches);
-        $text = $prefix.preg_replace('~([^\\n]{'.$width.'})\\ *~', "\$1\n", $text);
-        $text = rtrim($text, "\n").($matches[1] ?? '');
-
-        if (!$currentLineLength && '' !== $current && !str_ends_with($current, "\n")) {
-            $text = "\n".$text;
-        }
-
-        $lines = explode("\n", $text);
-
-        foreach ($lines as $line) {
-            $currentLineLength += \strlen($line);
-            if ($width <= $currentLineLength) {
-                $currentLineLength = 0;
-            }
-        }
-
-        if ($this->isDecorated()) {
-            foreach ($lines as $i => $line) {
-                $lines[$i] = $this->styleStack->getCurrent()->apply($line);
-            }
-        }
-
-        return implode("\n", $lines);
+        return $this->styleStack;
     }
 }

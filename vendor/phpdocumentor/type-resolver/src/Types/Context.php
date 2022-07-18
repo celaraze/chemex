@@ -48,7 +48,7 @@ final class Context
      * Initializes the new context and normalizes all passed namespaces to be in Qualified Namespace Name (QNN)
      * format (without a preceding `\`).
      *
-     * @param string   $namespace        The namespace where this DocBlock resides in.
+     * @param string $namespace The namespace where this DocBlock resides in.
      * @param string[] $namespaceAliases List of namespace aliases => Fully Qualified Namespace.
      * @psalm-param array<string, string> $namespaceAliases
      */

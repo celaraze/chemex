@@ -1,6 +1,6 @@
 <div class="{{$viewClass['form-group']}}">
 
-    <div  class="{{ $viewClass['label'] }} control-label">
+    <div class="{{ $viewClass['label'] }} control-label">
         <span>{!! $label !!}</span>
     </div>
 
@@ -20,9 +20,10 @@
                         @endforeach
                     </optgroup>
                 @endforeach
-             @else
+            @else
                 @foreach($options as $select => $option)
-                    <option value="{{$select}}" {{ Dcat\Admin\Support\Helper::equal($select, $value) ?'selected':'' }}>{{$option}}</option>
+                    <option
+                        value="{{$select}}" {{ Dcat\Admin\Support\Helper::equal($select, $value) ?'selected':'' }}>{{$option}}</option>
                 @endforeach
             @endif
         </select>

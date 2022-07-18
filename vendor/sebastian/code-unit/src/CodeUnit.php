@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeUnit;
 
-use function range;
-use function sprintf;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
+use function range;
+use function sprintf;
 
 /**
  * @psalm-immutable
@@ -35,6 +36,16 @@ abstract class CodeUnit
      * @psalm-var list<int>
      */
     private $sourceLines;
+
+    /**
+     * @psalm-param list<int> $sourceLines
+     */
+    private function __construct(string $name, string $sourceFileName, array $sourceLines)
+    {
+        $this->name = $name;
+        $this->sourceFileName = $sourceFileName;
+        $this->sourceLines = $sourceLines;
+    }
 
     /**
      * @psalm-param class-string $className
@@ -62,6 +73,83 @@ abstract class CodeUnit
      * @psalm-param class-string $className
      *
      * @throws InvalidCodeUnitException
+     */
+    private static function ensureUserDefinedClass(string $className): void
+    {
+        try {
+            $reflector = new ReflectionClass($className);
+
+            if ($reflector->isInterface()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is an interface and not a class',
+                        $className
+                    )
+                );
+            }
+
+            if ($reflector->isTrait()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is a trait and not a class',
+                        $className
+                    )
+                );
+            }
+
+            if (!$reflector->isUserDefined()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is not a user-defined class',
+                        $className
+                    )
+                );
+            }
+            // @codeCoverageIgnoreStart
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+    public function isInterface(): bool
+    {
+        return false;
+    }
+
+    public function isTrait(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @psalm-param class-string $className
+     *
+     * @throws ReflectionException
+     */
+    private static function reflectorForClass(string $className): ReflectionClass
+    {
+        try {
+            return new ReflectionClass($className);
+            // @codeCoverageIgnoreStart
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * @psalm-param class-string $className
+     *
+     * @throws InvalidCodeUnitException
      * @throws ReflectionException
      */
     public static function forClassMethod(string $className, string $methodName): ClassMethodUnit
@@ -78,6 +166,26 @@ abstract class CodeUnit
                 $reflector->getEndLine()
             )
         );
+    }
+
+    /**
+     * @psalm-param class-string $className
+     *
+     * @throws ReflectionException
+     */
+    private static function reflectorForClassMethod(string $className, string $methodName): ReflectionMethod
+    {
+        try {
+            return new ReflectionMethod($className, $methodName);
+            // @codeCoverageIgnoreStart
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -100,6 +208,44 @@ abstract class CodeUnit
                 $reflector->getEndLine()
             )
         );
+    }
+
+    /**
+     * @psalm-param class-string $interfaceName
+     *
+     * @throws InvalidCodeUnitException
+     */
+    private static function ensureUserDefinedInterface(string $interfaceName): void
+    {
+        try {
+            $reflector = new ReflectionClass($interfaceName);
+
+            if (!$reflector->isInterface()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is not an interface',
+                        $interfaceName
+                    )
+                );
+            }
+
+            if (!$reflector->isUserDefined()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is not a user-defined interface',
+                        $interfaceName
+                    )
+                );
+            }
+            // @codeCoverageIgnoreStart
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -144,6 +290,44 @@ abstract class CodeUnit
                 $reflector->getEndLine()
             )
         );
+    }
+
+    /**
+     * @psalm-param class-string $traitName
+     *
+     * @throws InvalidCodeUnitException
+     */
+    private static function ensureUserDefinedTrait(string $traitName): void
+    {
+        try {
+            $reflector = new ReflectionClass($traitName);
+
+            if (!$reflector->isTrait()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is not a trait',
+                        $traitName
+                    )
+                );
+            }
+
+            // @codeCoverageIgnoreStart
+            if (!$reflector->isUserDefined()) {
+                throw new InvalidCodeUnitException(
+                    sprintf(
+                        '"%s" is not a user-defined trait',
+                        $traitName
+                    )
+                );
+            }
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -198,13 +382,23 @@ abstract class CodeUnit
     }
 
     /**
-     * @psalm-param list<int> $sourceLines
+     * @psalm-param callable-string $functionName
+     *
+     * @throws ReflectionException
      */
-    private function __construct(string $name, string $sourceFileName, array $sourceLines)
+    private static function reflectorForFunction(string $functionName): ReflectionFunction
     {
-        $this->name           = $name;
-        $this->sourceFileName = $sourceFileName;
-        $this->sourceLines    = $sourceLines;
+        try {
+            return new ReflectionFunction($functionName);
+            // @codeCoverageIgnoreStart
+        } catch (\ReflectionException $e) {
+            throw new ReflectionException(
+                $e->getMessage(),
+                (int)$e->getCode(),
+                $e
+            );
+        }
+        // @codeCoverageIgnoreEnd
     }
 
     public function name(): string
@@ -235,17 +429,7 @@ abstract class CodeUnit
         return false;
     }
 
-    public function isInterface(): bool
-    {
-        return false;
-    }
-
     public function isInterfaceMethod(): bool
-    {
-        return false;
-    }
-
-    public function isTrait(): bool
     {
         return false;
     }
@@ -258,188 +442,5 @@ abstract class CodeUnit
     public function isFunction(): bool
     {
         return false;
-    }
-
-    /**
-     * @psalm-param class-string $className
-     *
-     * @throws InvalidCodeUnitException
-     */
-    private static function ensureUserDefinedClass(string $className): void
-    {
-        try {
-            $reflector = new ReflectionClass($className);
-
-            if ($reflector->isInterface()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is an interface and not a class',
-                        $className
-                    )
-                );
-            }
-
-            if ($reflector->isTrait()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is a trait and not a class',
-                        $className
-                    )
-                );
-            }
-
-            if (!$reflector->isUserDefined()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is not a user-defined class',
-                        $className
-                    )
-                );
-            }
-            // @codeCoverageIgnoreStart
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * @psalm-param class-string $interfaceName
-     *
-     * @throws InvalidCodeUnitException
-     */
-    private static function ensureUserDefinedInterface(string $interfaceName): void
-    {
-        try {
-            $reflector = new ReflectionClass($interfaceName);
-
-            if (!$reflector->isInterface()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is not an interface',
-                        $interfaceName
-                    )
-                );
-            }
-
-            if (!$reflector->isUserDefined()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is not a user-defined interface',
-                        $interfaceName
-                    )
-                );
-            }
-            // @codeCoverageIgnoreStart
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * @psalm-param class-string $traitName
-     *
-     * @throws InvalidCodeUnitException
-     */
-    private static function ensureUserDefinedTrait(string $traitName): void
-    {
-        try {
-            $reflector = new ReflectionClass($traitName);
-
-            if (!$reflector->isTrait()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is not a trait',
-                        $traitName
-                    )
-                );
-            }
-
-            // @codeCoverageIgnoreStart
-            if (!$reflector->isUserDefined()) {
-                throw new InvalidCodeUnitException(
-                    sprintf(
-                        '"%s" is not a user-defined trait',
-                        $traitName
-                    )
-                );
-            }
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * @psalm-param class-string $className
-     *
-     * @throws ReflectionException
-     */
-    private static function reflectorForClass(string $className): ReflectionClass
-    {
-        try {
-            return new ReflectionClass($className);
-            // @codeCoverageIgnoreStart
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * @psalm-param class-string $className
-     *
-     * @throws ReflectionException
-     */
-    private static function reflectorForClassMethod(string $className, string $methodName): ReflectionMethod
-    {
-        try {
-            return new ReflectionMethod($className, $methodName);
-            // @codeCoverageIgnoreStart
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * @psalm-param callable-string $functionName
-     *
-     * @throws ReflectionException
-     */
-    private static function reflectorForFunction(string $functionName): ReflectionFunction
-    {
-        try {
-            return new ReflectionFunction($functionName);
-            // @codeCoverageIgnoreStart
-        } catch (\ReflectionException $e) {
-            throw new ReflectionException(
-                $e->getMessage(),
-                (int) $e->getCode(),
-                $e
-            );
-        }
-        // @codeCoverageIgnoreEnd
     }
 }

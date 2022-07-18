@@ -12,17 +12,17 @@
 
 namespace Composer\Package;
 
-use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
-use Composer\Pcre\Preg;
-use Composer\Repository\LockArrayRepository;
-use Composer\Util\ProcessExecutor;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Plugin\PluginInterface;
+use Composer\Repository\LockArrayRepository;
 use Composer\Util\Git as GitUtil;
-use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 use Seld\JsonLint\ParsingException;
 
 /**
@@ -55,10 +55,10 @@ class Locker
     /**
      * Initializes packages locker.
      *
-     * @param IOInterface         $io
-     * @param JsonFile            $lockFile             lockfile loader
-     * @param InstallationManager $installationManager  installation manager instance
-     * @param string              $composerFileContents The contents of the composer file
+     * @param IOInterface $io
+     * @param JsonFile $lockFile lockfile loader
+     * @param InstallationManager $installationManager installation manager instance
+     * @param string $composerFileContents The contents of the composer file
      */
     public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ProcessExecutor $process = null)
     {
@@ -111,22 +111,6 @@ class Locker
     }
 
     /**
-     * Checks whether locker has been locked (lockfile found).
-     *
-     * @return bool
-     */
-    public function isLocked(): bool
-    {
-        if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
-            return false;
-        }
-
-        $data = $this->getLockData();
-
-        return isset($data['packages']);
-    }
-
-    /**
      * Checks whether the lock file is still up to date with the current hash
      *
      * @return bool
@@ -152,9 +136,9 @@ class Locker
     /**
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
-     * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
-     * @throws \RuntimeException
+     * @param bool $withDevReqs true to retrieve the locked dev packages
      * @return \Composer\Repository\LockArrayRepository
+     * @throws \RuntimeException
      */
     public function getLockedRepository(bool $withDevReqs = false): LockArrayRepository
     {
@@ -203,6 +187,22 @@ class Locker
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function getLockData(): array
+    {
+        if (null !== $this->lockDataCache) {
+            return $this->lockDataCache;
+        }
+
+        if (!$this->lockFile->exists()) {
+            throw new \LogicException('No lockfile found. Unable to read locked packages');
+        }
+
+        return $this->lockDataCache = $this->lockFile->read();
+    }
+
+    /**
      * @return string[] Names of dependencies installed through require-dev
      */
     public function getDevPackageNames(): array
@@ -221,7 +221,7 @@ class Locker
     /**
      * Returns the platform requirements stored in the lock file
      *
-     * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
+     * @param bool $withDevReqs if true, the platform requirements from the require-dev block are also returned
      * @return \Composer\Package\Link[]
      */
     public function getPlatformRequirements(bool $withDevReqs = false): array
@@ -319,35 +319,19 @@ class Locker
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    public function getLockData(): array
-    {
-        if (null !== $this->lockDataCache) {
-            return $this->lockDataCache;
-        }
-
-        if (!$this->lockFile->exists()) {
-            throw new \LogicException('No lockfile found. Unable to read locked packages');
-        }
-
-        return $this->lockDataCache = $this->lockFile->read();
-    }
-
-    /**
      * Locks provided data into lockfile.
      *
-     * @param PackageInterface[]          $packages          array of packages
-     * @param PackageInterface[]|null     $devPackages       array of dev packages or null if installed without --dev
-     * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
-     * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
-     * @param string[][]                  $aliases           array of aliases
-     * @param string                      $minimumStability
-     * @param array<string, int>          $stabilityFlags
-     * @param bool                        $preferStable
-     * @param bool                        $preferLowest
+     * @param PackageInterface[] $packages array of packages
+     * @param PackageInterface[]|null $devPackages array of dev packages or null if installed without --dev
+     * @param array<string, string> $platformReqs array of package name => constraint for required platform packages
+     * @param array<string, string> $platformDevReqs array of package name => constraint for dev-required platform packages
+     * @param string[][] $aliases array of aliases
+     * @param string $minimumStability
+     * @param array<string, int> $stabilityFlags
+     * @param bool $preferStable
+     * @param bool $preferLowest
      * @param array<string, string|false> $platformOverrides
-     * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param bool $write Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @return bool
      *
@@ -367,8 +351,8 @@ class Locker
 
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
-                               'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
-                               'This file is @gener'.'ated automatically', ),
+                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
+                'This file is @gener' . 'ated automatically',),
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
@@ -474,7 +458,7 @@ class Locker
     /**
      * Returns the packages's datetime for its source reference.
      *
-     * @param  PackageInterface $package The package to scan.
+     * @param PackageInterface $package The package to scan.
      * @return string|null      The formatted datetime or null if none was found.
      */
     private function getPackageTime(PackageInterface $package): ?string
@@ -493,19 +477,35 @@ class Locker
                 case 'git':
                     GitUtil::cleanEnv();
 
-                    if (0 === $this->process->execute('git log -n1 --pretty=%ct '.ProcessExecutor::escape($sourceRef).GitUtil::getNoShowSignatureFlag($this->process), $output, $path) && Preg::isMatch('{^\s*\d+\s*$}', $output)) {
-                        $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
+                    if (0 === $this->process->execute('git log -n1 --pretty=%ct ' . ProcessExecutor::escape($sourceRef) . GitUtil::getNoShowSignatureFlag($this->process), $output, $path) && Preg::isMatch('{^\s*\d+\s*$}', $output)) {
+                        $datetime = new \DateTime('@' . trim($output), new \DateTimeZone('UTC'));
                     }
                     break;
 
                 case 'hg':
-                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r '.ProcessExecutor::escape($sourceRef), $output, $path) && Preg::isMatch('{^\s*(\d+)\s*}', $output, $match)) {
-                        $datetime = new \DateTime('@'.$match[1], new \DateTimeZone('UTC'));
+                    if (0 === $this->process->execute('hg log --template "{date|hgdate}" -r ' . ProcessExecutor::escape($sourceRef), $output, $path) && Preg::isMatch('{^\s*(\d+)\s*}', $output, $match)) {
+                        $datetime = new \DateTime('@' . $match[1], new \DateTimeZone('UTC'));
                     }
                     break;
             }
         }
 
         return $datetime ? $datetime->format(DATE_RFC3339) : null;
+    }
+
+    /**
+     * Checks whether locker has been locked (lockfile found).
+     *
+     * @return bool
+     */
+    public function isLocked(): bool
+    {
+        if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
+            return false;
+        }
+
+        $data = $this->getLockData();
+
+        return isset($data['packages']);
     }
 }

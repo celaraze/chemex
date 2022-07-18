@@ -12,12 +12,12 @@
 
 namespace Composer;
 
+use Composer\Autoload\AutoloadGenerator;
+use Composer\Downloader\DownloadManager;
+use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\Locker;
 use Composer\Pcre\Preg;
 use Composer\Plugin\PluginManager;
-use Composer\Downloader\DownloadManager;
-use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\Archiver\ArchiveManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -66,6 +66,26 @@ class Composer extends PartialComposer
      * @var string
      */
     public const RUNTIME_API_VERSION = '2.2.2';
+    /**
+     * @var Locker
+     */
+    private $locker;
+    /**
+     * @var Downloader\DownloadManager
+     */
+    private $downloadManager;
+    /**
+     * @var Plugin\PluginManager
+     */
+    private $pluginManager;
+    /**
+     * @var Autoload\AutoloadGenerator
+     */
+    private $autoloadGenerator;
+    /**
+     * @var ArchiveManager
+     */
+    private $archiveManager;
 
     /**
      * @return string
@@ -73,46 +93,16 @@ class Composer extends PartialComposer
     public static function getVersion(): string
     {
         // no replacement done, this must be a source checkout
-        if (self::VERSION === '@package_version'.'@') {
+        if (self::VERSION === '@package_version' . '@') {
             return self::SOURCE_VERSION;
         }
 
         // we have a branch alias and version is a commit id, this must be a snapshot build
         if (self::BRANCH_ALIAS_VERSION !== '' && Preg::isMatch('{^[a-f0-9]{40}$}', self::VERSION)) {
-            return self::BRANCH_ALIAS_VERSION.'+'.self::VERSION;
+            return self::BRANCH_ALIAS_VERSION . '+' . self::VERSION;
         }
 
         return self::VERSION;
-    }
-
-    /**
-     * @var Locker
-     */
-    private $locker;
-
-    /**
-     * @var Downloader\DownloadManager
-     */
-    private $downloadManager;
-
-    /**
-     * @var Plugin\PluginManager
-     */
-    private $pluginManager;
-
-    /**
-     * @var Autoload\AutoloadGenerator
-     */
-    private $autoloadGenerator;
-
-    /**
-     * @var ArchiveManager
-     */
-    private $archiveManager;
-
-    public function setLocker(Locker $locker): void
-    {
-        $this->locker = $locker;
     }
 
     public function getLocker(): Locker
@@ -120,9 +110,9 @@ class Composer extends PartialComposer
         return $this->locker;
     }
 
-    public function setDownloadManager(DownloadManager $manager): void
+    public function setLocker(Locker $locker): void
     {
-        $this->downloadManager = $manager;
+        $this->locker = $locker;
     }
 
     public function getDownloadManager(): DownloadManager
@@ -130,9 +120,9 @@ class Composer extends PartialComposer
         return $this->downloadManager;
     }
 
-    public function setArchiveManager(ArchiveManager $manager): void
+    public function setDownloadManager(DownloadManager $manager): void
     {
-        $this->archiveManager = $manager;
+        $this->downloadManager = $manager;
     }
 
     public function getArchiveManager(): ArchiveManager
@@ -140,9 +130,9 @@ class Composer extends PartialComposer
         return $this->archiveManager;
     }
 
-    public function setPluginManager(PluginManager $manager): void
+    public function setArchiveManager(ArchiveManager $manager): void
     {
-        $this->pluginManager = $manager;
+        $this->archiveManager = $manager;
     }
 
     public function getPluginManager(): PluginManager
@@ -150,13 +140,18 @@ class Composer extends PartialComposer
         return $this->pluginManager;
     }
 
-    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator): void
+    public function setPluginManager(PluginManager $manager): void
     {
-        $this->autoloadGenerator = $autoloadGenerator;
+        $this->pluginManager = $manager;
     }
 
     public function getAutoloadGenerator(): AutoloadGenerator
     {
         return $this->autoloadGenerator;
+    }
+
+    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator): void
+    {
+        $this->autoloadGenerator = $autoloadGenerator;
     }
 }

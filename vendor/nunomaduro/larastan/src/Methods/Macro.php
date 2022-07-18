@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NunoMaduro\Larastan\Methods;
 
-use function array_map;
 use Closure;
 use ErrorException;
 use Illuminate\Validation\ValidationException;
@@ -24,6 +23,7 @@ use ReflectionFunction;
 use ReflectionParameter;
 use ReflectionType;
 use stdClass;
+use function array_map;
 
 final class Macro implements MethodReflection
 {
@@ -90,69 +90,11 @@ final class Macro implements MethodReflection
         }
     }
 
-    public function getDeclaringClass(): ClassReflection
-    {
-        return $this->classReflection;
-    }
-
-    public function isPrivate(): bool
-    {
-        return false;
-    }
-
-    public function isPublic(): bool
-    {
-        return true;
-    }
-
-    public function isFinal(): TrinaryLogic
-    {
-        return TrinaryLogic::createNo();
-    }
-
-    public function isInternal(): TrinaryLogic
-    {
-        return TrinaryLogic::createNo();
-    }
-
-    public function isStatic(): bool
-    {
-        return $this->isStatic;
-    }
-
-    /**
-     * Set the is static value.
-     *
-     * @param  bool  $isStatic
-     * @return void
-     */
-    public function setIsStatic(bool $isStatic): void
-    {
-        $this->isStatic = $isStatic;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getDocComment(): ?string
-    {
-        return $this->reflectionFunction->getDocComment() ?: null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getName(): string
-    {
-        return $this->methodName;
-    }
-
     /** @return ParameterReflection[] */
     public function getParameters(): array
     {
         return array_map(function (ReflectionParameter $reflection): ParameterReflection {
-            return new class($reflection) implements ParameterReflection
-            {
+            return new class($reflection) implements ParameterReflection {
                 /**
                  * @var ReflectionParameter
                  */
@@ -205,7 +147,7 @@ final class Macro implements MethodReflection
     /**
      * Set the parameters value.
      *
-     * @param  ReflectionParameter[]  $parameters
+     * @param ReflectionParameter[] $parameters
      * @return void
      */
     public function setParameters(array $parameters): void
@@ -213,9 +155,61 @@ final class Macro implements MethodReflection
         $this->parameters = $parameters;
     }
 
-    public function getReturnType(): ?ReflectionType
+    /**
+     * {@inheritdoc}
+     */
+    public function getName(): string
     {
-        return $this->reflectionFunction->getReturnType();
+        return $this->methodName;
+    }
+
+    public function getDeclaringClass(): ClassReflection
+    {
+        return $this->classReflection;
+    }
+
+    public function isPrivate(): bool
+    {
+        return false;
+    }
+
+    public function isPublic(): bool
+    {
+        return true;
+    }
+
+    public function isFinal(): TrinaryLogic
+    {
+        return TrinaryLogic::createNo();
+    }
+
+    public function isInternal(): TrinaryLogic
+    {
+        return TrinaryLogic::createNo();
+    }
+
+    public function isStatic(): bool
+    {
+        return $this->isStatic;
+    }
+
+    /**
+     * Set the is static value.
+     *
+     * @param bool $isStatic
+     * @return void
+     */
+    public function setIsStatic(bool $isStatic): void
+    {
+        $this->isStatic = $isStatic;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDocComment(): ?string
+    {
+        return $this->reflectionFunction->getDocComment() ?: null;
     }
 
     public function isDeprecated(): TrinaryLogic
@@ -236,6 +230,11 @@ final class Macro implements MethodReflection
         return [
             new FunctionVariant(TemplateTypeMap::createEmpty(), null, $this->getParameters(), $this->reflectionFunction->isVariadic(), TypehintHelper::decideTypeFromReflection($this->getReturnType())),
         ];
+    }
+
+    public function getReturnType(): ?ReflectionType
+    {
+        return $this->reflectionFunction->getReturnType();
     }
 
     public function getDeprecatedDescription(): ?string

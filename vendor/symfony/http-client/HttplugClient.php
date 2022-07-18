@@ -107,6 +107,28 @@ final class HttplugClient implements HttplugInterface, HttpAsyncClient, RequestF
         }
     }
 
+    private function sendPsr7Request(RequestInterface $request, bool $buffer = null): ResponseInterface
+    {
+        try {
+            $body = $request->getBody();
+
+            if ($body->isSeekable()) {
+                $body->seek(0);
+            }
+
+            return $this->client->request($request->getMethod(), (string)$request->getUri(), [
+                'headers' => $request->getHeaders(),
+                'body' => $body->getContents(),
+                'http_version' => '1.0' === $request->getProtocolVersion() ? '1.0' : null,
+                'buffer' => $buffer,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            throw new RequestException($e->getMessage(), $request, $e);
+        } catch (TransportExceptionInterface $e) {
+            throw new NetworkException($e->getMessage(), $request, $e);
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -165,8 +187,7 @@ final class HttplugClient implements HttplugInterface, HttpAsyncClient, RequestF
 
         $request = $request
             ->withProtocolVersion($protocolVersion)
-            ->withBody($this->createStream($body))
-        ;
+            ->withBody($this->createStream($body));
 
         foreach ($headers as $name => $value) {
             $request = $request->withAddedHeader($name, $value);
@@ -225,12 +246,12 @@ final class HttplugClient implements HttplugInterface, HttpAsyncClient, RequestF
 
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
@@ -242,28 +263,6 @@ final class HttplugClient implements HttplugInterface, HttpAsyncClient, RequestF
     {
         if ($this->client instanceof ResetInterface) {
             $this->client->reset();
-        }
-    }
-
-    private function sendPsr7Request(RequestInterface $request, bool $buffer = null): ResponseInterface
-    {
-        try {
-            $body = $request->getBody();
-
-            if ($body->isSeekable()) {
-                $body->seek(0);
-            }
-
-            return $this->client->request($request->getMethod(), (string) $request->getUri(), [
-                'headers' => $request->getHeaders(),
-                'body' => $body->getContents(),
-                'http_version' => '1.0' === $request->getProtocolVersion() ? '1.0' : null,
-                'buffer' => $buffer,
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            throw new RequestException($e->getMessage(), $request, $e);
-        } catch (TransportExceptionInterface $e) {
-            throw new NetworkException($e->getMessage(), $request, $e);
         }
     }
 }

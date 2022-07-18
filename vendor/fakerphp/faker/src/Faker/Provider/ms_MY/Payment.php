@@ -143,11 +143,83 @@ class Payment extends \Faker\Provider\Payment
     ];
 
     /**
-     * Return a Malaysian Bank
-     *
-     * @example 'Maybank'
+     * Return a Malaysian Local Bank
      *
      * @return string
+     * @example 'Public Bank'
+     *
+     */
+    public static function localBank()
+    {
+        return static::randomElement(static::$localBanks);
+    }
+
+    /**
+     * Return a Malaysian Foreign Bank
+     *
+     * @return string
+     * @example 'Citibank Berhad'
+     *
+     */
+    public static function foreignBank()
+    {
+        return static::randomElement(static::$foreignBanks);
+    }
+
+    /**
+     * Return a Malaysian Government Bank
+     *
+     * @return string
+     * @example 'Bank Simpanan Nasional'
+     *
+     */
+    public static function governmentBank()
+    {
+        return static::randomElement(static::$governmentBanks);
+    }
+
+    /**
+     * Return a Malaysian insurance company
+     *
+     * @return string
+     * @example 'AIA Malaysia'
+     *
+     */
+    public static function insurance()
+    {
+        return static::randomElement(static::$insuranceCompanies);
+    }
+
+    /**
+     * Return a Malaysian Bank SWIFT Code
+     *
+     * @return string
+     * @example 'MBBEMYKLXXX'
+     *
+     */
+    public static function swiftCode()
+    {
+        return static::toUpper(static::lexify(static::randomElement(static::$swiftCodes)));
+    }
+
+    /**
+     * Return the Malaysian currency symbol
+     *
+     * @return string
+     * @example 'RM'
+     *
+     */
+    public static function currencySymbol()
+    {
+        return static::randomElement(static::$currencySymbol);
+    }
+
+    /**
+     * Return a Malaysian Bank
+     *
+     * @return string
+     * @example 'Maybank'
+     *
      */
     public function bank()
     {
@@ -159,86 +231,14 @@ class Payment extends \Faker\Provider\Payment
     /**
      * Return a Malaysian Bank account number
      *
+     * @return string
      * @example '1234567890123456'
      *
-     * @return string
      */
     public function bankAccountNumber()
     {
         $formats = static::randomElement(static::$bankAccountNumberFormats);
 
         return static::numerify($formats);
-    }
-
-    /**
-     * Return a Malaysian Local Bank
-     *
-     * @example 'Public Bank'
-     *
-     * @return string
-     */
-    public static function localBank()
-    {
-        return static::randomElement(static::$localBanks);
-    }
-
-    /**
-     * Return a Malaysian Foreign Bank
-     *
-     * @example 'Citibank Berhad'
-     *
-     * @return string
-     */
-    public static function foreignBank()
-    {
-        return static::randomElement(static::$foreignBanks);
-    }
-
-    /**
-     * Return a Malaysian Government Bank
-     *
-     * @example 'Bank Simpanan Nasional'
-     *
-     * @return string
-     */
-    public static function governmentBank()
-    {
-        return static::randomElement(static::$governmentBanks);
-    }
-
-    /**
-     * Return a Malaysian insurance company
-     *
-     * @example 'AIA Malaysia'
-     *
-     * @return string
-     */
-    public static function insurance()
-    {
-        return static::randomElement(static::$insuranceCompanies);
-    }
-
-    /**
-     * Return a Malaysian Bank SWIFT Code
-     *
-     * @example 'MBBEMYKLXXX'
-     *
-     * @return string
-     */
-    public static function swiftCode()
-    {
-        return static::toUpper(static::lexify(static::randomElement(static::$swiftCodes)));
-    }
-
-    /**
-     * Return the Malaysian currency symbol
-     *
-     * @example 'RM'
-     *
-     * @return string
-     */
-    public static function currencySymbol()
-    {
-        return static::randomElement(static::$currencySymbol);
     }
 }

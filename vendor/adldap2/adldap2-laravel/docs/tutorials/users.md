@@ -53,7 +53,8 @@ $user = Adldap::make()->user([
 $user->save();
 ```
 
-All users created in your directory will be disabled by default. How do we enable these users upon creation and set thier password?
+All users created in your directory will be disabled by default. How do we enable these users upon creation and set
+thier password?
 
 What we can use is the `Adldap\Models\Attributes\AccountControl` attribute class and the `userPassword` attribute.
 

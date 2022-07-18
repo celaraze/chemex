@@ -43,20 +43,40 @@ class AuthController extends Controller
     }
 
     /**
+     * Get the guard to be used during authentication.
+     *
+     * @return \Illuminate\Contracts\Auth\StatefulGuard|GuardHelpers
+     */
+    protected function guard()
+    {
+        return Admin::guard();
+    }
+
+    /**
+     * Get the post login redirect path.
+     *
+     * @return string
+     */
+    protected function getRedirectPath()
+    {
+        return $this->redirectTo ?: admin_url('/');
+    }
+
+    /**
      * Handle a login request.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return mixed
      */
     public function postLogin(Request $request)
     {
         $credentials = $request->only([$this->username(), 'password']);
-        $remember = (bool) $request->input('remember', false);
+        $remember = (bool)$request->input('remember', false);
 
         /** @var \Illuminate\Validation\Validator $validator */
         $validator = Validator::make($credentials, [
-            $this->username()   => 'required',
-            'password'          => 'required',
+            $this->username() => 'required',
+            'password' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -70,6 +90,45 @@ class AuthController extends Controller
         return $this->validationErrorsResponse([
             $this->username() => $this->getFailedLoginMessage(),
         ]);
+    }
+
+    /**
+     * Get the login username to be used by the controller.
+     *
+     * @return string
+     */
+    protected function username()
+    {
+        return 'username';
+    }
+
+    /**
+     * Send the response after the user was authenticated.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function sendLoginResponse(Request $request)
+    {
+        $request->session()->regenerate();
+
+        $path = $this->getRedirectPath();
+
+        return $this->response()
+            ->success(trans('admin.login_successful'))
+            ->locationToIntended($path)
+            ->locationIf(Admin::app()->getEnabledApps(), $path)
+            ->send();
+    }
+
+    /**
+     * @return string|\Symfony\Component\Translation\TranslatorInterface
+     */
+    protected function getFailedLoginMessage()
+    {
+        return Lang::has('admin.auth_failed')
+            ? trans('admin.auth_failed')
+            : 'These credentials do not match our records.';
     }
 
     /**
@@ -94,7 +153,7 @@ class AuthController extends Controller
     /**
      * User setting page.
      *
-     * @param  Content  $content
+     * @param Content $content
      * @return Content
      */
     public function getSetting(Content $content)
@@ -109,45 +168,6 @@ class AuthController extends Controller
         return $content
             ->title(trans('admin.user_setting'))
             ->body($form->edit(Admin::user()->getKey()));
-    }
-
-    /**
-     * Update user setting.
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function putSetting()
-    {
-        $form = $this->settingForm();
-
-        if (! $this->validateCredentialsWhenUpdatingPassword()) {
-            $form->responseValidationMessages('old_password', trans('admin.old_password_error'));
-        }
-
-        return $form->update(Admin::user()->getKey());
-    }
-
-    protected function validateCredentialsWhenUpdatingPassword()
-    {
-        $user = Admin::user();
-
-        $oldPassword = \request('old_password');
-        $newPassword = \request('password');
-
-        if (
-            (! $newPassword)
-            || ($newPassword === $user->getAuthPassword())
-        ) {
-            return true;
-        }
-
-        if (! $oldPassword) {
-            return false;
-        }
-
-        return $this->guard()
-            ->getProvider()
-            ->validateCredentials($user, ['password' => $oldPassword]);
     }
 
     /**
@@ -194,7 +214,7 @@ class AuthController extends Controller
                     $form->password = bcrypt($form->password);
                 }
 
-                if (! $form->password) {
+                if (!$form->password) {
                     $form->deleteInput('password');
                 }
             });
@@ -209,61 +229,41 @@ class AuthController extends Controller
     }
 
     /**
-     * @return string|\Symfony\Component\Translation\TranslatorInterface
-     */
-    protected function getFailedLoginMessage()
-    {
-        return Lang::has('admin.auth_failed')
-            ? trans('admin.auth_failed')
-            : 'These credentials do not match our records.';
-    }
-
-    /**
-     * Get the post login redirect path.
+     * Update user setting.
      *
-     * @return string
-     */
-    protected function getRedirectPath()
-    {
-        return $this->redirectTo ?: admin_url('/');
-    }
-
-    /**
-     * Send the response after the user was authenticated.
-     *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function sendLoginResponse(Request $request)
+    public function putSetting()
     {
-        $request->session()->regenerate();
+        $form = $this->settingForm();
 
-        $path = $this->getRedirectPath();
+        if (!$this->validateCredentialsWhenUpdatingPassword()) {
+            $form->responseValidationMessages('old_password', trans('admin.old_password_error'));
+        }
 
-        return $this->response()
-            ->success(trans('admin.login_successful'))
-            ->locationToIntended($path)
-            ->locationIf(Admin::app()->getEnabledApps(), $path)
-            ->send();
+        return $form->update(Admin::user()->getKey());
     }
 
-    /**
-     * Get the login username to be used by the controller.
-     *
-     * @return string
-     */
-    protected function username()
+    protected function validateCredentialsWhenUpdatingPassword()
     {
-        return 'username';
-    }
+        $user = Admin::user();
 
-    /**
-     * Get the guard to be used during authentication.
-     *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard|GuardHelpers
-     */
-    protected function guard()
-    {
-        return Admin::guard();
+        $oldPassword = \request('old_password');
+        $newPassword = \request('password');
+
+        if (
+            (!$newPassword)
+            || ($newPassword === $user->getAuthPassword())
+        ) {
+            return true;
+        }
+
+        if (!$oldPassword) {
+            return false;
+        }
+
+        return $this->guard()
+            ->getProvider()
+            ->validateCredentials($user, ['password' => $oldPassword]);
     }
 }

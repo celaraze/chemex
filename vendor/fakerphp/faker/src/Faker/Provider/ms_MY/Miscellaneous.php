@@ -82,25 +82,11 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     ];
 
     /**
-     * Return a valid Malaysia JPJ(Road Transport Department) vehicle licence plate number
-     *
-     * @example 'WKN 2368'
-     *
-     * @return string
-     */
-    public function jpjNumberPlate()
-    {
-        $formats = static::toUpper(static::lexify(static::bothify(static::randomElement(static::$jpjNumberPlateFormats))));
-
-        return $this->generator->parse($formats);
-    }
-
-    /**
      * Return Peninsular prefix alphabet
      *
+     * @return string
      * @example 'W'
      *
-     * @return string
      */
     public static function peninsularPrefix()
     {
@@ -110,9 +96,9 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     /**
      * Return Sarawak state prefix alphabet
      *
+     * @return string
      * @example 'QA'
      *
-     * @return string
      */
     public static function sarawakPrefix()
     {
@@ -122,9 +108,9 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     /**
      * Return Sabah state prefix alphabet
      *
+     * @return string
      * @example 'SA'
      *
-     * @return string
      */
     public static function sabahPrefix()
     {
@@ -134,9 +120,9 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     /**
      * Return specialty licence plate prefix
      *
+     * @return string
      * @example 'G1M'
      *
-     * @return string
      */
     public static function specialPrefix()
     {
@@ -146,9 +132,9 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     /**
      * Return a valid license plate alphabet
      *
+     * @return string
      * @example 'A'
      *
-     * @return string
      */
     public static function validAlphabet()
     {
@@ -158,12 +144,26 @@ class Miscellaneous extends \Faker\Provider\Miscellaneous
     /**
      * Return a valid number sequence between 1 and 9999
      *
+     * @return int
      * @example '1234'
      *
-     * @return int
      */
     public static function numberSequence()
     {
         return self::numberBetween(1, 9999);
+    }
+
+    /**
+     * Return a valid Malaysia JPJ(Road Transport Department) vehicle licence plate number
+     *
+     * @return string
+     * @example 'WKN 2368'
+     *
+     */
+    public function jpjNumberPlate()
+    {
+        $formats = static::toUpper(static::lexify(static::bothify(static::randomElement(static::$jpjNumberPlateFormats))));
+
+        return $this->generator->parse($formats);
     }
 }

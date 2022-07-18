@@ -44,16 +44,32 @@ class ZendMonitorHandler extends AbstractProcessingHandler
         }
         //zend monitor constants are not defined if zend monitor is not enabled.
         $this->levelMap = [
-            Logger::DEBUG     => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
-            Logger::INFO      => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
-            Logger::NOTICE    => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
-            Logger::WARNING   => \ZEND_MONITOR_EVENT_SEVERITY_WARNING,
-            Logger::ERROR     => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
-            Logger::CRITICAL  => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
-            Logger::ALERT     => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
+            Logger::DEBUG => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
+            Logger::INFO => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
+            Logger::NOTICE => \ZEND_MONITOR_EVENT_SEVERITY_INFO,
+            Logger::WARNING => \ZEND_MONITOR_EVENT_SEVERITY_WARNING,
+            Logger::ERROR => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
+            Logger::CRITICAL => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
+            Logger::ALERT => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
             Logger::EMERGENCY => \ZEND_MONITOR_EVENT_SEVERITY_ERROR,
         ];
         parent::__construct($level, $bubble);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDefaultFormatter(): FormatterInterface
+    {
+        return new NormalizerFormatter();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getLevelMap(): array
+    {
+        return $this->levelMap;
     }
 
     /**
@@ -71,31 +87,15 @@ class ZendMonitorHandler extends AbstractProcessingHandler
 
     /**
      * Write to Zend Monitor Events
-     * @param string $type      Text displayed in "Class Name (custom)" field
-     * @param string $message   Text displayed in "Error String"
-     * @param array  $formatted Displayed in Custom Variables tab
-     * @param int    $severity  Set the event severity level (-1,0,1)
+     * @param string $type Text displayed in "Class Name (custom)" field
+     * @param string $message Text displayed in "Error String"
+     * @param array $formatted Displayed in Custom Variables tab
+     * @param int $severity Set the event severity level (-1,0,1)
      *
      * @phpstan-param FormattedRecord $formatted
      */
     protected function writeZendMonitorCustomEvent(string $type, string $message, array $formatted, int $severity): void
     {
         zend_monitor_custom_event($type, $message, $formatted, $severity);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getDefaultFormatter(): FormatterInterface
-    {
-        return new NormalizerFormatter();
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    public function getLevelMap(): array
-    {
-        return $this->levelMap;
     }
 }

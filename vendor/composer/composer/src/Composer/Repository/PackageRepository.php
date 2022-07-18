@@ -42,6 +42,11 @@ class PackageRepository extends ArrayRepository
         }
     }
 
+    public function getRepoName(): string
+    {
+        return Preg::replace('{^array }', 'package ', parent::getRepoName());
+    }
+
     /**
      * Initializes repository (reads file, or remote address).
      */
@@ -54,15 +59,10 @@ class PackageRepository extends ArrayRepository
             try {
                 $package = $loader->load($package);
             } catch (\Exception $e) {
-                throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: '.$e->getMessage()."\n\nInvalid package definition:\n".json_encode($package));
+                throw new InvalidRepositoryException('A repository of type "package" contains an invalid package definition: ' . $e->getMessage() . "\n\nInvalid package definition:\n" . json_encode($package));
             }
 
             $this->addPackage($package);
         }
-    }
-
-    public function getRepoName(): string
-    {
-        return Preg::replace('{^array }', 'package ', parent::getRepoName());
     }
 }

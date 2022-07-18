@@ -139,6 +139,11 @@ class Person extends \Faker\Provider\Person
         '詩', '貞', '郁', '鈺', '雅', '雯', '靜', '馨',
     ];
 
+    public static function firstNameMale()
+    {
+        return static::randomName(static::$characterMale, self::numberBetween(1, 2));
+    }
+
     public static function randomName($pool, $n)
     {
         $name = '';
@@ -148,11 +153,6 @@ class Person extends \Faker\Provider\Person
         }
 
         return $name;
-    }
-
-    public static function firstNameMale()
-    {
-        return static::randomName(static::$characterMale, self::numberBetween(1, 2));
     }
 
     public static function firstNameFemale()
@@ -168,10 +168,10 @@ class Person extends \Faker\Provider\Person
     /**
      * @param string $gender Person::GENDER_MALE || Person::GENDER_FEMALE
      *
-     * @see https://en.wikipedia.org/wiki/National_Identification_Card_(Republic_of_China)
-     *
      * @return string Length 10 alphanumeric characters, begins with 1 latin character (birthplace),
      *                1 number (gender) and then 8 numbers (the last one is check digit).
+     * @see https://en.wikipedia.org/wiki/National_Identification_Card_(Republic_of_China)
+     *
      */
     public function personalIdentityNumber($gender = null)
     {

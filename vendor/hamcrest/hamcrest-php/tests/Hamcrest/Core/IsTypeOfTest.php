@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Core;
 
 class IsTypeOfTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Core\IsTypeOf::typeOf('integer');
-    }
 
     public function testEvaluatesToTrueIfArgumentMatchesType()
     {
@@ -41,5 +37,10 @@ class IsTypeOfTest extends \Hamcrest\AbstractMatcherTest
     {
         $this->assertMismatchDescription('was null', typeOf('boolean'), null);
         $this->assertMismatchDescription('was an integer <5>', typeOf('float'), 5);
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Core\IsTypeOf::typeOf('integer');
     }
 }

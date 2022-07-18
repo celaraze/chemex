@@ -7,8 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\Xml;
 
+use DOMDocument;
 use function chdir;
 use function dirname;
 use function error_reporting;
@@ -17,7 +19,6 @@ use function getcwd;
 use function libxml_get_errors;
 use function libxml_use_internal_errors;
 use function sprintf;
-use DOMDocument;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -30,7 +31,7 @@ final class Loader
     public function loadFile(string $filename, bool $isHtml = false, bool $xinclude = false, bool $strict = false): DOMDocument
     {
         $reporting = error_reporting(0);
-        $contents  = file_get_contents($filename);
+        $contents = file_get_contents($filename);
 
         error_reporting($reporting);
 
@@ -61,11 +62,11 @@ final class Loader
             @chdir(dirname($filename));
         }
 
-        $document                     = new DOMDocument;
+        $document = new DOMDocument;
         $document->preserveWhiteSpace = false;
 
-        $internal  = libxml_use_internal_errors(true);
-        $message   = '';
+        $internal = libxml_use_internal_errors(true);
+        $message = '';
         $reporting = error_reporting(0);
 
         if ($filename !== '') {

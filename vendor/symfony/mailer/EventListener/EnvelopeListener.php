@@ -43,6 +43,14 @@ class EnvelopeListener implements EventSubscriberInterface
         }
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            // should be the last one to allow header changes by other listeners first
+            MessageEvent::class => ['onMessage', -255],
+        ];
+    }
+
     public function onMessage(MessageEvent $event): void
     {
         if ($this->sender) {
@@ -59,13 +67,5 @@ class EnvelopeListener implements EventSubscriberInterface
         if ($this->recipients) {
             $event->getEnvelope()->setRecipients($this->recipients);
         }
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            // should be the last one to allow header changes by other listeners first
-            MessageEvent::class => ['onMessage', -255],
-        ];
     }
 }

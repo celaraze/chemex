@@ -31,40 +31,40 @@ class ScaffoldController extends Controller
     ];
 
     public static $dataTypeMap = [
-        'int'                => 'integer',
-        'int@unsigned'       => 'unsignedInteger',
-        'tinyint'            => 'tinyInteger',
-        'tinyint@unsigned'   => 'unsignedTinyInteger',
-        'smallint'           => 'smallInteger',
-        'smallint@unsigned'  => 'unsignedSmallInteger',
-        'mediumint'          => 'mediumInteger',
+        'int' => 'integer',
+        'int@unsigned' => 'unsignedInteger',
+        'tinyint' => 'tinyInteger',
+        'tinyint@unsigned' => 'unsignedTinyInteger',
+        'smallint' => 'smallInteger',
+        'smallint@unsigned' => 'unsignedSmallInteger',
+        'mediumint' => 'mediumInteger',
         'mediumint@unsigned' => 'unsignedMediumInteger',
-        'bigint'             => 'bigInteger',
-        'bigint@unsigned'    => 'unsignedBigInteger',
+        'bigint' => 'bigInteger',
+        'bigint@unsigned' => 'unsignedBigInteger',
 
-        'date'      => 'date',
-        'time'      => 'time',
-        'datetime'  => 'dateTime',
+        'date' => 'date',
+        'time' => 'time',
+        'datetime' => 'dateTime',
         'timestamp' => 'timestamp',
 
-        'enum'   => 'enum',
-        'json'   => 'json',
+        'enum' => 'enum',
+        'json' => 'json',
         'binary' => 'binary',
 
-        'float'   => 'float',
-        'double'  => 'double',
+        'float' => 'float',
+        'double' => 'double',
         'decimal' => 'decimal',
 
-        'varchar'    => 'string',
-        'char'       => 'char',
-        'text'       => 'text',
+        'varchar' => 'string',
+        'char' => 'char',
+        'text' => 'text',
         'mediumtext' => 'mediumText',
-        'longtext'   => 'longText',
+        'longtext' => 'longText',
     ];
 
     public function index(Content $content)
     {
-        if (! config('app.debug')) {
+        if (!config('app.debug')) {
             Permission::error();
         }
 
@@ -78,9 +78,9 @@ class ScaffoldController extends Controller
         $dbTypes = static::$dbTypes;
         $dataTypeMap = static::$dataTypeMap;
         $action = URL::current();
-        $namespaceBase = 'App\\'.implode('\\', array_map(function ($name) {
-            return Str::studly($name);
-        }, explode(DIRECTORY_SEPARATOR, substr(config('admin.directory'), strlen(app_path().DIRECTORY_SEPARATOR)))));
+        $namespaceBase = 'App\\' . implode('\\', array_map(function ($name) {
+                return Str::studly($name);
+            }, explode(DIRECTORY_SEPARATOR, substr(config('admin.directory'), strlen(app_path() . DIRECTORY_SEPARATOR)))));
         $tables = collect($this->getDatabaseColumns())->map(function ($v) {
             return array_keys($v);
         })->toArray();
@@ -98,20 +98,88 @@ class ScaffoldController extends Controller
     {
         return [
             'status' => 1,
-            'value'  => Str::singular($tableName),
+            'value' => Str::singular($tableName),
         ];
+    }
+
+    /**
+     * @return array
+     */
+    protected function getDatabaseColumns($db = null, $tb = null)
+    {
+        $databases = Arr::where(config('database.connections', []), function ($value) {
+            $supports = ['mysql'];
+
+            return in_array(strtolower(Arr::get($value, 'driver')), $supports);
+        });
+
+        $data = [];
+
+        try {
+            foreach ($databases as $connectName => $value) {
+                if ($db && $db != $value['database']) {
+                    continue;
+                }
+
+                $sql = sprintf('SELECT * FROM information_schema.columns WHERE table_schema = "%s"', $value['database']);
+
+                if ($tb) {
+                    $p = Arr::get($value, 'prefix');
+
+                    $sql .= " AND TABLE_NAME = '{$p}{$tb}'";
+                }
+
+                $sql .= ' ORDER BY `ORDINAL_POSITION` ASC';
+
+                $tmp = DB::connection($connectName)->select($sql);
+
+                $collection = collect($tmp)->map(function ($v) use ($value) {
+                    if (!$p = Arr::get($value, 'prefix')) {
+                        return (array)$v;
+                    }
+                    $v = (array)$v;
+
+                    $v['TABLE_NAME'] = Str::replaceFirst($p, '', $v['TABLE_NAME']);
+
+                    return $v;
+                });
+
+                $data[$value['database']] = $collection->groupBy('TABLE_NAME')->map(function ($v) {
+                    return collect($v)->keyBy('COLUMN_NAME')->map(function ($v) {
+                        $v['COLUMN_TYPE'] = strtolower($v['COLUMN_TYPE']);
+                        $v['DATA_TYPE'] = strtolower($v['DATA_TYPE']);
+
+                        if (Str::contains($v['COLUMN_TYPE'], 'unsigned')) {
+                            $v['DATA_TYPE'] .= '@unsigned';
+                        }
+
+                        return [
+                            'type' => $v['DATA_TYPE'],
+                            'default' => $v['COLUMN_DEFAULT'],
+                            'nullable' => $v['IS_NULLABLE'],
+                            'key' => $v['COLUMN_KEY'],
+                            'id' => $v['COLUMN_KEY'] === 'PRI',
+                            'comment' => $v['COLUMN_COMMENT'],
+                        ];
+                    })->toArray();
+                })->toArray();
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return $data;
     }
 
     public function store(Request $request)
     {
-        if (! config('app.debug')) {
+        if (!config('app.debug')) {
             Permission::error();
         }
 
         $paths = [];
         $message = '';
 
-        $creates = (array) $request->get('create');
+        $creates = (array)$request->get('create');
         $table = Helper::slug($request->get('table_name'), '_');
         $controller = $request->get('controller_name');
         $model = $request->get('model_name');
@@ -137,7 +205,7 @@ class ScaffoldController extends Controller
 
             // 3. Create migration.
             if (in_array('migration', $creates)) {
-                $migrationName = 'create_'.$table.'_table';
+                $migrationName = 'create_' . $table . '_table';
 
                 $paths['migration'] = (new MigrationCreator(app('files')))->buildBluePrint(
                     $request->get('fields'),
@@ -182,6 +250,34 @@ class ScaffoldController extends Controller
         return $this->backWithSuccess($paths, $message);
     }
 
+    protected function backWithException(\Exception $exception)
+    {
+        $error = new MessageBag([
+            'title' => 'Error',
+            'message' => $exception->getMessage(),
+        ]);
+
+        return redirect()->refresh()->withInput()->with(compact('error'));
+    }
+
+    protected function backWithSuccess($paths, $message)
+    {
+        $messages = [];
+
+        foreach ($paths as $name => $path) {
+            $messages[] = ucfirst($name) . ": $path";
+        }
+
+        $messages[] = "<br />$message";
+
+        $success = new MessageBag([
+            'title' => 'Success',
+            'message' => implode('<br />', $messages),
+        ]);
+
+        return redirect()->refresh()->with(compact('success'));
+    }
+
     /**
      * @return array
      */
@@ -189,7 +285,7 @@ class ScaffoldController extends Controller
     {
         $db = addslashes(\request('db'));
         $table = \request('tb');
-        if (! $table || ! $db) {
+        if (!$table || !$db) {
             return ['status' => 1, 'list' => []];
         }
 
@@ -203,101 +299,5 @@ class ScaffoldController extends Controller
             ->first();
 
         return ['status' => 1, 'list' => $tables];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getDatabaseColumns($db = null, $tb = null)
-    {
-        $databases = Arr::where(config('database.connections', []), function ($value) {
-            $supports = ['mysql'];
-
-            return in_array(strtolower(Arr::get($value, 'driver')), $supports);
-        });
-
-        $data = [];
-
-        try {
-            foreach ($databases as $connectName => $value) {
-                if ($db && $db != $value['database']) {
-                    continue;
-                }
-
-                $sql = sprintf('SELECT * FROM information_schema.columns WHERE table_schema = "%s"', $value['database']);
-
-                if ($tb) {
-                    $p = Arr::get($value, 'prefix');
-
-                    $sql .= " AND TABLE_NAME = '{$p}{$tb}'";
-                }
-
-                $sql .= ' ORDER BY `ORDINAL_POSITION` ASC';
-
-                $tmp = DB::connection($connectName)->select($sql);
-
-                $collection = collect($tmp)->map(function ($v) use ($value) {
-                    if (! $p = Arr::get($value, 'prefix')) {
-                        return (array) $v;
-                    }
-                    $v = (array) $v;
-
-                    $v['TABLE_NAME'] = Str::replaceFirst($p, '', $v['TABLE_NAME']);
-
-                    return $v;
-                });
-
-                $data[$value['database']] = $collection->groupBy('TABLE_NAME')->map(function ($v) {
-                    return collect($v)->keyBy('COLUMN_NAME')->map(function ($v) {
-                        $v['COLUMN_TYPE'] = strtolower($v['COLUMN_TYPE']);
-                        $v['DATA_TYPE'] = strtolower($v['DATA_TYPE']);
-
-                        if (Str::contains($v['COLUMN_TYPE'], 'unsigned')) {
-                            $v['DATA_TYPE'] .= '@unsigned';
-                        }
-
-                        return [
-                            'type'     => $v['DATA_TYPE'],
-                            'default'  => $v['COLUMN_DEFAULT'],
-                            'nullable' => $v['IS_NULLABLE'],
-                            'key'      => $v['COLUMN_KEY'],
-                            'id'       => $v['COLUMN_KEY'] === 'PRI',
-                            'comment'  => $v['COLUMN_COMMENT'],
-                        ];
-                    })->toArray();
-                })->toArray();
-            }
-        } catch (\Throwable $e) {
-        }
-
-        return $data;
-    }
-
-    protected function backWithException(\Exception $exception)
-    {
-        $error = new MessageBag([
-            'title'   => 'Error',
-            'message' => $exception->getMessage(),
-        ]);
-
-        return redirect()->refresh()->withInput()->with(compact('error'));
-    }
-
-    protected function backWithSuccess($paths, $message)
-    {
-        $messages = [];
-
-        foreach ($paths as $name => $path) {
-            $messages[] = ucfirst($name).": $path";
-        }
-
-        $messages[] = "<br />$message";
-
-        $success = new MessageBag([
-            'title'   => 'Success',
-            'message' => implode('<br />', $messages),
-        ]);
-
-        return redirect()->refresh()->with(compact('success'));
     }
 }

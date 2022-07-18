@@ -51,25 +51,10 @@ class Pinyin
     }
 
     /**
-     * Convert string to pinyin.
-     *
-     * @param string $string
-     * @param int    $option
-     *
-     * @return array
-     */
-    public function convert($string, $option = PINYIN_DEFAULT)
-    {
-        $pinyin = $this->romanize($string, $option);
-
-        return $this->splitWords($pinyin, $option);
-    }
-
-    /**
      * Convert string (person name) to pinyin.
      *
      * @param string $stringName
-     * @param int    $option
+     * @param int $option
      *
      * @return array
      */
@@ -83,119 +68,10 @@ class Pinyin
     }
 
     /**
-     * Return a pinyin permalink from string.
-     *
-     * @param string $string
-     * @param string $delimiter
-     * @param int    $option
-     *
-     * @return string
-     */
-    public function permalink($string, $delimiter = '-', $option = PINYIN_DEFAULT)
-    {
-        if (\is_int($delimiter)) {
-            list($option, $delimiter) = [$delimiter, '-'];
-        }
-
-        if (!in_array($delimiter, ['_', '-', '.', ''], true)) {
-            throw new InvalidArgumentException("Delimiter must be one of: '_', '-', '', '.'.");
-        }
-
-        return implode($delimiter, $this->convert($string, $option | \PINYIN_KEEP_NUMBER | \PINYIN_KEEP_ENGLISH));
-    }
-
-    /**
-     * Return first letters.
-     *
-     * @param string $string
-     * @param string $delimiter
-     * @param int    $option
-     *
-     * @return string
-     */
-    public function abbr($string, $delimiter = '', $option = PINYIN_DEFAULT)
-    {
-        if (\is_int($delimiter)) {
-            list($option, $delimiter) = [$delimiter, ''];
-        }
-
-        return implode($delimiter, array_map(function ($pinyin) {
-            return \is_numeric($pinyin) || preg_match('/\d+/', $pinyin) ? $pinyin : mb_substr($pinyin, 0, 1);
-        }, $this->convert($string, $option | PINYIN_NO_TONE)));
-    }
-
-    /**
-     * Chinese phrase to pinyin.
-     *
-     * @param string $string
-     * @param string $delimiter
-     * @param int    $option
-     *
-     * @return string
-     */
-    public function phrase($string, $delimiter = ' ', $option = PINYIN_DEFAULT)
-    {
-        if (\is_int($delimiter)) {
-            list($option, $delimiter) = [$delimiter, ' '];
-        }
-
-        return implode($delimiter, $this->convert($string, $option));
-    }
-
-    /**
-     * Chinese to pinyin sentence.
-     *
-     * @param string $string
-     * @param string $delimiter
-     * @param int    $option
-     *
-     * @return string
-     */
-    public function sentence($string, $delimiter = ' ', $option = \PINYIN_NO_TONE)
-    {
-        if (\is_int($delimiter)) {
-            list($option, $delimiter) = [$delimiter, ' '];
-        }
-
-        return implode($delimiter, $this->convert($string, $option | \PINYIN_KEEP_PUNCTUATION | \PINYIN_KEEP_ENGLISH | \PINYIN_KEEP_NUMBER));
-    }
-
-    /**
-     * Loader setter.
-     *
-     * @param \Overtrue\Pinyin\DictLoaderInterface $loader
-     *
-     * @return $this
-     */
-    public function setLoader(DictLoaderInterface $loader)
-    {
-        $this->loader = $loader;
-
-        return $this;
-    }
-
-    /**
-     * Return dict loader,.
-     *
-     * @return \Overtrue\Pinyin\DictLoaderInterface
-     */
-    public function getLoader()
-    {
-        if (!($this->loader instanceof DictLoaderInterface)) {
-            $dataDir = dirname(__DIR__) . '/data/';
-
-            $loaderName = $this->loader;
-            $this->loader = new $loaderName($dataDir);
-        }
-
-        return $this->loader;
-    }
-
-    /**
      * Convert Chinese to pinyin.
      *
      * @param string $string
-     * @param int    $option
+     * @param int $option
      *
      * @return string
      */
@@ -217,9 +93,85 @@ class Pinyin
     }
 
     /**
+     * Pre-process.
+     *
+     * @param string $string
+     * @param int $option
+     *
+     * @return string
+     */
+    protected function prepare($string, $option = \PINYIN_DEFAULT)
+    {
+        $string = preg_replace_callback('~[a-z0-9_-]+~i', function ($matches) {
+            return "\t" . $matches[0];
+        }, $string);
+
+        $regex = ['\p{Han}', '\p{Z}', '\p{M}', "\t"];
+
+        if ($this->hasOption($option, \PINYIN_KEEP_NUMBER)) {
+            \array_push($regex, '0-9');
+        }
+
+        if ($this->hasOption($option, \PINYIN_KEEP_ENGLISH)) {
+            \array_push($regex, 'a-zA-Z');
+        }
+
+        if ($this->hasOption($option, \PINYIN_KEEP_PUNCTUATION)) {
+            $punctuations = array_merge($this->punctuations, ["\t" => ' ', '  ' => ' ']);
+            $string = trim(str_replace(array_keys($punctuations), $punctuations, $string));
+
+            \array_push($regex, preg_quote(implode(array_merge(array_keys($this->punctuations), $this->punctuations)), '~'));
+        }
+
+        return preg_replace(\sprintf('~[^%s]~u', implode($regex)), '', $string);
+    }
+
+    /**
+     * @param int $option
+     * @param int $check
+     *
+     * @return bool
+     */
+    public function hasOption($option, $check)
+    {
+        return ($option & $check) === $check;
+    }
+
+    /**
+     * Return dict loader,.
+     *
+     * @return \Overtrue\Pinyin\DictLoaderInterface
+     */
+    public function getLoader()
+    {
+        if (!($this->loader instanceof DictLoaderInterface)) {
+            $dataDir = dirname(__DIR__) . '/data/';
+
+            $loaderName = $this->loader;
+            $this->loader = new $loaderName($dataDir);
+        }
+
+        return $this->loader;
+    }
+
+    /**
+     * Loader setter.
+     *
+     * @param \Overtrue\Pinyin\DictLoaderInterface $loader
+     *
+     * @return $this
+     */
+    public function setLoader(DictLoaderInterface $loader)
+    {
+        $this->loader = $loader;
+
+        return $this;
+    }
+
+    /**
      * Convert Chinese Surname to pinyin.
      *
-     * @param string                               $string
+     * @param string $string
      * @param \Overtrue\Pinyin\DictLoaderInterface $dictLoader
      *
      * @return string
@@ -261,55 +213,10 @@ class Pinyin
     }
 
     /**
-     * @param int $option
-     * @param int $check
-     *
-     * @return bool
-     */
-    public function hasOption($option, $check)
-    {
-        return ($option & $check) === $check;
-    }
-
-    /**
-     * Pre-process.
-     *
-     * @param string $string
-     * @param int    $option
-     *
-     * @return string
-     */
-    protected function prepare($string, $option = \PINYIN_DEFAULT)
-    {
-        $string = preg_replace_callback('~[a-z0-9_-]+~i', function ($matches) {
-            return "\t" . $matches[0];
-        }, $string);
-
-        $regex = ['\p{Han}', '\p{Z}', '\p{M}', "\t"];
-
-        if ($this->hasOption($option, \PINYIN_KEEP_NUMBER)) {
-            \array_push($regex, '0-9');
-        }
-
-        if ($this->hasOption($option, \PINYIN_KEEP_ENGLISH)) {
-            \array_push($regex, 'a-zA-Z');
-        }
-
-        if ($this->hasOption($option, \PINYIN_KEEP_PUNCTUATION)) {
-            $punctuations = array_merge($this->punctuations, ["\t" => ' ', '  ' => ' ']);
-            $string = trim(str_replace(array_keys($punctuations), $punctuations, $string));
-
-            \array_push($regex, preg_quote(implode(array_merge(array_keys($this->punctuations), $this->punctuations)), '~'));
-        }
-
-        return preg_replace(\sprintf('~[^%s]~u', implode($regex)), '', $string);
-    }
-
-    /**
      * Format.
      *
      * @param string $pinyin
-     * @param int    $option
+     * @param int $option
      *
      * @return string
      */
@@ -337,5 +244,98 @@ class Pinyin
         }
 
         return $pinyin;
+    }
+
+    /**
+     * Return a pinyin permalink from string.
+     *
+     * @param string $string
+     * @param string $delimiter
+     * @param int $option
+     *
+     * @return string
+     */
+    public function permalink($string, $delimiter = '-', $option = PINYIN_DEFAULT)
+    {
+        if (\is_int($delimiter)) {
+            list($option, $delimiter) = [$delimiter, '-'];
+        }
+
+        if (!in_array($delimiter, ['_', '-', '.', ''], true)) {
+            throw new InvalidArgumentException("Delimiter must be one of: '_', '-', '', '.'.");
+        }
+
+        return implode($delimiter, $this->convert($string, $option | \PINYIN_KEEP_NUMBER | \PINYIN_KEEP_ENGLISH));
+    }
+
+    /**
+     * Convert string to pinyin.
+     *
+     * @param string $string
+     * @param int $option
+     *
+     * @return array
+     */
+    public function convert($string, $option = PINYIN_DEFAULT)
+    {
+        $pinyin = $this->romanize($string, $option);
+
+        return $this->splitWords($pinyin, $option);
+    }
+
+    /**
+     * Return first letters.
+     *
+     * @param string $string
+     * @param string $delimiter
+     * @param int $option
+     *
+     * @return string
+     */
+    public function abbr($string, $delimiter = '', $option = PINYIN_DEFAULT)
+    {
+        if (\is_int($delimiter)) {
+            list($option, $delimiter) = [$delimiter, ''];
+        }
+
+        return implode($delimiter, array_map(function ($pinyin) {
+            return \is_numeric($pinyin) || preg_match('/\d+/', $pinyin) ? $pinyin : mb_substr($pinyin, 0, 1);
+        }, $this->convert($string, $option | PINYIN_NO_TONE)));
+    }
+
+    /**
+     * Chinese phrase to pinyin.
+     *
+     * @param string $string
+     * @param string $delimiter
+     * @param int $option
+     *
+     * @return string
+     */
+    public function phrase($string, $delimiter = ' ', $option = PINYIN_DEFAULT)
+    {
+        if (\is_int($delimiter)) {
+            list($option, $delimiter) = [$delimiter, ' '];
+        }
+
+        return implode($delimiter, $this->convert($string, $option));
+    }
+
+    /**
+     * Chinese to pinyin sentence.
+     *
+     * @param string $string
+     * @param string $delimiter
+     * @param int $option
+     *
+     * @return string
+     */
+    public function sentence($string, $delimiter = ' ', $option = \PINYIN_NO_TONE)
+    {
+        if (\is_int($delimiter)) {
+            list($option, $delimiter) = [$delimiter, ' '];
+        }
+
+        return implode($delimiter, $this->convert($string, $option | \PINYIN_KEEP_PUNCTUATION | \PINYIN_KEEP_ENGLISH | \PINYIN_KEEP_NUMBER));
     }
 }

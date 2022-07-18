@@ -22,11 +22,6 @@ class TinymceController
         return ['location' => $disk->url("{$dir}/$newName")];
     }
 
-    protected function generateNewName(UploadedFile $file)
-    {
-        return uniqid(md5($file->getClientOriginalName())).'.'.$file->getClientOriginalExtension();
-    }
-
     /**
      * @return \Illuminate\Contracts\Filesystem\Filesystem|FilesystemAdapter
      */
@@ -35,5 +30,10 @@ class TinymceController
         $disk = request()->get('disk') ?: config('admin.upload.disk');
 
         return Storage::disk($disk);
+    }
+
+    protected function generateNewName(UploadedFile $file)
+    {
+        return uniqid(md5($file->getClientOriginalName())) . '.' . $file->getClientOriginalExtension();
     }
 }

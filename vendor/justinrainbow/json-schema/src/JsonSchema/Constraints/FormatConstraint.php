@@ -194,7 +194,7 @@ class FormatConstraint extends Constraint
 
     protected function validateStyle($style)
     {
-        $properties     = explode(';', rtrim($style, ';'));
+        $properties = explode(';', rtrim($style, ';'));
         $invalidEntries = preg_grep('/^\s*[-a-z]+\s*:\s*.+$/i', $properties, PREG_GREP_INVERT);
 
         return empty($invalidEntries);

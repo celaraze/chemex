@@ -42,30 +42,22 @@ final class BuilderModelFindExtension implements DynamicMethodReturnTypeExtensio
     /**
      * {@inheritdoc}
      */
-    public function getClass(): string
-    {
-        return Builder::class;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function isMethodSupported(MethodReflection $methodReflection): bool
     {
         $methodName = $methodReflection->getName();
 
-        if (! Str::startsWith($methodName, 'find')) {
+        if (!Str::startsWith($methodName, 'find')) {
             return false;
         }
 
         $model = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TModelClass');
 
-        if ($model === null || ! $model instanceof ObjectType) {
+        if ($model === null || !$model instanceof ObjectType) {
             return false;
         }
 
-        if (! $this->reflectionProvider->getClass(Builder::class)->hasNativeMethod($methodName) &&
-            ! $this->reflectionProvider->getClass(QueryBuilder::class)->hasNativeMethod($methodName)) {
+        if (!$this->reflectionProvider->getClass(Builder::class)->hasNativeMethod($methodName) &&
+            !$this->reflectionProvider->getClass(QueryBuilder::class)->hasNativeMethod($methodName)) {
             return false;
         }
 
@@ -75,11 +67,20 @@ final class BuilderModelFindExtension implements DynamicMethodReturnTypeExtensio
     /**
      * {@inheritdoc}
      */
+    public function getClass(): string
+    {
+        return Builder::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         /** @var ObjectType $model */
         $model = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TModelClass');
         $returnType = $methodReflection->getVariants()[0]->getReturnType();

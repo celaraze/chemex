@@ -15,24 +15,21 @@ use Dcat\Admin\Widgets\Form as WidgetForm;
 class BlockForm extends WidgetForm
 {
     /**
+     * @var \Dcat\Admin\Layout\Row
+     */
+    public $layoutRow;
+    /**
      * @var Form
      */
     protected $form;
-
     /**
      * @var Builder
      */
     protected $builder;
-
     /**
      * @var string
      */
     protected $title;
-
-    /**
-     * @var \Dcat\Admin\Layout\Row
-     */
-    public $layoutRow;
 
     public function __construct(Form $form)
     {
@@ -47,7 +44,7 @@ class BlockForm extends WidgetForm
     /**
      * 设置标题.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title($title)
@@ -74,7 +71,7 @@ class BlockForm extends WidgetForm
     /**
      * 在当前列增加一块表单.
      *
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function next(\Closure $callback)
@@ -127,7 +124,7 @@ HTML;
 
     protected function renderHeader()
     {
-        if (! $this->title) {
+        if (!$this->title) {
             return;
         }
 

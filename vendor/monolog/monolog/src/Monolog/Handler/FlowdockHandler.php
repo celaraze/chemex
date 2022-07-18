@@ -11,10 +11,10 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
-use Monolog\Utils;
 use Monolog\Formatter\FlowdockFormatter;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Logger;
+use Monolog\Utils;
 
 /**
  * Sends notifications through the Flowdock push API
@@ -41,14 +41,15 @@ class FlowdockHandler extends SocketHandler
      */
     public function __construct(
         string $apiToken,
-        $level = Logger::DEBUG,
-        bool $bubble = true,
-        bool $persistent = false,
-        float $timeout = 0.0,
-        float $writingTimeout = 10.0,
+               $level = Logger::DEBUG,
+        bool   $bubble = true,
+        bool   $persistent = false,
+        float  $timeout = 0.0,
+        float  $writingTimeout = 10.0,
         ?float $connectionTimeout = null,
-        ?int $chunkSize = null
-    ) {
+        ?int   $chunkSize = null
+    )
+    {
         if (!extension_loaded('openssl')) {
             throw new MissingExtensionException('The OpenSSL PHP extension is required to use the FlowdockHandler');
         }

@@ -15,16 +15,17 @@ class Comment implements \JsonSerializable
     /**
      * Constructs a comment node.
      *
-     * @param string $text          Comment text (including comment delimiters like /*)
-     * @param int    $startLine     Line number the comment started on
-     * @param int    $startFilePos  File offset the comment started on
-     * @param int    $startTokenPos Token offset the comment started on
+     * @param string $text Comment text (including comment delimiters like /*)
+     * @param int $startLine Line number the comment started on
+     * @param int $startFilePos File offset the comment started on
+     * @param int $startTokenPos Token offset the comment started on
      */
     public function __construct(
         string $text,
-        int $startLine = -1, int $startFilePos = -1, int $startTokenPos = -1,
-        int $endLine = -1, int $endFilePos = -1, int $endTokenPos = -1
-    ) {
+        int    $startLine = -1, int $startFilePos = -1, int $startTokenPos = -1,
+        int    $endLine = -1, int $endFilePos = -1, int $endTokenPos = -1
+    )
+    {
         $this->text = $text;
         $this->startLine = $startLine;
         $this->startFilePos = $startFilePos;
@@ -39,7 +40,8 @@ class Comment implements \JsonSerializable
      *
      * @return string The comment text (including comment delimiters like /*)
      */
-    public function getText() : string {
+    public function getText(): string
+    {
         return $this->text;
     }
 
@@ -48,7 +50,8 @@ class Comment implements \JsonSerializable
      *
      * @return int Line number (or -1 if not available)
      */
-    public function getStartLine() : int {
+    public function getStartLine(): int
+    {
         return $this->startLine;
     }
 
@@ -57,7 +60,8 @@ class Comment implements \JsonSerializable
      *
      * @return int File offset (or -1 if not available)
      */
-    public function getStartFilePos() : int {
+    public function getStartFilePos(): int
+    {
         return $this->startFilePos;
     }
 
@@ -66,7 +70,8 @@ class Comment implements \JsonSerializable
      *
      * @return int Token offset (or -1 if not available)
      */
-    public function getStartTokenPos() : int {
+    public function getStartTokenPos(): int
+    {
         return $this->startTokenPos;
     }
 
@@ -75,7 +80,8 @@ class Comment implements \JsonSerializable
      *
      * @return int Line number (or -1 if not available)
      */
-    public function getEndLine() : int {
+    public function getEndLine(): int
+    {
         return $this->endLine;
     }
 
@@ -84,7 +90,8 @@ class Comment implements \JsonSerializable
      *
      * @return int File offset (or -1 if not available)
      */
-    public function getEndFilePos() : int {
+    public function getEndFilePos(): int
+    {
         return $this->endFilePos;
     }
 
@@ -93,40 +100,44 @@ class Comment implements \JsonSerializable
      *
      * @return int Token offset (or -1 if not available)
      */
-    public function getEndTokenPos() : int {
+    public function getEndTokenPos(): int
+    {
         return $this->endTokenPos;
     }
 
     /**
      * Gets the line number the comment started on.
      *
+     * @return int Line number
      * @deprecated Use getStartLine() instead
      *
-     * @return int Line number
      */
-    public function getLine() : int {
+    public function getLine(): int
+    {
         return $this->startLine;
     }
 
     /**
      * Gets the file offset the comment started on.
      *
+     * @return int File offset
      * @deprecated Use getStartFilePos() instead
      *
-     * @return int File offset
      */
-    public function getFilePos() : int {
+    public function getFilePos(): int
+    {
         return $this->startFilePos;
     }
 
     /**
      * Gets the token offset the comment started on.
      *
+     * @return int Token offset
      * @deprecated Use getStartTokenPos() instead
      *
-     * @return int Token offset
      */
-    public function getTokenPos() : int {
+    public function getTokenPos(): int
+    {
         return $this->startTokenPos;
     }
 
@@ -135,7 +146,8 @@ class Comment implements \JsonSerializable
      *
      * @return string The comment text (including comment delimiters like /*)
      */
-    public function __toString() : string {
+    public function __toString(): string
+    {
         return $this->text;
     }
 
@@ -149,7 +161,8 @@ class Comment implements \JsonSerializable
      *
      * @return mixed|string
      */
-    public function getReformattedText() {
+    public function getReformattedText()
+    {
         $text = trim($this->text);
         $newlinePos = strpos($text, "\n");
         if (false === $newlinePos) {
@@ -204,7 +217,8 @@ class Comment implements \JsonSerializable
      * @param string $str String to check
      * @return int Length in characters. Tabs count as single characters.
      */
-    private function getShortestWhitespacePrefixLen(string $str) : int {
+    private function getShortestWhitespacePrefixLen(string $str): int
+    {
         $lines = explode("\n", $str);
         $shortestPrefixLen = \INF;
         foreach ($lines as $line) {
@@ -221,7 +235,8 @@ class Comment implements \JsonSerializable
      * @return       array
      * @psalm-return array{nodeType:string, text:mixed, line:mixed, filePos:mixed}
      */
-    public function jsonSerialize() : array {
+    public function jsonSerialize(): array
+    {
         // Technically not a node, but we make it look like one anyway
         $type = $this instanceof Comment\Doc ? 'Comment_Doc' : 'Comment';
         return [

@@ -802,6 +802,13 @@ EOT;
 
     protected static $encoding = 'UTF-8';
 
+    protected static function strlen($text)
+    {
+        return function_exists('mb_strlen')
+            ? mb_strlen($text, static::$encoding)
+            : count(static::explode($text));
+    }
+
     protected static function explode($text)
     {
         $chars = [];
@@ -813,13 +820,6 @@ EOT;
         }
 
         return $chars;
-    }
-
-    protected static function strlen($text)
-    {
-        return function_exists('mb_strlen')
-            ? mb_strlen($text, static::$encoding)
-            : count(static::explode($text));
     }
 
     protected static function validStart($word)
@@ -878,16 +878,16 @@ EOT;
             switch (true) {
                 case $ord > 251:
                     $temp .= $chars[++$i];
-                    // no break
+                // no break
                 case $ord > 247:
                     $temp .= $chars[++$i];
-                    // no break
+                // no break
                 case $ord > 239:
                     $temp .= $chars[++$i];
-                    // no break
+                // no break
                 case $ord > 223:
                     $temp .= $chars[++$i];
-                    // no break
+                // no break
                 case $ord > 191:
                     $temp .= $chars[++$i];
             }

@@ -15,18 +15,6 @@ class Sid
     protected $value;
 
     /**
-     * Determines if the specified SID is valid.
-     *
-     * @param string $sid
-     *
-     * @return bool
-     */
-    public static function isValid($sid)
-    {
-        return Utilities::isValidSid($sid);
-    }
-
-    /**
      * Constructor.
      *
      * @param mixed $value
@@ -42,6 +30,30 @@ class Sid
         } else {
             throw new InvalidArgumentException('Invalid Binary / String SID.');
         }
+    }
+
+    /**
+     * Determines if the specified SID is valid.
+     *
+     * @param string $sid
+     *
+     * @return bool
+     */
+    public static function isValid($sid)
+    {
+        return Utilities::isValidSid($sid);
+    }
+
+    /**
+     * Returns the string variant of a binary SID.
+     *
+     * @param string $binary
+     *
+     * @return string|null
+     */
+    protected function binarySidToString($binary)
+    {
+        return Utilities::binarySidToString($binary);
     }
 
     /**
@@ -73,9 +85,9 @@ class Sid
     {
         $sid = explode('-', ltrim($this->value, 'S-'));
 
-        $level = (int) array_shift($sid);
+        $level = (int)array_shift($sid);
 
-        $authority = (int) array_shift($sid);
+        $authority = (int)array_shift($sid);
 
         $subAuthorities = array_map('intval', $sid);
 
@@ -85,17 +97,5 @@ class Sid
         );
 
         return call_user_func_array('pack', $params);
-    }
-
-    /**
-     * Returns the string variant of a binary SID.
-     *
-     * @param string $binary
-     *
-     * @return string|null
-     */
-    protected function binarySidToString($binary)
-    {
-        return Utilities::binarySidToString($binary);
     }
 }

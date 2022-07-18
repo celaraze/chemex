@@ -26,8 +26,8 @@ class Unique
     /**
      * Ignore the given ID during the unique check.
      *
-     * @param  mixed  $id
-     * @param  string|null  $idColumn
+     * @param mixed $id
+     * @param string|null $idColumn
      * @return $this
      */
     public function ignore($id, $idColumn = null)
@@ -45,8 +45,8 @@ class Unique
     /**
      * Ignore the given model during the unique check.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string|null  $idColumn
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string|null $idColumn
      * @return $this
      */
     public function ignoreModel($model, $idColumn = null)
@@ -60,7 +60,7 @@ class Unique
     /**
      * Ignore soft deleted models during the unique check.
      *
-     * @param  string  $deletedAtColumn
+     * @param string $deletedAtColumn
      * @return $this
      */
     public function withoutTrashed($deletedAtColumn = 'deleted_at')
@@ -80,7 +80,7 @@ class Unique
         return rtrim(sprintf('unique:%s,%s,%s,%s,%s',
             $this->table,
             $this->column,
-            $this->ignore ? '"'.addslashes($this->ignore).'"' : 'NULL',
+            $this->ignore ? '"' . addslashes($this->ignore) . '"' : 'NULL',
             $this->idColumn,
             $this->formatWheres()
         ), ',');

@@ -23,36 +23,6 @@ use Symfony\Component\Translation\Exception\InvalidResourceException;
 class XliffUtils
 {
     /**
-     * Gets xliff file version based on the root "version" attribute.
-     *
-     * Defaults to 1.2 for backwards compatibility.
-     *
-     * @throws InvalidArgumentException
-     */
-    public static function getVersionNumber(\DOMDocument $dom): string
-    {
-        /** @var \DOMNode $xliff */
-        foreach ($dom->getElementsByTagName('xliff') as $xliff) {
-            $version = $xliff->attributes->getNamedItem('version');
-            if ($version) {
-                return $version->nodeValue;
-            }
-
-            $namespace = $xliff->attributes->getNamedItem('xmlns');
-            if ($namespace) {
-                if (0 !== substr_compare('urn:oasis:names:tc:xliff:document:', $namespace->nodeValue, 0, 34)) {
-                    throw new InvalidArgumentException(sprintf('Not a valid XLIFF namespace "%s".', $namespace));
-                }
-
-                return substr($namespace, 34);
-            }
-        }
-
-        // Falls back to v1.2
-        return '1.2';
-    }
-
-    /**
      * Validates and parses the given file into a DOMDocument.
      *
      * @throws InvalidResourceException
@@ -83,6 +53,36 @@ class XliffUtils
         return [];
     }
 
+    /**
+     * Gets xliff file version based on the root "version" attribute.
+     *
+     * Defaults to 1.2 for backwards compatibility.
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function getVersionNumber(\DOMDocument $dom): string
+    {
+        /** @var \DOMNode $xliff */
+        foreach ($dom->getElementsByTagName('xliff') as $xliff) {
+            $version = $xliff->attributes->getNamedItem('version');
+            if ($version) {
+                return $version->nodeValue;
+            }
+
+            $namespace = $xliff->attributes->getNamedItem('xmlns');
+            if ($namespace) {
+                if (0 !== substr_compare('urn:oasis:names:tc:xliff:document:', $namespace->nodeValue, 0, 34)) {
+                    throw new InvalidArgumentException(sprintf('Not a valid XLIFF namespace "%s".', $namespace));
+                }
+
+                return substr($namespace, 34);
+            }
+        }
+
+        // Falls back to v1.2
+        return '1.2';
+    }
+
     private static function shouldEnableEntityLoader(): bool
     {
         static $dom, $schema;
@@ -96,7 +96,7 @@ class XliffUtils
             });
             $schema = '<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:include schemaLocation="file:///'.str_replace('\\', '/', $tmpfile).'" />
+  <xsd:include schemaLocation="file:///' . str_replace('\\', '/', $tmpfile) . '" />
 </xsd:schema>';
             file_put_contents($tmpfile, '<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -108,31 +108,13 @@ class XliffUtils
         return !@$dom->schemaValidateSource($schema);
     }
 
-    public static function getErrorsAsString(array $xmlErrors): string
-    {
-        $errorsAsString = '';
-
-        foreach ($xmlErrors as $error) {
-            $errorsAsString .= sprintf("[%s %s] %s (in %s - line %d, column %d)\n",
-                \LIBXML_ERR_WARNING === $error['level'] ? 'WARNING' : 'ERROR',
-                $error['code'],
-                $error['message'],
-                $error['file'],
-                $error['line'],
-                $error['column']
-            );
-        }
-
-        return $errorsAsString;
-    }
-
     private static function getSchema(string $xliffVersion): string
     {
         if ('1.2' === $xliffVersion) {
-            $schemaSource = file_get_contents(__DIR__.'/../Resources/schemas/xliff-core-1.2-transitional.xsd');
+            $schemaSource = file_get_contents(__DIR__ . '/../Resources/schemas/xliff-core-1.2-transitional.xsd');
             $xmlUri = 'http://www.w3.org/2001/xml.xsd';
         } elseif ('2.0' === $xliffVersion) {
-            $schemaSource = file_get_contents(__DIR__.'/../Resources/schemas/xliff-core-2.0.xsd');
+            $schemaSource = file_get_contents(__DIR__ . '/../Resources/schemas/xliff-core-2.0.xsd');
             $xmlUri = 'informativeCopiesOf3rdPartySchemas/w3c/xml.xsd';
         } else {
             throw new InvalidArgumentException(sprintf('No support implemented for loading XLIFF version "%s".', $xliffVersion));
@@ -146,7 +128,7 @@ class XliffUtils
      */
     private static function fixXmlLocation(string $schemaSource, string $xmlUri): string
     {
-        $newPath = str_replace('\\', '/', __DIR__).'/../Resources/schemas/xml.xsd';
+        $newPath = str_replace('\\', '/', __DIR__) . '/../Resources/schemas/xml.xsd';
         $parts = explode('/', $newPath);
         $locationstart = 'file:///';
         if (0 === stripos($newPath, 'phar://')) {
@@ -160,8 +142,8 @@ class XliffUtils
             }
         }
 
-        $drive = '\\' === \DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
-        $newPath = $locationstart.$drive.implode('/', array_map('rawurlencode', $parts));
+        $drive = '\\' === \DIRECTORY_SEPARATOR ? array_shift($parts) . '/' : '';
+        $newPath = $locationstart . $drive . implode('/', array_map('rawurlencode', $parts));
 
         return str_replace($xmlUri, $newPath, $schemaSource);
     }
@@ -187,5 +169,23 @@ class XliffUtils
         libxml_use_internal_errors($internalErrors);
 
         return $errors;
+    }
+
+    public static function getErrorsAsString(array $xmlErrors): string
+    {
+        $errorsAsString = '';
+
+        foreach ($xmlErrors as $error) {
+            $errorsAsString .= sprintf("[%s %s] %s (in %s - line %d, column %d)\n",
+                \LIBXML_ERR_WARNING === $error['level'] ? 'WARNING' : 'ERROR',
+                $error['code'],
+                $error['message'],
+                $error['file'],
+                $error['line'],
+                $error['column']
+            );
+        }
+
+        return $errorsAsString;
     }
 }

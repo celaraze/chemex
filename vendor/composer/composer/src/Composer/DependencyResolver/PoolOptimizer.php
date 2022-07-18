@@ -16,8 +16,8 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Intervals;
 
@@ -150,6 +150,57 @@ class PoolOptimizer
     }
 
     /**
+     * Disjunctive require constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two require constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     * @return void
+     */
+    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->requireConstraintsPerPackage[$package][(string)$expanded] = $expanded;
+        }
+    }
+
+    /**
+     *
+     * @param ConstraintInterface $constraint
+     * @return ConstraintInterface[]
+     */
+    private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
+    {
+        $constraint = Intervals::compactConstraint($constraint);
+
+        if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
+            // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
+            // are no nested disjunctive MultiConstraint instances possible
+            return $constraint->getConstraints();
+        }
+
+        // Regular constraints and conjunctive MultiConstraints
+        return array($constraint);
+    }
+
+    /**
+     * Disjunctive conflict constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two conflict constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     * @return void
+     */
+    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->conflictConstraintsPerPackage[$package][(string)$expanded] = $expanded;
+        }
+    }
+
+    /**
      * @return void
      */
     private function markPackageIrremovable(BasePackage $package): void
@@ -165,26 +216,6 @@ class PoolOptimizer
                 $this->irremovablePackages[$aliasPackage->id] = true;
             }
         }
-    }
-
-    /**
-     * @return Pool Optimized pool
-     */
-    private function applyRemovalsToPool(Pool $pool): Pool
-    {
-        $packages = array();
-        $removedVersions = array();
-        foreach ($pool->getPackages() as $package) {
-            if (!isset($this->packagesToRemove[$package->id])) {
-                $packages[] = $package;
-            } else {
-                $removedVersions[$package->getName()][$package->getVersion()] = $package->getPrettyVersion();
-            }
-        }
-
-        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage);
-
-        return $optimizedPool;
     }
 
     /**
@@ -216,14 +247,14 @@ class PoolOptimizer
                     $groupHashParts = array();
 
                     if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                        $groupHashParts[] = 'require:' . (string) $requireConstraint;
+                        $groupHashParts[] = 'require:' . (string)$requireConstraint;
                     }
 
                     if ($package->getReplaces()) {
                         foreach ($package->getReplaces() as $link) {
                             if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
                                 // Use the same hash part as the regular require hash because that's what the replacement does
-                                $groupHashParts[] = 'require:' . (string) $link->getConstraint();
+                                $groupHashParts[] = 'require:' . (string)$link->getConstraint();
                             }
                         }
                     }
@@ -231,7 +262,7 @@ class PoolOptimizer
                     if (isset($this->conflictConstraintsPerPackage[$packageName])) {
                         foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
                             if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                                $groupHashParts[] = 'conflict:' . (string) $conflictConstraint;
+                                $groupHashParts[] = 'conflict:' . (string)$conflictConstraint;
                             }
                         }
                     }
@@ -273,6 +304,20 @@ class PoolOptimizer
     }
 
     /**
+     * @param int $id
+     * @return void
+     */
+    private function markPackageForRemoval(int $id): void
+    {
+        // We are not allowed to remove packages if they have been marked as irremovable
+        if (isset($this->irremovablePackages[$id])) {
+            throw new \LogicException('Attempted removing a package which was previously marked irremovable');
+        }
+
+        $this->packagesToRemove[$id] = true;
+    }
+
+    /**
      * @return string
      */
     private function calculateDependencyHash(BasePackage $package): string
@@ -301,7 +346,7 @@ class PoolOptimizer
                 // However, the majority of projects are going to specify their constraints already pretty
                 // much in the best variant possible. In other words, we'd be wasting time here and it would actually hurt
                 // performance more than the additional few packages that could be filtered out would benefit the process.
-                $subhash[$link->getTarget()] = (string) $link->getConstraint();
+                $subhash[$link->getTarget()] = (string)$link->getConstraint();
             }
 
             // Sort for best result
@@ -313,20 +358,6 @@ class PoolOptimizer
         }
 
         return $hash;
-    }
-
-    /**
-     * @param int $id
-     * @return void
-     */
-    private function markPackageForRemoval(int $id): void
-    {
-        // We are not allowed to remove packages if they have been marked as irremovable
-        if (isset($this->irremovablePackages[$id])) {
-            throw new \LogicException('Attempted removing a package which was previously marked irremovable');
-        }
-
-        $this->packagesToRemove[$id] = true;
     }
 
     /**
@@ -451,53 +482,22 @@ class PoolOptimizer
     }
 
     /**
-     * Disjunctive require constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
-     * two require constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
-     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
-     *
-     * @param string $package
-     * @param ConstraintInterface $constraint
-     * @return void
+     * @return Pool Optimized pool
      */
-    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
+    private function applyRemovalsToPool(Pool $pool): Pool
     {
-        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
-            $this->requireConstraintsPerPackage[$package][(string) $expanded] = $expanded;
-        }
-    }
-
-    /**
-     * Disjunctive conflict constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
-     * two conflict constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
-     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
-     *
-     * @param string $package
-     * @param ConstraintInterface $constraint
-     * @return void
-     */
-    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
-    {
-        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
-            $this->conflictConstraintsPerPackage[$package][(string) $expanded] = $expanded;
-        }
-    }
-
-    /**
-     *
-     * @param ConstraintInterface $constraint
-     * @return ConstraintInterface[]
-     */
-    private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
-    {
-        $constraint = Intervals::compactConstraint($constraint);
-
-        if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
-            // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
-            // are no nested disjunctive MultiConstraint instances possible
-            return $constraint->getConstraints();
+        $packages = array();
+        $removedVersions = array();
+        foreach ($pool->getPackages() as $package) {
+            if (!isset($this->packagesToRemove[$package->id])) {
+                $packages[] = $package;
+            } else {
+                $removedVersions[$package->getName()][$package->getVersion()] = $package->getPrettyVersion();
+            }
         }
 
-        // Regular constraints and conjunctive MultiConstraints
-        return array($constraint);
+        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage);
+
+        return $optimizedPool;
     }
 }

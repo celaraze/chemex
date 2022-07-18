@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 use DOMDocument;
@@ -35,7 +36,7 @@ final class MoveAttributesFromFilterWhitelistToCoverage implements Migration
         }
 
         $map = [
-            'addUncoveredFilesFromWhitelist'     => 'includeUncoveredFiles',
+            'addUncoveredFilesFromWhitelist' => 'includeUncoveredFiles',
             'processUncoveredFilesFromWhitelist' => 'processUncoveredFiles',
         ];
 

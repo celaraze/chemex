@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
 use DOMDocument;
@@ -20,6 +21,24 @@ final class Project extends Node
     {
         $this->init();
         $this->setProjectSourceDirectory($directory);
+    }
+
+    private function init(): void
+    {
+        $dom = new DOMDocument;
+        $dom->loadXML('<?xml version="1.0" ?><phpunit xmlns="https://schema.phpunit.de/coverage/1.0"><build/><project/></phpunit>');
+
+        $this->setContextNode(
+            $dom->getElementsByTagNameNS(
+                'https://schema.phpunit.de/coverage/1.0',
+                'project'
+            )->item(0)
+        );
+    }
+
+    private function setProjectSourceDirectory(string $name): void
+    {
+        $this->contextNode()->setAttribute('source', $name);
     }
 
     public function projectSourceDirectory(): string
@@ -68,23 +87,5 @@ final class Project extends Node
     public function asDom(): DOMDocument
     {
         return $this->dom();
-    }
-
-    private function init(): void
-    {
-        $dom = new DOMDocument;
-        $dom->loadXML('<?xml version="1.0" ?><phpunit xmlns="https://schema.phpunit.de/coverage/1.0"><build/><project/></phpunit>');
-
-        $this->setContextNode(
-            $dom->getElementsByTagNameNS(
-                'https://schema.phpunit.de/coverage/1.0',
-                'project'
-            )->item(0)
-        );
-    }
-
-    private function setProjectSourceDirectory(string $name): void
-    {
-        $this->contextNode()->setAttribute('source', $name);
     }
 }

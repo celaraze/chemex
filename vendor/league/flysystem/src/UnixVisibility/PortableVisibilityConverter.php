@@ -35,17 +35,32 @@ class PortableVisibilityConverter implements VisibilityConverter
     private $defaultForDirectories;
 
     public function __construct(
-        int $filePublic = 0644,
-        int $filePrivate = 0600,
-        int $directoryPublic = 0755,
-        int $directoryPrivate = 0700,
+        int    $filePublic = 0644,
+        int    $filePrivate = 0600,
+        int    $directoryPublic = 0755,
+        int    $directoryPrivate = 0700,
         string $defaultForDirectories = Visibility::PRIVATE
-    ) {
+    )
+    {
         $this->filePublic = $filePublic;
         $this->filePrivate = $filePrivate;
         $this->directoryPublic = $directoryPublic;
         $this->directoryPrivate = $directoryPrivate;
         $this->defaultForDirectories = $defaultForDirectories;
+    }
+
+    /**
+     * @param array<mixed> $permissionMap
+     */
+    public static function fromArray(array $permissionMap, string $defaultForDirectories = Visibility::PRIVATE): PortableVisibilityConverter
+    {
+        return new PortableVisibilityConverter(
+            $permissionMap['file']['public'] ?? 0644,
+            $permissionMap['file']['private'] ?? 0600,
+            $permissionMap['dir']['public'] ?? 0755,
+            $permissionMap['dir']['private'] ?? 0700,
+            $defaultForDirectories
+        );
     }
 
     public function forFile(string $visibility): int
@@ -91,19 +106,5 @@ class PortableVisibilityConverter implements VisibilityConverter
     public function defaultForDirectories(): int
     {
         return $this->defaultForDirectories === Visibility::PUBLIC ? $this->directoryPublic : $this->directoryPrivate;
-    }
-
-    /**
-     * @param array<mixed>  $permissionMap
-     */
-    public static function fromArray(array $permissionMap, string $defaultForDirectories = Visibility::PRIVATE): PortableVisibilityConverter
-    {
-        return new PortableVisibilityConverter(
-            $permissionMap['file']['public'] ?? 0644,
-            $permissionMap['file']['private'] ?? 0600,
-            $permissionMap['dir']['public'] ?? 0755,
-            $permissionMap['dir']['private'] ?? 0700,
-            $defaultForDirectories
-        );
     }
 }

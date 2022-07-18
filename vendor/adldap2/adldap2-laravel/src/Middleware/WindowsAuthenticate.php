@@ -47,7 +47,7 @@ class WindowsAuthenticate
      */
     public function handle(Request $request, Closure $next)
     {
-        if (! $this->auth->check()) {
+        if (!$this->auth->check()) {
             // Retrieve the users account name from the request.
             if ($account = $this->account($request)) {
                 // Retrieve the users username from their account name.
@@ -61,6 +61,51 @@ class WindowsAuthenticate
         }
 
         return $next($request);
+    }
+
+    /**
+     * Retrieves the users SSO account name from our server.
+     *
+     * @param Request $request
+     *
+     * @return string
+     */
+    protected function account(Request $request)
+    {
+        return utf8_encode($request->server($this->key()));
+    }
+
+    /**
+     * Returns the configured key to use for retrieving
+     * the username from the server global variable.
+     *
+     * @return string
+     */
+    protected function key()
+    {
+        return Config::get('ldap_auth.identifiers.windows.server_key', 'AUTH_USER');
+    }
+
+    /**
+     * Retrieves the users username from their full account name.
+     *
+     * @param string $account
+     *
+     * @return string
+     */
+    protected function username($account)
+    {
+        // Username's may be prefixed with their domain,
+        // we just need their account name.
+        $username = explode('\\', $account);
+
+        if (count($username) === 2) {
+            [$domain, $username] = $username;
+        } else {
+            $username = $username[key($username)];
+        }
+
+        return $username;
     }
 
     /**
@@ -107,19 +152,6 @@ class WindowsAuthenticate
     }
 
     /**
-     * Fires the windows authentication event.
-     *
-     * @param User       $user
-     * @param mixed|null $model
-     *
-     * @return void
-     */
-    protected function fireAuthenticatedEvent(User $user, $model = null)
-    {
-        Event::dispatch(new AuthenticatedWithWindows($user, $model));
-    }
-
-    /**
      * Retrieves an LDAP user by their username.
      *
      * @param string $username
@@ -129,6 +161,16 @@ class WindowsAuthenticate
     protected function resolveUserByUsername($username)
     {
         return Resolver::query()->whereEquals($this->discover(), $username)->first();
+    }
+
+    /**
+     * Returns the attribute to discover users by.
+     *
+     * @return string
+     */
+    protected function discover()
+    {
+        return Config::get('ldap_auth.identifiers.windows.locate_users_by', 'samaccountname');
     }
 
     /**
@@ -142,57 +184,15 @@ class WindowsAuthenticate
     }
 
     /**
-     * Retrieves the users SSO account name from our server.
+     * Fires the windows authentication event.
      *
-     * @param Request $request
+     * @param User $user
+     * @param mixed|null $model
      *
-     * @return string
+     * @return void
      */
-    protected function account(Request $request)
+    protected function fireAuthenticatedEvent(User $user, $model = null)
     {
-        return utf8_encode($request->server($this->key()));
-    }
-
-    /**
-     * Retrieves the users username from their full account name.
-     *
-     * @param string $account
-     *
-     * @return string
-     */
-    protected function username($account)
-    {
-        // Username's may be prefixed with their domain,
-        // we just need their account name.
-        $username = explode('\\', $account);
-
-        if (count($username) === 2) {
-            [$domain, $username] = $username;
-        } else {
-            $username = $username[key($username)];
-        }
-
-        return $username;
-    }
-
-    /**
-     * Returns the configured key to use for retrieving
-     * the username from the server global variable.
-     *
-     * @return string
-     */
-    protected function key()
-    {
-        return Config::get('ldap_auth.identifiers.windows.server_key', 'AUTH_USER');
-    }
-
-    /**
-     * Returns the attribute to discover users by.
-     *
-     * @return string
-     */
-    protected function discover()
-    {
-        return Config::get('ldap_auth.identifiers.windows.locate_users_by', 'samaccountname');
+        Event::dispatch(new AuthenticatedWithWindows($user, $model));
     }
 }

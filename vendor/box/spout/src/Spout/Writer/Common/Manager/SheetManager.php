@@ -36,12 +36,12 @@ class SheetManager
 
     /**
      * Throws an exception if the given sheet's name is not valid.
-     * @see Sheet::setName for validity rules.
-     *
      * @param string $name
      * @param Sheet $sheet The sheet whose future name is checked
-     * @throws \Box\Spout\Writer\Exception\InvalidSheetNameException If the sheet's name is invalid.
      * @return void
+     * @throws \Box\Spout\Writer\Exception\InvalidSheetNameException If the sheet's name is invalid.
+     * @see Sheet::setName for validity rules.
+     *
      */
     public function throwIfNameIsInvalid($name, Sheet $sheet)
     {
@@ -82,11 +82,29 @@ class SheetManager
     }
 
     /**
-     * Returns whether the given name contains at least one invalid character.
-     * @see Sheet::$INVALID_CHARACTERS_IN_SHEET_NAME for the full list.
+     * Returns whether the given name is unique.
      *
      * @param string $name
+     * @param Sheet $sheet The sheet whose future name is checked
+     * @return bool TRUE if the name is unique, FALSE otherwise.
+     */
+    private function isNameUnique($name, Sheet $sheet)
+    {
+        foreach (self::$SHEETS_NAME_USED[$sheet->getAssociatedWorkbookId()] as $sheetIndex => $sheetName) {
+            if ($sheetIndex !== $sheet->getIndex() && $sheetName === $name) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns whether the given name contains at least one invalid character.
+     * @param string $name
      * @return bool TRUE if the name contains invalid characters, FALSE otherwise.
+     * @see Sheet::$INVALID_CHARACTERS_IN_SHEET_NAME for the full list.
+     *
      */
     private function doesContainInvalidCharacters($name)
     {
@@ -105,24 +123,6 @@ class SheetManager
         $endsWithSingleQuote = ($this->stringHelper->getCharLastOccurrencePosition('\'', $name) === ($this->stringHelper->getStringLength($name) - 1));
 
         return ($startsWithSingleQuote || $endsWithSingleQuote);
-    }
-
-    /**
-     * Returns whether the given name is unique.
-     *
-     * @param string $name
-     * @param Sheet $sheet The sheet whose future name is checked
-     * @return bool TRUE if the name is unique, FALSE otherwise.
-     */
-    private function isNameUnique($name, Sheet $sheet)
-    {
-        foreach (self::$SHEETS_NAME_USED[$sheet->getAssociatedWorkbookId()] as $sheetIndex => $sheetName) {
-            if ($sheetIndex !== $sheet->getIndex() && $sheetName === $name) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

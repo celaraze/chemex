@@ -47,7 +47,7 @@ class Blacklist
     /**
      * Constructor.
      *
-     * @param  \Tymon\JWTAuth\Contracts\Providers\Storage  $storage
+     * @param \Tymon\JWTAuth\Contracts\Providers\Storage $storage
      * @return void
      */
     public function __construct(Storage $storage)
@@ -58,19 +58,19 @@ class Blacklist
     /**
      * Add the token (jti claim) to the blacklist.
      *
-     * @param  \Tymon\JWTAuth\Payload  $payload
+     * @param \Tymon\JWTAuth\Payload $payload
      * @return bool
      */
     public function add(Payload $payload)
     {
         // if there is no exp claim then add the jwt to
         // the blacklist indefinitely
-        if (! $payload->hasKey('exp')) {
+        if (!$payload->hasKey('exp')) {
             return $this->addForever($payload);
         }
 
         // if we have already added this token to the blacklist
-        if (! empty($this->storage->get($this->getKey($payload)))) {
+        if (!empty($this->storage->get($this->getKey($payload)))) {
             return true;
         }
 
@@ -84,9 +84,57 @@ class Blacklist
     }
 
     /**
+     * Add the token (jti claim) to the blacklist indefinitely.
+     *
+     * @param \Tymon\JWTAuth\Payload $payload
+     * @return bool
+     */
+    public function addForever(Payload $payload)
+    {
+        $this->storage->forever($this->getKey($payload), 'forever');
+
+        return true;
+    }
+
+    /**
+     * Get the unique key held within the blacklist.
+     *
+     * @param \Tymon\JWTAuth\Payload $payload
+     * @return mixed
+     */
+    public function getKey(Payload $payload)
+    {
+        return $payload($this->key);
+    }
+
+    /**
+     * Set the unique key held within the blacklist.
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function setKey($key)
+    {
+        $this->key = value($key);
+
+        return $this;
+    }
+
+    /**
+     * Get the timestamp when the blacklist comes into effect
+     * This defaults to immediate (0 seconds).
+     *
+     * @return int
+     */
+    protected function getGraceTimestamp()
+    {
+        return Utils::now()->addSeconds($this->gracePeriod)->getTimestamp();
+    }
+
+    /**
      * Get the number of minutes until the token expiry.
      *
-     * @param  \Tymon\JWTAuth\Payload  $payload
+     * @param \Tymon\JWTAuth\Payload $payload
      * @return int
      */
     protected function getMinutesUntilExpired(Payload $payload)
@@ -101,22 +149,9 @@ class Blacklist
     }
 
     /**
-     * Add the token (jti claim) to the blacklist indefinitely.
-     *
-     * @param  \Tymon\JWTAuth\Payload  $payload
-     * @return bool
-     */
-    public function addForever(Payload $payload)
-    {
-        $this->storage->forever($this->getKey($payload), 'forever');
-
-        return true;
-    }
-
-    /**
      * Determine whether the token has been blacklisted.
      *
-     * @param  \Tymon\JWTAuth\Payload  $payload
+     * @param \Tymon\JWTAuth\Payload $payload
      * @return bool
      */
     public function has(Payload $payload)
@@ -129,13 +164,13 @@ class Blacklist
         }
 
         // check whether the expiry + grace has past
-        return ! empty($val) && ! Utils::isFuture($val['valid_until']);
+        return !empty($val) && !Utils::isFuture($val['valid_until']);
     }
 
     /**
      * Remove the token (jti claim) from the blacklist.
      *
-     * @param  \Tymon\JWTAuth\Payload  $payload
+     * @param \Tymon\JWTAuth\Payload $payload
      * @return bool
      */
     public function remove(Payload $payload)
@@ -156,30 +191,6 @@ class Blacklist
     }
 
     /**
-     * Get the timestamp when the blacklist comes into effect
-     * This defaults to immediate (0 seconds).
-     *
-     * @return int
-     */
-    protected function getGraceTimestamp()
-    {
-        return Utils::now()->addSeconds($this->gracePeriod)->getTimestamp();
-    }
-
-    /**
-     * Set the grace period.
-     *
-     * @param  int  $gracePeriod
-     * @return $this
-     */
-    public function setGracePeriod($gracePeriod)
-    {
-        $this->gracePeriod = (int) $gracePeriod;
-
-        return $this;
-    }
-
-    /**
      * Get the grace period.
      *
      * @return int
@@ -190,38 +201,14 @@ class Blacklist
     }
 
     /**
-     * Get the unique key held within the blacklist.
+     * Set the grace period.
      *
-     * @param  \Tymon\JWTAuth\Payload  $payload
-     * @return mixed
-     */
-    public function getKey(Payload $payload)
-    {
-        return $payload($this->key);
-    }
-
-    /**
-     * Set the unique key held within the blacklist.
-     *
-     * @param  string  $key
+     * @param int $gracePeriod
      * @return $this
      */
-    public function setKey($key)
+    public function setGracePeriod($gracePeriod)
     {
-        $this->key = value($key);
-
-        return $this;
-    }
-
-    /**
-     * Set the refresh time limit.
-     *
-     * @param  int  $ttl
-     * @return $this
-     */
-    public function setRefreshTTL($ttl)
-    {
-        $this->refreshTTL = (int) $ttl;
+        $this->gracePeriod = (int)$gracePeriod;
 
         return $this;
     }
@@ -234,5 +221,18 @@ class Blacklist
     public function getRefreshTTL()
     {
         return $this->refreshTTL;
+    }
+
+    /**
+     * Set the refresh time limit.
+     *
+     * @param int $ttl
+     * @return $this
+     */
+    public function setRefreshTTL($ttl)
+    {
+        $this->refreshTTL = (int)$ttl;
+
+        return $this;
     }
 }

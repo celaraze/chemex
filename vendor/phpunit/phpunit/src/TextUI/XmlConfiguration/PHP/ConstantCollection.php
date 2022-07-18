@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class ConstantCollection implements Countable, IteratorAggregate
      */
     private $constants;
 
+    private function __construct(Constant ...$constants)
+    {
+        $this->constants = $constants;
+    }
+
     /**
      * @param Constant[] $constants
      */
     public static function fromArray(array $constants): self
     {
         return new self(...$constants);
-    }
-
-    private function __construct(Constant ...$constants)
-    {
-        $this->constants = $constants;
     }
 
     /**

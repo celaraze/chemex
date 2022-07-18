@@ -18,7 +18,7 @@ class EnlightnServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/enlightn.php' => config_path('enlightn.php'),
+                __DIR__ . '/../config/enlightn.php' => config_path('enlightn.php'),
             ], 'enlightn');
         }
     }
@@ -35,7 +35,7 @@ class EnlightnServiceProvider extends ServiceProvider
             Console\BaselineCommand::class,
         ]);
 
-        $this->mergeConfigFrom(__DIR__.'/../config/enlightn.php', 'enlightn');
+        $this->mergeConfigFrom(__DIR__ . '/../config/enlightn.php', 'enlightn');
 
         $this->app->singleton(Inspector::class);
         $this->app->resolving(Inspector::class, function ($inspector) {

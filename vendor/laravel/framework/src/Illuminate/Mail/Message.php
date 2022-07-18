@@ -34,7 +34,7 @@ class Message
     /**
      * Create a new message instance.
      *
-     * @param  \Symfony\Component\Mime\Email  $message
+     * @param \Symfony\Component\Mime\Email $message
      * @return void
      */
     public function __construct(Email $message)
@@ -45,15 +45,15 @@ class Message
     /**
      * Add a "from" address to the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
+     * @param string|array $address
+     * @param string|null $name
      * @return $this
      */
     public function from($address, $name = null)
     {
         is_array($address)
             ? $this->message->from(...$address)
-            : $this->message->from(new Address($address, (string) $name));
+            : $this->message->from(new Address($address, (string)$name));
 
         return $this;
     }
@@ -61,15 +61,15 @@ class Message
     /**
      * Set the "sender" of the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
+     * @param string|array $address
+     * @param string|null $name
      * @return $this
      */
     public function sender($address, $name = null)
     {
         is_array($address)
             ? $this->message->sender(...$address)
-            : $this->message->sender(new Address($address, (string) $name));
+            : $this->message->sender(new Address($address, (string)$name));
 
         return $this;
     }
@@ -77,7 +77,7 @@ class Message
     /**
      * Set the "return path" of the message.
      *
-     * @param  string  $address
+     * @param string $address
      * @return $this
      */
     public function returnPath($address)
@@ -90,9 +90,9 @@ class Message
     /**
      * Add a recipient to the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
-     * @param  bool  $override
+     * @param string|array $address
+     * @param string|null $name
+     * @param bool $override
      * @return $this
      */
     public function to($address, $name = null, $override = false)
@@ -100,12 +100,49 @@ class Message
         if ($override) {
             is_array($address)
                 ? $this->message->to(...$address)
-                : $this->message->to(new Address($address, (string) $name));
+                : $this->message->to(new Address($address, (string)$name));
 
             return $this;
         }
 
         return $this->addAddresses($address, $name, 'To');
+    }
+
+    /**
+     * Add a recipient to the message.
+     *
+     * @param string|array $address
+     * @param string $name
+     * @param string $type
+     * @return $this
+     */
+    protected function addAddresses($address, $name, $type)
+    {
+        if (is_array($address)) {
+            $type = lcfirst($type);
+
+            $addresses = collect($address)->map(function ($address, $key) {
+                if (is_string($key) && is_string($address)) {
+                    return new Address($key, $address);
+                }
+
+                if (is_array($address)) {
+                    return new Address($address['email'] ?? $address['address'], $address['name'] ?? null);
+                }
+
+                if (is_null($address)) {
+                    return new Address($key);
+                }
+
+                return $address;
+            })->all();
+
+            $this->message->{"{$type}"}(...$addresses);
+        } else {
+            $this->message->{"add{$type}"}(new Address($address, (string)$name));
+        }
+
+        return $this;
     }
 
     /**
@@ -125,11 +162,28 @@ class Message
     }
 
     /**
+     * Add an address debug header for a list of recipients.
+     *
+     * @param string $header
+     * @param \Symfony\Component\Mime\Address[] $addresses
+     * @return $this
+     */
+    protected function addAddressDebugHeader(string $header, array $addresses)
+    {
+        $this->message->getHeaders()->addTextHeader(
+            $header,
+            implode(', ', array_map(fn($a) => $a->toString(), $addresses)),
+        );
+
+        return $this;
+    }
+
+    /**
      * Add a carbon copy to the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
-     * @param  bool  $override
+     * @param string|array $address
+     * @param string|null $name
+     * @param bool $override
      * @return $this
      */
     public function cc($address, $name = null, $override = false)
@@ -137,7 +191,7 @@ class Message
         if ($override) {
             is_array($address)
                 ? $this->message->cc(...$address)
-                : $this->message->cc(new Address($address, (string) $name));
+                : $this->message->cc(new Address($address, (string)$name));
 
             return $this;
         }
@@ -164,9 +218,9 @@ class Message
     /**
      * Add a blind carbon copy to the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
-     * @param  bool  $override
+     * @param string|array $address
+     * @param string|null $name
+     * @param bool $override
      * @return $this
      */
     public function bcc($address, $name = null, $override = false)
@@ -174,7 +228,7 @@ class Message
         if ($override) {
             is_array($address)
                 ? $this->message->bcc(...$address)
-                : $this->message->bcc(new Address($address, (string) $name));
+                : $this->message->bcc(new Address($address, (string)$name));
 
             return $this;
         }
@@ -201,8 +255,8 @@ class Message
     /**
      * Add a "reply to" address to the message.
      *
-     * @param  string|array  $address
-     * @param  string|null  $name
+     * @param string|array $address
+     * @param string|null $name
      * @return $this
      */
     public function replyTo($address, $name = null)
@@ -211,63 +265,9 @@ class Message
     }
 
     /**
-     * Add a recipient to the message.
-     *
-     * @param  string|array  $address
-     * @param  string  $name
-     * @param  string  $type
-     * @return $this
-     */
-    protected function addAddresses($address, $name, $type)
-    {
-        if (is_array($address)) {
-            $type = lcfirst($type);
-
-            $addresses = collect($address)->map(function ($address, $key) {
-                if (is_string($key) && is_string($address)) {
-                    return new Address($key, $address);
-                }
-
-                if (is_array($address)) {
-                    return new Address($address['email'] ?? $address['address'], $address['name'] ?? null);
-                }
-
-                if (is_null($address)) {
-                    return new Address($key);
-                }
-
-                return $address;
-            })->all();
-
-            $this->message->{"{$type}"}(...$addresses);
-        } else {
-            $this->message->{"add{$type}"}(new Address($address, (string) $name));
-        }
-
-        return $this;
-    }
-
-    /**
-     * Add an address debug header for a list of recipients.
-     *
-     * @param  string  $header
-     * @param  \Symfony\Component\Mime\Address[]  $addresses
-     * @return $this
-     */
-    protected function addAddressDebugHeader(string $header, array $addresses)
-    {
-        $this->message->getHeaders()->addTextHeader(
-            $header,
-            implode(', ', array_map(fn ($a) => $a->toString(), $addresses)),
-        );
-
-        return $this;
-    }
-
-    /**
      * Set the subject of the message.
      *
-     * @param  string  $subject
+     * @param string $subject
      * @return $this
      */
     public function subject($subject)
@@ -280,7 +280,7 @@ class Message
     /**
      * Set the message priority level.
      *
-     * @param  int  $level
+     * @param int $level
      * @return $this
      */
     public function priority($level)
@@ -291,10 +291,25 @@ class Message
     }
 
     /**
+     * Attach in-memory data as an attachment.
+     *
+     * @param string $data
+     * @param string $name
+     * @param array $options
+     * @return $this
+     */
+    public function attachData($data, $name, array $options = [])
+    {
+        $this->message->attach($data, $name, $options['mime'] ?? null);
+
+        return $this;
+    }
+
+    /**
      * Attach a file to the message.
      *
-     * @param  string|\Illuminate\Contracts\Mail\Attachable|\Illuminate\Mail\Attachment  $file
-     * @param  array  $options
+     * @param string|\Illuminate\Contracts\Mail\Attachable|\Illuminate\Mail\Attachment $file
+     * @param array $options
      * @return $this
      */
     public function attach($file, array $options = [])
@@ -313,24 +328,24 @@ class Message
     }
 
     /**
-     * Attach in-memory data as an attachment.
+     * Embed in-memory data in the message and get the CID.
      *
-     * @param  string  $data
-     * @param  string  $name
-     * @param  array  $options
-     * @return $this
+     * @param string $data
+     * @param string $name
+     * @param string|null $contentType
+     * @return string
      */
-    public function attachData($data, $name, array $options = [])
+    public function embedData($data, $name, $contentType = null)
     {
-        $this->message->attach($data, $name, $options['mime'] ?? null);
+        $this->message->embed($data, $name, $contentType);
 
-        return $this;
+        return "cid:$name";
     }
 
     /**
      * Embed a file in the message and get the CID.
      *
-     * @param  string|\Illuminate\Contracts\Mail\Attachable|\Illuminate\Mail\Attachment  $file
+     * @param string|\Illuminate\Contracts\Mail\Attachable|\Illuminate\Mail\Attachment $file
      * @return string
      */
     public function embed($file)
@@ -364,21 +379,6 @@ class Message
     }
 
     /**
-     * Embed in-memory data in the message and get the CID.
-     *
-     * @param  string  $data
-     * @param  string  $name
-     * @param  string|null  $contentType
-     * @return string
-     */
-    public function embedData($data, $name, $contentType = null)
-    {
-        $this->message->embed($data, $name, $contentType);
-
-        return "cid:$name";
-    }
-
-    /**
      * Get the underlying Symfony Email instance.
      *
      * @return \Symfony\Component\Mime\Email
@@ -391,8 +391,8 @@ class Message
     /**
      * Dynamically pass missing methods to the Symfony instance.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

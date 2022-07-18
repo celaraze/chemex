@@ -59,7 +59,7 @@ class IpUtils
      */
     public static function checkIp4(string $requestIp, string $ip): bool
     {
-        $cacheKey = $requestIp.'-'.$ip;
+        $cacheKey = $requestIp . '-' . $ip;
         if (isset(self::$checkedIps[$cacheKey])) {
             return self::$checkedIps[$cacheKey];
         }
@@ -94,17 +94,17 @@ class IpUtils
      * Compares two IPv6 addresses.
      * In case a subnet is given, it checks if it contains the request IP.
      *
+     * @param string $ip IPv6 address or subnet in CIDR notation
+     *
+     * @throws \RuntimeException When IPV6 support is not enabled
      * @author David Soria Parra <dsp at php dot net>
      *
      * @see https://github.com/dsp/v6tools
      *
-     * @param string $ip IPv6 address or subnet in CIDR notation
-     *
-     * @throws \RuntimeException When IPV6 support is not enabled
      */
     public static function checkIp6(string $requestIp, string $ip): bool
     {
-        $cacheKey = $requestIp.'-'.$ip;
+        $cacheKey = $requestIp . '-' . $ip;
         if (isset(self::$checkedIps[$cacheKey])) {
             return self::$checkedIps[$cacheKey];
         }
@@ -117,7 +117,7 @@ class IpUtils
             [$address, $netmask] = explode('/', $ip, 2);
 
             if ('0' === $netmask) {
-                return (bool) unpack('n*', @inet_pton($address));
+                return (bool)unpack('n*', @inet_pton($address));
             }
 
             if ($netmask < 1 || $netmask > 128) {
@@ -173,7 +173,7 @@ class IpUtils
         $ip = inet_ntop($packedAddress & inet_pton($mask));
 
         if ($wrappedIPv6) {
-            $ip = '['.$ip.']';
+            $ip = '[' . $ip . ']';
         }
 
         return $ip;

@@ -13,7 +13,7 @@ class Divide extends Field
 
     public function render()
     {
-        if (! $this->label) {
+        if (!$this->label) {
             return '<hr/>';
         }
 

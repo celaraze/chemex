@@ -5,6 +5,33 @@ namespace GuzzleHttp\Promise;
 final class Utils
 {
     /**
+     * Adds a function to run in the task queue when it is next `run()` and
+     * returns a promise that is fulfilled or rejected with the result.
+     *
+     * @param callable $task Task function to run.
+     *
+     * @return PromiseInterface
+     */
+    public static function task(callable $task)
+    {
+        $queue = self::queue();
+        $promise = new Promise([$queue, 'run']);
+        $queue->add(function () use ($task, $promise) {
+            try {
+                if (Is::pending($promise)) {
+                    $promise->resolve($task());
+                }
+            } catch (\Throwable $e) {
+                $promise->reject($e);
+            } catch (\Exception $e) {
+                $promise->reject($e);
+            }
+        });
+
+        return $promise;
+    }
+
+    /**
      * Get the global task queue used for promise resolution.
      *
      * This task queue MUST be run in an event loop in order for promises to be
@@ -32,33 +59,6 @@ final class Utils
         }
 
         return $queue;
-    }
-
-    /**
-     * Adds a function to run in the task queue when it is next `run()` and
-     * returns a promise that is fulfilled or rejected with the result.
-     *
-     * @param callable $task Task function to run.
-     *
-     * @return PromiseInterface
-     */
-    public static function task(callable $task)
-    {
-        $queue = self::queue();
-        $promise = new Promise([$queue, 'run']);
-        $queue->add(function () use ($task, $promise) {
-            try {
-                if (Is::pending($promise)) {
-                    $promise->resolve($task());
-                }
-            } catch (\Throwable $e) {
-                $promise->reject($e);
-            } catch (\Exception $e) {
-                $promise->reject($e);
-            }
-        });
-
-        return $promise;
     }
 
     /**
@@ -97,11 +97,11 @@ final class Utils
      *
      * Returns an array of inspection state arrays.
      *
-     * @see inspect for the inspection state array format.
-     *
      * @param PromiseInterface[] $promises Traversable of promises to wait upon.
      *
      * @return array
+     * @see inspect for the inspection state array format.
+     *
      */
     public static function inspectAll($promises)
     {
@@ -145,8 +145,8 @@ final class Utils
      * respective positions to the original array. If any promise in the array
      * rejects, the returned promise is rejected with the rejection reason.
      *
-     * @param mixed $promises  Promises or values.
-     * @param bool  $recursive If true, resolves new promises that might have been added to the stack during its own resolution.
+     * @param mixed $promises Promises or values.
+     * @param bool $recursive If true, resolves new promises that might have been added to the stack during its own resolution.
      *
      * @return PromiseInterface
      */
@@ -181,6 +181,21 @@ final class Utils
     }
 
     /**
+     * Like some(), with 1 as count. However, if the promise fulfills, the
+     * fulfillment value is not an array of 1 but the value directly.
+     *
+     * @param mixed $promises Promises or values.
+     *
+     * @return PromiseInterface
+     */
+    public static function any($promises)
+    {
+        return self::some(1, $promises)->then(function ($values) {
+            return $values[0];
+        });
+    }
+
+    /**
      * Initiate a competitive race between multiple promises or values (values
      * will become immediately fulfilled promises).
      *
@@ -191,7 +206,7 @@ final class Utils
      * This promise is rejected with a {@see AggregateException} if the number
      * of fulfilled promises is less than the desired $count.
      *
-     * @param int   $count    Total number of promises.
+     * @param int $count Total number of promises.
      * @param mixed $promises Promises or values.
      *
      * @return PromiseInterface
@@ -230,31 +245,16 @@ final class Utils
     }
 
     /**
-     * Like some(), with 1 as count. However, if the promise fulfills, the
-     * fulfillment value is not an array of 1 but the value directly.
-     *
-     * @param mixed $promises Promises or values.
-     *
-     * @return PromiseInterface
-     */
-    public static function any($promises)
-    {
-        return self::some(1, $promises)->then(function ($values) {
-            return $values[0];
-        });
-    }
-
-    /**
      * Returns a promise that is fulfilled when all of the provided promises have
      * been fulfilled or rejected.
      *
      * The returned promise is fulfilled with an array of inspection state arrays.
      *
-     * @see inspect for the inspection state array format.
-     *
      * @param mixed $promises Promises or values.
      *
      * @return PromiseInterface
+     * @see inspect for the inspection state array format.
+     *
      */
     public static function settle($promises)
     {

@@ -43,7 +43,7 @@ class Tooltip extends Widget
     }
 
     /**
-     * @param  string|Renderable|\Closure  $content
+     * @param string|Renderable|\Closure $content
      * @return $this
      */
     public function title($content)
@@ -53,16 +53,16 @@ class Tooltip extends Widget
         return $this;
     }
 
+    public function green()
+    {
+        return $this->background(Admin::color()->success());
+    }
+
     public function background(string $color)
     {
         $this->background = $color;
 
         return $this;
-    }
-
-    public function green()
-    {
-        return $this->background(Admin::color()->success());
     }
 
     public function blue()
@@ -85,6 +85,20 @@ class Tooltip extends Widget
         return $this->placement('left');
     }
 
+    public function placement(string $placement = 'auto')
+    {
+        $map = [
+            'top' => 1,
+            'right' => 2,
+            'bottom' => 3,
+            'left' => 4,
+        ];
+
+        $this->placement = $map[$placement] ?? 1;
+
+        return $this;
+    }
+
     public function right()
     {
         return $this->placement('right');
@@ -100,18 +114,14 @@ class Tooltip extends Widget
         return $this->placement('bottom');
     }
 
-    public function placement(string $placement = 'auto')
+    public function render()
     {
-        $map = [
-            'top'    => 1,
-            'right'  => 2,
-            'bottom' => 3,
-            'left'   => 4,
-        ];
+        if ($this->built) {
+            return;
+        }
+        $this->built = true;
 
-        $this->placement = $map[$placement] ?? 1;
-
-        return $this;
+        $this->addScript();
     }
 
     protected function addScript()
@@ -128,24 +138,14 @@ $('{$this->selector}').on('mouseover', function () {
       time: 0,
       maxWidth: {$this->maxWidth},
     });
-    
+
     $(this).attr('layer-idx', idx);
 }).on('mouseleave', function () {
     layer.close($(this).attr('layer-idx'));
-    
+
     $(this).attr('layer-idx', '');
 });
 JS
         );
-    }
-
-    public function render()
-    {
-        if ($this->built) {
-            return;
-        }
-        $this->built = true;
-
-        $this->addScript();
     }
 }

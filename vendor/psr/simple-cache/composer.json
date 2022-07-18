@@ -1,7 +1,13 @@
 {
     "name": "psr/simple-cache",
     "description": "Common interfaces for simple caching",
-    "keywords": ["psr", "psr-16", "cache", "simple-cache", "caching"],
+    "keywords": [
+        "psr",
+        "psr-16",
+        "cache",
+        "simple-cache",
+        "caching"
+    ],
     "license": "MIT",
     "authors": [
         {

@@ -13,9 +13,31 @@ class ImporterTest extends TestCase
      */
     public function testCsv()
     {
-        $file = __DIR__.'/../resources/test.csv';
+        $file = __DIR__ . '/../resources/test.csv';
 
         $this->assertSheet($file, 0);
+    }
+
+    protected function assertSheet($file, $key)
+    {
+        $sheetsArray = Excel::import($file)->toArray();
+
+        $this->assertIsArray($sheetsArray);
+        $this->assertEquals(count($sheetsArray), 1);
+
+        $this->assertTrue(isset($sheetsArray[$key]));
+        $this->assertIsArray($sheetsArray[$key]);
+
+        $this->validateSheetArray($sheetsArray[$key]);
+    }
+
+    protected function validateSheetArray(array $sheetArray)
+    {
+        $this->assertEquals(count($sheetArray), 50);
+
+        $users = include __DIR__ . '/../resources/users.php';
+
+        $this->assertEquals(array_values($sheetArray), array_slice($users, 0, 50));
     }
 
     /**
@@ -23,7 +45,7 @@ class ImporterTest extends TestCase
      */
     public function testXlsx()
     {
-        $file = __DIR__.'/../resources/test.xlsx';
+        $file = __DIR__ . '/../resources/test.xlsx';
 
         $this->assertSheet($file, 'Sheet1');
     }
@@ -33,8 +55,8 @@ class ImporterTest extends TestCase
      */
     public function testWithHeadings()
     {
-        $xlsx = __DIR__.'/../resources/test.xlsx';
-        $csv = __DIR__.'/../resources/test.csv';
+        $xlsx = __DIR__ . '/../resources/test.xlsx';
+        $csv = __DIR__ . '/../resources/test.csv';
 
         $headers = [
             'ID', 'NAME', 'EMAIL',
@@ -62,8 +84,8 @@ class ImporterTest extends TestCase
      */
     public function testWithoutHeadings()
     {
-        $xlsx = __DIR__.'/../resources/test.xlsx';
-        $csv = __DIR__.'/../resources/test.csv';
+        $xlsx = __DIR__ . '/../resources/test.xlsx';
+        $csv = __DIR__ . '/../resources/test.csv';
 
         // xlsx
         $sheetArray = Excel::import($xlsx)
@@ -88,13 +110,13 @@ class ImporterTest extends TestCase
     public function testWorking()
     {
         // xlsx
-        $file = __DIR__.'/../resources/test.xlsx';
+        $file = __DIR__ . '/../resources/test.xlsx';
 
         $sheetArray = Excel::import($file)->active()->toArray();
         $this->validateSheetArray($sheetArray);
 
         // csv
-        $file = __DIR__.'/../resources/test.csv';
+        $file = __DIR__ . '/../resources/test.csv';
 
         $sheetArray = Excel::import($file)->active()->toArray();
         $this->validateSheetArray($sheetArray);
@@ -106,13 +128,13 @@ class ImporterTest extends TestCase
     public function testFirst()
     {
         // xlsx
-        $file = __DIR__.'/../resources/test.xlsx';
+        $file = __DIR__ . '/../resources/test.xlsx';
 
         $sheetArray = Excel::import($file)->first()->toArray();
         $this->validateSheetArray($sheetArray);
 
         // csv
-        $file = __DIR__.'/../resources/test.csv';
+        $file = __DIR__ . '/../resources/test.csv';
 
         $sheetArray = Excel::import($file)->first()->toArray();
         $this->validateSheetArray($sheetArray);
@@ -124,7 +146,7 @@ class ImporterTest extends TestCase
     public function testGetSheet()
     {
         // xlsx
-        $xlsx = __DIR__.'/../resources/test.xlsx';
+        $xlsx = __DIR__ . '/../resources/test.xlsx';
 
         $sheetArray = Excel::import($xlsx)->sheet('Sheet1')->toArray();
         $this->validateSheetArray($sheetArray);
@@ -133,7 +155,7 @@ class ImporterTest extends TestCase
         $this->validateSheetArray($sheetArray);
 
         // csv
-        $csv = __DIR__.'/../resources/test.csv';
+        $csv = __DIR__ . '/../resources/test.csv';
 
         $sheetArray = Excel::import($csv)->sheet(0)->toArray();
         $this->validateSheetArray($sheetArray);
@@ -144,8 +166,8 @@ class ImporterTest extends TestCase
      */
     public function testEach()
     {
-        $xlsx = __DIR__.'/../resources/test.xlsx';
-        $csv = __DIR__.'/../resources/test.csv';
+        $xlsx = __DIR__ . '/../resources/test.xlsx';
+        $csv = __DIR__ . '/../resources/test.csv';
 
         Excel::import($xlsx)->each(function (Contracts\Sheet $sheet) {
             $this->validateSheetArray($sheet->toArray());
@@ -169,7 +191,7 @@ class ImporterTest extends TestCase
      */
     public function testHeadingRow()
     {
-        $xlsx = __DIR__.'/../resources/heading.xlsx';
+        $xlsx = __DIR__ . '/../resources/heading.xlsx';
 
         $sheetArray = Excel::import($xlsx)
             ->headingRow(2)
@@ -196,8 +218,8 @@ class ImporterTest extends TestCase
      */
     public function testFilter()
     {
-        $xlsx = __DIR__.'/../resources/test.xlsx';
-        $csv = __DIR__.'/../resources/test.csv';
+        $xlsx = __DIR__ . '/../resources/test.xlsx';
+        $csv = __DIR__ . '/../resources/test.csv';
 
         $sheetArray = Excel::import($xlsx)
             ->sheet('Sheet1')
@@ -208,7 +230,7 @@ class ImporterTest extends TestCase
 
         $this->assertEquals(count($sheetArray), 40);
 
-        $users = include __DIR__.'/../resources/users.php';
+        $users = include __DIR__ . '/../resources/users.php';
 
         $this->assertEquals(array_values($sheetArray), array_values(array_slice($users, 10, 40)));
 
@@ -222,27 +244,5 @@ class ImporterTest extends TestCase
 
         $this->assertEquals(count($sheetArray), 40);
         $this->assertEquals(array_values($sheetArray), array_values(array_slice($users, 10, 40)));
-    }
-
-    protected function assertSheet($file, $key)
-    {
-        $sheetsArray = Excel::import($file)->toArray();
-
-        $this->assertIsArray($sheetsArray);
-        $this->assertEquals(count($sheetsArray), 1);
-
-        $this->assertTrue(isset($sheetsArray[$key]));
-        $this->assertIsArray($sheetsArray[$key]);
-
-        $this->validateSheetArray($sheetsArray[$key]);
-    }
-
-    protected function validateSheetArray(array $sheetArray)
-    {
-        $this->assertEquals(count($sheetArray), 50);
-
-        $users = include __DIR__.'/../resources/users.php';
-
-        $this->assertEquals(array_values($sheetArray), array_slice($users, 0, 50));
     }
 }

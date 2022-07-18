@@ -2,7 +2,7 @@
 
 > **Note**: If you're using Laravel 6, you must publish Laravel's auth
 > scaffolding by running the following commands before continuing on:
-> 
+>
 > ```bash
 > composer require laravel/ui --dev
 >
@@ -33,7 +33,7 @@ value inside the `users` authentication provider to `ldap`:
 > verification.
 >
 > You can do so in your `routes/web.php` file via:
-> 
+>
 > ```php
 > Auth::routes([
 >    'reset' => false,

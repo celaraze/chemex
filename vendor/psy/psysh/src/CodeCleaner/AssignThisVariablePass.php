@@ -26,9 +26,9 @@ class AssignThisVariablePass extends CodeCleanerPass
     /**
      * Validate that the user input does not assign the `$this` variable.
      *
+     * @param Node $node
      * @throws FatalErrorException if the user assign the `$this` variable
      *
-     * @param Node $node
      */
     public function enterNode(Node $node)
     {

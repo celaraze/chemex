@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
-use const PHP_VERSION;
 use function get_class;
 use function gettype;
 use function strtolower;
 use function version_compare;
+use const PHP_VERSION;
 
 abstract class Type
 {
@@ -89,6 +90,10 @@ abstract class Type
         return ($this->allowsNull() ? '?' : '') . $this->name();
     }
 
+    abstract public function allowsNull(): bool;
+
+    abstract public function name(): string;
+
     public function isCallable(): bool
     {
         return false;
@@ -160,8 +165,4 @@ abstract class Type
     }
 
     abstract public function isAssignable(self $other): bool;
-
-    abstract public function name(): string;
-
-    abstract public function allowsNull(): bool;
 }

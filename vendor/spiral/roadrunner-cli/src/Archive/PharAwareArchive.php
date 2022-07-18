@@ -42,7 +42,7 @@ abstract class PharAwareArchive extends Archive
     {
         $phar = $this->open($this->archive);
 
-        if (! $phar->isReadable()) {
+        if (!$phar->isReadable()) {
             throw new \LogicException(\sprintf('Could not open "%s" for reading', $this->archive->getPathname()));
         }
 

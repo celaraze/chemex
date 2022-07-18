@@ -22,32 +22,32 @@ class DateFormatHelper
         self::KEY_GENERAL => [
             // Time
             'am/pm' => 'A',  // Uppercase Ante meridiem and Post meridiem
-            ':mm'   => ':i', // Minutes with leading zeros - if preceded by a ":" (otherwise month)
-            'mm:'   => 'i:', // Minutes with leading zeros - if followed by a ":" (otherwise month)
-            'ss'    => 's',  // Seconds, with leading zeros
-            '.s'    => '',   // Ignore (fractional seconds format does not exist in PHP)
+            ':mm' => ':i', // Minutes with leading zeros - if preceded by a ":" (otherwise month)
+            'mm:' => 'i:', // Minutes with leading zeros - if followed by a ":" (otherwise month)
+            'ss' => 's',  // Seconds, with leading zeros
+            '.s' => '',   // Ignore (fractional seconds format does not exist in PHP)
 
             // Date
-            'e'     => 'Y',  // Full numeric representation of a year, 4 digits
-            'yyyy'  => 'Y',  // Full numeric representation of a year, 4 digits
-            'yy'    => 'y',  // Two digit representation of a year
+            'e' => 'Y',  // Full numeric representation of a year, 4 digits
+            'yyyy' => 'Y',  // Full numeric representation of a year, 4 digits
+            'yy' => 'y',  // Two digit representation of a year
             'mmmmm' => 'M',  // Short textual representation of a month, three letters ("mmmmm" should only contain the 1st letter...)
-            'mmmm'  => 'F',  // Full textual representation of a month
-            'mmm'   => 'M',  // Short textual representation of a month, three letters
-            'mm'    => 'm',  // Numeric representation of a month, with leading zeros
-            'm'     => 'n',  // Numeric representation of a month, without leading zeros
-            'dddd'  => 'l',  // Full textual representation of the day of the week
-            'ddd'   => 'D',  // Textual representation of a day, three letters
-            'dd'    => 'd',  // Day of the month, 2 digits with leading zeros
-            'd'     => 'j',  // Day of the month without leading zeros
+            'mmmm' => 'F',  // Full textual representation of a month
+            'mmm' => 'M',  // Short textual representation of a month, three letters
+            'mm' => 'm',  // Numeric representation of a month, with leading zeros
+            'm' => 'n',  // Numeric representation of a month, without leading zeros
+            'dddd' => 'l',  // Full textual representation of the day of the week
+            'ddd' => 'D',  // Textual representation of a day, three letters
+            'dd' => 'd',  // Day of the month, 2 digits with leading zeros
+            'd' => 'j',  // Day of the month without leading zeros
         ],
         self::KEY_HOUR_12 => [
-            'hh'    => 'h',  // 12-hour format of an hour without leading zeros
-            'h'     => 'g',  // 12-hour format of an hour without leading zeros
+            'hh' => 'h',  // 12-hour format of an hour without leading zeros
+            'h' => 'g',  // 12-hour format of an hour without leading zeros
         ],
         self::KEY_HOUR_24 => [
-            'hh'    => 'H',  // 24-hour hours with leading zero
-            'h'     => 'G',  // 24-hour format of an hour without leading zeros
+            'hh' => 'H',  // 24-hour hours with leading zero
+            'h' => 'G',  // 24-hour format of an hour without leading zeros
         ],
     ];
 

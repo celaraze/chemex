@@ -25,8 +25,8 @@ interface WorkbookManagerInterface
      * Creates a new sheet in the workbook and make it the current sheet.
      * The writing will resume where it stopped (i.e. data won't be truncated).
      *
-     * @throws IOException If unable to open the sheet for writing
      * @return Worksheet The created sheet
+     * @throws IOException If unable to open the sheet for writing
      */
     public function addNewSheetAndMakeItCurrent();
 
@@ -47,8 +47,8 @@ interface WorkbookManagerInterface
      * The writing will resume where it stopped (i.e. data won't be truncated).
      *
      * @param Sheet $sheet The "external" sheet to set as current
-     * @throws SheetNotFoundException If the given sheet does not exist in the workbook
      * @return void
+     * @throws SheetNotFoundException If the given sheet does not exist in the workbook
      */
     public function setCurrentSheet(Sheet $sheet);
 
@@ -58,9 +58,9 @@ interface WorkbookManagerInterface
      * with the creation of new worksheets if one worksheet has reached its maximum capicity.
      *
      * @param Row $row The row to be added
-     * @throws IOException If trying to create a new sheet and unable to open the sheet for writing
-     * @throws WriterException If unable to write data
      * @return void
+     * @throws WriterException If unable to write data
+     * @throws IOException If trying to create a new sheet and unable to open the sheet for writing
      */
     public function addRowToCurrentWorksheet(Row $row);
 

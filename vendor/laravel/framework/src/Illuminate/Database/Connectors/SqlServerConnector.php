@@ -22,7 +22,7 @@ class SqlServerConnector extends Connector implements ConnectorInterface
     /**
      * Establish a database connection.
      *
-     * @param  array  $config
+     * @param array $config
      * @return \PDO
      */
     public function connect(array $config)
@@ -35,7 +35,7 @@ class SqlServerConnector extends Connector implements ConnectorInterface
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -57,45 +57,41 @@ class SqlServerConnector extends Connector implements ConnectorInterface
     /**
      * Determine if the database configuration prefers ODBC.
      *
-     * @param  array  $config
+     * @param array $config
      * @return bool
      */
     protected function prefersOdbc(array $config)
     {
         return in_array('odbc', $this->getAvailableDrivers()) &&
-               ($config['odbc'] ?? null) === true;
+            ($config['odbc'] ?? null) === true;
     }
 
     /**
-     * Get the DSN string for a DbLib connection.
+     * Get the available PDO drivers.
      *
-     * @param  array  $config
-     * @return string
+     * @return array
      */
-    protected function getDblibDsn(array $config)
+    protected function getAvailableDrivers()
     {
-        return $this->buildConnectString('dblib', array_merge([
-            'host' => $this->buildHostString($config, ':'),
-            'dbname' => $config['database'],
-        ], Arr::only($config, ['appname', 'charset', 'version'])));
+        return PDO::getAvailableDrivers();
     }
 
     /**
      * Get the DSN string for an ODBC connection.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getOdbcDsn(array $config)
     {
         return isset($config['odbc_datasource_name'])
-                    ? 'odbc:'.$config['odbc_datasource_name'] : '';
+            ? 'odbc:' . $config['odbc_datasource_name'] : '';
     }
 
     /**
      * Get the DSN string for a SqlSrv connection.
      *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getSqlSrvDsn(array $config)
@@ -164,24 +160,10 @@ class SqlServerConnector extends Connector implements ConnectorInterface
     }
 
     /**
-     * Build a connection string from the given arguments.
-     *
-     * @param  string  $driver
-     * @param  array  $arguments
-     * @return string
-     */
-    protected function buildConnectString($driver, array $arguments)
-    {
-        return $driver.':'.implode(';', array_map(function ($key) use ($arguments) {
-            return sprintf('%s=%s', $key, $arguments[$key]);
-        }, array_keys($arguments)));
-    }
-
-    /**
      * Build a host string from the given configuration.
      *
-     * @param  array  $config
-     * @param  string  $separator
+     * @param array $config
+     * @param string $separator
      * @return string
      */
     protected function buildHostString(array $config, $separator)
@@ -190,16 +172,34 @@ class SqlServerConnector extends Connector implements ConnectorInterface
             return $config['host'];
         }
 
-        return $config['host'].$separator.$config['port'];
+        return $config['host'] . $separator . $config['port'];
     }
 
     /**
-     * Get the available PDO drivers.
+     * Build a connection string from the given arguments.
      *
-     * @return array
+     * @param string $driver
+     * @param array $arguments
+     * @return string
      */
-    protected function getAvailableDrivers()
+    protected function buildConnectString($driver, array $arguments)
     {
-        return PDO::getAvailableDrivers();
+        return $driver . ':' . implode(';', array_map(function ($key) use ($arguments) {
+                return sprintf('%s=%s', $key, $arguments[$key]);
+            }, array_keys($arguments)));
+    }
+
+    /**
+     * Get the DSN string for a DbLib connection.
+     *
+     * @param array $config
+     * @return string
+     */
+    protected function getDblibDsn(array $config)
+    {
+        return $this->buildConnectString('dblib', array_merge([
+            'host' => $this->buildHostString($config, ':'),
+            'dbname' => $config['database'],
+        ], Arr::only($config, ['appname', 'charset', 'version'])));
     }
 }

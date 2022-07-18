@@ -45,9 +45,9 @@ interface DceSecurityGeneratorInterface
      * @return string A binary string
      */
     public function generate(
-        int $localDomain,
+        int            $localDomain,
         ?IntegerObject $localIdentifier = null,
-        ?Hexadecimal $node = null,
-        ?int $clockSeq = null
+        ?Hexadecimal   $node = null,
+        ?int           $clockSeq = null
     ): string;
 }

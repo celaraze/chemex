@@ -30,7 +30,7 @@ final class Version
     public function __construct(string $release, string $path)
     {
         $this->release = $release;
-        $this->path    = $path;
+        $this->path = $path;
     }
 
     public function getVersion(): string

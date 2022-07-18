@@ -18,7 +18,7 @@ class Dimensions
     /**
      * Create a new dimensions rule instance.
      *
-     * @param  array  $constraints
+     * @param array $constraints
      * @return void
      */
     public function __construct(array $constraints = [])
@@ -29,7 +29,7 @@ class Dimensions
     /**
      * Set the "width" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function width($value)
@@ -42,7 +42,7 @@ class Dimensions
     /**
      * Set the "height" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function height($value)
@@ -55,7 +55,7 @@ class Dimensions
     /**
      * Set the "min width" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function minWidth($value)
@@ -68,7 +68,7 @@ class Dimensions
     /**
      * Set the "min height" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function minHeight($value)
@@ -81,7 +81,7 @@ class Dimensions
     /**
      * Set the "max width" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function maxWidth($value)
@@ -94,7 +94,7 @@ class Dimensions
     /**
      * Set the "max height" constraint.
      *
-     * @param  int  $value
+     * @param int $value
      * @return $this
      */
     public function maxHeight($value)
@@ -107,7 +107,7 @@ class Dimensions
     /**
      * Set the "ratio" constraint.
      *
-     * @param  float  $value
+     * @param float $value
      * @return $this
      */
     public function ratio($value)
@@ -130,6 +130,6 @@ class Dimensions
             $result .= "$key=$value,";
         }
 
-        return 'dimensions:'.substr($result, 0, -1);
+        return 'dimensions:' . substr($result, 0, -1);
     }
 }

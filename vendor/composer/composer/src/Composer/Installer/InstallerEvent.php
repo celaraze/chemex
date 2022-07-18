@@ -47,11 +47,11 @@ class InstallerEvent extends Event
     /**
      * Constructor.
      *
-     * @param string      $eventName
-     * @param Composer    $composer
+     * @param string $eventName
+     * @param Composer $composer
      * @param IOInterface $io
-     * @param bool        $devMode
-     * @param bool        $executeOperations
+     * @param bool $devMode
+     * @param bool $executeOperations
      * @param Transaction $transaction
      */
     public function __construct(string $eventName, Composer $composer, IOInterface $io, bool $devMode, bool $executeOperations, Transaction $transaction)

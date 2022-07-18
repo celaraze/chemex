@@ -38,9 +38,9 @@ class NotSoftDeletedInDatabase extends Constraint
     /**
      * Create a new constraint instance.
      *
-     * @param  \Illuminate\Database\Connection  $database
-     * @param  array  $data
-     * @param  string  $deletedAtColumn
+     * @param \Illuminate\Database\Connection $database
+     * @param array $data
+     * @param string $deletedAtColumn
      * @return void
      */
     public function __construct(Connection $database, array $data, string $deletedAtColumn)
@@ -53,7 +53,7 @@ class NotSoftDeletedInDatabase extends Constraint
     /**
      * Check if the data is found in the given table.
      *
-     * @param  string  $table
+     * @param string $table
      * @return bool
      */
     public function matches($table): bool
@@ -67,7 +67,7 @@ class NotSoftDeletedInDatabase extends Constraint
     /**
      * Get the description of the failure.
      *
-     * @param  string  $table
+     * @param string $table
      * @return string
      */
     public function failureDescription($table): string
@@ -79,9 +79,19 @@ class NotSoftDeletedInDatabase extends Constraint
     }
 
     /**
+     * Get a string representation of the object.
+     *
+     * @return string
+     */
+    public function toString(): string
+    {
+        return json_encode($this->data);
+    }
+
+    /**
      * Get additional info about the records found in the database table.
      *
-     * @param  string  $table
+     * @param string $table
      * @return string
      */
     protected function getAdditionalInfo($table)
@@ -94,22 +104,12 @@ class NotSoftDeletedInDatabase extends Constraint
             return 'The table is empty';
         }
 
-        $description = 'Found: '.json_encode($results, JSON_PRETTY_PRINT);
+        $description = 'Found: ' . json_encode($results, JSON_PRETTY_PRINT);
 
         if ($query->count() > $this->show) {
             $description .= sprintf(' and %s others', $query->count() - $this->show);
         }
 
         return $description;
-    }
-
-    /**
-     * Get a string representation of the object.
-     *
-     * @return string
-     */
-    public function toString(): string
-    {
-        return json_encode($this->data);
     }
 }

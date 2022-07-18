@@ -46,23 +46,33 @@ trait Excel
     protected $csvConfiguration = [
         'delimiter' => ',',
         'enclosure' => '"',
-        'encoding'  => 'UTF-8',
-        'bom'       => true,
+        'encoding' => 'UTF-8',
+        'bom' => true,
     ];
 
     /**
-     * @param  string|null  $type
-     * @return $this
+     * Generate a more truly "random" alpha-numeric string.
+     *
+     * @param int $length
+     * @return string
      */
-    public function type(?string $type)
+    public static function generateRandomString($length = 16)
     {
-        $this->type = $type;
+        $string = '';
 
-        return $this;
+        while (($len = strlen($string)) < $length) {
+            $size = $length - $len;
+
+            $bytes = random_bytes($size);
+
+            $string .= substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $size);
+        }
+
+        return $string;
     }
 
     /**
-     * @param  \Closure  $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function option(\Closure $callback)
@@ -73,7 +83,7 @@ trait Excel
     }
 
     /**
-     * @param  array|\Closure|false  $headings
+     * @param array|\Closure|false $headings
      * @return $this
      */
     public function headings($headings)
@@ -119,6 +129,17 @@ trait Excel
     }
 
     /**
+     * @param string|null $type
+     * @return $this
+     */
+    public function type(?string $type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
      * @return $this
      */
     public function ods()
@@ -143,7 +164,7 @@ trait Excel
     }
 
     /**
-     * @param  FilesystemInterface|FilesystemOperator|LaravelFilesystem|string  $filesystem
+     * @param FilesystemInterface|FilesystemOperator|LaravelFilesystem|string $filesystem
      * @return $this
      */
     public function disk($filesystem)
@@ -157,6 +178,25 @@ trait Excel
         }
 
         $this->filesystem = $filesystem;
+
+        return $this;
+    }
+
+    /**
+     * @param string $delimiter
+     * @param string $enclosure
+     * @param string $encoding
+     * @param bool $bom
+     * @return $this
+     */
+    public function configureCsv(
+        string $delimiter = ',',
+        string $enclosure = '"',
+        string $encoding = 'UTF-8',
+        bool   $bom = false
+    )
+    {
+        $this->csvConfiguration = compact('delimiter', 'enclosure', 'encoding', 'bom');
 
         return $this;
     }
@@ -178,25 +218,7 @@ trait Excel
     }
 
     /**
-     * @param  string  $delimiter
-     * @param  string  $enclosure
-     * @param  string  $encoding
-     * @param  bool  $bom
-     * @return $this
-     */
-    public function configureCsv(
-        string $delimiter = ',',
-        string $enclosure = '"',
-        string $encoding = 'UTF-8',
-        bool $bom = false
-    ) {
-        $this->csvConfiguration = compact('delimiter', 'enclosure', 'encoding', 'bom');
-
-        return $this;
-    }
-
-    /**
-     * @param  \Box\Spout\Reader\ReaderInterface|\Box\Spout\Writer\WriterInterface  $readerOrWriter
+     * @param \Box\Spout\Reader\ReaderInterface|\Box\Spout\Writer\WriterInterface $readerOrWriter
      */
     protected function configure(&$readerOrWriter)
     {
@@ -219,7 +241,7 @@ trait Excel
     }
 
     /**
-     * @param  string  $fileName
+     * @param string $fileName
      * @return string|UploadedFile
      */
     protected function prepareFileName($fileName)
@@ -229,14 +251,14 @@ trait Excel
         }
 
         if ($this->type && strpos($fileName, '.') === false) {
-            return $fileName.'.'.$this->type;
+            return $fileName . '.' . $this->type;
         }
 
         return $fileName;
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return array
      */
     protected function convertToArray($value)
@@ -249,27 +271,6 @@ trait Excel
             return $value->toArray();
         }
 
-        return (array) $value;
-    }
-
-    /**
-     * Generate a more truly "random" alpha-numeric string.
-     *
-     * @param  int  $length
-     * @return string
-     */
-    public static function generateRandomString($length = 16)
-    {
-        $string = '';
-
-        while (($len = strlen($string)) < $length) {
-            $size = $length - $len;
-
-            $bytes = random_bytes($size);
-
-            $string .= substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $size);
-        }
-
-        return $string;
+        return (array)$value;
     }
 }

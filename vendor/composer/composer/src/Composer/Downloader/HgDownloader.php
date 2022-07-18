@@ -12,16 +12,32 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Hg as HgUtils;
+use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
  */
 class HgDownloader extends VcsDownloader
 {
+    /**
+     * @inheritDoc
+     */
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
+    {
+        if (!is_dir($path . '/.hg')) {
+            return null;
+        }
+
+        $this->process->execute('hg st', $output, realpath($path));
+
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
+    }
+
     /**
      * @inheritDoc
      */
@@ -64,10 +80,10 @@ class HgDownloader extends VcsDownloader
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
         $ref = $target->getSourceReference();
-        $this->io->writeError(" Updating to ".$target->getSourceReference());
+        $this->io->writeError(" Updating to " . $target->getSourceReference());
 
         if (!$this->hasMetadataRepository($path)) {
-            throw new \RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
+            throw new \RuntimeException('The .hg directory is missing from ' . $path . ', see https://getcomposer.org/commit-deps for more information');
         }
 
         $command = function ($url) use ($ref): string {
@@ -82,17 +98,9 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, string $path): ?string
+    protected function hasMetadataRepository(string $path): bool
     {
-        if (!is_dir($path.'/.hg')) {
-            return null;
-        }
-
-        $this->process->execute('hg st', $output, realpath($path));
-
-        $output = trim($output);
-
-        return strlen($output) > 0 ? $output : null;
+        return is_dir($path . '/.hg');
     }
 
     /**
@@ -107,13 +115,5 @@ class HgDownloader extends VcsDownloader
         }
 
         return $output;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function hasMetadataRepository(string $path): bool
-    {
-        return is_dir($path . '/.hg');
     }
 }

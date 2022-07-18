@@ -36,11 +36,11 @@ class MaintenanceModeException extends ServiceUnavailableHttpException
     /**
      * Create a new exception instance.
      *
-     * @param  int  $time
-     * @param  int|null  $retryAfter
-     * @param  string|null  $message
-     * @param  \Throwable|null  $previous
-     * @param  int  $code
+     * @param int $time
+     * @param int|null $retryAfter
+     * @param string|null $message
+     * @param \Throwable|null $previous
+     * @param int $code
      * @return void
      */
     public function __construct($time, $retryAfter = null, $message = null, Throwable $previous = null, $code = 0)

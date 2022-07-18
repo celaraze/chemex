@@ -12,9 +12,9 @@
 namespace Monolog\Handler;
 
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Handler\Slack\SlackRecord;
 use Monolog\Logger;
 use Monolog\Utils;
-use Monolog\Handler\Slack\SlackRecord;
 
 /**
  * Sends notifications through Slack Webhooks
@@ -37,27 +37,28 @@ class SlackWebhookHandler extends AbstractProcessingHandler
     private $slackRecord;
 
     /**
-     * @param string      $webhookUrl             Slack Webhook URL
-     * @param string|null $channel                Slack channel (encoded ID or name)
-     * @param string|null $username               Name of a bot
-     * @param bool        $useAttachment          Whether the message should be added to Slack as attachment (plain text otherwise)
-     * @param string|null $iconEmoji              The emoji name to use (or null)
-     * @param bool        $useShortAttachment     Whether the the context/extra messages added to Slack as attachments are in a short style
-     * @param bool        $includeContextAndExtra Whether the attachment should include context and extra data
-     * @param string[]    $excludeFields          Dot separated list of fields to exclude from slack message. E.g. ['context.field1', 'extra.field2']
+     * @param string $webhookUrl Slack Webhook URL
+     * @param string|null $channel Slack channel (encoded ID or name)
+     * @param string|null $username Name of a bot
+     * @param bool $useAttachment Whether the message should be added to Slack as attachment (plain text otherwise)
+     * @param string|null $iconEmoji The emoji name to use (or null)
+     * @param bool $useShortAttachment Whether the the context/extra messages added to Slack as attachments are in a short style
+     * @param bool $includeContextAndExtra Whether the attachment should include context and extra data
+     * @param string[] $excludeFields Dot separated list of fields to exclude from slack message. E.g. ['context.field1', 'extra.field2']
      */
     public function __construct(
-        string $webhookUrl,
+        string  $webhookUrl,
         ?string $channel = null,
         ?string $username = null,
-        bool $useAttachment = true,
+        bool    $useAttachment = true,
         ?string $iconEmoji = null,
-        bool $useShortAttachment = false,
-        bool $includeContextAndExtra = false,
-        $level = Logger::CRITICAL,
-        bool $bubble = true,
-        array $excludeFields = array()
-    ) {
+        bool    $useShortAttachment = false,
+        bool    $includeContextAndExtra = false,
+                $level = Logger::CRITICAL,
+        bool    $bubble = true,
+        array   $excludeFields = array()
+    )
+    {
         if (!extension_loaded('curl')) {
             throw new MissingExtensionException('The curl extension is needed to use the SlackWebhookHandler');
         }
@@ -87,6 +88,22 @@ class SlackWebhookHandler extends AbstractProcessingHandler
         return $this->webhookUrl;
     }
 
+    public function getFormatter(): FormatterInterface
+    {
+        $formatter = parent::getFormatter();
+        $this->slackRecord->setFormatter($formatter);
+
+        return $formatter;
+    }
+
+    public function setFormatter(FormatterInterface $formatter): HandlerInterface
+    {
+        parent::setFormatter($formatter);
+        $this->slackRecord->setFormatter($formatter);
+
+        return $this;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -110,21 +127,5 @@ class SlackWebhookHandler extends AbstractProcessingHandler
         curl_setopt_array($ch, $options);
 
         Curl\Util::execute($ch);
-    }
-
-    public function setFormatter(FormatterInterface $formatter): HandlerInterface
-    {
-        parent::setFormatter($formatter);
-        $this->slackRecord->setFormatter($formatter);
-
-        return $this;
-    }
-
-    public function getFormatter(): FormatterInterface
-    {
-        $formatter = parent::getFormatter();
-        $this->slackRecord->setFormatter($formatter);
-
-        return $formatter;
     }
 }

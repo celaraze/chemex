@@ -21,8 +21,8 @@ class CallbackHandler extends Handler
     protected $callable;
 
     /**
+     * @param callable $callable
      * @throws InvalidArgumentException If argument is not callable
-     * @param  callable                 $callable
      */
     public function __construct($callable)
     {
@@ -42,8 +42,8 @@ class CallbackHandler extends Handler
     {
         $exception = $this->getException();
         $inspector = $this->getInspector();
-        $run       = $this->getRun();
-        $callable  = $this->callable;
+        $run = $this->getRun();
+        $callable = $this->callable;
 
         // invoke the callable directly, to get simpler stacktraces (in comparison to call_user_func).
         // this assumes that $callable is a properly typed php-callable, which we check in __construct().

@@ -26,8 +26,8 @@ class ContainerCommandLoader implements CommandLoaderInterface
     /**
      * Create a new command loader instance.
      *
-     * @param  \Psr\Container\ContainerInterface  $container
-     * @param  array  $commandMap
+     * @param \Psr\Container\ContainerInterface $container
+     * @param array $commandMap
      * @return void
      */
     public function __construct(ContainerInterface $container, array $commandMap)
@@ -39,14 +39,14 @@ class ContainerCommandLoader implements CommandLoaderInterface
     /**
      * Resolve a command from the container.
      *
-     * @param  string  $name
+     * @param string $name
      * @return \Symfony\Component\Console\Command\Command
      *
      * @throws \Symfony\Component\Console\Exception\CommandNotFoundException
      */
     public function get(string $name): Command
     {
-        if (! $this->has($name)) {
+        if (!$this->has($name)) {
             throw new CommandNotFoundException(sprintf('Command "%s" does not exist.', $name));
         }
 
@@ -56,7 +56,7 @@ class ContainerCommandLoader implements CommandLoaderInterface
     /**
      * Determines if a command exists.
      *
-     * @param  string  $name
+     * @param string $name
      * @return bool
      */
     public function has(string $name): bool

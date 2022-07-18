@@ -1,4 +1,3 @@
-
 [<img src="https://github-ads.s3.eu-central-1.amazonaws.com/support-ukraine.svg?t=1" />](https://supportukrainenow.org)
 
 # Ignition: a beautiful error page for PHP apps
@@ -39,7 +38,9 @@ There's also a beautiful dark mode.
 
 In [this video on YouTube](https://youtu.be/LEY0N0Bteew?t=739), you'll see a demo of all of the features.
 
-Do know more about the design decisions we made, read [this blog post](https://freek.dev/2168-ignition-the-most-beautiful-error-page-for-laravel-and-php-got-a-major-redesign).
+Do know more about the design decisions we made,
+read [this blog post](https://freek.dev/2168-ignition-the-most-beautiful-error-page-for-laravel-and-php-got-a-major-redesign)
+.
 
 ## Support us
 
@@ -66,7 +67,8 @@ composer require spatie/ignition
 
 ## Usage
 
-In order display the Ignition error page when an error occurs in your project, you must add this code. Typically, this would be done in the bootstrap part of your application.
+In order display the Ignition error page when an error occurs in your project, you must add this code. Typically, this
+would be done in the bootstrap part of your application.
 
 ```php
 \Spatie\Ignition\Ignition::make()->register();
@@ -263,7 +265,8 @@ use Spatie\FlareClient\Flare;
 
 ### Anonymize request to Flare
 
-By default, the Ignition collects information about the IP address of your application users. If you want don't want to send this information to Flare, call `anonymizeIp()`.
+By default, the Ignition collects information about the IP address of your application users. If you want don't want to
+send this information to Flare, call `anonymizeIp()`.
 
 ```php
 use Spatie\FlareClient\Flare;
@@ -279,11 +282,13 @@ use Spatie\FlareClient\Flare;
 
 ### Censoring request body fields
 
-When an exception occurs in a web request, the Flare client will pass on any request fields that are present in the body.
+When an exception occurs in a web request, the Flare client will pass on any request fields that are present in the
+body.
 
 In some cases, such as a login page, these request fields may contain a password that you don't want to send to Flare.
 
-To censor out values of certain fields, you can use call `censorRequestBodyFields`. You should pass it the names of the fields you wish to censor.
+To censor out values of certain fields, you can use call `censorRequestBodyFields`. You should pass it the names of the
+fields you wish to censor.
 
 ```php
 use Spatie\FlareClient\Flare;
@@ -301,7 +306,9 @@ This will replace the value of any sent fields named "password" with the value "
 
 ### Using middleware to modify data sent to Flare
 
-Before Flare receives the data that was collected from your local exception, we give you the ability to call custom middleware methods. These methods retrieve the report that should be sent to Flare and allow you to add custom information to that report.
+Before Flare receives the data that was collected from your local exception, we give you the ability to call custom
+middleware methods. These methods retrieve the report that should be sent to Flare and allow you to add custom
+information to that report.
 
 A valid middleware is any class that implements `FlareMiddleware`.
 
@@ -347,8 +354,10 @@ Please see [CONTRIBUTING](https://github.com/spatie/.github/blob/main/CONTRIBUTI
 
 Here are the steps you'll need to perform if you want to work on the UI of Ignition.
 
-- clone (or move) `spatie/ignition`, `spatie/ignition-ui`, `spatie/laravel-ignition`, `spatie/flare-client-php` and `spatie/ignition-test` into the same directory (e.g. `~/code/flare`)
+- clone (or move) `spatie/ignition`, `spatie/ignition-ui`, `spatie/laravel-ignition`, `spatie/flare-client-php`
+  and `spatie/ignition-test` into the same directory (e.g. `~/code/flare`)
 - create a new `package.json` file in `~/code/flare` directory:
+
 ```json
 {
     "private": true,
@@ -358,12 +367,14 @@ Here are the steps you'll need to perform if you want to work on the UI of Ignit
     ]
 }
 ```
+
 - run `yarn install` in the `~/code/flare` directory
 - in the `~/code/flare/ignition-test` directory
     - run `composer update`
     - run `cp .env.example .env`
     - run `php artisan key:generate`
-- http://ignition-test.test/ should now work (= show the new UI). If you use valet, you might want to run `valet park` inside the `~/code/flare` directory.
+- http://ignition-test.test/ should now work (= show the new UI). If you use valet, you might want to run `valet park`
+  inside the `~/code/flare` directory.
     - http://ignition-test.test/ has a bit of everything
     - http://ignition-test.test/sql-error has a solution and SQL exception
 

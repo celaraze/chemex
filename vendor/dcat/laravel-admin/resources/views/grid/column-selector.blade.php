@@ -1,4 +1,4 @@
-<span class="dropdown column-selector" >
+<span class="dropdown column-selector">
     <button class="btn btn-primary btn-outline dropdown-toggle" data-toggle="dropdown">
         <i class="fa fa-table"></i>
         <span class="caret"></span>

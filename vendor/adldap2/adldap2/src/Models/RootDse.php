@@ -12,6 +12,16 @@ use DateTime;
 class RootDse extends Model
 {
     /**
+     * Returns the hosts current time in the models date format.
+     *
+     * @return string
+     */
+    public function getCurrentTimeDate()
+    {
+        return (new DateTime())->setTimestamp($this->getCurrentTime())->format($this->dateFormat);
+    }
+
+    /**
      * Returns the hosts current time in unix timestamp format.
      *
      * @return int
@@ -21,16 +31,6 @@ class RootDse extends Model
         $time = $this->getFirstAttribute($this->schema->currentTime());
 
         return DateTime::createFromFormat($this->timestampFormat, $time)->getTimestamp();
-    }
-
-    /**
-     * Returns the hosts current time in the models date format.
-     *
-     * @return string
-     */
-    public function getCurrentTimeDate()
-    {
-        return (new DateTime())->setTimestamp($this->getCurrentTime())->format($this->dateFormat);
     }
 
     /**

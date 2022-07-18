@@ -68,6 +68,31 @@ class Worker implements WorkerInterface
     }
 
     /**
+     * Create a new RoadRunner {@see Worker} using global
+     * environment ({@see Environment}) configuration.
+     *
+     * @param bool $interceptSideEffects
+     * @return self
+     */
+    public static function create(bool $interceptSideEffects = true): self
+    {
+        return static::createFromEnvironment(Environment::fromGlobals(), $interceptSideEffects);
+    }
+
+    /**
+     * Create a new RoadRunner {@see Worker} using passed environment
+     * configuration.
+     *
+     * @param EnvironmentInterface $env
+     * @param bool $interceptSideEffects
+     * @return self
+     */
+    public static function createFromEnvironment(EnvironmentInterface $env, bool $interceptSideEffects = true): self
+    {
+        return new self(Relay::create($env->getRelayAddress()), $interceptSideEffects);
+    }
+
+    /**
      * @return LoggerInterface
      */
     public function getLogger(): LoggerInterface
@@ -94,60 +119,6 @@ class Worker implements WorkerInterface
             \substr($payload, $frame->options[0]),
             \substr($payload, 0, $frame->options[0])
         );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function respond(Payload $payload): void
-    {
-        $this->send($payload->body, $payload->header, $payload->eos);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function error(string $error): void
-    {
-        $frame = new Frame($error, [], Frame::ERROR);
-
-        $this->sendFrame($frame);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function stop(): void
-    {
-        $this->send('', $this->encode(['stop' => true]));
-    }
-
-    /**
-     * @param bool $eos End of stream
-     */
-    private function send(string $body = '', string $header = '', bool $eos = true): void
-    {
-        $frame = new Frame($header . $body, [\strlen($header)]);
-
-        if (!$eos) {
-            $frame->byte10 = Frame::BYTE10_STREAM;
-        }
-
-        $this->sendFrame($frame);
-    }
-
-    /**
-     * @param Frame $frame
-     */
-    private function sendFrame(Frame $frame): void
-    {
-        try {
-            $this->relay->send($frame);
-        } catch (GoridgeException $e) {
-            throw new TransportException($e->getMessage(), (int)$e->getCode(), $e);
-        } catch (\Throwable $e) {
-            throw new RoadRunnerException($e->getMessage(), (int)$e->getCode(), $e);
-        }
     }
 
     /**
@@ -189,7 +160,7 @@ class Worker implements WorkerInterface
     {
         $result = \json_decode($json, true, 512, self::JSON_DECODE_FLAGS);
 
-        if (! \is_array($result)) {
+        if (!\is_array($result)) {
             throw new \JsonException('Json message must be an array or object');
         }
 
@@ -206,27 +177,56 @@ class Worker implements WorkerInterface
     }
 
     /**
-     * Create a new RoadRunner {@see Worker} using global
-     * environment ({@see Environment}) configuration.
-     *
-     * @param bool $interceptSideEffects
-     * @return self
+     * @param Frame $frame
      */
-    public static function create(bool $interceptSideEffects = true): self
+    private function sendFrame(Frame $frame): void
     {
-        return static::createFromEnvironment(Environment::fromGlobals(), $interceptSideEffects);
+        try {
+            $this->relay->send($frame);
+        } catch (GoridgeException $e) {
+            throw new TransportException($e->getMessage(), (int)$e->getCode(), $e);
+        } catch (\Throwable $e) {
+            throw new RoadRunnerException($e->getMessage(), (int)$e->getCode(), $e);
+        }
     }
 
     /**
-     * Create a new RoadRunner {@see Worker} using passed environment
-     * configuration.
-     *
-     * @param EnvironmentInterface $env
-     * @param bool $interceptSideEffects
-     * @return self
+     * @param bool $eos End of stream
      */
-    public static function createFromEnvironment(EnvironmentInterface $env, bool $interceptSideEffects = true): self
+    private function send(string $body = '', string $header = '', bool $eos = true): void
     {
-        return new self(Relay::create($env->getRelayAddress()), $interceptSideEffects);
+        $frame = new Frame($header . $body, [\strlen($header)]);
+
+        if (!$eos) {
+            $frame->byte10 = Frame::BYTE10_STREAM;
+        }
+
+        $this->sendFrame($frame);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function respond(Payload $payload): void
+    {
+        $this->send($payload->body, $payload->header, $payload->eos);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function error(string $error): void
+    {
+        $frame = new Frame($error, [], Frame::ERROR);
+
+        $this->sendFrame($frame);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function stop(): void
+    {
+        $this->send('', $this->encode(['stop' => true]));
     }
 }

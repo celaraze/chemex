@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 /**
@@ -72,16 +73,16 @@ final class Php
 
     public function __construct(DirectoryCollection $includePaths, IniSettingCollection $iniSettings, ConstantCollection $constants, VariableCollection $globalVariables, VariableCollection $envVariables, VariableCollection $postVariables, VariableCollection $getVariables, VariableCollection $cookieVariables, VariableCollection $serverVariables, VariableCollection $filesVariables, VariableCollection $requestVariables)
     {
-        $this->includePaths     = $includePaths;
-        $this->iniSettings      = $iniSettings;
-        $this->constants        = $constants;
-        $this->globalVariables  = $globalVariables;
-        $this->envVariables     = $envVariables;
-        $this->postVariables    = $postVariables;
-        $this->getVariables     = $getVariables;
-        $this->cookieVariables  = $cookieVariables;
-        $this->serverVariables  = $serverVariables;
-        $this->filesVariables   = $filesVariables;
+        $this->includePaths = $includePaths;
+        $this->iniSettings = $iniSettings;
+        $this->constants = $constants;
+        $this->globalVariables = $globalVariables;
+        $this->envVariables = $envVariables;
+        $this->postVariables = $postVariables;
+        $this->getVariables = $getVariables;
+        $this->cookieVariables = $cookieVariables;
+        $this->serverVariables = $serverVariables;
+        $this->filesVariables = $filesVariables;
         $this->requestVariables = $requestVariables;
     }
 

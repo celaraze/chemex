@@ -9,11 +9,9 @@ trait HasExtension
      */
     protected $extension;
 
-    public function setExtension(ServiceProvider $serviceProvider)
+    public function getExtensionName()
     {
-        $this->extension = $serviceProvider;
-
-        return $this;
+        return $this->getExtension()->getName();
     }
 
     public function getExtension()
@@ -21,8 +19,10 @@ trait HasExtension
         return $this->extension;
     }
 
-    public function getExtensionName()
+    public function setExtension(ServiceProvider $serviceProvider)
     {
-        return $this->getExtension()->getName();
+        $this->extension = $serviceProvider;
+
+        return $this;
     }
 }

@@ -58,7 +58,7 @@ class SmtpTransport extends AbstractTransport
      * By default, the threshold is set to 100 (and no sleep at restart).
      *
      * @param int $threshold The maximum number of messages (0 to disable)
-     * @param int $sleep     The number of seconds to sleep between stopping and re-starting the transport
+     * @param int $sleep The number of seconds to sleep between stopping and re-starting the transport
      *
      * @return $this
      */
@@ -108,9 +108,9 @@ class SmtpTransport extends AbstractTransport
     {
         if ('' !== $domain && '[' !== $domain[0]) {
             if (filter_var($domain, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4)) {
-                $domain = '['.$domain.']';
+                $domain = '[' . $domain . ']';
             } elseif (filter_var($domain, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6)) {
-                $domain = '[IPv6:'.$domain.']';
+                $domain = '[IPv6:' . $domain . ']';
             }
         }
 
@@ -151,21 +151,6 @@ class SmtpTransport extends AbstractTransport
         return $message;
     }
 
-    public function __toString(): string
-    {
-        if ($this->stream instanceof SocketStream) {
-            $name = sprintf('smtp%s://%s', ($tls = $this->stream->isTLS()) ? 's' : '', $this->stream->getHost());
-            $port = $this->stream->getPort();
-            if (!(25 === $port || ($tls && 465 === $port))) {
-                $name .= ':'.$port;
-            }
-
-            return $name;
-        }
-
-        return 'smtp://sendmail';
-    }
-
     /**
      * Runs a command against the stream, expecting the given response codes.
      *
@@ -180,6 +165,141 @@ class SmtpTransport extends AbstractTransport
         $this->assertResponseCode($response, $codes);
 
         return $response;
+    }
+
+    private function getFullResponse(): string
+    {
+        $response = '';
+        do {
+            $line = $this->stream->readLine();
+            $response .= $line;
+        } while ($line && isset($line[3]) && ' ' !== $line[3]);
+
+        return $response;
+    }
+
+    /**
+     * @throws TransportException if a response code is incorrect
+     */
+    private function assertResponseCode(string $response, array $codes): void
+    {
+        if (!$codes) {
+            throw new LogicException('You must set the expected response code.');
+        }
+
+        if (!$response) {
+            throw new TransportException(sprintf('Expected response code "%s" but got an empty response.', implode('/', $codes)));
+        }
+
+        [$code] = sscanf($response, '%3d');
+        $valid = \in_array($code, $codes);
+
+        if (!$valid) {
+            throw new TransportException(sprintf('Expected response code "%s" but got code "%s", with message "%s".', implode('/', $codes), $code, trim($response)), $code);
+        }
+    }
+
+    private function checkRestartThreshold(): void
+    {
+        // when using sendmail via non-interactive mode, the transport is never "started"
+        if (!$this->started) {
+            return;
+        }
+
+        ++$this->restartCounter;
+        if ($this->restartCounter < $this->restartThreshold) {
+            return;
+        }
+
+        $this->stop();
+        if (0 < $sleep = $this->restartThresholdSleep) {
+            $this->getLogger()->debug(sprintf('Email transport "%s" sleeps for %d seconds after stopping', __CLASS__, $sleep));
+
+            sleep($sleep);
+        }
+        $this->start();
+        $this->restartCounter = 0;
+    }
+
+    /**
+     * Manually disconnect from the SMTP server.
+     *
+     * In most cases this is not necessary since the disconnect happens automatically on termination.
+     * In cases of long-running scripts, this might however make sense to avoid keeping an open
+     * connection to the SMTP server in between sending emails.
+     */
+    public function stop(): void
+    {
+        if (!$this->started) {
+            return;
+        }
+
+        $this->getLogger()->debug(sprintf('Email transport "%s" stopping', __CLASS__));
+
+        try {
+            $this->executeCommand("QUIT\r\n", [221]);
+        } catch (TransportExceptionInterface) {
+        } finally {
+            $this->stream->terminate();
+            $this->started = false;
+            $this->getLogger()->debug(sprintf('Email transport "%s" stopped', __CLASS__));
+        }
+    }
+
+    public function start(): void
+    {
+        if ($this->started) {
+            return;
+        }
+
+        $this->getLogger()->debug(sprintf('Email transport "%s" starting', __CLASS__));
+
+        $this->stream->initialize();
+        $this->assertResponseCode($this->getFullResponse(), [220]);
+        $this->doHeloCommand();
+        $this->started = true;
+        $this->lastMessageTime = 0;
+
+        $this->getLogger()->debug(sprintf('Email transport "%s" started', __CLASS__));
+    }
+
+    /**
+     * @internal since version 6.1, to be made private in 7.0
+     * @final since version 6.1, to be made private in 7.0
+     */
+    protected function doHeloCommand(): void
+    {
+        $this->executeCommand(sprintf("HELO %s\r\n", $this->domain), [250]);
+    }
+
+    public function __toString(): string
+    {
+        if ($this->stream instanceof SocketStream) {
+            $name = sprintf('smtp%s://%s', ($tls = $this->stream->isTLS()) ? 's' : '', $this->stream->getHost());
+            $port = $this->stream->getPort();
+            if (!(25 === $port || ($tls && 465 === $port))) {
+                $name .= ':' . $port;
+            }
+
+            return $name;
+        }
+
+        return 'smtp://sendmail';
+    }
+
+    public function __sleep(): array
+    {
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
+    }
+
+    public function __wakeup()
+    {
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
+    }
+
+    public function __destruct()
+    {
+        $this->stop();
     }
 
     protected function doSend(SentMessage $message): void
@@ -223,67 +343,6 @@ class SmtpTransport extends AbstractTransport
         }
     }
 
-    /**
-     * @internal since version 6.1, to be made private in 7.0
-     * @final since version 6.1, to be made private in 7.0
-     */
-    protected function doHeloCommand(): void
-    {
-        $this->executeCommand(sprintf("HELO %s\r\n", $this->domain), [250]);
-    }
-
-    private function doMailFromCommand(string $address): void
-    {
-        $this->executeCommand(sprintf("MAIL FROM:<%s>\r\n", $address), [250]);
-    }
-
-    private function doRcptToCommand(string $address): void
-    {
-        $this->executeCommand(sprintf("RCPT TO:<%s>\r\n", $address), [250, 251, 252]);
-    }
-
-    public function start(): void
-    {
-        if ($this->started) {
-            return;
-        }
-
-        $this->getLogger()->debug(sprintf('Email transport "%s" starting', __CLASS__));
-
-        $this->stream->initialize();
-        $this->assertResponseCode($this->getFullResponse(), [220]);
-        $this->doHeloCommand();
-        $this->started = true;
-        $this->lastMessageTime = 0;
-
-        $this->getLogger()->debug(sprintf('Email transport "%s" started', __CLASS__));
-    }
-
-    /**
-     * Manually disconnect from the SMTP server.
-     *
-     * In most cases this is not necessary since the disconnect happens automatically on termination.
-     * In cases of long-running scripts, this might however make sense to avoid keeping an open
-     * connection to the SMTP server in between sending emails.
-     */
-    public function stop(): void
-    {
-        if (!$this->started) {
-            return;
-        }
-
-        $this->getLogger()->debug(sprintf('Email transport "%s" stopping', __CLASS__));
-
-        try {
-            $this->executeCommand("QUIT\r\n", [221]);
-        } catch (TransportExceptionInterface) {
-        } finally {
-            $this->stream->terminate();
-            $this->started = false;
-            $this->getLogger()->debug(sprintf('Email transport "%s" stopped', __CLASS__));
-        }
-    }
-
     private function ping(): void
     {
         if (!$this->started) {
@@ -297,72 +356,13 @@ class SmtpTransport extends AbstractTransport
         }
     }
 
-    /**
-     * @throws TransportException if a response code is incorrect
-     */
-    private function assertResponseCode(string $response, array $codes): void
+    private function doMailFromCommand(string $address): void
     {
-        if (!$codes) {
-            throw new LogicException('You must set the expected response code.');
-        }
-
-        if (!$response) {
-            throw new TransportException(sprintf('Expected response code "%s" but got an empty response.', implode('/', $codes)));
-        }
-
-        [$code] = sscanf($response, '%3d');
-        $valid = \in_array($code, $codes);
-
-        if (!$valid) {
-            throw new TransportException(sprintf('Expected response code "%s" but got code "%s", with message "%s".', implode('/', $codes), $code, trim($response)), $code);
-        }
+        $this->executeCommand(sprintf("MAIL FROM:<%s>\r\n", $address), [250]);
     }
 
-    private function getFullResponse(): string
+    private function doRcptToCommand(string $address): void
     {
-        $response = '';
-        do {
-            $line = $this->stream->readLine();
-            $response .= $line;
-        } while ($line && isset($line[3]) && ' ' !== $line[3]);
-
-        return $response;
-    }
-
-    private function checkRestartThreshold(): void
-    {
-        // when using sendmail via non-interactive mode, the transport is never "started"
-        if (!$this->started) {
-            return;
-        }
-
-        ++$this->restartCounter;
-        if ($this->restartCounter < $this->restartThreshold) {
-            return;
-        }
-
-        $this->stop();
-        if (0 < $sleep = $this->restartThresholdSleep) {
-            $this->getLogger()->debug(sprintf('Email transport "%s" sleeps for %d seconds after stopping', __CLASS__, $sleep));
-
-            sleep($sleep);
-        }
-        $this->start();
-        $this->restartCounter = 0;
-    }
-
-    public function __sleep(): array
-    {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
-    }
-
-    public function __wakeup()
-    {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
-    }
-
-    public function __destruct()
-    {
-        $this->stop();
+        $this->executeCommand(sprintf("RCPT TO:<%s>\r\n", $address), [250, 251, 252]);
     }
 }

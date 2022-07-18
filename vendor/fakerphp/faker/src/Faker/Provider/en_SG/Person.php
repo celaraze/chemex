@@ -19,22 +19,10 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * Foreign Identification Number
-     *
-     * @param \DateTime|null $issueDate issue date
-     *
-     * @return string in format F1234567N or G1234567X
-     */
-    public static function fin(?\DateTime $issueDate = null): string
-    {
-        return self::singaporeId($issueDate, true);
-    }
-
-    /**
      * Singapore NRIC (citizens) or FIN (foreigners) number
      *
      * @param \DateTime|null $issueDate birth/issue date
-     * @param bool           $foreigner whether a person is foreigner or citizen
+     * @param bool $foreigner whether a person is foreigner or citizen
      *
      * @return string in format S1234567D, T1234567J, F1234567N or G1234567X
      */
@@ -66,9 +54,21 @@ class Person extends \Faker\Provider\Person
         $checksum = in_array($prefix, ['G', 'T'], true) ? 4 : 0;
 
         for ($i = 0; $i < $length; ++$i) {
-            $checksum += (int) $result[$i] * $weights[$i];
+            $checksum += (int)$result[$i] * $weights[$i];
         }
 
         return $prefix . $result . $checksumArr[$checksum % 11];
+    }
+
+    /**
+     * Foreign Identification Number
+     *
+     * @param \DateTime|null $issueDate issue date
+     *
+     * @return string in format F1234567N or G1234567X
+     */
+    public static function fin(?\DateTime $issueDate = null): string
+    {
+        return self::singaporeId($issueDate, true);
     }
 }

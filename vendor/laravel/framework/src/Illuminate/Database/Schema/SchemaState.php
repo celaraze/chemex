@@ -46,9 +46,9 @@ abstract class SchemaState
     /**
      * Create a new dumper instance.
      *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @param  \Illuminate\Filesystem\Filesystem|null  $files
-     * @param  callable|null  $processFactory
+     * @param \Illuminate\Database\Connection $connection
+     * @param \Illuminate\Filesystem\Filesystem|null $files
+     * @param callable|null $processFactory
      * @return void
      */
     public function __construct(Connection $connection, Filesystem $files = null, callable $processFactory = null)
@@ -67,10 +67,23 @@ abstract class SchemaState
     }
 
     /**
+     * Specify the callback that should be used to handle process output.
+     *
+     * @param callable $output
+     * @return $this
+     */
+    public function handleOutputUsing(callable $output)
+    {
+        $this->output = $output;
+
+        return $this;
+    }
+
+    /**
      * Dump the database's schema into a file.
      *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @param  string  $path
+     * @param \Illuminate\Database\Connection $connection
+     * @param string $path
      * @return void
      */
     abstract public function dump(Connection $connection, $path);
@@ -78,7 +91,7 @@ abstract class SchemaState
     /**
      * Load the given schema file into the database.
      *
-     * @param  string  $path
+     * @param string $path
      * @return void
      */
     abstract public function load($path);
@@ -86,7 +99,7 @@ abstract class SchemaState
     /**
      * Create a new process instance.
      *
-     * @param  array  $arguments
+     * @param array $arguments
      * @return \Symfony\Component\Process\Process
      */
     public function makeProcess(...$arguments)
@@ -97,25 +110,12 @@ abstract class SchemaState
     /**
      * Specify the name of the application's migration table.
      *
-     * @param  string  $table
+     * @param string $table
      * @return $this
      */
     public function withMigrationTable(string $table)
     {
         $this->migrationTable = $table;
-
-        return $this;
-    }
-
-    /**
-     * Specify the callback that should be used to handle process output.
-     *
-     * @param  callable  $output
-     * @return $this
-     */
-    public function handleOutputUsing(callable $output)
-    {
-        $this->output = $output;
 
         return $this;
     }

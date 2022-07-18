@@ -56,26 +56,9 @@ class DialogTable extends Widget
     }
 
     /**
-     * 设置异步表格实例.
-     *
-     * @param  LazyRenderable|null  $renderable
-     * @return $this
-     */
-    public function from(?LazyRenderable $renderable)
-    {
-        if (! $renderable) {
-            return $this;
-        }
-
-        $this->table = LazyTable::make($renderable)->simple()->runScript(false);
-
-        return $this;
-    }
-
-    /**
      * 设置弹窗标题.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title($title)
@@ -86,14 +69,31 @@ class DialogTable extends Widget
     }
 
     /**
+     * 设置异步表格实例.
+     *
+     * @param LazyRenderable|null $renderable
+     * @return $this
+     */
+    public function from(?LazyRenderable $renderable)
+    {
+        if (!$renderable) {
+            return $this;
+        }
+
+        $this->table = LazyTable::make($renderable)->simple()->runScript(false);
+
+        return $this;
+    }
+
+    /**
      * 设置弹窗宽度.
      *
+     * @param string $width
+     * @return $this
      * @example
      *    $this->width('500px');
      *    $this->width('50%');
      *
-     * @param  string  $width
-     * @return $this
      */
     public function width($width)
     {
@@ -105,7 +105,7 @@ class DialogTable extends Widget
     /**
      * 设置点击按钮HTML.
      *
-     * @param  string|\Closure|Renderable  $button
+     * @param string|\Closure|Renderable $button
      * @return $this
      */
     public function button($button)
@@ -118,12 +118,12 @@ class DialogTable extends Widget
     /**
      * 监听弹窗打开事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onShown(string $script)
     {
-        $this->events['shown'] .= ';'.$script;
+        $this->events['shown'] .= ';' . $script;
 
         return $this;
     }
@@ -131,12 +131,12 @@ class DialogTable extends Widget
     /**
      * 监听弹窗隐藏事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onHidden(string $script)
     {
-        $this->events['hidden'] .= ';'.$script;
+        $this->events['hidden'] .= ';' . $script;
 
         return $this;
     }
@@ -144,12 +144,12 @@ class DialogTable extends Widget
     /**
      * 监听表格加载完毕事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onLoad(string $script)
     {
-        $this->events['load'] .= ';'.$script;
+        $this->events['load'] .= ';' . $script;
 
         return $this;
     }
@@ -157,7 +157,7 @@ class DialogTable extends Widget
     /**
      * 设置弹窗底部内容.
      *
-     * @param  string|\Closure|Renderable  $footer
+     * @param string|\Closure|Renderable $footer
      * @return $this
      */
     public function footer($footer)
@@ -178,15 +178,31 @@ class DialogTable extends Widget
     public function render()
     {
         $this->addVariables([
-            'title'  => $this->title,
-            'width'  => $this->width,
+            'title' => $this->title,
+            'width' => $this->width,
             'button' => $this->renderButton(),
-            'table'  => $this->renderTable(),
+            'table' => $this->renderTable(),
             'footer' => $this->renderFooter(),
             'events' => $this->events,
         ]);
 
         return parent::render();
+    }
+
+    protected function renderButton()
+    {
+        if (!$this->button) {
+            return;
+        }
+
+        $button = Helper::render($this->button);
+
+        // 如果没有HTML标签则添加一个 a 标签
+        if (!preg_match('/(\<\/[\d\w]+\s*\>+)/i', $button)) {
+            $button = "<a href=\"javascript:void(0)\">{$button}</a>";
+        }
+
+        return $button;
     }
 
     protected function renderTable()
@@ -197,21 +213,5 @@ class DialogTable extends Widget
     protected function renderFooter()
     {
         return Helper::render($this->footer);
-    }
-
-    protected function renderButton()
-    {
-        if (! $this->button) {
-            return;
-        }
-
-        $button = Helper::render($this->button);
-
-        // 如果没有HTML标签则添加一个 a 标签
-        if (! preg_match('/(\<\/[\d\w]+\s*\>+)/i', $button)) {
-            $button = "<a href=\"javascript:void(0)\">{$button}</a>";
-        }
-
-        return $button;
     }
 }

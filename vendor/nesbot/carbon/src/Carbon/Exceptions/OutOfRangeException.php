@@ -50,11 +50,11 @@ class OutOfRangeException extends BaseInvalidArgumentException implements Invali
     /**
      * Constructor.
      *
-     * @param string         $unit
-     * @param mixed          $min
-     * @param mixed          $max
-     * @param mixed          $value
-     * @param int            $code
+     * @param string $unit
+     * @param mixed $min
+     * @param mixed $max
+     * @param mixed $value
+     * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct($unit, $min, $max, $value, $code = 0, Throwable $previous = null)

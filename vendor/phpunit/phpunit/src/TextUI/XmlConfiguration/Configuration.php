@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\CodeCoverage;
@@ -76,17 +77,17 @@ final class Configuration
 
     public function __construct(string $filename, ValidationResult $validationResult, ExtensionCollection $extensions, CodeCoverage $codeCoverage, Groups $groups, Groups $testdoxGroups, ExtensionCollection $listeners, Logging $logging, Php $php, PHPUnit $phpunit, TestSuiteCollection $testSuite)
     {
-        $this->filename         = $filename;
+        $this->filename = $filename;
         $this->validationResult = $validationResult;
-        $this->extensions       = $extensions;
-        $this->codeCoverage     = $codeCoverage;
-        $this->groups           = $groups;
-        $this->testdoxGroups    = $testdoxGroups;
-        $this->listeners        = $listeners;
-        $this->logging          = $logging;
-        $this->php              = $php;
-        $this->phpunit          = $phpunit;
-        $this->testSuite        = $testSuite;
+        $this->extensions = $extensions;
+        $this->codeCoverage = $codeCoverage;
+        $this->groups = $groups;
+        $this->testdoxGroups = $testdoxGroups;
+        $this->listeners = $listeners;
+        $this->logging = $logging;
+        $this->php = $php;
+        $this->phpunit = $phpunit;
+        $this->testSuite = $testSuite;
     }
 
     public function filename(): string

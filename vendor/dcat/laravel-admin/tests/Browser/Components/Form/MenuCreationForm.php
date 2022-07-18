@@ -30,7 +30,7 @@ class MenuCreationForm extends Component
     /**
      * 浏览器包含组件的断言
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -60,8 +60,8 @@ class MenuCreationForm extends Component
     /**
      * 注入表单.
      *
-     * @param  Browser  $browser
-     * @param  array  $input
+     * @param Browser $browser
+     * @param array $input
      * @return Browser
      */
     public function fill(Browser $browser, array $input)

@@ -13,8 +13,8 @@ namespace Prophecy\Doubler\Generator;
 
 use Prophecy\Doubler\Generator\Node\ArgumentTypeNode;
 use Prophecy\Doubler\Generator\Node\ReturnTypeNode;
-use Prophecy\Exception\InvalidArgumentException;
 use Prophecy\Exception\Doubler\ClassMirrorException;
+use Prophecy\Exception\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionMethod;
@@ -57,7 +57,7 @@ class ClassMirror
         if (null !== $class) {
             if (true === $class->isInterface()) {
                 throw new InvalidArgumentException(sprintf(
-                    "Could not reflect %s as a class, because it\n".
+                    "Could not reflect %s as a class, because it\n" .
                     "is interface - use the second argument instead.",
                     $class->getName()
                 ));
@@ -69,14 +69,14 @@ class ClassMirror
         foreach ($interfaces as $interface) {
             if (!$interface instanceof ReflectionClass) {
                 throw new InvalidArgumentException(sprintf(
-                    "[ReflectionClass \$interface1 [, ReflectionClass \$interface2]] array expected as\n".
+                    "[ReflectionClass \$interface1 [, ReflectionClass \$interface2]] array expected as\n" .
                     "a second argument to `ClassMirror::reflect(...)`, but got %s.",
-                    is_object($interface) ? get_class($interface).' class' : gettype($interface)
+                    is_object($interface) ? get_class($interface) . ' class' : gettype($interface)
                 ));
             }
             if (false === $interface->isInterface()) {
                 throw new InvalidArgumentException(sprintf(
-                    "Could not reflect %s as an interface, because it\n".
+                    "Could not reflect %s as an interface, because it\n" .
                     "is class - use the first argument instead.",
                     $interface->getName()
                 ));
@@ -123,15 +123,6 @@ class ClassMirror
         }
     }
 
-    private function reflectInterfaceToNode(ReflectionClass $interface, Node\ClassNode $node)
-    {
-        $node->addInterface($interface->getName());
-
-        foreach ($interface->getMethods() as $method) {
-            $this->reflectMethodToNode($method, $node);
-        }
-    }
-
     private function reflectMethodToNode(ReflectionMethod $method, Node\ClassNode $classNode)
     {
         $node = new Node\MethodNode($method->getName());
@@ -151,8 +142,7 @@ class ClassMirror
         if ($method->hasReturnType()) {
             $returnTypes = $this->getTypeHints($method->getReturnType(), $method->getDeclaringClass(), $method->getReturnType()->allowsNull());
             $node->setReturnTypeNode(new ReturnTypeNode(...$returnTypes));
-        }
-        elseif (method_exists($method, 'hasTentativeReturnType') && $method->hasTentativeReturnType()) {
+        } elseif (method_exists($method, 'hasTentativeReturnType') && $method->hasTentativeReturnType()) {
             $returnTypes = $this->getTypeHints($method->getTentativeReturnType(), $method->getDeclaringClass(), $method->getTentativeReturnType()->allowsNull());
             $node->setReturnTypeNode(new ReturnTypeNode(...$returnTypes));
         }
@@ -164,6 +154,42 @@ class ClassMirror
         }
 
         $classNode->addMethod($node);
+    }
+
+    private function getTypeHints(?ReflectionType $type, ?ReflectionClass $class, bool $allowsNull): array
+    {
+        $types = [];
+
+        if ($type instanceof ReflectionNamedType) {
+            $types = [$type->getName()];
+
+        } elseif ($type instanceof ReflectionUnionType) {
+            $types = $type->getTypes();
+        } elseif ($type instanceof ReflectionIntersectionType) {
+            throw new ClassMirrorException('Doubling intersection types is not supported', $class);
+        } elseif (is_object($type)) {
+            throw new ClassMirrorException('Unknown reflection type ' . get_class($type), $class);
+        }
+
+        $types = array_map(
+            function (string $type) use ($class) {
+                if ($type === 'self') {
+                    return $class->getName();
+                }
+                if ($type === 'parent') {
+                    return $class->getParentClass()->getName();
+                }
+
+                return $type;
+            },
+            $types
+        );
+
+        if ($types && $types != ['mixed'] && $allowsNull) {
+            $types[] = 'null';
+        }
+
+        return $types;
     }
 
     private function reflectArgumentToNode(ReflectionParameter $parameter, Node\MethodNode $methodNode)
@@ -213,42 +239,12 @@ class ClassMirror
         return $parameter->getDefaultValue();
     }
 
-    private function getTypeHints(?ReflectionType $type, ?ReflectionClass $class, bool $allowsNull) : array
+    private function reflectInterfaceToNode(ReflectionClass $interface, Node\ClassNode $node)
     {
-        $types = [];
+        $node->addInterface($interface->getName());
 
-        if ($type instanceof ReflectionNamedType) {
-            $types = [$type->getName()];
-
+        foreach ($interface->getMethods() as $method) {
+            $this->reflectMethodToNode($method, $node);
         }
-        elseif ($type instanceof ReflectionUnionType) {
-            $types = $type->getTypes();
-        }
-        elseif ($type instanceof ReflectionIntersectionType) {
-            throw new ClassMirrorException('Doubling intersection types is not supported', $class);
-        }
-        elseif(is_object($type)) {
-            throw new ClassMirrorException('Unknown reflection type ' . get_class($type), $class);
-        }
-
-        $types = array_map(
-            function(string $type) use ($class) {
-                if ($type === 'self') {
-                    return $class->getName();
-                }
-                if ($type === 'parent') {
-                    return $class->getParentClass()->getName();
-                }
-
-                return $type;
-            },
-            $types
-        );
-
-        if ($types && $types != ['mixed'] && $allowsNull) {
-            $types[] = 'null';
-        }
-
-        return $types;
     }
 }

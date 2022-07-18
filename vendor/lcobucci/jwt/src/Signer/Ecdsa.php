@@ -5,7 +5,6 @@ namespace Lcobucci\JWT\Signer;
 
 use Lcobucci\JWT\Signer\Ecdsa\MultibyteStringConverter;
 use Lcobucci\JWT\Signer\Ecdsa\SignatureConverter;
-
 use const OPENSSL_KEYTYPE_EC;
 
 abstract class Ecdsa extends OpenSSL
@@ -30,6 +29,13 @@ abstract class Ecdsa extends OpenSSL
         );
     }
 
+    /**
+     * Returns the length of each point in the signature, so that we can calculate and verify R and S points properly
+     *
+     * @internal
+     */
+    abstract public function keyLength(): int;
+
     final public function verify(string $expected, string $payload, Key $key): bool
     {
         return $this->verifySignature(
@@ -43,11 +49,4 @@ abstract class Ecdsa extends OpenSSL
     {
         return OPENSSL_KEYTYPE_EC;
     }
-
-    /**
-     * Returns the length of each point in the signature, so that we can calculate and verify R and S points properly
-     *
-     * @internal
-     */
-    abstract public function keyLength(): int;
 }

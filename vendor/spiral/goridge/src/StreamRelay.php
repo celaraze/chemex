@@ -34,7 +34,7 @@ class StreamRelay extends Relay
      * Example:
      * $relay = new StreamRelay(STDIN, STDOUT);
      *
-     * @param resource $in  Must be readable.
+     * @param resource $in Must be readable.
      * @param resource $out Must be writable.
      *
      * @throws InvalidArgumentException
@@ -59,6 +59,36 @@ class StreamRelay extends Relay
 
         $this->in = $in;
         $this->out = $out;
+    }
+
+    /**
+     * Checks if stream is readable.
+     *
+     * @param resource $stream
+     *
+     * @return bool
+     */
+    private function assertReadable($stream): bool
+    {
+        $meta = \stream_get_meta_data($stream);
+
+        $available = ['r', 'rb', 'r+', 'rb+', 'w+', 'wb+', 'w+b', 'a+', 'ab+', 'x+', 'c+', 'cb+'];
+
+        return \in_array($meta['mode'], $available, true);
+    }
+
+    /**
+     * Checks if stream is writable.
+     *
+     * @param resource $stream
+     *
+     * @return bool
+     */
+    private function assertWritable($stream): bool
+    {
+        $meta = \stream_get_meta_data($stream);
+
+        return !\in_array($meta['mode'], ['r', 'rb'], true);
     }
 
     /**
@@ -128,35 +158,5 @@ class StreamRelay extends Relay
 
             throw new TransportException($message);
         }
-    }
-
-    /**
-     * Checks if stream is readable.
-     *
-     * @param resource $stream
-     *
-     * @return bool
-     */
-    private function assertReadable($stream): bool
-    {
-        $meta = \stream_get_meta_data($stream);
-
-        $available = ['r', 'rb', 'r+', 'rb+', 'w+', 'wb+', 'w+b', 'a+', 'ab+', 'x+', 'c+', 'cb+'];
-
-        return \in_array($meta['mode'], $available, true);
-    }
-
-    /**
-     * Checks if stream is writable.
-     *
-     * @param resource $stream
-     *
-     * @return bool
-     */
-    private function assertWritable($stream): bool
-    {
-        $meta = \stream_get_meta_data($stream);
-
-        return !\in_array($meta['mode'], ['r', 'rb'], true);
     }
 }

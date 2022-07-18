@@ -40,9 +40,37 @@ class Internet extends Base
     ];
 
     /**
+     * @return string
+     * @example '10.1.1.17'
+     *
+     */
+    public static function localIpv4()
+    {
+        $ipBlock = self::randomElement(static::$localIpBlocks);
+
+        return long2ip(static::numberBetween(ip2long($ipBlock[0]), ip2long($ipBlock[1])));
+    }
+
+    /**
+     * @return string
+     * @example '32:F1:39:2F:D6:18'
+     *
+     */
+    public static function macAddress()
+    {
+        $mac = [];
+
+        for ($i = 0; $i < 6; ++$i) {
+            $mac[] = sprintf('%02X', self::numberBetween(0, 0xff));
+        }
+
+        return implode(':', $mac);
+    }
+
+    /**
+     * @return string
      * @example 'jdoe@acme.biz'
      *
-     * @return string
      */
     public function email()
     {
@@ -52,9 +80,9 @@ class Internet extends Base
     }
 
     /**
+     * @return string
      * @example 'jdoe@example.com'
      *
-     * @return string
      */
     final public function safeEmail()
     {
@@ -62,55 +90,9 @@ class Internet extends Base
     }
 
     /**
-     * @example 'jdoe@gmail.com'
-     *
      * @return string
-     */
-    public function freeEmail()
-    {
-        return preg_replace('/\s/u', '', $this->userName() . '@' . static::freeEmailDomain());
-    }
-
-    /**
-     * @example 'jdoe@dawson.com'
-     *
-     * @return string
-     */
-    public function companyEmail()
-    {
-        return preg_replace('/\s/u', '', $this->userName() . '@' . $this->domainName());
-    }
-
-    /**
-     * @example 'gmail.com'
-     *
-     * @return string
-     */
-    public static function freeEmailDomain()
-    {
-        return static::randomElement(static::$freeEmailDomain);
-    }
-
-    /**
-     * @example 'example.org'
-     *
-     * @return string
-     */
-    final public static function safeEmailDomain()
-    {
-        $domains = [
-            'example.com',
-            'example.org',
-            'example.net',
-        ];
-
-        return static::randomElement($domains);
-    }
-
-    /**
      * @example 'jdoe'
      *
-     * @return string
      */
     public function userName()
     {
@@ -129,145 +111,6 @@ class Internet extends Base
         $username = rtrim($username, '.');
 
         return $username;
-    }
-
-    /**
-     * @example 'fY4èHdZv68'
-     *
-     * @return string
-     */
-    public function password($minLength = 6, $maxLength = 20)
-    {
-        $pattern = str_repeat('*', $this->numberBetween($minLength, $maxLength));
-
-        return $this->asciify($pattern);
-    }
-
-    /**
-     * @example 'tiramisu.com'
-     *
-     * @return string
-     */
-    public function domainName()
-    {
-        return $this->domainWord() . '.' . $this->tld();
-    }
-
-    /**
-     * @example 'faber'
-     *
-     * @return string
-     */
-    public function domainWord()
-    {
-        $lastName = $this->generator->format('lastName');
-
-        $lastName = strtolower(static::transliterate($lastName));
-
-        // check if transliterate() didn't support the language and removed all letters
-        if (trim($lastName, '._') === '') {
-            throw new \Exception('domainWord failed with the selected locale. Try a different locale or activate the "intl" PHP extension.');
-        }
-
-        // clean possible trailing dot from last name
-        $lastName = rtrim($lastName, '.');
-
-        return $lastName;
-    }
-
-    /**
-     * @example 'com'
-     *
-     * @return string
-     */
-    public function tld()
-    {
-        return static::randomElement(static::$tld);
-    }
-
-    /**
-     * @example 'http://www.runolfsdottir.com/'
-     *
-     * @return string
-     */
-    public function url()
-    {
-        $format = static::randomElement(static::$urlFormats);
-
-        return $this->generator->parse($format);
-    }
-
-    /**
-     * @example 'aut-repellat-commodi-vel-itaque-nihil-id-saepe-nostrum'
-     *
-     * @return string
-     */
-    public function slug($nbWords = 6, $variableNbWords = true)
-    {
-        if ($nbWords <= 0) {
-            return '';
-        }
-
-        if ($variableNbWords) {
-            $nbWords = (int) ($nbWords * self::numberBetween(60, 140) / 100) + 1;
-        }
-        $words = $this->generator->words($nbWords);
-
-        return implode('-', $words);
-    }
-
-    /**
-     * @example '237.149.115.38'
-     *
-     * @return string
-     */
-    public function ipv4()
-    {
-        return long2ip(Miscellaneous::boolean() ? self::numberBetween(-2147483648, -2) : self::numberBetween(16777216, 2147483647));
-    }
-
-    /**
-     * @example '35cd:186d:3e23:2986:ef9f:5b41:42a4:e6f1'
-     *
-     * @return string
-     */
-    public function ipv6()
-    {
-        $res = [];
-
-        for ($i = 0; $i < 8; ++$i) {
-            $res[] = dechex(self::numberBetween(0, 65535));
-        }
-
-        return implode(':', $res);
-    }
-
-    /**
-     * @example '10.1.1.17'
-     *
-     * @return string
-     */
-    public static function localIpv4()
-    {
-        $ipBlock = self::randomElement(static::$localIpBlocks);
-
-        return long2ip(static::numberBetween(ip2long($ipBlock[0]), ip2long($ipBlock[1])));
-    }
-
-    /**
-     * @example '32:F1:39:2F:D6:18'
-     *
-     * @return string
-     */
-    public static function macAddress()
-    {
-        $mac = [];
-
-        for ($i = 0; $i < 6; ++$i) {
-            $mac[] = sprintf('%02X', self::numberBetween(0, 0xff));
-        }
-
-        return implode(':', $mac);
     }
 
     protected static function transliterate($string)
@@ -403,5 +246,162 @@ class Internet extends Base
         }
 
         return str_replace($arrayFrom, $arrayTo, $string);
+    }
+
+    /**
+     * @return string
+     * @example 'example.org'
+     *
+     */
+    final public static function safeEmailDomain()
+    {
+        $domains = [
+            'example.com',
+            'example.org',
+            'example.net',
+        ];
+
+        return static::randomElement($domains);
+    }
+
+    /**
+     * @return string
+     * @example 'jdoe@gmail.com'
+     *
+     */
+    public function freeEmail()
+    {
+        return preg_replace('/\s/u', '', $this->userName() . '@' . static::freeEmailDomain());
+    }
+
+    /**
+     * @return string
+     * @example 'gmail.com'
+     *
+     */
+    public static function freeEmailDomain()
+    {
+        return static::randomElement(static::$freeEmailDomain);
+    }
+
+    /**
+     * @return string
+     * @example 'jdoe@dawson.com'
+     *
+     */
+    public function companyEmail()
+    {
+        return preg_replace('/\s/u', '', $this->userName() . '@' . $this->domainName());
+    }
+
+    /**
+     * @return string
+     * @example 'tiramisu.com'
+     *
+     */
+    public function domainName()
+    {
+        return $this->domainWord() . '.' . $this->tld();
+    }
+
+    /**
+     * @return string
+     * @example 'faber'
+     *
+     */
+    public function domainWord()
+    {
+        $lastName = $this->generator->format('lastName');
+
+        $lastName = strtolower(static::transliterate($lastName));
+
+        // check if transliterate() didn't support the language and removed all letters
+        if (trim($lastName, '._') === '') {
+            throw new \Exception('domainWord failed with the selected locale. Try a different locale or activate the "intl" PHP extension.');
+        }
+
+        // clean possible trailing dot from last name
+        $lastName = rtrim($lastName, '.');
+
+        return $lastName;
+    }
+
+    /**
+     * @return string
+     * @example 'com'
+     *
+     */
+    public function tld()
+    {
+        return static::randomElement(static::$tld);
+    }
+
+    /**
+     * @return string
+     * @example 'fY4èHdZv68'
+     *
+     */
+    public function password($minLength = 6, $maxLength = 20)
+    {
+        $pattern = str_repeat('*', $this->numberBetween($minLength, $maxLength));
+
+        return $this->asciify($pattern);
+    }
+
+    /**
+     * @return string
+     * @example 'http://www.runolfsdottir.com/'
+     *
+     */
+    public function url()
+    {
+        $format = static::randomElement(static::$urlFormats);
+
+        return $this->generator->parse($format);
+    }
+
+    /**
+     * @return string
+     * @example 'aut-repellat-commodi-vel-itaque-nihil-id-saepe-nostrum'
+     *
+     */
+    public function slug($nbWords = 6, $variableNbWords = true)
+    {
+        if ($nbWords <= 0) {
+            return '';
+        }
+
+        if ($variableNbWords) {
+            $nbWords = (int)($nbWords * self::numberBetween(60, 140) / 100) + 1;
+        }
+        $words = $this->generator->words($nbWords);
+
+        return implode('-', $words);
+    }
+
+    /**
+     * @return string
+     * @example '237.149.115.38'
+     *
+     */
+    public function ipv4()
+    {
+        return long2ip(Miscellaneous::boolean() ? self::numberBetween(-2147483648, -2) : self::numberBetween(16777216, 2147483647));
+    }
+
+    /**
+     * @return string
+     * @example '35cd:186d:3e23:2986:ef9f:5b41:42a4:e6f1'
+     *
+     */
+    public function ipv6()
+    {
+        $res = [];
+
+        for ($i = 0; $i < 8; ++$i) {
+            $res[] = dechex(self::numberBetween(0, 65535));
+        }
+
+        return implode(':', $res);
     }
 }

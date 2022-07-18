@@ -1,10 +1,12 @@
 <style>
-    .number-group .input-group{flex-wrap: nowrap}
+    .number-group .input-group {
+        flex-wrap: nowrap
+    }
 </style>
 
 <div class="{{$viewClass['form-group']}}">
 
-    <div  class="{{$viewClass['label']}} control-label">
+    <div class="{{$viewClass['label']}} control-label">
         <span>{!! $label !!}</span>
     </div>
 

@@ -10,7 +10,7 @@ class Decimal extends Text
      * @var array
      */
     protected $options = [
-        'alias'      => 'decimal',
+        'alias' => 'decimal',
         'rightAlign' => false,
     ];
 

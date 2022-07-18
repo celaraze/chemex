@@ -26,14 +26,14 @@ use phpDocumentor\Reflection\Types\Mixed_;
  */
 final class List_ extends Array_ implements PseudoType
 {
-    public function underlyingType(): Type
-    {
-        return new Array_();
-    }
-
     public function __construct(?Type $valueType = null)
     {
         parent::__construct($valueType, new Integer());
+    }
+
+    public function underlyingType(): Type
+    {
+        return new Array_();
     }
 
     /**

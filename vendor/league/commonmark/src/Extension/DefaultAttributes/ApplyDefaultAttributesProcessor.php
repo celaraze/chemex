@@ -28,7 +28,7 @@ final class ApplyDefaultAttributesProcessor implements ConfigurationAwareInterfa
         $map = $this->config->get('default_attributes');
 
         // Don't bother iterating if no default attributes are configured
-        if (! $map) {
+        if (!$map) {
             return;
         }
 

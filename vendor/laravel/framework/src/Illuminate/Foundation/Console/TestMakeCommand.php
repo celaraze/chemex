@@ -11,13 +11,6 @@ use Symfony\Component\Console\Input\InputOption;
 class TestMakeCommand extends GeneratorCommand
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'make:test';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -27,7 +20,12 @@ class TestMakeCommand extends GeneratorCommand
      * @deprecated
      */
     protected static $defaultName = 'make:test';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'make:test';
     /**
      * The console command description.
      *
@@ -52,49 +50,34 @@ class TestMakeCommand extends GeneratorCommand
         $suffix = $this->option('unit') ? '.unit.stub' : '.stub';
 
         return $this->option('pest')
-            ? $this->resolveStubPath('/stubs/pest'.$suffix)
-            : $this->resolveStubPath('/stubs/test'.$suffix);
+            ? $this->resolveStubPath('/stubs/pest' . $suffix)
+            : $this->resolveStubPath('/stubs/test' . $suffix);
     }
 
     /**
      * Resolve the fully-qualified path to the stub.
      *
-     * @param  string  $stub
+     * @param string $stub
      * @return string
      */
     protected function resolveStubPath($stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
-                        ? $customPath
-                        : __DIR__.$stub;
+            ? $customPath
+            : __DIR__ . $stub;
     }
 
     /**
      * Get the destination class path.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      */
     protected function getPath($name)
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
 
-        return base_path('tests').str_replace('\\', '/', $name).'.php';
-    }
-
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        if ($this->option('unit')) {
-            return $rootNamespace.'\Unit';
-        } else {
-            return $rootNamespace.'\Feature';
-        }
+        return base_path('tests') . str_replace('\\', '/', $name) . '.php';
     }
 
     /**
@@ -105,6 +88,21 @@ class TestMakeCommand extends GeneratorCommand
     protected function rootNamespace()
     {
         return 'Tests';
+    }
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param string $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        if ($this->option('unit')) {
+            return $rootNamespace . '\Unit';
+        } else {
+            return $rootNamespace . '\Feature';
+        }
     }
 
     /**

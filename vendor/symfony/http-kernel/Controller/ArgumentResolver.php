@@ -40,6 +40,20 @@ final class ArgumentResolver implements ArgumentResolverInterface
     }
 
     /**
+     * @return iterable<int, ArgumentValueResolverInterface>
+     */
+    public static function getDefaultArgumentValueResolvers(): iterable
+    {
+        return [
+            new RequestAttributeValueResolver(),
+            new RequestValueResolver(),
+            new SessionValueResolver(),
+            new DefaultValueResolver(),
+            new VariadicValueResolver(),
+        ];
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getArguments(Request $request, callable $controller): array
@@ -80,19 +94,5 @@ final class ArgumentResolver implements ArgumentResolverInterface
         }
 
         return $arguments;
-    }
-
-    /**
-     * @return iterable<int, ArgumentValueResolverInterface>
-     */
-    public static function getDefaultArgumentValueResolvers(): iterable
-    {
-        return [
-            new RequestAttributeValueResolver(),
-            new RequestValueResolver(),
-            new SessionValueResolver(),
-            new DefaultValueResolver(),
-            new VariadicValueResolver(),
-        ];
     }
 }

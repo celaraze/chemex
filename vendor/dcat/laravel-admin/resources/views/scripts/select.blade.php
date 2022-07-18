@@ -1,6 +1,6 @@
 <script>
-@section('admin.select-ajax')
-    @if(isset($ajax))
+    @section('admin.select-ajax')
+        @if(isset($ajax))
         configs = $.extend(configs, {
         ajax: {
             url: "{{ $ajax['url'] }}",
@@ -33,30 +33,30 @@
         }
     });
     @endif
-@overwrite
+    @overwrite
 </script>
 
 
 @if(isset($loads))
-{{--loads联动--}}
-<script once>
-    var selector = '{!! $selector !!}';
+    {{--loads联动--}}
+    <script once>
+        var selector = '{!! $selector !!}';
 
-    var fields = '{!! $loads['fields'] !!}'.split('^');
-    var urls = '{!! $loads['urls'] !!}'.split('^');
+        var fields = '{!! $loads['fields'] !!}'.split('^');
+        var urls = '{!! $loads['urls'] !!}'.split('^');
 
-    $(document).off('change', selector);
-    $(document).on('change', selector, function () {
-        Dcat.helpers.loadFields(this, {
-            group: '{{ $loads['group'] ?? '.fields-group' }}',
-            urls: urls,
-            fields: fields,
-            textField: "{{ $loads['textField'] }}",
-            idField: "{{ $loads['idField'] }}",
+        $(document).off('change', selector);
+        $(document).on('change', selector, function () {
+            Dcat.helpers.loadFields(this, {
+                group: '{{ $loads['group'] ?? '.fields-group' }}',
+                urls: urls,
+                fields: fields,
+                textField: "{{ $loads['textField'] }}",
+                idField: "{{ $loads['idField'] }}",
+            });
         });
-    });
-    $(selector).trigger('change');
-</script>
+        $(selector).trigger('change');
+    </script>
 @endif
 
 <script once>

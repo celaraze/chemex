@@ -20,7 +20,6 @@ use phpDocumentor\Reflection\FqsenResolver;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Utils;
 use Webmozart\Assert\Assert;
-
 use function array_key_exists;
 use function explode;
 
@@ -40,16 +39,17 @@ final class Uses extends BaseTag implements Factory\StaticMethod
      */
     public function __construct(Fqsen $refers, ?Description $description = null)
     {
-        $this->refers      = $refers;
+        $this->refers = $refers;
         $this->description = $description;
     }
 
     public static function create(
-        string $body,
-        ?FqsenResolver $resolver = null,
+        string              $body,
+        ?FqsenResolver      $resolver = null,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::notNull($resolver);
         Assert::notNull($descriptionFactory);
 
@@ -93,7 +93,7 @@ final class Uses extends BaseTag implements Factory\StaticMethod
             $description = '';
         }
 
-        $refers = (string) $this->refers;
+        $refers = (string)$this->refers;
 
         return $refers . ($description !== '' ? ($refers !== '' ? ' ' : '') . $description : '');
     }

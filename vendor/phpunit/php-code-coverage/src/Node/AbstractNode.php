@@ -7,14 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Node;
 
-use const DIRECTORY_SEPARATOR;
+use Countable;
+use SebastianBergmann\CodeCoverage\Util\Percentage;
 use function array_merge;
 use function str_replace;
 use function substr;
-use Countable;
-use SebastianBergmann\CodeCoverage\Util\Percentage;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -52,7 +53,7 @@ abstract class AbstractNode implements Countable
             $name = substr($name, 0, -1);
         }
 
-        $this->name   = $name;
+        $this->name = $name;
         $this->parent = $parent;
     }
 
@@ -80,6 +81,11 @@ abstract class AbstractNode implements Countable
         }
 
         return $this->id;
+    }
+
+    public function parent(): ?self
+    {
+        return $this->parent;
     }
 
     public function pathAsString(): string
@@ -110,11 +116,6 @@ abstract class AbstractNode implements Countable
         return $this->pathAsArray;
     }
 
-    public function parent(): ?self
-    {
-        return $this->parent;
-    }
-
     public function percentageOfTestedClasses(): Percentage
     {
         return Percentage::fromFractionAndTotal(
@@ -122,6 +123,10 @@ abstract class AbstractNode implements Countable
             $this->numberOfClasses(),
         );
     }
+
+    abstract public function numberOfTestedClasses(): int;
+
+    abstract public function numberOfClasses(): int;
 
     public function percentageOfTestedTraits(): Percentage
     {
@@ -131,12 +136,26 @@ abstract class AbstractNode implements Countable
         );
     }
 
+    abstract public function numberOfTestedTraits(): int;
+
+    abstract public function numberOfTraits(): int;
+
     public function percentageOfTestedClassesAndTraits(): Percentage
     {
         return Percentage::fromFractionAndTotal(
             $this->numberOfTestedClassesAndTraits(),
             $this->numberOfClassesAndTraits(),
         );
+    }
+
+    public function numberOfTestedClassesAndTraits(): int
+    {
+        return $this->numberOfTestedClasses() + $this->numberOfTestedTraits();
+    }
+
+    public function numberOfClassesAndTraits(): int
+    {
+        return $this->numberOfClasses() + $this->numberOfTraits();
     }
 
     public function percentageOfTestedFunctions(): Percentage
@@ -147,6 +166,10 @@ abstract class AbstractNode implements Countable
         );
     }
 
+    abstract public function numberOfTestedFunctions(): int;
+
+    abstract public function numberOfFunctions(): int;
+
     public function percentageOfTestedMethods(): Percentage
     {
         return Percentage::fromFractionAndTotal(
@@ -155,12 +178,26 @@ abstract class AbstractNode implements Countable
         );
     }
 
+    abstract public function numberOfTestedMethods(): int;
+
+    abstract public function numberOfMethods(): int;
+
     public function percentageOfTestedFunctionsAndMethods(): Percentage
     {
         return Percentage::fromFractionAndTotal(
             $this->numberOfTestedFunctionsAndMethods(),
             $this->numberOfFunctionsAndMethods(),
         );
+    }
+
+    public function numberOfTestedFunctionsAndMethods(): int
+    {
+        return $this->numberOfTestedFunctions() + $this->numberOfTestedMethods();
+    }
+
+    public function numberOfFunctionsAndMethods(): int
+    {
+        return $this->numberOfFunctions() + $this->numberOfMethods();
     }
 
     public function percentageOfExecutedLines(): Percentage
@@ -171,6 +208,10 @@ abstract class AbstractNode implements Countable
         );
     }
 
+    abstract public function numberOfExecutedLines(): int;
+
+    abstract public function numberOfExecutableLines(): int;
+
     public function percentageOfExecutedBranches(): Percentage
     {
         return Percentage::fromFractionAndTotal(
@@ -178,6 +219,10 @@ abstract class AbstractNode implements Countable
             $this->numberOfExecutableBranches()
         );
     }
+
+    abstract public function numberOfExecutedBranches(): int;
+
+    abstract public function numberOfExecutableBranches(): int;
 
     public function percentageOfExecutedPaths(): Percentage
     {
@@ -187,29 +232,13 @@ abstract class AbstractNode implements Countable
         );
     }
 
-    public function numberOfClassesAndTraits(): int
-    {
-        return $this->numberOfClasses() + $this->numberOfTraits();
-    }
+    abstract public function numberOfExecutedPaths(): int;
 
-    public function numberOfTestedClassesAndTraits(): int
-    {
-        return $this->numberOfTestedClasses() + $this->numberOfTestedTraits();
-    }
+    abstract public function numberOfExecutablePaths(): int;
 
     public function classesAndTraits(): array
     {
         return array_merge($this->classes(), $this->traits());
-    }
-
-    public function numberOfFunctionsAndMethods(): int
-    {
-        return $this->numberOfFunctions() + $this->numberOfMethods();
-    }
-
-    public function numberOfTestedFunctionsAndMethods(): int
-    {
-        return $this->numberOfTestedFunctions() + $this->numberOfTestedMethods();
     }
 
     abstract public function classes(): array;
@@ -222,32 +251,4 @@ abstract class AbstractNode implements Countable
      * @psalm-return array{linesOfCode: int, commentLinesOfCode: int, nonCommentLinesOfCode: int}
      */
     abstract public function linesOfCode(): array;
-
-    abstract public function numberOfExecutableLines(): int;
-
-    abstract public function numberOfExecutedLines(): int;
-
-    abstract public function numberOfExecutableBranches(): int;
-
-    abstract public function numberOfExecutedBranches(): int;
-
-    abstract public function numberOfExecutablePaths(): int;
-
-    abstract public function numberOfExecutedPaths(): int;
-
-    abstract public function numberOfClasses(): int;
-
-    abstract public function numberOfTestedClasses(): int;
-
-    abstract public function numberOfTraits(): int;
-
-    abstract public function numberOfTestedTraits(): int;
-
-    abstract public function numberOfMethods(): int;
-
-    abstract public function numberOfTestedMethods(): int;
-
-    abstract public function numberOfFunctions(): int;
-
-    abstract public function numberOfTestedFunctions(): int;
 }

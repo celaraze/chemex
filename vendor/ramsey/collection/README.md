@@ -79,4 +79,5 @@ MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 
 [java]: http://docs.oracle.com/javase/8/docs/technotes/guides/collections/index.html
+
 [security.md]: https://github.com/ramsey/collection/blob/master/SECURITY.md

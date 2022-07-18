@@ -26,11 +26,11 @@ class Populator
     /**
      * Add an order for the generation of $number records for $entity.
      *
-     * @param string $entityName             Name of Entity object to generate
-     * @param int    $number                 The number of entities to populate
-     * @param array  $customColumnFormatters
-     * @param array  $customModifiers
-     * @param bool   $useExistingData        Should we use existing rows (e.g. roles) to populate relations?
+     * @param string $entityName Name of Entity object to generate
+     * @param int $number The number of entities to populate
+     * @param array $customColumnFormatters
+     * @param array $customModifiers
+     * @param bool $useExistingData Should we use existing rows (e.g. roles) to populate relations?
      */
     public function addEntity(
         $entityName,
@@ -38,7 +38,8 @@ class Populator
         $customColumnFormatters = [],
         $customModifiers = [],
         $useExistingData = false
-    ) {
+    )
+    {
         $mapper = $this->locator->mapper($entityName);
 
         if (null === $mapper) {

@@ -33,8 +33,7 @@ class AboutCommand extends BaseCommand
                 <<<EOT
 <info>php composer.phar about</info>
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

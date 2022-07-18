@@ -39,6 +39,6 @@ class BigIntType extends Type implements PhpIntegerMappingType
      */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return $value === null ? null : (string) $value;
+        return $value === null ? null : (string)$value;
     }
 }

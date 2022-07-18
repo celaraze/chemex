@@ -11,16 +11,16 @@
 
 namespace Prophecy\Prophecy;
 
-use SebastianBergmann\Comparator\ComparisonFailure;
-use Prophecy\Comparator\Factory as ComparatorFactory;
-use Prophecy\Call\Call;
-use Prophecy\Doubler\LazyDouble;
 use Prophecy\Argument\ArgumentsWildcard;
+use Prophecy\Call\Call;
 use Prophecy\Call\CallCenter;
-use Prophecy\Exception\Prophecy\ObjectProphecyException;
-use Prophecy\Exception\Prophecy\MethodProphecyException;
+use Prophecy\Comparator\Factory as ComparatorFactory;
+use Prophecy\Doubler\LazyDouble;
 use Prophecy\Exception\Prediction\AggregateException;
 use Prophecy\Exception\Prediction\PredictionException;
+use Prophecy\Exception\Prophecy\MethodProphecyException;
+use Prophecy\Exception\Prophecy\ObjectProphecyException;
+use SebastianBergmann\Comparator\ComparisonFailure;
 
 /**
  * Object prophecy.
@@ -42,20 +42,21 @@ class ObjectProphecy implements ProphecyInterface
     /**
      * Initializes object prophecy.
      *
-     * @param LazyDouble        $lazyDouble
-     * @param CallCenter        $callCenter
+     * @param LazyDouble $lazyDouble
+     * @param CallCenter $callCenter
      * @param RevealerInterface $revealer
      * @param ComparatorFactory $comparatorFactory
      */
     public function __construct(
-        LazyDouble $lazyDouble,
-        CallCenter $callCenter = null,
+        LazyDouble        $lazyDouble,
+        CallCenter        $callCenter = null,
         RevealerInterface $revealer = null,
         ComparatorFactory $comparatorFactory = null
-    ) {
+    )
+    {
         $this->lazyDouble = $lazyDouble;
         $this->callCenter = $callCenter ?: new CallCenter;
-        $this->revealer   = $revealer ?: new Revealer;
+        $this->revealer = $revealer ?: new Revealer;
 
         $this->comparatorFactory = $comparatorFactory ?: ComparatorFactory::getInstance();
     }
@@ -103,30 +104,6 @@ class ObjectProphecy implements ProphecyInterface
     }
 
     /**
-     * Reveals double.
-     *
-     * @return object
-     *
-     * @throws \Prophecy\Exception\Prophecy\ObjectProphecyException If double doesn't implement needed interface
-     */
-    public function reveal()
-    {
-        $double = $this->lazyDouble->getInstance();
-
-        if (null === $double || !$double instanceof ProphecySubjectInterface) {
-            throw new ObjectProphecyException(
-                "Generated double must implement ProphecySubjectInterface, but it does not.\n".
-                'It seems you have wrongly configured doubler without required ClassPatch.',
-                $this
-            );
-        }
-
-        $double->setProphecy($this);
-
-        return $double;
-    }
-
-    /**
      * Adds method prophecy to object prophecy.
      *
      * @param MethodProphecy $methodProphecy
@@ -139,7 +116,7 @@ class ObjectProphecy implements ProphecyInterface
         $argumentsWildcard = $methodProphecy->getArgumentsWildcard();
         if (null === $argumentsWildcard) {
             throw new MethodProphecyException(sprintf(
-                "Can not add prophecy for a method `%s::%s()`\n".
+                "Can not add prophecy for a method `%s::%s()`\n" .
                 "as you did not specify arguments wildcard for it.",
                 get_class($this->reveal()),
                 $methodProphecy->getMethodName()
@@ -156,39 +133,41 @@ class ObjectProphecy implements ProphecyInterface
     }
 
     /**
-     * Returns either all or related to single method prophecies.
+     * Reveals double.
      *
-     * @param null|string $methodName
+     * @return object
      *
-     * @return MethodProphecy[]
+     * @throws \Prophecy\Exception\Prophecy\ObjectProphecyException If double doesn't implement needed interface
      */
-    public function getMethodProphecies($methodName = null)
+    public function reveal()
     {
-        if (null === $methodName) {
-            return $this->methodProphecies;
+        $double = $this->lazyDouble->getInstance();
+
+        if (null === $double || !$double instanceof ProphecySubjectInterface) {
+            throw new ObjectProphecyException(
+                "Generated double must implement ProphecySubjectInterface, but it does not.\n" .
+                'It seems you have wrongly configured doubler without required ClassPatch.',
+                $this
+            );
         }
 
-        $methodName = strtolower($methodName);
+        $double->setProphecy($this);
 
-        if (!isset($this->methodProphecies[$methodName])) {
-            return array();
-        }
-
-        return $this->methodProphecies[$methodName];
+        return $double;
     }
 
     /**
      * Makes specific method call.
      *
      * @param string $methodName
-     * @param array  $arguments
+     * @param array $arguments
      *
      * @return mixed
      */
     public function makeProphecyMethodCall($methodName, array $arguments)
     {
         $arguments = $this->revealer->reveal($arguments);
-        $return    = $this->callCenter->makeCall($this, $methodName, $arguments);
+        $return = $this->callCenter->makeCall($this, $methodName, $arguments);
 
         return $this->revealer->reveal($return);
     }
@@ -196,7 +175,7 @@ class ObjectProphecy implements ProphecyInterface
     /**
      * Finds calls by method name & arguments wildcard.
      *
-     * @param string            $methodName
+     * @param string $methodName
      * @param ArgumentsWildcard $wildcard
      *
      * @return Call[]
@@ -238,7 +217,7 @@ class ObjectProphecy implements ProphecyInterface
      * Creates new method prophecy using specified method name and arguments.
      *
      * @param string $methodName
-     * @param array  $arguments
+     * @param array $arguments
      *
      * @return MethodProphecy
      */
@@ -255,10 +234,33 @@ class ObjectProphecy implements ProphecyInterface
             try {
                 $comparator->assertEquals($argumentsWildcard, $arguments);
                 return $prophecy;
-            } catch (ComparisonFailure $failure) {}
+            } catch (ComparisonFailure $failure) {
+            }
         }
 
         return new MethodProphecy($this, $methodName, $arguments);
+    }
+
+    /**
+     * Returns either all or related to single method prophecies.
+     *
+     * @param null|string $methodName
+     *
+     * @return MethodProphecy[]
+     */
+    public function getMethodProphecies($methodName = null)
+    {
+        if (null === $methodName) {
+            return $this->methodProphecies;
+        }
+
+        $methodName = strtolower($methodName);
+
+        if (!isset($this->methodProphecies[$methodName])) {
+            return array();
+        }
+
+        return $this->methodProphecies[$methodName];
     }
 
     /**
@@ -277,7 +279,7 @@ class ObjectProphecy implements ProphecyInterface
      * Tries to set property value to double.
      *
      * @param string $name
-     * @param mixed  $value
+     * @param mixed $value
      */
     public function __set($name, $value)
     {

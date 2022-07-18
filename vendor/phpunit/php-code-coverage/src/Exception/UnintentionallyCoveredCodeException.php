@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage;
 
 use RuntimeException;
@@ -25,11 +26,6 @@ final class UnintentionallyCoveredCodeException extends RuntimeException impleme
         parent::__construct($this->toString());
     }
 
-    public function getUnintentionallyCoveredUnits(): array
-    {
-        return $this->unintentionallyCoveredUnits;
-    }
-
     private function toString(): string
     {
         $message = '';
@@ -39,5 +35,10 @@ final class UnintentionallyCoveredCodeException extends RuntimeException impleme
         }
 
         return $message;
+    }
+
+    public function getUnintentionallyCoveredUnits(): array
+    {
+        return $this->unintentionallyCoveredUnits;
     }
 }

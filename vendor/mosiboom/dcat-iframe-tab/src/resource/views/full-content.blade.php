@@ -46,12 +46,14 @@
 @if(!request()->pjax())
     @include('iframe-tab::full-page', ['header' => $header])
 @else
-    <title>{{ Dcat\Admin\Admin::title() }} @if($header) | {{ $header }}@endif</title>
+    <title>{{ Dcat\Admin\Admin::title() }} @if($header)
+            | {{ $header }}
+        @endif</title>
 
     <script>
         try {
             Dcat.pjaxResponded();
-        }catch (e) {
+        } catch (e) {
             Dcat.wait();
         }
     </script>

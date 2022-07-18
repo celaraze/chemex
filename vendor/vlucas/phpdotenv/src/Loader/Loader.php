@@ -17,7 +17,7 @@ final class Loader implements LoaderInterface
      * repository, with the effect of actually mutating the environment.
      *
      * @param \Dotenv\Repository\RepositoryInterface $repository
-     * @param \Dotenv\Parser\Entry[]                 $entries
+     * @param \Dotenv\Parser\Entry[] $entries
      *
      * @return array<string,string|null>
      */

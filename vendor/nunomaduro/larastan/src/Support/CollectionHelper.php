@@ -41,7 +41,7 @@ final class CollectionHelper
             }
         }
 
-        if (! $type->isArray()->yes()) {
+        if (!$type->isArray()->yes()) {
             return new GenericObjectType(Collection::class, [$type->toArray()->getIterableKeyType(), $type->toArray()->getIterableValueType()]);
         }
 

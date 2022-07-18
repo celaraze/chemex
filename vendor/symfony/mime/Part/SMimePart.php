@@ -38,31 +38,6 @@ class SMimePart extends AbstractPart
         $this->parameters = $parameters;
     }
 
-    public function getMediaType(): string
-    {
-        return $this->type;
-    }
-
-    public function getMediaSubtype(): string
-    {
-        return $this->subtype;
-    }
-
-    public function bodyToString(): string
-    {
-        if (\is_string($this->body)) {
-            return $this->body;
-        }
-
-        $body = '';
-        foreach ($this->body as $chunk) {
-            $body .= $chunk;
-        }
-        $this->body = $body;
-
-        return $body;
-    }
-
     public function bodyToIterable(): iterable
     {
         if (\is_string($this->body)) {
@@ -83,13 +58,23 @@ class SMimePart extends AbstractPart
     {
         $headers = clone parent::getHeaders();
 
-        $headers->setHeaderBody('Parameterized', 'Content-Type', $this->getMediaType().'/'.$this->getMediaSubtype());
+        $headers->setHeaderBody('Parameterized', 'Content-Type', $this->getMediaType() . '/' . $this->getMediaSubtype());
 
         foreach ($this->parameters as $name => $value) {
             $headers->setHeaderParameter('Content-Type', $name, $value);
         }
 
         return $headers;
+    }
+
+    public function getMediaType(): string
+    {
+        return $this->type;
+    }
+
+    public function getMediaSubtype(): string
+    {
+        return $this->subtype;
     }
 
     public function __sleep(): array
@@ -102,6 +87,21 @@ class SMimePart extends AbstractPart
         $this->_headers = $this->getHeaders();
 
         return ['_headers', 'body', 'type', 'subtype', 'parameters'];
+    }
+
+    public function bodyToString(): string
+    {
+        if (\is_string($this->body)) {
+            return $this->body;
+        }
+
+        $body = '';
+        foreach ($this->body as $chunk) {
+            $body .= $chunk;
+        }
+        $this->body = $body;
+
+        return $body;
     }
 
     public function __wakeup(): void

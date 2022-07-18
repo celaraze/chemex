@@ -48,6 +48,11 @@ final class MailboxHeader extends AbstractHeader
         return $this->getAddress();
     }
 
+    public function getAddress(): Address
+    {
+        return $this->address;
+    }
+
     /**
      * @throws RfcComplianceException
      */
@@ -56,16 +61,11 @@ final class MailboxHeader extends AbstractHeader
         $this->address = $address;
     }
 
-    public function getAddress(): Address
-    {
-        return $this->address;
-    }
-
     public function getBodyAsString(): string
     {
         $str = $this->address->getEncodedAddress();
         if ($name = $this->address->getName()) {
-            $str = $this->createPhrase($this, $name, $this->getCharset(), true).' <'.$str.'>';
+            $str = $this->createPhrase($this, $name, $this->getCharset(), true) . ' <' . $str . '>';
         }
 
         return $str;

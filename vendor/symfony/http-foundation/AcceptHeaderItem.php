@@ -32,6 +32,22 @@ class AcceptHeaderItem
     }
 
     /**
+     * Set an attribute.
+     *
+     * @return $this
+     */
+    public function setAttribute(string $name, string $value): static
+    {
+        if ('q' === $name) {
+            $this->quality = (float)$value;
+        } else {
+            $this->attributes[$name] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * Builds an AcceptHeaderInstance instance from a string.
      */
     public static function fromString(?string $itemValue): self
@@ -49,12 +65,20 @@ class AcceptHeaderItem
      */
     public function __toString(): string
     {
-        $string = $this->value.($this->quality < 1 ? ';q='.$this->quality : '');
+        $string = $this->value . ($this->quality < 1 ? ';q=' . $this->quality : '');
         if (\count($this->attributes) > 0) {
-            $string .= '; '.HeaderUtils::toString($this->attributes, ';');
+            $string .= '; ' . HeaderUtils::toString($this->attributes, ';');
         }
 
         return $string;
+    }
+
+    /**
+     * Returns the item value.
+     */
+    public function getValue(): string
+    {
+        return $this->value;
     }
 
     /**
@@ -70,11 +94,11 @@ class AcceptHeaderItem
     }
 
     /**
-     * Returns the item value.
+     * Returns the item quality.
      */
-    public function getValue(): string
+    public function getQuality(): float
     {
-        return $this->value;
+        return $this->quality;
     }
 
     /**
@@ -90,11 +114,11 @@ class AcceptHeaderItem
     }
 
     /**
-     * Returns the item quality.
+     * Returns the item index.
      */
-    public function getQuality(): float
+    public function getIndex(): int
     {
-        return $this->quality;
+        return $this->index;
     }
 
     /**
@@ -107,14 +131,6 @@ class AcceptHeaderItem
         $this->index = $index;
 
         return $this;
-    }
-
-    /**
-     * Returns the item index.
-     */
-    public function getIndex(): int
-    {
-        return $this->index;
     }
 
     /**
@@ -139,21 +155,5 @@ class AcceptHeaderItem
     public function getAttributes(): array
     {
         return $this->attributes;
-    }
-
-    /**
-     * Set an attribute.
-     *
-     * @return $this
-     */
-    public function setAttribute(string $name, string $value): static
-    {
-        if ('q' === $name) {
-            $this->quality = (float) $value;
-        } else {
-            $this->attributes[$name] = $value;
-        }
-
-        return $this;
     }
 }

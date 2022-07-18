@@ -23,19 +23,40 @@ use Composer\Pcre\Preg;
 class Process
 {
     /**
+     * Escapes an array of arguments that make up a shell command
+     *
+     * @param string[] $args Argument list, with the module name first
+     */
+    public static function escapeShellCommand(array $args): string
+    {
+        $command = '';
+        $module = array_shift($args);
+
+        if ($module !== null) {
+            $command = self::escape($module, true, true);
+
+            foreach ($args as $arg) {
+                $command .= ' ' . self::escape($arg);
+            }
+        }
+
+        return $command;
+    }
+
+    /**
      * Escapes a string to be used as a shell argument.
      *
      * From https://github.com/johnstevenson/winbox-args
      * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
-     * @param string $arg  The argument to be escaped
+     * @param string $arg The argument to be escaped
      * @param bool $meta Additionally escape cmd.exe meta characters
      * @param bool $module The argument is the module to invoke
      */
     public static function escape(string $arg, bool $meta = true, bool $module = false): string
     {
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            return "'".str_replace("'", "'\\''", $arg)."'";
+            return "'" . str_replace("'", "'\\''", $arg) . "'";
         }
 
         $quote = strpbrk($arg, " \t") !== false || $arg === '';
@@ -53,7 +74,7 @@ class Process
         }
 
         if ($quote) {
-            $arg = '"'.(Preg::replace('/(\\\\*)$/', '$1$1', $arg)).'"';
+            $arg = '"' . (Preg::replace('/(\\\\*)$/', '$1$1', $arg)) . '"';
         }
 
         if ($meta) {
@@ -64,37 +85,16 @@ class Process
     }
 
     /**
-     * Escapes an array of arguments that make up a shell command
-     *
-     * @param string[] $args Argument list, with the module name first
-     */
-    public static function escapeShellCommand(array $args): string
-    {
-        $command = '';
-        $module = array_shift($args);
-
-        if ($module !== null) {
-            $command = self::escape($module, true, true);
-
-            foreach ($args as $arg) {
-                $command .= ' '.self::escape($arg);
-            }
-        }
-
-        return $command;
-    }
-
-    /**
      * Makes putenv environment changes available in $_SERVER and $_ENV
      *
      * @param string $name
      * @param ?string $value A null value unsets the variable
-      */
+     */
     public static function setEnv(string $name, ?string $value = null): bool
     {
         $unset = null === $value;
 
-        if (!putenv($unset ? $name : $name.'='.$value)) {
+        if (!putenv($unset ? $name : $name . '=' . $value)) {
             return false;
         }
 
@@ -105,7 +105,7 @@ class Process
         }
 
         // Update $_ENV if it is being used
-        if (false !== stripos((string) ini_get('variables_order'), 'E')) {
+        if (false !== stripos((string)ini_get('variables_order'), 'E')) {
             if ($unset) {
                 unset($_ENV[$name]);
             } else {

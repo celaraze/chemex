@@ -38,7 +38,7 @@ class InvalidPropertyAccessAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application seems to reference class properties that are either undefined "
-            ."or not accessible.";
+            . "or not accessible.";
     }
 
     /**

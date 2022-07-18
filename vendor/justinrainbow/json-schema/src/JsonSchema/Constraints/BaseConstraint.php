@@ -43,6 +43,27 @@ class BaseConstraint
         $this->factory = $factory ?: new Factory();
     }
 
+    /**
+     * Recursively cast an associative array to an object
+     *
+     * @param array $array
+     *
+     * @return object
+     */
+    public static function arrayToObjectRecursive($array)
+    {
+        $json = json_encode($array);
+        if (json_last_error() !== \JSON_ERROR_NONE) {
+            $message = 'Unable to encode schema array as JSON';
+            if (function_exists('json_last_error_msg')) {
+                $message .= ': ' . json_last_error_msg();
+            }
+            throw new InvalidArgumentException($message);
+        }
+
+        return (object)json_decode($json);
+    }
+
     public function addError(JsonPointer $path = null, $message, $constraint = '', array $more = null)
     {
         $error = array(
@@ -78,6 +99,15 @@ class BaseConstraint
         }
     }
 
+    public function numErrors($errorContext = Validator::ERROR_ALL)
+    {
+        if ($errorContext === Validator::ERROR_ALL) {
+            return count($this->errors);
+        }
+
+        return count($this->getErrors($errorContext));
+    }
+
     public function getErrors($errorContext = Validator::ERROR_ALL)
     {
         if ($errorContext === Validator::ERROR_ALL) {
@@ -89,15 +119,6 @@ class BaseConstraint
                 return true;
             }
         });
-    }
-
-    public function numErrors($errorContext = Validator::ERROR_ALL)
-    {
-        if ($errorContext === Validator::ERROR_ALL) {
-            return count($this->errors);
-        }
-
-        return count($this->getErrors($errorContext));
     }
 
     public function isValid()
@@ -123,26 +144,5 @@ class BaseConstraint
     public function getErrorMask()
     {
         return $this->errorMask;
-    }
-
-    /**
-     * Recursively cast an associative array to an object
-     *
-     * @param array $array
-     *
-     * @return object
-     */
-    public static function arrayToObjectRecursive($array)
-    {
-        $json = json_encode($array);
-        if (json_last_error() !== \JSON_ERROR_NONE) {
-            $message = 'Unable to encode schema array as JSON';
-            if (function_exists('json_last_error_msg')) {
-                $message .= ': ' . json_last_error_msg();
-            }
-            throw new InvalidArgumentException($message);
-        }
-
-        return (object) json_decode($json);
     }
 }

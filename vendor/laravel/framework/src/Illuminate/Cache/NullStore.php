@@ -11,7 +11,7 @@ class NullStore extends TaggableStore implements LockProvider
     /**
      * Retrieve an item from the cache by key.
      *
-     * @param  string  $key
+     * @param string $key
      * @return void
      */
     public function get($key)
@@ -22,9 +22,9 @@ class NullStore extends TaggableStore implements LockProvider
     /**
      * Store an item in the cache for a given number of seconds.
      *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  int  $seconds
+     * @param string $key
+     * @param mixed $value
+     * @param int $seconds
      * @return bool
      */
     public function put($key, $value, $seconds)
@@ -35,8 +35,8 @@ class NullStore extends TaggableStore implements LockProvider
     /**
      * Increment the value of an item in the cache.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
      * @return bool
      */
     public function increment($key, $value = 1)
@@ -47,8 +47,8 @@ class NullStore extends TaggableStore implements LockProvider
     /**
      * Decrement the value of an item in the cache.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
      * @return bool
      */
     public function decrement($key, $value = 1)
@@ -59,8 +59,8 @@ class NullStore extends TaggableStore implements LockProvider
     /**
      * Store an item in the cache indefinitely.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
      * @return bool
      */
     public function forever($key, $value)
@@ -69,23 +69,10 @@ class NullStore extends TaggableStore implements LockProvider
     }
 
     /**
-     * Get a lock instance.
-     *
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
-     * @return \Illuminate\Contracts\Cache\Lock
-     */
-    public function lock($name, $seconds = 0, $owner = null)
-    {
-        return new NoLock($name, $seconds, $owner);
-    }
-
-    /**
      * Restore a lock instance using the owner identifier.
      *
-     * @param  string  $name
-     * @param  string  $owner
+     * @param string $name
+     * @param string $owner
      * @return \Illuminate\Contracts\Cache\Lock
      */
     public function restoreLock($name, $owner)
@@ -94,9 +81,22 @@ class NullStore extends TaggableStore implements LockProvider
     }
 
     /**
+     * Get a lock instance.
+     *
+     * @param string $name
+     * @param int $seconds
+     * @param string|null $owner
+     * @return \Illuminate\Contracts\Cache\Lock
+     */
+    public function lock($name, $seconds = 0, $owner = null)
+    {
+        return new NoLock($name, $seconds, $owner);
+    }
+
+    /**
      * Remove an item from the cache.
      *
-     * @param  string  $key
+     * @param string $key
      * @return bool
      */
     public function forget($key)

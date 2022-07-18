@@ -1,7 +1,7 @@
 <?php
 
-namespace Laravel\Dusk
-{
+namespace Laravel\Dusk {
+
     use Laravel\Dusk\Component;
 
     /**

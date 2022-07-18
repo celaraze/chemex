@@ -15,7 +15,7 @@ class MenuEditForm extends MenuCreationForm
 
     public function __construct($id = null, $selector = 'form[method="POST"]')
     {
-        if ($id && ! is_numeric($id)) {
+        if ($id && !is_numeric($id)) {
             $selector = $id;
             $id = null;
         }
@@ -27,7 +27,7 @@ class MenuEditForm extends MenuCreationForm
     /**
      * 浏览器包含组件的断言
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -54,7 +54,7 @@ class MenuEditForm extends MenuCreationForm
                     ->is(new Select2('select[name="parent_id"]'))
                     ->is(new MultipleSelect2('select[name="roles[]"]'));
 
-                if (! $this->id) {
+                if (!$this->id) {
                     return;
                 }
 

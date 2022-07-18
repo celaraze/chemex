@@ -51,32 +51,26 @@ class NativeCalculator extends Calculator
     /**
      * {@inheritdoc}
      */
-    public function add(string $a, string $b) : string
+    public function pow(string $a, int $e): string
     {
-        /**
-         * @psalm-var numeric-string $a
-         * @psalm-var numeric-string $b
-         */
-        $result = $a + $b;
-
-        if (is_int($result)) {
-            return (string) $result;
+        if ($e === 0) {
+            return '1';
         }
 
-        if ($a === '0') {
-            return $b;
-        }
-
-        if ($b === '0') {
+        if ($e === 1) {
             return $a;
         }
 
-        [$aNeg, $bNeg, $aDig, $bDig] = $this->init($a, $b);
+        $odd = $e % 2;
+        $e -= $odd;
 
-        $result = $aNeg === $bNeg ? $this->doAdd($aDig, $bDig) : $this->doSub($aDig, $bDig);
+        $aa = $this->mul($a, $a);
 
-        if ($aNeg) {
-            $result = $this->neg($result);
+        /** @psalm-suppress PossiblyInvalidArgument We're sure that $e / 2 is an int now */
+        $result = $this->pow($aa, $e / 2);
+
+        if ($odd === 1) {
+            $result = $this->mul($result, $a);
         }
 
         return $result;
@@ -85,15 +79,7 @@ class NativeCalculator extends Calculator
     /**
      * {@inheritdoc}
      */
-    public function sub(string $a, string $b) : string
-    {
-        return $this->add($a, $this->neg($b));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function mul(string $a, string $b) : string
+    public function mul(string $a, string $b): string
     {
         /**
          * @psalm-var numeric-string $a
@@ -102,7 +88,7 @@ class NativeCalculator extends Calculator
         $result = $a * $b;
 
         if (is_int($result)) {
-            return (string) $result;
+            return (string)$result;
         }
 
         if ($a === '0' || $b === '0') {
@@ -137,11 +123,340 @@ class NativeCalculator extends Calculator
     }
 
     /**
+     * Performs the multiplication of two non-signed large integers.
+     *
+     * @param string $a The first operand.
+     * @param string $b The second operand.
+     *
+     * @return string
+     */
+    private function doMul(string $a, string $b): string
+    {
+        $x = \strlen($a);
+        $y = \strlen($b);
+
+        $maxDigits = \intdiv($this->maxDigits, 2);
+        $complement = 10 ** $maxDigits;
+
+        $result = '0';
+
+        for ($i = $x - $maxDigits; ; $i -= $maxDigits) {
+            $blockALength = $maxDigits;
+
+            if ($i < 0) {
+                $blockALength += $i;
+                /** @psalm-suppress LoopInvalidation */
+                $i = 0;
+            }
+
+            $blockA = (int)\substr($a, $i, $blockALength);
+
+            $line = '';
+            $carry = 0;
+
+            for ($j = $y - $maxDigits; ; $j -= $maxDigits) {
+                $blockBLength = $maxDigits;
+
+                if ($j < 0) {
+                    $blockBLength += $j;
+                    /** @psalm-suppress LoopInvalidation */
+                    $j = 0;
+                }
+
+                $blockB = (int)\substr($b, $j, $blockBLength);
+
+                $mul = $blockA * $blockB + $carry;
+                $value = $mul % $complement;
+                $carry = ($mul - $value) / $complement;
+
+                $value = (string)$value;
+                $value = \str_pad($value, $maxDigits, '0', STR_PAD_LEFT);
+
+                $line = $value . $line;
+
+                if ($j === 0) {
+                    break;
+                }
+            }
+
+            if ($carry !== 0) {
+                $line = $carry . $line;
+            }
+
+            $line = \ltrim($line, '0');
+
+            if ($line !== '') {
+                $line .= \str_repeat('0', $x - $blockALength - $i);
+                $result = $this->add($result, $line);
+            }
+
+            if ($i === 0) {
+                break;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function divQ(string $a, string $b) : string
+    public function add(string $a, string $b): string
     {
-        return $this->divQR($a, $b)[0];
+        /**
+         * @psalm-var numeric-string $a
+         * @psalm-var numeric-string $b
+         */
+        $result = $a + $b;
+
+        if (is_int($result)) {
+            return (string)$result;
+        }
+
+        if ($a === '0') {
+            return $b;
+        }
+
+        if ($b === '0') {
+            return $a;
+        }
+
+        [$aNeg, $bNeg, $aDig, $bDig] = $this->init($a, $b);
+
+        $result = $aNeg === $bNeg ? $this->doAdd($aDig, $bDig) : $this->doSub($aDig, $bDig);
+
+        if ($aNeg) {
+            $result = $this->neg($result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Performs the addition of two non-signed large integers.
+     *
+     * @param string $a The first operand.
+     * @param string $b The second operand.
+     *
+     * @return string
+     */
+    private function doAdd(string $a, string $b): string
+    {
+        [$a, $b, $length] = $this->pad($a, $b);
+
+        $carry = 0;
+        $result = '';
+
+        for ($i = $length - $this->maxDigits; ; $i -= $this->maxDigits) {
+            $blockLength = $this->maxDigits;
+
+            if ($i < 0) {
+                $blockLength += $i;
+                /** @psalm-suppress LoopInvalidation */
+                $i = 0;
+            }
+
+            /** @psalm-var numeric-string $blockA */
+            $blockA = \substr($a, $i, $blockLength);
+
+            /** @psalm-var numeric-string $blockB */
+            $blockB = \substr($b, $i, $blockLength);
+
+            $sum = (string)($blockA + $blockB + $carry);
+            $sumLength = \strlen($sum);
+
+            if ($sumLength > $blockLength) {
+                $sum = \substr($sum, 1);
+                $carry = 1;
+            } else {
+                if ($sumLength < $blockLength) {
+                    $sum = \str_repeat('0', $blockLength - $sumLength) . $sum;
+                }
+                $carry = 0;
+            }
+
+            $result = $sum . $result;
+
+            if ($i === 0) {
+                break;
+            }
+        }
+
+        if ($carry === 1) {
+            $result = '1' . $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Pads the left of one of the given numbers with zeros if necessary to make both numbers the same length.
+     *
+     * The numbers must only consist of digits, without leading minus sign.
+     *
+     * @param string $a The first operand.
+     * @param string $b The second operand.
+     *
+     * @return array{string, string, int}
+     */
+    private function pad(string $a, string $b): array
+    {
+        $x = \strlen($a);
+        $y = \strlen($b);
+
+        if ($x > $y) {
+            $b = \str_repeat('0', $x - $y) . $b;
+
+            return [$a, $b, $x];
+        }
+
+        if ($x < $y) {
+            $a = \str_repeat('0', $y - $x) . $a;
+
+            return [$a, $b, $y];
+        }
+
+        return [$a, $b, $x];
+    }
+
+    /**
+     * Performs the subtraction of two non-signed large integers.
+     *
+     * @param string $a The first operand.
+     * @param string $b The second operand.
+     *
+     * @return string
+     */
+    private function doSub(string $a, string $b): string
+    {
+        if ($a === $b) {
+            return '0';
+        }
+
+        // Ensure that we always subtract to a positive result: biggest minus smallest.
+        $cmp = $this->doCmp($a, $b);
+
+        $invert = ($cmp === -1);
+
+        if ($invert) {
+            $c = $a;
+            $a = $b;
+            $b = $c;
+        }
+
+        [$a, $b, $length] = $this->pad($a, $b);
+
+        $carry = 0;
+        $result = '';
+
+        $complement = 10 ** $this->maxDigits;
+
+        for ($i = $length - $this->maxDigits; ; $i -= $this->maxDigits) {
+            $blockLength = $this->maxDigits;
+
+            if ($i < 0) {
+                $blockLength += $i;
+                /** @psalm-suppress LoopInvalidation */
+                $i = 0;
+            }
+
+            /** @psalm-var numeric-string $blockA */
+            $blockA = \substr($a, $i, $blockLength);
+
+            /** @psalm-var numeric-string $blockB */
+            $blockB = \substr($b, $i, $blockLength);
+
+            $sum = $blockA - $blockB - $carry;
+
+            if ($sum < 0) {
+                $sum += $complement;
+                $carry = 1;
+            } else {
+                $carry = 0;
+            }
+
+            $sum = (string)$sum;
+            $sumLength = \strlen($sum);
+
+            if ($sumLength < $blockLength) {
+                $sum = \str_repeat('0', $blockLength - $sumLength) . $sum;
+            }
+
+            $result = $sum . $result;
+
+            if ($i === 0) {
+                break;
+            }
+        }
+
+        // Carry cannot be 1 when the loop ends, as a > b
+        assert($carry === 0);
+
+        $result = \ltrim($result, '0');
+
+        if ($invert) {
+            $result = $this->neg($result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compares two non-signed large numbers.
+     *
+     * @param string $a The first operand.
+     * @param string $b The second operand.
+     *
+     * @return int [-1, 0, 1]
+     */
+    private function doCmp(string $a, string $b): int
+    {
+        $x = \strlen($a);
+        $y = \strlen($b);
+
+        $cmp = $x <=> $y;
+
+        if ($cmp !== 0) {
+            return $cmp;
+        }
+
+        return \strcmp($a, $b) <=> 0; // enforce [-1, 0, 1]
+    }
+
+    /**
+     * Algorithm from: https://www.geeksforgeeks.org/modular-exponentiation-power-in-modular-arithmetic/
+     *
+     * {@inheritdoc}
+     */
+    public function modPow(string $base, string $exp, string $mod): string
+    {
+        // special case: the algorithm below fails with 0 power 0 mod 1 (returns 1 instead of 0)
+        if ($base === '0' && $exp === '0' && $mod === '1') {
+            return '0';
+        }
+
+        // special case: the algorithm below fails with power 0 mod 1 (returns 1 instead of 0)
+        if ($exp === '0' && $mod === '1') {
+            return '0';
+        }
+
+        $x = $base;
+
+        $res = '1';
+
+        // numbers are positive, so we can use remainder instead of modulo
+        $x = $this->divR($x, $mod);
+
+        while ($exp !== '0') {
+            if (in_array($exp[-1], ['1', '3', '5', '7', '9'])) { // odd
+                $res = $this->divR($this->mul($res, $x), $mod);
+            }
+
+            $exp = $this->divQ($exp, '2');
+            $x = $this->divR($this->mul($x, $x), $mod);
+        }
+
+        return $res;
     }
 
     /**
@@ -155,7 +470,7 @@ class NativeCalculator extends Calculator
     /**
      * {@inheritdoc}
      */
-    public function divQR(string $a, string $b) : array
+    public function divQR(string $a, string $b): array
     {
         if ($a === '0') {
             return ['0', '0'];
@@ -189,8 +504,8 @@ class NativeCalculator extends Calculator
                 assert(is_int($q));
 
                 return [
-                    (string) $q,
-                    (string) $r
+                    (string)$q,
+                    (string)$r
                 ];
             }
         }
@@ -211,315 +526,6 @@ class NativeCalculator extends Calculator
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function pow(string $a, int $e) : string
-    {
-        if ($e === 0) {
-            return '1';
-        }
-
-        if ($e === 1) {
-            return $a;
-        }
-
-        $odd = $e % 2;
-        $e -= $odd;
-
-        $aa = $this->mul($a, $a);
-
-        /** @psalm-suppress PossiblyInvalidArgument We're sure that $e / 2 is an int now */
-        $result = $this->pow($aa, $e / 2);
-
-        if ($odd === 1) {
-            $result = $this->mul($result, $a);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Algorithm from: https://www.geeksforgeeks.org/modular-exponentiation-power-in-modular-arithmetic/
-     *
-     * {@inheritdoc}
-     */
-    public function modPow(string $base, string $exp, string $mod) : string
-    {
-        // special case: the algorithm below fails with 0 power 0 mod 1 (returns 1 instead of 0)
-        if ($base === '0' && $exp === '0' && $mod === '1') {
-            return '0';
-        }
-
-        // special case: the algorithm below fails with power 0 mod 1 (returns 1 instead of 0)
-        if ($exp === '0' && $mod === '1') {
-            return '0';
-        }
-
-        $x = $base;
-
-        $res = '1';
-
-        // numbers are positive, so we can use remainder instead of modulo
-        $x = $this->divR($x, $mod);
-
-        while ($exp !== '0') {
-            if (in_array($exp[-1], ['1', '3', '5', '7', '9'])) { // odd
-                $res = $this->divR($this->mul($res, $x), $mod);
-            }
-
-            $exp = $this->divQ($exp, '2');
-            $x = $this->divR($this->mul($x, $x), $mod);
-        }
-
-        return $res;
-    }
-
-    /**
-     * Adapted from https://cp-algorithms.com/num_methods/roots_newton.html
-     *
-     * {@inheritDoc}
-     */
-    public function sqrt(string $n) : string
-    {
-        if ($n === '0') {
-            return '0';
-        }
-
-        // initial approximation
-        $x = \str_repeat('9', \intdiv(\strlen($n), 2) ?: 1);
-
-        $decreased = false;
-
-        for (;;) {
-            $nx = $this->divQ($this->add($x, $this->divQ($n, $x)), '2');
-
-            if ($x === $nx || $this->cmp($nx, $x) > 0 && $decreased) {
-                break;
-            }
-
-            $decreased = $this->cmp($nx, $x) < 0;
-            $x = $nx;
-        }
-
-        return $x;
-    }
-
-    /**
-     * Performs the addition of two non-signed large integers.
-     *
-     * @param string $a The first operand.
-     * @param string $b The second operand.
-     *
-     * @return string
-     */
-    private function doAdd(string $a, string $b) : string
-    {
-        [$a, $b, $length] = $this->pad($a, $b);
-
-        $carry = 0;
-        $result = '';
-
-        for ($i = $length - $this->maxDigits;; $i -= $this->maxDigits) {
-            $blockLength = $this->maxDigits;
-
-            if ($i < 0) {
-                $blockLength += $i;
-                /** @psalm-suppress LoopInvalidation */
-                $i = 0;
-            }
-
-            /** @psalm-var numeric-string $blockA */
-            $blockA = \substr($a, $i, $blockLength);
-
-            /** @psalm-var numeric-string $blockB */
-            $blockB = \substr($b, $i, $blockLength);
-
-            $sum = (string) ($blockA + $blockB + $carry);
-            $sumLength = \strlen($sum);
-
-            if ($sumLength > $blockLength) {
-                $sum = \substr($sum, 1);
-                $carry = 1;
-            } else {
-                if ($sumLength < $blockLength) {
-                    $sum = \str_repeat('0', $blockLength - $sumLength) . $sum;
-                }
-                $carry = 0;
-            }
-
-            $result = $sum . $result;
-
-            if ($i === 0) {
-                break;
-            }
-        }
-
-        if ($carry === 1) {
-            $result = '1' . $result;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Performs the subtraction of two non-signed large integers.
-     *
-     * @param string $a The first operand.
-     * @param string $b The second operand.
-     *
-     * @return string
-     */
-    private function doSub(string $a, string $b) : string
-    {
-        if ($a === $b) {
-            return '0';
-        }
-
-        // Ensure that we always subtract to a positive result: biggest minus smallest.
-        $cmp = $this->doCmp($a, $b);
-
-        $invert = ($cmp === -1);
-
-        if ($invert) {
-            $c = $a;
-            $a = $b;
-            $b = $c;
-        }
-
-        [$a, $b, $length] = $this->pad($a, $b);
-
-        $carry = 0;
-        $result = '';
-
-        $complement = 10 ** $this->maxDigits;
-
-        for ($i = $length - $this->maxDigits;; $i -= $this->maxDigits) {
-            $blockLength = $this->maxDigits;
-
-            if ($i < 0) {
-                $blockLength += $i;
-                /** @psalm-suppress LoopInvalidation */
-                $i = 0;
-            }
-
-            /** @psalm-var numeric-string $blockA */
-            $blockA = \substr($a, $i, $blockLength);
-
-            /** @psalm-var numeric-string $blockB */
-            $blockB = \substr($b, $i, $blockLength);
-
-            $sum = $blockA - $blockB - $carry;
-
-            if ($sum < 0) {
-                $sum += $complement;
-                $carry = 1;
-            } else {
-                $carry = 0;
-            }
-
-            $sum = (string) $sum;
-            $sumLength = \strlen($sum);
-
-            if ($sumLength < $blockLength) {
-                $sum = \str_repeat('0', $blockLength - $sumLength) . $sum;
-            }
-
-            $result = $sum . $result;
-
-            if ($i === 0) {
-                break;
-            }
-        }
-
-        // Carry cannot be 1 when the loop ends, as a > b
-        assert($carry === 0);
-
-        $result = \ltrim($result, '0');
-
-        if ($invert) {
-            $result = $this->neg($result);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Performs the multiplication of two non-signed large integers.
-     *
-     * @param string $a The first operand.
-     * @param string $b The second operand.
-     *
-     * @return string
-     */
-    private function doMul(string $a, string $b) : string
-    {
-        $x = \strlen($a);
-        $y = \strlen($b);
-
-        $maxDigits = \intdiv($this->maxDigits, 2);
-        $complement = 10 ** $maxDigits;
-
-        $result = '0';
-
-        for ($i = $x - $maxDigits;; $i -= $maxDigits) {
-            $blockALength = $maxDigits;
-
-            if ($i < 0) {
-                $blockALength += $i;
-                /** @psalm-suppress LoopInvalidation */
-                $i = 0;
-            }
-
-            $blockA = (int) \substr($a, $i, $blockALength);
-
-            $line = '';
-            $carry = 0;
-
-            for ($j = $y - $maxDigits;; $j -= $maxDigits) {
-                $blockBLength = $maxDigits;
-
-                if ($j < 0) {
-                    $blockBLength += $j;
-                    /** @psalm-suppress LoopInvalidation */
-                    $j = 0;
-                }
-
-                $blockB = (int) \substr($b, $j, $blockBLength);
-
-                $mul = $blockA * $blockB + $carry;
-                $value = $mul % $complement;
-                $carry = ($mul - $value) / $complement;
-
-                $value = (string) $value;
-                $value = \str_pad($value, $maxDigits, '0', STR_PAD_LEFT);
-
-                $line = $value . $line;
-
-                if ($j === 0) {
-                    break;
-                }
-            }
-
-            if ($carry !== 0) {
-                $line = $carry . $line;
-            }
-
-            $line = \ltrim($line, '0');
-
-            if ($line !== '') {
-                $line .= \str_repeat('0', $x - $blockALength - $i);
-                $result = $this->add($result, $line);
-            }
-
-            if ($i === 0) {
-                break;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
      * Performs the division of two non-signed large integers.
      *
      * @param string $a The first operand.
@@ -527,7 +533,7 @@ class NativeCalculator extends Calculator
      *
      * @return string[] The quotient and remainder.
      */
-    private function doDiv(string $a, string $b) : array
+    private function doDiv(string $a, string $b): array
     {
         $cmp = $this->doCmp($a, $b);
 
@@ -544,7 +550,7 @@ class NativeCalculator extends Calculator
         $r = $a; // remainder
         $z = $y; // focus length, always $y or $y+1
 
-        for (;;) {
+        for (; ;) {
             $focus = \substr($a, 0, $z);
 
             $cmp = $this->doCmp($focus, $b);
@@ -581,54 +587,48 @@ class NativeCalculator extends Calculator
     }
 
     /**
-     * Compares two non-signed large numbers.
-     *
-     * @param string $a The first operand.
-     * @param string $b The second operand.
-     *
-     * @return int [-1, 0, 1]
+     * {@inheritdoc}
      */
-    private function doCmp(string $a, string $b) : int
+    public function sub(string $a, string $b): string
     {
-        $x = \strlen($a);
-        $y = \strlen($b);
-
-        $cmp = $x <=> $y;
-
-        if ($cmp !== 0) {
-            return $cmp;
-        }
-
-        return \strcmp($a, $b) <=> 0; // enforce [-1, 0, 1]
+        return $this->add($a, $this->neg($b));
     }
 
     /**
-     * Pads the left of one of the given numbers with zeros if necessary to make both numbers the same length.
-     *
-     * The numbers must only consist of digits, without leading minus sign.
-     *
-     * @param string $a The first operand.
-     * @param string $b The second operand.
-     *
-     * @return array{string, string, int}
+     * {@inheritdoc}
      */
-    private function pad(string $a, string $b) : array
+    public function divQ(string $a, string $b): string
     {
-        $x = \strlen($a);
-        $y = \strlen($b);
+        return $this->divQR($a, $b)[0];
+    }
 
-        if ($x > $y) {
-            $b = \str_repeat('0', $x - $y) . $b;
-
-            return [$a, $b, $x];
+    /**
+     * Adapted from https://cp-algorithms.com/num_methods/roots_newton.html
+     *
+     * {@inheritDoc}
+     */
+    public function sqrt(string $n): string
+    {
+        if ($n === '0') {
+            return '0';
         }
 
-        if ($x < $y) {
-            $a = \str_repeat('0', $y - $x) . $a;
+        // initial approximation
+        $x = \str_repeat('9', \intdiv(\strlen($n), 2) ?: 1);
 
-            return [$a, $b, $y];
+        $decreased = false;
+
+        for (; ;) {
+            $nx = $this->divQ($this->add($x, $this->divQ($n, $x)), '2');
+
+            if ($x === $nx || $this->cmp($nx, $x) > 0 && $decreased) {
+                break;
+            }
+
+            $decreased = $this->cmp($nx, $x) < 0;
+            $x = $nx;
         }
 
-        return [$a, $b, $x];
+        return $x;
     }
 }

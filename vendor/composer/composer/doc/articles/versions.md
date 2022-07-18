@@ -74,11 +74,22 @@ correct location in your `vendor` directory.
 
 ### Branches
 
-If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For tags, it copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source and --prefer-dist, see [install options](../03-cli.md#install).)
+If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the
+special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want
+to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For
+tags, it copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source
+and --prefer-dist, see [install options](../03-cli.md#install).)
 
-In the above example, if you wanted to check out the `my-feature` branch, you would specify `dev-my-feature` as the version constraint in your `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
+In the above example, if you wanted to check out the `my-feature` branch, you would specify `dev-my-feature` as the
+version constraint in your `require` clause. This would result in Composer cloning the `my-library` repository into
+my `vendor` directory and checking out the `my-feature` branch.
 
-When branch names look like versions, we have to clarify for Composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
+When branch names look like versions, we have to clarify for Composer that we're trying to check out a branch and not a
+tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these
+branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that
+Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name
+the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you
+append `-dev` as a suffix, rather than using `dev-` as a prefix.
 
 ### Stabilities
 
@@ -95,7 +106,13 @@ Keeping this in mind will help you in the next section.
 
 ### Minimum Stability
 
-There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, note that the library released a beta and two release candidates for version `1.1` before the final official release. To receive these versions when running `composer install` or `composer update`, we have to explicitly tell Composer that we are ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](../04-schema.md#minimum-stability).
+There's one more thing that will affect which files are checked out of a library's VCS and added to your project:
+Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example,
+note that the library released a beta and two release candidates for version `1.1` before the final official release. To
+receive these versions when running `composer install` or `composer update`, we have to explicitly tell Composer that we
+are ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a
+project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more
+on the [schema page](../04-schema.md#minimum-stability).
 
 ## Writing Version Constraints
 
@@ -199,17 +216,17 @@ add the suffix `-stable`.
 
 Examples:
 
- Constraint         | Internally
+Constraint         | Internally
 ------------------- | ------------------------
- `1.2.3`            | `=1.2.3.0-stable`
- `>1.2`             | `>1.2.0.0-stable`
- `>=1.2`            | `>=1.2.0.0-dev`
- `>=1.2-stable`     | `>=1.2.0.0-stable`
- `<1.3`             | `<1.3.0.0-dev`
- `<=1.3`            | `<=1.3.0.0-stable`
- `1 - 2`            | `>=1.0.0.0-dev <3.0.0.0-dev`
- `~1.3`             | `>=1.3.0.0-dev <2.0.0.0-dev`
- `1.4.*`            | `>=1.4.0.0-dev <1.5.0.0-dev`
+`1.2.3`            | `=1.2.3.0-stable`
+`>1.2`             | `>1.2.0.0-stable`
+`>=1.2`            | `>=1.2.0.0-dev`
+`>=1.2-stable`     | `>=1.2.0.0-stable`
+`<1.3`             | `<1.3.0.0-dev`
+`<=1.3`            | `<=1.3.0.0-stable`
+`1 - 2`            | `>=1.0.0.0-dev <3.0.0.0-dev`
+`~1.3`             | `>=1.3.0.0-dev <2.0.0.0-dev`
+`1.4.*`            | `>=1.4.0.0-dev <1.5.0.0-dev`
 
 To allow various stabilities without enforcing them at the constraint level
 however, you may use [stability-flags](../04-schema.md#package-links) like
@@ -219,6 +236,7 @@ setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
 
 ## Summary
+
 ```jsonc
 "require": {
     "vendor/package": "1.3.2", // exactly 1.3.2

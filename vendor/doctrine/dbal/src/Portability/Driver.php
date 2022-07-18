@@ -7,9 +7,7 @@ use Doctrine\DBAL\Driver as DriverInterface;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use LogicException;
 use PDO;
-
 use function method_exists;
-
 use const CASE_LOWER;
 use const CASE_UPPER;
 
@@ -61,9 +59,9 @@ final class Driver extends AbstractDriverMiddleware
         }
 
         $convertEmptyStringToNull = ($portability & Connection::PORTABILITY_EMPTY_TO_NULL) !== 0;
-        $rightTrimString          = ($portability & Connection::PORTABILITY_RTRIM) !== 0;
+        $rightTrimString = ($portability & Connection::PORTABILITY_RTRIM) !== 0;
 
-        if (! $convertEmptyStringToNull && ! $rightTrimString && $case === null) {
+        if (!$convertEmptyStringToNull && !$rightTrimString && $case === null) {
             return $connection;
         }
 

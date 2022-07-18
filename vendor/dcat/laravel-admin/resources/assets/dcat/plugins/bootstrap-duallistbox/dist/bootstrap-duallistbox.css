@@ -41,6 +41,7 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
+
 .bootstrap-duallistbox-container select {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -77,7 +78,7 @@
 
 .bootstrap-duallistbox-container.moveonselect .move,
 .bootstrap-duallistbox-container.moveonselect .remove {
-  display:none;
+  display: none;
 }
 
 .bootstrap-duallistbox-container.moveonselect .moveall,

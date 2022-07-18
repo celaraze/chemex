@@ -12,9 +12,9 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -30,7 +30,7 @@ class ScriptAliasCommand extends BaseCommand
     public function __construct(string $script, ?string $description)
     {
         $this->script = $script;
-        $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json.';
+        $this->description = $description ?? 'Runs the ' . $script . ' script as defined in composer.json.';
 
         parent::__construct();
     }
@@ -56,8 +56,7 @@ The <info>run-script</info> command runs scripts defined in composer.json:
 
 Read more at https://getcomposer.org/doc/03-cli.md#run-script
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -47,10 +47,10 @@ class SolutionProviderRepository implements SolutionProviderRepositoryContract
             $solutions[] = $throwable->getSolution();
         }
 
-        /** @phpstan-ignore-next-line  */
+        /** @phpstan-ignore-next-line */
         $providedSolutions = $this->solutionProviders
             ->filter(function (string $solutionClass) {
-                if (! in_array(HasSolutionsForThrowable::class, class_implements($solutionClass) ?: [])) {
+                if (!in_array(HasSolutionsForThrowable::class, class_implements($solutionClass) ?: [])) {
                     return false;
                 }
 
@@ -60,7 +60,7 @@ class SolutionProviderRepository implements SolutionProviderRepositoryContract
 
                 return true;
             })
-            ->map(fn (string $solutionClass) => app($solutionClass))
+            ->map(fn(string $solutionClass) => app($solutionClass))
             ->filter(function (HasSolutionsForThrowable $solutionProvider) use ($throwable) {
                 try {
                     return $solutionProvider->canSolve($throwable);
@@ -83,11 +83,11 @@ class SolutionProviderRepository implements SolutionProviderRepositoryContract
 
     public function getSolutionForClass(string $solutionClass): ?Solution
     {
-        if (! class_exists($solutionClass)) {
+        if (!class_exists($solutionClass)) {
             return null;
         }
 
-        if (! in_array(Solution::class, class_implements($solutionClass) ?: [])) {
+        if (!in_array(Solution::class, class_implements($solutionClass) ?: [])) {
             return null;
         }
 

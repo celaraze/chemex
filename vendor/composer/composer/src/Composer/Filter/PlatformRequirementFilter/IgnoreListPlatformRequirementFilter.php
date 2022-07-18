@@ -84,7 +84,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
 
         $intervals = Intervals::get($constraint);
         $last = end($intervals['numeric']);
-        if ($last !== false && (string) $last->getEnd() !== (string) Interval::untilPositiveInfinity()) {
+        if ($last !== false && (string)$last->getEnd() !== (string)Interval::untilPositiveInfinity()) {
             $constraint = new MultiConstraint(array($constraint, new Constraint('>=', $last->getEnd()->getVersion())), false);
         }
 

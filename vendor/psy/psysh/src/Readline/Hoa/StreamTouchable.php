@@ -64,6 +64,11 @@ interface StreamTouchable extends IStream
     const DO_NOT_MAKE_DIRECTORY = false;
 
     /**
+     * Change the current umask.
+     */
+    public static function umask(int $umask = null): int;
+
+    /**
      * Set access and modification time of file.
      */
     public function touch(int $time = -1, int $atime = -1): bool;
@@ -79,8 +84,8 @@ interface StreamTouchable extends IStream
      */
     public function move(
         string $name,
-        bool $force = self::DO_NOT_OVERWRITE,
-        bool $mkdir = self::DO_NOT_MAKE_DIRECTORY
+        bool   $force = self::DO_NOT_OVERWRITE,
+        bool   $mkdir = self::DO_NOT_MAKE_DIRECTORY
     ): bool;
 
     /**
@@ -102,9 +107,4 @@ interface StreamTouchable extends IStream
      * Change file owner.
      */
     public function changeOwner($user): bool;
-
-    /**
-     * Change the current umask.
-     */
-    public static function umask(int $umask = null): int;
 }

@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Config;
+use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -21,29 +23,27 @@ use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
-use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\Package\Version\VersionSelector;
+use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
-use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
+use Composer\Util\Filesystem;
+use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Composer\Json\JsonFile;
-use Composer\Config\JsonConfigSource;
-use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
-use Composer\Package\Version\VersionParser;
 
 /**
  * Install a package as new project into new directory.
@@ -118,8 +118,7 @@ can pass the <info>'--repository=https://myrepository.org'</info> flag.
 
 Read more at https://getcomposer.org/doc/03-cli.md#create-project
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -143,7 +142,7 @@ EOT
                 throw new \RuntimeException('Not enough arguments (missing: "package").');
             }
             $parts = explode("/", strtolower($package), 2);
-            $input->setArgument('directory', $io->ask('New project directory [<comment>'.array_pop($parts).'</comment>]: '));
+            $input->setArgument('directory', $io->ask('New project directory [<comment>' . array_pop($parts) . '</comment>]: '));
         }
 
         return $this->installProject(
@@ -169,20 +168,20 @@ EOT
     }
 
     /**
-     * @param string|null               $packageName
-     * @param string|null               $directory
-     * @param string|null               $packageVersion
-     * @param string|null               $stability
-     * @param bool                      $preferSource
-     * @param bool                      $preferDist
-     * @param bool                      $installDevPackages
+     * @param string|null $packageName
+     * @param string|null $directory
+     * @param string|null $packageVersion
+     * @param string|null $stability
+     * @param bool $preferSource
+     * @param bool $preferDist
+     * @param bool $installDevPackages
      * @param string|array<string>|null $repositories
-     * @param bool                      $disablePlugins
-     * @param bool                      $disableScripts
-     * @param bool                      $noProgress
-     * @param bool                      $noInstall
-     * @param bool                      $secureHttp
-     * @param bool                      $addRepository
+     * @param bool $disablePlugins
+     * @param bool $disableScripts
+     * @param bool $noProgress
+     * @param bool $noInstall
+     * @param bool $secureHttp
+     * @param bool $addRepository
      *
      * @return int
      * @throws \Exception
@@ -192,7 +191,7 @@ EOT
         $oldCwd = Platform::getCwd();
 
         if ($repositories !== null && !is_array($repositories)) {
-            $repositories = (array) $repositories;
+            $repositories = (array)$repositories;
         }
 
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
@@ -293,12 +292,12 @@ EOT
                 $dirs = iterator_to_array($finder);
                 unset($finder);
                 foreach ($dirs as $dir) {
-                    if (!$fs->removeDirectory((string) $dir)) {
-                        throw new \RuntimeException('Could not remove '.$dir);
+                    if (!$fs->removeDirectory((string)$dir)) {
+                        throw new \RuntimeException('Could not remove ' . $dir);
                     }
                 }
             } catch (\Exception $e) {
-                $io->writeError('<error>An error occurred while removing the VCS metadata: '.$e->getMessage().'</error>');
+                $io->writeError('<error>An error occurred while removing the VCS metadata: ' . $e->getMessage() . '</error>');
             }
 
             $hasVcs = false;
@@ -309,7 +308,7 @@ EOT
             $package = $composer->getPackage();
             $configSource = new JsonConfigSource(new JsonFile('composer.json'));
             foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
-                foreach ($package->{'get'.$meta['method']}() as $link) {
+                foreach ($package->{'get' . $meta['method']}() as $link) {
                     if ($link->getPrettyConstraint() === 'self.version') {
                         $configSource->addLink($type, $link->getTarget(), $package->getPrettyVersion());
                     }
@@ -321,7 +320,7 @@ EOT
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
 
         chdir($oldCwd);
-        $vendorComposerDir = $config->get('vendor-dir').'/composer';
+        $vendorComposerDir = $config->get('vendor-dir') . '/composer';
         if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
             Silencer::call('rmdir', $vendorComposerDir);
             $vendorDir = $config->get('vendor-dir');
@@ -334,18 +333,18 @@ EOT
     }
 
     /**
-     * @param string             $packageName
-     * @param string|null        $directory
-     * @param string|null        $packageVersion
-     * @param string|null        $stability
-     * @param bool               $preferSource
-     * @param bool               $preferDist
-     * @param bool               $installDevPackages
+     * @param string $packageName
+     * @param string|null $directory
+     * @param string|null $packageVersion
+     * @param string|null $stability
+     * @param bool $preferSource
+     * @param bool $preferDist
+     * @param bool $installDevPackages
      * @param array<string>|null $repositories
-     * @param bool               $disablePlugins
-     * @param bool               $disableScripts
-     * @param bool               $noProgress
-     * @param bool               $secureHttp
+     * @param bool $disablePlugins
+     * @param bool $disableScripts
+     * @param bool $noProgress
+     * @param bool $secureHttp
      *
      * @return bool
      * @throws \Exception
@@ -379,17 +378,17 @@ EOT
 
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
-                throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
+                throw new \InvalidArgumentException('Cannot create project directory at "' . $directory . '", it exists as a file.');
             }
             if (!$fs->isDirEmpty($directory)) {
-                throw new \InvalidArgumentException('Project directory "'.$directory.'" is not empty.');
+                throw new \InvalidArgumentException('Project directory "' . $directory . '" is not empty.');
             }
         }
 
         if (null === $stability) {
             if (null === $packageVersion) {
                 $stability = 'stable';
-            } elseif (Preg::isMatch('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
+            } elseif (Preg::isMatch('{^[^,\s]*?@(' . implode('|', array_keys(BasePackage::$stabilities)) . ')$}i', $packageVersion, $match)) {
                 $stability = $match[1];
             } else {
                 $stability = VersionParser::parseStability($packageVersion);
@@ -399,7 +398,7 @@ EOT
         $stability = VersionParser::normalizeStability($stability);
 
         if (!isset(BasePackage::$stabilities[$stability])) {
-            throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
+            throw new \InvalidArgumentException('Invalid stability provided (' . $stability . '), must be one of: ' . implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
         $composer = Factory::create($io, $config->all(), $disablePlugins);
@@ -432,10 +431,10 @@ EOT
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
             if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
-                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
+                throw new \InvalidArgumentException($errorMessage . ' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 
-            throw new \InvalidArgumentException($errorMessage .'.');
+            throw new \InvalidArgumentException($errorMessage . '.');
         }
 
         // handler Ctrl+C for unix-like systems

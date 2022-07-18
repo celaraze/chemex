@@ -25,18 +25,6 @@ class RawMessage
         $this->message = $message;
     }
 
-    public function toString(): string
-    {
-        if (\is_string($this->message)) {
-            return $this->message;
-        }
-        if ($this->message instanceof \Traversable) {
-            $this->message = iterator_to_array($this->message, false);
-        }
-
-        return $this->message = implode('', $this->message);
-    }
-
     public function toIterable(): iterable
     {
         if (\is_string($this->message)) {
@@ -63,6 +51,18 @@ class RawMessage
     public function __serialize(): array
     {
         return [$this->toString()];
+    }
+
+    public function toString(): string
+    {
+        if (\is_string($this->message)) {
+            return $this->message;
+        }
+        if ($this->message instanceof \Traversable) {
+            $this->message = iterator_to_array($this->message, false);
+        }
+
+        return $this->message = implode('', $this->message);
     }
 
     public function __unserialize(array $data): void

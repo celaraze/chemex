@@ -14,14 +14,6 @@ class TimeType extends Type
     /**
      * {@inheritdoc}
      */
-    public function getName()
-    {
-        return Types::TIME_MUTABLE;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getSQLDeclaration(array $column, AbstractPlatform $platform)
     {
         return $platform->getTimeTypeDeclarationSQL($column);
@@ -41,6 +33,14 @@ class TimeType extends Type
         }
 
         throw ConversionException::conversionFailedInvalidType($value, $this->getName(), ['null', 'DateTime']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return Types::TIME_MUTABLE;
     }
 
     /**

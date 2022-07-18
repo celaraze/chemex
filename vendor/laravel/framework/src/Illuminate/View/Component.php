@@ -25,34 +25,24 @@ abstract class Component
      * @var array
      */
     protected static $methodCache = [];
-
-    /**
-     * The properties / methods that should not be exposed to the component.
-     *
-     * @var array
-     */
-    protected $except = [];
-
     /**
      * The component alias name.
      *
      * @var string
      */
     public $componentName;
-
     /**
      * The component attributes.
      *
      * @var \Illuminate\View\ComponentAttributeBag
      */
     public $attributes;
-
     /**
-     * Get the view / view contents that represent the component.
+     * The properties / methods that should not be exposed to the component.
      *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\Support\Htmlable|\Closure|string
+     * @var array
      */
-    abstract public function render();
+    protected $except = [];
 
     /**
      * Resolve the Blade view or view file that should be used when rendering the component.
@@ -75,21 +65,28 @@ abstract class Component
             $factory = Container::getInstance()->make('view');
 
             return strlen($view) <= PHP_MAXPATHLEN && $factory->exists($view)
-                        ? $view
-                        : $this->createBladeViewFromString($factory, $view);
+                ? $view
+                : $this->createBladeViewFromString($factory, $view);
         };
 
         return $view instanceof Closure ? function (array $data = []) use ($view, $resolver) {
             return $resolver($view($data));
         }
-        : $resolver($view);
+            : $resolver($view);
     }
+
+    /**
+     * Get the view / view contents that represent the component.
+     *
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\Support\Htmlable|\Closure|string
+     */
+    abstract public function render();
 
     /**
      * Create a Blade view with the raw component string content.
      *
-     * @param  \Illuminate\Contracts\View\Factory  $factory
-     * @param  string  $contents
+     * @param \Illuminate\Contracts\View\Factory $factory
+     * @param string $contents
      * @return string
      */
     protected function createBladeViewFromString($factory, $contents)
@@ -99,30 +96,41 @@ abstract class Component
             $directory = Container::getInstance()['config']->get('view.compiled')
         );
 
-        if (! is_file($viewFile = $directory.'/'.sha1($contents).'.blade.php')) {
-            if (! is_dir($directory)) {
+        if (!is_file($viewFile = $directory . '/' . sha1($contents) . '.blade.php')) {
+            if (!is_dir($directory)) {
                 mkdir($directory, 0755, true);
             }
 
             file_put_contents($viewFile, $contents);
         }
 
-        return '__components::'.basename($viewFile, '.blade.php');
+        return '__components::' . basename($viewFile, '.blade.php');
     }
 
     /**
      * Get the data that should be supplied to the view.
      *
-     * @author Freek Van der Herten
+     * @return array
      * @author Brent Roose
      *
-     * @return array
+     * @author Freek Van der Herten
      */
     public function data()
     {
         $this->attributes = $this->attributes ?: $this->newAttributeBag();
 
         return array_merge($this->extractPublicProperties(), $this->extractPublicMethods());
+    }
+
+    /**
+     * Get a new attribute bag instance.
+     *
+     * @param array $attributes
+     * @return \Illuminate\View\ComponentAttributeBag
+     */
+    protected function newAttributeBag(array $attributes = [])
+    {
+        return new ComponentAttributeBag($attributes);
     }
 
     /**
@@ -134,7 +142,7 @@ abstract class Component
     {
         $class = get_class($this);
 
-        if (! isset(static::$propertyCache[$class])) {
+        if (!isset(static::$propertyCache[$class])) {
             $reflection = new ReflectionClass($this);
 
             static::$propertyCache[$class] = collect($reflection->getProperties(ReflectionProperty::IS_PUBLIC))
@@ -159,6 +167,36 @@ abstract class Component
     }
 
     /**
+     * Determine if the given property / method should be ignored.
+     *
+     * @param string $name
+     * @return bool
+     */
+    protected function shouldIgnore($name)
+    {
+        return str_starts_with($name, '__') ||
+            in_array($name, $this->ignoredMethods());
+    }
+
+    /**
+     * Get the methods that should be ignored.
+     *
+     * @return array
+     */
+    protected function ignoredMethods()
+    {
+        return array_merge([
+            'data',
+            'render',
+            'resolveView',
+            'shouldRender',
+            'view',
+            'withName',
+            'withAttributes',
+        ], $this->except);
+    }
+
+    /**
      * Extract the public methods for the component.
      *
      * @return array
@@ -167,7 +205,7 @@ abstract class Component
     {
         $class = get_class($this);
 
-        if (! isset(static::$methodCache[$class])) {
+        if (!isset(static::$methodCache[$class])) {
             $reflection = new ReflectionClass($this);
 
             static::$methodCache[$class] = collect($reflection->getMethods(ReflectionMethod::IS_PUBLIC))
@@ -191,20 +229,20 @@ abstract class Component
     /**
      * Create a callable variable from the given method.
      *
-     * @param  \ReflectionMethod  $method
+     * @param \ReflectionMethod $method
      * @return mixed
      */
     protected function createVariableFromMethod(ReflectionMethod $method)
     {
         return $method->getNumberOfParameters() === 0
-                        ? $this->createInvokableVariable($method->getName())
-                        : Closure::fromCallable([$this, $method->getName()]);
+            ? $this->createInvokableVariable($method->getName())
+            : Closure::fromCallable([$this, $method->getName()]);
     }
 
     /**
      * Create an invokable, toStringable variable for the given component method.
      *
-     * @param  string  $method
+     * @param string $method
      * @return \Illuminate\View\InvokableComponentVariable
      */
     protected function createInvokableVariable(string $method)
@@ -215,39 +253,9 @@ abstract class Component
     }
 
     /**
-     * Determine if the given property / method should be ignored.
-     *
-     * @param  string  $name
-     * @return bool
-     */
-    protected function shouldIgnore($name)
-    {
-        return str_starts_with($name, '__') ||
-               in_array($name, $this->ignoredMethods());
-    }
-
-    /**
-     * Get the methods that should be ignored.
-     *
-     * @return array
-     */
-    protected function ignoredMethods()
-    {
-        return array_merge([
-            'data',
-            'render',
-            'resolveView',
-            'shouldRender',
-            'view',
-            'withName',
-            'withAttributes',
-        ], $this->except);
-    }
-
-    /**
      * Set the component alias name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return $this
      */
     public function withName($name)
@@ -260,7 +268,7 @@ abstract class Component
     /**
      * Set the extra attributes that the component should make available.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      * @return $this
      */
     public function withAttributes(array $attributes)
@@ -270,17 +278,6 @@ abstract class Component
         $this->attributes->setAttributes($attributes);
 
         return $this;
-    }
-
-    /**
-     * Get a new attribute bag instance.
-     *
-     * @param  array  $attributes
-     * @return \Illuminate\View\ComponentAttributeBag
-     */
-    protected function newAttributeBag(array $attributes = [])
-    {
-        return new ComponentAttributeBag($attributes);
     }
 
     /**

@@ -17,7 +17,7 @@ final class Each
      * index, and the aggregate promise. The callback can invoke any necessary
      * side effects and choose to resolve or reject the aggregate if needed.
      *
-     * @param mixed    $iterable    Iterator or array to iterate over.
+     * @param mixed $iterable Iterator or array to iterate over.
      * @param callable $onFulfilled
      * @param callable $onRejected
      *
@@ -27,10 +27,11 @@ final class Each
         $iterable,
         callable $onFulfilled = null,
         callable $onRejected = null
-    ) {
+    )
+    {
         return (new EachPromise($iterable, [
             'fulfilled' => $onFulfilled,
-            'rejected'  => $onRejected
+            'rejected' => $onRejected
         ]))->promise();
     }
 
@@ -42,10 +43,10 @@ final class Each
      * pending promises and returns a numeric concurrency limit value to allow
      * for dynamic a concurrency size.
      *
-     * @param mixed        $iterable
+     * @param mixed $iterable
      * @param int|callable $concurrency
-     * @param callable     $onFulfilled
-     * @param callable     $onRejected
+     * @param callable $onFulfilled
+     * @param callable $onRejected
      *
      * @return PromiseInterface
      */
@@ -54,10 +55,11 @@ final class Each
         $concurrency,
         callable $onFulfilled = null,
         callable $onRejected = null
-    ) {
+    )
+    {
         return (new EachPromise($iterable, [
-            'fulfilled'   => $onFulfilled,
-            'rejected'    => $onRejected,
+            'fulfilled' => $onFulfilled,
+            'rejected' => $onRejected,
             'concurrency' => $concurrency
         ]))->promise();
     }
@@ -67,9 +69,9 @@ final class Each
      * is rejected. If any promise is rejected, then the aggregate promise is
      * rejected with the encountered rejection.
      *
-     * @param mixed        $iterable
+     * @param mixed $iterable
      * @param int|callable $concurrency
-     * @param callable     $onFulfilled
+     * @param callable $onFulfilled
      *
      * @return PromiseInterface
      */
@@ -77,7 +79,8 @@ final class Each
         $iterable,
         $concurrency,
         callable $onFulfilled = null
-    ) {
+    )
+    {
         return each_limit(
             $iterable,
             $concurrency,

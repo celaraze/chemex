@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/ne.php', [
+return array_replace_recursive(require __DIR__ . '/ne.php', [
     'formats' => [
         'LT' => 'h:mm a',
         'LTS' => 'h:mm:ss a',

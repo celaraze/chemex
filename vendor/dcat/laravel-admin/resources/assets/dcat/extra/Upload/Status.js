@@ -1,4 +1,3 @@
-
 export default class Status {
     constructor(Uploder) {
         this.uploader = Uploder;
@@ -309,7 +308,11 @@ export default class Status {
         function showSuccess() {
             stats = uploader.getStats();
             if (stats.successNum) {
-                text = __('selected_success', {num: parent.fileCount, size: WebUploader.formatSize(parent.fileSize), success: stats.successNum});
+                text = __('selected_success', {
+                    num: parent.fileCount,
+                    size: WebUploader.formatSize(parent.fileSize),
+                    success: stats.successNum
+                });
             }
 
             if (stats.uploadFailNum) {

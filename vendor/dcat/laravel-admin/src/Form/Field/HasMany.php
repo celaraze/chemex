@@ -71,8 +71,8 @@ class HasMany extends Field
      */
     protected $views = [
         'default' => 'admin::form.hasmany',
-        'tab'     => 'admin::form.hasmanytab',
-        'table'   => 'admin::form.hasmanytable',
+        'tab' => 'admin::form.hasmanytab',
+        'table' => 'admin::form.hasmanytable',
     ];
 
     /**
@@ -91,7 +91,7 @@ class HasMany extends Field
      * Create a new HasMany field instance.
      *
      * @param $relationName
-     * @param  array  $arguments
+     * @param array $arguments
      */
     public function __construct($relationName, $arguments = [])
     {
@@ -119,12 +119,12 @@ class HasMany extends Field
     /**
      * Get validator for this field.
      *
-     * @param  array  $input
+     * @param array $input
      * @return bool|Validator
      */
     public function getValidator(array $input)
     {
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -134,7 +134,7 @@ class HasMany extends Field
 
         /* @var Field $field */
         foreach ($form->fields() as $field) {
-            if (! $fieldRules = $field->getRules()) {
+            if (!$fieldRules = $field->getRules()) {
                 continue;
             }
 
@@ -146,7 +146,7 @@ class HasMany extends Field
 
             if (is_array($column)) {
                 foreach ($column as $key => $name) {
-                    $rules[$name.$key] = $fieldRules;
+                    $rules[$name . $key] = $fieldRules;
                 }
 
                 $this->resetInputKey($input, $column);
@@ -176,7 +176,7 @@ class HasMany extends Field
 
         foreach ($rules as $column => $rule) {
             foreach (array_keys(Arr::get($input, $this->column)) as $key) {
-                if (Arr::get($input, "{$this->column}.{$key}.".NestedForm::REMOVE_FLAG_NAME)) {
+                if (Arr::get($input, "{$this->column}.{$key}." . NestedForm::REMOVE_FLAG_NAME)) {
                     continue;
                 }
 
@@ -197,7 +197,7 @@ class HasMany extends Field
         $newInput += $input;
 
         if ($hasManyRules = $this->getRules()) {
-            if (! Arr::has($input, $this->column)) {
+            if (!Arr::has($input, $this->column)) {
                 return false;
             }
 
@@ -208,6 +208,74 @@ class HasMany extends Field
         }
 
         return Validator::make($newInput, $newRules, array_merge($this->getValidationMessages(), $messages), $attributes);
+    }
+
+    /**
+     * Build a Nested form.
+     *
+     * @param null $key
+     * @return NestedForm
+     */
+    public function buildNestedForm($key = null)
+    {
+        $form = new Form\NestedForm($this->getNestedFormColumnName(), $key);
+
+        $this->setNestedFormDefaultKey($form);
+
+        $form->setForm($this->form);
+
+        $form->setResolvingFieldCallbacks($this->resolvingFieldCallbacks);
+
+        call_user_func($this->builder, $form);
+
+        $hidden[] = $form->hidden($this->getKeyName());
+        $hidden[] = $form->hidden(NestedForm::REMOVE_FLAG_NAME)->default(0)->addElementClass(NestedForm::REMOVE_FLAG_CLASS);
+
+        // 使用column布局之后需要重新追加字段
+        $form->layout()->appendToLastColumn($hidden);
+
+        return $form;
+    }
+
+    public function getNestedFormColumnName()
+    {
+        if ($this->parentRelationName) {
+            $key = $this->parentKey ?? (NestedForm::DEFAULT_KEY_PREFIX . NestedForm::DEFAULT_PARENT_KEY_NAME);
+
+            return $this->parentRelationName . '.' . $key . '.' . $this->column;
+        }
+
+        return $this->column;
+    }
+
+    protected function setNestedFormDefaultKey(Form\NestedForm $form)
+    {
+        if ($this->parentRelationName) {
+            // hasmany嵌套table时需要特殊处理
+            $form->setDefaultKey(Form\NestedForm::DEFAULT_KEY_PREFIX . $this->getNestedFormDefaultKeyName());
+        }
+    }
+
+    protected function getNestedFormDefaultKeyName()
+    {
+        if ($this->parentRelationName) {
+            // hasmany嵌套table时，需要重新设置行的默认key
+            return $this->parentRelationName . '_NKEY_';
+        }
+    }
+
+    /**
+     * Get the HasMany relation key name.
+     *
+     * @return string
+     */
+    public function getKeyName()
+    {
+        if (is_null($this->form)) {
+            return;
+        }
+
+        return $this->relationKeyName;
     }
 
     protected function normalizeValidatorInput(Field $field, array &$input)
@@ -227,66 +295,10 @@ class HasMany extends Field
     }
 
     /**
-     * Format validation messages.
-     *
-     * @param  array  $input
-     * @param  array  $messages
-     * @return array
-     */
-    protected function formatValidationMessages(array $input, array $messages)
-    {
-        $result = [];
-        foreach (Arr::get($input, $this->column) as $key => &$value) {
-            $newKey = $this->column.'.'.$key;
-
-            foreach ($messages as $k => $message) {
-                $result[$newKey.'.'.$k] = $message;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Format validation attributes.
-     *
-     * @param  array  $input
-     * @param  string  $label
-     * @param  string  $column
-     * @return array
-     */
-    protected function formatValidationAttribute($input, $label, $column)
-    {
-        $new = $attributes = [];
-
-        if (is_array($column)) {
-            foreach ($column as $index => $col) {
-                $new[$col.$index] = $col;
-            }
-        }
-
-        foreach (array_keys(Arr::dot($input)) as $key) {
-            if (is_string($column)) {
-                if (Str::endsWith($key, ".$column")) {
-                    $attributes[$key] = $label;
-                }
-            } else {
-                foreach ($new as $k => $val) {
-                    if (Str::endsWith($key, ".$k")) {
-                        $attributes[$key] = $label."[$val]";
-                    }
-                }
-            }
-        }
-
-        return $attributes;
-    }
-
-    /**
      * Reset input key for validation.
      *
-     * @param  array  $input
-     * @param  array  $column  $column is the column name array set
+     * @param array $input
+     * @param array $column $column is the column name array set
      * @return void.
      */
     protected function resetInputKey(array &$input, array $column)
@@ -320,7 +332,7 @@ class HasMany extends Field
                 /*
                  * if doesn't have column name, continue to the next loop
                  */
-                if (! array_key_exists($name, $column)) {
+                if (!array_key_exists($name, $column)) {
                     continue;
                 }
 
@@ -331,7 +343,7 @@ class HasMany extends Field
                  *
                  * I don't know why a form need range input? Only can imagine is for range search....
                  */
-                $newKey = $name.$column[$name];
+                $newKey = $name . $column[$name];
 
                 /*
                  * set new key
@@ -346,18 +358,59 @@ class HasMany extends Field
     }
 
     /**
-     * Prepare input data for insert or update.
+     * Format validation attributes.
      *
-     * @param  array  $input
+     * @param array $input
+     * @param string $label
+     * @param string $column
      * @return array
      */
-    protected function prepareInputValue($input)
+    protected function formatValidationAttribute($input, $label, $column)
     {
-        $form = $this->buildNestedForm();
+        $new = $attributes = [];
 
-        return array_values(
-            $form->setOriginal($this->original, $this->getKeyName())->prepare($input)
-        );
+        if (is_array($column)) {
+            foreach ($column as $index => $col) {
+                $new[$col . $index] = $col;
+            }
+        }
+
+        foreach (array_keys(Arr::dot($input)) as $key) {
+            if (is_string($column)) {
+                if (Str::endsWith($key, ".$column")) {
+                    $attributes[$key] = $label;
+                }
+            } else {
+                foreach ($new as $k => $val) {
+                    if (Str::endsWith($key, ".$k")) {
+                        $attributes[$key] = $label . "[$val]";
+                    }
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Format validation messages.
+     *
+     * @param array $input
+     * @param array $messages
+     * @return array
+     */
+    protected function formatValidationMessages(array $input, array $messages)
+    {
+        $result = [];
+        foreach (Arr::get($input, $this->column) as $key => &$value) {
+            $newKey = $this->column . '.' . $key;
+
+            foreach ($messages as $k => $message) {
+                $result[$newKey . '.' . $k] = $message;
+            }
+        }
+
+        return $result;
     }
 
     public function setParentRelationName($name, $parentKey)
@@ -368,95 +421,12 @@ class HasMany extends Field
         return $this;
     }
 
-    public function getNestedFormColumnName()
-    {
-        if ($this->parentRelationName) {
-            $key = $this->parentKey ?? (NestedForm::DEFAULT_KEY_PREFIX.NestedForm::DEFAULT_PARENT_KEY_NAME);
-
-            return $this->parentRelationName.'.'.$key.'.'.$this->column;
-        }
-
-        return $this->column;
-    }
-
-    protected function getNestedFormDefaultKeyName()
-    {
-        if ($this->parentRelationName) {
-            // hasmany嵌套table时，需要重新设置行的默认key
-            return $this->parentRelationName.'_NKEY_';
-        }
-    }
-
-    protected function setNestedFormDefaultKey(Form\NestedForm $form)
-    {
-        if ($this->parentRelationName) {
-            // hasmany嵌套table时需要特殊处理
-            $form->setDefaultKey(Form\NestedForm::DEFAULT_KEY_PREFIX.$this->getNestedFormDefaultKeyName());
-        }
-    }
-
     /**
-     * Build a Nested form.
-     *
-     * @param  null  $key
-     * @return NestedForm
-     */
-    public function buildNestedForm($key = null)
-    {
-        $form = new Form\NestedForm($this->getNestedFormColumnName(), $key);
-
-        $this->setNestedFormDefaultKey($form);
-
-        $form->setForm($this->form);
-
-        $form->setResolvingFieldCallbacks($this->resolvingFieldCallbacks);
-
-        call_user_func($this->builder, $form);
-
-        $hidden[] = $form->hidden($this->getKeyName());
-        $hidden[] = $form->hidden(NestedForm::REMOVE_FLAG_NAME)->default(0)->addElementClass(NestedForm::REMOVE_FLAG_CLASS);
-
-        // 使用column布局之后需要重新追加字段
-        $form->layout()->appendToLastColumn($hidden);
-
-        return $form;
-    }
-
-    /**
-     * Get the HasMany relation key name.
-     *
-     * @return string
-     */
-    public function getKeyName()
-    {
-        if (is_null($this->form)) {
-            return;
-        }
-
-        return $this->relationKeyName;
-    }
-
-    /**
-     * @param  string  $relationKeyName
+     * @param string $relationKeyName
      */
     public function setRelationKeyName(?string $relationKeyName)
     {
         $this->relationKeyName = $relationKeyName;
-
-        return $this;
-    }
-
-    /**
-     * Set view mode.
-     *
-     * @param  string  $mode  currently support `tab` mode.
-     * @return $this
-     *
-     * @author Edwin Hui
-     */
-    public function mode($mode)
-    {
-        $this->viewMode = $mode;
 
         return $this;
     }
@@ -472,6 +442,21 @@ class HasMany extends Field
     }
 
     /**
+     * Set view mode.
+     *
+     * @param string $mode currently support `tab` mode.
+     * @return $this
+     *
+     * @author Edwin Hui
+     */
+    public function mode($mode)
+    {
+        $this->viewMode = $mode;
+
+        return $this;
+    }
+
+    /**
      * Use table mode to showing hasmany field.
      *
      * @return HasMany
@@ -479,38 +464,6 @@ class HasMany extends Field
     public function useTable()
     {
         return $this->mode('table');
-    }
-
-    /**
-     * Build Nested form for related data.
-     *
-     * @return array
-     *
-     * @throws \Exception
-     */
-    protected function buildRelatedForms()
-    {
-        if (is_null($this->form)) {
-            return [];
-        }
-
-        $forms = [];
-
-        /*
-         * If redirect from `exception` or `validation error` page.
-         *
-         * Then get form data from session flash.
-         *
-         * Else get data from database.
-         */
-        foreach (Helper::array($this->value()) as $idx => $data) {
-            $key = Arr::get($data, $this->getKeyName(), $idx);
-
-            $forms[$key] = $this->buildNestedForm($key)
-                ->fill($data);
-        }
-
-        return $forms;
     }
 
     /**
@@ -537,15 +490,6 @@ class HasMany extends Field
         return $this;
     }
 
-    public function value($value = null)
-    {
-        if ($value === null) {
-            return Helper::array(parent::value($value));
-        }
-
-        return parent::value($value);
-    }
-
     /**
      * Render the `HasMany` field.
      *
@@ -555,7 +499,7 @@ class HasMany extends Field
      */
     public function render()
     {
-        if (! $this->shouldRender()) {
+        if (!$this->shouldRender()) {
             return '';
         }
 
@@ -567,12 +511,12 @@ class HasMany extends Field
         $this->view = $this->view ?: $this->views[$this->viewMode];
 
         $this->addVariables([
-            'forms'          => $this->buildRelatedForms(),
-            'template'       => $this->buildNestedForm()->render(),
-            'relationName'   => $this->relationName,
-            'options'        => $this->options,
-            'count'          => count($this->value()),
-            'columnClass'    => $this->columnClass,
+            'forms' => $this->buildRelatedForms(),
+            'template' => $this->buildNestedForm()->render(),
+            'relationName' => $this->relationName,
+            'options' => $this->options,
+            'count' => count($this->value()),
+            'columnClass' => $this->columnClass,
         ]);
 
         return parent::render();
@@ -612,22 +556,78 @@ class HasMany extends Field
         }, '');
 
         /* Build cell with hidden elements */
-        $template .= '<td class="hidden">'.implode('', $hidden).'</td>';
+        $template .= '<td class="hidden">' . implode('', $hidden) . '</td>';
 
         // specify a view to render.
         $this->view = $this->view ?: $this->views[$this->viewMode];
 
         $this->addVariables([
-            'headers'      => $headers,
-            'forms'        => $this->buildRelatedForms(),
-            'template'     => $template,
+            'headers' => $headers,
+            'forms' => $this->buildRelatedForms(),
+            'template' => $template,
             'relationName' => $this->relationName,
-            'options'      => $this->options,
-            'count'        => count($this->value()),
-            'columnClass'  => $this->columnClass,
-            'parentKey'    => $this->getNestedFormDefaultKeyName(),
+            'options' => $this->options,
+            'count' => count($this->value()),
+            'columnClass' => $this->columnClass,
+            'parentKey' => $this->getNestedFormDefaultKeyName(),
         ]);
 
         return parent::render();
+    }
+
+    /**
+     * Build Nested form for related data.
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function buildRelatedForms()
+    {
+        if (is_null($this->form)) {
+            return [];
+        }
+
+        $forms = [];
+
+        /*
+         * If redirect from `exception` or `validation error` page.
+         *
+         * Then get form data from session flash.
+         *
+         * Else get data from database.
+         */
+        foreach (Helper::array($this->value()) as $idx => $data) {
+            $key = Arr::get($data, $this->getKeyName(), $idx);
+
+            $forms[$key] = $this->buildNestedForm($key)
+                ->fill($data);
+        }
+
+        return $forms;
+    }
+
+    public function value($value = null)
+    {
+        if ($value === null) {
+            return Helper::array(parent::value($value));
+        }
+
+        return parent::value($value);
+    }
+
+    /**
+     * Prepare input data for insert or update.
+     *
+     * @param array $input
+     * @return array
+     */
+    protected function prepareInputValue($input)
+    {
+        $form = $this->buildNestedForm();
+
+        return array_values(
+            $form->setOriginal($this->original, $this->getKeyName())->prepare($input)
+        );
     }
 }

@@ -37,7 +37,7 @@ final class QuoteParser implements InlineParserInterface
      */
     public function parse(InlineParserContext $inlineContext): bool
     {
-        $char   = $inlineContext->getFullMatch();
+        $char = $inlineContext->getFullMatch();
         $cursor = $inlineContext->getCursor();
 
         $normalizedCharacter = $this->getNormalizedQuoteCharacter($char);
@@ -55,8 +55,8 @@ final class QuoteParser implements InlineParserInterface
         }
 
         [$leftFlanking, $rightFlanking] = $this->determineFlanking($charBefore, $charAfter);
-        $canOpen                        = $leftFlanking && ! $rightFlanking;
-        $canClose                       = $rightFlanking;
+        $canOpen = $leftFlanking && !$rightFlanking;
+        $canClose = $rightFlanking;
 
         $node = new Quote($normalizedCharacter, ['delim' => true]);
         $inlineContext->getContainer()->appendChild($node);
@@ -85,20 +85,20 @@ final class QuoteParser implements InlineParserInterface
      */
     private function determineFlanking(string $charBefore, string $charAfter): array
     {
-        $afterIsWhitespace   = \preg_match('/\pZ|\s/u', $charAfter);
-        $afterIsPunctuation  = \preg_match(RegexHelper::REGEX_PUNCTUATION, $charAfter);
-        $beforeIsWhitespace  = \preg_match('/\pZ|\s/u', $charBefore);
+        $afterIsWhitespace = \preg_match('/\pZ|\s/u', $charAfter);
+        $afterIsPunctuation = \preg_match(RegexHelper::REGEX_PUNCTUATION, $charAfter);
+        $beforeIsWhitespace = \preg_match('/\pZ|\s/u', $charBefore);
         $beforeIsPunctuation = \preg_match(RegexHelper::REGEX_PUNCTUATION, $charBefore);
 
-        $leftFlanking = ! $afterIsWhitespace &&
-            ! ($afterIsPunctuation &&
-                ! $beforeIsWhitespace &&
-                ! $beforeIsPunctuation);
+        $leftFlanking = !$afterIsWhitespace &&
+            !($afterIsPunctuation &&
+                !$beforeIsWhitespace &&
+                !$beforeIsPunctuation);
 
-        $rightFlanking = ! $beforeIsWhitespace &&
-            ! ($beforeIsPunctuation &&
-                ! $afterIsWhitespace &&
-                ! $afterIsPunctuation);
+        $rightFlanking = !$beforeIsWhitespace &&
+            !($beforeIsPunctuation &&
+                !$afterIsWhitespace &&
+                !$afterIsPunctuation);
 
         return [$leftFlanking, $rightFlanking];
     }

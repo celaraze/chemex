@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
-use function json_decode;
-use function sprintf;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Util\Json;
 use SebastianBergmann\Comparator\ComparisonFailure;
+use function json_decode;
+use function sprintf;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -69,8 +70,8 @@ final class JsonMatches extends Constraint
     /**
      * Throws an exception for the given compared value and test description.
      *
-     * @param mixed             $other             evaluated value or object
-     * @param string            $description       Additional information about the test
+     * @param mixed $other evaluated value or object
+     * @param string $description Additional information about the test
      * @param ComparisonFailure $comparisonFailure
      *
      * @throws \PHPUnit\Framework\Exception

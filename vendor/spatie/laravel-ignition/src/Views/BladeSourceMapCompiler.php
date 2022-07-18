@@ -60,6 +60,14 @@ class BladeSourceMapCompiler
         return $value;
     }
 
+    protected function insertLineNumberAtPosition(int $position, string $value): string
+    {
+        $before = mb_substr($value, 0, $position);
+        $lineNumber = count(explode("\n", $before));
+
+        return mb_substr($value, 0, $position) . "|---LINE:{$lineNumber}---|" . mb_substr($value, $position);
+    }
+
     protected function addStatementLineNumbers(string $value): string
     {
         // Matches @bladeStatements() like @if, @component(...), @etc;
@@ -100,14 +108,6 @@ class BladeSourceMapCompiler
         }
 
         return $value;
-    }
-
-    protected function insertLineNumberAtPosition(int $position, string $value): string
-    {
-        $before = mb_substr($value, 0, $position);
-        $lineNumber = count(explode("\n", $before));
-
-        return mb_substr($value, 0, $position)."|---LINE:{$lineNumber}---|".mb_substr($value, $position);
     }
 
     protected function trimEmptyLines(string $value): string

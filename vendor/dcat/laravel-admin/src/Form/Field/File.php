@@ -29,6 +29,20 @@ class File extends Field implements UploadFieldInterface
         $this->setUpDefaultOptions();
     }
 
+    /**
+     * @param Field $field
+     * @param string|array $fieldRules
+     * @return void
+     */
+    public static function deleteRules(Field $field, &$fieldRules)
+    {
+        if ($field instanceof self) {
+            $fieldRules = is_string($fieldRules) ? explode('|', $fieldRules) : $fieldRules;
+
+            Helper::deleteContains($fieldRules, ['image', 'file', 'dimensions', 'size', 'max', 'min']);
+        }
+    }
+
     public function setElementName($name)
     {
         $this->mergeOptions(['elementName' => $name]);
@@ -57,7 +71,7 @@ class File extends Field implements UploadFieldInterface
             return $this->validator->call($this, $input);
         }
 
-        if (! Arr::has($input, $this->column)) {
+        if (!Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -77,7 +91,7 @@ class File extends Field implements UploadFieldInterface
         $rules = $attributes = [];
         $requiredIf = null;
 
-        if (! $this->hasRule('required') && ! $requiredIf = $this->getRule('required_if*')) {
+        if (!$this->hasRule('required') && !$requiredIf = $this->getRule('required_if*')) {
             return false;
         }
 
@@ -85,20 +99,6 @@ class File extends Field implements UploadFieldInterface
         $attributes[$this->column] = $this->label;
 
         return Validator::make($input, $rules, $this->getValidationMessages(), $attributes);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function prepareInputValue($file)
-    {
-        if (request()->has(static::FILE_DELETE_FLAG)) {
-            return $this->destroy();
-        }
-
-        $this->destroyIfChanged($file);
-
-        return $file;
     }
 
     /**
@@ -121,34 +121,6 @@ class File extends Field implements UploadFieldInterface
         return $this;
     }
 
-    protected function formatFieldData($data)
-    {
-        return Helper::array($this->getValueFromData($data));
-    }
-
-    /**
-     * @return array
-     */
-    protected function initialPreviewConfig()
-    {
-        $previews = [];
-
-        foreach (Helper::array($this->value()) as $value) {
-            $previews[] = [
-                'id'   => $value,
-                'path' => Helper::basename($value),
-                'url'  => $this->objectUrl($value),
-            ];
-        }
-
-        return $previews;
-    }
-
-    protected function forceOptions()
-    {
-        $this->options['fileNumLimit'] = 1;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -156,7 +128,7 @@ class File extends Field implements UploadFieldInterface
     {
         $this->setDefaultServer();
 
-        if (! empty($this->value())) {
+        if (!empty($this->value())) {
             $this->setupPreviewOptions();
         }
 
@@ -164,12 +136,17 @@ class File extends Field implements UploadFieldInterface
         $this->formatValue();
 
         $this->addVariables([
-            'fileType'      => $this->options['isImage'] ? '' : 'file',
+            'fileType' => $this->options['isImage'] ? '' : 'file',
             'showUploadBtn' => ($this->options['autoUpload'] ?? false) ? false : true,
-            'options'       => JavaScript::format($this->options),
+            'options' => JavaScript::format($this->options),
         ]);
 
         return parent::render();
+    }
+
+    protected function forceOptions()
+    {
+        $this->options['fileNumLimit'] = 1;
     }
 
     /**
@@ -185,13 +162,27 @@ class File extends Field implements UploadFieldInterface
     }
 
     /**
+     * Webuploader 事件监听(once).
+     *
+     * @see http://fex.baidu.com/webuploader/doc/index.html#WebUploader_Uploader_events
+     *
+     * @param string $event
+     * @param string $script
+     * @return $this
+     */
+    public function once(string $event, string $script)
+    {
+        return $this->on($event, $script, true);
+    }
+
+    /**
      * Webuploader 事件监听.
      *
      * @see http://fex.baidu.com/webuploader/doc/index.html#WebUploader_Uploader_events
      *
-     * @param  string  $event
-     * @param  string  $script
-     * @param  bool  $once
+     * @param string $event
+     * @param string $script
+     * @param bool $once
      * @return $this
      */
     public function on(string $event, string $script, bool $once = false)
@@ -203,38 +194,47 @@ class File extends Field implements UploadFieldInterface
         return $this;
     }
 
-    /**
-     * Webuploader 事件监听(once).
-     *
-     * @see http://fex.baidu.com/webuploader/doc/index.html#WebUploader_Uploader_events
-     *
-     * @param  string  $event
-     * @param  string  $script
-     * @return $this
-     */
-    public function once(string $event, string $script)
-    {
-        return $this->on($event, $script, true);
-    }
-
-    /**
-     * @param  Field  $field
-     * @param  string|array  $fieldRules
-     * @return void
-     */
-    public static function deleteRules(Field $field, &$fieldRules)
-    {
-        if ($field instanceof self) {
-            $fieldRules = is_string($fieldRules) ? explode('|', $fieldRules) : $fieldRules;
-
-            Helper::deleteContains($fieldRules, ['image', 'file', 'dimensions', 'size', 'max', 'min']);
-        }
-    }
-
     public function override(bool $override = true)
     {
         $this->options['override'] = $override;
 
         return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function prepareInputValue($file)
+    {
+        if (request()->has(static::FILE_DELETE_FLAG)) {
+            return $this->destroy();
+        }
+
+        $this->destroyIfChanged($file);
+
+        return $file;
+    }
+
+    protected function formatFieldData($data)
+    {
+        return Helper::array($this->getValueFromData($data));
+    }
+
+    /**
+     * @return array
+     */
+    protected function initialPreviewConfig()
+    {
+        $previews = [];
+
+        foreach (Helper::array($this->value()) as $value) {
+            $previews[] = [
+                'id' => $value,
+                'path' => Helper::basename($value),
+                'url' => $this->objectUrl($value),
+            ];
+        }
+
+        return $previews;
     }
 }

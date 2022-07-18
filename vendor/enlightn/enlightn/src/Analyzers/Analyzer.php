@@ -19,56 +19,48 @@ abstract class Analyzer
      * @var string
      */
     const DOCS_URL = 'https://www.laravel-enlightn.com/docs';
-
-    /**
-     * The category of the analyzer.
-     *
-     * @var string|null
-     */
-    public $category = null;
-
-    /**
-     * The severity of the analyzer.
-     *
-     * @var string|null
-     */
-    public $severity = null;
-
-    /**
-     * The time to fix in minutes.
-     *
-     * @var int|null
-     */
-    public $timeToFix = null;
-
-    /**
-     * The title describing the analyzer.
-     *
-     * @var string|null
-     */
-    public $title = null;
-
-    /**
-     * The error message describing the analyzer insights.
-     *
-     * @var string|null
-     */
-    public $errorMessage = null;
-
-    /**
-     * The application paths and associated line numbers to flag.
-     *
-     * @var array
-     */
-    public $traces = [];
-
     /**
      * Determine whether the analyzer should be run in CI mode.
      *
      * @var bool
      */
     public static $runInCI = true;
-
+    /**
+     * The category of the analyzer.
+     *
+     * @var string|null
+     */
+    public $category = null;
+    /**
+     * The severity of the analyzer.
+     *
+     * @var string|null
+     */
+    public $severity = null;
+    /**
+     * The time to fix in minutes.
+     *
+     * @var int|null
+     */
+    public $timeToFix = null;
+    /**
+     * The title describing the analyzer.
+     *
+     * @var string|null
+     */
+    public $title = null;
+    /**
+     * The error message describing the analyzer insights.
+     *
+     * @var string|null
+     */
+    public $errorMessage = null;
+    /**
+     * The application paths and associated line numbers to flag.
+     *
+     * @var array
+     */
+    public $traces = [];
     /**
      * The exception thrown during the analysis.
      *
@@ -100,7 +92,7 @@ abstract class Analyzer
     /**
      * Run the analyzer.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param \Illuminate\Contracts\Foundation\Application $app
      * @return void
      */
     public function run(Application $app)
@@ -117,21 +109,23 @@ abstract class Analyzer
     }
 
     /**
-     * Get the error message pertaining to the analysis.
+     * Mark the analyzer as skipped.
      *
-     * @return string
+     * @return $this
      */
-    public function getErrorMessage()
+    public function markSkipped()
     {
-        return method_exists($this, 'errorMessage') ? $this->errorMessage() : $this->errorMessage;
+        $this->skipped = true;
+
+        return $this;
     }
 
     /**
      * Add an associated path and line number trace.
      *
-     * @param  string  $path
-     * @param  int  $lineNumber
-     * @param  string|null  $details
+     * @param string $path
+     * @param int $lineNumber
+     * @param string|null $details
      * @return $this
      */
     public function addTrace(string $path, $lineNumber = 0, $details = null)
@@ -144,11 +138,45 @@ abstract class Analyzer
             return $this;
         }
 
-        if (! in_array($trace = new Trace($path, $lineNumber, $details), $this->traces)) {
+        if (!in_array($trace = new Trace($path, $lineNumber, $details), $this->traces)) {
             $this->traces[] = $trace;
         }
 
         return $this->markFailed();
+    }
+
+    /**
+     * Mark the analyzer as failed.
+     *
+     * @return $this
+     */
+    public function markFailed()
+    {
+        $this->passed = false;
+
+        return $this;
+    }
+
+    /**
+     * Determine whether the error should be ignored.
+     *
+     * @param string $path
+     * @param string|null $details
+     * @return bool
+     */
+    public function isIgnoredError(string $path, $details)
+    {
+        $ignoredErrors = config('enlightn.ignore_errors', []);
+
+        if (!isset($ignoredErrors[static::class])) {
+            return false;
+        }
+
+        return collect($ignoredErrors[static::class])
+            ->contains(function ($info) use ($path, $details) {
+                return ($info['path'] == $path || base_path(trim($info['path'], '/')) == $path) &&
+                    Str::is($info['details'], $details);
+            });
     }
 
     /**
@@ -163,7 +191,7 @@ abstract class Analyzer
             return $this;
         }
 
-        if (! in_array($trace, $this->traces)) {
+        if (!in_array($trace, $this->traces)) {
             $this->traces[] = $trace;
         }
 
@@ -199,30 +227,6 @@ abstract class Analyzer
     }
 
     /**
-     * Mark the analyzer as failed.
-     *
-     * @return $this
-     */
-    public function markFailed()
-    {
-        $this->passed = false;
-
-        return $this;
-    }
-
-    /**
-     * Mark the analyzer as skipped.
-     *
-     * @return $this
-     */
-    public function markSkipped()
-    {
-        $this->skipped = true;
-
-        return $this;
-    }
-
-    /**
      * Get the analyzer information.
      *
      * @return array
@@ -239,7 +243,7 @@ abstract class Analyzer
             'error' => ($this->getStatus() == 'failed') ? $this->getErrorMessage() : null,
             'traces' => $this->traces,
             'docsUrl' => $this->getDocsUrl(),
-            'reportable' => ! in_array(static::class, config('enlightn.dont_report', [])),
+            'reportable' => !in_array(static::class, config('enlightn.dont_report', [])),
             'class' => static::class,
             'stackTrace' => $this->stackTrace,
         ];
@@ -262,13 +266,13 @@ abstract class Analyzer
     }
 
     /**
-     * Determine whether the analyzer passed.
+     * Determine whether the analyzer run failed with an exception.
      *
      * @return bool
      */
-    public function passed()
+    public function runFailed()
     {
-        return $this->passed;
+        return !is_null($this->exceptionMessage);
     }
 
     /**
@@ -282,13 +286,23 @@ abstract class Analyzer
     }
 
     /**
-     * Determine whether the analyzer run failed with an exception.
+     * Determine whether the analyzer passed.
      *
      * @return bool
      */
-    public function runFailed()
+    public function passed()
     {
-        return ! is_null($this->exceptionMessage);
+        return $this->passed;
+    }
+
+    /**
+     * Get the error message pertaining to the analysis.
+     *
+     * @return string
+     */
+    public function getErrorMessage()
+    {
+        return method_exists($this, 'errorMessage') ? $this->errorMessage() : $this->errorMessage;
     }
 
     /**
@@ -299,15 +313,15 @@ abstract class Analyzer
     public function getDocsUrl()
     {
         $page = $this->docsPageName ??
-                Str::kebab(
-                    str_replace(
-                        ['CSRF', 'SQL', 'HSTS', 'NPlusOne', 'XSS', 'PHP'],
-                        ['Csrf', 'Sql', 'Hsts', 'Nplusone', 'Xss', 'Php'],
-                        class_basename(get_class($this))
-                    )
-                );
+            Str::kebab(
+                str_replace(
+                    ['CSRF', 'SQL', 'HSTS', 'NPlusOne', 'XSS', 'PHP'],
+                    ['Csrf', 'Sql', 'Hsts', 'Nplusone', 'Xss', 'Php'],
+                    class_basename(get_class($this))
+                )
+            );
 
-        return self::DOCS_URL.'/'.strtolower($this->category).'/'.$page.'.html';
+        return self::DOCS_URL . '/' . strtolower($this->category) . '/' . $page . '.html';
     }
 
     /**
@@ -318,27 +332,5 @@ abstract class Analyzer
     public function isLocalAndShouldSkip()
     {
         return config('app.env') === 'local' && config('enlightn.skip_env_specific', false);
-    }
-
-    /**
-     * Determine whether the error should be ignored.
-     *
-     * @param string $path
-     * @param string|null $details
-     * @return bool
-     */
-    public function isIgnoredError(string $path, $details)
-    {
-        $ignoredErrors = config('enlightn.ignore_errors', []);
-
-        if (! isset($ignoredErrors[static::class])) {
-            return false;
-        }
-
-        return collect($ignoredErrors[static::class])
-            ->contains(function ($info) use ($path, $details) {
-                return ($info['path'] == $path || base_path(trim($info['path'], '/')) == $path) &&
-                    Str::is($info['details'], $details);
-            });
     }
 }

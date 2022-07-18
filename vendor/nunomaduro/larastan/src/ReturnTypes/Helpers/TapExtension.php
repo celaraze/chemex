@@ -29,9 +29,10 @@ class TapExtension implements DynamicFunctionReturnTypeExtension
      */
     public function getTypeFromFunctionCall(
         FunctionReflection $functionReflection,
-        FuncCall $functionCall,
-        Scope $scope
-    ): Type {
+        FuncCall           $functionCall,
+        Scope              $scope
+    ): Type
+    {
         if (count($functionCall->getArgs()) === 1) {
             $type = $scope->getType($functionCall->getArgs()[0]->value);
 

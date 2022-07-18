@@ -12,10 +12,10 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
@@ -47,8 +47,7 @@ Displays detailed information about why a package cannot be installed.
 
 Read more at https://getcomposer.org/doc/03-cli.md#prohibits-why-not-
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

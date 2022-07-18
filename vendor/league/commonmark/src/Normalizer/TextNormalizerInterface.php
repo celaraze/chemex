@@ -19,7 +19,7 @@ namespace League\CommonMark\Normalizer;
 interface TextNormalizerInterface
 {
     /**
-     * @param string               $text    The text to normalize
+     * @param string $text The text to normalize
      * @param array<string, mixed> $context Additional context about the text being normalized (optional)
      *
      * $context may include (but is not required to include) the following:

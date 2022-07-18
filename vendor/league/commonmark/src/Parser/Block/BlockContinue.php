@@ -32,17 +32,7 @@ final class BlockContinue
     private function __construct(?CursorState $cursorState = null, bool $finalize = false)
     {
         $this->cursorState = $cursorState;
-        $this->finalize    = $finalize;
-    }
-
-    public function getCursorState(): ?CursorState
-    {
-        return $this->cursorState;
-    }
-
-    public function isFinalize(): bool
-    {
-        return $this->finalize;
+        $this->finalize = $finalize;
     }
 
     /**
@@ -69,5 +59,15 @@ final class BlockContinue
     public static function finished(): self
     {
         return new self(null, true);
+    }
+
+    public function getCursorState(): ?CursorState
+    {
+        return $this->cursorState;
+    }
+
+    public function isFinalize(): bool
+    {
+        return $this->finalize;
     }
 }

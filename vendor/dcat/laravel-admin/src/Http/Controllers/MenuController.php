@@ -14,11 +14,6 @@ use Dcat\Admin\Widgets\Form as WidgetForm;
 
 class MenuController extends AdminController
 {
-    public function title()
-    {
-        return trans('admin.menu');
-    }
-
     public function index(Content $content)
     {
         return $content
@@ -57,6 +52,11 @@ class MenuController extends AdminController
             });
     }
 
+    public function title()
+    {
+        return trans('admin.menu');
+    }
+
     /**
      * @return \Dcat\Admin\Tree
      */
@@ -81,7 +81,7 @@ class MenuController extends AdminController
             $tree->branch(function ($branch) {
                 $payload = "<i class='fa {$branch['icon']}'></i>&nbsp;<strong>{$branch['title']}</strong>";
 
-                if (! isset($branch['children'])) {
+                if (!isset($branch['children'])) {
                     if (url()->isValidUrl($branch['uri'])) {
                         $uri = $branch['uri'];
                     } else {
@@ -94,6 +94,16 @@ class MenuController extends AdminController
                 return $payload;
             });
         });
+    }
+
+    /**
+     * Help message for icon field.
+     *
+     * @return string
+     */
+    protected function iconHelp()
+    {
+        return 'For more icons please see <a href="http://fontawesome.io/icons/" target="_blank">http://fontawesome.io/icons/</a>';
     }
 
     /**
@@ -117,7 +127,7 @@ class MenuController extends AdminController
             $form->select('parent_id', trans('admin.parent_id'))->options(function () use ($menuModel) {
                 return $menuModel::selectOptions();
             })->saving(function ($v) {
-                return (int) $v;
+                return (int)$v;
             });
             $form->text('title', trans('admin.title'))->required();
             $form->icon('icon', trans('admin.icon'))->help($this->iconHelp());
@@ -144,7 +154,7 @@ class MenuController extends AdminController
                         return (new $permissionModel())->allNodes();
                     })
                     ->customFormat(function ($v) {
-                        if (! $v) {
+                        if (!$v) {
                             return [];
                         }
 
@@ -163,15 +173,5 @@ class MenuController extends AdminController
 
             return $response->info(__('admin.nothing_updated'));
         });
-    }
-
-    /**
-     * Help message for icon field.
-     *
-     * @return string
-     */
-    protected function iconHelp()
-    {
-        return 'For more icons please see <a href="http://fontawesome.io/icons/" target="_blank">http://fontawesome.io/icons/</a>';
     }
 }

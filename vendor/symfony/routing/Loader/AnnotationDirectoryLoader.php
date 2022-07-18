@@ -43,7 +43,7 @@ class AnnotationDirectoryLoader extends AnnotationFileLoader
             \RecursiveIteratorIterator::LEAVES_ONLY
         ));
         usort($files, function (\SplFileInfo $a, \SplFileInfo $b) {
-            return (string) $a > (string) $b ? 1 : -1;
+            return (string)$a > (string)$b ? 1 : -1;
         });
 
         foreach ($files as $file) {

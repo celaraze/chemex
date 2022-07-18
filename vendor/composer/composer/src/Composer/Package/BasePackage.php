@@ -12,8 +12,8 @@
 
 namespace Composer\Package;
 
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * Base class for packages providing name storage and default match implementation
@@ -22,6 +22,11 @@ use Composer\Repository\PlatformRepository;
  */
 abstract class BasePackage implements PackageInterface
 {
+    public const STABILITY_STABLE = 0;
+    public const STABILITY_RC = 5;
+    public const STABILITY_BETA = 10;
+    public const STABILITY_ALPHA = 15;
+    public const STABILITY_DEV = 20;
     /**
      * @phpstan-var array<non-empty-string, array{description: string, method: Link::TYPE_*}>
      * @internal
@@ -33,13 +38,6 @@ abstract class BasePackage implements PackageInterface
         'replace' => array('description' => 'replaces', 'method' => Link::TYPE_REPLACE),
         'require-dev' => array('description' => 'requires (for development)', 'method' => Link::TYPE_DEV_REQUIRE),
     );
-
-    public const STABILITY_STABLE = 0;
-    public const STABILITY_RC = 5;
-    public const STABILITY_BETA = 10;
-    public const STABILITY_ALPHA = 15;
-    public const STABILITY_DEV = 20;
-
     /** @var array<string, self::STABILITY_*> */
     public static $stabilities = array(
         'stable' => self::STABILITY_STABLE,
@@ -75,19 +73,36 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * @inheritDoc
+     * Build a regexp from package names, expanding * globs as required
+     *
+     * @param string[] $packageNames
+     * @param non-empty-string $wrap
+     * @return non-empty-string
      */
-    public function getName(): string
+    public static function packageNamesToRegexp(array $packageNames, string $wrap = '{^(?:%s)$}iD'): string
     {
-        return $this->name;
+        $packageNames = array_map(
+            function ($packageName): string {
+                return BasePackage::packageNameToRegexp($packageName, '%s');
+            },
+            $packageNames
+        );
+
+        return sprintf($wrap, implode('|', $packageNames));
     }
 
     /**
-     * @inheritDoc
+     * Build a regexp from a package name, expanding * globs as required
+     *
+     * @param string $allowPattern
+     * @param non-empty-string $wrap Wrap the cleaned string by the given string
+     * @return non-empty-string
      */
-    public function getPrettyName(): string
+    public static function packageNameToRegexp(string $allowPattern, string $wrap = '{^%s$}i'): string
     {
-        return $this->prettyName;
+        $cleanedAllowPattern = str_replace('\\*', '.*', preg_quote($allowPattern));
+
+        return sprintf($wrap, $cleanedAllowPattern);
     }
 
     /**
@@ -115,9 +130,9 @@ abstract class BasePackage implements PackageInterface
     /**
      * @inheritDoc
      */
-    public function setId(int $id): void
+    public function getName(): string
     {
-        $this->id = $id;
+        return $this->name;
     }
 
     /**
@@ -131,20 +146,9 @@ abstract class BasePackage implements PackageInterface
     /**
      * @inheritDoc
      */
-    public function setRepository(RepositoryInterface $repository): void
+    public function setId(int $id): void
     {
-        if ($this->repository && $repository !== $this->repository) {
-            throw new \LogicException('A package can only be added to one repository');
-        }
-        $this->repository = $repository;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getRepository(): ?RepositoryInterface
-    {
-        return $this->repository;
+        $this->id = $id;
     }
 
     /**
@@ -158,13 +162,22 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * Returns package unique name, constructed from name, version and release type.
-     *
-     * @return string
+     * @inheritDoc
      */
-    public function getUniqueName(): string
+    public function getRepository(): ?RepositoryInterface
     {
-        return $this->getName().'-'.$this->getVersion();
+        return $this->repository;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRepository(RepositoryInterface $repository): void
+    {
+        if ($this->repository && $repository !== $this->repository) {
+            throw new \LogicException('A package can only be added to one repository');
+        }
+        $this->repository = $repository;
     }
 
     /**
@@ -193,9 +206,27 @@ abstract class BasePackage implements PackageInterface
         return $this->getUniqueName();
     }
 
+    /**
+     * Returns package unique name, constructed from name, version and release type.
+     *
+     * @return string
+     */
+    public function getUniqueName(): string
+    {
+        return $this->getName() . '-' . $this->getVersion();
+    }
+
     public function getPrettyString(): string
     {
-        return $this->getPrettyName().' '.$this->getPrettyVersion();
+        return $this->getPrettyName() . ' ' . $this->getPrettyVersion();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrettyName(): string
+    {
+        return $this->prettyName;
     }
 
     /**
@@ -218,7 +249,7 @@ abstract class BasePackage implements PackageInterface
                 $reference = $this->getDistReference();
                 break;
             default:
-                throw new \UnexpectedValueException('Display mode '.$displayMode.' is not supported');
+                throw new \UnexpectedValueException('Display mode ' . $displayMode . ' is not supported');
         }
 
         if (null === $reference) {
@@ -247,38 +278,5 @@ abstract class BasePackage implements PackageInterface
     {
         $this->repository = null;
         $this->id = -1;
-    }
-
-    /**
-     * Build a regexp from a package name, expanding * globs as required
-     *
-     * @param  string $allowPattern
-     * @param  non-empty-string $wrap         Wrap the cleaned string by the given string
-     * @return non-empty-string
-     */
-    public static function packageNameToRegexp(string $allowPattern, string $wrap = '{^%s$}i'): string
-    {
-        $cleanedAllowPattern = str_replace('\\*', '.*', preg_quote($allowPattern));
-
-        return sprintf($wrap, $cleanedAllowPattern);
-    }
-
-    /**
-     * Build a regexp from package names, expanding * globs as required
-     *
-     * @param string[] $packageNames
-     * @param non-empty-string $wrap
-     * @return non-empty-string
-     */
-    public static function packageNamesToRegexp(array $packageNames, string $wrap = '{^(?:%s)$}iD'): string
-    {
-        $packageNames = array_map(
-            function ($packageName): string {
-                return BasePackage::packageNameToRegexp($packageName, '%s');
-            },
-            $packageNames
-        );
-
-        return sprintf($wrap, implode('|', $packageNames));
     }
 }

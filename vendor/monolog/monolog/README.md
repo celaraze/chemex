@@ -3,12 +3,12 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/monolog/monolog.svg)](https://packagist.org/packages/monolog/monolog)
 [![Latest Stable Version](https://img.shields.io/packagist/v/monolog/monolog.svg)](https://packagist.org/packages/monolog/monolog)
 
-
 Monolog sends your logs to files, sockets, inboxes, databases and various
 web services. See the complete list of handlers below. Special handlers
 allow you to build advanced logging strategies.
 
-This library implements the [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md)
+This library implements
+the [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md)
 interface that you can type-hint against in your own libraries to keep
 a maximum of interoperability. You can also use it in your applications to
 make sure you can always use another compatible logger at a later time.
@@ -50,9 +50,13 @@ $log->error('Bar');
 
 ## Support Monolog Financially
 
-Get supported Monolog and help fund the project with the [Tidelift Subscription](https://tidelift.com/subscription/pkg/packagist-monolog-monolog?utm_source=packagist-monolog-monolog&utm_medium=referral&utm_campaign=enterprise) or via [GitHub sponsorship](https://github.com/sponsors/Seldaek). 
+Get supported Monolog and help fund the project with
+the [Tidelift Subscription](https://tidelift.com/subscription/pkg/packagist-monolog-monolog?utm_source=packagist-monolog-monolog&utm_medium=referral&utm_campaign=enterprise)
+or via [GitHub sponsorship](https://github.com/sponsors/Seldaek).
 
-Tidelift delivers commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use.
+Tidelift delivers commercial support and maintenance for the open source dependencies you use to build your
+applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies
+you use.
 
 ## Third Party Packages
 
@@ -68,7 +72,8 @@ can also add your own there if you publish one.
 
 ### Support
 
-Monolog 1.x support is somewhat limited at this point and only important fixes will be done. You should migrate to Monolog 2 where possible to benefit from all the latest features and fixes.
+Monolog 1.x support is somewhat limited at this point and only important fixes will be done. You should migrate to
+Monolog 2 where possible to benefit from all the latest features and fixes.
 
 ### Submitting bugs and feature requests
 
@@ -76,25 +81,34 @@ Bugs and feature request are tracked on [GitHub](https://github.com/Seldaek/mono
 
 ### Framework Integrations
 
-- Frameworks and libraries using [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md)
+- Frameworks and libraries
+  using [PSR-3](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md)
   can be used very easily with Monolog since it implements the interface.
 - [Symfony](http://symfony.com) comes out of the box with Monolog.
 - [Laravel](http://laravel.com/) comes out of the box with Monolog.
 - [Lumen](http://lumen.laravel.com/) comes out of the box with Monolog.
 - [PPI](https://github.com/ppi/framework) comes out of the box with Monolog.
-- [CakePHP](http://cakephp.org/) is usable with Monolog via the [cakephp-monolog](https://github.com/jadb/cakephp-monolog) plugin.
-- [Slim](http://www.slimframework.com/) is usable with Monolog via the [Slim-Monolog](https://github.com/Flynsarmy/Slim-Monolog) log writer.
+- [CakePHP](http://cakephp.org/) is usable with Monolog via
+  the [cakephp-monolog](https://github.com/jadb/cakephp-monolog) plugin.
+- [Slim](http://www.slimframework.com/) is usable with Monolog via
+  the [Slim-Monolog](https://github.com/Flynsarmy/Slim-Monolog) log writer.
 - [XOOPS 2.6](http://xoops.org/) comes out of the box with Monolog.
 - [Aura.Web_Project](https://github.com/auraphp/Aura.Web_Project) comes out of the box with Monolog.
-- [Nette Framework](http://nette.org/en/) is usable with Monolog via the [contributte/monolog](https://github.com/contributte/monolog) or [orisai/nette-monolog](https://github.com/orisai/nette-monolog) extensions.
+- [Nette Framework](http://nette.org/en/) is usable with Monolog via
+  the [contributte/monolog](https://github.com/contributte/monolog)
+  or [orisai/nette-monolog](https://github.com/orisai/nette-monolog) extensions.
 - [Proton Micro Framework](https://github.com/alexbilbie/Proton) comes out of the box with Monolog.
 - [FuelPHP](http://fuelphp.com/) comes out of the box with Monolog.
 - [Equip Framework](https://github.com/equip/framework) comes out of the box with Monolog.
-- [Yii 2](http://www.yiiframework.com/) is usable with Monolog via the [yii2-monolog](https://github.com/merorafael/yii2-monolog) or [yii2-psr-log-target](https://github.com/samdark/yii2-psr-log-target) plugins.
+- [Yii 2](http://www.yiiframework.com/) is usable with Monolog via
+  the [yii2-monolog](https://github.com/merorafael/yii2-monolog)
+  or [yii2-psr-log-target](https://github.com/samdark/yii2-psr-log-target) plugins.
 - [Hawkbit Micro Framework](https://github.com/HawkBitPhp/hawkbit) comes out of the box with Monolog.
 - [SilverStripe 4](https://www.silverstripe.org/) comes out of the box with Monolog.
-- [Drupal](https://www.drupal.org/) is usable with Monolog via the [monolog](https://www.drupal.org/project/monolog) module.
-- [Aimeos ecommerce framework](https://aimeos.org/) is usable with Monolog via the [ai-monolog](https://github.com/aimeos/ai-monolog) extension.
+- [Drupal](https://www.drupal.org/) is usable with Monolog via the [monolog](https://www.drupal.org/project/monolog)
+  module.
+- [Aimeos ecommerce framework](https://aimeos.org/) is usable with Monolog via
+  the [ai-monolog](https://github.com/aimeos/ai-monolog) extension.
 - [Magento](https://magento.com/) comes out of the box with Monolog.
 
 ### Author

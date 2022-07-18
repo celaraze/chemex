@@ -76,6 +76,6 @@ class UnsupportedSchemeException extends LogicException
             $message .= sprintf('; supported schemes for mailer "%s" are: "%s"', $name, implode('", "', $supported));
         }
 
-        parent::__construct($message.'.');
+        parent::__construct($message . '.');
     }
 }

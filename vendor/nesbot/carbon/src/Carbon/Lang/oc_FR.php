@@ -9,4 +9,4 @@
  * file that was distributed with this source code.
  */
 
-return require __DIR__.'/oc.php';
+return require __DIR__ . '/oc.php';

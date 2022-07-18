@@ -45,7 +45,8 @@ class NodeTraverser implements NodeTraverserInterface
     /** @var bool Whether traversal should be stopped */
     protected $stopTraversal;
 
-    public function __construct() {
+    public function __construct()
+    {
         // for BC
     }
 
@@ -54,7 +55,8 @@ class NodeTraverser implements NodeTraverserInterface
      *
      * @param NodeVisitor $visitor Visitor to add
      */
-    public function addVisitor(NodeVisitor $visitor) {
+    public function addVisitor(NodeVisitor $visitor)
+    {
         $this->visitors[] = $visitor;
     }
 
@@ -63,7 +65,8 @@ class NodeTraverser implements NodeTraverserInterface
      *
      * @param NodeVisitor $visitor
      */
-    public function removeVisitor(NodeVisitor $visitor) {
+    public function removeVisitor(NodeVisitor $visitor)
+    {
         foreach ($this->visitors as $index => $storedVisitor) {
             if ($storedVisitor === $visitor) {
                 unset($this->visitors[$index]);
@@ -79,7 +82,8 @@ class NodeTraverser implements NodeTraverserInterface
      *
      * @return Node[] Traversed array of nodes
      */
-    public function traverse(array $nodes) : array {
+    public function traverse(array $nodes): array
+    {
         $this->stopTraversal = false;
 
         foreach ($this->visitors as $visitor) {
@@ -100,95 +104,14 @@ class NodeTraverser implements NodeTraverserInterface
     }
 
     /**
-     * Recursively traverse a node.
-     *
-     * @param Node $node Node to traverse.
-     *
-     * @return Node Result of traversal (may be original node or new one)
-     */
-    protected function traverseNode(Node $node) : Node {
-        foreach ($node->getSubNodeNames() as $name) {
-            $subNode =& $node->$name;
-
-            if (\is_array($subNode)) {
-                $subNode = $this->traverseArray($subNode);
-                if ($this->stopTraversal) {
-                    break;
-                }
-            } elseif ($subNode instanceof Node) {
-                $traverseChildren = true;
-                $breakVisitorIndex = null;
-
-                foreach ($this->visitors as $visitorIndex => $visitor) {
-                    $return = $visitor->enterNode($subNode);
-                    if (null !== $return) {
-                        if ($return instanceof Node) {
-                            $this->ensureReplacementReasonable($subNode, $return);
-                            $subNode = $return;
-                        } elseif (self::DONT_TRAVERSE_CHILDREN === $return) {
-                            $traverseChildren = false;
-                        } elseif (self::DONT_TRAVERSE_CURRENT_AND_CHILDREN === $return) {
-                            $traverseChildren = false;
-                            $breakVisitorIndex = $visitorIndex;
-                            break;
-                        } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
-                            break 2;
-                        } else {
-                            throw new \LogicException(
-                                'enterNode() returned invalid value of type ' . gettype($return)
-                            );
-                        }
-                    }
-                }
-
-                if ($traverseChildren) {
-                    $subNode = $this->traverseNode($subNode);
-                    if ($this->stopTraversal) {
-                        break;
-                    }
-                }
-
-                foreach ($this->visitors as $visitorIndex => $visitor) {
-                    $return = $visitor->leaveNode($subNode);
-
-                    if (null !== $return) {
-                        if ($return instanceof Node) {
-                            $this->ensureReplacementReasonable($subNode, $return);
-                            $subNode = $return;
-                        } elseif (self::STOP_TRAVERSAL === $return) {
-                            $this->stopTraversal = true;
-                            break 2;
-                        } elseif (\is_array($return)) {
-                            throw new \LogicException(
-                                'leaveNode() may only return an array ' .
-                                'if the parent structure is an array'
-                            );
-                        } else {
-                            throw new \LogicException(
-                                'leaveNode() returned invalid value of type ' . gettype($return)
-                            );
-                        }
-                    }
-
-                    if ($breakVisitorIndex === $visitorIndex) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $node;
-    }
-
-    /**
      * Recursively traverse array (usually of nodes).
      *
      * @param array $nodes Array to traverse
      *
      * @return array Result of traversal (may be original array or changed one)
      */
-    protected function traverseArray(array $nodes) : array {
+    protected function traverseArray(array $nodes): array
+    {
         $doNodes = [];
 
         foreach ($nodes as $i => &$node) {
@@ -272,7 +195,8 @@ class NodeTraverser implements NodeTraverserInterface
         return $nodes;
     }
 
-    private function ensureReplacementReasonable($old, $new) {
+    private function ensureReplacementReasonable($old, $new)
+    {
         if ($old instanceof Node\Stmt && $new instanceof Node\Expr) {
             throw new \LogicException(
                 "Trying to replace statement ({$old->getType()}) " .
@@ -287,5 +211,88 @@ class NodeTraverser implements NodeTraverserInterface
                 "with statement ({$new->getType()})"
             );
         }
+    }
+
+    /**
+     * Recursively traverse a node.
+     *
+     * @param Node $node Node to traverse.
+     *
+     * @return Node Result of traversal (may be original node or new one)
+     */
+    protected function traverseNode(Node $node): Node
+    {
+        foreach ($node->getSubNodeNames() as $name) {
+            $subNode =& $node->$name;
+
+            if (\is_array($subNode)) {
+                $subNode = $this->traverseArray($subNode);
+                if ($this->stopTraversal) {
+                    break;
+                }
+            } elseif ($subNode instanceof Node) {
+                $traverseChildren = true;
+                $breakVisitorIndex = null;
+
+                foreach ($this->visitors as $visitorIndex => $visitor) {
+                    $return = $visitor->enterNode($subNode);
+                    if (null !== $return) {
+                        if ($return instanceof Node) {
+                            $this->ensureReplacementReasonable($subNode, $return);
+                            $subNode = $return;
+                        } elseif (self::DONT_TRAVERSE_CHILDREN === $return) {
+                            $traverseChildren = false;
+                        } elseif (self::DONT_TRAVERSE_CURRENT_AND_CHILDREN === $return) {
+                            $traverseChildren = false;
+                            $breakVisitorIndex = $visitorIndex;
+                            break;
+                        } elseif (self::STOP_TRAVERSAL === $return) {
+                            $this->stopTraversal = true;
+                            break 2;
+                        } else {
+                            throw new \LogicException(
+                                'enterNode() returned invalid value of type ' . gettype($return)
+                            );
+                        }
+                    }
+                }
+
+                if ($traverseChildren) {
+                    $subNode = $this->traverseNode($subNode);
+                    if ($this->stopTraversal) {
+                        break;
+                    }
+                }
+
+                foreach ($this->visitors as $visitorIndex => $visitor) {
+                    $return = $visitor->leaveNode($subNode);
+
+                    if (null !== $return) {
+                        if ($return instanceof Node) {
+                            $this->ensureReplacementReasonable($subNode, $return);
+                            $subNode = $return;
+                        } elseif (self::STOP_TRAVERSAL === $return) {
+                            $this->stopTraversal = true;
+                            break 2;
+                        } elseif (\is_array($return)) {
+                            throw new \LogicException(
+                                'leaveNode() may only return an array ' .
+                                'if the parent structure is an array'
+                            );
+                        } else {
+                            throw new \LogicException(
+                                'leaveNode() returned invalid value of type ' . gettype($return)
+                            );
+                        }
+                    }
+
+                    if ($breakVisitorIndex === $visitorIndex) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $node;
     }
 }

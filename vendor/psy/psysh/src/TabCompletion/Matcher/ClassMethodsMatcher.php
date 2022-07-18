@@ -57,7 +57,7 @@ class ClassMethodsMatcher extends AbstractMatcher
                 $chunks = \explode('\\', $class);
                 $className = \array_pop($chunks);
 
-                return $className.'::'.$name;
+                return $className . '::' . $name;
             },
             \array_filter($methods, function ($method) use ($input) {
                 return AbstractMatcher::startsWith($input, $method);

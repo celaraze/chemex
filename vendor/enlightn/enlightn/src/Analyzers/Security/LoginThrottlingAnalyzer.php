@@ -39,12 +39,18 @@ class LoginThrottlingAnalyzer extends SecurityAnalyzer
      * @var int|null
      */
     public $timeToFix = 5;
+    /**
+     * The routes that are not protected from CSRF.
+     *
+     * @var \Illuminate\Support\Collection
+     */
+    public $unprotectedRoutes;
 
     /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -54,13 +60,6 @@ class LoginThrottlingAnalyzer extends SecurityAnalyzer
     }
 
     /**
-     * The routes that are not protected from CSRF.
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    public $unprotectedRoutes;
-
-    /**
      * Get the error message describing the analyzer insights.
      *
      * @return string
@@ -68,11 +67,19 @@ class LoginThrottlingAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your application is not adequately protected from brute force attacks. This can be very dangerous and "
-            ."you may resolve this by adding appropriate login throttling middleware to your login routes. We make an "
-            ."educated guess that the following routes could be unprotected login routes: {$this->formatUnprotectedRoutes()}. "
-            ."You may ignore this in case the throttling is already setup at the web server (Nginx, Apache) level instead "
-            ."of the Laravel application level or in case you have devised your own custom throttling mechanism and are not "
-            ."using the throttling middleware or RateLimiter class that ships with the Laravel Framework.";
+            . "you may resolve this by adding appropriate login throttling middleware to your login routes. We make an "
+            . "educated guess that the following routes could be unprotected login routes: {$this->formatUnprotectedRoutes()}. "
+            . "You may ignore this in case the throttling is already setup at the web server (Nginx, Apache) level instead "
+            . "of the Laravel application level or in case you have devised your own custom throttling mechanism and are not "
+            . "using the throttling middleware or RateLimiter class that ships with the Laravel Framework.";
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatUnprotectedRoutes()
+    {
+        return $this->unprotectedRoutes->join(', ', ' and ');
     }
 
     /**
@@ -101,19 +108,29 @@ class LoginThrottlingAnalyzer extends SecurityAnalyzer
     }
 
     /**
-     * Determine whether to skip the analyzer.
+     * Determine whether the app uses the RateLimiter facade
      *
+     * @param \Enlightn\Enlightn\Inspection\Inspector $inspector
      * @return bool
-     * @throws \ReflectionException
      */
-    public function skip()
+    protected function appUsesRateLimiterFacade(Inspector $inspector)
     {
-        // Skip this analyzer if the app is stateless (there is no login for stateless apps) or if the app
-        // uses the laravel/ui package (that handles login throttling without middleware).
-        return $this->appIsStateless() || trait_exists(\Illuminate\Foundation\Auth\AuthenticatesUsers::class)
-            // Fortify also uses it's own authentication pipeline that has throttling. We skip this analyzer if we find
-            // that the app uses Fortify's in-built login throttling.
-            || (class_exists(\Laravel\Fortify\LoginRateLimiter::class) && is_null(config('fortify.limiters.login')));
+        $builder = (new QueryBuilder())->hasStaticCall(RateLimiterFacade::class, 'hit');
+
+        return $this->passesCodeInspection($inspector, $builder);
+    }
+
+    /**
+     * Determine whether the app uses the RateLimiter facade
+     *
+     * @param \Enlightn\Enlightn\Inspection\Inspector $inspector
+     * @return bool
+     */
+    protected function appUsesRateLimiterInstance(Inspector $inspector)
+    {
+        $builder = (new QueryBuilder())->instantiates(RateLimiter::class);
+
+        return $this->passesCodeInspection($inspector, $builder);
     }
 
     /**
@@ -144,36 +161,18 @@ class LoginThrottlingAnalyzer extends SecurityAnalyzer
     }
 
     /**
-     * Determine whether the app uses the RateLimiter facade
+     * Determine whether to skip the analyzer.
      *
-     * @param \Enlightn\Enlightn\Inspection\Inspector $inspector
      * @return bool
+     * @throws \ReflectionException
      */
-    protected function appUsesRateLimiterFacade(Inspector $inspector)
+    public function skip()
     {
-        $builder = (new QueryBuilder())->hasStaticCall(RateLimiterFacade::class, 'hit');
-
-        return $this->passesCodeInspection($inspector, $builder);
-    }
-
-    /**
-     * Determine whether the app uses the RateLimiter facade
-     *
-     * @param \Enlightn\Enlightn\Inspection\Inspector $inspector
-     * @return bool
-     */
-    protected function appUsesRateLimiterInstance(Inspector $inspector)
-    {
-        $builder = (new QueryBuilder())->instantiates(RateLimiter::class);
-
-        return $this->passesCodeInspection($inspector, $builder);
-    }
-
-    /**
-     * @return string
-     */
-    protected function formatUnprotectedRoutes()
-    {
-        return $this->unprotectedRoutes->join(', ', ' and ');
+        // Skip this analyzer if the app is stateless (there is no login for stateless apps) or if the app
+        // uses the laravel/ui package (that handles login throttling without middleware).
+        return $this->appIsStateless() || trait_exists(\Illuminate\Foundation\Auth\AuthenticatesUsers::class)
+            // Fortify also uses it's own authentication pipeline that has throttling. We skip this analyzer if we find
+            // that the app uses Fortify's in-built login throttling.
+            || (class_exists(\Laravel\Fortify\LoginRateLimiter::class) && is_null(config('fortify.limiters.login')));
     }
 }

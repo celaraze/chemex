@@ -16,7 +16,6 @@ namespace Ramsey\Collection\Map;
 
 use Ramsey\Collection\AbstractArray;
 use Ramsey\Collection\Exception\InvalidArgumentException;
-
 use function array_key_exists;
 use function array_keys;
 use function in_array;
@@ -49,14 +48,6 @@ abstract class AbstractMap extends AbstractArray implements MapInterface
     /**
      * @inheritDoc
      */
-    public function containsKey($key): bool
-    {
-        return array_key_exists($key, $this->data);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function containsValue($value): bool
     {
         return in_array($value, $this->data, true);
@@ -68,6 +59,17 @@ abstract class AbstractMap extends AbstractArray implements MapInterface
     public function keys(): array
     {
         return array_keys($this->data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function put($key, $value)
+    {
+        $previousValue = $this->get($key);
+        $this[$key] = $value;
+
+        return $previousValue;
     }
 
     /**
@@ -85,12 +87,9 @@ abstract class AbstractMap extends AbstractArray implements MapInterface
     /**
      * @inheritDoc
      */
-    public function put($key, $value)
+    public function containsKey($key): bool
     {
-        $previousValue = $this->get($key);
-        $this[$key] = $value;
-
-        return $previousValue;
+        return array_key_exists($key, $this->data);
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 namespace Hamcrest\Text;
 
 /*
@@ -16,11 +17,6 @@ class StringContains extends SubstringMatcher
         parent::__construct($substring);
     }
 
-    public function ignoringCase()
-    {
-        return new StringContainsIgnoringCase($this->_substring);
-    }
-
     /**
      * Matches if value is a string that contains $substring.
      *
@@ -31,11 +27,16 @@ class StringContains extends SubstringMatcher
         return new self($substring);
     }
 
+    public function ignoringCase()
+    {
+        return new StringContainsIgnoringCase($this->_substring);
+    }
+
     // -- Protected Methods
 
     protected function evalSubstringOf($item)
     {
-        return (false !== strpos((string) $item, $this->_substring));
+        return (false !== strpos((string)$item, $this->_substring));
     }
 
     protected function relationship()

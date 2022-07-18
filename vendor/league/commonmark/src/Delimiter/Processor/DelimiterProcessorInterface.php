@@ -70,9 +70,9 @@ interface DelimiterProcessorInterface
      * Note that removal of the delimiter from the delimiter nodes and detaching
      * them is done by the caller.
      *
-     * @param AbstractStringContainer $opener       The node that contained the opening delimiter
-     * @param AbstractStringContainer $closer       The node that contained the closing delimiter
-     * @param int                     $delimiterUse The number of delimiters that were used
+     * @param AbstractStringContainer $opener The node that contained the opening delimiter
+     * @param AbstractStringContainer $closer The node that contained the closing delimiter
+     * @param int $delimiterUse The number of delimiters that were used
      */
     public function process(AbstractStringContainer $opener, AbstractStringContainer $closer, int $delimiterUse): void;
 }

@@ -265,7 +265,8 @@ development of new functionality.
 
 Each entry consists of the following
 
-* **type:** The type of funding, or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
+* **type:** The type of funding, or the platform through which funding can be provided, e.g. patreon, opencollective,
+  tidelift or github.
 * **url:** URL to a website with details, and a way to fund the package.
 
 An example:
@@ -839,9 +840,9 @@ Example:
 ```
 
 > **Note:** Order is significant here. When looking for a package, Composer
-will look from the first to the last repository, and pick the first match.
-By default Packagist is added last which means that custom repositories can
-override packages from it.
+> will look from the first to the last repository, and pick the first match.
+> By default Packagist is added last which means that custom repositories can
+> override packages from it.
 
 Using JSON object notation is also possible. However, JSON key/value pairs
 are to be considered unordered so consistent behaviour cannot be guaranteed.
@@ -942,7 +943,7 @@ It can be boolean or a package name/URL pointing to a recommended alternative.
 Examples:
 
 Use `"abandoned": true` to indicate this package is abandoned.
-Use `"abandoned": "monolog/monolog"` to indicate this package is abandoned, and that 
+Use `"abandoned": "monolog/monolog"` to indicate this package is abandoned, and that
 the recommended alternative is `monolog/monolog`.
 
 Defaults to false.

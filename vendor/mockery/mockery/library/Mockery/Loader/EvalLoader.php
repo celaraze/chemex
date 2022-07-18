@@ -21,7 +21,6 @@
 namespace Mockery\Loader;
 
 use Mockery\Generator\MockDefinition;
-use Mockery\Loader\Loader;
 
 class EvalLoader implements Loader
 {

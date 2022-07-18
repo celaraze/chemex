@@ -54,8 +54,8 @@ EOD;
     /**
      * Checks if the book has been created. Throws an exception if not created yet.
      *
-     * @throws \Box\Spout\Common\Exception\IOException If the sheet data file cannot be opened for writing
      * @return void
+     * @throws \Box\Spout\Common\Exception\IOException If the sheet data file cannot be opened for writing
      */
     protected function throwIfSharedStringsFilePointerIsNotAvailable()
     {

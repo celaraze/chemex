@@ -22,16 +22,6 @@ namespace Ramsey\Uuid\Rfc4122;
 trait VersionTrait
 {
     /**
-     * Returns the version
-     */
-    abstract public function getVersion(): ?int;
-
-    /**
-     * Returns true if these fields represent a nil UUID
-     */
-    abstract public function isNil(): bool;
-
-    /**
      * Returns true if the version matches one of those defined by RFC 4122
      *
      * @return bool True if the UUID version is valid, false otherwise
@@ -54,4 +44,14 @@ trait VersionTrait
 
         return false;
     }
+
+    /**
+     * Returns true if these fields represent a nil UUID
+     */
+    abstract public function isNil(): bool;
+
+    /**
+     * Returns the version
+     */
+    abstract public function getVersion(): ?int;
 }

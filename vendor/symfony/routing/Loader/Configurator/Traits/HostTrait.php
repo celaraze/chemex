@@ -35,7 +35,7 @@ trait HostTrait
                     $localizedRoute->setRequirement('_locale', preg_quote($locale));
                     $localizedRoute->setDefault('_canonical_route', $name);
                     $localizedRoute->setHost($host);
-                    $routes->add($name.'.'.$locale, $localizedRoute);
+                    $routes->add($name . '.' . $locale, $localizedRoute);
                 }
             } elseif (!isset($hosts[$locale])) {
                 throw new \InvalidArgumentException(sprintf('Route "%s" with locale "%s" is missing a corresponding host in its parent collection.', $name, $locale));

@@ -28,7 +28,7 @@ class Chart extends Widget
 
     public function __construct($selector = null, $options = [])
     {
-        if ($selector && ! is_string($selector)) {
+        if ($selector && !is_string($selector)) {
             $options = $selector;
             $selector = null;
         }
@@ -41,7 +41,7 @@ class Chart extends Widget
     /**
      * 设置或获取图表容器选择器.
      *
-     * @param  string|null  $selector
+     * @param string|null $selector
      * @return $this|string|null
      */
     public function selector(?string $selector = null)
@@ -52,7 +52,7 @@ class Chart extends Widget
 
         $this->containerSelector = $selector;
 
-        if ($selector && ! $this->built) {
+        if ($selector && !$this->built) {
             $this->autoRender();
         }
 
@@ -60,7 +60,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  string|array  $title
+     * @param string|array $title
      * @return $this
      */
     public function title($title)
@@ -77,7 +77,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $series
+     * @param array $series
      * @return $this
      */
     public function series($series)
@@ -88,7 +88,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function labels($value)
@@ -99,7 +99,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  string|array  $colors
+     * @param string|array $colors
      * @return $this
      */
     public function colors($colors)
@@ -110,7 +110,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function stroke($value)
@@ -121,7 +121,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function xaxis($value)
@@ -132,7 +132,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function tooltip($value)
@@ -143,7 +143,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function yaxis($value)
@@ -154,7 +154,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function fill($value)
@@ -165,7 +165,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array  $value
+     * @param array $value
      * @return $this
      */
     public function chart($value)
@@ -176,7 +176,7 @@ class Chart extends Widget
     }
 
     /**
-     * @param  array|bool  $value
+     * @param array|bool $value
      * @return $this
      */
     public function dataLabels($value)
@@ -188,60 +188,6 @@ class Chart extends Widget
         $this->options['dataLabels'] = Helper::array($value);
 
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    protected function buildDefaultScript()
-    {
-        $options = JavaScript::format($this->options);
-
-        return <<<JS
-(function () {
-    var options = {$options};
-
-    var chart = new ApexCharts(
-        $("{$this->containerSelector}")[0], 
-        options
-    );
-    chart.render();
-})();
-JS;
-    }
-
-    /**
-     * @return string
-     */
-    public function addScript()
-    {
-        if (! $this->allowBuildRequest()) {
-            return $this->script = $this->buildDefaultScript();
-        }
-
-        $this->fetched(
-            <<<JS
-if (! response.status) {
-    return Dcat.error(response.message || 'Server internal error.');
-}
-
-var chartBox = $(response.selector || '{$this->containerSelector}');
-
-if (chartBox.length) {
-    chartBox.html('');
-
-    if (typeof response.options === 'string') {
-        eval(response.options);
-    }
-    
-    setTimeout(function () {
-        new ApexCharts(chartBox[0], response.options).render();
-    }, 50);
-}
-JS
-        );
-
-        return $this->script = $this->buildRequestScript();
     }
 
     /**
@@ -261,11 +207,11 @@ JS
     {
         $hasSelector = $this->containerSelector ? true : false;
 
-        if (! $hasSelector) {
+        if (!$hasSelector) {
             // 没有指定ID，需要自动生成
             $id = $this->generateId();
 
-            $this->selector('#'.$id);
+            $this->selector('#' . $id);
         }
 
         $this->addScript();
@@ -285,6 +231,70 @@ HTML;
     }
 
     /**
+     * 生成唯一ID.
+     *
+     * @return string
+     */
+    protected function generateId()
+    {
+        return 'apex-chart-' . Str::random(8);
+    }
+
+    /**
+     * @return string
+     */
+    public function addScript()
+    {
+        if (!$this->allowBuildRequest()) {
+            return $this->script = $this->buildDefaultScript();
+        }
+
+        $this->fetched(
+            <<<JS
+if (! response.status) {
+    return Dcat.error(response.message || 'Server internal error.');
+}
+
+var chartBox = $(response.selector || '{$this->containerSelector}');
+
+if (chartBox.length) {
+    chartBox.html('');
+
+    if (typeof response.options === 'string') {
+        eval(response.options);
+    }
+
+    setTimeout(function () {
+        new ApexCharts(chartBox[0], response.options).render();
+    }, 50);
+}
+JS
+        );
+
+        return $this->script = $this->buildRequestScript();
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildDefaultScript()
+    {
+        $options = JavaScript::format($this->options);
+
+        return <<<JS
+(function () {
+    var options = {$options};
+
+    var chart = new ApexCharts(
+        $("{$this->containerSelector}")[0],
+        options
+    );
+    chart.render();
+})();
+JS;
+    }
+
+    /**
      * 返回API请求结果.
      *
      * @return array
@@ -292,9 +302,9 @@ HTML;
     public function valueResult()
     {
         return [
-            'status'   => 1,
+            'status' => 1,
             'selector' => $this->containerSelector,
-            'options'  => $this->formatScriptOptions(),
+            'options' => $this->formatScriptOptions(),
         ];
     }
 
@@ -308,15 +318,5 @@ HTML;
         $code = JavaScript::format($this->options);
 
         return "response.options = {$code}";
-    }
-
-    /**
-     * 生成唯一ID.
-     *
-     * @return string
-     */
-    protected function generateId()
-    {
-        return 'apex-chart-'.Str::random(8);
     }
 }

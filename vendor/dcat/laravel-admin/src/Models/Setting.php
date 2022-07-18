@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $primaryKey = 'slug';
     public $incrementing = false;
+    protected $primaryKey = 'slug';
     protected $fillable = ['slug', 'value'];
 
     /**

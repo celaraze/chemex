@@ -9,11 +9,9 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Deprecations\Deprecation;
 use Throwable;
-
 use function array_change_key_case;
 use function assert;
 use function is_int;
-
 use const CASE_LOWER;
 
 /**
@@ -117,10 +115,10 @@ class TableGenerator
 
         try {
             $platform = $this->conn->getDatabasePlatform();
-            $sql      = 'SELECT sequence_value, sequence_increment_by'
+            $sql = 'SELECT sequence_value, sequence_increment_by'
                 . ' FROM ' . $platform->appendLockHint($this->generatorTableName, LockMode::PESSIMISTIC_WRITE)
                 . ' WHERE sequence_name = ? ' . $platform->getWriteLockSQL();
-            $row      = $this->conn->fetchAssociative($sql, [$sequence]);
+            $row = $this->conn->fetchAssociative($sql, [$sequence]);
 
             if ($row !== false) {
                 $row = array_change_key_case($row, CASE_LOWER);
@@ -137,9 +135,9 @@ class TableGenerator
                     ];
                 }
 
-                $sql  = 'UPDATE ' . $this->generatorTableName . ' ' .
-                       'SET sequence_value = sequence_value + sequence_increment_by ' .
-                       'WHERE sequence_name = ? AND sequence_value = ?';
+                $sql = 'UPDATE ' . $this->generatorTableName . ' ' .
+                    'SET sequence_value = sequence_value + sequence_increment_by ' .
+                    'WHERE sequence_name = ? AND sequence_value = ?';
                 $rows = $this->conn->executeStatement($sql, [$sequence, $row['sequence_value']]);
 
                 if ($rows !== 1) {

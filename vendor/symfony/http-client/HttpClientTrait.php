@@ -26,17 +26,6 @@ trait HttpClientTrait
     private static int $CHUNK_SIZE = 16372;
 
     /**
-     * {@inheritdoc}
-     */
-    public function withOptions(array $options): static
-    {
-        $clone = clone $this;
-        $clone->defaultOptions = self::mergeDefaultOptions($options, $this->defaultOptions);
-
-        return $clone;
-    }
-
-    /**
      * Validates and normalizes method, URL and options, and merges them with defaults.
      *
      * @throws InvalidArgumentException When a not-supported option is found
@@ -104,7 +93,7 @@ trait HttpClientTrait
             $options['body'] = self::normalizeBody($options['body']);
 
             if (\is_string($options['body'])
-                && (string) \strlen($options['body']) !== substr($h = $options['normalized_headers']['content-length'][0] ?? '', 16)
+                && (string)\strlen($options['body']) !== substr($h = $options['normalized_headers']['content-length'][0] ?? '', 16)
                 && ('' !== $h || '' !== $options['body'])
             ) {
                 if ('chunked' === substr($options['normalized_headers']['transfer-encoding'][0] ?? '', \strlen('Transfer-Encoding: '))) {
@@ -143,7 +132,7 @@ trait HttpClientTrait
                 throw new InvalidArgumentException(sprintf('Option "auth_bearer" must be a string, "%s" given.', get_debug_type($options['auth_bearer'])));
             }
             if (preg_match('{[^\x21-\x7E]}', $options['auth_bearer'])) {
-                throw new InvalidArgumentException('Invalid character found in option "auth_bearer": '.json_encode($options['auth_bearer']).'.');
+                throw new InvalidArgumentException('Invalid character found in option "auth_bearer": ' . json_encode($options['auth_bearer']) . '.');
             }
         }
 
@@ -154,11 +143,11 @@ trait HttpClientTrait
         if (null !== $url) {
             // Merge auth with headers
             if (($options['auth_basic'] ?? false) && !($options['normalized_headers']['authorization'] ?? false)) {
-                $options['normalized_headers']['authorization'] = ['Authorization: Basic '.base64_encode($options['auth_basic'])];
+                $options['normalized_headers']['authorization'] = ['Authorization: Basic ' . base64_encode($options['auth_basic'])];
             }
             // Merge bearer with headers
             if (($options['auth_bearer'] ?? false) && !($options['normalized_headers']['authorization'] ?? false)) {
-                $options['normalized_headers']['authorization'] = ['Authorization: Bearer '.$options['auth_bearer']];
+                $options['normalized_headers']['authorization'] = ['Authorization: Bearer ' . $options['auth_bearer']];
             }
 
             unset($options['auth_basic'], $options['auth_bearer']);
@@ -174,12 +163,12 @@ trait HttpClientTrait
         }
 
         // Finalize normalization of options
-        $options['http_version'] = (string) ($options['http_version'] ?? '') ?: null;
-        if (0 > $options['timeout'] = (float) ($options['timeout'] ?? ini_get('default_socket_timeout'))) {
+        $options['http_version'] = (string)($options['http_version'] ?? '') ?: null;
+        if (0 > $options['timeout'] = (float)($options['timeout'] ?? ini_get('default_socket_timeout'))) {
             $options['timeout'] = 172800.0; // 2 days
         }
 
-        $options['max_duration'] = isset($options['max_duration']) ? (float) $options['max_duration'] : 0;
+        $options['max_duration'] = isset($options['max_duration']) ? (float)$options['max_duration'] : 0;
         $options['headers'] = array_merge(...array_values($options['normalized_headers']));
 
         return [$url, $options];
@@ -201,7 +190,7 @@ trait HttpClientTrait
         if ($resolve = $options['resolve'] ?? false) {
             $options['resolve'] = [];
             foreach ($resolve as $k => $v) {
-                $options['resolve'][substr(self::parseUrl('http://'.$k)['authority'], 2)] = (string) $v;
+                $options['resolve'][substr(self::parseUrl('http://' . $k)['authority'], 2)] = (string)$v;
             }
         }
 
@@ -222,7 +211,7 @@ trait HttpClientTrait
 
         if ($resolve = $defaultOptions['resolve'] ?? false) {
             foreach ($resolve as $k => $v) {
-                $options['resolve'] += [substr(self::parseUrl('http://'.$k)['authority'], 2) => (string) $v];
+                $options['resolve'] += [substr(self::parseUrl('http://' . $k)['authority'], 2) => (string)$v];
             }
         }
 
@@ -243,7 +232,7 @@ trait HttpClientTrait
                     $msg = 'try using "%s" instead.';
                 }
 
-                throw new InvalidArgumentException(sprintf('Option "auth_ntlm" is not supported by "%s", '.$msg, __CLASS__, CurlHttpClient::class));
+                throw new InvalidArgumentException(sprintf('Option "auth_ntlm" is not supported by "%s", ' . $msg, __CLASS__, CurlHttpClient::class));
             }
 
             $alternatives = [];
@@ -271,7 +260,7 @@ trait HttpClientTrait
 
         foreach ($headers as $name => $values) {
             if ($values instanceof \Stringable) {
-                $values = (string) $values;
+                $values = (string)$values;
             }
 
             if (\is_int($name)) {
@@ -285,14 +274,14 @@ trait HttpClientTrait
                     throw new InvalidArgumentException(sprintf('Invalid value for header "%s": expected string, "%s" given.', $name, get_debug_type($values)));
                 }
 
-                $values = (array) $values;
+                $values = (array)$values;
             }
 
             $lcName = strtolower($name);
             $normalizedHeaders[$lcName] = [];
 
             foreach ($values as $value) {
-                $normalizedHeaders[$lcName][] = $value = $name.': '.$value;
+                $normalizedHeaders[$lcName][] = $value = $name . ': ' . $value;
 
                 if (\strlen($value) !== strcspn($value, "\r\n\0")) {
                     throw new InvalidArgumentException(sprintf('Invalid header: CR/LF/NUL found in "%s".', $value));
@@ -301,6 +290,126 @@ trait HttpClientTrait
         }
 
         return $normalizedHeaders;
+    }
+
+    /**
+     * Parses a URL and fixes its encoding if needed.
+     *
+     * @throws InvalidArgumentException When an invalid URL is passed
+     */
+    private static function parseUrl(string $url, array $query = [], array $allowedSchemes = ['http' => 80, 'https' => 443]): array
+    {
+        if (false === $parts = parse_url($url)) {
+            throw new InvalidArgumentException(sprintf('Malformed URL "%s".', $url));
+        }
+
+        if ($query) {
+            $parts['query'] = self::mergeQueryString($parts['query'] ?? null, $query, true);
+        }
+
+        $port = $parts['port'] ?? 0;
+
+        if (null !== $scheme = $parts['scheme'] ?? null) {
+            if (!isset($allowedSchemes[$scheme = strtolower($scheme)])) {
+                throw new InvalidArgumentException(sprintf('Unsupported scheme in "%s".', $url));
+            }
+
+            $port = $allowedSchemes[$scheme] === $port ? 0 : $port;
+            $scheme .= ':';
+        }
+
+        if (null !== $host = $parts['host'] ?? null) {
+            if (!\defined('INTL_IDNA_VARIANT_UTS46') && preg_match('/[\x80-\xFF]/', $host)) {
+                throw new InvalidArgumentException(sprintf('Unsupported IDN "%s", try enabling the "intl" PHP extension or running "composer require symfony/polyfill-intl-idn".', $host));
+            }
+
+            $host = \defined('INTL_IDNA_VARIANT_UTS46') ? idn_to_ascii($host, \IDNA_DEFAULT | \IDNA_USE_STD3_RULES | \IDNA_CHECK_BIDI | \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII, \INTL_IDNA_VARIANT_UTS46) ?: strtolower($host) : strtolower($host);
+            $host .= $port ? ':' . $port : '';
+        }
+
+        foreach (['user', 'pass', 'path', 'query', 'fragment'] as $part) {
+            if (!isset($parts[$part])) {
+                continue;
+            }
+
+            if (str_contains($parts[$part], '%')) {
+                // https://tools.ietf.org/html/rfc3986#section-2.3
+                $parts[$part] = preg_replace_callback('/%(?:2[DE]|3[0-9]|[46][1-9A-F]|5F|[57][0-9A]|7E)++/i', function ($m) {
+                    return rawurldecode($m[0]);
+                }, $parts[$part]);
+            }
+
+            // https://tools.ietf.org/html/rfc3986#section-3.3
+            $parts[$part] = preg_replace_callback("#[^-A-Za-z0-9._~!$&/'()*+,;=:@%]++#", function ($m) {
+                return rawurlencode($m[0]);
+            }, $parts[$part]);
+        }
+
+        return [
+            'scheme' => $scheme,
+            'authority' => null !== $host ? '//' . (isset($parts['user']) ? $parts['user'] . (isset($parts['pass']) ? ':' . $parts['pass'] : '') . '@' : '') . $host : null,
+            'path' => isset($parts['path'][0]) ? $parts['path'] : null,
+            'query' => isset($parts['query']) ? '?' . $parts['query'] : null,
+            'fragment' => isset($parts['fragment']) ? '#' . $parts['fragment'] : null,
+        ];
+    }
+
+    /**
+     * Merges and encodes a query array with a query string.
+     *
+     * @throws InvalidArgumentException When an invalid query-string value is passed
+     */
+    private static function mergeQueryString(?string $queryString, array $queryArray, bool $replace): ?string
+    {
+        if (!$queryArray) {
+            return $queryString;
+        }
+
+        $query = [];
+
+        if (null !== $queryString) {
+            foreach (explode('&', $queryString) as $v) {
+                if ('' !== $v) {
+                    $k = urldecode(explode('=', $v, 2)[0]);
+                    $query[$k] = (isset($query[$k]) ? $query[$k] . '&' : '') . $v;
+                }
+            }
+        }
+
+        if ($replace) {
+            foreach ($queryArray as $k => $v) {
+                if (null === $v) {
+                    unset($query[$k]);
+                }
+            }
+        }
+
+        $queryString = http_build_query($queryArray, '', '&', \PHP_QUERY_RFC3986);
+        $queryArray = [];
+
+        if ($queryString) {
+            foreach (explode('&', $queryString) as $v) {
+                $queryArray[rawurldecode(explode('=', $v, 2)[0])] = $v;
+            }
+        }
+
+        return implode('&', $replace ? array_replace($query, $queryArray) : ($query + $queryArray));
+    }
+
+    /**
+     * @throws InvalidArgumentException When the value cannot be json-encoded
+     */
+    private static function jsonEncode(mixed $value, int $flags = null, int $maxDepth = 512): string
+    {
+        $flags ??= \JSON_HEX_TAG | \JSON_HEX_APOS | \JSON_HEX_AMP | \JSON_HEX_QUOT | \JSON_PRESERVE_ZERO_FRACTION;
+
+        try {
+            $value = json_encode($value, $flags | \JSON_THROW_ON_ERROR, $maxDepth);
+        } catch (\JsonException $e) {
+            throw new InvalidArgumentException('Invalid value for "json" option: ' . $e->getMessage());
+        }
+
+        return $value;
     }
 
     /**
@@ -319,7 +428,7 @@ trait HttpClientTrait
                         array_walk_recursive($vars, $caster);
                         $v = $vars;
                     } elseif (method_exists($v, '__toString')) {
-                        $v = (string) $v;
+                        $v = (string)$v;
                     }
                 }
             });
@@ -351,7 +460,9 @@ trait HttpClientTrait
         }
 
         if ($body instanceof \Traversable) {
-            return $generatorToCallable((static function ($body) { yield from $body; })($body));
+            return $generatorToCallable((static function ($body) {
+                yield from $body;
+            })($body));
         }
 
         if ($body instanceof \Closure) {
@@ -405,29 +516,13 @@ trait HttpClientTrait
             };
         } elseif (\is_array($fingerprint)) {
             foreach ($fingerprint as $algo => $hash) {
-                $fingerprint[$algo] = 'pin-sha256' === $algo ? (array) $hash : str_replace(':', '', $hash);
+                $fingerprint[$algo] = 'pin-sha256' === $algo ? (array)$hash : str_replace(':', '', $hash);
             }
         } else {
             throw new InvalidArgumentException(sprintf('Option "peer_fingerprint" must be string or array, "%s" given.', get_debug_type($fingerprint)));
         }
 
         return $fingerprint;
-    }
-
-    /**
-     * @throws InvalidArgumentException When the value cannot be json-encoded
-     */
-    private static function jsonEncode(mixed $value, int $flags = null, int $maxDepth = 512): string
-    {
-        $flags ??= \JSON_HEX_TAG | \JSON_HEX_APOS | \JSON_HEX_AMP | \JSON_HEX_QUOT | \JSON_PRESERVE_ZERO_FRACTION;
-
-        try {
-            $value = json_encode($value, $flags | \JSON_THROW_ON_ERROR, $maxDepth);
-        } catch (\JsonException $e) {
-            throw new InvalidArgumentException('Invalid value for "json" option: '.$e->getMessage());
-        }
-
-        return $value;
     }
 
     /**
@@ -439,7 +534,7 @@ trait HttpClientTrait
      */
     private static function resolveUrl(array $url, ?array $base, array $queryDefaults = []): array
     {
-        if (null !== $base && '' === ($base['scheme'] ?? '').($base['authority'] ?? '')) {
+        if (null !== $base && '' === ($base['scheme'] ?? '') . ($base['authority'] ?? '')) {
             throw new InvalidArgumentException(sprintf('Invalid "base_uri" option: host or scheme is missing in "%s".', implode('', $base)));
         }
 
@@ -447,7 +542,7 @@ trait HttpClientTrait
             throw new InvalidArgumentException(sprintf('Invalid URL: scheme is missing in "%s". Did you forget to add "http(s)://"?', implode('', $base ?? $url)));
         }
 
-        if (null === $base && '' === $url['scheme'].$url['authority']) {
+        if (null === $base && '' === $url['scheme'] . $url['authority']) {
             throw new InvalidArgumentException(sprintf('Invalid URL: no "base_uri" option was provided and host or scheme is missing in "%s".', implode('', $url)));
         }
 
@@ -463,7 +558,7 @@ trait HttpClientTrait
                 } else {
                     if ('/' !== $url['path'][0]) {
                         if (null === $base['path']) {
-                            $url['path'] = '/'.$url['path'];
+                            $url['path'] = '/' . $url['path'];
                         } else {
                             $segments = explode('/', $base['path']);
                             array_splice($segments, -1, 1, [$url['path']]);
@@ -477,7 +572,7 @@ trait HttpClientTrait
                 $url['authority'] = $base['authority'];
 
                 if ($queryDefaults) {
-                    $url['query'] = '?'.self::mergeQueryString(substr($url['query'] ?? '', 1), $queryDefaults, false);
+                    $url['query'] = '?' . self::mergeQueryString(substr($url['query'] ?? '', 1), $queryDefaults, false);
                 }
             }
 
@@ -493,64 +588,6 @@ trait HttpClientTrait
         }
 
         return $url;
-    }
-
-    /**
-     * Parses a URL and fixes its encoding if needed.
-     *
-     * @throws InvalidArgumentException When an invalid URL is passed
-     */
-    private static function parseUrl(string $url, array $query = [], array $allowedSchemes = ['http' => 80, 'https' => 443]): array
-    {
-        if (false === $parts = parse_url($url)) {
-            throw new InvalidArgumentException(sprintf('Malformed URL "%s".', $url));
-        }
-
-        if ($query) {
-            $parts['query'] = self::mergeQueryString($parts['query'] ?? null, $query, true);
-        }
-
-        $port = $parts['port'] ?? 0;
-
-        if (null !== $scheme = $parts['scheme'] ?? null) {
-            if (!isset($allowedSchemes[$scheme = strtolower($scheme)])) {
-                throw new InvalidArgumentException(sprintf('Unsupported scheme in "%s".', $url));
-            }
-
-            $port = $allowedSchemes[$scheme] === $port ? 0 : $port;
-            $scheme .= ':';
-        }
-
-        if (null !== $host = $parts['host'] ?? null) {
-            if (!\defined('INTL_IDNA_VARIANT_UTS46') && preg_match('/[\x80-\xFF]/', $host)) {
-                throw new InvalidArgumentException(sprintf('Unsupported IDN "%s", try enabling the "intl" PHP extension or running "composer require symfony/polyfill-intl-idn".', $host));
-            }
-
-            $host = \defined('INTL_IDNA_VARIANT_UTS46') ? idn_to_ascii($host, \IDNA_DEFAULT | \IDNA_USE_STD3_RULES | \IDNA_CHECK_BIDI | \IDNA_CHECK_CONTEXTJ | \IDNA_NONTRANSITIONAL_TO_ASCII, \INTL_IDNA_VARIANT_UTS46) ?: strtolower($host) : strtolower($host);
-            $host .= $port ? ':'.$port : '';
-        }
-
-        foreach (['user', 'pass', 'path', 'query', 'fragment'] as $part) {
-            if (!isset($parts[$part])) {
-                continue;
-            }
-
-            if (str_contains($parts[$part], '%')) {
-                // https://tools.ietf.org/html/rfc3986#section-2.3
-                $parts[$part] = preg_replace_callback('/%(?:2[DE]|3[0-9]|[46][1-9A-F]|5F|[57][0-9A]|7E)++/i', function ($m) { return rawurldecode($m[0]); }, $parts[$part]);
-            }
-
-            // https://tools.ietf.org/html/rfc3986#section-3.3
-            $parts[$part] = preg_replace_callback("#[^-A-Za-z0-9._~!$&/'()*+,;=:@%]++#", function ($m) { return rawurlencode($m[0]); }, $parts[$part]);
-        }
-
-        return [
-            'scheme' => $scheme,
-            'authority' => null !== $host ? '//'.(isset($parts['user']) ? $parts['user'].(isset($parts['pass']) ? ':'.$parts['pass'] : '').'@' : '').$host : null,
-            'path' => isset($parts['path'][0]) ? $parts['path'] : null,
-            'query' => isset($parts['query']) ? '?'.$parts['query'] : null,
-            'fragment' => isset($parts['fragment']) ? '#'.$parts['fragment'] : null,
-        ];
     }
 
     /**
@@ -582,48 +619,6 @@ trait HttpClientTrait
     }
 
     /**
-     * Merges and encodes a query array with a query string.
-     *
-     * @throws InvalidArgumentException When an invalid query-string value is passed
-     */
-    private static function mergeQueryString(?string $queryString, array $queryArray, bool $replace): ?string
-    {
-        if (!$queryArray) {
-            return $queryString;
-        }
-
-        $query = [];
-
-        if (null !== $queryString) {
-            foreach (explode('&', $queryString) as $v) {
-                if ('' !== $v) {
-                    $k = urldecode(explode('=', $v, 2)[0]);
-                    $query[$k] = (isset($query[$k]) ? $query[$k].'&' : '').$v;
-                }
-            }
-        }
-
-        if ($replace) {
-            foreach ($queryArray as $k => $v) {
-                if (null === $v) {
-                    unset($query[$k]);
-                }
-            }
-        }
-
-        $queryString = http_build_query($queryArray, '', '&', \PHP_QUERY_RFC3986);
-        $queryArray = [];
-
-        if ($queryString) {
-            foreach (explode('&', $queryString) as $v) {
-                $queryArray[rawurldecode(explode('=', $v, 2)[0])] = $v;
-            }
-        }
-
-        return implode('&', $replace ? array_replace($query, $queryArray) : ($query + $queryArray));
-    }
-
-    /**
      * Loads proxy configuration from the same environment variables as curl when no proxy is explicitly set.
      */
     private static function getProxy(?string $proxy, array $url, ?string $noProxy): ?array
@@ -648,9 +643,9 @@ trait HttpClientTrait
         }
 
         if ('http' === $proxy['scheme']) {
-            $proxyUrl = 'tcp://'.$proxy['host'].':'.($proxy['port'] ?? '80');
+            $proxyUrl = 'tcp://' . $proxy['host'] . ':' . ($proxy['port'] ?? '80');
         } elseif ('https' === $proxy['scheme']) {
-            $proxyUrl = 'ssl://'.$proxy['host'].':'.($proxy['port'] ?? '443');
+            $proxyUrl = 'ssl://' . $proxy['host'] . ':' . ($proxy['port'] ?? '443');
         } else {
             throw new TransportException(sprintf('Unsupported proxy scheme "%s": "http" or "https" expected.', $proxy['scheme']));
         }
@@ -660,7 +655,7 @@ trait HttpClientTrait
 
         return [
             'url' => $proxyUrl,
-            'auth' => isset($proxy['user']) ? 'Basic '.base64_encode(rawurldecode($proxy['user']).':'.rawurldecode($proxy['pass'] ?? '')) : null,
+            'auth' => isset($proxy['user']) ? 'Basic ' . base64_encode(rawurldecode($proxy['user']) . ':' . rawurldecode($proxy['pass'] ?? '')) : null,
             'no_proxy' => $noProxy,
         ];
     }
@@ -676,5 +671,16 @@ trait HttpClientTrait
         }
 
         return $contentType && preg_match('#^(?:text/|application/(?:.+\+)?(?:json|xml)$)#i', $contentType);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withOptions(array $options): static
+    {
+        $clone = clone $this;
+        $clone->defaultOptions = self::mergeDefaultOptions($options, $this->defaultOptions);
+
+        return $clone;
     }
 }

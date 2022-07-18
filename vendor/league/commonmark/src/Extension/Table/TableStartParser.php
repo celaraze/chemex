@@ -35,7 +35,7 @@ final class TableStartParser implements BlockStartParserInterface
             return BlockStart::none();
         }
 
-        $lines    = \explode("\n", $paragraph);
+        $lines = \explode("\n", $paragraph);
         $lastLine = \array_pop($lines);
 
         $headerCells = TableParser::split($lastLine);
@@ -70,10 +70,10 @@ final class TableStartParser implements BlockStartParserInterface
     private static function parseSeparator(Cursor $cursor): array
     {
         $columns = [];
-        $pipes   = 0;
-        $valid   = false;
+        $pipes = 0;
+        $valid = false;
 
-        while (! $cursor->isAtEnd()) {
+        while (!$cursor->isAtEnd()) {
             switch ($c = $cursor->getCurrentCharacter()) {
                 case '|':
                     $cursor->advanceBy(1);
@@ -93,7 +93,7 @@ final class TableStartParser implements BlockStartParserInterface
                         return [];
                     }
 
-                    $left  = false;
+                    $left = false;
                     $right = false;
                     if ($c === ':') {
                         $left = true;
@@ -125,7 +125,7 @@ final class TableStartParser implements BlockStartParserInterface
             }
         }
 
-        if (! $valid) {
+        if (!$valid) {
             return [];
         }
 

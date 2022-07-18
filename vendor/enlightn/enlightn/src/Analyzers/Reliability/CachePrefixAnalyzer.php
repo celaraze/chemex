@@ -38,19 +38,19 @@ class CachePrefixAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your cache prefix is too generic and may result in collisions with other apps "
-            ."that share the same cache servers. In general, this should be fixed if you set "
-            ."a non-generic app name in your .env file.";
+            . "that share the same cache servers. In general, this should be fixed if you set "
+            . "a non-generic app name in your .env file.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
     {
-        if (! ($prefix = $config->get('cache.prefix')) ||
+        if (!($prefix = $config->get('cache.prefix')) ||
             $prefix == 'laravel_cache') {
             $this->recordError('cache', 'prefix');
         }

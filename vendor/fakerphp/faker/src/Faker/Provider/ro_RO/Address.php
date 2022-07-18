@@ -105,19 +105,9 @@ class Address extends \Faker\Provider\Address
         '{{streetAddress}}, {{city}}, {{county}}, CP {{postcode}}',
     ];
 
-    public function cityName()
-    {
-        return static::randomElement(static::$cityNames);
-    }
-
     public static function block()
     {
         return static::numerify(static::randomElement(static::$block));
-    }
-
-    public function blockSegment()
-    {
-        return static::randomElement(static::$blockSegment);
     }
 
     public static function floor()
@@ -128,6 +118,16 @@ class Address extends \Faker\Provider\Address
     public static function apartmentNumber()
     {
         return static::numerify(static::randomElement(static::$apartmentNumber));
+    }
+
+    public function cityName()
+    {
+        return static::randomElement(static::$cityNames);
+    }
+
+    public function blockSegment()
+    {
+        return static::randomElement(static::$blockSegment);
     }
 
     public function streetPrefix()

@@ -16,7 +16,6 @@ use Doctrine\Common\Cache\CacheProvider;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\DoctrineAdapter as SymfonyDoctrineAdapter;
 use Symfony\Contracts\Service\ResetInterface;
-
 use function rawurlencode;
 
 /**
@@ -28,6 +27,11 @@ final class DoctrineProvider extends CacheProvider
 {
     /** @var CacheItemPoolInterface */
     private $pool;
+
+    private function __construct(CacheItemPoolInterface $pool)
+    {
+        $this->pool = $pool;
+    }
 
     public static function wrap(CacheItemPoolInterface $pool): Cache
     {
@@ -45,11 +49,6 @@ final class DoctrineProvider extends CacheProvider
         }
 
         return new self($pool);
-    }
-
-    private function __construct(CacheItemPoolInterface $pool)
-    {
-        $this->pool = $pool;
     }
 
     /** @internal */

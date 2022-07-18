@@ -16,4 +16,4 @@
  * - Ash
  * - harpreetkhalsagtbit
  */
-return require __DIR__.'/pa.php';
+return require __DIR__ . '/pa.php';

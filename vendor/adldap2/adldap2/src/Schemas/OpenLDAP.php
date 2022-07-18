@@ -39,17 +39,17 @@ class OpenLDAP extends Schema
     /**
      * {@inheritdoc}
      */
-    public function filterDisabled()
+    public function lockoutTime()
     {
-        return sprintf('(%s=*)', $this->lockoutTime());
+        return 'pwdAccountLockedTime';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function lockoutTime()
+    public function filterDisabled()
     {
-        return 'pwdAccountLockedTime';
+        return sprintf('(%s=*)', $this->lockoutTime());
     }
 
     /**

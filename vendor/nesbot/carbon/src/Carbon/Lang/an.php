@@ -12,4 +12,4 @@
 /*
  * Unknown default region, use the first alphabetically.
  */
-return require __DIR__.'/an_ES.php';
+return require __DIR__ . '/an_ES.php';

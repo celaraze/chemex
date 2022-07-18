@@ -18,12 +18,12 @@ class WebUploader
         /* @var Uploader $webUploader */
         $webUploader = app('admin.web-uploader');
 
-        if (! $webUploader->isUploading()) {
+        if (!$webUploader->isUploading()) {
             return $next($request);
         }
 
         try {
-            if (! $file = $webUploader->getUploadedFile()) {
+            if (!$file = $webUploader->getUploadedFile()) {
                 // 分块未上传完毕，返回已合并成功信息
                 return Admin::json(['merge' => 1])->send();
             }

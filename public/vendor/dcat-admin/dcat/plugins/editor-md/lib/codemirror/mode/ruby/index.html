@@ -2,33 +2,39 @@
 
 <title>CodeMirror: Ruby mode</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="../../doc/docs.css">
+<link href="../../doc/docs.css" rel=stylesheet>
 
-<link rel="stylesheet" href="../../lib/codemirror.css">
+<link href="../../lib/codemirror.css" rel="stylesheet">
 <script src="../../lib/codemirror.js"></script>
 <script src="../../addon/edit/matchbrackets.js"></script>
 <script src="ruby.js"></script>
 <style>
-      .CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}
-      .cm-s-default span.cm-arrow { color: red; }
-    </style>
-<div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+    .CodeMirror {
+        border-top: 1px solid black;
+        border-bottom: 1px solid black;
+    }
 
-  <ul>
-    <li><a href="../../index.html">Home</a>
-    <li><a href="../../doc/manual.html">Manual</a>
-    <li><a href="https://github.com/codemirror/codemirror">Code</a>
-  </ul>
-  <ul>
-    <li><a href="../index.html">Language modes</a>
-    <li><a class=active href="#">Ruby</a>
-  </ul>
+    .cm-s-default span.cm-arrow {
+        color: red;
+    }
+</style>
+<div id=nav>
+    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+
+    <ul>
+        <li><a href="../../index.html">Home</a>
+        <li><a href="../../doc/manual.html">Manual</a>
+        <li><a href="https://github.com/codemirror/codemirror">Code</a>
+    </ul>
+    <ul>
+        <li><a href="../index.html">Language modes</a>
+        <li><a class=active href="#">Ruby</a>
+    </ul>
 </div>
 
 <article>
-<h2>Ruby mode</h2>
-<form><textarea id="code" name="code">
+    <h2>Ruby mode</h2>
+    <form><textarea id="code" name="code">
 # Code from http://sandbox.mc.edu/~bennet/ruby/code/poly_rb.html
 #
 # This program evaluates polynomials.  It first asks for the coefficients
@@ -63,7 +69,7 @@ def readints(prompt)
     print prompt
     line = readline.chomp
     raise EOFError.new if line == 'quit' # You can also use a real EOF.
-            
+
     # Go through each item on the line, converting each one and adding it
     # to retval.
     retval = [ ]
@@ -112,16 +118,16 @@ def polystr(p)
     result = (if p[0][0] < 0 then "-" else "" end) + term_to_str(*p[0])
 
     # Convert the rest of the terms, in each case adding the appropriate
-    # + or - separating them.  
+    # + or - separating them.
     for term in p[1...p.length]
         # Add the separator then the rep. of the term.
-        result += (if term[0] < 0 then " - " else " + " end) + 
+        result += (if term[0] < 0 then " - " else " + " end) +
                 term_to_str(*term)
     end
 
     return result
 end
-        
+
 #
 # Run until some kind of endfile.
 begin
@@ -168,16 +174,16 @@ else
 end
 </textarea></form>
     <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        mode: "text/x-ruby",
-        matchBrackets: true,
-        indentUnit: 4
-      });
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            mode: "text/x-ruby",
+            matchBrackets: true,
+            indentUnit: 4
+        });
     </script>
 
     <p><strong>MIME types defined:</strong> <code>text/x-ruby</code>.</p>
 
     <p>Development of the CodeMirror Ruby mode was kindly sponsored
-    by <a href="http://ubalo.com/">Ubalo</a>.</p>
+        by <a href="http://ubalo.com/">Ubalo</a>.</p>
 
-  </article>
+</article>

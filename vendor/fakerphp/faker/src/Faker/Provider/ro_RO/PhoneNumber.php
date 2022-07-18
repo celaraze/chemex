@@ -40,16 +40,6 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
         ],
     ];
 
-    /**
-     * @see http://en.wikipedia.org/wiki/Telephone_numbers_in_Romania#Last_years
-     */
-    public function phoneNumber()
-    {
-        $type = static::randomElement(array_keys(static::$normalFormats));
-
-        return static::numerify(static::randomElement(static::$normalFormats[$type]));
-    }
-
     public static function tollFreePhoneNumber()
     {
         return static::numerify(static::randomElement(static::$specialFormats['toll-free']));
@@ -58,5 +48,15 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     public static function premiumRatePhoneNumber()
     {
         return static::numerify(static::randomElement(static::$specialFormats['premium-rate']));
+    }
+
+    /**
+     * @see http://en.wikipedia.org/wiki/Telephone_numbers_in_Romania#Last_years
+     */
+    public function phoneNumber()
+    {
+        $type = static::randomElement(array_keys(static::$normalFormats));
+
+        return static::numerify(static::randomElement(static::$normalFormats[$type]));
     }
 }

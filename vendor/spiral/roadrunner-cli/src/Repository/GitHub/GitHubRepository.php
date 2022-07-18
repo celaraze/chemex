@@ -145,7 +145,7 @@ final class GitHubRepository implements RepositoryInterface
         $headers = $response->getHeaders();
         $link = $headers['link'] ?? [];
 
-        if (! isset($link[0])) {
+        if (!isset($link[0])) {
             return false;
         }
 

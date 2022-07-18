@@ -22,7 +22,7 @@ class Runtime
      */
     public function hasConstant(string $constant, ?string $class = null): bool
     {
-        return defined(ltrim($class.'::'.$constant, ':'));
+        return defined(ltrim($class . '::' . $constant, ':'));
     }
 
     /**
@@ -33,7 +33,7 @@ class Runtime
      */
     public function getConstant(string $constant, ?string $class = null)
     {
-        return constant(ltrim($class.'::'.$constant, ':'));
+        return constant(ltrim($class . '::' . $constant, ':'));
     }
 
     /**

@@ -50,15 +50,25 @@ class BatchModification
     /**
      * Constructor.
      *
-     * @param string|null     $attribute
+     * @param string|null $attribute
      * @param string|int|null $type
-     * @param array           $values
+     * @param array $values
      */
     public function __construct($attribute = null, $type = null, $values = [])
     {
         $this->setAttribute($attribute)
             ->setType($type)
             ->setValues($values);
+    }
+
+    /**
+     * Returns the original value of the attribute before modification.
+     *
+     * @return mixed
+     */
+    public function getOriginal()
+    {
+        return $this->original;
     }
 
     /**
@@ -76,13 +86,13 @@ class BatchModification
     }
 
     /**
-     * Returns the original value of the attribute before modification.
+     * Returns the attribute of the modification.
      *
-     * @return mixed
+     * @return string
      */
-    public function getOriginal()
+    public function getAttribute()
     {
-        return $this->original;
+        return $this->attribute;
     }
 
     /**
@@ -100,13 +110,13 @@ class BatchModification
     }
 
     /**
-     * Returns the attribute of the modification.
+     * Returns the values of the modification.
      *
-     * @return string
+     * @return array
      */
-    public function getAttribute()
+    public function getValues()
     {
-        return $this->attribute;
+        return $this->values;
     }
 
     /**
@@ -122,20 +132,20 @@ class BatchModification
             // We need to make sure all values given to a batch modification are
             // strings, otherwise we'll receive an LDAP exception when
             // we try to process the modification.
-            return (string) $value;
+            return (string)$value;
         }, $values);
 
         return $this;
     }
 
     /**
-     * Returns the values of the modification.
+     * Returns the type of the modification.
      *
-     * @return array
+     * @return int
      */
-    public function getValues()
+    public function getType()
     {
-        return $this->values;
+        return $this->type;
     }
 
     /**
@@ -157,16 +167,6 @@ class BatchModification
     }
 
     /**
-     * Returns the type of the modification.
-     *
-     * @return int
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
      * Determines if the batch modification
      * is valid in its current state.
      *
@@ -175,6 +175,37 @@ class BatchModification
     public function isValid()
     {
         return !is_null($this->get());
+    }
+
+    /**
+     * Returns the built batch modification array.
+     *
+     * @return array|null
+     */
+    public function get()
+    {
+        switch ($this->type) {
+            case LDAP_MODIFY_BATCH_REMOVE_ALL:
+                // A values key cannot be provided when
+                // a remove all type is selected.
+                return [
+                    static::KEY_ATTRIB => $this->attribute,
+                    static::KEY_MODTYPE => $this->type,
+                ];
+            case LDAP_MODIFY_BATCH_REMOVE:
+                // Fallthrough.
+            case LDAP_MODIFY_BATCH_ADD:
+                // Fallthrough.
+            case LDAP_MODIFY_BATCH_REPLACE:
+                return [
+                    static::KEY_ATTRIB => $this->attribute,
+                    static::KEY_MODTYPE => $this->type,
+                    static::KEY_VALUES => $this->values,
+                ];
+            default:
+                // If the modtype isn't recognized, we'll return null.
+                return;
+        }
     }
 
     /**
@@ -218,37 +249,6 @@ class BatchModification
         }
 
         return $this;
-    }
-
-    /**
-     * Returns the built batch modification array.
-     *
-     * @return array|null
-     */
-    public function get()
-    {
-        switch ($this->type) {
-            case LDAP_MODIFY_BATCH_REMOVE_ALL:
-                // A values key cannot be provided when
-                // a remove all type is selected.
-                return [
-                    static::KEY_ATTRIB  => $this->attribute,
-                    static::KEY_MODTYPE => $this->type,
-                ];
-            case LDAP_MODIFY_BATCH_REMOVE:
-                // Fallthrough.
-            case LDAP_MODIFY_BATCH_ADD:
-                // Fallthrough.
-            case LDAP_MODIFY_BATCH_REPLACE:
-                return [
-                    static::KEY_ATTRIB  => $this->attribute,
-                    static::KEY_MODTYPE => $this->type,
-                    static::KEY_VALUES  => $this->values,
-                ];
-            default:
-                // If the modtype isn't recognized, we'll return null.
-                return;
-        }
     }
 
     /**

@@ -7,8 +7,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Exporter;
 
+use SebastianBergmann\RecursionContext\Context;
+use SplObjectStorage;
 use function bin2hex;
 use function count;
 use function function_exists;
@@ -31,8 +34,6 @@ use function str_replace;
 use function strlen;
 use function substr;
 use function var_export;
-use SebastianBergmann\RecursionContext\Context;
-use SplObjectStorage;
 
 /**
  * A nifty utility for visualizing PHP variables.
@@ -48,36 +49,14 @@ use SplObjectStorage;
 class Exporter
 {
     /**
-     * Exports a value as a string.
-     *
-     * The output of this method is similar to the output of print_r(), but
-     * improved in various aspects:
-     *
-     *  - NULL is rendered as "null" (instead of "")
-     *  - TRUE is rendered as "true" (instead of "1")
-     *  - FALSE is rendered as "false" (instead of "")
-     *  - Strings are always quoted with single quotes
-     *  - Carriage returns and newlines are normalized to \n
-     *  - Recursion and repeated rendering is treated properly
-     *
-     * @param int $indentation The indentation level of the 2nd+ line
-     *
-     * @return string
-     */
-    public function export($value, $indentation = 0)
-    {
-        return $this->recursiveExport($value, $indentation);
-    }
-
-    /**
      * @param array<mixed> $data
-     * @param Context      $context
+     * @param Context $context
      *
      * @return string
      */
     public function shortenedRecursiveExport(&$data, Context $context = null)
     {
-        $result   = [];
+        $result = [];
         $exporter = new self();
 
         if (!$context) {
@@ -155,64 +134,33 @@ class Exporter
     }
 
     /**
-     * Converts an object to an array containing all of its private, protected
-     * and public properties.
+     * Exports a value as a string.
      *
-     * @return array
+     * The output of this method is similar to the output of print_r(), but
+     * improved in various aspects:
+     *
+     *  - NULL is rendered as "null" (instead of "")
+     *  - TRUE is rendered as "true" (instead of "1")
+     *  - FALSE is rendered as "false" (instead of "")
+     *  - Strings are always quoted with single quotes
+     *  - Carriage returns and newlines are normalized to \n
+     *  - Recursion and repeated rendering is treated properly
+     *
+     * @param int $indentation The indentation level of the 2nd+ line
+     *
+     * @return string
      */
-    public function toArray($value)
+    public function export($value, $indentation = 0)
     {
-        if (!is_object($value)) {
-            return (array) $value;
-        }
-
-        $array = [];
-
-        foreach ((array) $value as $key => $val) {
-            // Exception traces commonly reference hundreds to thousands of
-            // objects currently loaded in memory. Including them in the result
-            // has a severe negative performance impact.
-            if ("\0Error\0trace" === $key || "\0Exception\0trace" === $key) {
-                continue;
-            }
-
-            // properties are transformed to keys in the following way:
-            // private   $property => "\0Classname\0property"
-            // protected $property => "\0*\0property"
-            // public    $property => "property"
-            if (preg_match('/^\0.+\0(.+)$/', (string) $key, $matches)) {
-                $key = $matches[1];
-            }
-
-            // See https://github.com/php/php-src/commit/5721132
-            if ($key === "\0gcdata") {
-                continue;
-            }
-
-            $array[$key] = $val;
-        }
-
-        // Some internal classes like SplObjectStorage don't work with the
-        // above (fast) mechanism nor with reflection in Zend.
-        // Format the output similarly to print_r() in this case
-        if ($value instanceof SplObjectStorage) {
-            foreach ($value as $key => $val) {
-                $array[spl_object_hash($val)] = [
-                    'obj' => $val,
-                    'inf' => $value->getInfo(),
-                ];
-            }
-        }
-
-        return $array;
+        return $this->recursiveExport($value, $indentation);
     }
 
     /**
      * Recursive implementation of export.
      *
-     * @param mixed                                       $value       The value to export
-     * @param int                                         $indentation The indentation level of the 2nd+ line
-     * @param \SebastianBergmann\RecursionContext\Context $processed   Previously processed objects
+     * @param mixed $value The value to export
+     * @param int $indentation The indentation level of the 2nd+ line
+     * @param \SebastianBergmann\RecursionContext\Context $processed Previously processed objects
      *
      * @return string
      *
@@ -232,7 +180,7 @@ class Exporter
             return 'false';
         }
 
-        if (is_float($value) && (float) ((int) $value) === $value) {
+        if (is_float($value) && (float)((int)$value) === $value) {
             return "{$value}.0";
         }
 
@@ -255,16 +203,16 @@ class Exporter
             }
 
             return "'" .
-            str_replace(
-                '<lf>',
-                "\n",
                 str_replace(
-                    ["\r\n", "\n\r", "\r", "\n"],
-                    ['\r\n<lf>', '\n\r<lf>', '\r<lf>', '\n<lf>'],
-                    $value
-                )
-            ) .
-            "'";
+                    '<lf>',
+                    "\n",
+                    str_replace(
+                        ["\r\n", "\n\r", "\r", "\n"],
+                        ['\r\n<lf>', '\n\r<lf>', '\r<lf>', '\n<lf>'],
+                        $value
+                    )
+                ) .
+                "'";
         }
 
         $whitespace = str_repeat(' ', 4 * $indentation);
@@ -278,8 +226,8 @@ class Exporter
                 return 'Array &' . $key;
             }
 
-            $array  = $value;
-            $key    = $processed->add($value);
+            $array = $value;
+            $key = $processed->add($value);
             $values = '';
 
             if (count($array) > 0) {
@@ -305,9 +253,9 @@ class Exporter
                 return sprintf('%s Object &%s', $class, $hash);
             }
 
-            $hash   = $processed->add($value);
+            $hash = $processed->add($value);
             $values = '';
-            $array  = $this->toArray($value);
+            $array = $this->toArray($value);
 
             if (count($array) > 0) {
                 foreach ($array as $k => $v) {
@@ -326,5 +274,58 @@ class Exporter
         }
 
         return var_export($value, true);
+    }
+
+    /**
+     * Converts an object to an array containing all of its private, protected
+     * and public properties.
+     *
+     * @return array
+     */
+    public function toArray($value)
+    {
+        if (!is_object($value)) {
+            return (array)$value;
+        }
+
+        $array = [];
+
+        foreach ((array)$value as $key => $val) {
+            // Exception traces commonly reference hundreds to thousands of
+            // objects currently loaded in memory. Including them in the result
+            // has a severe negative performance impact.
+            if ("\0Error\0trace" === $key || "\0Exception\0trace" === $key) {
+                continue;
+            }
+
+            // properties are transformed to keys in the following way:
+            // private   $property => "\0Classname\0property"
+            // protected $property => "\0*\0property"
+            // public    $property => "property"
+            if (preg_match('/^\0.+\0(.+)$/', (string)$key, $matches)) {
+                $key = $matches[1];
+            }
+
+            // See https://github.com/php/php-src/commit/5721132
+            if ($key === "\0gcdata") {
+                continue;
+            }
+
+            $array[$key] = $val;
+        }
+
+        // Some internal classes like SplObjectStorage don't work with the
+        // above (fast) mechanism nor with reflection in Zend.
+        // Format the output similarly to print_r() in this case
+        if ($value instanceof SplObjectStorage) {
+            foreach ($value as $key => $val) {
+                $array[spl_object_hash($val)] = [
+                    'obj' => $val,
+                    'inf' => $value->getInfo(),
+                ];
+            }
+        }
+
+        return $array;
     }
 }

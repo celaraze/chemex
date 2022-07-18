@@ -18,7 +18,7 @@ if (!class_exists(LazyTranslator::class, false)) {
          * Returns the translation.
          *
          * @param string|null $id
-         * @param array       $parameters
+         * @param array $parameters
          * @param string|null $domain
          * @param string|null $locale
          *

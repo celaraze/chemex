@@ -10,28 +10,26 @@ use Illuminate\Support\Collection;
 class Group extends AbstractFilter
 {
     /**
+     * Input value from presenter.
+     *
+     * @var mixed
+     */
+    public $input;
+    /**
      * @var \Closure|null
      */
     protected $builder;
-
     /**
      * @var string
      */
     protected $name;
 
     /**
-     * Input value from presenter.
-     *
-     * @var mixed
-     */
-    public $input;
-
-    /**
      * Group constructor.
      *
-     * @param  string  $column
-     * @param  string  $label
-     * @param  \Closure|null  $builder
+     * @param string $column
+     * @param string $label
+     * @param \Closure|null $builder
      */
     public function __construct($column, \Closure $builder = null, $label = '')
     {
@@ -41,7 +39,7 @@ class Group extends AbstractFilter
     }
 
     /**
-     * @param  Filter  $filter
+     * @param Filter $filter
      */
     public function setParent(Filter $filter)
     {
@@ -60,26 +58,21 @@ class Group extends AbstractFilter
     }
 
     /**
-     * Join a query to group.
+     * Filter out `not equal` records.
      *
-     * @param  string  $label
-     * @param  array  $condition
-     * @return $this
+     * @param string $label
+     * @return Group
      */
-    protected function joinGroup($label, array $condition)
+    public function notEqual($label = '')
     {
-        $this->group->push(
-            compact('label', 'condition')
-        );
-
-        return $this;
+        return $this->equal($label, '!=');
     }
 
     /**
      * Filter out `equal` records.
      *
-     * @param  string  $label
-     * @param  string  $operator
+     * @param string $label
+     * @param string $operator
      * @return Group
      */
     public function equal($label = '', $operator = '=')
@@ -92,20 +85,25 @@ class Group extends AbstractFilter
     }
 
     /**
-     * Filter out `not equal` records.
+     * Join a query to group.
      *
-     * @param  string  $label
-     * @return Group
+     * @param string $label
+     * @param array $condition
+     * @return $this
      */
-    public function notEqual($label = '')
+    protected function joinGroup($label, array $condition)
     {
-        return $this->equal($label, '!=');
+        $this->group->push(
+            compact('label', 'condition')
+        );
+
+        return $this;
     }
 
     /**
      * Filter out `greater then` records.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function gt($label = '')
@@ -116,7 +114,7 @@ class Group extends AbstractFilter
     /**
      * Filter out `less then` records.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function lt($label = '')
@@ -127,7 +125,7 @@ class Group extends AbstractFilter
     /**
      * Filter out `not less then` records.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function nlt($label = '')
@@ -138,7 +136,7 @@ class Group extends AbstractFilter
     /**
      * Filter out `not greater than` records.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function ngt($label = '')
@@ -149,7 +147,7 @@ class Group extends AbstractFilter
     /**
      * Filter out records that match the regex.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function match($label = '')
@@ -162,8 +160,8 @@ class Group extends AbstractFilter
     /**
      * Specify a where query.
      *
-     * @param  string  $label
-     * @param  \Closure  $builder
+     * @param string $label
+     * @param \Closure $builder
      * @return Group
      */
     public function where($label, \Closure $builder)
@@ -176,10 +174,21 @@ class Group extends AbstractFilter
     }
 
     /**
+     * Alias of `like` method.
+     *
+     * @param string $label
+     * @return Group
+     */
+    public function contains($label = '')
+    {
+        return $this->like($label);
+    }
+
+    /**
      * Specify a where like query.
      *
-     * @param  string  $label
-     * @param  string  $operator
+     * @param string $label
+     * @param string $operator
      * @return Group
      */
     public function like($label = '', $operator = 'like')
@@ -192,20 +201,9 @@ class Group extends AbstractFilter
     }
 
     /**
-     * Alias of `like` method.
-     *
-     * @param  string  $label
-     * @return Group
-     */
-    public function contains($label = '')
-    {
-        return $this->like($label);
-    }
-
-    /**
      * Specify a where ilike query.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function ilike($label = '')
@@ -216,7 +214,7 @@ class Group extends AbstractFilter
     /**
      * Filter out records which starts with input query.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function startWith($label = '')
@@ -231,7 +229,7 @@ class Group extends AbstractFilter
     /**
      * Filter out records which ends with input query.
      *
-     * @param  string  $label
+     * @param string $label
      * @return Group
      */
     public function endWith($label = '')
@@ -250,7 +248,7 @@ class Group extends AbstractFilter
     {
         $value = Arr::get($inputs, $this->column);
 
-        if (! isset($value)) {
+        if (!isset($value)) {
             return;
         }
 
@@ -268,21 +266,6 @@ class Group extends AbstractFilter
     }
 
     /**
-     * Inject script to current page.
-     */
-    protected function injectScript()
-    {
-        $script = <<<JS
-$(".{$this->name} li a").on('click', function(){
-    $(".{$this->name}-label").text($(this).text());
-    $(".{$this->name}-operation").val($(this).data('index'));
-});
-JS;
-
-        Admin::script($script);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function defaultVariables()
@@ -293,7 +276,7 @@ JS;
 
         return array_merge(parent::defaultVariables(), [
             'group_name' => $this->name,
-            'default'    => $default,
+            'default' => $default,
         ]);
     }
 
@@ -309,5 +292,20 @@ JS;
         }
 
         return parent::render();
+    }
+
+    /**
+     * Inject script to current page.
+     */
+    protected function injectScript()
+    {
+        $script = <<<JS
+$(".{$this->name} li a").on('click', function(){
+    $(".{$this->name}-label").text($(this).text());
+    $(".{$this->name}-operation").val($(this).data('index'));
+});
+JS;
+
+        Admin::script($script);
     }
 }

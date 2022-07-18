@@ -1,13 +1,9 @@
 <?php
+
 namespace Hamcrest\Type;
 
 class IsIntegerTest extends \Hamcrest\AbstractMatcherTest
 {
-
-    protected function createMatcher()
-    {
-        return \Hamcrest\Type\IsInteger::integerValue();
-    }
 
     public function testEvaluatesToTrueIfArgumentMatchesType()
     {
@@ -32,5 +28,10 @@ class IsIntegerTest extends \Hamcrest\AbstractMatcherTest
     {
         $this->assertMismatchDescription('was null', integerValue(), null);
         $this->assertMismatchDescription('was a string "foo"', integerValue(), 'foo');
+    }
+
+    protected function createMatcher()
+    {
+        return \Hamcrest\Type\IsInteger::integerValue();
     }
 }

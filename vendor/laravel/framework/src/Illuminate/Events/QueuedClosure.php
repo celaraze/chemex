@@ -45,7 +45,7 @@ class QueuedClosure
     /**
      * Create a new queued closure event listener resolver.
      *
-     * @param  \Closure  $closure
+     * @param \Closure $closure
      * @return void
      */
     public function __construct(Closure $closure)
@@ -54,48 +54,9 @@ class QueuedClosure
     }
 
     /**
-     * Set the desired connection for the job.
-     *
-     * @param  string|null  $connection
-     * @return $this
-     */
-    public function onConnection($connection)
-    {
-        $this->connection = $connection;
-
-        return $this;
-    }
-
-    /**
-     * Set the desired queue for the job.
-     *
-     * @param  string|null  $queue
-     * @return $this
-     */
-    public function onQueue($queue)
-    {
-        $this->queue = $queue;
-
-        return $this;
-    }
-
-    /**
-     * Set the desired delay in seconds for the job.
-     *
-     * @param  \DateTimeInterface|\DateInterval|int|null  $delay
-     * @return $this
-     */
-    public function delay($delay)
-    {
-        $this->delay = $delay;
-
-        return $this;
-    }
-
-    /**
      * Specify a callback that should be invoked if the queued listener job fails.
      *
-     * @param  \Closure  $closure
+     * @param \Closure $closure
      * @return $this
      */
     public function catch(Closure $closure)
@@ -121,5 +82,44 @@ class QueuedClosure
                 })->all(),
             ]))->onConnection($this->connection)->onQueue($this->queue)->delay($this->delay);
         };
+    }
+
+    /**
+     * Set the desired delay in seconds for the job.
+     *
+     * @param \DateTimeInterface|\DateInterval|int|null $delay
+     * @return $this
+     */
+    public function delay($delay)
+    {
+        $this->delay = $delay;
+
+        return $this;
+    }
+
+    /**
+     * Set the desired queue for the job.
+     *
+     * @param string|null $queue
+     * @return $this
+     */
+    public function onQueue($queue)
+    {
+        $this->queue = $queue;
+
+        return $this;
+    }
+
+    /**
+     * Set the desired connection for the job.
+     *
+     * @param string|null $connection
+     * @return $this
+     */
+    public function onConnection($connection)
+    {
+        $this->connection = $connection;
+
+        return $this;
     }
 }

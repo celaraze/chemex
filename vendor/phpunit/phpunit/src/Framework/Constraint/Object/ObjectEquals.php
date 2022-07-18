@@ -7,10 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
-use function get_class;
-use function is_object;
 use PHPUnit\Framework\ActualValueIsNotAnObjectException;
 use PHPUnit\Framework\ComparisonMethodDoesNotAcceptParameterTypeException;
 use PHPUnit\Framework\ComparisonMethodDoesNotDeclareBoolReturnTypeException;
@@ -19,6 +18,8 @@ use PHPUnit\Framework\ComparisonMethodDoesNotDeclareParameterTypeException;
 use PHPUnit\Framework\ComparisonMethodDoesNotExistException;
 use ReflectionNamedType;
 use ReflectionObject;
+use function get_class;
+use function is_object;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -38,12 +39,7 @@ final class ObjectEquals extends Constraint
     public function __construct(object $object, string $method = 'equals')
     {
         $this->expected = $object;
-        $this->method   = $method;
-    }
-
-    public function toString(): string
-    {
-        return 'two objects are equal';
+        $this->method = $method;
     }
 
     /**
@@ -147,5 +143,10 @@ final class ObjectEquals extends Constraint
     protected function failureDescription($other): string
     {
         return $this->toString();
+    }
+
+    public function toString(): string
+    {
+        return 'two objects are equal';
     }
 }

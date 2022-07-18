@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-return array_replace_recursive(require __DIR__.'/shi.php', [
+return array_replace_recursive(require __DIR__ . '/shi.php', [
     'meridiem' => ['tifawt', 'tadggʷat'],
     'weekdays' => ['asamas', 'aynas', 'asinas', 'akṛas', 'akwas', 'asimwas', 'asiḍyas'],
     'weekdays_short' => ['asa', 'ayn', 'asi', 'akṛ', 'akw', 'asim', 'asiḍ'],

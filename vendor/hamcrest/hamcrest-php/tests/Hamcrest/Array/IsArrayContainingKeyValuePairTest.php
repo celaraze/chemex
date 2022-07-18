@@ -1,4 +1,5 @@
 <?php
+
 namespace Hamcrest\Arrays;
 
 use Hamcrest\AbstractMatcherTest;
@@ -6,14 +7,9 @@ use Hamcrest\AbstractMatcherTest;
 class IsArrayContainingKeyValuePairTest extends AbstractMatcherTest
 {
 
-    protected function createMatcher()
-    {
-        return IsArrayContainingKeyValuePair::hasKeyValuePair('irrelevant', 'irrelevant');
-    }
-
     public function testMatchesArrayContainingMatchingKeyAndValue()
     {
-        $array = array('a'=>1, 'b'=>2);
+        $array = array('a' => 1, 'b' => 2);
 
         $this->assertMatches(hasKeyValuePair(equalTo('a'), equalTo(1)), $array, 'matcherA');
         $this->assertMatches(hasKeyValuePair(equalTo('b'), equalTo(2)), $array, 'matcherB');
@@ -32,5 +28,10 @@ class IsArrayContainingKeyValuePairTest extends AbstractMatcherTest
     public function testHasReadableDescription()
     {
         $this->assertDescription('array containing ["a" => <2>]', hasKeyValuePair(equalTo('a'), equalTo(2)));
+    }
+
+    protected function createMatcher()
+    {
+        return IsArrayContainingKeyValuePair::hasKeyValuePair('irrelevant', 'irrelevant');
     }
 }

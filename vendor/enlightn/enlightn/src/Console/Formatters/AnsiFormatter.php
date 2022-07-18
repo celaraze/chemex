@@ -34,11 +34,33 @@ class AnsiFormatter implements Formatter
     public function beforeAnalysis(Command $command)
     {
         $this->setColors($command->getOutput());
-        $command->line(require __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'logo.php');
+        $command->line(require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'logo.php');
         $command->getOutput()->newLine();
         $command->line('Please wait while Enlightn scans your code base...');
 
         $this->compactLines = config('enlightn.compact_lines', true);
+    }
+
+    /**
+     * Set the console colors for Enlightn's logo.
+     *
+     * @param \Illuminate\Console\OutputStyle $output
+     * @return void
+     */
+    protected function setColors(OutputStyle $output)
+    {
+        collect([
+            'e' => 'green',
+            'n' => 'green',
+            'l' => 'green',
+            'i' => 'green',
+            'g' => 'green',
+            'h' => 'green',
+            't' => 'green',
+            'ns' => 'green',
+        ])->each(function ($color, $tag) use ($output) {
+            $output->getFormatter()->setStyle($tag, new OutputFormatterStyle($color));
+        });
     }
 
     /**
@@ -56,16 +78,16 @@ class AnsiFormatter implements Formatter
         if ($this->category !== $result['category']) {
             $command->getOutput()->newLine();
             $command->line('|------------------------------------------');
-            $command->line('| Running '.$result['category'].' Checks');
+            $command->line('| Running ' . $result['category'] . ' Checks');
             $command->line('|------------------------------------------');
         }
 
         $command->getOutput()->newLine();
         $command->getOutput()->write("<fg=yellow>Check {$current}/{$total}: </fg=yellow>");
         $command->getOutput()->write($result['title']);
-        $command->line(' '.$this->getSymbolForStatus($result['status']));
+        $command->line(' ' . $this->getSymbolForStatus($result['status']));
 
-        if (! in_array($result['status'], ['passed', 'skipped'])) {
+        if (!in_array($result['status'], ['passed', 'skipped'])) {
             $error = $result['error'] ?? $result['exception'];
             $command->line("<fg=red>{$error}</fg=red>");
 
@@ -73,7 +95,7 @@ class AnsiFormatter implements Formatter
                 $command->line("<fg=red>{$result['stackTrace']}</fg=red>");
             }
 
-            if (! empty($result['traces'])) {
+            if (!empty($result['traces'])) {
                 $this->formatTraces($command, $result['traces'], $allAnalyzers);
             }
 
@@ -84,17 +106,25 @@ class AnsiFormatter implements Formatter
     }
 
     /**
-     * Called after analysis for printing the final output.
+     * Get the appropriate symbol for the status.
      *
-     * @param \Illuminate\Console\Command $command
-     * @param bool $allAnalyzers
-     * @return void
+     * @param string $status
+     * @return string
      */
-    public function afterAnalysis(Command $command, bool $allAnalyzers)
+    protected function getSymbolForStatus(string $status)
     {
-        if ($allAnalyzers) {
-            $this->printReportCard($command);
+        switch ($status) {
+            case 'passed':
+                return '<fg=green>Passed</fg=green>';
+            case 'failed':
+                return '<fg=red>Failed</fg=red>';
+            case 'skipped':
+                return '<fg=cyan>Not Applicable</fg=cyan>';
+            case 'error':
+                return '<fg=magenta>Exception</fg=magenta>';
         }
+
+        return '';
     }
 
     /**
@@ -107,8 +137,8 @@ class AnsiFormatter implements Formatter
         if ($command->option('details')) {
             collect($traces)->each(function (Trace $trace) use ($command) {
                 $command->line(
-                    "<fg=magenta>At ".$trace->relativePath().", line ".$trace->lineNumber
-                   .(is_null($trace->details) ? "." : (": ".$trace->details))."</fg=magenta>"
+                    "<fg=magenta>At " . $trace->relativePath() . ", line " . $trace->lineNumber
+                    . (is_null($trace->details) ? "." : (": " . $trace->details)) . "</fg=magenta>"
                 );
             });
 
@@ -125,8 +155,8 @@ class AnsiFormatter implements Formatter
             })->toArray();
 
             $command->line(
-                "<fg=magenta>At ".$path.(empty($lineNumbers) ? "" : ": line(s): ")
-                .collect($lineNumbers)->join(', ', ' and ').".</fg=magenta>"
+                "<fg=magenta>At " . $path . (empty($lineNumbers) ? "" : ": line(s): ")
+                . collect($lineNumbers)->join(', ', ' and ') . ".</fg=magenta>"
             );
         });
 
@@ -136,8 +166,22 @@ class AnsiFormatter implements Formatter
 
         if ($count > 5 && $allAnalyzers && $this->compactLines) {
             $command->line("<fg=magenta>And "
-                .($count - 5)
-                ."</fg=magenta> more file(s).");
+                . ($count - 5)
+                . "</fg=magenta> more file(s).");
+        }
+    }
+
+    /**
+     * Called after analysis for printing the final output.
+     *
+     * @param \Illuminate\Console\Command $command
+     * @param bool $allAnalyzers
+     * @return void
+     */
+    public function afterAnalysis(Command $command, bool $allAnalyzers)
+    {
+        if ($allAnalyzers) {
+            $this->printReportCard($command);
         }
     }
 
@@ -180,7 +224,7 @@ class AnsiFormatter implements Formatter
      */
     protected function formatResult(string $status, string $category, array $result)
     {
-        $totalAnalyzersInCategory = (float) collect($result[$category])->filter(function ($_, $status) {
+        $totalAnalyzersInCategory = (float)collect($result[$category])->filter(function ($_, $status) {
             return in_array($status, ['passed', 'failed', 'skipped', 'error']);
         })->sum(function ($count) {
             return $count;
@@ -190,54 +234,10 @@ class AnsiFormatter implements Formatter
             // Avoid division by zero.
             $percentage = 0;
         } else {
-            $percentage = round((float) $result[$category][$status] * 100 / $totalAnalyzersInCategory, 0);
+            $percentage = round((float)$result[$category][$status] * 100 / $totalAnalyzersInCategory, 0);
         }
 
         return $result[$category][$status]
-            .str_pad(" ({$percentage}%)", 7, " ", STR_PAD_LEFT);
-    }
-
-    /**
-     * Set the console colors for Enlightn's logo.
-     *
-     * @param \Illuminate\Console\OutputStyle $output
-     * @return void
-     */
-    protected function setColors(OutputStyle $output)
-    {
-        collect([
-            'e' => 'green',
-            'n' => 'green',
-            'l' => 'green',
-            'i' => 'green',
-            'g' => 'green',
-            'h' => 'green',
-            't' => 'green',
-            'ns' => 'green',
-        ])->each(function ($color, $tag) use ($output) {
-            $output->getFormatter()->setStyle($tag, new OutputFormatterStyle($color));
-        });
-    }
-
-    /**
-     * Get the appropriate symbol for the status.
-     *
-     * @param string $status
-     * @return string
-     */
-    protected function getSymbolForStatus(string $status)
-    {
-        switch ($status) {
-            case 'passed':
-                return '<fg=green>Passed</fg=green>';
-            case 'failed':
-                return '<fg=red>Failed</fg=red>';
-            case 'skipped':
-                return '<fg=cyan>Not Applicable</fg=cyan>';
-            case 'error':
-                return '<fg=magenta>Exception</fg=magenta>';
-        }
-
-        return '';
+            . str_pad(" ({$percentage}%)", 7, " ", STR_PAD_LEFT);
     }
 }

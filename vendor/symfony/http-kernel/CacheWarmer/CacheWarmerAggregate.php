@@ -96,7 +96,7 @@ class CacheWarmerAggregate implements CacheWarmerInterface
                     continue;
                 }
 
-                $preload[] = array_values((array) $warmer->warmUp($cacheDir));
+                $preload[] = array_values((array)$warmer->warmUp($cacheDir));
             }
         } finally {
             if ($collectDeprecations) {

@@ -32,7 +32,9 @@
         "symfony/http-kernel": "<5.4"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Component\\Mailer\\": "" },
+        "psr-4": {
+            "Symfony\\Component\\Mailer\\": ""
+        },
         "exclude-from-classmap": [
             "/Tests/"
         ]

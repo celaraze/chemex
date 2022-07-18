@@ -21,7 +21,7 @@ class ConnectionResolver implements ConnectionResolverInterface
     /**
      * Create a new connection resolver instance.
      *
-     * @param  array<string, \Illuminate\Database\ConnectionInterface>  $connections
+     * @param array<string, \Illuminate\Database\ConnectionInterface> $connections
      * @return void
      */
     public function __construct(array $connections = [])
@@ -32,9 +32,21 @@ class ConnectionResolver implements ConnectionResolverInterface
     }
 
     /**
+     * Add a connection to the resolver.
+     *
+     * @param string $name
+     * @param \Illuminate\Database\ConnectionInterface $connection
+     * @return void
+     */
+    public function addConnection($name, ConnectionInterface $connection)
+    {
+        $this->connections[$name] = $connection;
+    }
+
+    /**
      * Get a database connection instance.
      *
-     * @param  string|null  $name
+     * @param string|null $name
      * @return \Illuminate\Database\ConnectionInterface
      */
     public function connection($name = null)
@@ -44,29 +56,6 @@ class ConnectionResolver implements ConnectionResolverInterface
         }
 
         return $this->connections[$name];
-    }
-
-    /**
-     * Add a connection to the resolver.
-     *
-     * @param  string  $name
-     * @param  \Illuminate\Database\ConnectionInterface  $connection
-     * @return void
-     */
-    public function addConnection($name, ConnectionInterface $connection)
-    {
-        $this->connections[$name] = $connection;
-    }
-
-    /**
-     * Check if a connection has been registered.
-     *
-     * @param  string  $name
-     * @return bool
-     */
-    public function hasConnection($name)
-    {
-        return isset($this->connections[$name]);
     }
 
     /**
@@ -80,9 +69,20 @@ class ConnectionResolver implements ConnectionResolverInterface
     }
 
     /**
+     * Check if a connection has been registered.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function hasConnection($name)
+    {
+        return isset($this->connections[$name]);
+    }
+
+    /**
      * Set the default connection name.
      *
-     * @param  string  $name
+     * @param string $name
      * @return void
      */
     public function setDefaultConnection($name)

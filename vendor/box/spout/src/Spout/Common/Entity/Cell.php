@@ -75,23 +75,6 @@ class Cell
     }
 
     /**
-     * @param mixed|null $value
-     */
-    public function setValue($value)
-    {
-        $this->value = $value;
-        $this->type = $this->detectType($value);
-    }
-
-    /**
-     * @return mixed|null
-     */
-    public function getValue()
-    {
-        return !$this->isError() ? $this->value : null;
-    }
-
-    /**
      * @return mixed
      */
     public function getValueEvenIfError()
@@ -100,19 +83,19 @@ class Cell
     }
 
     /**
-     * @param Style|null $style
-     */
-    public function setStyle($style)
-    {
-        $this->style = $style ?: new Style();
-    }
-
-    /**
      * @return Style
      */
     public function getStyle()
     {
         return $this->style;
+    }
+
+    /**
+     * @param Style|null $style
+     */
+    public function setStyle($style)
+    {
+        $this->style = $style ?: new Style();
     }
 
     /**
@@ -129,33 +112,6 @@ class Cell
     public function setType($type)
     {
         $this->type = $type;
-    }
-
-    /**
-     * Get the current value type
-     *
-     * @param mixed|null $value
-     * @return int
-     */
-    protected function detectType($value)
-    {
-        if (CellTypeHelper::isBoolean($value)) {
-            return self::TYPE_BOOLEAN;
-        }
-        if (CellTypeHelper::isEmpty($value)) {
-            return self::TYPE_EMPTY;
-        }
-        if (CellTypeHelper::isNumeric($value)) {
-            return self::TYPE_NUMERIC;
-        }
-        if (CellTypeHelper::isDateTimeOrDateInterval($value)) {
-            return self::TYPE_DATE;
-        }
-        if (CellTypeHelper::isNonEmptyString($value)) {
-            return self::TYPE_STRING;
-        }
-
-        return self::TYPE_ERROR;
     }
 
     /**
@@ -199,6 +155,31 @@ class Cell
     }
 
     /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string)$this->getValue();
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getValue()
+    {
+        return !$this->isError() ? $this->value : null;
+    }
+
+    /**
+     * @param mixed|null $value
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
+        $this->type = $this->detectType($value);
+    }
+
+    /**
      * @return bool
      */
     public function isError()
@@ -207,10 +188,29 @@ class Cell
     }
 
     /**
-     * @return string
+     * Get the current value type
+     *
+     * @param mixed|null $value
+     * @return int
      */
-    public function __toString()
+    protected function detectType($value)
     {
-        return (string) $this->getValue();
+        if (CellTypeHelper::isBoolean($value)) {
+            return self::TYPE_BOOLEAN;
+        }
+        if (CellTypeHelper::isEmpty($value)) {
+            return self::TYPE_EMPTY;
+        }
+        if (CellTypeHelper::isNumeric($value)) {
+            return self::TYPE_NUMERIC;
+        }
+        if (CellTypeHelper::isDateTimeOrDateInterval($value)) {
+            return self::TYPE_DATE;
+        }
+        if (CellTypeHelper::isNonEmptyString($value)) {
+            return self::TYPE_STRING;
+        }
+
+        return self::TYPE_ERROR;
     }
 }

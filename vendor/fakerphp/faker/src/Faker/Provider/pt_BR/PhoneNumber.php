@@ -14,6 +14,52 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     protected static $cellphoneFormats = ['9####-####'];
 
     /**
+     * Randomizes between cellphone and landline numbers.
+     *
+     * @param bool $formatted [def: true] If it should return a formatted number or not.
+     */
+    public static function phone($formatted = true)
+    {
+        $options = static::randomElement([
+            ['cellphone', false],
+            ['cellphone', true],
+            ['landline', null],
+        ]);
+
+        return call_user_func("static::{$options[0]}", $formatted, $options[1]);
+    }
+
+    /**
+     * Concatenates {@link areaCode} and {@link cellphone} into a national cellphone number.
+     *
+     * @param bool $formatted [def: true] If it should return a formatted number or not.
+     *
+     * @return string
+     */
+    public static function cellphoneNumber($formatted = true)
+    {
+        return static::anyPhoneNumber('cellphone', $formatted);
+    }
+
+    /**
+     * Generates a complete phone number.
+     *
+     * @param string $type [def: landline] One of "landline" or "cellphone". Defaults to "landline" on invalid values.
+     * @param bool $formatted [def: true] If the number should be formatted or not.
+     *
+     * @return string
+     */
+    protected static function anyPhoneNumber($type, $formatted = true)
+    {
+        $area = static::areaCode();
+        $number = ($type == 'cellphone') ?
+            static::cellphone($formatted) :
+            static::landline($formatted);
+
+        return $formatted ? "($area) $number" : $area . $number;
+    }
+
+    /**
      * Generates a 2-digit area code not composed by zeroes.
      *
      * @see http://www.anatel.gov.br/legislacao/resolucoes/16-2001/383-resolucao-263.
@@ -71,52 +117,6 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     }
 
     /**
-     * Randomizes between cellphone and landline numbers.
-     *
-     * @param bool $formatted [def: true] If it should return a formatted number or not.
-     */
-    public static function phone($formatted = true)
-    {
-        $options = static::randomElement([
-            ['cellphone', false],
-            ['cellphone', true],
-            ['landline', null],
-        ]);
-
-        return call_user_func("static::{$options[0]}", $formatted, $options[1]);
-    }
-
-    /**
-     * Generates a complete phone number.
-     *
-     * @param string $type      [def: landline] One of "landline" or "cellphone". Defaults to "landline" on invalid values.
-     * @param bool   $formatted [def: true] If the number should be formatted or not.
-     *
-     * @return string
-     */
-    protected static function anyPhoneNumber($type, $formatted = true)
-    {
-        $area = static::areaCode();
-        $number = ($type == 'cellphone') ?
-            static::cellphone($formatted) :
-            static::landline($formatted);
-
-        return $formatted ? "($area) $number" : $area . $number;
-    }
-
-    /**
-     * Concatenates {@link areaCode} and {@link cellphone} into a national cellphone number.
-     *
-     * @param bool $formatted [def: true] If it should return a formatted number or not.
-     *
-     * @return string
-     */
-    public static function cellphoneNumber($formatted = true)
-    {
-        return static::anyPhoneNumber('cellphone', $formatted);
-    }
-
-    /**
      * Concatenates {@link areaCode} and {@link landline} into a national landline number.
      *
      * @param bool $formatted [def: true] If it should return a formatted number or not.
@@ -129,16 +129,6 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     }
 
     /**
-     * Randomizes between complete cellphone and landline numbers.
-     */
-    public function phoneNumber()
-    {
-        $method = static::randomElement(['cellphoneNumber', 'landlineNumber']);
-
-        return call_user_func("static::$method", true);
-    }
-
-    /**
      * Randomizes between complete cellphone and landline numbers, cleared from formatting symbols.
      */
     public static function phoneNumberCleared()
@@ -146,5 +136,15 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
         $method = static::randomElement(['cellphoneNumber', 'landlineNumber']);
 
         return call_user_func("static::$method", false);
+    }
+
+    /**
+     * Randomizes between complete cellphone and landline numbers.
+     */
+    public function phoneNumber()
+    {
+        $method = static::randomElement(['cellphoneNumber', 'landlineNumber']);
+
+        return call_user_func("static::$method", true);
     }
 }

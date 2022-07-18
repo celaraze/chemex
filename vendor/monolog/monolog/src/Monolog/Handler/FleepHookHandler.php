@@ -42,19 +42,20 @@ class FleepHookHandler extends SocketHandler
      * For instructions on how to create a new web hook in your conversations
      * see https://fleep.io/integrations/webhooks/
      *
-     * @param  string                    $token  Webhook token
+     * @param string $token Webhook token
      * @throws MissingExtensionException
      */
     public function __construct(
         string $token,
-        $level = Logger::DEBUG,
-        bool $bubble = true,
-        bool $persistent = false,
-        float $timeout = 0.0,
-        float $writingTimeout = 10.0,
+               $level = Logger::DEBUG,
+        bool   $bubble = true,
+        bool   $persistent = false,
+        float  $timeout = 0.0,
+        float  $writingTimeout = 10.0,
         ?float $connectionTimeout = null,
-        ?int $chunkSize = null
-    ) {
+        ?int   $chunkSize = null
+    )
+    {
         if (!extension_loaded('openssl')) {
             throw new MissingExtensionException('The OpenSSL PHP extension is required to use the FleepHookHandler');
         }
@@ -75,6 +76,15 @@ class FleepHookHandler extends SocketHandler
     }
 
     /**
+     * Handles a log record
+     */
+    public function write(array $record): void
+    {
+        parent::write($record);
+        $this->closeSocket();
+    }
+
+    /**
      * Returns the default formatter to use with this handler
      *
      * Overloaded to remove empty context and extra arrays from the end of the log message.
@@ -87,15 +97,6 @@ class FleepHookHandler extends SocketHandler
     }
 
     /**
-     * Handles a log record
-     */
-    public function write(array $record): void
-    {
-        parent::write($record);
-        $this->closeSocket();
-    }
-
-    /**
      * {@inheritDoc}
      */
     protected function generateDataStream(array $record): string
@@ -103,20 +104,6 @@ class FleepHookHandler extends SocketHandler
         $content = $this->buildContent($record);
 
         return $this->buildHeader($content) . $content;
-    }
-
-    /**
-     * Builds the header of the API Call
-     */
-    private function buildHeader(string $content): string
-    {
-        $header = "POST " . static::FLEEP_HOOK_URI . $this->token . " HTTP/1.1\r\n";
-        $header .= "Host: " . static::FLEEP_HOST . "\r\n";
-        $header .= "Content-Type: application/x-www-form-urlencoded\r\n";
-        $header .= "Content-Length: " . strlen($content) . "\r\n";
-        $header .= "\r\n";
-
-        return $header;
     }
 
     /**
@@ -131,5 +118,19 @@ class FleepHookHandler extends SocketHandler
         ];
 
         return http_build_query($dataArray);
+    }
+
+    /**
+     * Builds the header of the API Call
+     */
+    private function buildHeader(string $content): string
+    {
+        $header = "POST " . static::FLEEP_HOOK_URI . $this->token . " HTTP/1.1\r\n";
+        $header .= "Host: " . static::FLEEP_HOST . "\r\n";
+        $header .= "Content-Type: application/x-www-form-urlencoded\r\n";
+        $header .= "Content-Length: " . strlen($content) . "\r\n";
+        $header .= "\r\n";
+
+        return $header;
     }
 }

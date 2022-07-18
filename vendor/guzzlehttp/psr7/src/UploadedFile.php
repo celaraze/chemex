@@ -66,7 +66,8 @@ class UploadedFile implements UploadedFileInterface
         int $errorStatus,
         string $clientFilename = null,
         string $clientMediaType = null
-    ) {
+    )
+    {
         $this->setError($errorStatus);
         $this->size = $size;
         $this->clientFilename = $clientFilename;
@@ -75,6 +76,28 @@ class UploadedFile implements UploadedFileInterface
         if ($this->isOk()) {
             $this->setStreamOrFile($streamOrFile);
         }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function setError(int $error): void
+    {
+        if (false === in_array($error, UploadedFile::ERRORS, true)) {
+            throw new InvalidArgumentException(
+                'Invalid error status for UploadedFile'
+            );
+        }
+
+        $this->error = $error;
+    }
+
+    /**
+     * Return true if there is no upload error
+     */
+    private function isOk(): bool
+    {
+        return $this->error === UPLOAD_ERR_OK;
     }
 
     /**
@@ -97,66 +120,6 @@ class UploadedFile implements UploadedFileInterface
                 'Invalid stream or file provided for UploadedFile'
             );
         }
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function setError(int $error): void
-    {
-        if (false === in_array($error, UploadedFile::ERRORS, true)) {
-            throw new InvalidArgumentException(
-                'Invalid error status for UploadedFile'
-            );
-        }
-
-        $this->error = $error;
-    }
-
-    private function isStringNotEmpty($param): bool
-    {
-        return is_string($param) && false === empty($param);
-    }
-
-    /**
-     * Return true if there is no upload error
-     */
-    private function isOk(): bool
-    {
-        return $this->error === UPLOAD_ERR_OK;
-    }
-
-    public function isMoved(): bool
-    {
-        return $this->moved;
-    }
-
-    /**
-     * @throws RuntimeException if is moved or not ok
-     */
-    private function validateActive(): void
-    {
-        if (false === $this->isOk()) {
-            throw new RuntimeException('Cannot retrieve stream due to upload error');
-        }
-
-        if ($this->isMoved()) {
-            throw new RuntimeException('Cannot retrieve stream after it has already been moved');
-        }
-    }
-
-    public function getStream(): StreamInterface
-    {
-        $this->validateActive();
-
-        if ($this->stream instanceof StreamInterface) {
-            return $this->stream;
-        }
-
-        /** @var string $file */
-        $file = $this->file;
-
-        return new LazyOpenStream($file, 'r+');
     }
 
     public function moveTo($targetPath): void
@@ -187,6 +150,44 @@ class UploadedFile implements UploadedFileInterface
                 sprintf('Uploaded file could not be moved to %s', $targetPath)
             );
         }
+    }
+
+    /**
+     * @throws RuntimeException if is moved or not ok
+     */
+    private function validateActive(): void
+    {
+        if (false === $this->isOk()) {
+            throw new RuntimeException('Cannot retrieve stream due to upload error');
+        }
+
+        if ($this->isMoved()) {
+            throw new RuntimeException('Cannot retrieve stream after it has already been moved');
+        }
+    }
+
+    public function isMoved(): bool
+    {
+        return $this->moved;
+    }
+
+    private function isStringNotEmpty($param): bool
+    {
+        return is_string($param) && false === empty($param);
+    }
+
+    public function getStream(): StreamInterface
+    {
+        $this->validateActive();
+
+        if ($this->stream instanceof StreamInterface) {
+            return $this->stream;
+        }
+
+        /** @var string $file */
+        $file = $this->file;
+
+        return new LazyOpenStream($file, 'r+');
     }
 
     public function getSize(): ?int

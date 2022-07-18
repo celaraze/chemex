@@ -44,18 +44,12 @@ class Rule2Literals extends Rule
         }
     }
 
-    /** @return int[] */
-    public function getLiterals(): array
-    {
-        return array($this->literal1, $this->literal2);
-    }
-
     /**
      * @inheritDoc
      */
     public function getHash()
     {
-        return $this->literal1.','.$this->literal2;
+        return $this->literal1 . ',' . $this->literal2;
     }
 
     /**
@@ -63,7 +57,7 @@ class Rule2Literals extends Rule
      *
      * Ignores whether either of the rules is disabled.
      *
-     * @param  Rule $rule The rule to check against
+     * @param Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
     public function equals(Rule $rule): bool
@@ -95,6 +89,12 @@ class Rule2Literals extends Rule
         }
 
         return true;
+    }
+
+    /** @return int[] */
+    public function getLiterals(): array
+    {
+        return array($this->literal1, $this->literal2);
     }
 
     /** @return false */

@@ -2,9 +2,9 @@
 
 #{$prefix}menu {
     margin: 0;
-    padding: 0;       
+    padding: 0;
     list-style: none;
-    
+
     > li {
         margin: 0;
         padding: 5px 1px;
@@ -14,7 +14,7 @@
         &.divider {
             display: inline-block;
             text-indent: -9999px;
-            margin: 0 5px; 
+            margin: 0 5px;
             height: 65%;
             border-right: 1px solid $borderColor;
         }
@@ -36,14 +36,14 @@
                 background: #eee;
             }
 
-            > .fa { 
+            > .fa {
                 text-align: center;
                 display: block;
                 padding: 5px;
             }
 
             > #{$prefix}bold {
-                padding: 5px 2px; 
+                padding: 5px 2px;
                 display: inline-block;
                 font-weight: bold;
             }
@@ -59,7 +59,7 @@
     }
 }
 
-#{$prefix}dropdown-menu { 
+#{$prefix}dropdown-menu {
     display: none;
     background: #fff;
     border: 1px solid $borderColor;
@@ -82,18 +82,18 @@
         border: 5px solid transparent;
     }
 
-    &:before { 
-        border-bottom-color: #ccc;   
+    &:before {
+        border-bottom-color: #ccc;
     }
 
-    &:after { 
-        border-bottom-color: #ffffff;  
+    &:after {
+        border-bottom-color: #ffffff;
         top: -10px;
     }
 
 
     > li {
-        
+
         > a {
             color: $color;
             display: block;

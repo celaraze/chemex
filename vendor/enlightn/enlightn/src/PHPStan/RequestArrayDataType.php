@@ -12,6 +12,15 @@ use PHPStan\Type\UnionType;
 
 class RequestArrayDataType extends ArrayType
 {
+    /**
+     * @param mixed[] $properties
+     * @return Type
+     */
+    public static function __set_state(array $properties): Type
+    {
+        return new self($properties['keyType'], $properties['itemType']);
+    }
+
     public function isSuperTypeOf(Type $type): TrinaryLogic
     {
         if ($type instanceof self) {
@@ -34,14 +43,5 @@ class RequestArrayDataType extends ArrayType
         }
 
         return TrinaryLogic::createNo();
-    }
-
-    /**
-     * @param mixed[] $properties
-     * @return Type
-     */
-    public static function __set_state(array $properties): Type
-    {
-        return new self($properties['keyType'], $properties['itemType']);
     }
 }

@@ -2,7 +2,12 @@
     "name": "symfony/polyfill-php72",
     "type": "library",
     "description": "Symfony polyfill backporting some PHP 7.2+ features to lower PHP versions",
-    "keywords": ["polyfill", "shim", "compatibility", "portable"],
+    "keywords": [
+        "polyfill",
+        "shim",
+        "compatibility",
+        "portable"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -19,8 +24,12 @@
         "php": ">=7.1"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Polyfill\\Php72\\": "" },
-        "files": [ "bootstrap.php" ]
+        "psr-4": {
+            "Symfony\\Polyfill\\Php72\\": ""
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "minimum-stability": "dev",
     "extra": {

@@ -4,8 +4,8 @@ namespace Egulias\EmailValidator\Validation;
 
 use Egulias\EmailValidator\EmailLexer;
 use Egulias\EmailValidator\Result\InvalidEmail;
-use Egulias\EmailValidator\Validation\Exception\EmptyValidationList;
 use Egulias\EmailValidator\Result\MultipleErrors;
+use Egulias\EmailValidator\Validation\Exception\EmptyValidationList;
 
 class MultipleValidationWithAnd implements EmailValidation
 {
@@ -43,7 +43,7 @@ class MultipleValidationWithAnd implements EmailValidation
 
     /**
      * @param EmailValidation[] $validations The validations.
-     * @param int               $mode        The validation mode (one of the constants).
+     * @param int $mode The validation mode (one of the constants).
      */
     public function __construct(array $validations, $mode = self::ALLOW_ALL_ERRORS)
     {
@@ -58,7 +58,7 @@ class MultipleValidationWithAnd implements EmailValidation
     /**
      * {@inheritdoc}
      */
-    public function isValid(string $email, EmailLexer $emailLexer) : bool
+    public function isValid(string $email, EmailLexer $emailLexer): bool
     {
         $result = true;
         foreach ($this->validations as $validation) {
@@ -78,14 +78,15 @@ class MultipleValidationWithAnd implements EmailValidation
         return $result;
     }
 
-    private function initErrorStorage() : void
+    /**
+     * {@inheritdoc}
+     */
+    public function getWarnings(): array
     {
-        if (null === $this->error) {
-            $this->error = new MultipleErrors();
-        }
+        return $this->warnings;
     }
 
-    private function processError(EmailValidation $validation) : void
+    private function processError(EmailValidation $validation): void
     {
         if (null !== $validation->getError()) {
             $this->initErrorStorage();
@@ -94,24 +95,23 @@ class MultipleValidationWithAnd implements EmailValidation
         }
     }
 
-    private function shouldStop(bool $result) : bool
-    {
-        return !$result && $this->mode === self::STOP_ON_ERROR;
-    }
-
     /**
      * Returns the validation errors.
      */
-    public function getError() : ?InvalidEmail
+    public function getError(): ?InvalidEmail
     {
         return $this->error;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getWarnings() : array
+    private function initErrorStorage(): void
     {
-        return $this->warnings;
+        if (null === $this->error) {
+            $this->error = new MultipleErrors();
+        }
+    }
+
+    private function shouldStop(bool $result): bool
+    {
+        return !$result && $this->mode === self::STOP_ON_ERROR;
     }
 }

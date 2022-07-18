@@ -24,10 +24,18 @@ class Validator extends BaseConstraint
 {
     const SCHEMA_MEDIA_TYPE = 'application/schema+json';
 
-    const ERROR_NONE                    = 0x00000000;
-    const ERROR_ALL                     = 0xFFFFFFFF;
-    const ERROR_DOCUMENT_VALIDATION     = 0x00000001;
-    const ERROR_SCHEMA_VALIDATION       = 0x00000002;
+    const ERROR_NONE = 0x00000000;
+    const ERROR_ALL = 0xFFFFFFFF;
+    const ERROR_DOCUMENT_VALIDATION = 0x00000001;
+    const ERROR_SCHEMA_VALIDATION = 0x00000002;
+
+    /**
+     * Alias to validate(), to maintain backwards-compatibility with the previous API
+     */
+    public function coerce(&$value, $schema)
+    {
+        return $this->validate($value, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
+    }
 
     /**
      * Validates the given data against the schema and returns an object containing the results
@@ -76,13 +84,5 @@ class Validator extends BaseConstraint
     public function check($value, $schema)
     {
         return $this->validate($value, $schema);
-    }
-
-    /**
-     * Alias to validate(), to maintain backwards-compatibility with the previous API
-     */
-    public function coerce(&$value, $schema)
-    {
-        return $this->validate($value, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
     }
 }

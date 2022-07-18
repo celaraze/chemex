@@ -43,7 +43,7 @@ final class InlineParserEngine implements InlineParserEngineInterface
 
     public function __construct(EnvironmentInterface $environment, ReferenceMapInterface $referenceMap)
     {
-        $this->environment  = $environment;
+        $this->environment = $environment;
         $this->referenceMap = $referenceMap;
 
         foreach ($environment->getInlineParsers() as $parser) {
@@ -57,7 +57,7 @@ final class InlineParserEngine implements InlineParserEngineInterface
     public function parse(string $contents, AbstractBlock $block): void
     {
         $contents = \trim($contents);
-        $cursor   = new Cursor($contents);
+        $cursor = new Cursor($contents);
 
         $inlineParserContext = new InlineParserContext($cursor, $block, $this->referenceMap);
 
@@ -91,12 +91,12 @@ final class InlineParserEngine implements InlineParserEngineInterface
             }
 
             // Despite potentially being interested, nothing actually parsed text here, so add the current character and continue onwards
-            $this->addPlainText((string) $cursor->getCurrentCharacter(), $block);
+            $this->addPlainText((string)$cursor->getCurrentCharacter(), $block);
             $cursor->advance();
         }
 
         // Add any remaining text that wasn't parsed
-        if (! $cursor->isAtEnd()) {
+        if (!$cursor->isAtEnd()) {
             $this->addPlainText($cursor->getRemainder(), $block);
         }
 
@@ -107,16 +107,6 @@ final class InlineParserEngine implements InlineParserEngineInterface
 
         // Combine adjacent text notes into one
         AdjacentTextMerger::mergeChildNodes($block);
-    }
-
-    private function addPlainText(string $text, AbstractBlock $container): void
-    {
-        $lastInline = $container->lastChild();
-        if ($lastInline instanceof Text && ! $lastInline->data->has('delim')) {
-            $lastInline->append($text);
-        } else {
-            $container->appendChild(new Text($text));
-        }
     }
 
     /**
@@ -133,7 +123,7 @@ final class InlineParserEngine implements InlineParserEngineInterface
      */
     private function matchParsers(string $contents): array
     {
-        $contents    = \trim($contents);
+        $contents = \trim($contents);
         $isMultibyte = \mb_strlen($contents) !== \strlen($contents);
 
         $ret = [];
@@ -144,7 +134,7 @@ final class InlineParserEngine implements InlineParserEngineInterface
             }
 
             // See if the parser's InlineParserMatch regex matched against any part of the string
-            if (! \preg_match_all($regex, $contents, $matches, \PREG_OFFSET_CAPTURE | \PREG_SET_ORDER)) {
+            if (!\preg_match_all($regex, $contents, $matches, \PREG_OFFSET_CAPTURE | \PREG_SET_ORDER)) {
                 continue;
             }
 
@@ -173,5 +163,15 @@ final class InlineParserEngine implements InlineParserEngineInterface
         \ksort($ret);
 
         return $ret;
+    }
+
+    private function addPlainText(string $text, AbstractBlock $container): void
+    {
+        $lastInline = $container->lastChild();
+        if ($lastInline instanceof Text && !$lastInline->data->has('delim')) {
+            $lastInline->append($text);
+        } else {
+            $container->appendChild(new Text($text));
+        }
     }
 }

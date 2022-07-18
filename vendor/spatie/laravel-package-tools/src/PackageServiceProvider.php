@@ -13,8 +13,6 @@ abstract class PackageServiceProvider extends ServiceProvider
 {
     protected Package $package;
 
-    abstract public function configurePackage(Package $package): void;
-
     public function register()
     {
         $this->registeringPackage();
@@ -36,6 +34,23 @@ abstract class PackageServiceProvider extends ServiceProvider
         $this->packageRegistered();
 
         return $this;
+    }
+
+    public function registeringPackage()
+    {
+    }
+
+    protected function getPackageBaseDir(): string
+    {
+        $reflector = new ReflectionClass(get_class($this));
+
+        return dirname($reflector->getFileName());
+    }
+
+    abstract public function configurePackage(Package $package): void;
+
+    public function packageRegistered()
+    {
     }
 
     public function boot()
@@ -66,7 +81,7 @@ abstract class PackageServiceProvider extends ServiceProvider
             $now = Carbon::now();
             foreach ($this->package->migrationFileNames as $migrationFileName) {
                 $filePath = $this->package->basePath("/../database/migrations/{$migrationFileName}.php");
-                if (! file_exists($filePath)) {
+                if (!file_exists($filePath)) {
                     // Support for the .stub file extension
                     $filePath .= '.stub';
                 }
@@ -75,7 +90,7 @@ abstract class PackageServiceProvider extends ServiceProvider
                     $filePath => $this->generateMigrationName(
                         $migrationFileName,
                         $now->addSecond()
-                    ), ], "{$this->package->shortName()}-migrations");
+                    ),], "{$this->package->shortName()}-migrations");
 
                 if ($this->package->runsMigrations) {
                     $this->loadMigrationsFrom($filePath);
@@ -95,7 +110,7 @@ abstract class PackageServiceProvider extends ServiceProvider
             }
         }
 
-        if (! empty($this->package->commands)) {
+        if (!empty($this->package->commands)) {
             $this->commands($this->package->commands);
         }
 
@@ -142,6 +157,10 @@ abstract class PackageServiceProvider extends ServiceProvider
         return $this;
     }
 
+    public function bootingPackage()
+    {
+    }
+
     public static function generateMigrationName(string $migrationFileName, Carbon $now): string
     {
         $migrationsPath = 'migrations/';
@@ -162,26 +181,7 @@ abstract class PackageServiceProvider extends ServiceProvider
         return database_path($migrationsPath . $now->format('Y_m_d_His') . '_' . Str::of($migrationFileName)->snake()->finish('.php'));
     }
 
-    public function registeringPackage()
-    {
-    }
-
-    public function packageRegistered()
-    {
-    }
-
-    public function bootingPackage()
-    {
-    }
-
     public function packageBooted()
     {
-    }
-
-    protected function getPackageBaseDir(): string
-    {
-        $reflector = new ReflectionClass(get_class($this));
-
-        return dirname($reflector->getFileName());
     }
 }

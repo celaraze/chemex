@@ -10,9 +10,9 @@ class Code extends Markdown
     protected $lang = 'php';
 
     /**
-     * @param  string  $content
-     * @param  int  $start
-     * @param  int  $end
+     * @param string $content
+     * @param int $start
+     * @param int $end
      */
     public function __construct($content = '', int $start = 1, int $end = 1000)
     {
@@ -27,62 +27,16 @@ class Code extends Markdown
     }
 
     /**
-     * 设置语言.
-     *
-     * @param  string  $lang
-     * @return $this
-     */
-    public function lang(string $lang)
-    {
-        $this->lang = $lang;
-
-        return $this;
-    }
-
-    public function javascript()
-    {
-        return $this->lang('javascript');
-    }
-
-    public function asHtml()
-    {
-        return $this->lang('html');
-    }
-
-    public function java()
-    {
-        return $this->lang('java');
-    }
-
-    public function python()
-    {
-        return $this->lang('python');
-    }
-
-    /**
-     * 读取指定行上下区间文件内容.
-     *
-     * @param  string  $file
-     * @param  int  $lineNumber
-     * @param  int  $padding
-     * @return $this
-     */
-    public function section($file, $lineNumber = 1, $context = 5)
-    {
-        return $this->readFileContent($file, $lineNumber - $context, $lineNumber + $context);
-    }
-
-    /**
      * 读取指定行文件内容.
      *
-     * @param  string  $file
-     * @param  int  $start
-     * @param  int  $end
+     * @param string $file
+     * @param int $start
+     * @param int $end
      * @return $this
      */
     public function readFileContent($file, $start = 1, $end = 10)
     {
-        if (! $file or ! is_readable($file) || $end < $start) {
+        if (!$file or !is_readable($file) || $end < $start) {
             return $this;
         }
 
@@ -103,6 +57,52 @@ class Code extends Markdown
         fclose($file);
 
         return $this->content($source);
+    }
+
+    public function javascript()
+    {
+        return $this->lang('javascript');
+    }
+
+    /**
+     * 设置语言.
+     *
+     * @param string $lang
+     * @return $this
+     */
+    public function lang(string $lang)
+    {
+        $this->lang = $lang;
+
+        return $this;
+    }
+
+    public function asHtml()
+    {
+        return $this->lang('html');
+    }
+
+    public function java()
+    {
+        return $this->lang('java');
+    }
+
+    public function python()
+    {
+        return $this->lang('python');
+    }
+
+    /**
+     * 读取指定行上下区间文件内容.
+     *
+     * @param string $file
+     * @param int $lineNumber
+     * @param int $padding
+     * @return $this
+     */
+    public function section($file, $lineNumber = 1, $context = 5)
+    {
+        return $this->readFileContent($file, $lineNumber - $context, $lineNumber + $context);
     }
 
     protected function renderContent()

@@ -56,45 +56,6 @@ class ResponseCacheStrategy implements ResponseCacheStrategyInterface
     /**
      * {@inheritdoc}
      */
-    public function add(Response $response)
-    {
-        ++$this->embeddedResponses;
-
-        foreach (self::OVERRIDE_DIRECTIVES as $directive) {
-            if ($response->headers->hasCacheControlDirective($directive)) {
-                $this->flagDirectives[$directive] = true;
-            }
-        }
-
-        foreach (self::INHERIT_DIRECTIVES as $directive) {
-            if (false !== $this->flagDirectives[$directive]) {
-                $this->flagDirectives[$directive] = $response->headers->hasCacheControlDirective($directive);
-            }
-        }
-
-        $age = $response->getAge();
-        $this->age = max($this->age, $age);
-
-        if ($this->willMakeFinalResponseUncacheable($response)) {
-            $this->isNotCacheableResponseEmbedded = true;
-
-            return;
-        }
-
-        $isHeuristicallyCacheable = $response->headers->hasCacheControlDirective('public');
-        $maxAge = $response->headers->hasCacheControlDirective('max-age') ? (int) $response->headers->getCacheControlDirective('max-age') : null;
-        $this->storeRelativeAgeDirective('max-age', $maxAge, $age, $isHeuristicallyCacheable);
-        $sharedMaxAge = $response->headers->hasCacheControlDirective('s-maxage') ? (int) $response->headers->getCacheControlDirective('s-maxage') : $maxAge;
-        $this->storeRelativeAgeDirective('s-maxage', $sharedMaxAge, $age, $isHeuristicallyCacheable);
-
-        $expires = $response->getExpires();
-        $expires = null !== $expires ? (int) $expires->format('U') - (int) $response->getDate()->format('U') : null;
-        $this->storeRelativeAgeDirective('expires', $expires >= 0 ? $expires : null, 0, $isHeuristicallyCacheable);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function update(Response $response)
     {
         // if we have no embedded Response, do nothing
@@ -147,9 +108,48 @@ class ResponseCacheStrategy implements ResponseCacheStrategyInterface
 
         if (is_numeric($this->ageDirectives['expires'])) {
             $date = clone $response->getDate();
-            $date->modify('+'.($this->ageDirectives['expires'] + $this->age).' seconds');
+            $date->modify('+' . ($this->ageDirectives['expires'] + $this->age) . ' seconds');
             $response->setExpires($date);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function add(Response $response)
+    {
+        ++$this->embeddedResponses;
+
+        foreach (self::OVERRIDE_DIRECTIVES as $directive) {
+            if ($response->headers->hasCacheControlDirective($directive)) {
+                $this->flagDirectives[$directive] = true;
+            }
+        }
+
+        foreach (self::INHERIT_DIRECTIVES as $directive) {
+            if (false !== $this->flagDirectives[$directive]) {
+                $this->flagDirectives[$directive] = $response->headers->hasCacheControlDirective($directive);
+            }
+        }
+
+        $age = $response->getAge();
+        $this->age = max($this->age, $age);
+
+        if ($this->willMakeFinalResponseUncacheable($response)) {
+            $this->isNotCacheableResponseEmbedded = true;
+
+            return;
+        }
+
+        $isHeuristicallyCacheable = $response->headers->hasCacheControlDirective('public');
+        $maxAge = $response->headers->hasCacheControlDirective('max-age') ? (int)$response->headers->getCacheControlDirective('max-age') : null;
+        $this->storeRelativeAgeDirective('max-age', $maxAge, $age, $isHeuristicallyCacheable);
+        $sharedMaxAge = $response->headers->hasCacheControlDirective('s-maxage') ? (int)$response->headers->getCacheControlDirective('s-maxage') : $maxAge;
+        $this->storeRelativeAgeDirective('s-maxage', $sharedMaxAge, $age, $isHeuristicallyCacheable);
+
+        $expires = $response->getExpires();
+        $expires = null !== $expires ? (int)$expires->format('U') - (int)$response->getDate()->format('U') : null;
+        $this->storeRelativeAgeDirective('expires', $expires >= 0 ? $expires : null, 0, $isHeuristicallyCacheable);
     }
 
     /**

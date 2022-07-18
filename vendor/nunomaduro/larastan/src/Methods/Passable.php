@@ -60,19 +60,20 @@ final class Passable implements PassableContract
     /**
      * Method constructor.
      *
-     * @param  \PHPStan\Reflection\Php\PhpMethodReflectionFactory  $methodReflectionFactory
-     * @param  ReflectionProvider  $reflectionProvider
-     * @param  \Illuminate\Contracts\Pipeline\Pipeline  $pipeline
-     * @param  \PHPStan\Reflection\ClassReflection  $classReflection
-     * @param  string  $methodName
+     * @param \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory
+     * @param ReflectionProvider $reflectionProvider
+     * @param \Illuminate\Contracts\Pipeline\Pipeline $pipeline
+     * @param \PHPStan\Reflection\ClassReflection $classReflection
+     * @param string $methodName
      */
     public function __construct(
         PhpMethodReflectionFactory $methodReflectionFactory,
-        ReflectionProvider $reflectionProvider,
-        Pipeline $pipeline,
-        ClassReflection $classReflection,
-        string $methodName
-    ) {
+        ReflectionProvider         $reflectionProvider,
+        Pipeline                   $pipeline,
+        ClassReflection            $classReflection,
+        string                     $methodName
+    )
+    {
         $this->methodReflectionFactory = $methodReflectionFactory;
         $this->reflectionProvider = $reflectionProvider;
         $this->pipeline = $pipeline;
@@ -109,14 +110,6 @@ final class Passable implements PassableContract
     /**
      * {@inheritdoc}
      */
-    public function hasFound(): bool
-    {
-        return $this->methodReflection !== null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function searchOn(string $class): bool
     {
         $classReflection = $this->reflectionProvider->getClass($class);
@@ -128,42 +121,6 @@ final class Passable implements PassableContract
         }
 
         return $found;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getMethodReflection(): MethodReflection
-    {
-        if ($this->methodReflection === null) {
-            throw new LogicException("MethodReflection doesn't exist");
-        }
-
-        return $this->methodReflection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setMethodReflection(MethodReflection $methodReflection): void
-    {
-        $this->methodReflection = $methodReflection;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setStaticAllowed(bool $staticAllowed): void
-    {
-        $this->staticAllowed = $staticAllowed;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isStaticAllowed(): bool
-    {
-        return $this->staticAllowed;
     }
 
     /**
@@ -200,6 +157,50 @@ final class Passable implements PassableContract
         }
 
         return $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasFound(): bool
+    {
+        return $this->methodReflection !== null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getMethodReflection(): MethodReflection
+    {
+        if ($this->methodReflection === null) {
+            throw new LogicException("MethodReflection doesn't exist");
+        }
+
+        return $this->methodReflection;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMethodReflection(MethodReflection $methodReflection): void
+    {
+        $this->methodReflection = $methodReflection;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isStaticAllowed(): bool
+    {
+        return $this->staticAllowed;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setStaticAllowed(bool $staticAllowed): void
+    {
+        $this->staticAllowed = $staticAllowed;
     }
 
     public function getReflectionProvider(): ReflectionProvider

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NunoMaduro\Larastan\Types;
 
-use function count;
 use Illuminate\Database\Eloquent\Collection;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -15,6 +14,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Type;
+use function count;
 
 /**
  * @see https://github.com/nunomaduro/larastan/issues/476
@@ -44,7 +44,7 @@ class GenericEloquentCollectionTypeNodeResolverExtension implements TypeNodeReso
 
     public function resolve(TypeNode $typeNode, NameScope $nameScope): ?Type
     {
-        if (! $typeNode instanceof UnionTypeNode || count($typeNode->types) !== 2) {
+        if (!$typeNode instanceof UnionTypeNode || count($typeNode->types) !== 2) {
             return null;
         }
 
@@ -71,7 +71,7 @@ class GenericEloquentCollectionTypeNodeResolverExtension implements TypeNodeReso
         }
 
         $innerArrayTypeNode = $arrayTypeNode->type;
-        if (! $innerArrayTypeNode instanceof IdentifierTypeNode) {
+        if (!$innerArrayTypeNode instanceof IdentifierTypeNode) {
             return null;
         }
 

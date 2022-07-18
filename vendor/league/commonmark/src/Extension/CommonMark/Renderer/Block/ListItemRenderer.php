@@ -39,7 +39,7 @@ final class ListItemRenderer implements NodeRendererInterface, XmlNodeRendererIn
         ListItem::assertInstanceOf($node);
 
         $contents = $childRenderer->renderNodes($node->children());
-        if (\substr($contents, 0, 1) === '<' && ! $this->startsTaskListItem($node)) {
+        if (\substr($contents, 0, 1) === '<' && !$this->startsTaskListItem($node)) {
             $contents = "\n" . $contents;
         }
 
@@ -50,6 +50,13 @@ final class ListItemRenderer implements NodeRendererInterface, XmlNodeRendererIn
         $attrs = $node->data->get('attributes');
 
         return new HtmlElement('li', $attrs, $contents);
+    }
+
+    private function startsTaskListItem(ListItem $block): bool
+    {
+        $firstChild = $block->firstChild();
+
+        return $firstChild instanceof Paragraph && $firstChild->firstChild() instanceof TaskListItemMarker;
     }
 
     public function getXmlTagName(Node $node): string
@@ -63,12 +70,5 @@ final class ListItemRenderer implements NodeRendererInterface, XmlNodeRendererIn
     public function getXmlAttributes(Node $node): array
     {
         return [];
-    }
-
-    private function startsTaskListItem(ListItem $block): bool
-    {
-        $firstChild = $block->firstChild();
-
-        return $firstChild instanceof Paragraph && $firstChild->firstChild() instanceof TaskListItemMarker;
     }
 }

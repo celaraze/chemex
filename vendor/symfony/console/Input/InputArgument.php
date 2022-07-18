@@ -14,7 +14,6 @@ namespace Symfony\Component\Console\Input;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
-use Symfony\Component\Console\Completion\Suggestion;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
 
@@ -36,10 +35,10 @@ class InputArgument
     private string $description;
 
     /**
-     * @param string                           $name        The argument name
-     * @param int|null                         $mode        The argument mode: self::REQUIRED or self::OPTIONAL
-     * @param string                           $description A description text
-     * @param string|bool|int|float|array|null $default     The default value (for self::OPTIONAL mode only)
+     * @param string $name The argument name
+     * @param int|null $mode The argument mode: self::REQUIRED or self::OPTIONAL
+     * @param string $description A description text
+     * @param string|bool|int|float|array|null $default The default value (for self::OPTIONAL mode only)
      * @param array|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completion
      *
      * @throws InvalidArgumentException When argument mode is not valid
@@ -89,6 +88,14 @@ class InputArgument
     }
 
     /**
+     * Returns the default value.
+     */
+    public function getDefault(): string|bool|int|float|array|null
+    {
+        return $this->default;
+    }
+
+    /**
      * Sets the default value.
      *
      * @throws LogicException When incorrect default value is given
@@ -108,14 +115,6 @@ class InputArgument
         }
 
         $this->default = $default;
-    }
-
-    /**
-     * Returns the default value.
-     */
-    public function getDefault(): string|bool|int|float|array|null
-    {
-        return $this->default;
     }
 
     public function hasCompletion(): bool

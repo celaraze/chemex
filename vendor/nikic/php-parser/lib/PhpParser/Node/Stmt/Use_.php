@@ -27,21 +27,24 @@ class Use_ extends Stmt
     /**
      * Constructs an alias (use) list node.
      *
-     * @param UseUse[] $uses       Aliases
-     * @param int      $type       Type of alias
-     * @param array    $attributes Additional attributes
+     * @param UseUse[] $uses Aliases
+     * @param int $type Type of alias
+     * @param array $attributes Additional attributes
      */
-    public function __construct(array $uses, int $type = self::TYPE_NORMAL, array $attributes = []) {
+    public function __construct(array $uses, int $type = self::TYPE_NORMAL, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->type = $type;
         $this->uses = $uses;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['type', 'uses'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Use';
     }
 }

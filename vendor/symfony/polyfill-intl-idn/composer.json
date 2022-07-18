@@ -2,7 +2,14 @@
     "name": "symfony/polyfill-intl-idn",
     "type": "library",
     "description": "Symfony polyfill for intl's idn_to_ascii and idn_to_utf8 functions",
-    "keywords": ["polyfill", "shim", "compatibility", "portable", "intl", "idn"],
+    "keywords": [
+        "polyfill",
+        "shim",
+        "compatibility",
+        "portable",
+        "intl",
+        "idn"
+    ],
     "homepage": "https://symfony.com",
     "license": "MIT",
     "authors": [
@@ -25,8 +32,12 @@
         "symfony/polyfill-php72": "^1.10"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Polyfill\\Intl\\Idn\\": "" },
-        "files": [ "bootstrap.php" ]
+        "psr-4": {
+            "Symfony\\Polyfill\\Intl\\Idn\\": ""
+        },
+        "files": [
+            "bootstrap.php"
+        ]
     },
     "suggest": {
         "ext-intl": "For best performance"

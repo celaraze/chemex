@@ -26,7 +26,7 @@ export default class Tree {
     }
 
     // 绑定点击事件
-    _init () {
+    _init() {
         var _this = this,
             opts = _this.options;
 
@@ -77,7 +77,7 @@ export default class Tree {
     }
 
     // 发起请求
-    request (page, after) {
+    request(page, after) {
         var _this = this,
             row = _this.row,
             key = _this.key,
@@ -110,7 +110,7 @@ export default class Tree {
                 var children = _this.helper.getChildren(row.nextAll(), row);
                 row = children.length ? $(children.pop()) : row;
 
-                var _body = $('<div>'+resp+'</div>'),
+                var _body = $('<div>' + resp + '</div>'),
                     _tbody = _body.find(tableSelector + ' tbody'),
                     lastPage = _body.find('last-page').text(),
                     nextPage = _body.find('next-page').text();
@@ -159,7 +159,7 @@ export default class Tree {
                 // 主动触发ready事件，执行子节点附带的js脚本
                 Dcat.triggerReady();
             },
-            error:function(a, b, c){
+            error: function (a, b, c) {
                 after && after();
 
                 Dcat.loading(false);

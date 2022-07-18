@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
 /**
@@ -276,70 +277,62 @@ final class PHPUnit
 
     public function __construct(bool $cacheResult, ?string $cacheResultFile, $columns, string $colors, bool $stderr, bool $noInteraction, bool $verbose, bool $reverseDefectList, bool $convertDeprecationsToExceptions, bool $convertErrorsToExceptions, bool $convertNoticesToExceptions, bool $convertWarningsToExceptions, bool $forceCoversAnnotation, ?string $bootstrap, bool $processIsolation, bool $failOnEmptyTestSuite, bool $failOnIncomplete, bool $failOnRisky, bool $failOnSkipped, bool $failOnWarning, bool $stopOnDefect, bool $stopOnError, bool $stopOnFailure, bool $stopOnWarning, bool $stopOnIncomplete, bool $stopOnRisky, bool $stopOnSkipped, ?string $extensionsDirectory, ?string $testSuiteLoaderClass, ?string $testSuiteLoaderFile, ?string $printerClass, ?string $printerFile, bool $beStrictAboutChangesToGlobalState, bool $beStrictAboutOutputDuringTests, bool $beStrictAboutResourceUsageDuringSmallTests, bool $beStrictAboutTestsThatDoNotTestAnything, bool $beStrictAboutTodoAnnotatedTests, bool $beStrictAboutCoversAnnotation, bool $enforceTimeLimit, int $defaultTimeLimit, int $timeoutForSmallTests, int $timeoutForMediumTests, int $timeoutForLargeTests, ?string $defaultTestSuite, int $executionOrder, bool $resolveDependencies, bool $defectsFirst, bool $backupGlobals, bool $backupStaticAttributes, bool $registerMockObjectsFromTestArgumentsRecursively, bool $conflictBetweenPrinterClassAndTestdox)
     {
-        $this->cacheResult                                     = $cacheResult;
-        $this->cacheResultFile                                 = $cacheResultFile;
-        $this->columns                                         = $columns;
-        $this->colors                                          = $colors;
-        $this->stderr                                          = $stderr;
-        $this->noInteraction                                   = $noInteraction;
-        $this->verbose                                         = $verbose;
-        $this->reverseDefectList                               = $reverseDefectList;
-        $this->convertDeprecationsToExceptions                 = $convertDeprecationsToExceptions;
-        $this->convertErrorsToExceptions                       = $convertErrorsToExceptions;
-        $this->convertNoticesToExceptions                      = $convertNoticesToExceptions;
-        $this->convertWarningsToExceptions                     = $convertWarningsToExceptions;
-        $this->forceCoversAnnotation                           = $forceCoversAnnotation;
-        $this->bootstrap                                       = $bootstrap;
-        $this->processIsolation                                = $processIsolation;
-        $this->failOnEmptyTestSuite                            = $failOnEmptyTestSuite;
-        $this->failOnIncomplete                                = $failOnIncomplete;
-        $this->failOnRisky                                     = $failOnRisky;
-        $this->failOnSkipped                                   = $failOnSkipped;
-        $this->failOnWarning                                   = $failOnWarning;
-        $this->stopOnDefect                                    = $stopOnDefect;
-        $this->stopOnError                                     = $stopOnError;
-        $this->stopOnFailure                                   = $stopOnFailure;
-        $this->stopOnWarning                                   = $stopOnWarning;
-        $this->stopOnIncomplete                                = $stopOnIncomplete;
-        $this->stopOnRisky                                     = $stopOnRisky;
-        $this->stopOnSkipped                                   = $stopOnSkipped;
-        $this->extensionsDirectory                             = $extensionsDirectory;
-        $this->testSuiteLoaderClass                            = $testSuiteLoaderClass;
-        $this->testSuiteLoaderFile                             = $testSuiteLoaderFile;
-        $this->printerClass                                    = $printerClass;
-        $this->printerFile                                     = $printerFile;
-        $this->beStrictAboutChangesToGlobalState               = $beStrictAboutChangesToGlobalState;
-        $this->beStrictAboutOutputDuringTests                  = $beStrictAboutOutputDuringTests;
-        $this->beStrictAboutResourceUsageDuringSmallTests      = $beStrictAboutResourceUsageDuringSmallTests;
-        $this->beStrictAboutTestsThatDoNotTestAnything         = $beStrictAboutTestsThatDoNotTestAnything;
-        $this->beStrictAboutTodoAnnotatedTests                 = $beStrictAboutTodoAnnotatedTests;
-        $this->beStrictAboutCoversAnnotation                   = $beStrictAboutCoversAnnotation;
-        $this->enforceTimeLimit                                = $enforceTimeLimit;
-        $this->defaultTimeLimit                                = $defaultTimeLimit;
-        $this->timeoutForSmallTests                            = $timeoutForSmallTests;
-        $this->timeoutForMediumTests                           = $timeoutForMediumTests;
-        $this->timeoutForLargeTests                            = $timeoutForLargeTests;
-        $this->defaultTestSuite                                = $defaultTestSuite;
-        $this->executionOrder                                  = $executionOrder;
-        $this->resolveDependencies                             = $resolveDependencies;
-        $this->defectsFirst                                    = $defectsFirst;
-        $this->backupGlobals                                   = $backupGlobals;
-        $this->backupStaticAttributes                          = $backupStaticAttributes;
+        $this->cacheResult = $cacheResult;
+        $this->cacheResultFile = $cacheResultFile;
+        $this->columns = $columns;
+        $this->colors = $colors;
+        $this->stderr = $stderr;
+        $this->noInteraction = $noInteraction;
+        $this->verbose = $verbose;
+        $this->reverseDefectList = $reverseDefectList;
+        $this->convertDeprecationsToExceptions = $convertDeprecationsToExceptions;
+        $this->convertErrorsToExceptions = $convertErrorsToExceptions;
+        $this->convertNoticesToExceptions = $convertNoticesToExceptions;
+        $this->convertWarningsToExceptions = $convertWarningsToExceptions;
+        $this->forceCoversAnnotation = $forceCoversAnnotation;
+        $this->bootstrap = $bootstrap;
+        $this->processIsolation = $processIsolation;
+        $this->failOnEmptyTestSuite = $failOnEmptyTestSuite;
+        $this->failOnIncomplete = $failOnIncomplete;
+        $this->failOnRisky = $failOnRisky;
+        $this->failOnSkipped = $failOnSkipped;
+        $this->failOnWarning = $failOnWarning;
+        $this->stopOnDefect = $stopOnDefect;
+        $this->stopOnError = $stopOnError;
+        $this->stopOnFailure = $stopOnFailure;
+        $this->stopOnWarning = $stopOnWarning;
+        $this->stopOnIncomplete = $stopOnIncomplete;
+        $this->stopOnRisky = $stopOnRisky;
+        $this->stopOnSkipped = $stopOnSkipped;
+        $this->extensionsDirectory = $extensionsDirectory;
+        $this->testSuiteLoaderClass = $testSuiteLoaderClass;
+        $this->testSuiteLoaderFile = $testSuiteLoaderFile;
+        $this->printerClass = $printerClass;
+        $this->printerFile = $printerFile;
+        $this->beStrictAboutChangesToGlobalState = $beStrictAboutChangesToGlobalState;
+        $this->beStrictAboutOutputDuringTests = $beStrictAboutOutputDuringTests;
+        $this->beStrictAboutResourceUsageDuringSmallTests = $beStrictAboutResourceUsageDuringSmallTests;
+        $this->beStrictAboutTestsThatDoNotTestAnything = $beStrictAboutTestsThatDoNotTestAnything;
+        $this->beStrictAboutTodoAnnotatedTests = $beStrictAboutTodoAnnotatedTests;
+        $this->beStrictAboutCoversAnnotation = $beStrictAboutCoversAnnotation;
+        $this->enforceTimeLimit = $enforceTimeLimit;
+        $this->defaultTimeLimit = $defaultTimeLimit;
+        $this->timeoutForSmallTests = $timeoutForSmallTests;
+        $this->timeoutForMediumTests = $timeoutForMediumTests;
+        $this->timeoutForLargeTests = $timeoutForLargeTests;
+        $this->defaultTestSuite = $defaultTestSuite;
+        $this->executionOrder = $executionOrder;
+        $this->resolveDependencies = $resolveDependencies;
+        $this->defectsFirst = $defectsFirst;
+        $this->backupGlobals = $backupGlobals;
+        $this->backupStaticAttributes = $backupStaticAttributes;
         $this->registerMockObjectsFromTestArgumentsRecursively = $registerMockObjectsFromTestArgumentsRecursively;
-        $this->conflictBetweenPrinterClassAndTestdox           = $conflictBetweenPrinterClassAndTestdox;
+        $this->conflictBetweenPrinterClassAndTestdox = $conflictBetweenPrinterClassAndTestdox;
     }
 
     public function cacheResult(): bool
     {
         return $this->cacheResult;
-    }
-
-    /**
-     * @psalm-assert-if-true !null $this->cacheResultFile
-     */
-    public function hasCacheResultFile(): bool
-    {
-        return $this->cacheResultFile !== null;
     }
 
     /**
@@ -351,7 +344,15 @@ final class PHPUnit
             throw new Exception('Cache result file is not configured');
         }
 
-        return (string) $this->cacheResultFile;
+        return (string)$this->cacheResultFile;
+    }
+
+    /**
+     * @psalm-assert-if-true !null $this->cacheResultFile
+     */
+    public function hasCacheResultFile(): bool
+    {
+        return $this->cacheResultFile !== null;
     }
 
     public function columns()
@@ -410,14 +411,6 @@ final class PHPUnit
     }
 
     /**
-     * @psalm-assert-if-true !null $this->bootstrap
-     */
-    public function hasBootstrap(): bool
-    {
-        return $this->bootstrap !== null;
-    }
-
-    /**
      * @throws Exception
      */
     public function bootstrap(): string
@@ -426,7 +419,15 @@ final class PHPUnit
             throw new Exception('Bootstrap script is not configured');
         }
 
-        return (string) $this->bootstrap;
+        return (string)$this->bootstrap;
+    }
+
+    /**
+     * @psalm-assert-if-true !null $this->bootstrap
+     */
+    public function hasBootstrap(): bool
+    {
+        return $this->bootstrap !== null;
     }
 
     public function processIsolation(): bool
@@ -495,6 +496,18 @@ final class PHPUnit
     }
 
     /**
+     * @throws Exception
+     */
+    public function extensionsDirectory(): string
+    {
+        if (!$this->hasExtensionsDirectory()) {
+            throw new Exception('Extensions directory is not configured');
+        }
+
+        return (string)$this->extensionsDirectory;
+    }
+
+    /**
      * @psalm-assert-if-true !null $this->extensionsDirectory
      */
     public function hasExtensionsDirectory(): bool
@@ -504,14 +517,16 @@ final class PHPUnit
 
     /**
      * @throws Exception
+     *
+     * @deprecated see https://github.com/sebastianbergmann/phpunit/issues/4039
      */
-    public function extensionsDirectory(): string
+    public function testSuiteLoaderClass(): string
     {
-        if (!$this->hasExtensionsDirectory()) {
-            throw new Exception('Extensions directory is not configured');
+        if (!$this->hasTestSuiteLoaderClass()) {
+            throw new Exception('TestSuiteLoader class is not configured');
         }
 
-        return (string) $this->extensionsDirectory;
+        return (string)$this->testSuiteLoaderClass;
     }
 
     /**
@@ -529,13 +544,13 @@ final class PHPUnit
      *
      * @deprecated see https://github.com/sebastianbergmann/phpunit/issues/4039
      */
-    public function testSuiteLoaderClass(): string
+    public function testSuiteLoaderFile(): string
     {
-        if (!$this->hasTestSuiteLoaderClass()) {
-            throw new Exception('TestSuiteLoader class is not configured');
+        if (!$this->hasTestSuiteLoaderFile()) {
+            throw new Exception('TestSuiteLoader sourcecode file is not configured');
         }
 
-        return (string) $this->testSuiteLoaderClass;
+        return (string)$this->testSuiteLoaderFile;
     }
 
     /**
@@ -550,16 +565,14 @@ final class PHPUnit
 
     /**
      * @throws Exception
-     *
-     * @deprecated see https://github.com/sebastianbergmann/phpunit/issues/4039
      */
-    public function testSuiteLoaderFile(): string
+    public function printerClass(): string
     {
-        if (!$this->hasTestSuiteLoaderFile()) {
-            throw new Exception('TestSuiteLoader sourcecode file is not configured');
+        if (!$this->hasPrinterClass()) {
+            throw new Exception('ResultPrinter class is not configured');
         }
 
-        return (string) $this->testSuiteLoaderFile;
+        return (string)$this->printerClass;
     }
 
     /**
@@ -573,13 +586,13 @@ final class PHPUnit
     /**
      * @throws Exception
      */
-    public function printerClass(): string
+    public function printerFile(): string
     {
-        if (!$this->hasPrinterClass()) {
-            throw new Exception('ResultPrinter class is not configured');
+        if (!$this->hasPrinterFile()) {
+            throw new Exception('ResultPrinter sourcecode file is not configured');
         }
 
-        return (string) $this->printerClass;
+        return (string)$this->printerFile;
     }
 
     /**
@@ -588,18 +601,6 @@ final class PHPUnit
     public function hasPrinterFile(): bool
     {
         return $this->printerFile !== null;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function printerFile(): string
-    {
-        if (!$this->hasPrinterFile()) {
-            throw new Exception('ResultPrinter sourcecode file is not configured');
-        }
-
-        return (string) $this->printerFile;
     }
 
     public function beStrictAboutChangesToGlobalState(): bool
@@ -658,14 +659,6 @@ final class PHPUnit
     }
 
     /**
-     * @psalm-assert-if-true !null $this->defaultTestSuite
-     */
-    public function hasDefaultTestSuite(): bool
-    {
-        return $this->defaultTestSuite !== null;
-    }
-
-    /**
      * @throws Exception
      */
     public function defaultTestSuite(): string
@@ -674,7 +667,15 @@ final class PHPUnit
             throw new Exception('Default test suite is not configured');
         }
 
-        return (string) $this->defaultTestSuite;
+        return (string)$this->defaultTestSuite;
+    }
+
+    /**
+     * @psalm-assert-if-true !null $this->defaultTestSuite
+     */
+    public function hasDefaultTestSuite(): bool
+    {
+        return $this->defaultTestSuite !== null;
     }
 
     public function executionOrder(): int

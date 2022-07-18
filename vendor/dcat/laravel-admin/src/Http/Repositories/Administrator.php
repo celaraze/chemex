@@ -40,7 +40,7 @@ class Administrator extends EloquentRepository
 
         $permissions = $roleModel::getPermissionId($roleIds);
 
-        if (! $permissions->isEmpty()) {
+        if (!$permissions->isEmpty()) {
             $items = $items->map(function ($v) use ($roleKeyName, $permissions) {
                 $v['permissions'] = [];
 

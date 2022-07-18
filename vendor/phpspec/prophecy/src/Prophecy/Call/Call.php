@@ -32,21 +32,21 @@ class Call
     /**
      * Initializes call.
      *
-     * @param string      $methodName
-     * @param array       $arguments
-     * @param mixed       $returnValue
-     * @param Exception   $exception
+     * @param string $methodName
+     * @param array $arguments
+     * @param mixed $returnValue
+     * @param Exception $exception
      * @param null|string $file
-     * @param null|int    $line
+     * @param null|int $line
      */
     public function __construct($methodName, array $arguments, $returnValue,
                                 Exception $exception = null, $file, $line)
     {
-        $this->methodName  = $methodName;
-        $this->arguments   = $arguments;
+        $this->methodName = $methodName;
+        $this->arguments = $arguments;
         $this->returnValue = $returnValue;
-        $this->exception   = $exception;
-        $this->scores      = new \SplObjectStorage();
+        $this->exception = $exception;
+        $this->scores = new \SplObjectStorage();
 
         if ($file) {
             $this->file = $file;
@@ -62,16 +62,6 @@ class Call
     public function getMethodName()
     {
         return $this->methodName;
-    }
-
-    /**
-     * Returns called method arguments.
-     *
-     * @return array
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
     }
 
     /**
@@ -158,5 +148,15 @@ class Call
         }
 
         return $this->scores[$wildcard] = $wildcard->scoreArguments($this->getArguments());
+    }
+
+    /**
+     * Returns called method arguments.
+     *
+     * @return array
+     */
+    public function getArguments()
+    {
+        return $this->arguments;
     }
 }

@@ -34,13 +34,13 @@ final class DisallowedRawHtmlRenderer implements NodeRendererInterface, Configur
 
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): ?string
     {
-        $rendered = (string) $this->innerRenderer->render($node, $childRenderer);
+        $rendered = (string)$this->innerRenderer->render($node, $childRenderer);
 
         if ($rendered === '') {
             return '';
         }
 
-        $tags = (array) $this->config->get('disallowed_raw_html/disallowed_tags');
+        $tags = (array)$this->config->get('disallowed_raw_html/disallowed_tags');
         if (\count($tags) === 0) {
             return $rendered;
         }

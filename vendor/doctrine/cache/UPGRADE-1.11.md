@@ -6,6 +6,7 @@ will only contain interfaces to provide a lightweight package for backward
 compatibility.
 
 There are two new classes to use in the `Doctrine\Common\Cache\Psr6` namespace:
+
 * The `CacheAdapter` class allows using any Doctrine Cache as PSR-6 cache. This
   is useful to provide a forward compatibility layer in libraries that accept
   Doctrine cache implementations and switch to PSR-6.

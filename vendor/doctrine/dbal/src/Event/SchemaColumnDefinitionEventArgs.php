@@ -31,15 +31,23 @@ class SchemaColumnDefinitionEventArgs extends SchemaEventArgs
 
     /**
      * @param mixed[] $tableColumn
-     * @param string  $table
-     * @param string  $database
+     * @param string $table
+     * @param string $database
      */
     public function __construct(array $tableColumn, $table, $database, Connection $connection)
     {
         $this->tableColumn = $tableColumn;
-        $this->table       = $table;
-        $this->database    = $database;
-        $this->connection  = $connection;
+        $this->table = $table;
+        $this->database = $database;
+        $this->connection = $connection;
+    }
+
+    /**
+     * @return Column|null
+     */
+    public function getColumn()
+    {
+        return $this->column;
     }
 
     /**
@@ -53,14 +61,6 @@ class SchemaColumnDefinitionEventArgs extends SchemaEventArgs
         $this->column = $column;
 
         return $this;
-    }
-
-    /**
-     * @return Column|null
-     */
-    public function getColumn()
-    {
-        return $this->column;
     }
 
     /**

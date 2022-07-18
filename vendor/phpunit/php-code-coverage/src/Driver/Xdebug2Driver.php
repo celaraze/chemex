@@ -7,14 +7,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Driver;
 
-use const XDEBUG_CC_BRANCH_CHECK;
-use const XDEBUG_CC_DEAD_CODE;
-use const XDEBUG_CC_UNUSED;
-use const XDEBUG_FILTER_CODE_COVERAGE;
-use const XDEBUG_PATH_INCLUDE;
-use const XDEBUG_PATH_WHITELIST;
+use SebastianBergmann\CodeCoverage\Filter;
+use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 use function defined;
 use function extension_loaded;
 use function ini_get;
@@ -25,8 +22,12 @@ use function xdebug_get_code_coverage;
 use function xdebug_set_filter;
 use function xdebug_start_code_coverage;
 use function xdebug_stop_code_coverage;
-use SebastianBergmann\CodeCoverage\Filter;
-use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
+use const XDEBUG_CC_BRANCH_CHECK;
+use const XDEBUG_CC_DEAD_CODE;
+use const XDEBUG_CC_UNUSED;
+use const XDEBUG_FILTER_CODE_COVERAGE;
+use const XDEBUG_PATH_INCLUDE;
+use const XDEBUG_PATH_WHITELIST;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage

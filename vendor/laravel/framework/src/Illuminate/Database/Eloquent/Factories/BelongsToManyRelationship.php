@@ -31,9 +31,9 @@ class BelongsToManyRelationship
     /**
      * Create a new attached relationship definition.
      *
-     * @param  \Illuminate\Database\Eloquent\Factories\Factory|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model  $factory
-     * @param  callable|array  $pivot
-     * @param  string  $relationship
+     * @param \Illuminate\Database\Eloquent\Factories\Factory|\Illuminate\Support\Collection|\Illuminate\Database\Eloquent\Model $factory
+     * @param callable|array $pivot
+     * @param string $relationship
      * @return void
      */
     public function __construct($factory, $pivot, $relationship)
@@ -46,7 +46,7 @@ class BelongsToManyRelationship
     /**
      * Create the attached relationship for the given model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param \Illuminate\Database\Eloquent\Model $model
      * @return void
      */
     public function createFor(Model $model)

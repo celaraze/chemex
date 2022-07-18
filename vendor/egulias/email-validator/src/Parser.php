@@ -2,10 +2,10 @@
 
 namespace Egulias\EmailValidator;
 
-use Egulias\EmailValidator\Result\Result;
-use Egulias\EmailValidator\Result\ValidEmail;
 use Egulias\EmailValidator\Result\InvalidEmail;
 use Egulias\EmailValidator\Result\Reason\ExpectingATEXT;
+use Egulias\EmailValidator\Result\Result;
+use Egulias\EmailValidator\Result\ValidEmail;
 
 abstract class Parser
 {
@@ -19,20 +19,12 @@ abstract class Parser
      */
     protected $lexer;
 
-    /**
-     * id-left "@" id-right
-     */
-    abstract protected function parseRightFromAt() : Result;
-    abstract protected function parseLeftFromAt() : Result;
-    abstract protected function preLeftParsing() : Result;
-
-
     public function __construct(EmailLexer $lexer)
     {
-        $this->lexer = $lexer;   
+        $this->lexer = $lexer;
     }
 
-    public function parse(string $str) : Result
+    public function parse(string $str): Result
     {
         $this->lexer->setInput($str);
 
@@ -51,7 +43,7 @@ abstract class Parser
             return $localPartResult;
         }
 
-        $domainPartResult = $this->parseRightFromAt(); 
+        $domainPartResult = $this->parseRightFromAt();
 
         if ($domainPartResult->isInvalid()) {
             return $domainPartResult;
@@ -60,15 +52,24 @@ abstract class Parser
         return new ValidEmail();
     }
 
+    abstract protected function preLeftParsing(): Result;
+
+    abstract protected function parseLeftFromAt(): Result;
+
+    /**
+     * id-left "@" id-right
+     */
+    abstract protected function parseRightFromAt(): Result;
+
     /**
      * @return Warning\Warning[]
      */
-    public function getWarnings() : array
+    public function getWarnings(): array
     {
         return $this->warnings;
     }
 
-    protected function hasAtToken() : bool
+    protected function hasAtToken(): bool
     {
         $this->lexer->moveNext();
         $this->lexer->moveNext();

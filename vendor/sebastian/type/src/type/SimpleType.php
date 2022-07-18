@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
 use function strtolower;
@@ -30,9 +31,32 @@ final class SimpleType extends Type
 
     public function __construct(string $name, bool $nullable, $value = null)
     {
-        $this->name       = $this->normalize($name);
+        $this->name = $this->normalize($name);
         $this->allowsNull = $nullable;
-        $this->value      = $value;
+        $this->value = $value;
+    }
+
+    private function normalize(string $name): string
+    {
+        $name = strtolower($name);
+
+        switch ($name) {
+            case 'boolean':
+                return 'bool';
+
+            case 'real':
+            case 'double':
+                return 'float';
+
+            case 'integer':
+                return 'int';
+
+            case '[]':
+                return 'array';
+
+            default:
+                return $name;
+        }
     }
 
     public function isAssignable(Type $other): bool
@@ -70,28 +94,5 @@ final class SimpleType extends Type
     public function isSimple(): bool
     {
         return true;
-    }
-
-    private function normalize(string $name): string
-    {
-        $name = strtolower($name);
-
-        switch ($name) {
-            case 'boolean':
-                return 'bool';
-
-            case 'real':
-            case 'double':
-                return 'float';
-
-            case 'integer':
-                return 'int';
-
-            case '[]':
-                return 'array';
-
-            default:
-                return $name;
-        }
     }
 }

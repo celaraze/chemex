@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Driver\OCI8;
 
 use Doctrine\DBAL\SQL\Parser\Visitor;
-
 use function count;
 use function implode;
 
@@ -31,7 +30,7 @@ final class ConvertPositionalToNamedPlaceholders implements Visitor
     public function acceptPositionalParameter(string $sql): void
     {
         $position = count($this->parameterMap) + 1;
-        $param    = ':param' . $position;
+        $param = ':param' . $position;
 
         $this->parameterMap[$position] = $param;
 

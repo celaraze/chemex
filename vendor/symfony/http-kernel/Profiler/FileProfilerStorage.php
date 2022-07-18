@@ -60,7 +60,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         while (\count($result) < $limit && $line = $this->readLineFromFile($file)) {
             $values = str_getcsv($line);
             [$csvToken, $csvIp, $csvMethod, $csvUrl, $csvTime, $csvParent, $csvStatusCode] = $values;
-            $csvTime = (int) $csvTime;
+            $csvTime = (int)$csvTime;
 
             if ($ip && !str_contains($csvIp, $ip) || $url && !str_contains($csvUrl, $url) || $method && !str_contains($csvMethod, $method) || $statusCode && !str_contains($csvStatusCode, $statusCode)) {
                 continue;
@@ -91,6 +91,59 @@ class FileProfilerStorage implements ProfilerStorageInterface
     }
 
     /**
+     * Gets the index filename.
+     */
+    protected function getIndexFilename(): string
+    {
+        return $this->folder . '/index.csv';
+    }
+
+    /**
+     * Reads a line in the file, backward.
+     *
+     * This function automatically skips the empty lines and do not include the line return in result value.
+     *
+     * @param resource $file The file resource, with the pointer placed at the end of the line to read
+     */
+    protected function readLineFromFile($file): mixed
+    {
+        $line = '';
+        $position = ftell($file);
+
+        if (0 === $position) {
+            return null;
+        }
+
+        while (true) {
+            $chunkSize = min($position, 1024);
+            $position -= $chunkSize;
+            fseek($file, $position);
+
+            if (0 === $chunkSize) {
+                // bof reached
+                break;
+            }
+
+            $buffer = fread($file, $chunkSize);
+
+            if (false === ($upTo = strrpos($buffer, "\n"))) {
+                $line = $buffer . $line;
+                continue;
+            }
+
+            $position += $upTo;
+            $line = substr($buffer, $upTo + 1) . $line;
+            fseek($file, max(0, $position), \SEEK_SET);
+
+            if ('' !== $line) {
+                break;
+            }
+        }
+
+        return '' === $line ? null : $line;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function purge()
@@ -118,7 +171,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
 
         if (\function_exists('gzcompress')) {
-            $file = 'compress.zlib://'.$file;
+            $file = 'compress.zlib://' . $file;
         }
 
         if (!$data = unserialize(file_get_contents($file))) {
@@ -126,6 +179,55 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
 
         return $this->createProfileFromData($token, $data);
+    }
+
+    /**
+     * Gets filename to store data, associated to the token.
+     */
+    protected function getFilename(string $token): string
+    {
+        // Uses 4 last characters, because first are mostly the same.
+        $folderA = substr($token, -2, 2);
+        $folderB = substr($token, -4, 2);
+
+        return $this->folder . '/' . $folderA . '/' . $folderB . '/' . $token;
+    }
+
+    protected function createProfileFromData(string $token, array $data, Profile $parent = null)
+    {
+        $profile = new Profile($token);
+        $profile->setIp($data['ip']);
+        $profile->setMethod($data['method']);
+        $profile->setUrl($data['url']);
+        $profile->setTime($data['time']);
+        $profile->setStatusCode($data['status_code']);
+        $profile->setCollectors($data['data']);
+
+        if (!$parent && $data['parent']) {
+            $parent = $this->read($data['parent']);
+        }
+
+        if ($parent) {
+            $profile->setParent($parent);
+        }
+
+        foreach ($data['children'] as $token) {
+            if (!$token || !file_exists($file = $this->getFilename($token))) {
+                continue;
+            }
+
+            if (\function_exists('gzcompress')) {
+                $file = 'compress.zlib://' . $file;
+            }
+
+            if (!$childData = unserialize(file_get_contents($file))) {
+                continue;
+            }
+
+            $profile->addChild($this->createProfileFromData($token, $childData, $profile));
+        }
+
+        return $profile;
     }
 
     /**
@@ -170,7 +272,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         $context = stream_context_create();
 
         if (\function_exists('gzcompress')) {
-            $file = 'compress.zlib://'.$file;
+            $file = 'compress.zlib://' . $file;
             stream_context_set_option($context, 'zlib', 'level', 3);
         }
 
@@ -197,107 +299,5 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
 
         return true;
-    }
-
-    /**
-     * Gets filename to store data, associated to the token.
-     */
-    protected function getFilename(string $token): string
-    {
-        // Uses 4 last characters, because first are mostly the same.
-        $folderA = substr($token, -2, 2);
-        $folderB = substr($token, -4, 2);
-
-        return $this->folder.'/'.$folderA.'/'.$folderB.'/'.$token;
-    }
-
-    /**
-     * Gets the index filename.
-     */
-    protected function getIndexFilename(): string
-    {
-        return $this->folder.'/index.csv';
-    }
-
-    /**
-     * Reads a line in the file, backward.
-     *
-     * This function automatically skips the empty lines and do not include the line return in result value.
-     *
-     * @param resource $file The file resource, with the pointer placed at the end of the line to read
-     */
-    protected function readLineFromFile($file): mixed
-    {
-        $line = '';
-        $position = ftell($file);
-
-        if (0 === $position) {
-            return null;
-        }
-
-        while (true) {
-            $chunkSize = min($position, 1024);
-            $position -= $chunkSize;
-            fseek($file, $position);
-
-            if (0 === $chunkSize) {
-                // bof reached
-                break;
-            }
-
-            $buffer = fread($file, $chunkSize);
-
-            if (false === ($upTo = strrpos($buffer, "\n"))) {
-                $line = $buffer.$line;
-                continue;
-            }
-
-            $position += $upTo;
-            $line = substr($buffer, $upTo + 1).$line;
-            fseek($file, max(0, $position), \SEEK_SET);
-
-            if ('' !== $line) {
-                break;
-            }
-        }
-
-        return '' === $line ? null : $line;
-    }
-
-    protected function createProfileFromData(string $token, array $data, Profile $parent = null)
-    {
-        $profile = new Profile($token);
-        $profile->setIp($data['ip']);
-        $profile->setMethod($data['method']);
-        $profile->setUrl($data['url']);
-        $profile->setTime($data['time']);
-        $profile->setStatusCode($data['status_code']);
-        $profile->setCollectors($data['data']);
-
-        if (!$parent && $data['parent']) {
-            $parent = $this->read($data['parent']);
-        }
-
-        if ($parent) {
-            $profile->setParent($parent);
-        }
-
-        foreach ($data['children'] as $token) {
-            if (!$token || !file_exists($file = $this->getFilename($token))) {
-                continue;
-            }
-
-            if (\function_exists('gzcompress')) {
-                $file = 'compress.zlib://'.$file;
-            }
-
-            if (!$childData = unserialize(file_get_contents($file))) {
-                continue;
-            }
-
-            $profile->addChild($this->createProfileFromData($token, $childData, $profile));
-        }
-
-        return $profile;
     }
 }

@@ -81,11 +81,11 @@ HELP
     }
 
     /**
-     * @deprecated Use `resolveCode` instead
-     *
      * @param string $name
      *
      * @return mixed
+     * @deprecated Use `resolveCode` instead
+     *
      */
     protected function resolveTarget(string $name)
     {

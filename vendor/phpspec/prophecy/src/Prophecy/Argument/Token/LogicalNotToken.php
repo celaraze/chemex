@@ -18,7 +18,7 @@ namespace Prophecy\Argument\Token;
  */
 class LogicalNotToken implements TokenInterface
 {
-    /** @var \Prophecy\Argument\Token\TokenInterface  */
+    /** @var \Prophecy\Argument\Token\TokenInterface */
     private $token;
 
     /**
@@ -26,7 +26,7 @@ class LogicalNotToken implements TokenInterface
      */
     public function __construct($value)
     {
-        $this->token = $value instanceof TokenInterface? $value : new ExactValueToken($value);
+        $this->token = $value instanceof TokenInterface ? $value : new ExactValueToken($value);
     }
 
     /**

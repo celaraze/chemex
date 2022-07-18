@@ -66,7 +66,7 @@ class AutocompleterAggregate implements Autocompleter
     {
         foreach ($this->getAutocompleters() as $autocompleter) {
             $preg = \preg_match(
-                '#('.$autocompleter->getWordDefinition().')$#u',
+                '#(' . $autocompleter->getWordDefinition() . ')$#u',
                 $prefix,
                 $match
             );
@@ -90,6 +90,14 @@ class AutocompleterAggregate implements Autocompleter
     }
 
     /**
+     * Get list of autocompleters.
+     */
+    public function getAutocompleters()
+    {
+        return $this->_autocompleters;
+    }
+
+    /**
      * Set/initialize list of autocompleters.
      */
     protected function setAutocompleters(array $autocompleters)
@@ -98,14 +106,6 @@ class AutocompleterAggregate implements Autocompleter
         $this->_autocompleters = new \ArrayObject($autocompleters);
 
         return $old;
-    }
-
-    /**
-     * Get list of autocompleters.
-     */
-    public function getAutocompleters()
-    {
-        return $this->_autocompleters;
     }
 
     /**

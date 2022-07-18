@@ -29,44 +29,16 @@ abstract class ReaderAbstract implements ReaderInterface
     protected $optionsManager;
 
     /**
-     * Returns whether stream wrappers are supported
-     *
-     * @return bool
-     */
-    abstract protected function doesSupportStreamWrapper();
-
-    /**
-     * Opens the file at the given file path to make it ready to be read
-     *
-     * @param  string $filePath Path of the file to be read
-     * @return void
-     */
-    abstract protected function openReader($filePath);
-
-    /**
-     * Returns an iterator to iterate over sheets.
-     *
-     * @return IteratorInterface To iterate over sheets
-     */
-    abstract protected function getConcreteSheetIterator();
-
-    /**
-     * Closes the reader. To be used after reading the file.
-     *
-     * @return ReaderAbstract
-     */
-    abstract protected function closeReader();
-
-    /**
      * @param OptionsManagerInterface $optionsManager
      * @param GlobalFunctionsHelper $globalFunctionsHelper
      * @param InternalEntityFactoryInterface $entityFactory
      */
     public function __construct(
-        OptionsManagerInterface $optionsManager,
-        GlobalFunctionsHelper $globalFunctionsHelper,
+        OptionsManagerInterface        $optionsManager,
+        GlobalFunctionsHelper          $globalFunctionsHelper,
         InternalEntityFactoryInterface $entityFactory
-    ) {
+    )
+    {
         $this->optionsManager = $optionsManager;
         $this->globalFunctionsHelper = $globalFunctionsHelper;
         $this->entityFactory = $entityFactory;
@@ -102,9 +74,9 @@ abstract class ReaderAbstract implements ReaderInterface
      * Prepares the reader to read the given file. It also makes sure
      * that the file exists and is readable.
      *
-     * @param  string $filePath Path of the file to be read
-     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path does not exist, is not readable or is corrupted
+     * @param string $filePath Path of the file to be read
      * @return void
+     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path does not exist, is not readable or is corrupted
      */
     public function open($filePath)
     {
@@ -132,20 +104,15 @@ abstract class ReaderAbstract implements ReaderInterface
     }
 
     /**
-     * Returns the real path of the given path.
-     * If the given path is a valid stream wrapper, returns the path unchanged.
+     * Checks if the given path is an unsupported stream wrapper
+     * (like local path, php://temp, mystream://foo/bar...).
      *
-     * @param string $filePath
-     * @return string
+     * @param string $filePath Path of the file to be read
+     * @return bool Whether the given path is an unsupported stream wrapper
      */
-    protected function getFileRealPath($filePath)
+    protected function isStreamWrapper($filePath)
     {
-        if ($this->isSupportedStreamWrapper($filePath)) {
-            return $filePath;
-        }
-
-        // Need to use realpath to fix "Can't open file" on some Windows setup
-        return \realpath($filePath);
+        return ($this->getStreamWrapperScheme($filePath) !== null);
     }
 
     /**
@@ -166,16 +133,11 @@ abstract class ReaderAbstract implements ReaderInterface
     }
 
     /**
-     * Checks if the given path is an unsupported stream wrapper
-     * (like local path, php://temp, mystream://foo/bar...).
+     * Returns whether stream wrappers are supported
      *
-     * @param string $filePath Path of the file to be read
-     * @return bool Whether the given path is an unsupported stream wrapper
+     * @return bool
      */
-    protected function isStreamWrapper($filePath)
-    {
-        return ($this->getStreamWrapperScheme($filePath) !== null);
-    }
+    abstract protected function doesSupportStreamWrapper();
 
     /**
      * Checks if the given path is an supported stream wrapper
@@ -208,10 +170,35 @@ abstract class ReaderAbstract implements ReaderInterface
     }
 
     /**
+     * Returns the real path of the given path.
+     * If the given path is a valid stream wrapper, returns the path unchanged.
+     *
+     * @param string $filePath
+     * @return string
+     */
+    protected function getFileRealPath($filePath)
+    {
+        if ($this->isSupportedStreamWrapper($filePath)) {
+            return $filePath;
+        }
+
+        // Need to use realpath to fix "Can't open file" on some Windows setup
+        return \realpath($filePath);
+    }
+
+    /**
+     * Opens the file at the given file path to make it ready to be read
+     *
+     * @param string $filePath Path of the file to be read
+     * @return void
+     */
+    abstract protected function openReader($filePath);
+
+    /**
      * Returns an iterator to iterate over sheets.
      *
-     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException If called before opening the reader
      * @return \Iterator To iterate over sheets
+     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException If called before opening the reader
      */
     public function getSheetIterator()
     {
@@ -221,6 +208,13 @@ abstract class ReaderAbstract implements ReaderInterface
 
         return $this->getConcreteSheetIterator();
     }
+
+    /**
+     * Returns an iterator to iterate over sheets.
+     *
+     * @return IteratorInterface To iterate over sheets
+     */
+    abstract protected function getConcreteSheetIterator();
 
     /**
      * Closes the reader, preventing any additional reading
@@ -240,4 +234,11 @@ abstract class ReaderAbstract implements ReaderInterface
             $this->isStreamOpened = false;
         }
     }
+
+    /**
+     * Closes the reader. To be used after reading the file.
+     *
+     * @return ReaderAbstract
+     */
+    abstract protected function closeReader();
 }

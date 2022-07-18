@@ -22,9 +22,29 @@ abstract class DuskTestCase extends BaseTestCase
      */
     protected $login = true;
 
-    public function login(Browser $browser)
+    /**
+     * Prepare for Dusk test execution.
+     *
+     * @beforeClass
+     *
+     * @return void
+     */
+    public static function prepare()
     {
-        $browser->loginAs($this->getUser(), 'admin');
+        static::startChromeDriver();
+    }
+
+    /**
+     * Build the process to run the Chromedriver.
+     *
+     * @param array $arguments
+     * @return \Symfony\Component\Process\Process
+     *
+     * @throws \RuntimeException
+     */
+    protected static function buildChromeProcess(array $arguments = [])
+    {
+        return (new ChromeProcess(static::$chromeDriver))->toProcess($arguments);
     }
 
     public function setUp(): void
@@ -44,19 +64,7 @@ abstract class DuskTestCase extends BaseTestCase
     }
 
     /**
-     * Prepare for Dusk test execution.
-     *
-     * @beforeClass
-     *
-     * @return void
-     */
-    public static function prepare()
-    {
-        static::startChromeDriver();
-    }
-
-    /**
-     * @param  \Facebook\WebDriver\Remote\RemoteWebDriver  $driver
+     * @param \Facebook\WebDriver\Remote\RemoteWebDriver $driver
      * @return \Laravel\Dusk\Browser
      */
     protected function newBrowser($driver)
@@ -70,6 +78,11 @@ abstract class DuskTestCase extends BaseTestCase
         }
 
         return $browser;
+    }
+
+    public function login(Browser $browser)
+    {
+        $browser->loginAs($this->getUser(), 'admin');
     }
 
     /**
@@ -87,21 +100,8 @@ abstract class DuskTestCase extends BaseTestCase
 
         return RemoteWebDriver::create(
             'http://localhost:9515', DesiredCapabilities::chrome()->setCapability(
-                ChromeOptions::CAPABILITY_W3C, $options
-            )
+            ChromeOptions::CAPABILITY_W3C, $options
+        )
         );
-    }
-
-    /**
-     * Build the process to run the Chromedriver.
-     *
-     * @param  array  $arguments
-     * @return \Symfony\Component\Process\Process
-     *
-     * @throws \RuntimeException
-     */
-    protected static function buildChromeProcess(array $arguments = [])
-    {
-        return (new ChromeProcess(static::$chromeDriver))->toProcess($arguments);
     }
 }

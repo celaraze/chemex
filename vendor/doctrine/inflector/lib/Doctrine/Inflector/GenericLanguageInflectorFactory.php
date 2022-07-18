@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Inflector;
 
 use Doctrine\Inflector\Rules\Ruleset;
-
 use function array_unshift;
 
 abstract class GenericLanguageInflectorFactory implements LanguageInflectorFactory
@@ -19,8 +18,12 @@ abstract class GenericLanguageInflectorFactory implements LanguageInflectorFacto
     final public function __construct()
     {
         $this->singularRulesets[] = $this->getSingularRuleset();
-        $this->pluralRulesets[]   = $this->getPluralRuleset();
+        $this->pluralRulesets[] = $this->getPluralRuleset();
     }
+
+    abstract protected function getSingularRuleset(): Ruleset;
+
+    abstract protected function getPluralRuleset(): Ruleset;
 
     final public function build(): Inflector
     {
@@ -59,8 +62,4 @@ abstract class GenericLanguageInflectorFactory implements LanguageInflectorFacto
 
         return $this;
     }
-
-    abstract protected function getSingularRuleset(): Ruleset;
-
-    abstract protected function getPluralRuleset(): Ruleset;
 }

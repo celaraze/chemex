@@ -47,7 +47,9 @@
 @if(! request()->pjax())
     @include('admin::layouts.page')
 @else
-    <title>{{ Dcat\Admin\Admin::title() }} @if($header) | {{ $header }}@endif</title>
+    <title>{{ Dcat\Admin\Admin::title() }} @if($header)
+            | {{ $header }}
+        @endif</title>
 
     <script>Dcat.wait()</script>
 

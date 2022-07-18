@@ -49,74 +49,8 @@ final class Path
      */
     private static $bufferSize = 0;
 
-    /**
-     * Canonicalizes the given path.
-     *
-     * During normalization, all slashes are replaced by forward slashes ("/").
-     * Furthermore, all "." and ".." segments are removed as far as possible.
-     * ".." segments at the beginning of relative paths are not removed.
-     *
-     * ```php
-     * echo Path::canonicalize("\symfony\puli\..\css\style.css");
-     * // => /symfony/css/style.css
-     *
-     * echo Path::canonicalize("../css/./style.css");
-     * // => ../css/style.css
-     * ```
-     *
-     * This method is able to deal with both UNIX and Windows paths.
-     */
-    public static function canonicalize(string $path): string
+    private function __construct()
     {
-        if ('' === $path) {
-            return '';
-        }
-
-        // This method is called by many other methods in this class. Buffer
-        // the canonicalized paths to make up for the severe performance
-        // decrease.
-        if (isset(self::$buffer[$path])) {
-            return self::$buffer[$path];
-        }
-
-        // Replace "~" with user's home directory.
-        if ('~' === $path[0]) {
-            $path = self::getHomeDirectory().mb_substr($path, 1);
-        }
-
-        $path = self::normalize($path);
-
-        [$root, $pathWithoutRoot] = self::split($path);
-
-        $canonicalParts = self::findCanonicalParts($root, $pathWithoutRoot);
-
-        // Add the root directory again
-        self::$buffer[$path] = $canonicalPath = $root.implode('/', $canonicalParts);
-        ++self::$bufferSize;
-
-        // Clean up regularly to prevent memory leaks
-        if (self::$bufferSize > self::CLEANUP_THRESHOLD) {
-            self::$buffer = \array_slice(self::$buffer, -self::CLEANUP_SIZE, null, true);
-            self::$bufferSize = self::CLEANUP_SIZE;
-        }
-
-        return $canonicalPath;
-    }
-
-    /**
-     * Normalizes the given path.
-     *
-     * During normalization, all slashes are replaced by forward slashes ("/").
-     * Contrary to {@link canonicalize()}, this method does not remove invalid
-     * or dot path segments. Consequently, it is much more efficient and should
-     * be used whenever the given path is known to be a valid, absolute system
-     * path.
-     *
-     * This method is able to deal with both UNIX and Windows paths.
-     */
-    public static function normalize(string $path): string
-    {
-        return str_replace('\\', '/', $path);
     }
 
     /**
@@ -164,15 +98,69 @@ final class Path
 
         // Directory equals root directory "/"
         if (0 === $dirSeparatorPosition) {
-            return $scheme.'/';
+            return $scheme . '/';
         }
 
         // Directory equals Windows root "C:/"
         if (2 === $dirSeparatorPosition && ctype_alpha($path[0]) && ':' === $path[1]) {
-            return $scheme.mb_substr($path, 0, 3);
+            return $scheme . mb_substr($path, 0, 3);
         }
 
-        return $scheme.mb_substr($path, 0, $dirSeparatorPosition);
+        return $scheme . mb_substr($path, 0, $dirSeparatorPosition);
+    }
+
+    /**
+     * Canonicalizes the given path.
+     *
+     * During normalization, all slashes are replaced by forward slashes ("/").
+     * Furthermore, all "." and ".." segments are removed as far as possible.
+     * ".." segments at the beginning of relative paths are not removed.
+     *
+     * ```php
+     * echo Path::canonicalize("\symfony\puli\..\css\style.css");
+     * // => /symfony/css/style.css
+     *
+     * echo Path::canonicalize("../css/./style.css");
+     * // => ../css/style.css
+     * ```
+     *
+     * This method is able to deal with both UNIX and Windows paths.
+     */
+    public static function canonicalize(string $path): string
+    {
+        if ('' === $path) {
+            return '';
+        }
+
+        // This method is called by many other methods in this class. Buffer
+        // the canonicalized paths to make up for the severe performance
+        // decrease.
+        if (isset(self::$buffer[$path])) {
+            return self::$buffer[$path];
+        }
+
+        // Replace "~" with user's home directory.
+        if ('~' === $path[0]) {
+            $path = self::getHomeDirectory() . mb_substr($path, 1);
+        }
+
+        $path = self::normalize($path);
+
+        [$root, $pathWithoutRoot] = self::split($path);
+
+        $canonicalParts = self::findCanonicalParts($root, $pathWithoutRoot);
+
+        // Add the root directory again
+        self::$buffer[$path] = $canonicalPath = $root . implode('/', $canonicalParts);
+        ++self::$bufferSize;
+
+        // Clean up regularly to prevent memory leaks
+        if (self::$bufferSize > self::CLEANUP_THRESHOLD) {
+            self::$buffer = \array_slice(self::$buffer, -self::CLEANUP_SIZE, null, true);
+            self::$bufferSize = self::CLEANUP_SIZE;
+        }
+
+        return $canonicalPath;
     }
 
     /**
@@ -198,10 +186,110 @@ final class Path
 
         // For >= Windows8 support
         if (getenv('HOMEDRIVE') && getenv('HOMEPATH')) {
-            return self::canonicalize(getenv('HOMEDRIVE').getenv('HOMEPATH'));
+            return self::canonicalize(getenv('HOMEDRIVE') . getenv('HOMEPATH'));
         }
 
         throw new RuntimeException("Cannot find the home directory path: Your environment or operating system isn't supported.");
+    }
+
+    /**
+     * Normalizes the given path.
+     *
+     * During normalization, all slashes are replaced by forward slashes ("/").
+     * Contrary to {@link canonicalize()}, this method does not remove invalid
+     * or dot path segments. Consequently, it is much more efficient and should
+     * be used whenever the given path is known to be a valid, absolute system
+     * path.
+     *
+     * This method is able to deal with both UNIX and Windows paths.
+     */
+    public static function normalize(string $path): string
+    {
+        return str_replace('\\', '/', $path);
+    }
+
+    /**
+     * Splits a canonical path into its root directory and the remainder.
+     *
+     * If the path has no root directory, an empty root directory will be
+     * returned.
+     *
+     * If the root directory is a Windows style partition, the resulting root
+     * will always contain a trailing slash.
+     *
+     * list ($root, $path) = Path::split("C:/symfony")
+     * // => ["C:/", "symfony"]
+     *
+     * list ($root, $path) = Path::split("C:")
+     * // => ["C:/", ""]
+     *
+     * @return array{string, string} an array with the root directory and the remaining relative path
+     */
+    private static function split(string $path): array
+    {
+        if ('' === $path) {
+            return ['', ''];
+        }
+
+        // Remember scheme as part of the root, if any
+        if (false !== ($schemeSeparatorPosition = mb_strpos($path, '://'))) {
+            $root = mb_substr($path, 0, $schemeSeparatorPosition + 3);
+            $path = mb_substr($path, $schemeSeparatorPosition + 3);
+        } else {
+            $root = '';
+        }
+
+        $length = mb_strlen($path);
+
+        // Remove and remember root directory
+        if (str_starts_with($path, '/')) {
+            $root .= '/';
+            $path = $length > 1 ? mb_substr($path, 1) : '';
+        } elseif ($length > 1 && ctype_alpha($path[0]) && ':' === $path[1]) {
+            if (2 === $length) {
+                // Windows special case: "C:"
+                $root .= $path . '/';
+                $path = '';
+            } elseif ('/' === $path[2]) {
+                // Windows normal case: "C:/"..
+                $root .= mb_substr($path, 0, 3);
+                $path = $length > 3 ? mb_substr($path, 3) : '';
+            }
+        }
+
+        return [$root, $path];
+    }
+
+    /**
+     * @return non-empty-string[]
+     */
+    private static function findCanonicalParts(string $root, string $pathWithoutRoot): array
+    {
+        $parts = explode('/', $pathWithoutRoot);
+
+        $canonicalParts = [];
+
+        // Collapse "." and "..", if possible
+        foreach ($parts as $part) {
+            if ('.' === $part || '' === $part) {
+                continue;
+            }
+
+            // Collapse ".." with the previous part, if one exists
+            // Don't collapse ".." if the previous part is also ".."
+            if ('..' === $part && \count($canonicalParts) > 0 && '..' !== $canonicalParts[\count($canonicalParts) - 1]) {
+                array_pop($canonicalParts);
+
+                continue;
+            }
+
+            // Only add ".." prefixes for relative paths
+            if ('..' !== $part || '' === $root) {
+                $canonicalParts[] = $part;
+            }
+        }
+
+        return $canonicalParts;
     }
 
     /**
@@ -230,7 +318,7 @@ final class Path
 
         // UNIX root "/" or "\" (Windows style)
         if ('/' === $firstCharacter || '\\' === $firstCharacter) {
-            return $scheme.'/';
+            return $scheme . '/';
         }
 
         $length = mb_strlen($path);
@@ -239,12 +327,12 @@ final class Path
         if ($length > 1 && ':' === $path[1] && ctype_alpha($firstCharacter)) {
             // Special case: "C:"
             if (2 === $length) {
-                return $scheme.$path.'/';
+                return $scheme . $path . '/';
             }
 
             // Normal case: "C:/ or "C:\"
             if ('/' === $path[2] || '\\' === $path[2]) {
-                return $scheme.$firstCharacter.$path[1].'/';
+                return $scheme . $firstCharacter . $path[1] . '/';
             }
         }
 
@@ -272,35 +360,15 @@ final class Path
     }
 
     /**
-     * Returns the extension from a file path (without leading dot).
-     *
-     * @param bool $forceLowerCase forces the extension to be lower-case
-     */
-    public static function getExtension(string $path, bool $forceLowerCase = false): string
-    {
-        if ('' === $path) {
-            return '';
-        }
-
-        $extension = pathinfo($path, \PATHINFO_EXTENSION);
-
-        if ($forceLowerCase) {
-            $extension = self::toLower($extension);
-        }
-
-        return $extension;
-    }
-
-    /**
      * Returns whether the path has an (or the specified) extension.
      *
-     * @param string               $path       the path string
+     * @param string $path the path string
      * @param string|string[]|null $extensions if null or not provided, checks if
      *                                         an extension exists, otherwise
      *                                         checks for the specified extension
      *                                         or array of extensions (with or
      *                                         without leading dot)
-     * @param bool                 $ignoreCase whether to ignore case-sensitivity
+     * @param bool $ignoreCase whether to ignore case-sensitivity
      */
     public static function hasExtension(string $path, $extensions = null, bool $ignoreCase = false): bool
     {
@@ -332,9 +400,38 @@ final class Path
     }
 
     /**
+     * Returns the extension from a file path (without leading dot).
+     *
+     * @param bool $forceLowerCase forces the extension to be lower-case
+     */
+    public static function getExtension(string $path, bool $forceLowerCase = false): string
+    {
+        if ('' === $path) {
+            return '';
+        }
+
+        $extension = pathinfo($path, \PATHINFO_EXTENSION);
+
+        if ($forceLowerCase) {
+            $extension = self::toLower($extension);
+        }
+
+        return $extension;
+    }
+
+    private static function toLower(string $string): string
+    {
+        if (false !== $encoding = mb_detect_encoding($string)) {
+            return mb_strtolower($string, $encoding);
+        }
+
+        return strtolower($string, $encoding);
+    }
+
+    /**
      * Changes the extension of a path string.
      *
-     * @param string $path      The path string with filename.ext to change.
+     * @param string $path The path string with filename.ext to change.
      * @param string $extension new extension (with or without leading dot)
      *
      * @return string the path string with new file extension
@@ -355,10 +452,15 @@ final class Path
 
         // No actual extension in path
         if (empty($actualExtension)) {
-            return $path.('.' === mb_substr($path, -1) ? '' : '.').$extension;
+            return $path . ('.' === mb_substr($path, -1) ? '' : '.') . $extension;
         }
 
-        return mb_substr($path, 0, -mb_strlen($actualExtension)).$extension;
+        return mb_substr($path, 0, -mb_strlen($actualExtension)) . $extension;
+    }
+
+    public static function isRelative(string $path): bool
+    {
+        return !self::isAbsolute($path);
     }
 
     public static function isAbsolute(string $path): bool
@@ -393,11 +495,6 @@ final class Path
         }
 
         return false;
-    }
-
-    public static function isRelative(string $path): bool
-    {
-        return !self::isAbsolute($path);
     }
 
     /**
@@ -458,7 +555,7 @@ final class Path
             $scheme = '';
         }
 
-        return $scheme.self::canonicalize(rtrim($basePath, '/\\').'/'.$path);
+        return $scheme . self::canonicalize(rtrim($basePath, '/\\') . '/' . $path);
     }
 
     /**
@@ -566,7 +663,7 @@ final class Path
             $dotDotPrefix .= '../';
         }
 
-        return rtrim($dotDotPrefix.implode('/', $parts), '/');
+        return rtrim($dotDotPrefix . implode('/', $parts), '/');
     }
 
     /**
@@ -638,7 +735,7 @@ final class Path
 
                 // Prevent false positives for common prefixes
                 // see isBasePath()
-                if (str_starts_with($path.'/', $basePath.'/')) {
+                if (str_starts_with($path . '/', $basePath . '/')) {
                     // next path
                     continue 2;
                 }
@@ -647,7 +744,7 @@ final class Path
             }
         }
 
-        return $bpRoot.$basePath;
+        return $bpRoot . $basePath;
     }
 
     /**
@@ -717,103 +814,6 @@ final class Path
         // Don't append a slash for the root "/", because then that root
         // won't be discovered as common prefix ("//" is not a prefix of
         // "/foobar/").
-        return str_starts_with($ofPath.'/', rtrim($basePath, '/').'/');
-    }
-
-    /**
-     * @return non-empty-string[]
-     */
-    private static function findCanonicalParts(string $root, string $pathWithoutRoot): array
-    {
-        $parts = explode('/', $pathWithoutRoot);
-
-        $canonicalParts = [];
-
-        // Collapse "." and "..", if possible
-        foreach ($parts as $part) {
-            if ('.' === $part || '' === $part) {
-                continue;
-            }
-
-            // Collapse ".." with the previous part, if one exists
-            // Don't collapse ".." if the previous part is also ".."
-            if ('..' === $part && \count($canonicalParts) > 0 && '..' !== $canonicalParts[\count($canonicalParts) - 1]) {
-                array_pop($canonicalParts);
-
-                continue;
-            }
-
-            // Only add ".." prefixes for relative paths
-            if ('..' !== $part || '' === $root) {
-                $canonicalParts[] = $part;
-            }
-        }
-
-        return $canonicalParts;
-    }
-
-    /**
-     * Splits a canonical path into its root directory and the remainder.
-     *
-     * If the path has no root directory, an empty root directory will be
-     * returned.
-     *
-     * If the root directory is a Windows style partition, the resulting root
-     * will always contain a trailing slash.
-     *
-     * list ($root, $path) = Path::split("C:/symfony")
-     * // => ["C:/", "symfony"]
-     *
-     * list ($root, $path) = Path::split("C:")
-     * // => ["C:/", ""]
-     *
-     * @return array{string, string} an array with the root directory and the remaining relative path
-     */
-    private static function split(string $path): array
-    {
-        if ('' === $path) {
-            return ['', ''];
-        }
-
-        // Remember scheme as part of the root, if any
-        if (false !== ($schemeSeparatorPosition = mb_strpos($path, '://'))) {
-            $root = mb_substr($path, 0, $schemeSeparatorPosition + 3);
-            $path = mb_substr($path, $schemeSeparatorPosition + 3);
-        } else {
-            $root = '';
-        }
-
-        $length = mb_strlen($path);
-
-        // Remove and remember root directory
-        if (str_starts_with($path, '/')) {
-            $root .= '/';
-            $path = $length > 1 ? mb_substr($path, 1) : '';
-        } elseif ($length > 1 && ctype_alpha($path[0]) && ':' === $path[1]) {
-            if (2 === $length) {
-                // Windows special case: "C:"
-                $root .= $path.'/';
-                $path = '';
-            } elseif ('/' === $path[2]) {
-                // Windows normal case: "C:/"..
-                $root .= mb_substr($path, 0, 3);
-                $path = $length > 3 ? mb_substr($path, 3) : '';
-            }
-        }
-
-        return [$root, $path];
-    }
-
-    private static function toLower(string $string): string
-    {
-        if (false !== $encoding = mb_detect_encoding($string)) {
-            return mb_strtolower($string, $encoding);
-        }
-
-        return strtolower($string, $encoding);
-    }
-
-    private function __construct()
-    {
+        return str_starts_with($ofPath . '/', rtrim($basePath, '/') . '/');
     }
 }

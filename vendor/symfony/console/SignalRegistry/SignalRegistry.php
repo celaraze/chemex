@@ -22,6 +22,11 @@ final class SignalRegistry
         }
     }
 
+    public static function isSupported(): bool
+    {
+        return \function_exists('pcntl_signal');
+    }
+
     public function register(int $signal, callable $signalHandler): void
     {
         if (!isset($this->signalHandlers[$signal])) {
@@ -35,11 +40,6 @@ final class SignalRegistry
         $this->signalHandlers[$signal][] = $signalHandler;
 
         pcntl_signal($signal, $this->handle(...));
-    }
-
-    public static function isSupported(): bool
-    {
-        return \function_exists('pcntl_signal');
     }
 
     /**

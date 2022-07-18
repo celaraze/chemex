@@ -21,11 +21,11 @@ class Markdown extends Widget
      * @var array
      */
     protected $options = [
-        'htmlDecode'      => 'style,script,iframe',
-        'emoji'           => true,
-        'taskList'        => true,
-        'tex'             => true,
-        'flowChart'       => true,
+        'htmlDecode' => 'style,script,iframe',
+        'emoji' => true,
+        'taskList' => true,
+        'tex' => true,
+        'flowChart' => true,
         'sequenceDiagram' => true,
     ];
 
@@ -35,11 +35,11 @@ class Markdown extends Widget
             $this->content($markdown);
         }
 
-        $this->id('mkd-'.Str::random(8));
+        $this->id('mkd-' . Str::random(8));
     }
 
     /**
-     * @param  string|Renderable  $markdown
+     * @param string|Renderable $markdown
      * @return $this
      */
     public function content($markdown)
@@ -57,7 +57,7 @@ class Markdown extends Widget
     public function render()
     {
         $this->addVariables([
-            'id'      => $this->id(),
+            'id' => $this->id(),
             'content' => $this->renderContent(),
         ]);
 

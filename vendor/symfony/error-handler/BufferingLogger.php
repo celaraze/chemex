@@ -37,12 +37,12 @@ class BufferingLogger extends AbstractLogger
 
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
@@ -55,9 +55,9 @@ class BufferingLogger extends AbstractLogger
                     } elseif ($val instanceof \DateTimeInterface) {
                         $message = str_replace("{{$key}}", $val->format(\DateTime::RFC3339), $message);
                     } elseif (\is_object($val)) {
-                        $message = str_replace("{{$key}}", '[object '.get_debug_type($val).']', $message);
+                        $message = str_replace("{{$key}}", '[object ' . get_debug_type($val) . ']', $message);
                     } else {
-                        $message = str_replace("{{$key}}", '['.\gettype($val).']', $message);
+                        $message = str_replace("{{$key}}", '[' . \gettype($val) . ']', $message);
                     }
                 }
             }

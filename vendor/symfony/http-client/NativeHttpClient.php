@@ -36,14 +36,13 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
     use HttpClientTrait;
     use LoggerAwareTrait;
 
-    private array $defaultOptions = self::OPTIONS_DEFAULTS;
     private static array $emptyDefaults = self::OPTIONS_DEFAULTS;
-
+    private array $defaultOptions = self::OPTIONS_DEFAULTS;
     private NativeClientState $multi;
 
     /**
-     * @param array $defaultOptions     Default request's options
-     * @param int   $maxHostConnections The maximum number of connections to open
+     * @param array $defaultOptions Default request's options
+     * @param int $maxHostConnections The maximum number of connections to open
      *
      * @see HttpClientInterface::OPTIONS_DEFAULTS for available options
      */
@@ -70,10 +69,10 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
 
         if ($options['bindto']) {
             if (file_exists($options['bindto'])) {
-                throw new TransportException(__CLASS__.' cannot bind to local Unix sockets, use e.g. CurlHttpClient instead.');
+                throw new TransportException(__CLASS__ . ' cannot bind to local Unix sockets, use e.g. CurlHttpClient instead.');
             }
             if (str_starts_with($options['bindto'], 'if!')) {
-                throw new TransportException(__CLASS__.' cannot bind to network interfaces, use e.g. CurlHttpClient instead.');
+                throw new TransportException(__CLASS__ . ' cannot bind to network interfaces, use e.g. CurlHttpClient instead.');
             }
             if (str_starts_with($options['bindto'], 'host!')) {
                 $options['bindto'] = substr($options['bindto'], 5);
@@ -104,7 +103,7 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
 
         if ($options['peer_fingerprint']) {
             if (isset($options['peer_fingerprint']['pin-sha256']) && 1 === \count($options['peer_fingerprint'])) {
-                throw new TransportException(__CLASS__.' cannot verify "pin-sha256" fingerprints, please provide a "sha256" one.');
+                throw new TransportException(__CLASS__ . ' cannot verify "pin-sha256" fingerprints, please provide a "sha256" one.');
             }
 
             unset($options['peer_fingerprint']['pin-sha256']);
@@ -222,10 +221,12 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
                 'ciphers' => $options['ciphers'],
                 'peer_fingerprint' => $options['peer_fingerprint'],
                 'capture_peer_cert_chain' => $options['capture_peer_cert_chain'],
-                'allow_self_signed' => (bool) $options['peer_fingerprint'],
+                'allow_self_signed' => (bool)$options['peer_fingerprint'],
                 'SNI_enabled' => true,
                 'disable_compression' => true,
-            ], static function ($v) { return null !== $v; }),
+            ], static function ($v) {
+                return null !== $v;
+            }),
             'socket' => [
                 'bindto' => $options['bindto'],
                 'tcp_nodelay' => true,
@@ -238,7 +239,7 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
             [$host, $port] = self::parseHostPort($url, $info);
 
             if (!isset($options['normalized_headers']['host'])) {
-                $options['headers'][] = 'Host: '.$host.$port;
+                $options['headers'][] = 'Host: ' . $host . $port;
             }
 
             $proxy = self::getProxy($options['proxy'], $url, $options['no_proxy']);
@@ -252,23 +253,6 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
         };
 
         return new NativeResponse($this->multi, $context, implode('', $url), $options, $info, $resolver, $onProgress, $this->logger);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function stream(ResponseInterface|iterable $responses, float $timeout = null): ResponseStreamInterface
-    {
-        if ($responses instanceof NativeResponse) {
-            $responses = [$responses];
-        }
-
-        return new ResponseStream(NativeResponse::stream($responses, $timeout));
-    }
-
-    public function reset()
-    {
-        $this->multi->reset();
     }
 
     private static function getBodyAsString($body): string
@@ -301,12 +285,48 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
     {
         if ($port = parse_url($url['authority'], \PHP_URL_PORT) ?: '') {
             $info['primary_port'] = $port;
-            $port = ':'.$port;
+            $port = ':' . $port;
         } else {
             $info['primary_port'] = 'http:' === $url['scheme'] ? 80 : 443;
         }
 
         return [parse_url($url['authority'], \PHP_URL_HOST), $port];
+    }
+
+    private static function configureHeadersAndProxy($context, string $host, array $requestHeaders, ?array $proxy, bool $isSsl): bool
+    {
+        if (null === $proxy) {
+            stream_context_set_option($context, 'http', 'header', $requestHeaders);
+            stream_context_set_option($context, 'ssl', 'peer_name', $host);
+
+            return false;
+        }
+
+        // Matching "no_proxy" should follow the behavior of curl
+
+        foreach ($proxy['no_proxy'] as $rule) {
+            $dotRule = '.' . ltrim($rule, '.');
+
+            if ('*' === $rule || $host === $rule || str_ends_with($host, $dotRule)) {
+                stream_context_set_option($context, 'http', 'proxy', null);
+                stream_context_set_option($context, 'http', 'request_fulluri', false);
+                stream_context_set_option($context, 'http', 'header', $requestHeaders);
+                stream_context_set_option($context, 'ssl', 'peer_name', $host);
+
+                return false;
+            }
+        }
+
+        if (null !== $proxy['auth']) {
+            $requestHeaders[] = 'Proxy-Authorization: ' . $proxy['auth'];
+        }
+
+        stream_context_set_option($context, 'http', 'proxy', $proxy['url']);
+        stream_context_set_option($context, 'http', 'request_fulluri', !$isSsl);
+        stream_context_set_option($context, 'http', 'header', $requestHeaders);
+        stream_context_set_option($context, 'ssl', 'peer_name', null);
+
+        return true;
     }
 
     /**
@@ -407,7 +427,7 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
             if (false !== (parse_url($location, \PHP_URL_HOST) ?? false)) {
                 // Authorization and Cookie headers MUST NOT follow except for the initial host name
                 $requestHeaders = $redirectHeaders['host'] === $host && $redirectHeaders['port'] === $port ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
-                $requestHeaders[] = 'Host: '.$host.$port;
+                $requestHeaders[] = 'Host: ' . $host . $port;
                 $dnsResolve = !self::configureHeadersAndProxy($context, $host, $requestHeaders, $proxy, 'https:' === $url['scheme']);
             } else {
                 $dnsResolve = isset(stream_context_get_options($context)['ssl']['peer_name']);
@@ -422,39 +442,20 @@ final class NativeHttpClient implements HttpClientInterface, LoggerAwareInterfac
         };
     }
 
-    private static function configureHeadersAndProxy($context, string $host, array $requestHeaders, ?array $proxy, bool $isSsl): bool
+    /**
+     * {@inheritdoc}
+     */
+    public function stream(ResponseInterface|iterable $responses, float $timeout = null): ResponseStreamInterface
     {
-        if (null === $proxy) {
-            stream_context_set_option($context, 'http', 'header', $requestHeaders);
-            stream_context_set_option($context, 'ssl', 'peer_name', $host);
-
-            return false;
+        if ($responses instanceof NativeResponse) {
+            $responses = [$responses];
         }
 
-        // Matching "no_proxy" should follow the behavior of curl
+        return new ResponseStream(NativeResponse::stream($responses, $timeout));
+    }
 
-        foreach ($proxy['no_proxy'] as $rule) {
-            $dotRule = '.'.ltrim($rule, '.');
-
-            if ('*' === $rule || $host === $rule || str_ends_with($host, $dotRule)) {
-                stream_context_set_option($context, 'http', 'proxy', null);
-                stream_context_set_option($context, 'http', 'request_fulluri', false);
-                stream_context_set_option($context, 'http', 'header', $requestHeaders);
-                stream_context_set_option($context, 'ssl', 'peer_name', $host);
-
-                return false;
-            }
-        }
-
-        if (null !== $proxy['auth']) {
-            $requestHeaders[] = 'Proxy-Authorization: '.$proxy['auth'];
-        }
-
-        stream_context_set_option($context, 'http', 'proxy', $proxy['url']);
-        stream_context_set_option($context, 'http', 'request_fulluri', !$isSsl);
-        stream_context_set_option($context, 'http', 'header', $requestHeaders);
-        stream_context_set_option($context, 'ssl', 'peer_name', null);
-
-        return true;
+    public function reset()
+    {
+        $this->multi->reset();
     }
 }

@@ -40,47 +40,6 @@ class Frame implements Serializable
     }
 
     /**
-     * @param  bool        $shortened
-     * @return string|null
-     */
-    public function getFile($shortened = false)
-    {
-        if (empty($this->frame['file'])) {
-            return null;
-        }
-
-        $file = $this->frame['file'];
-
-        // Check if this frame occurred within an eval().
-        // @todo: This can be made more reliable by checking if we've entered
-        // eval() in a previous trace, but will need some more work on the upper
-        // trace collector(s).
-        if (preg_match('/^(.*)\((\d+)\) : (?:eval\(\)\'d|assert) code$/', $file, $matches)) {
-            $file = $this->frame['file'] = $matches[1];
-            $this->frame['line'] = (int) $matches[2];
-        }
-
-        if ($shortened && is_string($file)) {
-            // Replace the part of the path that all frames have in common, and add 'soft hyphens' for smoother line-breaks.
-            $dirname = dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))));
-            if ($dirname !== '/') {
-                $file = str_replace($dirname, "&hellip;", $file);
-            }
-            $file = str_replace("/", "/&shy;", $file);
-        }
-
-        return $file;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getLine()
-    {
-        return isset($this->frame['line']) ? $this->frame['line'] : null;
-    }
-
-    /**
      * @return string|null
      */
     public function getClass()
@@ -101,32 +60,7 @@ class Frame implements Serializable
      */
     public function getArgs()
     {
-        return isset($this->frame['args']) ? (array) $this->frame['args'] : [];
-    }
-
-    /**
-     * Returns the full contents of the file for this frame,
-     * if it's known.
-     * @return string|null
-     */
-    public function getFileContents()
-    {
-        if ($this->fileContentsCache === null && $filePath = $this->getFile()) {
-            // Leave the stage early when 'Unknown' or '[internal]' is passed
-            // this would otherwise raise an exception when
-            // open_basedir is enabled.
-            if ($filePath === "Unknown" || $filePath === '[internal]') {
-                return null;
-            }
-
-            try {
-                $this->fileContentsCache = file_get_contents($filePath);
-            } catch (ErrorException $exception) {
-                // Internal file paths of PHP extensions cannot be opened
-            }
-        }
-
-        return $this->fileContentsCache;
+        return isset($this->frame['args']) ? (array)$this->frame['args'] : [];
     }
 
     /**
@@ -153,7 +87,7 @@ class Frame implements Serializable
      * a filter to only retrieve comments from a specific
      * context.
      *
-     * @param  string  $filter
+     * @param string $filter
      * @return array[]
      */
     public function getComments($filter = null)
@@ -186,6 +120,10 @@ class Frame implements Serializable
      *
      * NOTE: lines are 0-indexed
      *
+     * @param int $start
+     * @param int $length
+     * @return string[]|null
+     * @throws InvalidArgumentException if $length is less than or equal to 0
      * @example
      *     Get all lines for this file
      *     $frame->getFileLines(); // => array( 0 => '<?php', 1 => '...', ...)
@@ -193,10 +131,6 @@ class Frame implements Serializable
      *     Get one line for this file, starting at line 10 (zero-indexed, remember!)
      *     $frame->getFileLines(9, 1); // array( 9 => '...' )
      *
-     * @throws InvalidArgumentException if $length is less than or equal to 0
-     * @param  int                      $start
-     * @param  int                      $length
-     * @return string[]|null
      */
     public function getFileLines($start = 0, $length = null)
     {
@@ -205,8 +139,8 @@ class Frame implements Serializable
 
             // Get a subset of lines from $start to $end
             if ($length !== null) {
-                $start  = (int) $start;
-                $length = (int) $length;
+                $start = (int)$start;
+                $length = (int)$length;
                 if ($start < 0) {
                     $start = 0;
                 }
@@ -225,11 +159,69 @@ class Frame implements Serializable
     }
 
     /**
+     * Returns the full contents of the file for this frame,
+     * if it's known.
+     * @return string|null
+     */
+    public function getFileContents()
+    {
+        if ($this->fileContentsCache === null && $filePath = $this->getFile()) {
+            // Leave the stage early when 'Unknown' or '[internal]' is passed
+            // this would otherwise raise an exception when
+            // open_basedir is enabled.
+            if ($filePath === "Unknown" || $filePath === '[internal]') {
+                return null;
+            }
+
+            try {
+                $this->fileContentsCache = file_get_contents($filePath);
+            } catch (ErrorException $exception) {
+                // Internal file paths of PHP extensions cannot be opened
+            }
+        }
+
+        return $this->fileContentsCache;
+    }
+
+    /**
+     * @param bool $shortened
+     * @return string|null
+     */
+    public function getFile($shortened = false)
+    {
+        if (empty($this->frame['file'])) {
+            return null;
+        }
+
+        $file = $this->frame['file'];
+
+        // Check if this frame occurred within an eval().
+        // @todo: This can be made more reliable by checking if we've entered
+        // eval() in a previous trace, but will need some more work on the upper
+        // trace collector(s).
+        if (preg_match('/^(.*)\((\d+)\) : (?:eval\(\)\'d|assert) code$/', $file, $matches)) {
+            $file = $this->frame['file'] = $matches[1];
+            $this->frame['line'] = (int)$matches[2];
+        }
+
+        if ($shortened && is_string($file)) {
+            // Replace the part of the path that all frames have in common, and add 'soft hyphens' for smoother line-breaks.
+            $dirname = dirname(dirname(dirname(dirname(dirname(dirname(__DIR__))))));
+            if ($dirname !== '/') {
+                $file = str_replace($dirname, "&hellip;", $file);
+            }
+            $file = str_replace("/", "/&shy;", $file);
+        }
+
+        return $file;
+    }
+
+    /**
      * Implements the Serializable interface, with special
      * steps to also save the existing comments.
      *
-     * @see Serializable::serialize
      * @return string
+     * @see Serializable::serialize
      */
     public function serialize()
     {
@@ -254,8 +246,8 @@ class Frame implements Serializable
      * Unserializes the frame data, while also preserving
      * any existing comment data.
      *
-     * @see Serializable::unserialize
      * @param string $serializedFrame
+     * @see Serializable::unserialize
      */
     public function unserialize($serializedFrame)
     {
@@ -281,7 +273,7 @@ class Frame implements Serializable
 
     /**
      * Compares Frame against one another
-     * @param  Frame $frame
+     * @param Frame $frame
      * @return bool
      */
     public function equals(Frame $frame)
@@ -290,6 +282,14 @@ class Frame implements Serializable
             return false;
         }
         return $frame->getFile() === $this->getFile() && $frame->getLine() === $this->getLine();
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLine()
+    {
+        return isset($this->frame['line']) ? $this->frame['line'] : null;
     }
 
     /**

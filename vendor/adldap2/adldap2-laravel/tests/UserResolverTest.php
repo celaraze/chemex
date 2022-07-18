@@ -164,7 +164,7 @@ class UserResolverTest extends TestCase
 
         $resolver->byCredentials([
             'userprincipalname' => 'jdoe',
-            'password'          => 'Password1',
+            'password' => 'Password1',
         ]);
     }
 

@@ -1,3 +1,3 @@
 <div class="panel details-container cf">
-  <?php $tpl->render($panel_details) ?>
+    <?php $tpl->render($panel_details) ?>
 </div>

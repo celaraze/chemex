@@ -15,7 +15,6 @@ use Spiral\RoadRunner\Console\Environment\Environment;
 use Spiral\RoadRunner\Console\Repository\GitHub\GitHubRepository;
 use Spiral\RoadRunner\Console\Repository\RepositoriesCollection;
 use Spiral\RoadRunner\Console\Repository\RepositoryInterface;
-use Spiral\RoadRunner\Console\Repository\Version1\StaticRepository;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;

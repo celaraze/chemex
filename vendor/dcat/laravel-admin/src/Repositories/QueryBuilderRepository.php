@@ -82,23 +82,30 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     }
 
     /**
-     * 获取列表页面查询的字段.
+     * 查询详情页面数据.
      *
+     * @param Show $show
      * @return array
      */
-    public function getGridColumns()
+    public function detail(Show $show): array
     {
-        return ['*'];
+        $result = $this->newQuery()
+            ->where($this->getKeyName(), $show->getKey())
+            ->first($this->getDetailColumns());
+
+        if (!$result) {
+            abort(404);
+        }
+
+        return (array)$result;
     }
 
     /**
-     * 获取表单页面查询的字段.
-     *
-     * @return array
+     * @return Builder
      */
-    public function getFormColumns()
+    protected function newQuery()
     {
-        return ['*'];
+        return clone $this->queryBuilder;
     }
 
     /**
@@ -112,166 +119,9 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     }
 
     /**
-     * 查询Grid表格数据.
-     *
-     * @param  Grid\Model  $model
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Collection|array
-     */
-    public function get(Grid\Model $model)
-    {
-        $this->setSort($model);
-        $this->setPaginate($model);
-
-        $query = $this->newQuery();
-
-        $model->getQueries()->unique()->each(function ($value) use (&$query) {
-            if ($value['method'] == 'paginate') {
-                $value['arguments'][1] = $this->getGridColumns();
-            } elseif ($value['method'] == 'get') {
-                $value['arguments'] = [$this->getGridColumns()];
-            }
-
-            $query = call_user_func_array([$query, $value['method']], $value['arguments'] ?? []);
-        });
-
-        return $query;
-    }
-
-    /**
-     * 设置表格数据排序.
-     *
-     * @param  Grid\Model  $model
-     * @return void
-     */
-    protected function setSort(Grid\Model $model)
-    {
-        [$column, $type] = $model->getSort();
-
-        if (empty($column) || empty($type)) {
-            return;
-        }
-
-        if (Str::contains($column, '.')) {
-            $this->setRelationSort($model, $column, $type);
-        } else {
-            $model->resetOrderBy();
-
-            $model->addQuery('orderBy', [$column, $type]);
-        }
-    }
-
-    /**
-     * 设置关联数据排序.
-     *
-     * @param  Grid\Model  $model
-     * @param  string  $column
-     * @param  string  $type
-     * @return void
-     */
-    protected function setRelationSort(Grid\Model $model, $column, $type)
-    {
-        [$relationName, $relationColumn] = explode('.', $column);
-
-        if ($model->getQueries()->contains(function ($query) use ($relationName) {
-            return $query['method'] == 'with' && in_array($relationName, $query['arguments']);
-        })) {
-            $model->addQuery('select', [$this->getGridColumns()]);
-
-            $model->resetOrderBy();
-
-            $model->addQuery('orderBy', [
-                $relationColumn,
-                $type,
-            ]);
-        }
-    }
-
-    /**
-     * 设置分页参数.
-     *
-     * @param  Grid\Model  $model
-     * @return void
-     */
-    protected function setPaginate(Grid\Model $model)
-    {
-        $paginate = $model->findQueryByMethod('paginate')->first();
-
-        $model->rejectQuery(['paginate']);
-
-        if (! $model->allowPagination()) {
-            $model->addQuery('get', [$this->getGridColumns()]);
-        } else {
-            $model->addQuery('paginate', $this->resolvePerPage($model, $paginate));
-        }
-    }
-
-    /**
-     * 获取分页参数.
-     *
-     * @param  Grid\Model  $model
-     * @param  array|null  $paginate
-     * @return array
-     */
-    protected function resolvePerPage(Grid\Model $model, $paginate)
-    {
-        if ($paginate && is_array($paginate)) {
-            if ($perPage = request()->input($model->getPerPageName())) {
-                $paginate['arguments'][0] = (int) $perPage;
-            }
-
-            return $paginate['arguments'];
-        }
-
-        return [
-            $model->getPerPage(),
-            $this->getGridColumns(),
-            $model->getPageName(),
-            $model->getCurrentPage(),
-        ];
-    }
-
-    /**
-     * 查询编辑页面数据.
-     *
-     * @param  Form  $form
-     * @return array
-     */
-    public function edit(Form $form): array
-    {
-        $result = $this->newQuery()
-            ->where($this->getKeyName(), $form->getKey())
-            ->first($this->getFormColumns());
-
-        if (! $result) {
-            abort(404);
-        }
-
-        return (array) $result;
-    }
-
-    /**
-     * 查询详情页面数据.
-     *
-     * @param  Show  $show
-     * @return array
-     */
-    public function detail(Show $show): array
-    {
-        $result = $this->newQuery()
-            ->where($this->getKeyName(), $show->getKey())
-            ->first($this->getDetailColumns());
-
-        if (! $result) {
-            abort(404);
-        }
-
-        return (array) $result;
-    }
-
-    /**
      * 新增记录.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return mixed
      */
     public function store(Form $form)
@@ -289,7 +139,7 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     /**
      * 查询更新前的行数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return array
      */
     public function updating(Form $form): array
@@ -298,9 +148,38 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     }
 
     /**
+     * 查询编辑页面数据.
+     *
+     * @param Form $form
+     * @return array
+     */
+    public function edit(Form $form): array
+    {
+        $result = $this->newQuery()
+            ->where($this->getKeyName(), $form->getKey())
+            ->first($this->getFormColumns());
+
+        if (!$result) {
+            abort(404);
+        }
+
+        return (array)$result;
+    }
+
+    /**
+     * 获取表单页面查询的字段.
+     *
+     * @return array
+     */
+    public function getFormColumns()
+    {
+        return ['*'];
+    }
+
+    /**
      * 更新数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return bool
      */
     public function update(Form $form)
@@ -340,7 +219,7 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     /**
      * 删除数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return bool
      */
     public function delete(Form $form, array $deletingData)
@@ -352,7 +231,7 @@ class QueryBuilderRepository extends Repository implements TreeRepository
         collect(explode(',', $id))->filter()->each(function ($id) use ($form, $deletingData) {
             $data = $deletingData->get($id, []);
 
-            if (! $data) {
+            if (!$data) {
                 return;
             }
 
@@ -368,9 +247,138 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     }
 
     /**
+     * 查询Grid表格数据.
+     *
+     * @param Grid\Model $model
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Collection|array
+     */
+    public function get(Grid\Model $model)
+    {
+        $this->setSort($model);
+        $this->setPaginate($model);
+
+        $query = $this->newQuery();
+
+        $model->getQueries()->unique()->each(function ($value) use (&$query) {
+            if ($value['method'] == 'paginate') {
+                $value['arguments'][1] = $this->getGridColumns();
+            } elseif ($value['method'] == 'get') {
+                $value['arguments'] = [$this->getGridColumns()];
+            }
+
+            $query = call_user_func_array([$query, $value['method']], $value['arguments'] ?? []);
+        });
+
+        return $query;
+    }
+
+    /**
+     * 设置表格数据排序.
+     *
+     * @param Grid\Model $model
+     * @return void
+     */
+    protected function setSort(Grid\Model $model)
+    {
+        [$column, $type] = $model->getSort();
+
+        if (empty($column) || empty($type)) {
+            return;
+        }
+
+        if (Str::contains($column, '.')) {
+            $this->setRelationSort($model, $column, $type);
+        } else {
+            $model->resetOrderBy();
+
+            $model->addQuery('orderBy', [$column, $type]);
+        }
+    }
+
+    /**
+     * 设置关联数据排序.
+     *
+     * @param Grid\Model $model
+     * @param string $column
+     * @param string $type
+     * @return void
+     */
+    protected function setRelationSort(Grid\Model $model, $column, $type)
+    {
+        [$relationName, $relationColumn] = explode('.', $column);
+
+        if ($model->getQueries()->contains(function ($query) use ($relationName) {
+            return $query['method'] == 'with' && in_array($relationName, $query['arguments']);
+        })) {
+            $model->addQuery('select', [$this->getGridColumns()]);
+
+            $model->resetOrderBy();
+
+            $model->addQuery('orderBy', [
+                $relationColumn,
+                $type,
+            ]);
+        }
+    }
+
+    /**
+     * 获取列表页面查询的字段.
+     *
+     * @return array
+     */
+    public function getGridColumns()
+    {
+        return ['*'];
+    }
+
+    /**
+     * 设置分页参数.
+     *
+     * @param Grid\Model $model
+     * @return void
+     */
+    protected function setPaginate(Grid\Model $model)
+    {
+        $paginate = $model->findQueryByMethod('paginate')->first();
+
+        $model->rejectQuery(['paginate']);
+
+        if (!$model->allowPagination()) {
+            $model->addQuery('get', [$this->getGridColumns()]);
+        } else {
+            $model->addQuery('paginate', $this->resolvePerPage($model, $paginate));
+        }
+    }
+
+    /**
+     * 获取分页参数.
+     *
+     * @param Grid\Model $model
+     * @param array|null $paginate
+     * @return array
+     */
+    protected function resolvePerPage(Grid\Model $model, $paginate)
+    {
+        if ($paginate && is_array($paginate)) {
+            if ($perPage = request()->input($model->getPerPageName())) {
+                $paginate['arguments'][0] = (int)$perPage;
+            }
+
+            return $paginate['arguments'];
+        }
+
+        return [
+            $model->getPerPage(),
+            $this->getGridColumns(),
+            $model->getPageName(),
+            $model->getCurrentPage(),
+        ];
+    }
+
+    /**
      * 查询删除前的行数据.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return array
      */
     public function deleting(Form $form): array
@@ -386,7 +394,7 @@ class QueryBuilderRepository extends Repository implements TreeRepository
             )
             ->get($this->getFormColumns())
             ->transform(function ($value) {
-                return (array) $value;
+                return (array)$value;
             })
             ->toArray();
     }
@@ -424,8 +432,8 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     /**
      * 保存层级数据排序.
      *
-     * @param  array  $tree
-     * @param  int  $parentId
+     * @param array $tree
+     * @param int $parentId
      */
     public function saveOrder($tree = [], $parentId = 0)
     {
@@ -435,7 +443,7 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     /**
      * 设置数据查询回调.
      *
-     * @param  \Closure|null  $query
+     * @param \Closure|null $query
      * @return $this
      */
     public function withQuery($queryCallback)
@@ -451,13 +459,5 @@ class QueryBuilderRepository extends Repository implements TreeRepository
     public function toTree()
     {
         throw new RuntimeException('Not support.');
-    }
-
-    /**
-     * @return Builder
-     */
-    protected function newQuery()
-    {
-        return clone $this->queryBuilder;
     }
 }

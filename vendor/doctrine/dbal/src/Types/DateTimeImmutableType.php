@@ -4,7 +4,6 @@ namespace Doctrine\DBAL\Types;
 
 use DateTimeImmutable;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function date_create_immutable;
 
 /**
@@ -12,14 +11,6 @@ use function date_create_immutable;
  */
 class DateTimeImmutableType extends DateTimeType
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getName()
-    {
-        return Types::DATETIME_IMMUTABLE;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -38,6 +29,14 @@ class DateTimeImmutableType extends DateTimeType
             $this->getName(),
             ['null', DateTimeImmutable::class]
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return Types::DATETIME_IMMUTABLE;
     }
 
     /**

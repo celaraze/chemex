@@ -7,14 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
-use function sprintf;
 use Countable;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\SelfDescribing;
 use SebastianBergmann\Comparator\ComparisonFailure;
 use SebastianBergmann\Exporter\Exporter;
+use function sprintf;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -59,23 +60,6 @@ abstract class Constraint implements Countable, SelfDescribing
     }
 
     /**
-     * Counts the number of constraint elements.
-     */
-    public function count(): int
-    {
-        return 1;
-    }
-
-    protected function exporter(): Exporter
-    {
-        if ($this->exporter === null) {
-            $this->exporter = new Exporter;
-        }
-
-        return $this->exporter;
-    }
-
-    /**
      * Evaluates the constraint for parameter $other. Returns true if the
      * constraint is met, false otherwise.
      *
@@ -92,8 +76,8 @@ abstract class Constraint implements Countable, SelfDescribing
     /**
      * Throws an exception for the given compared value and test description.
      *
-     * @param mixed             $other             evaluated value or object
-     * @param string            $description       Additional information about the test
+     * @param mixed $other evaluated value or object
+     * @param string $description Additional information about the test
      * @param ComparisonFailure $comparisonFailure
      *
      * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
@@ -125,19 +109,6 @@ abstract class Constraint implements Countable, SelfDescribing
     }
 
     /**
-     * Return additional failure description where needed.
-     *
-     * The function can be overridden to provide additional failure
-     * information like a diff
-     *
-     * @param mixed $other evaluated value or object
-     */
-    protected function additionalFailureDescription($other): string
-    {
-        return '';
-    }
-
-    /**
      * Returns the description of the failure.
      *
      * The beginning of failure messages is "Failed asserting that" in most
@@ -155,24 +126,34 @@ abstract class Constraint implements Countable, SelfDescribing
         return $this->exporter()->export($other) . ' ' . $this->toString();
     }
 
+    protected function exporter(): Exporter
+    {
+        if ($this->exporter === null) {
+            $this->exporter = new Exporter;
+        }
+
+        return $this->exporter;
+    }
+
     /**
-     * Returns a custom string representation of the constraint object when it
-     * appears in context of an $operator expression.
+     * Return additional failure description where needed.
      *
-     * The purpose of this method is to provide meaningful descriptive string
-     * in context of operators such as LogicalNot. Native PHPUnit constraints
-     * are supported out of the box by LogicalNot, but externally developed
-     * ones had no way to provide correct strings in this context.
+     * The function can be overridden to provide additional failure
+     * information like a diff
      *
-     * The method shall return empty string, when it does not handle
-     * customization by itself.
-     *
-     * @param Operator $operator the $operator of the expression
-     * @param mixed    $role     role of $this constraint in the $operator expression
+     * @param mixed $other evaluated value or object
      */
-    protected function toStringInContext(Operator $operator, $role): string
+    protected function additionalFailureDescription($other): string
     {
         return '';
+    }
+
+    /**
+     * Counts the number of constraint elements.
+     */
+    public function count(): int
+    {
+        return 1;
     }
 
     /**
@@ -188,8 +169,8 @@ abstract class Constraint implements Countable, SelfDescribing
      * customization by itself.
      *
      * @param Operator $operator the $operator of the expression
-     * @param mixed    $role     role of $this constraint in the $operator expression
-     * @param mixed    $other    evaluated value or object
+     * @param mixed $role role of $this constraint in the $operator expression
+     * @param mixed $other evaluated value or object
      */
     protected function failureDescriptionInContext(Operator $operator, $role, $other): string
     {
@@ -200,6 +181,26 @@ abstract class Constraint implements Countable, SelfDescribing
         }
 
         return $this->exporter()->export($other) . ' ' . $string;
+    }
+
+    /**
+     * Returns a custom string representation of the constraint object when it
+     * appears in context of an $operator expression.
+     *
+     * The purpose of this method is to provide meaningful descriptive string
+     * in context of operators such as LogicalNot. Native PHPUnit constraints
+     * are supported out of the box by LogicalNot, but externally developed
+     * ones had no way to provide correct strings in this context.
+     *
+     * The method shall return empty string, when it does not handle
+     * customization by itself.
+     *
+     * @param Operator $operator the $operator of the expression
+     * @param mixed $role role of $this constraint in the $operator expression
+     */
+    protected function toStringInContext(Operator $operator, $role): string
+    {
+        return '';
     }
 
     /**

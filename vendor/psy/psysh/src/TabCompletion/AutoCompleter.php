@@ -42,11 +42,26 @@ class AutoCompleter
     }
 
     /**
+     * The readline_completion_function callback handler.
+     *
+     * @param string $input
+     * @param int $index
+     *
+     * @return array
+     * @see processCallback
+     *
+     */
+    public function callback(string $input, int $index): array
+    {
+        return $this->processCallback($input, $index, \readline_info());
+    }
+
+    /**
      * Handle readline completion.
      *
      * @param string $input Readline current word
-     * @param int    $index Current word index
-     * @param array  $info  readline_info() data
+     * @param int $index Current word index
+     * @param array $info readline_info() data
      *
      * @return array
      */
@@ -62,7 +77,7 @@ class AutoCompleter
             $line = $input;
         }
 
-        $tokens = \token_get_all('<?php '.$line);
+        $tokens = \token_get_all('<?php ' . $line);
 
         // remove whitespaces
         $tokens = \array_filter($tokens, function ($token) {
@@ -81,21 +96,6 @@ class AutoCompleter
         $matches = \array_unique($matches);
 
         return !empty($matches) ? $matches : [''];
-    }
-
-    /**
-     * The readline_completion_function callback handler.
-     *
-     * @see processCallback
-     *
-     * @param string $input
-     * @param int    $index
-     *
-     * @return array
-     */
-    public function callback(string $input, int $index): array
-    {
-        return $this->processCallback($input, $index, \readline_info());
     }
 
     /**

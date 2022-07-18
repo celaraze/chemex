@@ -43,19 +43,7 @@ abstract class NodeVisitor extends NodeVisitorAbstract implements VisitorContrac
      */
     public function passed()
     {
-        return $this->affirmativeCheck ? $this->found : ! $this->found;
-    }
-
-    /**
-     * Pass or fail the visitor based on the affirmative check.
-     *
-     * @return $this
-     */
-    public function markFound()
-    {
-        $this->found = true;
-
-        return $this;
+        return $this->affirmativeCheck ? $this->found : !$this->found;
     }
 
     /**
@@ -87,25 +75,15 @@ abstract class NodeVisitor extends NodeVisitorAbstract implements VisitorContrac
     }
 
     /**
-     * Compares node values with the expected value.
+     * Pass or fail the visitor based on the affirmative check.
      *
-     * @param  \PhpParser\Node  $node
-     * @param  string|int|float|bool  $expectedValue
-     * @return bool
+     * @return $this
      */
-    protected function compareValue(Node $node, $expectedValue)
+    public function markFound()
     {
-        if (property_exists($node, 'value')) {
-            // works for strings, int and float
-            return $node->value === $expectedValue;
-        }
+        $this->found = true;
 
-        if (is_bool($expectedValue)) {
-            return $node instanceof ConstFetch
-                && $node->name->toString() === ($expectedValue ? 'true' : 'false');
-        }
-
-        throw new UnexpectedValueException('This value type is not yet supported');
+        return $this;
     }
 
     /**
@@ -124,5 +102,27 @@ abstract class NodeVisitor extends NodeVisitorAbstract implements VisitorContrac
         return collect($nodeArgs)->every(function ($arg, $key) use ($expectedValues) {
             return $this->compareValue($arg->value, $expectedValues[$key]);
         });
+    }
+
+    /**
+     * Compares node values with the expected value.
+     *
+     * @param \PhpParser\Node $node
+     * @param string|int|float|bool $expectedValue
+     * @return bool
+     */
+    protected function compareValue(Node $node, $expectedValue)
+    {
+        if (property_exists($node, 'value')) {
+            // works for strings, int and float
+            return $node->value === $expectedValue;
+        }
+
+        if (is_bool($expectedValue)) {
+            return $node instanceof ConstFetch
+                && $node->name->toString() === ($expectedValue ? 'true' : 'false');
+        }
+
+        throw new UnexpectedValueException('This value type is not yet supported');
     }
 }

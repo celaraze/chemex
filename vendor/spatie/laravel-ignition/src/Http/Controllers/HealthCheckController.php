@@ -9,7 +9,7 @@ class HealthCheckController
 {
     public function __invoke()
     {
-        if (! config('ignition.enable_runnable_solutions')) {
+        if (!config('ignition.enable_runnable_solutions')) {
             abort(400, 'Runnable solutions are not enabled');
         }
 

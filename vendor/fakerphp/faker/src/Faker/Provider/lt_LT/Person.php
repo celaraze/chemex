@@ -254,9 +254,9 @@ class Person extends \Faker\Provider\Person
     /**
      * @param string|null $gender 'male', 'female' or null for any
      *
+     * @return string
      * @example 'Doe'
      *
-     * @return string
      */
     public function lastName($gender = null)
     {
@@ -325,9 +325,9 @@ class Person extends \Faker\Provider\Person
      * @see https://en.wikipedia.org/wiki/National_identification_number#Lithuania
      * @see https://lt.wikipedia.org/wiki/Asmens_kodas
      *
-     * @param string    $gender       [male|female]
+     * @param string $gender [male|female]
      * @param \DateTime $birthdate
-     * @param string    $randomNumber three integers
+     * @param string $randomNumber three integers
      *
      * @return string on format XXXXXXXXXXX
      */
@@ -338,10 +338,10 @@ class Person extends \Faker\Provider\Person
         }
 
         $genderNumber = ($gender == 'male') ? 1 : 0;
-        $firstNumber = (int) floor($birthdate->format('Y') / 100) * 2 - 34 - $genderNumber;
+        $firstNumber = (int)floor($birthdate->format('Y') / 100) * 2 - 34 - $genderNumber;
 
         $datePart = $birthdate->format('ymd');
-        $randomDigits = (string) (!$randomNumber || strlen($randomNumber) < 3) ? static::numerify('###') : substr($randomNumber, 0, 3);
+        $randomDigits = (string)(!$randomNumber || strlen($randomNumber) < 3) ? static::numerify('###') : substr($randomNumber, 0, 3);
         $partOfPerosnalCode = $firstNumber . $datePart . $randomDigits;
 
         $sum = self::calculateSum($partOfPerosnalCode, 1);
@@ -368,7 +368,7 @@ class Person extends \Faker\Provider\Person
      * @see https://lt.wikipedia.org/wiki/Asmens_kodas
      *
      * @param string $numbers
-     * @param int    $time    [1|2]
+     * @param int $time [1|2]
      *
      * @return int
      */
@@ -383,9 +383,9 @@ class Person extends \Faker\Provider\Person
         $sum = 0;
 
         for ($i = 1; $i <= 10; ++$i) {
-            $sum += ((int) $numbers[$i - 1]) * $multipliers[$i - 1];
+            $sum += ((int)$numbers[$i - 1]) * $multipliers[$i - 1];
         }
 
-        return (int) $sum;
+        return (int)$sum;
     }
 }

@@ -13,8 +13,8 @@
         {!! $content !!}
     </div>
     @if($footer)
-    <div class="card-footer">
-        {!! $footer !!}
-    </div>
+        <div class="card-footer">
+            {!! $footer !!}
+        </div>
     @endif
 </div>

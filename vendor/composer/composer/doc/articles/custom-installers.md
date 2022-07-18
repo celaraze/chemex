@@ -67,8 +67,10 @@ Composer Plugin.
 A basic Installer Plugin would thus compose of three files:
 
 1. the package file: composer.json
-2. The Plugin class, e.g.: `My\Project\Composer\Plugin.php`, containing a class that implements `Composer\Plugin\PluginInterface`.
-3. The Installer class, e.g.: `My\Project\Composer\Installer.php`, containing a class that implements `Composer\Installer\InstallerInterface`.
+2. The Plugin class, e.g.: `My\Project\Composer\Plugin.php`, containing a class that
+   implements `Composer\Plugin\PluginInterface`.
+3. The Installer class, e.g.: `My\Project\Composer\Installer.php`, containing a class that
+   implements `Composer\Installer\InstallerInterface`.
 
 ### composer.json
 
@@ -209,7 +211,11 @@ different installation path.
 > Installer will be put in the `/data/templates/<stripped name>` folder._
 
 [1]: ../04-schema.md#type
+
 [2]: ../04-schema.md#extra
+
 [3]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/PluginInterface.php
+
 [4]: https://github.com/composer/composer/blob/main/src/Composer/Installer/InstallerInterface.php
+
 [5]: https://github.com/composer/composer/blob/main/src/Composer/Installer/LibraryInstaller.php

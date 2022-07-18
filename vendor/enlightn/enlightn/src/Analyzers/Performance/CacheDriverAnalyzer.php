@@ -33,7 +33,7 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)
@@ -42,7 +42,7 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
         $driver = ucfirst($config->get("cache.stores.{$defaultStore}.driver", "null"));
 
         if (method_exists($this, "assess{$driver}Driver")) {
-            if (! $this->{"assess{$driver}Driver"}($config)) {
+            if (!$this->{"assess{$driver}Driver"}($config)) {
                 $this->recordError('cache', 'default');
             }
         }
@@ -51,14 +51,14 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
     /**
      * Assess whether a proper cache driver is set.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return bool
      */
     protected function assessNullDriver($config)
     {
         $this->errorMessage = "Your cache driver is set to null. This means that your app is not "
-            ."using caching and all cache read operations will result in a miss. This setting is "
-            ."only suitable for test environments in specific situations.";
+            . "using caching and all cache read operations will result in a miss. This setting is "
+            . "only suitable for test environments in specific situations.";
 
         return false;
     }
@@ -66,14 +66,14 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
     /**
      * Assess whether a proper cache driver is set.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return bool
      */
     protected function assessArrayDriver($config)
     {
         $this->errorMessage = "Your cache driver is set to array. This means that your app is not "
-            ."using caching and caches will not be persisted outside the running PHP process in any way. "
-            ."This setting is only suitable for testing.";
+            . "using caching and caches will not be persisted outside the running PHP process in any way. "
+            . "This setting is only suitable for testing.";
 
         return false;
     }
@@ -81,7 +81,7 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
     /**
      * Assess whether a proper cache driver is set.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return bool
      */
     protected function assessFileDriver($config)
@@ -92,11 +92,11 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
         }
 
         $this->errorMessage = "Your cache driver is set to file in a non-local environment. "
-            ."This means that your app uses the local filesystem for caching. This setting is "
-            ."only suitable if your app is hosted on a single server setup. Even for single "
-            ."server setups, a cache system such as Redis or Memcached are better suited "
-            ."for performance (when using unix sockets) and more efficient eviction of expired "
-            ."cache items.";
+            . "This means that your app uses the local filesystem for caching. This setting is "
+            . "only suitable if your app is hosted on a single server setup. Even for single "
+            . "server setups, a cache system such as Redis or Memcached are better suited "
+            . "for performance (when using unix sockets) and more efficient eviction of expired "
+            . "cache items.";
 
         $this->severity = self::SEVERITY_MINOR;
 
@@ -106,7 +106,7 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
     /**
      * Assess whether a proper cache driver is set.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return bool
      */
     protected function assessDatabaseDriver($config)
@@ -117,8 +117,8 @@ class CacheDriverAnalyzer extends PerformanceAnalyzer
         }
 
         $this->errorMessage = "Your cache driver is set to database in a non-local environment. "
-            ."This setting is not suitable for production environments. Cache drivers such as "
-            ."Redis or Memcached are much more robust and better suited for production.";
+            . "This setting is not suitable for production environments. Cache drivers such as "
+            . "Redis or Memcached are much more robust and better suited for production.";
 
         $this->severity = self::SEVERITY_MINOR;
 

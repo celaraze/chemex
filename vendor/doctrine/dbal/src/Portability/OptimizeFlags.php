@@ -20,11 +20,11 @@ final class OptimizeFlags
      * @var array<string,int>
      */
     private static $platforms = [
-        DB2Platform::class        => 0,
-        OraclePlatform::class     => Connection::PORTABILITY_EMPTY_TO_NULL,
+        DB2Platform::class => 0,
+        OraclePlatform::class => Connection::PORTABILITY_EMPTY_TO_NULL,
         PostgreSQLPlatform::class => 0,
-        SqlitePlatform::class     => 0,
-        SQLServerPlatform::class  => 0,
+        SqlitePlatform::class => 0,
+        SQLServerPlatform::class => 0,
     ];
 
     public function __invoke(AbstractPlatform $platform, int $flags): int

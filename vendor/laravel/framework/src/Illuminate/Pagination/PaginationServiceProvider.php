@@ -13,11 +13,11 @@ class PaginationServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadViewsFrom(__DIR__.'/resources/views', 'pagination');
+        $this->loadViewsFrom(__DIR__ . '/resources/views', 'pagination');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/resources/views' => $this->app->resourcePath('views/vendor/pagination'),
+                __DIR__ . '/resources/views' => $this->app->resourcePath('views/vendor/pagination'),
             ], 'laravel-pagination');
         }
     }

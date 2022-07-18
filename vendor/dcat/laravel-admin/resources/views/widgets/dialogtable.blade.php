@@ -52,7 +52,7 @@
             maxmin: false,
             resize: false,
             content: $(_temp).html(),
-            success: function(layero, index) {
+            success: function (layero, index) {
                 var $c = getLayer(index).find(_container),
                     $t = getLayer(index).find(_tb);
 
@@ -85,13 +85,13 @@
     }
 
     function setDataId(obj) {
-        if (! obj.attr('data-id')) {
+        if (!obj.attr('data-id')) {
             obj.attr('data-id', id);
         }
     }
 
     function setId(val) {
-        if (! val) return;
+        if (!val) return;
 
         _id = '#' + val;
         _temp = _id + ' .content';
@@ -100,17 +100,17 @@
         _btnId = _id + ' .switch-dialog';
     }
 
-    function openDialog () {
+    function openDialog() {
         setId($(this).attr('data-id'));
         setDataId($(this));
 
-        if (! $(this).attr('layer')) {
+        if (!$(this).attr('layer')) {
             open($(this));
         }
     }
 
     function getLayer(index) {
-        return $('#layui-layer'+index)
+        return $('#layui-layer' + index)
     }
 
     function closeDialog() {

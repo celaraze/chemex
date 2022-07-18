@@ -36,7 +36,7 @@ final class DkimSigner
     private array $defaultOptions;
 
     /**
-     * @param string $pk         The private key as a string or the path to the file containing the private key, should be prefixed with file:// (in PEM format)
+     * @param string $pk The private key as a string or the path to the file containing the private key, should be prefixed with file:// (in PEM format)
      * @param string $passphrase A passphrase of the private key (if any)
      */
     public function __construct(string $pk, string $domainName, string $selector, array $defaultOptions = [], string $passphrase = '')
@@ -44,18 +44,18 @@ final class DkimSigner
         if (!\extension_loaded('openssl')) {
             throw new \LogicException('PHP extension "openssl" is required to use DKIM.');
         }
-        $this->key = openssl_pkey_get_private($pk, $passphrase) ?: throw new InvalidArgumentException('Unable to load DKIM private key: '.openssl_error_string());
+        $this->key = openssl_pkey_get_private($pk, $passphrase) ?: throw new InvalidArgumentException('Unable to load DKIM private key: ' . openssl_error_string());
         $this->domainName = $domainName;
         $this->selector = $selector;
         $this->defaultOptions = $defaultOptions + [
-            'algorithm' => self::ALGO_SHA256,
-            'signature_expiration_delay' => 0,
-            'body_max_length' => \PHP_INT_MAX,
-            'body_show_length' => false,
-            'header_canon' => self::CANON_RELAXED,
-            'body_canon' => self::CANON_RELAXED,
-            'headers_to_ignore' => [],
-        ];
+                'algorithm' => self::ALGO_SHA256,
+                'signature_expiration_delay' => 0,
+                'body_max_length' => \PHP_INT_MAX,
+                'body_show_length' => false,
+                'header_canon' => self::CANON_RELAXED,
+                'body_canon' => self::CANON_RELAXED,
+                'headers_to_ignore' => [],
+            ];
     }
 
     public function sign(Message $message, array $options = []): Message
@@ -95,10 +95,10 @@ final class DkimSigner
             'bh' => base64_encode($bodyHash),
             'd' => $this->domainName,
             'h' => implode(': ', $signedHeaderNames),
-            'i' => '@'.$this->domainName,
+            'i' => '@' . $this->domainName,
             's' => $this->selector,
             't' => time(),
-            'c' => $options['header_canon'].'/'.$options['body_canon'],
+            'c' => $options['header_canon'] . '/' . $options['body_canon'],
         ];
 
         if ($options['body_show_length']) {
@@ -109,19 +109,19 @@ final class DkimSigner
         }
         $value = '';
         foreach ($params as $k => $v) {
-            $value .= $k.'='.$v.'; ';
+            $value .= $k . '=' . $v . '; ';
         }
         $value = trim($value);
         $header = new UnstructuredHeader('DKIM-Signature', $value);
-        $headerCanonData .= rtrim($this->canonicalizeHeader($header->toString()."\r\n b=", $options['header_canon']));
+        $headerCanonData .= rtrim($this->canonicalizeHeader($header->toString() . "\r\n b=", $options['header_canon']));
         if (self::ALGO_SHA256 === $options['algorithm']) {
             if (!openssl_sign($headerCanonData, $signature, $this->key, \OPENSSL_ALGO_SHA256)) {
-                throw new RuntimeException('Unable to sign DKIM hash: '.openssl_error_string());
+                throw new RuntimeException('Unable to sign DKIM hash: ' . openssl_error_string());
             }
         } else {
             throw new \RuntimeException(sprintf('The "%s" DKIM signing algorithm is not supported yet.', self::ALGO_ED25519));
         }
-        $header->setValue($value.' b='.trim(chunk_split(base64_encode($signature), 73, ' ')));
+        $header->setValue($value . ' b=' . trim(chunk_split(base64_encode($signature), 73, ' ')));
         $headers->add($header);
 
         return new Message($headers, $message->getBody());
@@ -130,7 +130,7 @@ final class DkimSigner
     private function canonicalizeHeader(string $header, string $headerCanon): string
     {
         if (self::CANON_RELAXED !== $headerCanon) {
-            return $header."\r\n";
+            return $header . "\r\n";
         }
 
         $exploded = explode(':', $header, 2);
@@ -138,7 +138,7 @@ final class DkimSigner
         $value = str_replace("\r\n", '', $exploded[1]);
         $value = trim(preg_replace("/[ \t][ \t]+/", ' ', $value));
 
-        return $name.':'.$value."\r\n";
+        return $name . ':' . $value . "\r\n";
     }
 
     private function hashBody(AbstractPart $body, string $bodyCanon, int $maxLength): array
@@ -173,7 +173,7 @@ final class DkimSigner
                             $isSpaceSequence = true;
                             break;
                         }
-                        // no break
+                    // no break
                     default:
                         if ($emptyCounter > 0) {
                             $canon .= str_repeat("\r\n", $emptyCounter);

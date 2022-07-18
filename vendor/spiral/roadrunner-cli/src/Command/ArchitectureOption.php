@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace Spiral\RoadRunner\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Spiral\RoadRunner\Console\Environment\Architecture;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -31,27 +31,11 @@ class ArchitectureOption extends Option
     /**
      * {@inheritDoc}
      */
-    protected function getDescription(): string
-    {
-        return 'Required processor architecture (one of: ' . $this->choices() . ')';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function default(): string
-    {
-        return Architecture::createFromGlobals();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function get(InputInterface $input, StyleInterface $io): string
     {
         $architecture = parent::get($input, $io);
 
-        if (! Architecture::isValid($architecture)) {
+        if (!Architecture::isValid($architecture)) {
             $message = 'Possibly invalid architecture (--%s=%s) option (available: %s)';
             $io->warning(\sprintf($message, $this->name, $architecture, $this->choices()));
         }
@@ -65,5 +49,21 @@ class ArchitectureOption extends Option
     private function choices(): string
     {
         return \implode(', ', Architecture::all());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDescription(): string
+    {
+        return 'Required processor architecture (one of: ' . $this->choices() . ')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function default(): string
+    {
+        return Architecture::createFromGlobals();
     }
 }

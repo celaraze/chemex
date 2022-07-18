@@ -14,8 +14,8 @@ trait TempFile
     protected $tempFile;
 
     /**
-     * @param  FilesystemInterface|FilesystemOperator  $filesystem
-     * @param  string  $filePath
+     * @param FilesystemInterface|FilesystemOperator $filesystem
+     * @param string $filePath
      * @return string
      *
      * @throws FileNotFoundException|FilesystemException
@@ -29,15 +29,8 @@ trait TempFile
         return $this->tempFile;
     }
 
-    protected function removeTempFile()
-    {
-        if ($this->tempFile && is_file($this->tempFile)) {
-            @unlink($this->tempFile);
-        }
-    }
-
     /**
-     * @param  string  $filePath
+     * @param string $filePath
      * @return string
      */
     private function generateTempPath(string $filePath)
@@ -45,9 +38,9 @@ trait TempFile
         $extension = pathinfo($filePath)['extension'] ?? null;
 
         return $this->getTempFolder()
-            .'/'
-            .uniqid(microtime(true).static::generateRandomString())
-            .($extension ? ".{$extension}" : '');
+            . '/'
+            . uniqid(microtime(true) . static::generateRandomString())
+            . ($extension ? ".{$extension}" : '');
     }
 
     /**
@@ -56,5 +49,12 @@ trait TempFile
     private function getTempFolder()
     {
         return sys_get_temp_dir();
+    }
+
+    protected function removeTempFile()
+    {
+        if ($this->tempFile && is_file($this->tempFile)) {
+            @unlink($this->tempFile);
+        }
     }
 }

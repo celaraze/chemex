@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class TestSuiteCollection implements Countable, IteratorAggregate
      */
     private $testSuites;
 
+    private function __construct(TestSuite ...$testSuites)
+    {
+        $this->testSuites = $testSuites;
+    }
+
     /**
      * @param TestSuite[] $testSuites
      */
     public static function fromArray(array $testSuites): self
     {
         return new self(...$testSuites);
-    }
-
-    private function __construct(TestSuite ...$testSuites)
-    {
-        $this->testSuites = $testSuites;
     }
 
     /**
@@ -45,11 +46,6 @@ final class TestSuiteCollection implements Countable, IteratorAggregate
         return $this->testSuites;
     }
 
-    public function count(): int
-    {
-        return count($this->testSuites);
-    }
-
     public function getIterator(): TestSuiteCollectionIterator
     {
         return new TestSuiteCollectionIterator($this);
@@ -58,5 +54,10 @@ final class TestSuiteCollection implements Countable, IteratorAggregate
     public function isEmpty(): bool
     {
         return $this->count() === 0;
+    }
+
+    public function count(): int
+    {
+        return count($this->testSuites);
     }
 }

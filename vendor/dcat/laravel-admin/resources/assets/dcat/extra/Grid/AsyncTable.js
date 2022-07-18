@@ -18,7 +18,7 @@ export default class AsyncTable {
     load(url, box) {
         let _this = this;
 
-        if (! url) {
+        if (!url) {
             return;
         }
 
@@ -48,7 +48,7 @@ export default class AsyncTable {
         box.find('.grid-column-header a').on('click', loadLink);
 
         box.find('form').on('submit', function () {
-            _this.load($(this).attr('action')+'&'+$(this).serialize(), box);
+            _this.load($(this).attr('action') + '&' + $(this).serialize(), box);
 
             return false;
         });

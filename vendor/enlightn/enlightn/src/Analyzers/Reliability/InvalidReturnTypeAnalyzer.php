@@ -38,7 +38,7 @@ class InvalidReturnTypeAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application seems to to use invalid return types. The return type of the method or "
-            ."function does not match the signature.";
+            . "function does not match the signature.";
     }
 
     /**

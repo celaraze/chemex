@@ -41,7 +41,7 @@ final class ProcessStream extends AbstractStream
         $this->stream = proc_open($this->command, $descriptorSpec, $pipes);
         stream_set_blocking($pipes[2], false);
         if ($err = stream_get_contents($pipes[2])) {
-            throw new TransportException('Process could not be started: '.$err);
+            throw new TransportException('Process could not be started: ' . $err);
         }
         $this->in = &$pipes[0];
         $this->out = &$pipes[1];
@@ -60,6 +60,6 @@ final class ProcessStream extends AbstractStream
 
     protected function getReadConnectionDescription(): string
     {
-        return 'process '.$this->command;
+        return 'process ' . $this->command;
     }
 }

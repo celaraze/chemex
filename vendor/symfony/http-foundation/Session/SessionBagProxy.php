@@ -57,6 +57,14 @@ final class SessionBagProxy implements SessionBagInterface
     /**
      * {@inheritdoc}
      */
+    public function getStorageKey(): string
+    {
+        return $this->bag->getStorageKey();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getName(): string
     {
         return $this->bag->getName();
@@ -75,14 +83,6 @@ final class SessionBagProxy implements SessionBagInterface
         $this->data[$this->bag->getStorageKey()] = &$array;
 
         $this->bag->initialize($array);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getStorageKey(): string
-    {
-        return $this->bag->getStorageKey();
     }
 
     /**

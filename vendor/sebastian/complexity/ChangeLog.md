@@ -25,6 +25,9 @@ All notable changes are documented in this file using the [Keep a CHANGELOG](htt
 * Initial release
 
 [2.0.2]: https://github.com/sebastianbergmann/complexity/compare/2.0.1...2.0.2
+
 [2.0.1]: https://github.com/sebastianbergmann/complexity/compare/2.0.0...2.0.1
+
 [2.0.0]: https://github.com/sebastianbergmann/complexity/compare/1.0.0...2.0.0
+
 [1.0.0]: https://github.com/sebastianbergmann/complexity/compare/70ee0ad32d9e2be3f85beffa3e2eb474193f2487...1.0.0

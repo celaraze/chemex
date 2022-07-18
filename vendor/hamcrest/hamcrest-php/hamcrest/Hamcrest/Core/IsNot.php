@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\BaseMatcher;
 use Hamcrest\Description;
 use Hamcrest\Matcher;
@@ -22,16 +24,6 @@ class IsNot extends BaseMatcher
         $this->_matcher = $matcher;
     }
 
-    public function matches($arg)
-    {
-        return !$this->_matcher->matches($arg);
-    }
-
-    public function describeTo(Description $description)
-    {
-        $description->appendText('not ')->appendDescriptionOf($this->_matcher);
-    }
-
     /**
      * Matches if value does not match $value.
      *
@@ -40,5 +32,15 @@ class IsNot extends BaseMatcher
     public static function not($value)
     {
         return new self(Util::wrapValueWithIsEqual($value));
+    }
+
+    public function matches($arg)
+    {
+        return !$this->_matcher->matches($arg);
+    }
+
+    public function describeTo(Description $description)
+    {
+        $description->appendText('not ')->appendDescriptionOf($this->_matcher);
     }
 }

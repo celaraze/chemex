@@ -67,44 +67,13 @@ class FileDirectory extends FileGeneric
         string $streamName,
         string $mode = self::MODE_READ,
         string $context = null,
-        bool $wait = false
-    ) {
+        bool   $wait = false
+    )
+    {
         $this->setMode($mode);
         parent::__construct($streamName, $context, $wait);
 
         return;
-    }
-
-    /**
-     * Open the stream and return the associated resource.
-     */
-    protected function &_open(string $streamName, StreamContext $context = null)
-    {
-        if (false === \is_dir($streamName)) {
-            if ($this->getMode() === self::MODE_READ) {
-                throw new FileDoesNotExistException('Directory %s does not exist.', 0, $streamName);
-            } else {
-                self::create(
-                    $streamName,
-                    $this->getMode(),
-                    null !== $context
-                        ? $context->getContext()
-                        : null
-                );
-            }
-        }
-
-        $out = null;
-
-        return $out;
-    }
-
-    /**
-     * Close the current stream.
-     */
-    protected function _close(): bool
-    {
-        return true;
     }
 
     /**
@@ -125,7 +94,7 @@ class FileDirectory extends FileGeneric
 
         foreach ($finder as $file) {
             $relative = \substr($file->getPathname(), $fromLength);
-            $_to = $to.\DIRECTORY_SEPARATOR.$relative;
+            $_to = $to . \DIRECTORY_SEPARATOR . $relative;
 
             if (true === $file->isDir()) {
                 self::create($_to, self::MODE_CREATE);
@@ -158,35 +127,14 @@ class FileDirectory extends FileGeneric
     }
 
     /**
-     * Delete a directory.
-     */
-    public function delete(): bool
-    {
-        $from = $this->getStreamName();
-        $finder = new FileFinder();
-        $finder->in($from)
-               ->childFirst();
-
-        foreach ($finder as $file) {
-            $file->open()->delete();
-            $file->close();
-        }
-
-        if (null === $this->getStreamContext()) {
-            return @\rmdir($from);
-        }
-
-        return @\rmdir($from, $this->getStreamContext()->getContext());
-    }
-
-    /**
      * Create a directory.
      */
     public static function create(
         string $name,
         string $mode = self::MODE_CREATE_RECURSIVE,
         string $context = null
-    ): bool {
+    ): bool
+    {
         if (true === \is_dir($name)) {
             return true;
         }
@@ -197,7 +145,7 @@ class FileDirectory extends FileGeneric
 
         if (null !== $context) {
             if (false === StreamContext::contextExists($context)) {
-                throw new FileException('Context %s was not previously declared, cannot retrieve '.'this context.', 2, $context);
+                throw new FileException('Context %s was not previously declared, cannot retrieve ' . 'this context.', 2, $context);
             } else {
                 $context = StreamContext::getInstance($context);
             }
@@ -217,5 +165,59 @@ class FileDirectory extends FileGeneric
             self::MODE_CREATE_RECURSIVE === $mode,
             $context->getContext()
         );
+    }
+
+    /**
+     * Delete a directory.
+     */
+    public function delete(): bool
+    {
+        $from = $this->getStreamName();
+        $finder = new FileFinder();
+        $finder->in($from)
+            ->childFirst();
+
+        foreach ($finder as $file) {
+            $file->open()->delete();
+            $file->close();
+        }
+
+        if (null === $this->getStreamContext()) {
+            return @\rmdir($from);
+        }
+
+        return @\rmdir($from, $this->getStreamContext()->getContext());
+    }
+
+    /**
+     * Open the stream and return the associated resource.
+     */
+    protected function &_open(string $streamName, StreamContext $context = null)
+    {
+        if (false === \is_dir($streamName)) {
+            if ($this->getMode() === self::MODE_READ) {
+                throw new FileDoesNotExistException('Directory %s does not exist.', 0, $streamName);
+            } else {
+                self::create(
+                    $streamName,
+                    $this->getMode(),
+                    null !== $context
+                        ? $context->getContext()
+                        : null
+                );
+            }
+        }
+
+        $out = null;
+
+        return $out;
+    }
+
+    /**
+     * Close the current stream.
+     */
+    protected function _close(): bool
+    {
+        return true;
     }
 }

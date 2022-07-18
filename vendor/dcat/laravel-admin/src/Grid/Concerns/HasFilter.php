@@ -18,19 +18,9 @@ trait HasFilter
     protected $filter;
 
     /**
-     * Setup grid filter.
-     *
-     * @return void
-     */
-    protected function setUpFilter()
-    {
-        $this->filter = new Grid\Filter($this->model());
-    }
-
-    /**
      * Process the grid filter.
      *
-     * @param  bool  $toArray
+     * @param bool $toArray
      * @return Collection
      */
     public function processFilter()
@@ -46,30 +36,13 @@ trait HasFilter
     }
 
     /**
-     * Get or set the grid filter.
-     *
-     * @param  Closure  $callback
-     * @return $this|Grid\Filter
-     */
-    public function filter(Closure $callback = null)
-    {
-        if ($callback === null) {
-            return $this->filter;
-        }
-
-        call_user_func($callback, $this->filter);
-
-        return $this;
-    }
-
-    /**
      * Render the grid filter.
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
     public function renderFilter()
     {
-        if (! $this->options['filter']) {
+        if (!$this->options['filter']) {
             return '';
         }
 
@@ -89,6 +62,17 @@ trait HasFilter
     }
 
     /**
+     * Show grid filter.
+     *
+     * @param bool $val
+     * @return $this
+     */
+    public function showFilter(bool $val = true)
+    {
+        return $this->disableFilter(!$val);
+    }
+
+    /**
      * Disable grid filter.
      *
      * @return $this
@@ -97,24 +81,24 @@ trait HasFilter
     {
         $this->filter->disableCollapse($disable);
 
-        return $this->option('filter', ! $disable);
+        return $this->option('filter', !$disable);
     }
 
     /**
-     * Show grid filter.
+     * Show filter button.
      *
-     * @param  bool  $val
+     * @param bool $val
      * @return $this
      */
-    public function showFilter(bool $val = true)
+    public function showFilterButton(bool $val = true)
     {
-        return $this->disableFilter(! $val);
+        return $this->disableFilterButton(!$val);
     }
 
     /**
      * Disable filter button.
      *
-     * @param  bool  $disable
+     * @param bool $disable
      * @return $this
      */
     public function disableFilterButton(bool $disable = true)
@@ -125,19 +109,18 @@ trait HasFilter
     }
 
     /**
-     * Show filter button.
+     * Setup grid filter.
      *
-     * @param  bool  $val
-     * @return $this
+     * @return void
      */
-    public function showFilterButton(bool $val = true)
+    protected function setUpFilter()
     {
-        return $this->disableFilterButton(! $val);
+        $this->filter = new Grid\Filter($this->model());
     }
 
     protected function addFilterScript()
     {
-        if (! $this->isAsyncRequest()) {
+        if (!$this->isAsyncRequest()) {
             return;
         }
 
@@ -152,5 +135,22 @@ JS
         $url = Helper::urlWithoutQuery($this->filter()->urlWithoutFilters(), ['_pjax', static::ASYNC_NAME]);
 
         Admin::script("$('.grid-filter-form').attr('action', '{$url}');", true);
+    }
+
+    /**
+     * Get or set the grid filter.
+     *
+     * @param Closure $callback
+     * @return $this|Grid\Filter
+     */
+    public function filter(Closure $callback = null)
+    {
+        if ($callback === null) {
+            return $this->filter;
+        }
+
+        call_user_func($callback, $this->filter);
+
+        return $this;
     }
 }

@@ -19,14 +19,6 @@ final class CommandIsSuccessful extends Constraint
     /**
      * {@inheritdoc}
      */
-    public function toString(): string
-    {
-        return 'is successful';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function matches($other): bool
     {
         return Command::SUCCESS === $other;
@@ -37,7 +29,15 @@ final class CommandIsSuccessful extends Constraint
      */
     protected function failureDescription($other): string
     {
-        return 'the command '.$this->toString();
+        return 'the command ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return 'is successful';
     }
 
     /**

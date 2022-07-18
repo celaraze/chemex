@@ -25,12 +25,36 @@ class Bound
 
     /**
      * @param string $version
-     * @param bool   $isInclusive
+     * @param bool $isInclusive
      */
     public function __construct($version, $isInclusive)
     {
         $this->version = $version;
         $this->isInclusive = $isInclusive;
+    }
+
+    /**
+     * @return self
+     */
+    public static function zero()
+    {
+        return new Bound('0.0.0.0-dev', true);
+    }
+
+    /**
+     * @return self
+     */
+    public static function positiveInfinity()
+    {
+        return new Bound(PHP_INT_MAX . '.0.0.0', false);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isZero()
+    {
+        return $this->getVersion() === '0.0.0.0-dev' && $this->isInclusive();
     }
 
     /**
@@ -52,23 +76,15 @@ class Bound
     /**
      * @return bool
      */
-    public function isZero()
-    {
-        return $this->getVersion() === '0.0.0.0-dev' && $this->isInclusive();
-    }
-
-    /**
-     * @return bool
-     */
     public function isPositiveInfinity()
     {
-        return $this->getVersion() === PHP_INT_MAX.'.0.0.0' && !$this->isInclusive();
+        return $this->getVersion() === PHP_INT_MAX . '.0.0.0' && !$this->isInclusive();
     }
 
     /**
      * Compares a bound to another with a given operator.
      *
-     * @param Bound  $other
+     * @param Bound $other
      * @param string $operator
      *
      * @return bool
@@ -102,21 +118,5 @@ class Bound
             $this->getVersion(),
             $this->isInclusive() ? 'inclusive' : 'exclusive'
         );
-    }
-
-    /**
-     * @return self
-     */
-    public static function zero()
-    {
-        return new Bound('0.0.0.0-dev', true);
-    }
-
-    /**
-     * @return self
-     */
-    public static function positiveInfinity()
-    {
-        return new Bound(PHP_INT_MAX.'.0.0.0', false);
     }
 }

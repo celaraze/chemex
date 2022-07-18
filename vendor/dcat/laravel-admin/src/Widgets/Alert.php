@@ -23,9 +23,22 @@ class Alert extends Widget
     }
 
     /**
+     * Set contents.
+     *
+     * @param string|\Closure|Renderable $content
+     * @return $this
+     */
+    public function content($content)
+    {
+        $this->content = $this->toString($content);
+
+        return $this;
+    }
+
+    /**
      * Set title.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title($title)
@@ -36,14 +49,14 @@ class Alert extends Widget
     }
 
     /**
-     * Set contents.
+     * Add style.
      *
-     * @param  string|\Closure|Renderable  $content
+     * @param string $style
      * @return $this
      */
-    public function content($content)
+    public function style($style = 'info')
     {
-        $this->content = $this->toString($content);
+        $this->style = $style;
 
         return $this;
     }
@@ -61,6 +74,19 @@ class Alert extends Widget
     public function info()
     {
         return $this->style('info')->icon('fa fa-info');
+    }
+
+    /**
+     * Add icon.
+     *
+     * @param string $icon
+     * @return $this
+     */
+    public function icon($icon)
+    {
+        $this->icon = $icon;
+
+        return $this;
     }
 
     /**
@@ -96,38 +122,12 @@ class Alert extends Widget
     /**
      * Show close button.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function removable(bool $value = true)
     {
         $this->showCloseBtn = $value;
-
-        return $this;
-    }
-
-    /**
-     * Add style.
-     *
-     * @param  string  $style
-     * @return $this
-     */
-    public function style($style = 'info')
-    {
-        $this->style = $style;
-
-        return $this;
-    }
-
-    /**
-     * Add icon.
-     *
-     * @param  string  $icon
-     * @return $this
-     */
-    public function icon($icon)
-    {
-        $this->icon = $icon;
 
         return $this;
     }
@@ -140,10 +140,10 @@ class Alert extends Widget
         $this->class("alert alert-{$this->style} alert-dismissable");
 
         return [
-            'title'        => $this->title,
-            'content'      => $this->content,
-            'icon'         => $this->icon,
-            'attributes'   => $this->formatHtmlAttributes(),
+            'title' => $this->title,
+            'content' => $this->content,
+            'icon' => $this->icon,
+            'attributes' => $this->formatHtmlAttributes(),
             'showCloseBtn' => $this->showCloseBtn,
         ];
     }

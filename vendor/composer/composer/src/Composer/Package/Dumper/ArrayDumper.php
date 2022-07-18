@@ -13,8 +13,8 @@
 namespace Composer\Package\Dumper;
 
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 
 /**
@@ -74,7 +74,7 @@ class ArrayDumper
         }
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
-            if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
+            if ($links = $package->{'get' . ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {
                     $data[$type][$link->getTarget()] = $link->getPrettyConstraint();
                 }
@@ -144,7 +144,7 @@ class ArrayDumper
 
     /**
      * @param array<int|string, string> $keys
-     * @param array<string, mixed>      $data
+     * @param array<string, mixed> $data
      *
      * @return array<string, mixed>
      */
@@ -155,7 +155,7 @@ class ArrayDumper
                 $method = $key;
             }
 
-            $getter = 'get'.ucfirst($method);
+            $getter = 'get' . ucfirst($method);
             $value = $package->$getter();
 
             if (null !== $value && !(\is_array($value) && 0 === \count($value))) {

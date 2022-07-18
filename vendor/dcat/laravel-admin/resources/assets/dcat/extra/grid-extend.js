@@ -1,4 +1,3 @@
-
 import Helper from './Grid/Helper'
 import Tree from './Grid/Tree'
 import Orderable from './Grid/Orderable'
@@ -19,7 +18,7 @@ import AsyncTable from './Grid/AsyncTable'
     };
 
     // 异步表格
-    Dcat.grid.AsyncTable =function (opts) {
+    Dcat.grid.AsyncTable = function (opts) {
         return new AsyncTable(opts)
     }
 })(window, jQuery);

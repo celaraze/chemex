@@ -16,7 +16,7 @@ trait MessageTrait
     private $headers = [];
 
     /** @var array<string, string> Map of lowercase header name => original name at registration */
-    private $headerNames  = [];
+    private $headerNames = [];
 
     /** @var string */
     private $protocol = '1.1';
@@ -50,6 +50,11 @@ trait MessageTrait
         return isset($this->headerNames[strtolower($header)]);
     }
 
+    public function getHeaderLine($header): string
+    {
+        return implode(', ', $this->getHeader($header));
+    }
+
     public function getHeader($header): array
     {
         $header = strtolower($header);
@@ -61,11 +66,6 @@ trait MessageTrait
         $header = $this->headerNames[$header];
 
         return $this->headers[$header];
-    }
-
-    public function getHeaderLine($header): string
-    {
-        return implode(', ', $this->getHeader($header));
     }
 
     public function withHeader($header, $value): MessageInterface
@@ -82,6 +82,107 @@ trait MessageTrait
         $new->headers[$header] = $value;
 
         return $new;
+    }
+
+    /**
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2
+     *
+     * @param mixed $header
+     */
+    private function assertHeader($header): void
+    {
+        if (!is_string($header)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Header name must be a string but %s provided.',
+                is_object($header) ? get_class($header) : gettype($header)
+            ));
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9\'`#$%&*+.^_|~!-]+$/', $header)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    '"%s" is not valid header name',
+                    $header
+                )
+            );
+        }
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return string[]
+     */
+    private function normalizeHeaderValue($value): array
+    {
+        if (!is_array($value)) {
+            return $this->trimAndValidateHeaderValues([$value]);
+        }
+
+        if (count($value) === 0) {
+            throw new \InvalidArgumentException('Header value can not be an empty array.');
+        }
+
+        return $this->trimAndValidateHeaderValues($value);
+    }
+
+    /**
+     * Trims whitespace from the header values.
+     *
+     * Spaces and tabs ought to be excluded by parsers when extracting the field value from a header field.
+     *
+     * header-field = field-name ":" OWS field-value OWS
+     * OWS          = *( SP / HTAB )
+     *
+     * @param mixed[] $values Header values
+     *
+     * @return string[] Trimmed header values
+     *
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2.4
+     */
+    private function trimAndValidateHeaderValues(array $values): array
+    {
+        return array_map(function ($value) {
+            if (!is_scalar($value) && null !== $value) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Header value must be scalar or null but %s provided.',
+                    is_object($value) ? get_class($value) : gettype($value)
+                ));
+            }
+
+            $trimmed = trim((string)$value, " \t");
+            $this->assertValue($trimmed);
+
+            return $trimmed;
+        }, array_values($values));
+    }
+
+    /**
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2
+     *
+     * field-value    = *( field-content / obs-fold )
+     * field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+     * field-vchar    = VCHAR / obs-text
+     * VCHAR          = %x21-7E
+     * obs-text       = %x80-FF
+     * obs-fold       = CRLF 1*( SP / HTAB )
+     */
+    private function assertValue(string $value): void
+    {
+        // The regular expression intentionally does not support the obs-fold production, because as
+        // per RFC 7230#3.2.4:
+        //
+        // A sender MUST NOT generate a message that includes
+        // line folding (i.e., that has any field-value that contains a match to
+        // the obs-fold rule) unless the message is intended for packaging
+        // within the message/http media type.
+        //
+        // Clients must not send a request with line folding and a server sending folded headers is
+        // likely very rare. Line folding is a fairly obscure feature of HTTP/1.1 and thus not accepting
+        // folding is not likely to break any legitimate use case.
+        if (!preg_match('/^[\x20\x09\x21-\x7E\x80-\xFF]*$/', $value)) {
+            throw new \InvalidArgumentException(sprintf('"%s" is not valid header value', $value));
+        }
     }
 
     public function withAddedHeader($header, $value): MessageInterface
@@ -146,7 +247,7 @@ trait MessageTrait
         $this->headerNames = $this->headers = [];
         foreach ($headers as $header => $value) {
             // Numeric array keys are converted to int by PHP.
-            $header = (string) $header;
+            $header = (string)$header;
 
             $this->assertHeader($header);
             $value = $this->normalizeHeaderValue($value);
@@ -158,107 +259,6 @@ trait MessageTrait
                 $this->headerNames[$normalized] = $header;
                 $this->headers[$header] = $value;
             }
-        }
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return string[]
-     */
-    private function normalizeHeaderValue($value): array
-    {
-        if (!is_array($value)) {
-            return $this->trimAndValidateHeaderValues([$value]);
-        }
-
-        if (count($value) === 0) {
-            throw new \InvalidArgumentException('Header value can not be an empty array.');
-        }
-
-        return $this->trimAndValidateHeaderValues($value);
-    }
-
-    /**
-     * Trims whitespace from the header values.
-     *
-     * Spaces and tabs ought to be excluded by parsers when extracting the field value from a header field.
-     *
-     * header-field = field-name ":" OWS field-value OWS
-     * OWS          = *( SP / HTAB )
-     *
-     * @param mixed[] $values Header values
-     *
-     * @return string[] Trimmed header values
-     *
-     * @see https://tools.ietf.org/html/rfc7230#section-3.2.4
-     */
-    private function trimAndValidateHeaderValues(array $values): array
-    {
-        return array_map(function ($value) {
-            if (!is_scalar($value) && null !== $value) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Header value must be scalar or null but %s provided.',
-                    is_object($value) ? get_class($value) : gettype($value)
-                ));
-            }
-
-            $trimmed = trim((string) $value, " \t");
-            $this->assertValue($trimmed);
-
-            return $trimmed;
-        }, array_values($values));
-    }
-
-    /**
-     * @see https://tools.ietf.org/html/rfc7230#section-3.2
-     *
-     * @param mixed $header
-     */
-    private function assertHeader($header): void
-    {
-        if (!is_string($header)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Header name must be a string but %s provided.',
-                is_object($header) ? get_class($header) : gettype($header)
-            ));
-        }
-
-        if (! preg_match('/^[a-zA-Z0-9\'`#$%&*+.^_|~!-]+$/', $header)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    '"%s" is not valid header name',
-                    $header
-                )
-            );
-        }
-    }
-
-    /**
-     * @see https://tools.ietf.org/html/rfc7230#section-3.2
-     *
-     * field-value    = *( field-content / obs-fold )
-     * field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
-     * field-vchar    = VCHAR / obs-text
-     * VCHAR          = %x21-7E
-     * obs-text       = %x80-FF
-     * obs-fold       = CRLF 1*( SP / HTAB )
-     */
-    private function assertValue(string $value): void
-    {
-        // The regular expression intentionally does not support the obs-fold production, because as
-        // per RFC 7230#3.2.4:
-        //
-        // A sender MUST NOT generate a message that includes
-        // line folding (i.e., that has any field-value that contains a match to
-        // the obs-fold rule) unless the message is intended for packaging
-        // within the message/http media type.
-        //
-        // Clients must not send a request with line folding and a server sending folded headers is
-        // likely very rare. Line folding is a fairly obscure feature of HTTP/1.1 and thus not accepting
-        // folding is not likely to break any legitimate use case.
-        if (! preg_match('/^[\x20\x09\x21-\x7E\x80-\xFF]*$/', $value)) {
-            throw new \InvalidArgumentException(sprintf('"%s" is not valid header value', $value));
         }
     }
 }

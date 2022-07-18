@@ -50,6 +50,13 @@ class LintCommand extends Command
         $this->isReadableProvider = null === $isReadableProvider ? null : $isReadableProvider(...);
     }
 
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestOptionValuesFor('format')) {
+            $suggestions->suggestValues(['txt', 'json', 'github']);
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -82,14 +89,13 @@ You can also exclude one or more specific files:
   <info>php %command.full_name% dirname --exclude="dirname/foo.yaml" --exclude="dirname/bar.yaml"</info>
 
 EOF
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $filenames = (array) $input->getArgument('filename');
+        $filenames = (array)$input->getArgument('filename');
         $excludes = $input->getOption('exclude');
         $this->format = $input->getOption('format');
         $flags = $input->getOption('parse-tags');
@@ -131,27 +137,6 @@ EOF
         return $this->display($io, $filesInfo);
     }
 
-    private function validate(string $content, int $flags, string $file = null)
-    {
-        $prevErrorHandler = set_error_handler(function ($level, $message, $file, $line) use (&$prevErrorHandler) {
-            if (\E_USER_DEPRECATED === $level) {
-                throw new ParseException($message, $this->getParser()->getRealCurrentLineNb() + 1);
-            }
-
-            return $prevErrorHandler ? $prevErrorHandler($level, $message, $file, $line) : false;
-        });
-
-        try {
-            $this->getParser()->parse($content, Yaml::PARSE_CONSTANT | $flags);
-        } catch (ParseException $e) {
-            return ['file' => $file, 'line' => $e->getParsedLine(), 'valid' => false, 'message' => $e->getMessage()];
-        } finally {
-            restore_error_handler();
-        }
-
-        return ['file' => $file, 'valid' => true];
-    }
-
     private function display(SymfonyStyle $io, array $files): int
     {
         return match ($this->format) {
@@ -174,10 +159,10 @@ EOF
 
         foreach ($filesInfo as $info) {
             if ($info['valid'] && $this->displayCorrectFiles) {
-                $io->comment('<info>OK</info>'.($info['file'] ? sprintf(' in %s', $info['file']) : ''));
+                $io->comment('<info>OK</info>' . ($info['file'] ? sprintf(' in %s', $info['file']) : ''));
             } elseif (!$info['valid']) {
                 ++$erroredFiles;
-                $io->text('<error> ERROR </error>'.($info['file'] ? sprintf(' in %s', $info['file']) : ''));
+                $io->text('<error> ERROR </error>' . ($info['file'] ? sprintf(' in %s', $info['file']) : ''));
                 $io->text(sprintf('<error> >> %s</error>', $info['message']));
 
                 if (str_contains($info['message'], 'PARSE_CUSTOM_TAGS')) {
@@ -204,7 +189,7 @@ EOF
         $errors = 0;
 
         array_walk($filesInfo, function (&$v) use (&$errors) {
-            $v['file'] = (string) $v['file'];
+            $v['file'] = (string)$v['file'];
             if (!$v['valid']) {
                 ++$errors;
             }
@@ -217,6 +202,45 @@ EOF
         $io->writeln(json_encode($filesInfo, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES));
 
         return min($errors, 1);
+    }
+
+    private function validate(string $content, int $flags, string $file = null)
+    {
+        $prevErrorHandler = set_error_handler(function ($level, $message, $file, $line) use (&$prevErrorHandler) {
+            if (\E_USER_DEPRECATED === $level) {
+                throw new ParseException($message, $this->getParser()->getRealCurrentLineNb() + 1);
+            }
+
+            return $prevErrorHandler ? $prevErrorHandler($level, $message, $file, $line) : false;
+        });
+
+        try {
+            $this->getParser()->parse($content, Yaml::PARSE_CONSTANT | $flags);
+        } catch (ParseException $e) {
+            return ['file' => $file, 'line' => $e->getParsedLine(), 'valid' => false, 'message' => $e->getMessage()];
+        } finally {
+            restore_error_handler();
+        }
+
+        return ['file' => $file, 'valid' => true];
+    }
+
+    private function getParser(): Parser
+    {
+        return $this->parser ??= new Parser();
+    }
+
+    private function isReadable(string $fileOrDirectory): bool
+    {
+        $default = function ($fileOrDirectory) {
+            return is_readable($fileOrDirectory);
+        };
+
+        if (null !== $this->isReadableProvider) {
+            return ($this->isReadableProvider)($fileOrDirectory, $default);
+        }
+
+        return $default($fileOrDirectory);
     }
 
     private function getFiles(string $fileOrDirectory): iterable
@@ -236,11 +260,6 @@ EOF
         }
     }
 
-    private function getParser(): Parser
-    {
-        return $this->parser ??= new Parser();
-    }
-
     private function getDirectoryIterator(string $directory): iterable
     {
         $default = function ($directory) {
@@ -255,25 +274,5 @@ EOF
         }
 
         return $default($directory);
-    }
-
-    private function isReadable(string $fileOrDirectory): bool
-    {
-        $default = function ($fileOrDirectory) {
-            return is_readable($fileOrDirectory);
-        };
-
-        if (null !== $this->isReadableProvider) {
-            return ($this->isReadableProvider)($fileOrDirectory, $default);
-        }
-
-        return $default($fileOrDirectory);
-    }
-
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        if ($input->mustSuggestOptionValuesFor('format')) {
-            $suggestions->suggestValues(['txt', 'json', 'github']);
-        }
     }
 }

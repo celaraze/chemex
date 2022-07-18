@@ -38,55 +38,6 @@ final class DelimiterStack
         $this->top = $newDelimiter;
     }
 
-    private function findEarliest(?DelimiterInterface $stackBottom = null): ?DelimiterInterface
-    {
-        $delimiter = $this->top;
-        while ($delimiter !== null && $delimiter->getPrevious() !== $stackBottom) {
-            $delimiter = $delimiter->getPrevious();
-        }
-
-        return $delimiter;
-    }
-
-    public function removeDelimiter(DelimiterInterface $delimiter): void
-    {
-        if ($delimiter->getPrevious() !== null) {
-            /** @psalm-suppress PossiblyNullReference */
-            $delimiter->getPrevious()->setNext($delimiter->getNext());
-        }
-
-        if ($delimiter->getNext() === null) {
-            // top of stack
-            $this->top = $delimiter->getPrevious();
-        } else {
-            /** @psalm-suppress PossiblyNullReference */
-            $delimiter->getNext()->setPrevious($delimiter->getPrevious());
-        }
-    }
-
-    private function removeDelimiterAndNode(DelimiterInterface $delimiter): void
-    {
-        $delimiter->getInlineNode()->detach();
-        $this->removeDelimiter($delimiter);
-    }
-
-    private function removeDelimitersBetween(DelimiterInterface $opener, DelimiterInterface $closer): void
-    {
-        $delimiter = $closer->getPrevious();
-        while ($delimiter !== null && $delimiter !== $opener) {
-            $previous = $delimiter->getPrevious();
-            $this->removeDelimiter($delimiter);
-            $delimiter = $previous;
-        }
-    }
-
-    public function removeAll(?DelimiterInterface $stackBottom = null): void
-    {
-        while ($this->top && $this->top !== $stackBottom) {
-            $this->removeDelimiter($this->top);
-        }
-    }
-
     public function removeEarlierMatches(string $character): void
     {
         $opener = $this->top;
@@ -104,7 +55,7 @@ final class DelimiterStack
      */
     public function searchByCharacter($characters): ?DelimiterInterface
     {
-        if (! \is_array($characters)) {
+        if (!\is_array($characters)) {
             $characters = [$characters];
         }
 
@@ -132,21 +83,21 @@ final class DelimiterStack
             $delimiterChar = $closer->getChar();
 
             $delimiterProcessor = $processors->getDelimiterProcessor($delimiterChar);
-            if (! $closer->canClose() || $delimiterProcessor === null) {
+            if (!$closer->canClose() || $delimiterProcessor === null) {
                 $closer = $closer->getNext();
                 continue;
             }
 
             $openingDelimiterChar = $delimiterProcessor->getOpeningCharacter();
 
-            $useDelims            = 0;
-            $openerFound          = false;
+            $useDelims = 0;
+            $openerFound = false;
             $potentialOpenerFound = false;
-            $opener               = $closer->getPrevious();
+            $opener = $closer->getPrevious();
             while ($opener !== null && $opener !== $stackBottom && $opener !== ($openersBottom[$delimiterChar] ?? null)) {
                 if ($opener->canOpen() && $opener->getChar() === $openingDelimiterChar) {
                     $potentialOpenerFound = true;
-                    $useDelims            = $delimiterProcessor->getDelimiterUse($opener, $closer);
+                    $useDelims = $delimiterProcessor->getDelimiterUse($opener, $closer);
                     if ($useDelims > 0) {
                         $openerFound = true;
                         break;
@@ -156,8 +107,8 @@ final class DelimiterStack
                 $opener = $opener->getPrevious();
             }
 
-            if (! $openerFound) {
-                if (! $potentialOpenerFound) {
+            if (!$openerFound) {
+                if (!$potentialOpenerFound) {
                     // Only do this when we didn't even have a potential
                     // opener (one that matches the character and can open).
                     // If an opener was rejected because of the number of
@@ -166,7 +117,7 @@ final class DelimiterStack
                     // we want to consider it next time because the number
                     // of delimiters can change as we continue processing.
                     $openersBottom[$delimiterChar] = $closer->getPrevious();
-                    if (! $closer->canOpen()) {
+                    if (!$closer->canOpen()) {
                         // We can remove a closer that can't be an opener,
                         // once we've seen there's no matching opener.
                         $this->removeDelimiter($closer);
@@ -210,5 +161,54 @@ final class DelimiterStack
 
         // Remove all delimiters
         $this->removeAll($stackBottom);
+    }
+
+    private function findEarliest(?DelimiterInterface $stackBottom = null): ?DelimiterInterface
+    {
+        $delimiter = $this->top;
+        while ($delimiter !== null && $delimiter->getPrevious() !== $stackBottom) {
+            $delimiter = $delimiter->getPrevious();
+        }
+
+        return $delimiter;
+    }
+
+    public function removeDelimiter(DelimiterInterface $delimiter): void
+    {
+        if ($delimiter->getPrevious() !== null) {
+            /** @psalm-suppress PossiblyNullReference */
+            $delimiter->getPrevious()->setNext($delimiter->getNext());
+        }
+
+        if ($delimiter->getNext() === null) {
+            // top of stack
+            $this->top = $delimiter->getPrevious();
+        } else {
+            /** @psalm-suppress PossiblyNullReference */
+            $delimiter->getNext()->setPrevious($delimiter->getPrevious());
+        }
+    }
+
+    private function removeDelimitersBetween(DelimiterInterface $opener, DelimiterInterface $closer): void
+    {
+        $delimiter = $closer->getPrevious();
+        while ($delimiter !== null && $delimiter !== $opener) {
+            $previous = $delimiter->getPrevious();
+            $this->removeDelimiter($delimiter);
+            $delimiter = $previous;
+        }
+    }
+
+    private function removeDelimiterAndNode(DelimiterInterface $delimiter): void
+    {
+        $delimiter->getInlineNode()->detach();
+        $this->removeDelimiter($delimiter);
+    }
+
+    public function removeAll(?DelimiterInterface $stackBottom = null): void
+    {
+        while ($this->top && $this->top !== $stackBottom) {
+            $this->removeDelimiter($this->top);
+        }
     }
 }

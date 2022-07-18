@@ -38,7 +38,7 @@ class DeadCodeAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application contains some dead or unreachable code. It is good practice to delete all unreachable "
-            ."code so as to improve code readability.";
+            . "code so as to improve code readability.";
     }
 
     /**

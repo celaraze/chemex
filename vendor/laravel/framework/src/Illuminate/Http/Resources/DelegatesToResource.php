@@ -35,8 +35,8 @@ trait DelegatesToResource
     /**
      * Retrieve the model for a bound value.
      *
-     * @param  mixed  $value
-     * @param  string|null  $field
+     * @param mixed $value
+     * @param string|null $field
      * @return void
      *
      * @throws \Exception
@@ -49,9 +49,9 @@ trait DelegatesToResource
     /**
      * Retrieve the model for a bound value.
      *
-     * @param  string  $childType
-     * @param  mixed  $value
-     * @param  string|null  $field
+     * @param string $childType
+     * @param mixed $value
+     * @param string|null $field
      * @return void
      *
      * @throws \Exception
@@ -64,7 +64,7 @@ trait DelegatesToResource
     /**
      * Determine if the given attribute exists.
      *
-     * @param  mixed  $offset
+     * @param mixed $offset
      * @return bool
      */
     public function offsetExists($offset): bool
@@ -75,7 +75,7 @@ trait DelegatesToResource
     /**
      * Get the value for a given offset.
      *
-     * @param  mixed  $offset
+     * @param mixed $offset
      * @return mixed
      */
     public function offsetGet($offset): mixed
@@ -86,8 +86,8 @@ trait DelegatesToResource
     /**
      * Set the value for a given offset.
      *
-     * @param  mixed  $offset
-     * @param  mixed  $value
+     * @param mixed $offset
+     * @param mixed $value
      * @return void
      */
     public function offsetSet($offset, $value): void
@@ -98,7 +98,7 @@ trait DelegatesToResource
     /**
      * Unset the value for a given offset.
      *
-     * @param  mixed  $offset
+     * @param mixed $offset
      * @return void
      */
     public function offsetUnset($offset): void
@@ -109,7 +109,7 @@ trait DelegatesToResource
     /**
      * Determine if an attribute exists on the resource.
      *
-     * @param  string  $key
+     * @param string $key
      * @return bool
      */
     public function __isset($key)
@@ -120,7 +120,7 @@ trait DelegatesToResource
     /**
      * Unset an attribute on the resource.
      *
-     * @param  string  $key
+     * @param string $key
      * @return void
      */
     public function __unset($key)
@@ -131,7 +131,7 @@ trait DelegatesToResource
     /**
      * Dynamically get properties from the underlying resource.
      *
-     * @param  string  $key
+     * @param string $key
      * @return mixed
      */
     public function __get($key)
@@ -142,8 +142,8 @@ trait DelegatesToResource
     /**
      * Dynamically pass method calls to the underlying resource.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

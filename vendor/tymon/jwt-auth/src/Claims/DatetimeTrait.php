@@ -28,7 +28,7 @@ trait DatetimeTrait
     /**
      * Set the claim value, and call a validate method.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return $this
      *
      * @throws \Tymon\JWTAuth\Exceptions\InvalidClaimException
@@ -51,7 +51,7 @@ trait DatetimeTrait
      */
     public function validateCreate($value)
     {
-        if (! is_numeric($value)) {
+        if (!is_numeric($value)) {
             throw new InvalidClaimException($this);
         }
 
@@ -59,9 +59,22 @@ trait DatetimeTrait
     }
 
     /**
+     * Set the leeway in seconds.
+     *
+     * @param int $leeway
+     * @return $this
+     */
+    public function setLeeway($leeway)
+    {
+        $this->leeway = $leeway;
+
+        return $this;
+    }
+
+    /**
      * Determine whether the value is in the future.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     protected function isFuture($value)
@@ -72,24 +85,11 @@ trait DatetimeTrait
     /**
      * Determine whether the value is in the past.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     protected function isPast($value)
     {
         return Utils::isPast($value, $this->leeway);
-    }
-
-    /**
-     * Set the leeway in seconds.
-     *
-     * @param  int  $leeway
-     * @return $this
-     */
-    public function setLeeway($leeway)
-    {
-        $this->leeway = $leeway;
-
-        return $this;
     }
 }

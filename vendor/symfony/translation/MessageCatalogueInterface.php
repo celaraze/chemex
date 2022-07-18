@@ -44,16 +44,16 @@ interface MessageCatalogueInterface
     /**
      * Sets a message translation.
      *
-     * @param string $id          The message id
+     * @param string $id The message id
      * @param string $translation The messages translation
-     * @param string $domain      The domain name
+     * @param string $domain The domain name
      */
     public function set(string $id, string $translation, string $domain = 'messages');
 
     /**
      * Checks if a message has a translation.
      *
-     * @param string $id     The message id
+     * @param string $id The message id
      * @param string $domain The domain name
      */
     public function has(string $id, string $domain = 'messages'): bool;
@@ -61,7 +61,7 @@ interface MessageCatalogueInterface
     /**
      * Checks if a message has a translation (it does not take into account the fallback mechanism).
      *
-     * @param string $id     The message id
+     * @param string $id The message id
      * @param string $domain The domain name
      */
     public function defines(string $id, string $domain = 'messages'): bool;
@@ -69,7 +69,7 @@ interface MessageCatalogueInterface
     /**
      * Gets a message translation.
      *
-     * @param string $id     The message id
+     * @param string $id The message id
      * @param string $domain The domain name
      */
     public function get(string $id, string $domain = 'messages'): string;
@@ -77,16 +77,16 @@ interface MessageCatalogueInterface
     /**
      * Sets translations for a given domain.
      *
-     * @param array  $messages An array of translations
-     * @param string $domain   The domain name
+     * @param array $messages An array of translations
+     * @param string $domain The domain name
      */
     public function replace(array $messages, string $domain = 'messages');
 
     /**
      * Adds translations for a given domain.
      *
-     * @param array  $messages An array of translations
-     * @param string $domain   The domain name
+     * @param array $messages An array of translations
+     * @param string $domain The domain name
      */
     public function add(array $messages, string $domain = 'messages');
 

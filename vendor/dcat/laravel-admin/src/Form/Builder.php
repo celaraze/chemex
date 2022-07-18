@@ -36,49 +36,44 @@ class Builder implements FieldsCollection
     const MODE_EDIT = 'edit';
     const MODE_CREATE = 'create';
     const MODE_DELETE = 'delete';
-
+    /**
+     * @var array
+     */
+    public $confirm = [];
     /**
      * @var mixed
      */
     protected $id;
-
     /**
      * @var Form
      */
     protected $form;
-
     /**
      * @var
      */
     protected $action;
-
     /**
      * @var array
      */
     protected $options = [];
-
     /**
      * Form action mode, could be create|view|edit.
      *
      * @var string
      */
     protected $mode = self::MODE_CREATE;
-
     /**
      * @var Field[]
      */
     protected $hiddenFields = [];
-
     /**
      * @var Tools
      */
     protected $tools;
-
     /**
      * @var Footer
      */
     protected $footer;
-
     /**
      * Width for label and field.
      *
@@ -88,55 +83,43 @@ class Builder implements FieldsCollection
         'label' => 2,
         'field' => 8,
     ];
-
     /**
      * View for this form.
      *
      * @var string
      */
     protected $view = 'admin::form.container';
-
     /**
      * Form title.
      *
      * @var string
      */
     protected $title;
-
     /**
      * @var Layout
      */
     protected $layout;
-
     /**
      * @var string
      */
     protected $elementId;
-
     /**
      * @var \Closure
      */
     protected $wrapper;
-
     /**
      * @var bool
      */
     protected $showHeader = true;
-
     /**
      * @var bool
      */
     protected $showFooter = true;
 
     /**
-     * @var array
-     */
-    public $confirm = [];
-
-    /**
      * Builder constructor.
      *
-     * @param  Form  $form
+     * @param Form $form
      */
     public function __construct(Form $form)
     {
@@ -147,20 +130,7 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * @param  \Closure  $closure
-     * @return Layout
-     */
-    public function layout($closure = null)
-    {
-        if ($closure) {
-            $closure($this->layout);
-        }
-
-        return $this->layout;
-    }
-
-    /**
-     * @param  Closure  $closure
+     * @param Closure $closure
      * @return $this;
      */
     public function wrap(Closure $closure)
@@ -199,8 +169,8 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * @param  string  $title
-     * @param  string  $content
+     * @param string $title
+     * @param string $content
      * @return $this
      */
     public function confirm(?string $title = null, ?string $content = null)
@@ -214,7 +184,7 @@ class Builder implements FieldsCollection
     /**
      * Set the builder mode.
      *
-     * @param  string  $mode
+     * @param string $mode
      * @return void|string
      */
     public function mode(string $mode = null)
@@ -227,6 +197,16 @@ class Builder implements FieldsCollection
     }
 
     /**
+     * Check if is creating resource.
+     *
+     * @return bool
+     */
+    public function isCreating()
+    {
+        return $this->isMode(static::MODE_CREATE);
+    }
+
+    /**
      * Returns builder is $mode.
      *
      * @param $mode
@@ -235,16 +215,6 @@ class Builder implements FieldsCollection
     public function isMode($mode)
     {
         return $this->mode == $mode;
-    }
-
-    /**
-     * Check if is creating resource.
-     *
-     * @return bool
-     */
-    public function isCreating()
-    {
-        return $this->isMode(static::MODE_CREATE);
     }
 
     /**
@@ -287,23 +257,8 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * @return string
-     */
-    public function resource($slice = null)
-    {
-        if ($this->mode == self::MODE_CREATE) {
-            return $this->form->resource(-1);
-        }
-        if ($slice !== null) {
-            return $this->form->resource($slice);
-        }
-
-        return $this->form->resource();
-    }
-
-    /**
-     * @param  int  $field
-     * @param  int  $label
+     * @param int $field
+     * @param int $label
      * @return $this
      */
     public function width($field = 8, $label = 2)
@@ -327,37 +282,9 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * Get or set action for form.
-     *
-     * @return string|void
-     */
-    public function action($action = null)
-    {
-        if ($action !== null) {
-            $this->action = admin_url($action);
-
-            return;
-        }
-
-        if ($this->action) {
-            return $this->action;
-        }
-
-        if ($this->isMode(static::MODE_EDIT)) {
-            return $this->form->resource().'/'.$this->id;
-        }
-
-        if ($this->isMode(static::MODE_CREATE)) {
-            return $this->form->resource(-1);
-        }
-
-        return '';
-    }
-
-    /**
      * Set view for this form.
      *
-     * @param  string  $view
+     * @param string $view
      * @return $this
      */
     public function view($view)
@@ -370,7 +297,7 @@ class Builder implements FieldsCollection
     /**
      * Get or set title for form.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this|string
      */
     public function title($title = null)
@@ -403,7 +330,7 @@ class Builder implements FieldsCollection
      */
     public function hasRows()
     {
-        return ! empty($this->form->rows());
+        return !empty($this->form->rows());
     }
 
     /**
@@ -433,18 +360,9 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * @param  Field  $field
-     * @return void
-     */
-    public function addHiddenField(Field $field)
-    {
-        $this->hiddenFields[] = $field;
-    }
-
-    /**
      * Add or get options.
      *
-     * @param  array  $options
+     * @param array $options
      * @return array|null
      */
     public function options($options = [])
@@ -459,8 +377,8 @@ class Builder implements FieldsCollection
     /**
      * Get or set option.
      *
-     * @param  string  $option
-     * @param  mixed  $value
+     * @param string $option
+     * @param mixed $value
      * @return void
      */
     public function option($option, $value = null)
@@ -473,125 +391,71 @@ class Builder implements FieldsCollection
     }
 
     /**
-     * @param  bool  $disable
+     * @param bool $disable
      * @return void
      */
     public function disableHeader(bool $disable = true)
     {
-        $this->showHeader = ! $disable;
+        $this->showHeader = !$disable;
     }
 
     /**
-     * @param  bool  $disable
+     * @param bool $disable
      * @return void
      */
     public function disableFooter(bool $disable = true)
     {
-        $this->showFooter = ! $disable;
+        $this->showFooter = !$disable;
     }
 
     /**
-     * @param $id
-     * @return void
-     */
-    public function setElementId($id)
-    {
-        $this->elementId = $id;
-    }
-
-    /**
+     * Render form header tools.
+     *
      * @return string
      */
-    public function getElementId()
+    public function renderTools()
     {
-        return $this->elementId ?: ($this->elementId = 'form-'.Str::random(8));
+        return $this->tools->render();
     }
 
     /**
-     * Determine if form fields has files.
+     * Render form.
      *
-     * @return bool
+     * @return string
      */
-    public function hasFile()
+    public function render()
     {
-        foreach ($this->fields() as $field) {
-            if ($field instanceof UploadField) {
-                return true;
+        $this->removeIgnoreFields();
+        $this->removeReservedFields();
+
+        $tabObj = $this->form->getTab();
+
+        if (!$tabObj->isEmpty()) {
+            $tabObj->addScript();
+        }
+
+        if ($this->form->allowAjaxSubmit()) {
+            $this->addSubmitScript();
+        }
+
+        $open = $this->open(['class' => 'form-horizontal']);
+
+        if ($this->layout->hasColumns()) {
+            $content = $this->doWrap(view($this->view, $this->variables()));
+        } else {
+            if (!$this->layout->hasBlocks()) {
+                $this->layout->prepend(
+                    12,
+                    $this->doWrap(view($this->view, $this->variables()))
+                );
             }
-        }
 
-        return false;
-    }
-
-    /**
-     * Add field for store redirect url after update or store.
-     *
-     * @return void
-     */
-    protected function addRedirectUrlField()
-    {
-        $previous = Helper::getPreviousUrl();
-
-        if (! $previous || $previous == URL::current()) {
-            return;
-        }
-
-        if (
-            Str::contains($previous, url($this->resource()))
-            && ! Helper::urlHasQuery($previous, [DialogForm::QUERY_NAME])
-        ) {
-            $this->addHiddenField(
-                (new Hidden(static::PREVIOUS_URL_KEY))->value($previous)
+            $content = $this->layout->build(
+                $this->renderHiddenFields()
             );
         }
-    }
 
-    /**
-     * Open up a new HTML form.
-     *
-     * @param  array  $options
-     * @return string
-     */
-    public function open($options = [])
-    {
-        $attributes = [];
-
-        if ($this->isMode(static::MODE_EDIT)) {
-            $this->addHiddenField((new Hidden('_method'))->value('PUT'));
-        }
-
-        $this->addRedirectUrlField();
-
-        $attributes['id'] = $this->getElementId();
-        $attributes['action'] = $this->action();
-        $attributes['method'] = Arr::get($options, 'method', 'post');
-        $attributes['accept-charset'] = 'UTF-8';
-        $attributes['data-toggle'] = 'validator';
-        $attributes['class'] = Arr::get($options, 'class');
-
-        if ($this->hasFile()) {
-            $attributes['enctype'] = 'multipart/form-data';
-        }
-
-        $html = [];
-        foreach ($attributes as $name => $value) {
-            $html[] = "$name=\"$value\"";
-        }
-
-        return '<form '.implode(' ', $html).' '.Admin::getPjaxContainerId().'>';
-    }
-
-    /**
-     * Close the current form.
-     *
-     * @return string
-     */
-    public function close()
-    {
-        $this->form = null;
-        $this->resetFields();
-
-        return '</form>';
+        return "{$open}{$content}{$this->close()}";
     }
 
     /**
@@ -613,7 +477,7 @@ class Builder implements FieldsCollection
      */
     protected function removeReservedFields()
     {
-        if (! $this->isMode(static::MODE_CREATE)) {
+        if (!$this->isMode(static::MODE_CREATE)) {
             return;
         }
 
@@ -643,104 +507,13 @@ class Builder implements FieldsCollection
 
         if ($this->form->hasTab()) {
             $this->form->getTab()->getTabs()->transform(function ($item) use ($reject) {
-                if (! empty($item['fields'])) {
+                if (!empty($item['fields'])) {
                     $item['fields'] = $item['fields']->reject($reject);
                 }
 
                 return $item;
             });
         }
-    }
-
-    /**
-     * Render form header tools.
-     *
-     * @return string
-     */
-    public function renderTools()
-    {
-        return $this->tools->render();
-    }
-
-    /**
-     * Render form footer.
-     *
-     * @return string
-     */
-    public function renderFooter()
-    {
-        if (! $this->showFooter) {
-            return;
-        }
-
-        return $this->footer->render();
-    }
-
-    protected function defaultVariables()
-    {
-        return [
-            'form'       => $this,
-            'tabObj'     => $this->form->getTab(),
-            'width'      => $this->width,
-            'elementId'  => $this->getElementId(),
-            'showHeader' => $this->showHeader,
-            'fields'     => $this->fields(),
-            'rows'       => $this->rows(),
-            'layout'     => $this->layout(),
-        ];
-    }
-
-    /**
-     * Render form.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $this->removeIgnoreFields();
-        $this->removeReservedFields();
-
-        $tabObj = $this->form->getTab();
-
-        if (! $tabObj->isEmpty()) {
-            $tabObj->addScript();
-        }
-
-        if ($this->form->allowAjaxSubmit()) {
-            $this->addSubmitScript();
-        }
-
-        $open = $this->open(['class' => 'form-horizontal']);
-
-        if ($this->layout->hasColumns()) {
-            $content = $this->doWrap(view($this->view, $this->variables()));
-        } else {
-            if (! $this->layout->hasBlocks()) {
-                $this->layout->prepend(
-                    12,
-                    $this->doWrap(view($this->view, $this->variables()))
-                );
-            }
-
-            $content = $this->layout->build(
-                $this->renderHiddenFields()
-            );
-        }
-
-        return "{$open}{$content}{$this->close()}";
-    }
-
-    /**
-     * @param  Renderable  $view
-     * @return string
-     */
-    protected function doWrap(Renderable $view)
-    {
-        if ($wrapper = $this->wrapper) {
-            return Helper::render($wrapper($view));
-        }
-
-        return "<div class='card'>{$view->render()}</div>";
     }
 
     /**
@@ -762,16 +535,226 @@ JS
         );
     }
 
+    /**
+     * @return string
+     */
+    public function getElementId()
+    {
+        return $this->elementId ?: ($this->elementId = 'form-' . Str::random(8));
+    }
+
+    /**
+     * @param $id
+     * @return void
+     */
+    public function setElementId($id)
+    {
+        $this->elementId = $id;
+    }
+
+    /**
+     * Open up a new HTML form.
+     *
+     * @param array $options
+     * @return string
+     */
+    public function open($options = [])
+    {
+        $attributes = [];
+
+        if ($this->isMode(static::MODE_EDIT)) {
+            $this->addHiddenField((new Hidden('_method'))->value('PUT'));
+        }
+
+        $this->addRedirectUrlField();
+
+        $attributes['id'] = $this->getElementId();
+        $attributes['action'] = $this->action();
+        $attributes['method'] = Arr::get($options, 'method', 'post');
+        $attributes['accept-charset'] = 'UTF-8';
+        $attributes['data-toggle'] = 'validator';
+        $attributes['class'] = Arr::get($options, 'class');
+
+        if ($this->hasFile()) {
+            $attributes['enctype'] = 'multipart/form-data';
+        }
+
+        $html = [];
+        foreach ($attributes as $name => $value) {
+            $html[] = "$name=\"$value\"";
+        }
+
+        return '<form ' . implode(' ', $html) . ' ' . Admin::getPjaxContainerId() . '>';
+    }
+
+    /**
+     * @param Field $field
+     * @return void
+     */
+    public function addHiddenField(Field $field)
+    {
+        $this->hiddenFields[] = $field;
+    }
+
+    /**
+     * Add field for store redirect url after update or store.
+     *
+     * @return void
+     */
+    protected function addRedirectUrlField()
+    {
+        $previous = Helper::getPreviousUrl();
+
+        if (!$previous || $previous == URL::current()) {
+            return;
+        }
+
+        if (
+            Str::contains($previous, url($this->resource()))
+            && !Helper::urlHasQuery($previous, [DialogForm::QUERY_NAME])
+        ) {
+            $this->addHiddenField(
+                (new Hidden(static::PREVIOUS_URL_KEY))->value($previous)
+            );
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function resource($slice = null)
+    {
+        if ($this->mode == self::MODE_CREATE) {
+            return $this->form->resource(-1);
+        }
+        if ($slice !== null) {
+            return $this->form->resource($slice);
+        }
+
+        return $this->form->resource();
+    }
+
+    /**
+     * Get or set action for form.
+     *
+     * @return string|void
+     */
+    public function action($action = null)
+    {
+        if ($action !== null) {
+            $this->action = admin_url($action);
+
+            return;
+        }
+
+        if ($this->action) {
+            return $this->action;
+        }
+
+        if ($this->isMode(static::MODE_EDIT)) {
+            return $this->form->resource() . '/' . $this->id;
+        }
+
+        if ($this->isMode(static::MODE_CREATE)) {
+            return $this->form->resource(-1);
+        }
+
+        return '';
+    }
+
+    /**
+     * Determine if form fields has files.
+     *
+     * @return bool
+     */
+    public function hasFile()
+    {
+        foreach ($this->fields() as $field) {
+            if ($field instanceof UploadField) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Renderable $view
+     * @return string
+     */
+    protected function doWrap(Renderable $view)
+    {
+        if ($wrapper = $this->wrapper) {
+            return Helper::render($wrapper($view));
+        }
+
+        return "<div class='card'>{$view->render()}</div>";
+    }
+
     public function renderHiddenFields()
     {
         $html = '';
 
         foreach ($this->hiddenFields as $field) {
-            if (! $field->hasAttribute(Field::BUILD_IGNORE)) {
+            if (!$field->hasAttribute(Field::BUILD_IGNORE)) {
                 $html .= $field->render();
             }
         }
 
         return $html;
+    }
+
+    /**
+     * Close the current form.
+     *
+     * @return string
+     */
+    public function close()
+    {
+        $this->form = null;
+        $this->resetFields();
+
+        return '</form>';
+    }
+
+    /**
+     * Render form footer.
+     *
+     * @return string
+     */
+    public function renderFooter()
+    {
+        if (!$this->showFooter) {
+            return;
+        }
+
+        return $this->footer->render();
+    }
+
+    protected function defaultVariables()
+    {
+        return [
+            'form' => $this,
+            'tabObj' => $this->form->getTab(),
+            'width' => $this->width,
+            'elementId' => $this->getElementId(),
+            'showHeader' => $this->showHeader,
+            'fields' => $this->fields(),
+            'rows' => $this->rows(),
+            'layout' => $this->layout(),
+        ];
+    }
+
+    /**
+     * @param \Closure $closure
+     * @return Layout
+     */
+    public function layout($closure = null)
+    {
+        if ($closure) {
+            $closure($this->layout);
+        }
+
+        return $this->layout;
     }
 }

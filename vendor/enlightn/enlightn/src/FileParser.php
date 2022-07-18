@@ -10,14 +10,14 @@ class FileParser
      * Get the first line number in a file that matches any of the search strings
      * after the "after" search strings are matched.
      *
-     * @param  string  $filePath
-     * @param  string|array  $search
-     * @param  array  $after
+     * @param string $filePath
+     * @param string|array $search
+     * @param array $after
      * @return int|bool
      */
     public static function getLineNumber(string $filePath, $search, $after = [])
     {
-        if (! file_exists($filePath)) {
+        if (!file_exists($filePath)) {
             return false;
         }
 
@@ -32,7 +32,7 @@ class FileParser
             while (($line = fgets($handle)) !== false) {
                 $count++;
 
-                if (! is_null($afterSearch)) {
+                if (!is_null($afterSearch)) {
                     if (strpos($line, $afterSearch) !== false) {
                         // remove the after search string when found
                         $afterSearch = array_shift($after);

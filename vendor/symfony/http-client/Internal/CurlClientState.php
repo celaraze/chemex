@@ -23,9 +23,9 @@ use Symfony\Component\HttpClient\Response\CurlResponse;
  */
 final class CurlClientState extends ClientState
 {
+    public static array $curlVersion;
     public ?\CurlMultiHandle $handle;
     public ?\CurlShareHandle $share;
-
     /** @var PushedResponse[] */
     public array $pushedResponses = [];
     public DnsCache $dnsCache;
@@ -33,8 +33,6 @@ final class CurlClientState extends ClientState
     public array $pauseExpiries = [];
     public int $execCounter = \PHP_INT_MIN;
     public ?LoggerInterface $logger = null;
-
-    public static array $curlVersion;
 
     public function __construct(int $maxHostConnections, int $maxPendingPushes)
     {
@@ -118,12 +116,12 @@ final class CurlClientState extends ClientState
             return \CURL_PUSH_DENY;
         }
 
-        $url = $headers[':scheme'][0].'://'.$headers[':authority'][0];
+        $url = $headers[':scheme'][0] . '://' . $headers[':authority'][0];
 
         // curl before 7.65 doesn't validate the pushed ":authority" header,
         // but this is a MUST in the HTTP/2 RFC; let's restrict pushes to the original host,
         // ignoring domains mentioned as alt-name in the certificate for now (same as curl).
-        if (!str_starts_with($origin, $url.'/')) {
+        if (!str_starts_with($origin, $url . '/')) {
             $this->logger?->debug(sprintf('Rejecting pushed response from "%s": server is not authoritative for "%s"', $origin, $url));
 
             return \CURL_PUSH_DENY;
@@ -138,7 +136,7 @@ final class CurlClientState extends ClientState
         $url .= $headers[':path'][0];
         $this->logger?->debug(sprintf('Queueing pushed response: "%s"', $url));
 
-        $this->pushedResponses[$url] = new PushedResponse(new CurlResponse($this, $pushed), $headers, $this->openHandles[(int) $parent][1] ?? [], $pushed);
+        $this->pushedResponses[$url] = new PushedResponse(new CurlResponse($this, $pushed), $headers, $this->openHandles[(int)$parent][1] ?? [], $pushed);
 
         return \CURL_PUSH_OK;
     }

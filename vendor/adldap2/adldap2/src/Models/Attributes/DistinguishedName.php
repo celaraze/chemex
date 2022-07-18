@@ -12,11 +12,11 @@ class DistinguishedName
      * @var array
      */
     protected $components = [
-        'cn'  => [],
+        'cn' => [],
         'uid' => [],
-        'ou'  => [],
-        'dc'  => [],
-        'o'   => [],
+        'ou' => [],
+        'dc' => [],
+        'o' => [],
     ];
 
     /**
@@ -27,6 +27,45 @@ class DistinguishedName
     public function __construct($baseDn = null)
     {
         $this->setBase($baseDn);
+    }
+
+    /**
+     * Sets the base RDN of the distinguished name.
+     *
+     * @param string|DistinguishedName $base
+     *
+     * @return DistinguishedName
+     */
+    public function setBase($base)
+    {
+        // Typecast base to string in case we've been given
+        // an instance of the distinguished name object.
+        $base = (string)$base;
+
+        // If the base DN isn't null we'll try to explode it.
+        $base = Utilities::explodeDn($base, false) ?: [];
+
+        // Remove the count key from the exploded distinguished name.
+        unset($base['count']);
+
+        foreach ($base as $key => $rdn) {
+            // We'll break the RDN into pieces
+            $pieces = explode('=', $rdn) ?: [];
+
+            // If there's exactly 2 pieces, then we can work with it.
+            if (count($pieces) === 2) {
+                $attribute = ucfirst(strtolower($pieces[0]));
+
+                $method = 'add' . $attribute;
+
+                if (method_exists($this, $method)) {
+                    // We see what type of RDN it is and add each accordingly.
+                    call_user_func_array([$this, $method], [$pieces[1]]);
+                }
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -52,7 +91,7 @@ class DistinguishedName
         foreach ($this->components as $component => $values) {
             array_map(function ($value) use ($component, &$components) {
                 // Assemble the component and escape the value.
-                $components[] = sprintf('%s=%s', $component, ldap_escape((string) $value, '', 2));
+                $components[] = sprintf('%s=%s', $component, ldap_escape((string)$value, '', 2));
             }, $values);
         }
 
@@ -74,6 +113,40 @@ class DistinguishedName
     }
 
     /**
+     * Adds a component to the distinguished name.
+     *
+     * @param string $component
+     * @param string $value
+     *
+     * @throws \UnexpectedValueException When the given name does not exist.
+     */
+    protected function addComponent($component, $value)
+    {
+        $this->validateComponentExists($component);
+
+        // We need to make sure the value we're given isn't empty before adding it into our components.
+        if (!empty($value)) {
+            $this->components[$component][] = $value;
+        }
+    }
+
+    /**
+     * Validates that the given component exists in the available components.
+     *
+     * @param string $component The name of the component to validate.
+     *
+     * @return void
+     * @throws \UnexpectedValueException When the given component does not exist.
+     *
+     */
+    protected function validateComponentExists($component)
+    {
+        if (!array_key_exists($component, $this->components)) {
+            throw new \UnexpectedValueException("The RDN component '$component' does not exist.");
+        }
+    }
+
+    /**
      * Removes a domain component.
      *
      * @param string $dc
@@ -85,6 +158,23 @@ class DistinguishedName
         $this->removeComponent('dc', $dc);
 
         return $this;
+    }
+
+    /**
+     * Removes the given value from the given component.
+     *
+     * @param string $component
+     * @param string $value
+     *
+     * @return void
+     * @throws \UnexpectedValueException When the given component does not exist.
+     *
+     */
+    protected function removeComponent($component, $value)
+    {
+        $this->validateComponentExists($component);
+
+        $this->components[$component] = array_diff($this->components[$component], [$value]);
     }
 
     /**
@@ -200,45 +290,6 @@ class DistinguishedName
     }
 
     /**
-     * Sets the base RDN of the distinguished name.
-     *
-     * @param string|DistinguishedName $base
-     *
-     * @return DistinguishedName
-     */
-    public function setBase($base)
-    {
-        // Typecast base to string in case we've been given
-        // an instance of the distinguished name object.
-        $base = (string) $base;
-
-        // If the base DN isn't null we'll try to explode it.
-        $base = Utilities::explodeDn($base, false) ?: [];
-
-        // Remove the count key from the exploded distinguished name.
-        unset($base['count']);
-
-        foreach ($base as $key => $rdn) {
-            // We'll break the RDN into pieces
-            $pieces = explode('=', $rdn) ?: [];
-
-            // If there's exactly 2 pieces, then we can work with it.
-            if (count($pieces) === 2) {
-                $attribute = ucfirst(strtolower($pieces[0]));
-
-                $method = 'add'.$attribute;
-
-                if (method_exists($this, $method)) {
-                    // We see what type of RDN it is and add each accordingly.
-                    call_user_func_array([$this, $method], [$pieces[1]]);
-                }
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Returns an array of all components in the distinguished name.
      *
      * If a component name is given ('cn', 'dc' for example) then
@@ -257,56 +308,5 @@ class DistinguishedName
         $this->validateComponentExists($component);
 
         return $this->components[$component];
-    }
-
-    /**
-     * Adds a component to the distinguished name.
-     *
-     * @param string $component
-     * @param string $value
-     *
-     * @throws \UnexpectedValueException When the given name does not exist.
-     */
-    protected function addComponent($component, $value)
-    {
-        $this->validateComponentExists($component);
-
-        // We need to make sure the value we're given isn't empty before adding it into our components.
-        if (!empty($value)) {
-            $this->components[$component][] = $value;
-        }
-    }
-
-    /**
-     * Removes the given value from the given component.
-     *
-     * @param string $component
-     * @param string $value
-     *
-     * @throws \UnexpectedValueException When the given component does not exist.
-     *
-     * @return void
-     */
-    protected function removeComponent($component, $value)
-    {
-        $this->validateComponentExists($component);
-
-        $this->components[$component] = array_diff($this->components[$component], [$value]);
-    }
-
-    /**
-     * Validates that the given component exists in the available components.
-     *
-     * @param string $component The name of the component to validate.
-     *
-     * @throws \UnexpectedValueException When the given component does not exist.
-     *
-     * @return void
-     */
-    protected function validateComponentExists($component)
-    {
-        if (!array_key_exists($component, $this->components)) {
-            throw new \UnexpectedValueException("The RDN component '$component' does not exist.");
-        }
     }
 }

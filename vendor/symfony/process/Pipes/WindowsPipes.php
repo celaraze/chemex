@@ -50,17 +50,19 @@ class WindowsPipes extends AbstractPipes
             ];
             $tmpDir = sys_get_temp_dir();
             $lastError = 'unknown reason';
-            set_error_handler(function ($type, $msg) use (&$lastError) { $lastError = $msg; });
-            for ($i = 0;; ++$i) {
+            set_error_handler(function ($type, $msg) use (&$lastError) {
+                $lastError = $msg;
+            });
+            for ($i = 0; ; ++$i) {
                 foreach ($pipes as $pipe => $name) {
                     $file = sprintf('%s\\sf_proc_%02X.%s', $tmpDir, $i, $name);
 
-                    if (!$h = fopen($file.'.lock', 'w')) {
-                        if (file_exists($file.'.lock')) {
+                    if (!$h = fopen($file . '.lock', 'w')) {
+                        if (file_exists($file . '.lock')) {
                             continue 2;
                         }
                         restore_error_handler();
-                        throw new RuntimeException('A temporary file could not be opened to write the process output: '.$lastError);
+                        throw new RuntimeException('A temporary file could not be opened to write the process output: ' . $lastError);
                     }
                     if (!flock($h, \LOCK_EX | \LOCK_NB)) {
                         continue 2;
@@ -90,17 +92,32 @@ class WindowsPipes extends AbstractPipes
 
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
     {
         $this->close();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function close()
+    {
+        parent::close();
+        foreach ($this->fileHandles as $type => $handle) {
+            ftruncate($handle, 0);
+            fclose($handle);
+            flock($this->lockHandles[$type], \LOCK_UN);
+            fclose($this->lockHandles[$type]);
+        }
+        $this->fileHandles = $this->lockHandles = [];
     }
 
     /**
@@ -185,20 +202,5 @@ class WindowsPipes extends AbstractPipes
     public function areOpen(): bool
     {
         return $this->pipes && $this->fileHandles;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function close()
-    {
-        parent::close();
-        foreach ($this->fileHandles as $type => $handle) {
-            ftruncate($handle, 0);
-            fclose($handle);
-            flock($this->lockHandles[$type], \LOCK_UN);
-            fclose($this->lockHandles[$type]);
-        }
-        $this->fileHandles = $this->lockHandles = [];
     }
 }

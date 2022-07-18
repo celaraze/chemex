@@ -7,6 +7,12 @@ use Illuminate\Support\Arr;
 class Where extends AbstractFilter
 {
     /**
+     * Input value from presenter.
+     *
+     * @var mixed
+     */
+    public $input;
+    /**
      * Query closure.
      *
      * @var \Closure
@@ -14,18 +20,11 @@ class Where extends AbstractFilter
     protected $where;
 
     /**
-     * Input value from presenter.
-     *
-     * @var mixed
-     */
-    public $input;
-
-    /**
      * Where constructor.
      *
-     * @param  string  $column
-     * @param  \Closure  $query
-     * @param  string  $label
+     * @param string $column
+     * @param \Closure $query
+     * @param string $label
      */
     public function __construct($column, \Closure $query, $label = '')
     {
@@ -37,7 +36,7 @@ class Where extends AbstractFilter
     /**
      * Get condition of this filter.
      *
-     * @param  array  $inputs
+     * @param array $inputs
      * @return array|mixed|void
      */
     public function condition($inputs)

@@ -33,19 +33,6 @@ final class Uninflected
     /**
      * @return Pattern[]
      */
-    public static function getPlural(): iterable
-    {
-        yield from self::getDefault();
-
-        yield new Pattern('people');
-        yield new Pattern('trivia');
-        yield new Pattern('\w+ware$');
-        yield new Pattern('media');
-    }
-
-    /**
-     * @return Pattern[]
-     */
     private static function getDefault(): iterable
     {
         yield new Pattern('\w+media');
@@ -189,5 +176,18 @@ final class Uninflected
         yield new Pattern('wood');
         yield new Pattern('wool');
         yield new Pattern('yengeese');
+    }
+
+    /**
+     * @return Pattern[]
+     */
+    public static function getPlural(): iterable
+    {
+        yield from self::getDefault();
+
+        yield new Pattern('people');
+        yield new Pattern('trivia');
+        yield new Pattern('\w+ware$');
+        yield new Pattern('media');
     }
 }

@@ -27,19 +27,11 @@ class Interval
     }
 
     /**
-     * @return Constraint
+     * @return self
      */
-    public function getStart()
+    public static function any()
     {
-        return $this->start;
-    }
-
-    /**
-     * @return Constraint
-     */
-    public function getEnd()
-    {
-        return $this->end;
+        return new self(self::fromZero(), self::untilPositiveInfinity());
     }
 
     /**
@@ -64,18 +56,10 @@ class Interval
         static $positiveInfinity;
 
         if (null === $positiveInfinity) {
-            $positiveInfinity = new Constraint('<', PHP_INT_MAX.'.0.0.0');
+            $positiveInfinity = new Constraint('<', PHP_INT_MAX . '.0.0.0');
         }
 
         return $positiveInfinity;
-    }
-
-    /**
-     * @return self
-     */
-    public static function any()
-    {
-        return new self(self::fromZero(), self::untilPositiveInfinity());
     }
 
     /**
@@ -94,5 +78,21 @@ class Interval
     {
         // nothing == no names included
         return array('names' => array(), 'exclude' => false);
+    }
+
+    /**
+     * @return Constraint
+     */
+    public function getStart()
+    {
+        return $this->start;
+    }
+
+    /**
+     * @return Constraint
+     */
+    public function getEnd()
+    {
+        return $this->end;
     }
 }

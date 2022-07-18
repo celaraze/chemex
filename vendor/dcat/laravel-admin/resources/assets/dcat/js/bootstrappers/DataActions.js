@@ -1,19 +1,17 @@
-import Dropdown from "../../../adminlte/js/Dropdown";
-
 let $document = $(document);
 
 let defaultActions = {
     // 刷新按钮
-    refresh (action, Dcat) {
+    refresh(action, Dcat) {
         $document.on('click', action, function () {
             Dcat.reload($(this).data('url'));
         });
     },
     // 删除按钮初始化
-    delete (action, Dcat) {
+    delete(action, Dcat) {
         let lang = Dcat.lang;
 
-        $document.on('click', action, function() {
+        $document.on('click', action, function () {
             let url = $(this).data('url'),
                 redirect = $(this).data('redirect'),
                 msg = $(this).data('message');
@@ -27,7 +25,7 @@ let defaultActions = {
 
                         response.data.detail = msg;
 
-                        if (redirect && ! response.data.then) {
+                        if (redirect && !response.data.then) {
                             response.data.then = {action: 'redirect', value: redirect}
                         }
 
@@ -38,15 +36,15 @@ let defaultActions = {
         });
     },
     // 批量删除按钮初始化
-    'batch-delete' (action, Dcat) {
-        $document.on('click', action, function() {
+    'batch-delete'(action, Dcat) {
+        $document.on('click', action, function () {
             let url = $(this).data('url'),
                 name = $(this).data('name'),
                 redirect = $(this).data('redirect'),
                 keys = Dcat.grid.selected(name),
                 lang = Dcat.lang;
 
-            if (! keys.length) {
+            if (!keys.length) {
                 return;
             }
             let msg = 'ID - ' + keys.join(', ');
@@ -58,7 +56,7 @@ let defaultActions = {
                     success: function (response) {
                         Dcat.NP.done();
 
-                        if (redirect && ! response.data.then) {
+                        if (redirect && !response.data.then) {
                             response.data.then = {action: 'redirect', value: redirect}
                         }
 
@@ -70,13 +68,13 @@ let defaultActions = {
     },
 
     // 图片预览
-    'preview-img' (action, Dcat) {
+    'preview-img'(action, Dcat) {
         $document.on('click', action, function () {
             return Dcat.helpers.previewImage($(this).attr('src'));
         });
     },
 
-    'popover' (action, Dcat) {
+    'popover'(action, Dcat) {
         Dcat.onPjaxComplete(function () {
             $('.popover').remove();
         }, false);
@@ -86,7 +84,7 @@ let defaultActions = {
         });
     },
 
-    'box-actions' () {
+    'box-actions'() {
         $document.on('click', '.box [data-action="collapse"]', function (e) {
             e.preventDefault();
 
@@ -101,10 +99,11 @@ let defaultActions = {
         });
     },
 
-    dropdown () {
+    dropdown() {
         function hide() {
             $('.dropdown-menu').removeClass('show')
         }
+
         $document.off('click', document, hide)
         $document.on('click', hide);
 
@@ -126,14 +125,14 @@ let defaultActions = {
 
             let $this = $(this);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $this.Dropdown('fixPosition')
             }, 1)
         }
 
         let selector = '[data-toggle="dropdown"]';
 
-        $document.off('click',selector).on('click', selector, toggle).on('click', selector, fix);
+        $document.off('click', selector).on('click', selector, toggle).on('click', selector, fix);
     },
 };
 

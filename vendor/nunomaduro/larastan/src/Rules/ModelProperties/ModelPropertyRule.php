@@ -40,13 +40,13 @@ class ModelPropertyRule implements Rule
     }
 
     /**
-     * @param  MethodCall  $node
-     * @param  Scope  $scope
+     * @param MethodCall $node
+     * @param Scope $scope
      * @return string[]
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (! $node->name instanceof Node\Identifier) {
+        if (!$node->name instanceof Node\Identifier) {
             return [];
         }
 
@@ -70,7 +70,7 @@ class ModelPropertyRule implements Rule
             return [];
         }
 
-        if (! $type->hasMethod($name)->yes()) {
+        if (!$type->hasMethod($name)->yes()) {
             return [];
         }
 

@@ -29,7 +29,7 @@ abstract class BaseMiddleware
     /**
      * Create a new BaseMiddleware instance.
      *
-     * @param  \Tymon\JWTAuth\JWTAuth  $auth
+     * @param \Tymon\JWTAuth\JWTAuth $auth
      * @return void
      */
     public function __construct(JWTAuth $auth)
@@ -38,24 +38,9 @@ abstract class BaseMiddleware
     }
 
     /**
-     * Check the request for the presence of a token.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
-     */
-    public function checkForToken(Request $request)
-    {
-        if (! $this->auth->parser()->setRequest($request)->hasToken()) {
-            throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
-        }
-    }
-
-    /**
      * Attempt to authenticate a user via the token in the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      *
      * @throws \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException
@@ -65,7 +50,7 @@ abstract class BaseMiddleware
         $this->checkForToken($request);
 
         try {
-            if (! $this->auth->parseToken()->authenticate()) {
+            if (!$this->auth->parseToken()->authenticate()) {
                 throw new UnauthorizedHttpException('jwt-auth', 'User not found');
             }
         } catch (JWTException $e) {
@@ -74,16 +59,31 @@ abstract class BaseMiddleware
     }
 
     /**
+     * Check the request for the presence of a token.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
+     */
+    public function checkForToken(Request $request)
+    {
+        if (!$this->auth->parser()->setRequest($request)->hasToken()) {
+            throw new UnauthorizedHttpException('jwt-auth', 'Token not provided');
+        }
+    }
+
+    /**
      * Set the authentication header.
      *
-     * @param  \Illuminate\Http\Response|\Illuminate\Http\JsonResponse  $response
-     * @param  string|null  $token
+     * @param \Illuminate\Http\Response|\Illuminate\Http\JsonResponse $response
+     * @param string|null $token
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     protected function setAuthenticationHeader($response, $token = null)
     {
         $token = $token ?: $this->auth->refresh();
-        $response->headers->set('Authorization', 'Bearer '.$token);
+        $response->headers->set('Authorization', 'Bearer ' . $token);
 
         return $response;
     }

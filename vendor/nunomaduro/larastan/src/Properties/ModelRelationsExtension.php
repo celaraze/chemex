@@ -38,7 +38,7 @@ final class ModelRelationsExtension implements PropertiesClassReflectionExtensio
 
     public function __construct(
         RelationParserHelper $relationParserHelper,
-        BuilderHelper $builderHelper)
+        BuilderHelper        $builderHelper)
     {
         $this->relationParserHelper = $relationParserHelper;
         $this->builderHelper = $builderHelper;
@@ -46,7 +46,7 @@ final class ModelRelationsExtension implements PropertiesClassReflectionExtensio
 
     public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
     {
-        if (! $classReflection->isSubclassOf(Model::class)) {
+        if (!$classReflection->isSubclassOf(Model::class)) {
             return false;
         }
 
@@ -56,13 +56,13 @@ final class ModelRelationsExtension implements PropertiesClassReflectionExtensio
 
         $hasNativeMethod = $classReflection->hasNativeMethod($propertyName);
 
-        if (! $hasNativeMethod) {
+        if (!$hasNativeMethod) {
             return false;
         }
 
         $returnType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod($propertyName)->getVariants())->getReturnType();
 
-        if (! (new ObjectType(Relation::class))->isSuperTypeOf($returnType)->yes()) {
+        if (!(new ObjectType(Relation::class))->isSuperTypeOf($returnType)->yes()) {
             return false;
         }
 

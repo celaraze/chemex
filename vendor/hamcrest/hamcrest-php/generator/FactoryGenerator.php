@@ -49,14 +49,6 @@ class FactoryGenerator
         }
     }
 
-    public function write()
-    {
-        foreach ($this->factoryFiles as $file) {
-            $file->build();
-            $file->write();
-        }
-    }
-
     public function getClassesWithFactoryMethods()
     {
         $classes = array();
@@ -120,5 +112,13 @@ class FactoryGenerator
         }
 
         return null;
+    }
+
+    public function write()
+    {
+        foreach ($this->factoryFiles as $file) {
+            $file->build();
+            $file->write();
+        }
     }
 }

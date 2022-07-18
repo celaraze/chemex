@@ -17,7 +17,7 @@
 
 use Carbon\CarbonInterface;
 
-return array_replace_recursive(require __DIR__.'/sr.php', [
+return array_replace_recursive(require __DIR__ . '/sr.php', [
     'month' => ':count mjesec|:count mjeseca|:count mjeseci',
     'week' => ':count nedjelja|:count nedjelje|:count nedjelja',
     'second' => ':count sekund|:count sekunde|:count sekundi',

@@ -11,7 +11,7 @@
         <div>
             <div class="right-content pull-right">{!! $options['content']['right'] !!}</div>
 
-            <h2 class="main-content m-b-10" >
+            <h2 class="main-content m-b-10">
                 {!! $options['content']['left'] !!}&nbsp;
             </h2>
             <p class="text-muted">
@@ -20,11 +20,12 @@
         </div>
 
         @if($options['progress'])
-        <div class="progress progress-sm m-b-0">
-            <div data-width="{!! $options['progress']['percent'] !!}%" class="progress-bar progress-bar-{!! $options['progress']['style'] !!}" >
-                <span class="sr-only"></span>
+            <div class="progress progress-sm m-b-0">
+                <div data-width="{!! $options['progress']['percent'] !!}%"
+                     class="progress-bar progress-bar-{!! $options['progress']['style'] !!}">
+                    <span class="sr-only"></span>
+                </div>
             </div>
-        </div>
         @endif
 
     </div>

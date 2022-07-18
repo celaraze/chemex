@@ -20,9 +20,9 @@ class Rule
     /**
      * Create a new conditional rule set.
      *
-     * @param  callable|bool  $condition
-     * @param  array|string|\Closure  $rules
-     * @param  array|string|\Closure  $defaultRules
+     * @param callable|bool $condition
+     * @param array|string|\Closure $rules
+     * @param array|string|\Closure $defaultRules
      * @return \Illuminate\Validation\ConditionalRules
      */
     public static function when($condition, $rules, $defaultRules = [])
@@ -33,7 +33,7 @@ class Rule
     /**
      * Get a dimensions constraint builder instance.
      *
-     * @param  array  $constraints
+     * @param array $constraints
      * @return \Illuminate\Validation\Rules\Dimensions
      */
     public static function dimensions(array $constraints = [])
@@ -44,8 +44,8 @@ class Rule
     /**
      * Get an exists constraint builder instance.
      *
-     * @param  string  $table
-     * @param  string  $column
+     * @param string $table
+     * @param string $column
      * @return \Illuminate\Validation\Rules\Exists
      */
     public static function exists($table, $column = 'NULL')
@@ -56,7 +56,7 @@ class Rule
     /**
      * Get an in constraint builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|array|string  $values
+     * @param \Illuminate\Contracts\Support\Arrayable|array|string $values
      * @return \Illuminate\Validation\Rules\In
      */
     public static function in($values)
@@ -71,7 +71,7 @@ class Rule
     /**
      * Get a not_in constraint builder instance.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|array|string  $values
+     * @param \Illuminate\Contracts\Support\Arrayable|array|string $values
      * @return \Illuminate\Validation\Rules\NotIn
      */
     public static function notIn($values)
@@ -86,7 +86,7 @@ class Rule
     /**
      * Create a new nested rule set.
      *
-     * @param  callable  $callback
+     * @param callable $callback
      * @return \Illuminate\Validation\NestedRules
      */
     public static function forEach($callback)
@@ -97,7 +97,7 @@ class Rule
     /**
      * Get a required_if constraint builder instance.
      *
-     * @param  callable|bool  $callback
+     * @param callable|bool $callback
      * @return \Illuminate\Validation\Rules\RequiredIf
      */
     public static function requiredIf($callback)
@@ -108,7 +108,7 @@ class Rule
     /**
      * Get a exclude_if constraint builder instance.
      *
-     * @param  callable|bool  $callback
+     * @param callable|bool $callback
      * @return \Illuminate\Validation\Rules\ExcludeIf
      */
     public static function excludeIf($callback)
@@ -119,7 +119,7 @@ class Rule
     /**
      * Get a prohibited_if constraint builder instance.
      *
-     * @param  callable|bool  $callback
+     * @param callable|bool $callback
      * @return \Illuminate\Validation\Rules\ProhibitedIf
      */
     public static function prohibitedIf($callback)
@@ -130,8 +130,8 @@ class Rule
     /**
      * Get a unique constraint builder instance.
      *
-     * @param  string  $table
-     * @param  string  $column
+     * @param string $table
+     * @param string $column
      * @return \Illuminate\Validation\Rules\Unique
      */
     public static function unique($table, $column = 'NULL')

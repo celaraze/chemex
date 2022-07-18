@@ -19,6 +19,7 @@ class MapDateTime
 {
     public function __construct(
         public readonly ?string $format = null
-    ) {
+    )
+    {
     }
 }

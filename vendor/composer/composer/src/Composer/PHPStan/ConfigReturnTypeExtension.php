@@ -17,7 +17,6 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -30,7 +29,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
 
     public function __construct()
     {
-        $schema = JsonFile::parseJson((string) file_get_contents(__DIR__.'/../../../res/composer-schema.json'));
+        $schema = JsonFile::parseJson((string)file_get_contents(__DIR__ . '/../../../res/composer-schema.json'));
         /**
          * @var string $prop
          */
@@ -41,34 +40,6 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
     }
 
-    public function getClass(): string
-    {
-        return Config::class;
-    }
-
-    public function isMethodSupported(MethodReflection $methodReflection): bool
-    {
-        return strtolower($methodReflection->getName()) === 'get';
-    }
-
-    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
-    {
-        $args = $methodCall->getArgs();
-
-        if (count($args) < 1) {
-            return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
-        }
-
-        $keyType = $scope->getType($args[0]->value);
-        if ($keyType instanceof ConstantStringType) {
-            if (isset($this->properties[$keyType->getValue()])) {
-                return $this->properties[$keyType->getValue()];
-            }
-        }
-
-        return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
-    }
-
     /**
      * @param array<mixed> $def
      */
@@ -76,7 +47,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
     {
         if (isset($def['type'])) {
             $types = [];
-            foreach ((array) $def['type'] as $type) {
+            foreach ((array)$def['type'] as $type) {
                 switch ($type) {
                     case 'integer':
                         if (in_array($path, ['process-timeout', 'cache-ttl', 'cache-files-ttl', 'cache-files-maxsize'], true)) {
@@ -117,7 +88,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                     case 'object':
                         $addlPropType = null;
                         if (isset($def['additionalProperties'])) {
-                            $addlPropType = $this->parseType($def['additionalProperties'], $path.'.additionalProperties');
+                            $addlPropType = $this->parseType($def['additionalProperties'], $path . '.additionalProperties');
                         }
 
                         if (isset($def['properties'])) {
@@ -127,7 +98,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                             $propIndex = 0;
                             foreach ($def['properties'] as $propName => $propdef) {
                                 $keyNames[] = new ConstantStringType($propName);
-                                $valType = $this->parseType($propdef, $path.'.'.$propName);
+                                $valType = $this->parseType($propdef, $path . '.' . $propName);
                                 if (!isset($def['required']) || !in_array($propName, $def['required'], true)) {
                                     $valType = TypeCombinator::addNull($valType);
                                     $optionalKeys[] = $propIndex;
@@ -148,7 +119,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
 
                     case 'array':
                         if (isset($def['items'])) {
-                            $valType = $this->parseType($def['items'], $path.'.items');
+                            $valType = $this->parseType($def['items'], $path . '.items');
                         } else {
                             $valType = new MixedType();
                         }
@@ -181,5 +152,33 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
 
         return $type;
+    }
+
+    public function getClass(): string
+    {
+        return Config::class;
+    }
+
+    public function isMethodSupported(MethodReflection $methodReflection): bool
+    {
+        return strtolower($methodReflection->getName()) === 'get';
+    }
+
+    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+    {
+        $args = $methodCall->getArgs();
+
+        if (count($args) < 1) {
+            return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+        }
+
+        $keyType = $scope->getType($args[0]->value);
+        if ($keyType instanceof ConstantStringType) {
+            if (isset($this->properties[$keyType->getValue()])) {
+                return $this->properties[$keyType->getValue()];
+            }
+        }
+
+        return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
     }
 }

@@ -13,8 +13,8 @@ namespace Prophecy\Doubler;
 
 use Doctrine\Instantiator\Instantiator;
 use Prophecy\Doubler\ClassPatch\ClassPatchInterface;
-use Prophecy\Doubler\Generator\ClassMirror;
 use Prophecy\Doubler\Generator\ClassCreator;
+use Prophecy\Doubler\Generator\ClassMirror;
 use Prophecy\Exception\InvalidArgumentException;
 use ReflectionClass;
 
@@ -43,16 +43,16 @@ class Doubler
     /**
      * Initializes doubler.
      *
-     * @param ClassMirror   $mirror
-     * @param ClassCreator  $creator
+     * @param ClassMirror $mirror
+     * @param ClassCreator $creator
      * @param NameGenerator $namer
      */
-    public function __construct(ClassMirror $mirror = null, ClassCreator $creator = null,
+    public function __construct(ClassMirror   $mirror = null, ClassCreator $creator = null,
                                 NameGenerator $namer = null)
     {
-        $this->mirror  = $mirror  ?: new ClassMirror;
+        $this->mirror = $mirror ?: new ClassMirror;
         $this->creator = $creator ?: new ClassCreator;
-        $this->namer   = $namer   ?: new NameGenerator;
+        $this->namer = $namer ?: new NameGenerator;
     }
 
     /**
@@ -82,9 +82,9 @@ class Doubler
     /**
      * Creates double from specific class or/and list of interfaces.
      *
-     * @param ReflectionClass   $class
+     * @param ReflectionClass $class
      * @param ReflectionClass[] $interfaces Array of ReflectionClass instances
-     * @param array             $args       Constructor arguments
+     * @param array $args Constructor arguments
      *
      * @return DoubleInterface
      *
@@ -95,14 +95,14 @@ class Doubler
         foreach ($interfaces as $interface) {
             if (!$interface instanceof ReflectionClass) {
                 throw new InvalidArgumentException(sprintf(
-                    "[ReflectionClass \$interface1 [, ReflectionClass \$interface2]] array expected as\n".
+                    "[ReflectionClass \$interface1 [, ReflectionClass \$interface2]] array expected as\n" .
                     "a second argument to `Doubler::double(...)`, but got %s.",
-                    is_object($interface) ? get_class($interface).' class' : gettype($interface)
+                    is_object($interface) ? get_class($interface) . ' class' : gettype($interface)
                 ));
             }
         }
 
-        $classname  = $this->createDoubleClass($class, $interfaces);
+        $classname = $this->createDoubleClass($class, $interfaces);
         $reflection = new ReflectionClass($classname);
 
         if (null !== $args) {
@@ -123,7 +123,7 @@ class Doubler
     /**
      * Creates double class and returns its FQN.
      *
-     * @param ReflectionClass   $class
+     * @param ReflectionClass $class
      * @param ReflectionClass[] $interfaces
      *
      * @return string

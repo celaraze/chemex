@@ -16,9 +16,8 @@ namespace Ramsey\Uuid\Type;
 
 use Ramsey\Uuid\Exception\UnsupportedOperationException;
 use Ramsey\Uuid\Type\Integer as IntegerObject;
-use ValueError;
 use stdClass;
-
+use ValueError;
 use function json_decode;
 use function json_encode;
 use function sprintf;
@@ -44,34 +43,14 @@ final class Time implements TypeInterface
      */
     private $microseconds;
 
-    /**
-     * @param mixed $seconds
-     * @param mixed $microseconds
-     */
-    public function __construct($seconds, $microseconds = 0)
+    public function __toString(): string
     {
-        $this->seconds = new IntegerObject($seconds);
-        $this->microseconds = new IntegerObject($microseconds);
-    }
-
-    public function getSeconds(): IntegerObject
-    {
-        return $this->seconds;
-    }
-
-    public function getMicroseconds(): IntegerObject
-    {
-        return $this->microseconds;
+        return $this->toString();
     }
 
     public function toString(): string
     {
         return $this->seconds->toString() . '.' . $this->microseconds->toString();
-    }
-
-    public function __toString(): string
-    {
-        return $this->toString();
     }
 
     /**
@@ -85,9 +64,19 @@ final class Time implements TypeInterface
         ];
     }
 
+    public function getSeconds(): IntegerObject
+    {
+        return $this->seconds;
+    }
+
+    public function getMicroseconds(): IntegerObject
+    {
+        return $this->microseconds;
+    }
+
     public function serialize(): string
     {
-        return (string) json_encode($this);
+        return (string)json_encode($this);
     }
 
     /**
@@ -121,6 +110,16 @@ final class Time implements TypeInterface
         }
 
         $this->__construct($time->seconds, $time->microseconds);
+    }
+
+    /**
+     * @param mixed $seconds
+     * @param mixed $microseconds
+     */
+    public function __construct($seconds, $microseconds = 0)
+    {
+        $this->seconds = new IntegerObject($seconds);
+        $this->microseconds = new IntegerObject($microseconds);
     }
 
     /**

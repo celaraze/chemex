@@ -129,8 +129,8 @@ class StyleBuilder
      *
      * @param string $cellAlignment The cell alignment
      *
-     * @throws InvalidArgumentException If the given cell alignment is not valid
      * @return StyleBuilder
+     * @throws InvalidArgumentException If the given cell alignment is not valid
      */
     public function setCellAlignment($cellAlignment)
     {

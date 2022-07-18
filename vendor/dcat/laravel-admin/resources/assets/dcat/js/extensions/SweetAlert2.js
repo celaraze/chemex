@@ -1,4 +1,3 @@
-
 import Swal from '../sweetalert/sweetalert2'
 
 let w = window;
@@ -14,7 +13,7 @@ export default class SweetAlert2 {
         Swal.confirm = _this.confirm.bind(_this);
 
         w.swal = w.Swal = _this.swal = Dcat.swal = Swal;
-        
+
         Dcat.confirm = Swal.confirm;
     }
 

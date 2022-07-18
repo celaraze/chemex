@@ -5,7 +5,6 @@ namespace Doctrine\DBAL;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Deprecations\Deprecation;
-
 use function func_num_args;
 use function is_string;
 
@@ -59,19 +58,19 @@ class Statement
     /**
      * Creates a new <tt>Statement</tt> for the given SQL and <tt>Connection</tt>.
      *
-     * @internal The statement can be only instantiated by {@see Connection}.
-     *
-     * @param Connection       $conn      The connection for handling statement errors.
+     * @param Connection $conn The connection for handling statement errors.
      * @param Driver\Statement $statement The underlying driver-level statement.
-     * @param string           $sql       The SQL of the statement.
+     * @param string $sql The SQL of the statement.
      *
      * @throws Exception
+     * @internal The statement can be only instantiated by {@see Connection}.
+     *
      */
     public function __construct(Connection $conn, Driver\Statement $statement, string $sql)
     {
-        $this->conn     = $conn;
-        $this->stmt     = $statement;
-        $this->sql      = $sql;
+        $this->conn = $conn;
+        $this->stmt = $statement;
+        $this->sql = $sql;
         $this->platform = $conn->getDatabasePlatform();
     }
 
@@ -84,8 +83,8 @@ class Statement
      * being bound.
      *
      * @param string|int $param The name or position of the parameter.
-     * @param mixed      $value The value of the parameter.
-     * @param mixed      $type  Either a PDO binding type or a DBAL mapping type name or instance.
+     * @param mixed $value The value of the parameter.
+     * @param mixed $type Either a PDO binding type or a DBAL mapping type name or instance.
      *
      * @return bool TRUE on success, FALSE on failure.
      *
@@ -94,7 +93,7 @@ class Statement
     public function bindValue($param, $value, $type = ParameterType::STRING)
     {
         $this->params[$param] = $value;
-        $this->types[$param]  = $type;
+        $this->types[$param] = $type;
 
         $bindingType = ParameterType::STRING;
 
@@ -106,7 +105,7 @@ class Statement
             $bindingType = $type;
 
             if ($type instanceof Type) {
-                $value       = $type->convertToDatabaseValue($value, $this->platform);
+                $value = $type->convertToDatabaseValue($value, $this->platform);
                 $bindingType = $type->getBindingType();
             }
         }
@@ -123,10 +122,10 @@ class Statement
      *
      * Binding a parameter by reference does not support DBAL mapping types.
      *
-     * @param string|int $param    The name or position of the parameter.
-     * @param mixed      $variable The reference to the variable to bind.
-     * @param int        $type     The binding type.
-     * @param int|null   $length   Must be specified when using an OUT bind
+     * @param string|int $param The name or position of the parameter.
+     * @param mixed $variable The reference to the variable to bind.
+     * @param int $type The binding type.
+     * @param int|null $length Must be specified when using an OUT bind
      *                             so that PHP allocates enough memory to hold the returned value.
      *
      * @return bool TRUE on success, FALSE on failure.
@@ -136,7 +135,7 @@ class Statement
     public function bindParam($param, &$variable, $type = ParameterType::STRING, $length = null)
     {
         $this->params[$param] = $variable;
-        $this->types[$param]  = $type;
+        $this->types[$param] = $type;
 
         try {
             if (func_num_args() > 3) {
@@ -150,13 +149,29 @@ class Statement
     }
 
     /**
-     * Executes the statement with the currently bound parameters.
+     * Executes the statement with the currently bound parameters and return result.
      *
-     * @deprecated Statement::execute() is deprecated, use Statement::executeQuery() or executeStatement() instead
+     * @param mixed[] $params
+     *
+     * @throws Exception
+     */
+    public function executeQuery(array $params = []): Result
+    {
+        if ($params === []) {
+            $params = null; // Workaround as long execute() exists and used internally.
+        }
+
+        return $this->execute($params);
+    }
+
+    /**
+     * Executes the statement with the currently bound parameters.
      *
      * @param mixed[]|null $params
      *
      * @throws Exception
+     * @deprecated Statement::execute() is deprecated, use Statement::executeQuery() or executeStatement() instead
+     *
      */
     public function execute($params = null): Result
     {
@@ -187,22 +202,6 @@ class Statement
                 $logger->stopQuery();
             }
         }
-    }
-
-    /**
-     * Executes the statement with the currently bound parameters and return result.
-     *
-     * @param mixed[] $params
-     *
-     * @throws Exception
-     */
-    public function executeQuery(array $params = []): Result
-    {
-        if ($params === []) {
-            $params = null; // Workaround as long execute() exists and used internally.
-        }
-
-        return $this->execute($params);
     }
 
     /**

@@ -45,7 +45,7 @@ class EnvFileAnalyzer extends ReliabilityAnalyzer
      */
     public function handle(Filesystem $files)
     {
-        if (! $files->exists(base_path('.env'))) {
+        if (!$files->exists(base_path('.env'))) {
             $this->markFailed();
         }
     }

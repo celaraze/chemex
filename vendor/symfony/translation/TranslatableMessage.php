@@ -40,16 +40,6 @@ class TranslatableMessage implements TranslatableInterface
         return $this->message;
     }
 
-    public function getParameters(): array
-    {
-        return $this->parameters;
-    }
-
-    public function getDomain(): ?string
-    {
-        return $this->domain;
-    }
-
     public function trans(TranslatorInterface $translator, string $locale = null): string
     {
         return $translator->trans($this->getMessage(), array_map(
@@ -58,5 +48,15 @@ class TranslatableMessage implements TranslatableInterface
             },
             $this->getParameters()
         ), $this->getDomain(), $locale);
+    }
+
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+
+    public function getDomain(): ?string
+    {
+        return $this->domain;
     }
 }

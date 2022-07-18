@@ -68,50 +68,22 @@ class ManagerFactory implements ManagerFactoryInterface
     }
 
     /**
-     * @param OptionsManagerInterface $optionsManager
-     * @param StyleManager $styleManager
-     * @param StyleMerger $styleMerger
-     * @param SharedStringsManager $sharedStringsManager
-     * @return WorksheetManager
+     * @param string $xlFolder Path to the "xl" folder
+     * @return SharedStringsManager
      */
-    private function createWorksheetManager(
-        OptionsManagerInterface $optionsManager,
-        StyleManager $styleManager,
-        StyleMerger $styleMerger,
-        SharedStringsManager $sharedStringsManager
-    ) {
-        $rowManager = $this->createRowManager();
-        $stringsEscaper = $this->helperFactory->createStringsEscaper();
-        $stringsHelper = $this->helperFactory->createStringHelper();
+    private function createSharedStringsManager($xlFolder)
+    {
+        $stringEscaper = $this->helperFactory->createStringsEscaper();
 
-        return new WorksheetManager(
-            $optionsManager,
-            $rowManager,
-            $styleManager,
-            $styleMerger,
-            $sharedStringsManager,
-            $stringsEscaper,
-            $stringsHelper,
-            $this->entityFactory
-        );
+        return new SharedStringsManager($xlFolder, $stringEscaper);
     }
 
     /**
-     * @return SheetManager
+     * @return StyleMerger
      */
-    public function createSheetManager()
+    private function createStyleMerger()
     {
-        $stringHelper = $this->helperFactory->createStringHelper();
-
-        return new SheetManager($stringHelper);
-    }
-
-    /**
-     * @return RowManager
-     */
-    public function createRowManager()
-    {
-        return new RowManager();
+        return new StyleMerger();
     }
 
     /**
@@ -137,21 +109,50 @@ class ManagerFactory implements ManagerFactoryInterface
     }
 
     /**
-     * @return StyleMerger
+     * @param OptionsManagerInterface $optionsManager
+     * @param StyleManager $styleManager
+     * @param StyleMerger $styleMerger
+     * @param SharedStringsManager $sharedStringsManager
+     * @return WorksheetManager
      */
-    private function createStyleMerger()
+    private function createWorksheetManager(
+        OptionsManagerInterface $optionsManager,
+        StyleManager            $styleManager,
+        StyleMerger             $styleMerger,
+        SharedStringsManager    $sharedStringsManager
+    )
     {
-        return new StyleMerger();
+        $rowManager = $this->createRowManager();
+        $stringsEscaper = $this->helperFactory->createStringsEscaper();
+        $stringsHelper = $this->helperFactory->createStringHelper();
+
+        return new WorksheetManager(
+            $optionsManager,
+            $rowManager,
+            $styleManager,
+            $styleMerger,
+            $sharedStringsManager,
+            $stringsEscaper,
+            $stringsHelper,
+            $this->entityFactory
+        );
     }
 
     /**
-     * @param string $xlFolder Path to the "xl" folder
-     * @return SharedStringsManager
+     * @return RowManager
      */
-    private function createSharedStringsManager($xlFolder)
+    public function createRowManager()
     {
-        $stringEscaper = $this->helperFactory->createStringsEscaper();
+        return new RowManager();
+    }
 
-        return new SharedStringsManager($xlFolder, $stringEscaper);
+    /**
+     * @return SheetManager
+     */
+    public function createSheetManager()
+    {
+        $stringHelper = $this->helperFactory->createStringHelper();
+
+        return new SheetManager($stringHelper);
     }
 }

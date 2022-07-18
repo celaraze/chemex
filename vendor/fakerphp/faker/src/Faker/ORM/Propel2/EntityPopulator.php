@@ -30,19 +30,6 @@ class EntityPopulator
         return $this->class;
     }
 
-    public function setColumnFormatters($columnFormatters)
-    {
-        $this->columnFormatters = $columnFormatters;
-    }
-
-    /**
-     * @return array
-     */
-    public function getColumnFormatters()
-    {
-        return $this->columnFormatters;
-    }
-
     public function mergeColumnFormattersWith($columnFormatters)
     {
         $this->columnFormatters = array_merge($this->columnFormatters, $columnFormatters);
@@ -129,19 +116,6 @@ class EntityPopulator
         return false;
     }
 
-    public function setModifiers($modifiers)
-    {
-        $this->modifiers = $modifiers;
-    }
-
-    /**
-     * @return array
-     */
-    public function getModifiers()
-    {
-        return $this->modifiers;
-    }
-
     public function mergeModifiersWith($modifiers)
     {
         $this->modifiers = array_merge($this->modifiers, $modifiers);
@@ -203,5 +177,31 @@ class EntityPopulator
         $obj->save($con);
 
         return $obj->getPrimaryKey();
+    }
+
+    /**
+     * @return array
+     */
+    public function getColumnFormatters()
+    {
+        return $this->columnFormatters;
+    }
+
+    public function setColumnFormatters($columnFormatters)
+    {
+        $this->columnFormatters = $columnFormatters;
+    }
+
+    /**
+     * @return array
+     */
+    public function getModifiers()
+    {
+        return $this->modifiers;
+    }
+
+    public function setModifiers($modifiers)
+    {
+        $this->modifiers = $modifiers;
     }
 }

@@ -5,26 +5,6 @@ namespace Faker\Provider\en_NG;
 class Address extends \Faker\Provider\Address
 {
     protected static $postcode = ['#####', '## ###'];
-
-    private static $county = [
-        'Abuja', 'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra',
-        'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-        'Cross River',
-        'Delta',
-        'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe',
-        'Imo', 'Jigawa',
-        'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
-        'Lagos',
-        'Nasarawa', 'Niger',
-        'Ogun', 'Ondo', 'Osun', 'Oyo',
-        'Plateau',
-        'Rivers',
-        'Sokoto',
-        'Taraba',
-        'Yobe',
-        'Zamfara',
-    ];
-
     protected static $country = [
         'Afghanistan', 'Albania', 'Algeria', 'American Samoa', 'Andorra', 'Angola', 'Anguilla', 'Antarctica (the territory South of 60 deg S)', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Aruba', 'Australia', 'Austria', 'Azerbaijan',
         'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bermuda', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Bouvet Island (Bouvetoya)', 'Brazil', 'British Indian Ocean Territory (Chagos Archipelago)', 'British Virgin Islands', 'Brunei Darussalam', 'Bulgaria', 'Burkina Faso', 'Burundi',
@@ -52,7 +32,24 @@ class Address extends \Faker\Provider\Address
         'Yemen',
         'Zambia', 'Zimbabwe',
     ];
-
+    private static $county = [
+        'Abuja', 'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra',
+        'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+        'Cross River',
+        'Delta',
+        'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe',
+        'Imo', 'Jigawa',
+        'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
+        'Lagos',
+        'Nasarawa', 'Niger',
+        'Ogun', 'Ondo', 'Osun', 'Oyo',
+        'Plateau',
+        'Rivers',
+        'Sokoto',
+        'Taraba',
+        'Yobe',
+        'Zamfara',
+    ];
     private static $regions = [
         'Abakaliki', 'Abeokuta', 'Akure', 'Asaba', 'Awka',
         'Bauchi',
@@ -75,9 +72,9 @@ class Address extends \Faker\Provider\Address
     /**
      * Randomly returns a Nigerian state or county.
      *
+     * @return string
      * @example 'Lagos'
      *
-     * @return string
      */
     public static function county()
     {
@@ -87,9 +84,9 @@ class Address extends \Faker\Provider\Address
     /**
      * Randomly returns a Nigerian region of a state.
      *
+     * @return string
      * @example 'Ikeja'
      *
-     * @return string
      */
     public static function region()
     {

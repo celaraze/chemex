@@ -37,9 +37,10 @@ class CollectionMakeDynamicStaticMethodReturnTypeExtension implements DynamicSta
 
     public function getTypeFromStaticMethodCall(
         MethodReflection $methodReflection,
-        StaticCall $methodCall,
-        Scope $scope
-    ): Type {
+        StaticCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         if (count($methodCall->getArgs()) < 1) {
             return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
         }

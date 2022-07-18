@@ -130,7 +130,7 @@ class SheetManager
     {
         // The "workbookView" node is located before "sheet" nodes, ensuring that
         // the active sheet is known before parsing sheets data.
-        $this->activeSheetIndex = (int) $xmlReader->getAttribute(self::XML_ATTRIBUTE_ACTIVE_TAB);
+        $this->activeSheetIndex = (int)$xmlReader->getAttribute(self::XML_ATTRIBUTE_ACTIVE_TAB);
 
         return XMLProcessor::PROCESSING_CONTINUE;
     }
@@ -146,14 +146,6 @@ class SheetManager
         $this->currentSheetIndex++;
 
         return XMLProcessor::PROCESSING_CONTINUE;
-    }
-
-    /**
-     * @return int A return code that indicates what action should the processor take next
-     */
-    protected function processSheetsEndingNode()
-    {
-        return XMLProcessor::PROCESSING_STOP;
     }
 
     /**
@@ -223,5 +215,13 @@ class SheetManager
         }
 
         return $sheetDataXMLFilePath;
+    }
+
+    /**
+     * @return int A return code that indicates what action should the processor take next
+     */
+    protected function processSheetsEndingNode()
+    {
+        return XMLProcessor::PROCESSING_STOP;
     }
 }

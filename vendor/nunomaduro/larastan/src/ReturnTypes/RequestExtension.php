@@ -42,9 +42,10 @@ final class RequestExtension implements DynamicMethodReturnTypeExtension
      */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $uploadedFileType = new ObjectType(UploadedFile::class);
         $uploadedFileArrayType = new ArrayType(new IntegerType(), $uploadedFileType);
 

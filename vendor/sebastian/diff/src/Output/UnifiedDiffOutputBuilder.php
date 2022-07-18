@@ -7,8 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Diff\Output;
 
+use SebastianBergmann\Diff\Differ;
 use function array_splice;
 use function count;
 use function fclose;
@@ -19,7 +21,6 @@ use function min;
 use function stream_get_contents;
 use function strlen;
 use function substr;
-use SebastianBergmann\Diff\Differ;
 
 /**
  * Builds a diff string representation in unified diff format in chunks.
@@ -53,7 +54,7 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
 
     public function __construct(string $header = "--- Original\n+++ New\n", bool $addLineNumbers = false)
     {
-        $this->header         = $header;
+        $this->header = $header;
         $this->addLineNumbers = $addLineNumbers;
     }
 
@@ -121,11 +122,11 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
 
         // write hunks to output buffer
 
-        $cutOff      = max($this->commonLineThreshold, $this->contextLines);
+        $cutOff = max($this->commonLineThreshold, $this->contextLines);
         $hunkCapture = false;
-        $sameCount   = $toRange   = $fromRange = 0;
-        $toStart     = $fromStart = 1;
-        $i           = 0;
+        $sameCount = $toRange = $fromRange = 0;
+        $toStart = $fromStart = 1;
+        $i = 0;
 
         /** @var int $i */
         foreach ($diff as $i => $entry) {
@@ -172,7 +173,7 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
                     $toStart += $toRange;
 
                     $hunkCapture = false;
-                    $sameCount   = $toRange = $fromRange = 0;
+                    $sameCount = $toRange = $fromRange = 0;
                 }
 
                 continue;
@@ -229,14 +230,15 @@ final class UnifiedDiffOutputBuilder extends AbstractChunkOutputBuilder
 
     private function writeHunk(
         array $diff,
-        int $diffStartIndex,
-        int $diffEndIndex,
-        int $fromStart,
-        int $fromRange,
-        int $toStart,
-        int $toRange,
-        $output
-    ): void {
+        int   $diffStartIndex,
+        int   $diffEndIndex,
+        int   $fromStart,
+        int   $fromRange,
+        int   $toStart,
+        int   $toRange,
+              $output
+    ): void
+    {
         if ($this->addLineNumbers) {
             fwrite($output, '@@ -' . $fromStart);
 

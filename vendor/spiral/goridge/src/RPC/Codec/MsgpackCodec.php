@@ -35,30 +35,6 @@ final class MsgpackCodec implements CodecInterface
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function getIndex(): int
-    {
-        return Frame::CODEC_MSGPACK;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function encode($payload): string
-    {
-        return ($this->pack)($payload);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function decode(string $payload, $options = null)
-    {
-        return ($this->unpack)($payload, $options);
-    }
-
-    /**
      * Init pack and unpack functions.
      *
      * @psalm-suppress MixedArgument
@@ -94,5 +70,29 @@ final class MsgpackCodec implements CodecInterface
         }
 
         throw new \LogicException('Could not initialize codec, please install msgpack extension or library');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getIndex(): int
+    {
+        return Frame::CODEC_MSGPACK;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function encode($payload): string
+    {
+        return ($this->pack)($payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function decode(string $payload, $options = null)
+    {
+        return ($this->unpack)($payload, $options);
     }
 }

@@ -19,8 +19,8 @@ use ReflectionMethod;
 $method = new ReflectionMethod(BuiltinMethodReflection::class, 'getFileName');
 
 require $method->hasReturnType()
-    ? __DIR__.'/../../../lazy/Carbon/PHPStan/MacroStrongType.php'
-    : __DIR__.'/../../../lazy/Carbon/PHPStan/MacroWeakType.php';
+    ? __DIR__ . '/../../../lazy/Carbon/PHPStan/MacroStrongType.php'
+    : __DIR__ . '/../../../lazy/Carbon/PHPStan/MacroWeakType.php';
 
 final class Macro extends LazyMacro
 {

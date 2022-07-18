@@ -12,10 +12,10 @@
 
 namespace Composer\Command;
 
+use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
-use Composer\Repository\InstalledRepository;
-use Composer\Installer\SuggestedPackagesReporter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,8 +46,7 @@ The <info>%command.name%</info> command shows a sorted list of suggested package
 
 Read more at https://getcomposer.org/doc/03-cli.md#suggests
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

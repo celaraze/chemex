@@ -2,12 +2,12 @@
 
 namespace Adldap\Models;
 
-use DateTime;
-use Adldap\Utilities;
 use Adldap\AdldapException;
-use Adldap\Schemas\ActiveDirectory;
 use Adldap\Models\Attributes\AccountControl;
 use Adldap\Models\Attributes\TSPropertyArray;
+use Adldap\Schemas\ActiveDirectory;
+use Adldap\Utilities;
+use DateTime;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
@@ -34,18 +34,6 @@ class User extends Entry implements Authenticatable
     public static function usePasswordStrategy(callable $strategy)
     {
         static::$passwordStrategy = $strategy;
-    }
-
-    /**
-     * Will return user set password strategy or default one.
-     *
-     * @return callable
-     */
-    public static function getPasswordStrategy(): callable
-    {
-        return static::$passwordStrategy ?? function ($password) {
-            return Utilities::encodePassword($password);
-        };
     }
 
     /**
@@ -387,13 +375,17 @@ class User extends Entry implements Authenticatable
     }
 
     /**
-     * Returns the users bad password time.
+     * Returns the formatted timestamp of the bad password date.
      *
-     * @return string
+     * @return string|null
+     * @throws \Exception
+     *
      */
-    public function getBadPasswordTime()
+    public function getBadPasswordDate()
     {
-        return $this->getFirstAttribute($this->schema->badPasswordTime());
+        if ($timestamp = $this->getBadPasswordTimestamp()) {
+            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
+        }
     }
 
     /**
@@ -409,27 +401,27 @@ class User extends Entry implements Authenticatable
     }
 
     /**
-     * Returns the formatted timestamp of the bad password date.
-     *
-     * @throws \Exception
-     *
-     * @return string|null
-     */
-    public function getBadPasswordDate()
-    {
-        if ($timestamp = $this->getBadPasswordTimestamp()) {
-            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
-        }
-    }
-
-    /**
-     * Returns the time when the users password was set last.
+     * Returns the users bad password time.
      *
      * @return string
      */
-    public function getPasswordLastSet()
+    public function getBadPasswordTime()
     {
-        return $this->getFirstAttribute($this->schema->passwordLastSet());
+        return $this->getFirstAttribute($this->schema->badPasswordTime());
+    }
+
+    /**
+     * Returns the formatted timestamp of the password last set date.
+     *
+     * @return string|null
+     * @throws \Exception
+     *
+     */
+    public function getPasswordLastSetDate()
+    {
+        if ($timestamp = $this->getPasswordLastSetTimestamp()) {
+            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
+        }
     }
 
     /**
@@ -445,27 +437,27 @@ class User extends Entry implements Authenticatable
     }
 
     /**
-     * Returns the formatted timestamp of the password last set date.
-     *
-     * @throws \Exception
-     *
-     * @return string|null
-     */
-    public function getPasswordLastSetDate()
-    {
-        if ($timestamp = $this->getPasswordLastSetTimestamp()) {
-            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
-        }
-    }
-
-    /**
-     * Returns the users lockout time.
+     * Returns the time when the users password was set last.
      *
      * @return string
      */
-    public function getLockoutTime()
+    public function getPasswordLastSet()
     {
-        return $this->getFirstAttribute($this->schema->lockoutTime());
+        return $this->getFirstAttribute($this->schema->passwordLastSet());
+    }
+
+    /**
+     * Returns the formatted timestamp of the lockout date.
+     *
+     * @return string|null
+     * @throws \Exception
+     *
+     */
+    public function getLockoutDate()
+    {
+        if ($timestamp = $this->getLockoutTimestamp()) {
+            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
+        }
     }
 
     /**
@@ -481,17 +473,13 @@ class User extends Entry implements Authenticatable
     }
 
     /**
-     * Returns the formatted timestamp of the lockout date.
+     * Returns the users lockout time.
      *
-     * @throws \Exception
-     *
-     * @return string|null
+     * @return string
      */
-    public function getLockoutDate()
+    public function getLockoutTime()
     {
-        if ($timestamp = $this->getLockoutTimestamp()) {
-            return (new DateTime())->setTimestamp($timestamp)->format($this->dateFormat);
-        }
+        return $this->getFirstAttribute($this->schema->lockoutTime());
     }
 
     /**
@@ -549,7 +537,7 @@ class User extends Entry implements Authenticatable
      */
     public function setAccountExpiry($expiryTime)
     {
-        $time = is_null($expiryTime) ? '9223372036854775807' : (string) Utilities::convertUnixTimeToWindowsTime($expiryTime);
+        $time = is_null($expiryTime) ? '9223372036854775807' : (string)Utilities::convertUnixTimeToWindowsTime($expiryTime);
 
         return $this->setFirstAttribute($this->schema->accountExpires(), $time);
     }
@@ -607,7 +595,7 @@ class User extends Entry implements Authenticatable
      * Sets the users thumbnail photo.
      *
      * @param string $data
-     * @param bool   $encode
+     * @param bool $encode
      *
      * @return $this
      */
@@ -631,7 +619,7 @@ class User extends Entry implements Authenticatable
     {
         $jpeg = $this->getJpegPhoto();
 
-        return is_null($jpeg) ? $jpeg : 'data:image/jpeg;base64,'.base64_encode($jpeg);
+        return is_null($jpeg) ? $jpeg : 'data:image/jpeg;base64,' . base64_encode($jpeg);
     }
 
     /**
@@ -809,9 +797,9 @@ class User extends Entry implements Authenticatable
      *
      * @param string $password
      *
+     * @return $this
      * @throws AdldapException When no SSL or TLS secured connection is present.
      *
-     * @return $this
      */
     public function setPassword($password)
     {
@@ -841,6 +829,18 @@ class User extends Entry implements Authenticatable
     }
 
     /**
+     * Will return user set password strategy or default one.
+     *
+     * @return callable
+     */
+    public static function getPasswordStrategy(): callable
+    {
+        return static::$passwordStrategy ?? function ($password) {
+                return Utilities::encodePassword($password);
+            };
+    }
+
+    /**
      * Sets the option to force the password change at the next logon.
      *
      * Does not work if the "Password never expires" option is enabled.
@@ -867,16 +867,16 @@ class User extends Entry implements Authenticatable
      *
      * Throws an exception on failure.
      *
-     * @param string $oldPassword      The new password
-     * @param string $newPassword      The old password
-     * @param bool   $replaceNotRemove Alternative password change method. Set to true if you're receiving 'CONSTRAINT'
+     * @param string $oldPassword The new password
+     * @param string $newPassword The old password
+     * @param bool $replaceNotRemove Alternative password change method. Set to true if you're receiving 'CONSTRAINT'
      *                                 errors.
      *
-     * @throws UserPasswordPolicyException    When the new password does not match your password policy.
+     * @return true
      * @throws UserPasswordIncorrectException When the old password is incorrect.
      * @throws AdldapException                When an unknown cause of failure occurs.
      *
-     * @return true
+     * @throws UserPasswordPolicyException    When the new password does not match your password policy.
      */
     public function changePassword($oldPassword, $newPassword, $replaceNotRemove = false)
     {
@@ -971,9 +971,9 @@ class User extends Entry implements Authenticatable
     /**
      * Return the expiration date of the user account.
      *
+     * @return DateTime|null
      * @throws \Exception
      *
-     * @return DateTime|null
      */
     public function expirationDate()
     {
@@ -1014,7 +1014,7 @@ class User extends Entry implements Authenticatable
             return false;
         }
 
-        $lastSet = (int) $this->getPasswordLastSet();
+        $lastSet = (int)$this->getPasswordLastSet();
 
         if ($lastSet === 0) {
             // If the users last set time is zero, the password has

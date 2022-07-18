@@ -24,8 +24,8 @@ class ResponseReceived
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Http\Client\Request  $request
-     * @param  \Illuminate\Http\Client\Response  $response
+     * @param \Illuminate\Http\Client\Request $request
+     * @param \Illuminate\Http\Client\Response $response
      * @return void
      */
     public function __construct(Request $request, Response $response)

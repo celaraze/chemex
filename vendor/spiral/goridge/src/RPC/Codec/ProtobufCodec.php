@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Spiral\Goridge\RPC\Codec;
 
-use Spiral\Goridge\Frame;
 use Google\Protobuf\Internal\Message;
+use Spiral\Goridge\Frame;
 use Spiral\Goridge\RPC\CodecInterface;
 
 final class ProtobufCodec implements CodecInterface
@@ -57,17 +57,6 @@ final class ProtobufCodec implements CodecInterface
     }
 
     /**
-     * @psalm-suppress UnsafeInstantiation
-     *
-     * @param class-string<Message> $class
-     * @return Message
-     */
-    protected function create(string $class): Message
-    {
-        return new $class();
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function decode(string $payload, $options = null)
@@ -83,5 +72,16 @@ final class ProtobufCodec implements CodecInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * @psalm-suppress UnsafeInstantiation
+     *
+     * @param class-string<Message> $class
+     * @return Message
+     */
+    protected function create(string $class): Message
+    {
+        return new $class();
     }
 }

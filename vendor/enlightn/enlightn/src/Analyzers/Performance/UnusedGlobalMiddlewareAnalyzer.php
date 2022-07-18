@@ -49,8 +49,8 @@ class UnusedGlobalMiddlewareAnalyzer extends PerformanceAnalyzer
     /**
      * Create a new analyzer instance.
      *
-     * @param  \Illuminate\Routing\Router  $router
-     * @param  \Illuminate\Contracts\Http\Kernel  $kernel
+     * @param \Illuminate\Routing\Router $router
+     * @param \Illuminate\Contracts\Http\Kernel $kernel
      * @return void
      */
     public function __construct(Router $router, Kernel $kernel)
@@ -67,8 +67,18 @@ class UnusedGlobalMiddlewareAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return 'Your application contains global middleware that is not currently being used. It is '
-            .'recommended to remove these middleware from your Kernel class to enhance performance '
-            .'slightly. Your unused middleware include: '.$this->formatUnusedMiddleware();
+            . 'recommended to remove these middleware from your Kernel class to enhance performance '
+            . 'slightly. Your unused middleware include: ' . $this->formatUnusedMiddleware();
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatUnusedMiddleware()
+    {
+        return $this->unusedMiddleware->map(function ($middlewareClass) {
+            return '[' . class_basename($middlewareClass) . ']';
+        })->join(', ', ' and ');
     }
 
     /**
@@ -111,15 +121,5 @@ class UnusedGlobalMiddlewareAnalyzer extends PerformanceAnalyzer
         if ($this->unusedMiddleware->count() > 0) {
             $this->markFailed();
         }
-    }
-
-    /**
-     * @return string
-     */
-    protected function formatUnusedMiddleware()
-    {
-        return $this->unusedMiddleware->map(function ($middlewareClass) {
-            return '['.class_basename($middlewareClass).']';
-        })->join(', ', ' and ');
     }
 }

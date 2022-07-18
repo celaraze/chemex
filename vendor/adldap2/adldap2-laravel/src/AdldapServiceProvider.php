@@ -39,12 +39,32 @@ class AdldapServiceProvider extends ServiceProvider
         }
 
         if ($this->app->runningInConsole()) {
-            $config = __DIR__.'/Config/config.php';
+            $config = __DIR__ . '/Config/config.php';
 
             $this->publishes([
                 $config => config_path('ldap.php'),
             ]);
         }
+    }
+
+    /**
+     * Determines whether logging is enabled.
+     *
+     * @return bool
+     */
+    protected function isLogging()
+    {
+        return Config::get('ldap.logging', false);
+    }
+
+    /**
+     * Determines if the current application is a Lumen instance.
+     *
+     * @return bool
+     */
+    protected function isLumen()
+    {
+        return Str::contains($this->app->version(), 'Lumen');
     }
 
     /**
@@ -71,23 +91,13 @@ class AdldapServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [AdldapInterface::class];
-    }
-
-    /**
      * Adds providers to the specified Adldap instance.
      *
      * If a provider is configured to auto connect,
      * this method will throw a BindException.
      *
      * @param Adldap $ldap
-     * @param array  $connections
+     * @param array $connections
      *
      * @return Adldap
      */
@@ -125,19 +135,9 @@ class AdldapServiceProvider extends ServiceProvider
     }
 
     /**
-     * Returns a new Adldap instance.
-     *
-     * @return Adldap
-     */
-    protected function newAdldap()
-    {
-        return new Adldap();
-    }
-
-    /**
      * Returns a new LDAP Provider instance.
      *
-     * @param array                    $configuration
+     * @param array $configuration
      * @param ConnectionInterface|null $connection
      *
      * @return Provider
@@ -161,22 +161,22 @@ class AdldapServiceProvider extends ServiceProvider
     }
 
     /**
-     * Determines whether logging is enabled.
+     * Returns a new Adldap instance.
      *
-     * @return bool
+     * @return Adldap
      */
-    protected function isLogging()
+    protected function newAdldap()
     {
-        return Config::get('ldap.logging', false);
+        return new Adldap();
     }
 
     /**
-     * Determines if the current application is a Lumen instance.
+     * Get the services provided by the provider.
      *
-     * @return bool
+     * @return array
      */
-    protected function isLumen()
+    public function provides()
     {
-        return Str::contains($this->app->version(), 'Lumen');
+        return [AdldapInterface::class];
     }
 }

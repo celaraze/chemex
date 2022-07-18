@@ -1,9 +1,11 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
+
 namespace TheSeer\Tokenizer;
 
 use DOMDocument;
 
-class XMLSerializer {
+class XMLSerializer
+{
 
     /** @var \XMLWriter */
     private $writer;
@@ -19,22 +21,25 @@ class XMLSerializer {
      *
      * @param NamespaceUri $xmlns
      */
-    public function __construct(NamespaceUri $xmlns = null) {
+    public function __construct(NamespaceUri $xmlns = null)
+    {
         if ($xmlns === null) {
             $xmlns = new NamespaceUri('https://github.com/theseer/tokenizer');
         }
         $this->xmlns = $xmlns;
     }
 
-    public function toDom(TokenCollection $tokens): DOMDocument {
-        $dom                     = new DOMDocument();
+    public function toDom(TokenCollection $tokens): DOMDocument
+    {
+        $dom = new DOMDocument();
         $dom->preserveWhiteSpace = false;
         $dom->loadXML($this->toXML($tokens));
 
         return $dom;
     }
 
-    public function toXML(TokenCollection $tokens): string {
+    public function toXML(TokenCollection $tokens): string
+    {
         $this->writer = new \XMLWriter();
         $this->writer->openMemory();
         $this->writer->setIndent(true);
@@ -60,7 +65,8 @@ class XMLSerializer {
         return $this->writer->outputMemory();
     }
 
-    private function addToken(Token $token): void {
+    private function addToken(Token $token): void
+    {
         if ($this->previousToken->getLine() < $token->getLine()) {
             $this->writer->endElement();
 

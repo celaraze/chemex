@@ -9,7 +9,8 @@
                 <span class="option d-none"></span>
 
                 @if(! $disabled)
-                    <input name="{{ $name }}" type="hidden" value="{{ implode(',', Dcat\Admin\Support\Helper::array($value)) }}" />
+                    <input name="{{ $name }}" type="hidden"
+                           value="{{ implode(',', Dcat\Admin\Support\Helper::array($value)) }}"/>
                 @endif
             </div>
 

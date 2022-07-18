@@ -35,8 +35,6 @@ abstract class TransportFactoryTestCase extends TestCase
     protected $client;
     protected $logger;
 
-    abstract public function getFactory(): TransportFactoryInterface;
-
     abstract public function supportsProvider(): iterable;
 
     abstract public function createProvider(): iterable;
@@ -61,6 +59,8 @@ abstract class TransportFactoryTestCase extends TestCase
         $this->assertSame($supports, $factory->supports($dsn));
     }
 
+    abstract public function getFactory(): TransportFactoryInterface;
+
     /**
      * @dataProvider createProvider
      */
@@ -70,7 +70,7 @@ abstract class TransportFactoryTestCase extends TestCase
 
         $this->assertEquals($transport, $factory->create($dsn));
         if (str_contains('smtp', $dsn->getScheme())) {
-            $this->assertStringMatchesFormat($dsn->getScheme().'://%S'.$dsn->getHost().'%S', (string) $transport);
+            $this->assertStringMatchesFormat($dsn->getScheme() . '://%S' . $dsn->getHost() . '%S', (string)$transport);
         }
     }
 

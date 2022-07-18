@@ -32,14 +32,6 @@ final class ResponseFormatSame extends Constraint
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function toString(): string
-    {
-        return 'format is '.($this->format ?? 'null');
-    }
-
-    /**
      * @param Response $response
      *
      * {@inheritdoc}
@@ -56,7 +48,15 @@ final class ResponseFormatSame extends Constraint
      */
     protected function failureDescription($response): string
     {
-        return 'the Response '.$this->toString();
+        return 'the Response ' . $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return 'format is ' . ($this->format ?? 'null');
     }
 
     /**
@@ -66,6 +66,6 @@ final class ResponseFormatSame extends Constraint
      */
     protected function additionalFailureDescription($response): string
     {
-        return (string) $response;
+        return (string)$response;
     }
 }

@@ -2,12 +2,12 @@
 
 namespace Fruitcake\Cors;
 
-use Closure;
 use Asm89\Stack\CorsService;
+use Closure;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\Container\Container;
 use Symfony\Component\HttpFoundation\Response;
 
 class HandleCors
@@ -27,14 +27,14 @@ class HandleCors
     /**
      * Handle an incoming request. Based on Asm89\Stack\Cors by asm89
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return Response
      */
     public function handle($request, Closure $next)
     {
         // Check if we're dealing with CORS and if we should handle it
-        if (! $this->shouldRun($request)) {
+        if (!$this->shouldRun($request)) {
             return $next($request);
         }
 
@@ -59,40 +59,9 @@ class HandleCors
     }
 
     /**
-     * Add the headers to the Response, if they don't exist yet.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
-    protected function addHeaders(Request $request, Response $response): Response
-    {
-        if (! $response->headers->has('Access-Control-Allow-Origin')) {
-            // Add the CORS headers to the Response
-            $response = $this->cors->addActualRequestHeaders($response, $request);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Add the headers to the Response, if they don't exist yet.
-     *
-     * @param RequestHandled $event
-     * @deprecated
-     */
-    public function onRequestHandled(RequestHandled $event)
-    {
-        if ($this->shouldRun($event->request) && $this->container->make(Kernel::class)->hasMiddleware(static::class)) {
-            $this->addHeaders($event->request, $event->response);
-        }
-    }
-
-
-    /**
      * Determine if the request has a URI that should pass through the CORS flow.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     protected function shouldRun(Request $request): bool
@@ -141,5 +110,35 @@ class HandleCors
         return array_filter($paths, function ($path) {
             return is_string($path);
         });
+    }
+
+    /**
+     * Add the headers to the Response, if they don't exist yet.
+     *
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    protected function addHeaders(Request $request, Response $response): Response
+    {
+        if (!$response->headers->has('Access-Control-Allow-Origin')) {
+            // Add the CORS headers to the Response
+            $response = $this->cors->addActualRequestHeaders($response, $request);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Add the headers to the Response, if they don't exist yet.
+     *
+     * @param RequestHandled $event
+     * @deprecated
+     */
+    public function onRequestHandled(RequestHandled $event)
+    {
+        if ($this->shouldRun($event->request) && $this->container->make(Kernel::class)->hasMiddleware(static::class)) {
+            $this->addHeaders($event->request, $event->response);
+        }
     }
 }

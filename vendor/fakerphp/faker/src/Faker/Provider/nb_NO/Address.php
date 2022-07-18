@@ -35,7 +35,7 @@ class Address extends \Faker\Provider\Address
         'Haugesund', 'Hokksund', 'Holmestrand', 'Honningsvåg', 'Horten', 'Hønefoss', 'Jessheim', 'Jørpeland',
         'Kirkenes', 'Kolvereid', 'Kongsberg', 'Kongsvinger', 'Kopervik', 'Kragerø', 'Kristiansand', 'Kristiansund',
         'Langesund', 'Larvik', 'Leknes', 'Levanger', 'Lillehammer', 'Lillesand', 'Lillestrøm', 'Lyngdal', 'Mandal',
-        'Mo i Rana',  'Moelv', 'Molde', 'Mosjøen', 'Moss', 'Mysen', 'Måløy', 'Namsos', 'Narvik', 'Notodden', 'Odda',
+        'Mo i Rana', 'Moelv', 'Molde', 'Mosjøen', 'Moss', 'Mysen', 'Måløy', 'Namsos', 'Narvik', 'Notodden', 'Odda',
         'Orkanger', 'Oslo', 'Otta', 'Porsgrunn', 'Risør', 'Rjukan', 'Røros', 'Sandefjord', 'Sandnes', 'Sandnessjøen',
         'Sandvika', 'Sarpsborg', 'Sauda', 'Ski', 'Skien', 'Skudeneshavn', 'Sortland', 'Stathelle', 'Stavanger',
         'Stavern', 'Steinkjer', 'Stjørdalshalsen', 'Stokmarknes', 'Stord', 'Svelvik', 'Svolvær', 'Tromsø', 'Trondheim',

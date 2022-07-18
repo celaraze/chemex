@@ -48,14 +48,14 @@ final class ModelForwardsCallsExtension implements MethodsClassReflectionExtensi
      */
     public function hasMethod(ClassReflection $classReflection, string $methodName): bool
     {
-        if (array_key_exists($classReflection->getCacheKey().'-'.$methodName, $this->cache)) {
+        if (array_key_exists($classReflection->getCacheKey() . '-' . $methodName, $this->cache)) {
             return true;
         }
 
         $methodReflection = $this->findMethod($classReflection, $methodName);
 
         if ($methodReflection !== null) {
-            $this->cache[$classReflection->getCacheKey().'-'.$methodName] = $methodReflection;
+            $this->cache[$classReflection->getCacheKey() . '-' . $methodName] = $methodReflection;
 
             return true;
         }
@@ -64,22 +64,12 @@ final class ModelForwardsCallsExtension implements MethodsClassReflectionExtensi
     }
 
     /**
-     * @param  ClassReflection  $classReflection
-     * @param  string  $methodName
-     * @return MethodReflection
-     */
-    public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
-    {
-        return $this->cache[$classReflection->getCacheKey().'-'.$methodName];
-    }
-
-    /**
      * @throws ShouldNotHappenException
      * @throws MissingMethodFromReflectionException
      */
     private function findMethod(ClassReflection $classReflection, string $methodName): ?MethodReflection
     {
-        if ($classReflection->getName() !== Model::class && ! $classReflection->isSubclassOf(Model::class)) {
+        if ($classReflection->getName() !== Model::class && !$classReflection->isSubclassOf(Model::class)) {
             return null;
         }
 
@@ -88,8 +78,7 @@ final class ModelForwardsCallsExtension implements MethodsClassReflectionExtensi
         if (in_array($methodName, ['increment', 'decrement'], true)) {
             $methodReflection = $classReflection->getNativeMethod($methodName);
 
-            return new class($classReflection, $methodName, $methodReflection) implements MethodReflection
-            {
+            return new class($classReflection, $methodName, $methodReflection) implements MethodReflection {
                 /** @var ClassReflection */
                 private $classReflection;
 
@@ -208,5 +197,15 @@ final class ModelForwardsCallsExtension implements MethodsClassReflectionExtensi
         }
 
         return null;
+    }
+
+    /**
+     * @param ClassReflection $classReflection
+     * @param string $methodName
+     * @return MethodReflection
+     */
+    public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+    {
+        return $this->cache[$classReflection->getCacheKey() . '-' . $methodName];
     }
 }

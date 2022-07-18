@@ -21,7 +21,9 @@
         "symfony/polyfill-mbstring": "~1.8"
     },
     "autoload": {
-        "psr-4": { "Symfony\\Component\\Filesystem\\": "" },
+        "psr-4": {
+            "Symfony\\Component\\Filesystem\\": ""
+        },
         "exclude-from-classmap": [
             "/Tests/"
         ]

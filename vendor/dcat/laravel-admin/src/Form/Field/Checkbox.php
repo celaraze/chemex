@@ -20,26 +20,9 @@ class Checkbox extends MultipleSelect
     protected $inline = true;
 
     /**
-     * @param  array|\Closure|string  $options
-     * @return $this|mixed
-     */
-    public function options($options = [])
-    {
-        if ($options instanceof \Closure) {
-            $this->options = $options;
-
-            return $this;
-        }
-
-        $this->options = Helper::array($options);
-
-        return $this;
-    }
-
-    /**
      * "info", "primary", "inverse", "danger", "success", "purple".
      *
-     * @param  string  $style
+     * @param string $style
      * @return $this
      */
     public function style(string $style)
@@ -61,13 +44,6 @@ class Checkbox extends MultipleSelect
         return $this;
     }
 
-    public function inline(bool $inline)
-    {
-        $this->inline = $inline;
-
-        return $this;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -82,7 +58,7 @@ class Checkbox extends MultipleSelect
         $this->addCascadeScript();
 
         $checkbox = WidgetCheckbox::make(
-            $this->getElementName().'[]',
+            $this->getElementName() . '[]',
             $this->options,
             $this->style
         );
@@ -105,9 +81,33 @@ class Checkbox extends MultipleSelect
         return parent::render();
     }
 
+    /**
+     * @param array|\Closure|string $options
+     * @return $this|mixed
+     */
+    public function options($options = [])
+    {
+        if ($options instanceof \Closure) {
+            $this->options = $options;
+
+            return $this;
+        }
+
+        $this->options = Helper::array($options);
+
+        return $this;
+    }
+
+    public function inline(bool $inline)
+    {
+        $this->inline = $inline;
+
+        return $this;
+    }
+
     protected function makeCheckAllCheckbox()
     {
-        if (! $this->canCheckAll) {
+        if (!$this->canCheckAll) {
             return;
         }
 

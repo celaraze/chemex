@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\CliArguments;
 
 /**
@@ -20,16 +21,16 @@ final class Mapper
     public function mapToLegacyArray(Configuration $arguments): array
     {
         $result = [
-            'extensions'              => [],
-            'listGroups'              => false,
-            'listSuites'              => false,
-            'listTests'               => false,
-            'listTestsXml'            => false,
-            'loader'                  => null,
+            'extensions' => [],
+            'listGroups' => false,
+            'listSuites' => false,
+            'listTests' => false,
+            'listTestsXml' => false,
+            'loader' => null,
             'useDefaultConfiguration' => true,
-            'loadedExtensions'        => [],
-            'unavailableExtensions'   => [],
-            'notLoadedExtensions'     => [],
+            'loadedExtensions' => [],
+            'unavailableExtensions' => [],
+            'notLoadedExtensions' => [],
         ];
 
         if ($arguments->hasColors()) {

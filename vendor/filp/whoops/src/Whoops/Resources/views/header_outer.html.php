@@ -1,3 +1,3 @@
 <header>
-  <?php $tpl->render($header) ?>
+    <?php $tpl->render($header) ?>
 </header>

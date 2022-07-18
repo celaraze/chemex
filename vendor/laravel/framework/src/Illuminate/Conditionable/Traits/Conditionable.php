@@ -51,10 +51,10 @@ trait Conditionable
         $value = $value instanceof Closure ? $value($this) : $value;
 
         if (func_num_args() === 1) {
-            return new HigherOrderWhenProxy($this, ! $value);
+            return new HigherOrderWhenProxy($this, !$value);
         }
 
-        if (! $value) {
+        if (!$value) {
             return $callback($this, $value) ?? $this;
         } elseif ($default) {
             return $default($this, $value) ?? $this;

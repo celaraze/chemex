@@ -126,21 +126,6 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     ];
 
     /**
-     * Generate a country calling code prefix.
-     *
-     * @example Prefix an empty string: ''
-     * @example Prefix the country calling code: '+30'
-     *
-     * @internal Used to generate phone numbers with or without prefixes.
-     *
-     * @return string
-     */
-    public static function internationalCodePrefix()
-    {
-        return static::randomElement(static::$internationalCallPrefixes);
-    }
-
-    /**
      * Generate an area code for a fixed line number.
      *
      * Doesn't include codes for Greater Athens Metropolitan Area (21#) because
@@ -150,69 +135,16 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
      * The capital of each zone uses 3 digits and the 4th digit can be any number.
      * The other areas in each zone use 4 digits, but not every number is valid for the 4th digit.
      *
-     * @example Thessaloniki has code '231', so '2310' and '2313' are valid.
+     * @return string
      * @example Serres has code '232', but '2326', '2328' and '2329' are not valid.
      *
-     * @return string
+     * @example Thessaloniki has code '231', so '2310' and '2313' are valid.
      */
     public static function areaCode()
     {
         return static::numerify(
             str_pad(static::randomElement(static::$areaCodes), 4, '#')
         );
-    }
-
-    /**
-     * Generate a fixed line number.
-     *
-     * Numbers can be generated with or without the international code prefix.
-     * Numbers can be generated with or without spaces between their parts.
-     * Numbers in Athens use a 3-digit area code, and can be formatted as 21# ### ####.
-     * Numbers in other areas use a 4-digit area code, and can be formatted as 2### ### ###.
-     *
-     * @example A number in Athens: '2101234567'
-     * @example A number in Thessaloniki: '2310123456'
-     * @example A number with spaces in Athens: '210 123 4567'
-     * @example A number with spaces in Thessaloniki: '2310 123 456'
-     * @example A number with international code prefix: '+302101234567'
-     * @example A number with international code prefix and spaces: '+30 2310 123 456'
-     *
-     * @return string
-     */
-    public function fixedLineNumber()
-    {
-        return ltrim(static::numerify($this->generator->parse(
-            static::randomElement(static::$fixedLineFormats)
-        )));
-    }
-
-    /**
-     * Generate a code for a mobile number.
-     *
-     * @internal Used to generate mobile numbers.
-     *
-     * @return string
-     */
-    public static function mobileCode()
-    {
-        return static::randomElement(static::$mobileCodes);
-    }
-
-    /**
-     * Generate a mobile number.
-     *
-     * @example A mobile number: '6901234567'
-     * @example A mobile number with spaces: '690 123 4567'
-     * @example A mobile number with international code prefix: '+306901234567'
-     * @example A mobile number with international code prefix and spaces: '+30 690 123 4567'
-     *
-     * @return string
-     */
-    public function mobileNumber()
-    {
-        return ltrim(static::numerify($this->generator->parse(
-            static::randomElement(static::$mobileFormats)
-        )));
     }
 
     /**
@@ -229,31 +161,41 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     }
 
     /**
-     * Generate a personal number.
-     *
-     * @example A personal number: '7012345678'
-     * @example A personal number with spaces: '70 1234 5678'
-     * @example A personal number with international code prefix: '+307012345678'
-     * @example A personal number with international code prefix and spaces: '+30 70 1234 5678'
+     * Generate a country calling code prefix.
      *
      * @return string
+     * @example Prefix the country calling code: '+30'
+     *
+     * @internal Used to generate phone numbers with or without prefixes.
+     *
+     * @example Prefix an empty string: ''
      */
-    public function personalNumber()
+    public static function internationalCodePrefix()
     {
-        return ltrim(static::numerify($this->generator->parse(
-            static::randomElement(static::$personalFormats)
-        )));
+        return static::randomElement(static::$internationalCallPrefixes);
+    }
+
+    /**
+     * Generate a code for a mobile number.
+     *
+     * @return string
+     * @internal Used to generate mobile numbers.
+     *
+     */
+    public static function mobileCode()
+    {
+        return static::randomElement(static::$mobileCodes);
     }
 
     /**
      * Generate a toll-free number.
      *
-     * @example A toll-free number: '8001234567'
+     * @return string
      * @example A toll-free number with spaces: '800 123 4567'
      * @example A toll-free number with international code prefix: '+308001234567'
      * @example A toll-free number with international code prefix and spaces: '+30 800 123 4567'
      *
-     * @return string
+     * @example A toll-free number: '8001234567'
      */
     public static function tollFreeNumber()
     {
@@ -267,9 +209,9 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     /**
      * Generate a code for a shared-cost number.
      *
+     * @return string
      * @internal Used to generate shared-cost numbers.
      *
-     * @return string
      */
     public static function sharedCostCode()
     {
@@ -277,14 +219,84 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     }
 
     /**
+     * Generate a code for a premium-rate number.
+     *
+     * @return string
+     * @internal Used to generate premium-rate numbers.
+     *
+     */
+    public static function premiumRateCode()
+    {
+        return static::randomElement(static::$premiumRateCodes);
+    }
+
+    /**
+     * Generate a fixed line number.
+     *
+     * Numbers can be generated with or without the international code prefix.
+     * Numbers can be generated with or without spaces between their parts.
+     * Numbers in Athens use a 3-digit area code, and can be formatted as 21# ### ####.
+     * Numbers in other areas use a 4-digit area code, and can be formatted as 2### ### ###.
+     *
+     * @return string
+     * @example A number in Thessaloniki: '2310123456'
+     * @example A number with spaces in Athens: '210 123 4567'
+     * @example A number with spaces in Thessaloniki: '2310 123 456'
+     * @example A number with international code prefix: '+302101234567'
+     * @example A number with international code prefix and spaces: '+30 2310 123 456'
+     *
+     * @example A number in Athens: '2101234567'
+     */
+    public function fixedLineNumber()
+    {
+        return ltrim(static::numerify($this->generator->parse(
+            static::randomElement(static::$fixedLineFormats)
+        )));
+    }
+
+    /**
+     * Generate a mobile number.
+     *
+     * @return string
+     * @example A mobile number with spaces: '690 123 4567'
+     * @example A mobile number with international code prefix: '+306901234567'
+     * @example A mobile number with international code prefix and spaces: '+30 690 123 4567'
+     *
+     * @example A mobile number: '6901234567'
+     */
+    public function mobileNumber()
+    {
+        return ltrim(static::numerify($this->generator->parse(
+            static::randomElement(static::$mobileFormats)
+        )));
+    }
+
+    /**
+     * Generate a personal number.
+     *
+     * @return string
+     * @example A personal number with spaces: '70 1234 5678'
+     * @example A personal number with international code prefix: '+307012345678'
+     * @example A personal number with international code prefix and spaces: '+30 70 1234 5678'
+     *
+     * @example A personal number: '7012345678'
+     */
+    public function personalNumber()
+    {
+        return ltrim(static::numerify($this->generator->parse(
+            static::randomElement(static::$personalFormats)
+        )));
+    }
+
+    /**
      * Generate a shared-cost number.
      *
-     * @example A shared-cost number: '8011234567'
+     * @return string
      * @example A shared-cost number with spaces: '801 123 4567'
      * @example A shared-cost number with international code prefix: '+308011234567'
      * @example A shared-cost number with international code prefix and spaces: '+30 801 123 4567'
      *
-     * @return string
+     * @example A shared-cost number: '8011234567'
      */
     public function sharedCostNumber()
     {
@@ -294,26 +306,14 @@ class PhoneNumber extends \Faker\Provider\PhoneNumber
     }
 
     /**
-     * Generate a code for a premium-rate number.
-     *
-     * @internal Used to generate premium-rate numbers.
-     *
-     * @return string
-     */
-    public static function premiumRateCode()
-    {
-        return static::randomElement(static::$premiumRateCodes);
-    }
-
-    /**
      * Generate a premium-rate number.
      *
-     * @example A premium-rate number: '9011234567'
+     * @return string
      * @example A premium-rate number with spaces: '901 123 4567'
      * @example A premium-rate number with international code prefix: '+309011234567'
      * @example A premium-rate number with international code prefix and spaces: '+30 901 123 4567'
      *
-     * @return string
+     * @example A premium-rate number: '9011234567'
      */
     public function premiumRateNumber()
     {

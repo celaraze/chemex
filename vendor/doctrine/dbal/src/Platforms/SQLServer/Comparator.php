@@ -32,7 +32,7 @@ class Comparator extends BaseComparator
     public function diffTable(Table $fromTable, Table $toTable)
     {
         $fromTable = clone $fromTable;
-        $toTable   = clone $toTable;
+        $toTable = clone $toTable;
 
         $this->normalizeColumns($fromTable);
         $this->normalizeColumns($toTable);
@@ -45,7 +45,7 @@ class Comparator extends BaseComparator
         foreach ($table->getColumns() as $column) {
             $options = $column->getPlatformOptions();
 
-            if (! isset($options['collation']) || $options['collation'] !== $this->databaseCollation) {
+            if (!isset($options['collation']) || $options['collation'] !== $this->databaseCollation) {
                 continue;
             }
 

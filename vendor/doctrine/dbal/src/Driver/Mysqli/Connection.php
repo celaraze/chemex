@@ -48,29 +48,14 @@ final class Connection implements ServerInfoAwareConnection
         return $this->getNativeConnection();
     }
 
+    public function getNativeConnection(): mysqli
+    {
+        return $this->connection;
+    }
+
     public function getServerVersion(): string
     {
         return $this->connection->get_server_info();
-    }
-
-    public function prepare(string $sql): DriverStatement
-    {
-        try {
-            $stmt = $this->connection->prepare($sql);
-        } catch (mysqli_sql_exception $e) {
-            throw ConnectionError::upcast($e);
-        }
-
-        if ($stmt === false) {
-            throw ConnectionError::new($this->connection);
-        }
-
-        return new Statement($stmt);
-    }
-
-    public function query(string $sql): ResultInterface
-    {
-        return $this->prepare($sql)->execute();
     }
 
     /**
@@ -94,6 +79,26 @@ final class Connection implements ServerInfoAwareConnection
         }
 
         return $this->connection->affected_rows;
+    }
+
+    public function query(string $sql): ResultInterface
+    {
+        return $this->prepare($sql)->execute();
+    }
+
+    public function prepare(string $sql): DriverStatement
+    {
+        try {
+            $stmt = $this->connection->prepare($sql);
+        } catch (mysqli_sql_exception $e) {
+            throw ConnectionError::upcast($e);
+        }
+
+        if ($stmt === false) {
+            throw ConnectionError::new($this->connection);
+        }
+
+        return new Statement($stmt);
     }
 
     /**
@@ -135,10 +140,5 @@ final class Connection implements ServerInfoAwareConnection
         } catch (mysqli_sql_exception $e) {
             return false;
         }
-    }
-
-    public function getNativeConnection(): mysqli
-    {
-        return $this->connection;
     }
 }

@@ -22,7 +22,7 @@ class LumenServiceProvider extends AbstractServiceProvider
     {
         $this->app->configure('jwt');
 
-        $path = realpath(__DIR__.'/../../config/config.php');
+        $path = realpath(__DIR__ . '/../../config/config.php');
         $this->mergeConfigFrom($path, 'jwt');
 
         $this->app->routeMiddleware($this->middlewareAliases);

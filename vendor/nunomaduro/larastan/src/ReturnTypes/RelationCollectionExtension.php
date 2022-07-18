@@ -49,13 +49,13 @@ final class RelationCollectionExtension implements DynamicMethodReturnTypeExtens
 
         $modelType = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TRelatedModel');
 
-        if (! $modelType instanceof ObjectType) {
+        if (!$modelType instanceof ObjectType) {
             return false;
         }
 
         $returnType = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 
-        if (! in_array(Collection::class, $returnType->getReferencedClasses(), true)) {
+        if (!in_array(Collection::class, $returnType->getReferencedClasses(), true)) {
             return false;
         }
 
@@ -67,9 +67,10 @@ final class RelationCollectionExtension implements DynamicMethodReturnTypeExtens
      */
     public function getTypeFromMethodCall(
         MethodReflection $methodReflection,
-        MethodCall $methodCall,
-        Scope $scope
-    ): Type {
+        MethodCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         /** @var ObjectType $modelType */
         $modelType = $methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getType('TRelatedModel');
 

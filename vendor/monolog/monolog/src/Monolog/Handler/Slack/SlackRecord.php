@@ -11,10 +11,10 @@
 
 namespace Monolog\Handler\Slack;
 
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Logger;
 use Monolog\Utils;
-use Monolog\Formatter\NormalizerFormatter;
-use Monolog\Formatter\FormatterInterface;
 
 /**
  * Slack record utility helping to log to Slack webhooks or API.
@@ -93,15 +93,16 @@ class SlackRecord
      * @param string[] $excludeFields
      */
     public function __construct(
-        ?string $channel = null,
-        ?string $username = null,
-        bool $useAttachment = true,
-        ?string $userIcon = null,
-        bool $useShortAttachment = false,
-        bool $includeContextAndExtra = false,
-        array $excludeFields = array(),
+        ?string            $channel = null,
+        ?string            $username = null,
+        bool               $useAttachment = true,
+        ?string            $userIcon = null,
+        bool               $useShortAttachment = false,
+        bool               $includeContextAndExtra = false,
+        array              $excludeFields = array(),
         FormatterInterface $formatter = null
-    ) {
+    )
+    {
         $this
             ->setChannel($channel)
             ->setUsername($username)
@@ -115,6 +116,87 @@ class SlackRecord
         if ($this->includeContextAndExtra) {
             $this->normalizerFormatter = new NormalizerFormatter();
         }
+    }
+
+    public function setFormatter(?FormatterInterface $formatter = null): self
+    {
+        $this->formatter = $formatter;
+
+        return $this;
+    }
+
+    /**
+     * @param string[] $excludeFields
+     */
+    public function excludeFields(array $excludeFields = []): self
+    {
+        $this->excludeFields = $excludeFields;
+
+        return $this;
+    }
+
+    public function includeContextAndExtra(bool $includeContextAndExtra = false): self
+    {
+        $this->includeContextAndExtra = $includeContextAndExtra;
+
+        if ($this->includeContextAndExtra) {
+            $this->normalizerFormatter = new NormalizerFormatter();
+        }
+
+        return $this;
+    }
+
+    public function useShortAttachment(bool $useShortAttachment = false): self
+    {
+        $this->useShortAttachment = $useShortAttachment;
+
+        return $this;
+    }
+
+    public function setUserIcon(?string $userIcon = null): self
+    {
+        $this->userIcon = $userIcon;
+
+        if (\is_string($userIcon)) {
+            $this->userIcon = trim($userIcon, ':');
+        }
+
+        return $this;
+    }
+
+    public function useAttachment(bool $useAttachment = true): self
+    {
+        $this->useAttachment = $useAttachment;
+
+        return $this;
+    }
+
+    /**
+     * Username used by the bot when posting
+     *
+     * @param ?string $username
+     *
+     * @return static
+     */
+    public function setUsername(?string $username = null): self
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * Channel used by the bot when posting
+     *
+     * @param ?string $channel
+     *
+     * @return static
+     */
+    public function setChannel(?string $channel = null): self
+    {
+        $this->channel = $channel;
+
+        return $this;
     }
 
     /**
@@ -146,13 +228,13 @@ class SlackRecord
 
         if ($this->useAttachment) {
             $attachment = array(
-                'fallback'    => $message,
-                'text'        => $message,
-                'color'       => $this->getAttachmentColor($record['level']),
-                'fields'      => array(),
-                'mrkdwn_in'   => array('fields'),
-                'ts'          => $record['datetime']->getTimestamp(),
-                'footer'      => $this->username,
+                'fallback' => $message,
+                'text' => $message,
+                'color' => $this->getAttachmentColor($record['level']),
+                'fields' => array(),
+                'mrkdwn_in' => array('fields'),
+                'ts' => $record['datetime']->getTimestamp(),
+                'footer' => $this->username,
                 'footer_icon' => $this->userIcon,
             );
 
@@ -171,7 +253,7 @@ class SlackRecord
 
                     if ($this->useShortAttachment) {
                         $attachment['fields'][] = $this->generateAttachmentField(
-                            (string) $key,
+                            (string)$key,
                             $record[$key]
                         );
                     } else {
@@ -201,163 +283,6 @@ class SlackRecord
     }
 
     /**
-     * Returns a Slack message attachment color associated with
-     * provided level.
-     */
-    public function getAttachmentColor(int $level): string
-    {
-        switch (true) {
-            case $level >= Logger::ERROR:
-                return static::COLOR_DANGER;
-            case $level >= Logger::WARNING:
-                return static::COLOR_WARNING;
-            case $level >= Logger::INFO:
-                return static::COLOR_GOOD;
-            default:
-                return static::COLOR_DEFAULT;
-        }
-    }
-
-    /**
-     * Stringifies an array of key/value pairs to be used in attachment fields
-     *
-     * @param mixed[] $fields
-     */
-    public function stringify(array $fields): string
-    {
-        /** @var Record $fields */
-        $normalized = $this->normalizerFormatter->format($fields);
-
-        $hasSecondDimension = count(array_filter($normalized, 'is_array'));
-        $hasNonNumericKeys = !count(array_filter(array_keys($normalized), 'is_numeric'));
-
-        return $hasSecondDimension || $hasNonNumericKeys
-            ? Utils::jsonEncode($normalized, JSON_PRETTY_PRINT|Utils::DEFAULT_JSON_FLAGS)
-            : Utils::jsonEncode($normalized, Utils::DEFAULT_JSON_FLAGS);
-    }
-
-    /**
-     * Channel used by the bot when posting
-     *
-     * @param ?string $channel
-     *
-     * @return static
-     */
-    public function setChannel(?string $channel = null): self
-    {
-        $this->channel = $channel;
-
-        return $this;
-    }
-
-    /**
-     * Username used by the bot when posting
-     *
-     * @param ?string $username
-     *
-     * @return static
-     */
-    public function setUsername(?string $username = null): self
-    {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    public function useAttachment(bool $useAttachment = true): self
-    {
-        $this->useAttachment = $useAttachment;
-
-        return $this;
-    }
-
-    public function setUserIcon(?string $userIcon = null): self
-    {
-        $this->userIcon = $userIcon;
-
-        if (\is_string($userIcon)) {
-            $this->userIcon = trim($userIcon, ':');
-        }
-
-        return $this;
-    }
-
-    public function useShortAttachment(bool $useShortAttachment = false): self
-    {
-        $this->useShortAttachment = $useShortAttachment;
-
-        return $this;
-    }
-
-    public function includeContextAndExtra(bool $includeContextAndExtra = false): self
-    {
-        $this->includeContextAndExtra = $includeContextAndExtra;
-
-        if ($this->includeContextAndExtra) {
-            $this->normalizerFormatter = new NormalizerFormatter();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string[] $excludeFields
-     */
-    public function excludeFields(array $excludeFields = []): self
-    {
-        $this->excludeFields = $excludeFields;
-
-        return $this;
-    }
-
-    public function setFormatter(?FormatterInterface $formatter = null): self
-    {
-        $this->formatter = $formatter;
-
-        return $this;
-    }
-
-    /**
-     * Generates attachment field
-     *
-     * @param string|mixed[] $value
-     *
-     * @return array{title: string, value: string, short: false}
-     */
-    private function generateAttachmentField(string $title, $value): array
-    {
-        $value = is_array($value)
-            ? sprintf('```%s```', substr($this->stringify($value), 0, 1990))
-            : $value;
-
-        return array(
-            'title' => ucfirst($title),
-            'value' => $value,
-            'short' => false,
-        );
-    }
-
-    /**
-     * Generates a collection of attachment fields from array
-     *
-     * @param mixed[] $data
-     *
-     * @return array<array{title: string, value: string, short: false}>
-     */
-    private function generateAttachmentFields(array $data): array
-    {
-        /** @var Record $data */
-        $normalized = $this->normalizerFormatter->format($data);
-
-        $fields = array();
-        foreach ($normalized as $key => $value) {
-            $fields[] = $this->generateAttachmentField((string) $key, $value);
-        }
-
-        return $fields;
-    }
-
-    /**
      * Get a copy of record with fields excluded according to $this->excludeFields
      *
      * @phpstan-param FormattedRecord $record
@@ -383,5 +308,81 @@ class SlackRecord
         }
 
         return $record;
+    }
+
+    /**
+     * Returns a Slack message attachment color associated with
+     * provided level.
+     */
+    public function getAttachmentColor(int $level): string
+    {
+        switch (true) {
+            case $level >= Logger::ERROR:
+                return static::COLOR_DANGER;
+            case $level >= Logger::WARNING:
+                return static::COLOR_WARNING;
+            case $level >= Logger::INFO:
+                return static::COLOR_GOOD;
+            default:
+                return static::COLOR_DEFAULT;
+        }
+    }
+
+    /**
+     * Generates attachment field
+     *
+     * @param string|mixed[] $value
+     *
+     * @return array{title: string, value: string, short: false}
+     */
+    private function generateAttachmentField(string $title, $value): array
+    {
+        $value = is_array($value)
+            ? sprintf('```%s```', substr($this->stringify($value), 0, 1990))
+            : $value;
+
+        return array(
+            'title' => ucfirst($title),
+            'value' => $value,
+            'short' => false,
+        );
+    }
+
+    /**
+     * Stringifies an array of key/value pairs to be used in attachment fields
+     *
+     * @param mixed[] $fields
+     */
+    public function stringify(array $fields): string
+    {
+        /** @var Record $fields */
+        $normalized = $this->normalizerFormatter->format($fields);
+
+        $hasSecondDimension = count(array_filter($normalized, 'is_array'));
+        $hasNonNumericKeys = !count(array_filter(array_keys($normalized), 'is_numeric'));
+
+        return $hasSecondDimension || $hasNonNumericKeys
+            ? Utils::jsonEncode($normalized, JSON_PRETTY_PRINT | Utils::DEFAULT_JSON_FLAGS)
+            : Utils::jsonEncode($normalized, Utils::DEFAULT_JSON_FLAGS);
+    }
+
+    /**
+     * Generates a collection of attachment fields from array
+     *
+     * @param mixed[] $data
+     *
+     * @return array<array{title: string, value: string, short: false}>
+     */
+    private function generateAttachmentFields(array $data): array
+    {
+        /** @var Record $data */
+        $normalized = $this->normalizerFormatter->format($data);
+
+        $fields = array();
+        foreach ($normalized as $key => $value) {
+            $fields[] = $this->generateAttachmentField((string)$key, $value);
+        }
+
+        return $fields;
     }
 }

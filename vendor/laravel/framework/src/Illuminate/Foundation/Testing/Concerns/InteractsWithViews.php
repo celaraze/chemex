@@ -14,8 +14,8 @@ trait InteractsWithViews
     /**
      * Create a new TestView from the given view.
      *
-     * @param  string  $view
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
+     * @param string $view
+     * @param \Illuminate\Contracts\Support\Arrayable|array $data
      * @return \Illuminate\Testing\TestView
      */
     protected function view(string $view, $data = [])
@@ -26,21 +26,21 @@ trait InteractsWithViews
     /**
      * Render the contents of the given Blade template string.
      *
-     * @param  string  $template
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
+     * @param string $template
+     * @param \Illuminate\Contracts\Support\Arrayable|array $data
      * @return \Illuminate\Testing\TestView
      */
     protected function blade(string $template, $data = [])
     {
         $tempDirectory = sys_get_temp_dir();
 
-        if (! in_array($tempDirectory, ViewFacade::getFinder()->getPaths())) {
+        if (!in_array($tempDirectory, ViewFacade::getFinder()->getPaths())) {
             ViewFacade::addLocation(sys_get_temp_dir());
         }
 
         $tempFileInfo = pathinfo(tempnam($tempDirectory, 'laravel-blade'));
 
-        $tempFile = $tempFileInfo['dirname'].'/'.$tempFileInfo['filename'].'.blade.php';
+        $tempFile = $tempFileInfo['dirname'] . '/' . $tempFileInfo['filename'] . '.blade.php';
 
         file_put_contents($tempFile, $template);
 
@@ -50,8 +50,8 @@ trait InteractsWithViews
     /**
      * Render the given view component.
      *
-     * @param  string  $componentClass
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
+     * @param string $componentClass
+     * @param \Illuminate\Contracts\Support\Arrayable|array $data
      * @return \Illuminate\Testing\TestComponent
      */
     protected function component(string $componentClass, $data = [])
@@ -70,8 +70,8 @@ trait InteractsWithViews
     /**
      * Populate the shared view error bag with the given errors.
      *
-     * @param  array  $errors
-     * @param  string  $key
+     * @param array $errors
+     * @param string $key
      * @return $this
      */
     protected function withViewErrors(array $errors, $key = 'default')

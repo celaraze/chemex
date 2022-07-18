@@ -7,12 +7,13 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Rule;
 
-use function count;
 use PHPUnit\Framework\MockObject\Invocation as BaseInvocation;
 use PHPUnit\Framework\MockObject\Verifiable;
 use PHPUnit\Framework\SelfDescribing;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -41,7 +42,7 @@ abstract class InvocationOrder implements SelfDescribing, Verifiable
         return $this->invokedDo($invocation);
     }
 
-    abstract public function matches(BaseInvocation $invocation): bool;
-
     abstract protected function invokedDo(BaseInvocation $invocation);
+
+    abstract public function matches(BaseInvocation $invocation): bool;
 }

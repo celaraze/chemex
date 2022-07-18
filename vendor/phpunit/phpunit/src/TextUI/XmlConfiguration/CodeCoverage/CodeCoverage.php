@@ -7,9 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage;
 
-use function count;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Filter\DirectoryCollection;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Clover;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Cobertura;
@@ -21,6 +21,7 @@ use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Xml;
 use PHPUnit\TextUI\XmlConfiguration\Directory;
 use PHPUnit\TextUI\XmlConfiguration\Exception;
 use PHPUnit\TextUI\XmlConfiguration\FileCollection;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -115,31 +116,23 @@ final class CodeCoverage
 
     public function __construct(?Directory $cacheDirectory, DirectoryCollection $directories, FileCollection $files, DirectoryCollection $excludeDirectories, FileCollection $excludeFiles, bool $pathCoverage, bool $includeUncoveredFiles, bool $processUncoveredFiles, bool $ignoreDeprecatedCodeUnits, bool $disableCodeCoverageIgnore, ?Clover $clover, ?Cobertura $cobertura, ?Crap4j $crap4j, ?Html $html, ?Php $php, ?Text $text, ?Xml $xml)
     {
-        $this->cacheDirectory            = $cacheDirectory;
-        $this->directories               = $directories;
-        $this->files                     = $files;
-        $this->excludeDirectories        = $excludeDirectories;
-        $this->excludeFiles              = $excludeFiles;
-        $this->pathCoverage              = $pathCoverage;
-        $this->includeUncoveredFiles     = $includeUncoveredFiles;
-        $this->processUncoveredFiles     = $processUncoveredFiles;
+        $this->cacheDirectory = $cacheDirectory;
+        $this->directories = $directories;
+        $this->files = $files;
+        $this->excludeDirectories = $excludeDirectories;
+        $this->excludeFiles = $excludeFiles;
+        $this->pathCoverage = $pathCoverage;
+        $this->includeUncoveredFiles = $includeUncoveredFiles;
+        $this->processUncoveredFiles = $processUncoveredFiles;
         $this->ignoreDeprecatedCodeUnits = $ignoreDeprecatedCodeUnits;
         $this->disableCodeCoverageIgnore = $disableCodeCoverageIgnore;
-        $this->clover                    = $clover;
-        $this->cobertura                 = $cobertura;
-        $this->crap4j                    = $crap4j;
-        $this->html                      = $html;
-        $this->php                       = $php;
-        $this->text                      = $text;
-        $this->xml                       = $xml;
-    }
-
-    /**
-     * @psalm-assert-if-true !null $this->cacheDirectory
-     */
-    public function hasCacheDirectory(): bool
-    {
-        return $this->cacheDirectory !== null;
+        $this->clover = $clover;
+        $this->cobertura = $cobertura;
+        $this->crap4j = $crap4j;
+        $this->html = $html;
+        $this->php = $php;
+        $this->text = $text;
+        $this->xml = $xml;
     }
 
     /**
@@ -154,6 +147,14 @@ final class CodeCoverage
         }
 
         return $this->cacheDirectory;
+    }
+
+    /**
+     * @psalm-assert-if-true !null $this->cacheDirectory
+     */
+    public function hasCacheDirectory(): bool
+    {
+        return $this->cacheDirectory !== null;
     }
 
     public function hasNonEmptyListOfFilesToBeIncludedInCodeCoverageReport(): bool
@@ -207,14 +208,6 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->clover
-     */
-    public function hasClover(): bool
-    {
-        return $this->clover !== null;
-    }
-
-    /**
      * @throws Exception
      */
     public function clover(): Clover
@@ -229,11 +222,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->cobertura
+     * @psalm-assert-if-true !null $this->clover
      */
-    public function hasCobertura(): bool
+    public function hasClover(): bool
     {
-        return $this->cobertura !== null;
+        return $this->clover !== null;
     }
 
     /**
@@ -251,11 +244,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->crap4j
+     * @psalm-assert-if-true !null $this->cobertura
      */
-    public function hasCrap4j(): bool
+    public function hasCobertura(): bool
     {
-        return $this->crap4j !== null;
+        return $this->cobertura !== null;
     }
 
     /**
@@ -273,11 +266,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->html
+     * @psalm-assert-if-true !null $this->crap4j
      */
-    public function hasHtml(): bool
+    public function hasCrap4j(): bool
     {
-        return $this->html !== null;
+        return $this->crap4j !== null;
     }
 
     /**
@@ -295,11 +288,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->php
+     * @psalm-assert-if-true !null $this->html
      */
-    public function hasPhp(): bool
+    public function hasHtml(): bool
     {
-        return $this->php !== null;
+        return $this->html !== null;
     }
 
     /**
@@ -317,11 +310,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->text
+     * @psalm-assert-if-true !null $this->php
      */
-    public function hasText(): bool
+    public function hasPhp(): bool
     {
-        return $this->text !== null;
+        return $this->php !== null;
     }
 
     /**
@@ -339,11 +332,11 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->xml
+     * @psalm-assert-if-true !null $this->text
      */
-    public function hasXml(): bool
+    public function hasText(): bool
     {
-        return $this->xml !== null;
+        return $this->text !== null;
     }
 
     /**
@@ -358,5 +351,13 @@ final class CodeCoverage
         }
 
         return $this->xml;
+    }
+
+    /**
+     * @psalm-assert-if-true !null $this->xml
+     */
+    public function hasXml(): bool
+    {
+        return $this->xml !== null;
     }
 }

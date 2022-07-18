@@ -23,6 +23,11 @@ class SessionStore implements ColumnSelectorStore
         session()->put($this->getKey(), $input);
     }
 
+    protected function getKey()
+    {
+        return $this->grid->getName() . '/' . request()->path() . '/' . Admin::user()->getKey();
+    }
+
     public function get()
     {
         return session()->get($this->getKey());
@@ -31,10 +36,5 @@ class SessionStore implements ColumnSelectorStore
     public function forget()
     {
         session()->remove($this->getKey());
-    }
-
-    protected function getKey()
-    {
-        return $this->grid->getName().'/'.request()->path().'/'.Admin::user()->getKey();
     }
 }

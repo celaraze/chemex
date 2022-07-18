@@ -35,16 +35,16 @@ final class Query
     private $types;
 
     /**
-     * @param array<mixed>                $params
+     * @param array<mixed> $params
      * @param array<Type|int|string|null> $types
      *
      * @psalm-suppress ImpurePropertyAssignment
      */
     public function __construct(string $sql, array $params, array $types)
     {
-        $this->sql    = $sql;
+        $this->sql = $sql;
         $this->params = $params;
-        $this->types  = $types;
+        $this->types = $types;
     }
 
     public function getSQL(): string

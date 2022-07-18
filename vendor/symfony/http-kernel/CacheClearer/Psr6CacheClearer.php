@@ -28,11 +28,6 @@ class Psr6CacheClearer implements CacheClearerInterface
         $this->pools = $pools;
     }
 
-    public function hasPool(string $name): bool
-    {
-        return isset($this->pools[$name]);
-    }
-
     /**
      * @throws \InvalidArgumentException If the cache pool with the given name does not exist
      */
@@ -43,6 +38,11 @@ class Psr6CacheClearer implements CacheClearerInterface
         }
 
         return $this->pools[$name];
+    }
+
+    public function hasPool(string $name): bool
+    {
+        return isset($this->pools[$name]);
     }
 
     /**

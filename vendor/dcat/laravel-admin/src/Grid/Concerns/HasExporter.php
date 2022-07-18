@@ -25,9 +25,62 @@ trait HasExporter
     protected $exported = false;
 
     /**
+     * Handle export request.
+     *
+     * @param bool $forceExport
+     * @return mixed
+     */
+    public function handleExportRequest($forceExport = false)
+    {
+        if (
+            $this->exported
+            || (
+                (!$this->allowExporter()
+                    || !$scope = request($this->exporter()->getQueryName()))
+                && !$forceExport
+            )
+        ) {
+            return;
+        }
+
+        $this->exported = true;
+
+        $this->callBuilder();
+
+        $this->fire(new Grid\Events\Exporting([$scope]));
+
+        // clear output buffer.
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
+        if ($forceExport || $this->allowExporter()) {
+            return $this->resolveExportDriver($scope)->export();
+        }
+    }
+
+    /**
+     * If grid show export btn.
+     *
+     * @return bool
+     */
+    public function allowExporter()
+    {
+        return $this->enableExporter;
+    }
+
+    /**
+     * @return Exporter
+     */
+    public function exporter()
+    {
+        return $this->exporter ?: ($this->exporter = new Exporter($this));
+    }
+
+    /**
      * Set exporter driver for Grid to export.
      *
-     * @param  string|Grid\Exporters\AbstractExporter|array  $exporterDriver
+     * @param string|Grid\Exporters\AbstractExporter|array $exporterDriver
      * @return Exporter
      */
     public function export($exporterDriver = null)
@@ -51,50 +104,7 @@ trait HasExporter
     }
 
     /**
-     * Handle export request.
-     *
-     * @param  bool  $forceExport
-     * @return mixed
-     */
-    public function handleExportRequest($forceExport = false)
-    {
-        if (
-            $this->exported
-            || (
-                (! $this->allowExporter()
-                    || ! $scope = request($this->exporter()->getQueryName()))
-                && ! $forceExport
-            )
-        ) {
-            return;
-        }
-
-        $this->exported = true;
-
-        $this->callBuilder();
-
-        $this->fire(new Grid\Events\Exporting([$scope]));
-
-        // clear output buffer.
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-
-        if ($forceExport || $this->allowExporter()) {
-            return $this->resolveExportDriver($scope)->export();
-        }
-    }
-
-    /**
-     * @return Exporter
-     */
-    public function exporter()
-    {
-        return $this->exporter ?: ($this->exporter = new Exporter($this));
-    }
-
-    /**
-     * @param  string  $scope
+     * @param string $scope
      * @return AbstractExporter
      */
     protected function resolveExportDriver($scope)
@@ -105,8 +115,8 @@ trait HasExporter
     /**
      * Get the export url.
      *
-     * @param  int  $scope
-     * @param  null  $args
+     * @param int $scope
+     * @param null $args
      * @return string
      */
     public function exportUrl($scope = 1, $args = null)
@@ -117,7 +127,7 @@ trait HasExporter
             $input = array_merge($input, $constraints);
         }
 
-        return $this->resource().'?'.http_build_query($input);
+        return $this->resource() . '?' . http_build_query($input);
     }
 
     /**
@@ -127,20 +137,10 @@ trait HasExporter
      */
     public function renderExportButton()
     {
-        if (! $this->allowExporter()) {
+        if (!$this->allowExporter()) {
             return '';
         }
 
         return (new Tools\ExportButton($this))->render();
-    }
-
-    /**
-     * If grid show export btn.
-     *
-     * @return bool
-     */
-    public function allowExporter()
-    {
-        return $this->enableExporter;
     }
 }

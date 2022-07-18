@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
 use function array_filter;
@@ -43,6 +44,26 @@ final class ExecutionOrderDependency
      */
     private $useDeepClone = false;
 
+    public function __construct(string $classOrCallableName, ?string $methodName = null, ?string $option = null)
+    {
+        if ($classOrCallableName === '') {
+            return;
+        }
+
+        if (strpos($classOrCallableName, '::') !== false) {
+            [$this->className, $this->methodName] = explode('::', $classOrCallableName);
+        } else {
+            $this->className = $classOrCallableName;
+            $this->methodName = !empty($methodName) ? $methodName : 'class';
+        }
+
+        if ($option === 'clone') {
+            $this->useDeepClone = true;
+        } elseif ($option === 'shallowClone') {
+            $this->useShallowClone = true;
+        }
+    }
+
     public static function createFromDependsAnnotation(string $className, string $annotation): self
     {
         // Split clone option and target
@@ -50,10 +71,10 @@ final class ExecutionOrderDependency
 
         if (count($parts) === 1) {
             $cloneOption = '';
-            $target      = $parts[0];
+            $target = $parts[0];
         } else {
             $cloneOption = $parts[0];
-            $target      = $parts[1];
+            $target = $parts[1];
         }
 
         // Prefix provided class for targets assumed to be in scope
@@ -74,12 +95,17 @@ final class ExecutionOrderDependency
         return array_values(
             array_filter(
                 $dependencies,
-                static function (self $d)
-                {
+                static function (self $d) {
                     return $d->isValid();
                 }
             )
         );
+    }
+
+    public function isValid(): bool
+    {
+        // Invalid dependencies can be declared and are skipped by the runner
+        return $this->className !== '' && $this->methodName !== '';
     }
 
     /**
@@ -91,8 +117,7 @@ final class ExecutionOrderDependency
     public static function mergeUnique(array $existing, array $additional): array
     {
         $existingTargets = array_map(
-            static function ($dependency)
-            {
+            static function ($dependency) {
                 return $dependency->getTarget();
             },
             $existing
@@ -104,10 +129,17 @@ final class ExecutionOrderDependency
             }
 
             $existingTargets[] = $dependency->getTarget();
-            $existing[]        = $dependency;
+            $existing[] = $dependency;
         }
 
         return $existing;
+    }
+
+    public function getTarget(): string
+    {
+        return $this->isValid()
+            ? $this->className . '::' . $this->methodName
+            : '';
     }
 
     /**
@@ -126,10 +158,9 @@ final class ExecutionOrderDependency
             return [];
         }
 
-        $diff         = [];
+        $diff = [];
         $rightTargets = array_map(
-            static function ($dependency)
-            {
+            static function ($dependency) {
                 return $dependency->getTarget();
             },
             $right
@@ -146,35 +177,9 @@ final class ExecutionOrderDependency
         return $diff;
     }
 
-    public function __construct(string $classOrCallableName, ?string $methodName = null, ?string $option = null)
-    {
-        if ($classOrCallableName === '') {
-            return;
-        }
-
-        if (strpos($classOrCallableName, '::') !== false) {
-            [$this->className, $this->methodName] = explode('::', $classOrCallableName);
-        } else {
-            $this->className  = $classOrCallableName;
-            $this->methodName = !empty($methodName) ? $methodName : 'class';
-        }
-
-        if ($option === 'clone') {
-            $this->useDeepClone = true;
-        } elseif ($option === 'shallowClone') {
-            $this->useShallowClone = true;
-        }
-    }
-
     public function __toString(): string
     {
         return $this->getTarget();
-    }
-
-    public function isValid(): bool
-    {
-        // Invalid dependencies can be declared and are skipped by the runner
-        return $this->className !== '' && $this->methodName !== '';
     }
 
     public function useShallowClone(): bool
@@ -190,13 +195,6 @@ final class ExecutionOrderDependency
     public function targetIsClass(): bool
     {
         return $this->methodName === 'class';
-    }
-
-    public function getTarget(): string
-    {
-        return $this->isValid()
-            ? $this->className . '::' . $this->methodName
-            : '';
     }
 
     public function getTargetClassName(): string

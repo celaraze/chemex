@@ -23,7 +23,7 @@ class ScheduleClearCacheCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     public function handle(Schedule $schedule)
@@ -32,7 +32,7 @@ class ScheduleClearCacheCommand extends Command
 
         foreach ($schedule->events($this->laravel) as $event) {
             if ($event->mutex->exists($event)) {
-                $this->line('<info>Deleting mutex for:</info> '.$event->command);
+                $this->line('<info>Deleting mutex for:</info> ' . $event->command);
 
                 $event->mutex->forget($event);
 
@@ -40,7 +40,7 @@ class ScheduleClearCacheCommand extends Command
             }
         }
 
-        if (! $mutexCleared) {
+        if (!$mutexCleared) {
             $this->info('No mutex files were found.');
         }
     }

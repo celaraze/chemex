@@ -2,21 +2,21 @@
 <?php
 
 if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
-    echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
+    echo 'Warning: Composer should be invoked via the CLI version of PHP, not the ' . PHP_SAPI . ' SAPI' . PHP_EOL;
 }
 
 if (PHP_VERSION_ID < 70205) {
-    echo 'Composer 2.3.0 dropped support for PHP <7.2.5 and you are running '.PHP_VERSION.', please upgrade PHP or use Composer 2.2 LTS via "composer self-update --2.2". Aborting.'.PHP_EOL;
+    echo 'Composer 2.3.0 dropped support for PHP <7.2.5 and you are running ' . PHP_VERSION . ', please upgrade PHP or use Composer 2.2 LTS via "composer self-update --2.2". Aborting.' . PHP_EOL;
     exit(1);
 }
 
 setlocale(LC_ALL, 'C');
-require __DIR__.'/../src/bootstrap.php';
+require __DIR__ . '/../src/bootstrap.php';
 
 use Composer\Console\Application;
-use Composer\XdebugHandler\XdebugHandler;
-use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
+use Composer\Util\Platform;
+use Composer\XdebugHandler\XdebugHandler;
 
 error_reporting(-1);
 
@@ -26,13 +26,13 @@ $xdebug->check();
 unset($xdebug);
 
 if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '4.0', '>=')) {
-    echo 'HHVM 4.0 has dropped support for Composer, please use PHP instead. Aborting.'.PHP_EOL;
+    echo 'HHVM 4.0 has dropped support for Composer, please use PHP instead. Aborting.' . PHP_EOL;
     exit(1);
 }
 if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
     echo 'The iconv OR mbstring extension is required and both are missing.'
-        .PHP_EOL.'Install either of them or recompile php without --disable-iconv.'
-        .PHP_EOL.'Aborting.'.PHP_EOL;
+        . PHP_EOL . 'Install either of them or recompile php without --disable-iconv.'
+        . PHP_EOL . 'Aborting.' . PHP_EOL;
     exit(1);
 }
 
@@ -45,14 +45,14 @@ if (function_exists('ini_set')) {
     } else {
         $memoryInBytes = function ($value) {
             $unit = strtolower(substr($value, -1, 1));
-            $value = (int) $value;
-            switch($unit) {
+            $value = (int)$value;
+            switch ($unit) {
                 case 'g':
                     $value *= 1024;
-                    // no break (cumulative multiplier)
+                // no break (cumulative multiplier)
                 case 'm':
                     $value *= 1024;
-                    // no break (cumulative multiplier)
+                // no break (cumulative multiplier)
                 case 'k':
                     $value *= 1024;
             }

@@ -5,7 +5,6 @@ namespace Doctrine\DBAL\SQL;
 use Doctrine\DBAL\SQL\Parser\Exception;
 use Doctrine\DBAL\SQL\Parser\Exception\RegularExpressionError;
 use Doctrine\DBAL\SQL\Parser\Visitor;
-
 use function array_merge;
 use function assert;
 use function current;
@@ -17,7 +16,6 @@ use function preg_match;
 use function reset;
 use function sprintf;
 use function strlen;
-
 use const PREG_NO_ERROR;
 
 /**
@@ -34,15 +32,15 @@ final class Parser
 {
     private const SPECIAL_CHARS = ':\?\'"`\\[\\-\\/';
 
-    private const BACKTICK_IDENTIFIER  = '`[^`]*`';
-    private const BRACKET_IDENTIFIER   = '(?<!\b(?i:ARRAY))\[(?:[^\]])*\]';
-    private const MULTICHAR            = ':{2,}';
-    private const NAMED_PARAMETER      = ':[a-zA-Z0-9_]+';
+    private const BACKTICK_IDENTIFIER = '`[^`]*`';
+    private const BRACKET_IDENTIFIER = '(?<!\b(?i:ARRAY))\[(?:[^\]])*\]';
+    private const MULTICHAR = ':{2,}';
+    private const NAMED_PARAMETER = ':[a-zA-Z0-9_]+';
     private const POSITIONAL_PARAMETER = '(?<!\\?)\\?(?!\\?)';
-    private const ONE_LINE_COMMENT     = '--[^\r\n]*';
-    private const MULTI_LINE_COMMENT   = '/\*([^*]+|\*+[^/*])*\**\*/';
-    private const SPECIAL              = '[' . self::SPECIAL_CHARS . ']';
-    private const OTHER                = '[^' . self::SPECIAL_CHARS . ']+';
+    private const ONE_LINE_COMMENT = '--[^\r\n]*';
+    private const MULTI_LINE_COMMENT = '/\*([^*]+|\*+[^/*])*\**\*/';
+    private const SPECIAL = '[' . self::SPECIAL_CHARS . ']';
+    private const OTHER = '[^' . self::SPECIAL_CHARS . ']+';
 
     /** @var string */
     private $sqlPattern;
@@ -71,6 +69,16 @@ final class Parser
         ]);
 
         $this->sqlPattern = sprintf('(%s)', implode('|', $patterns));
+    }
+
+    private function getMySQLStringLiteralPattern(string $delimiter): string
+    {
+        return $delimiter . '((\\\\.)|(?![' . $delimiter . '\\\\]).)*' . $delimiter;
+    }
+
+    private function getAnsiSQLStringLiteralPattern(string $delimiter): string
+    {
+        return $delimiter . '[^' . $delimiter . ']*' . $delimiter;
     }
 
     /**
@@ -114,15 +122,5 @@ final class Parser
         }
 
         assert($offset === strlen($sql));
-    }
-
-    private function getMySQLStringLiteralPattern(string $delimiter): string
-    {
-        return $delimiter . '((\\\\.)|(?![' . $delimiter . '\\\\]).)*' . $delimiter;
-    }
-
-    private function getAnsiSQLStringLiteralPattern(string $delimiter): string
-    {
-        return $delimiter . '[^' . $delimiter . ']*' . $delimiter;
     }
 }

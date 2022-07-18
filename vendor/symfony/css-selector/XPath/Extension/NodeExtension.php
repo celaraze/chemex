@@ -56,7 +56,7 @@ class NodeExtension extends AbstractExtension
 
     public function hasFlag(int $flag): bool
     {
-        return (bool) ($this->flags & $flag);
+        return (bool)($this->flags & $flag);
     }
 
     /**
@@ -128,7 +128,7 @@ class NodeExtension extends AbstractExtension
             $safe = $safe && $this->isSafeName($node->getNamespace());
         }
 
-        $attribute = $safe ? '@'.$name : sprintf('attribute::*[name() = %s]', Translator::getXpathLiteral($name));
+        $attribute = $safe ? '@' . $name : sprintf('attribute::*[name() = %s]', Translator::getXpathLiteral($name));
         $value = $node->getValue();
         $xpath = $translator->nodeToXPath($node->getSelector());
 
@@ -139,11 +139,24 @@ class NodeExtension extends AbstractExtension
         return $translator->addAttributeMatching($xpath, $node->getOperator(), $attribute, $value);
     }
 
+    private function isSafeName(string $name): bool
+    {
+        return 0 < preg_match('~^[a-zA-Z_][a-zA-Z0-9_.-]*$~', $name);
+    }
+
     public function translateClass(Node\ClassNode $node, Translator $translator): XPathExpr
     {
         $xpath = $translator->nodeToXPath($node->getSelector());
 
         return $translator->addAttributeMatching($xpath, '~=', '@class', $node->getName());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName(): string
+    {
+        return 'node';
     }
 
     public function translateHash(Node\HashNode $node, Translator $translator): XPathExpr
@@ -180,18 +193,5 @@ class NodeExtension extends AbstractExtension
         }
 
         return $xpath;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getName(): string
-    {
-        return 'node';
-    }
-
-    private function isSafeName(string $name): bool
-    {
-        return 0 < preg_match('~^[a-zA-Z_][a-zA-Z0-9_.-]*$~', $name);
     }
 }

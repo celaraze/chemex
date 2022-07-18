@@ -21,7 +21,7 @@ class JobRetryRequested
     /**
      * Create a new event instance.
      *
-     * @param  \stdClass  $job
+     * @param \stdClass $job
      * @return void
      */
     public function __construct($job)

@@ -106,8 +106,9 @@ abstract class File extends FileGeneric implements StreamBufferable, StreamLocka
         string $streamName,
         string $mode,
         string $context = null,
-        bool $wait = false
-    ) {
+        bool   $wait = false
+    )
+    {
         $this->setMode($mode);
 
         switch ($streamName) {
@@ -129,9 +130,9 @@ abstract class File extends FileGeneric implements StreamBufferable, StreamLocka
             default:
                 if (true === \ctype_digit($streamName)) {
                     if (\PHP_VERSION_ID >= 50306) {
-                        $streamName = 'php://fd/'.$streamName;
+                        $streamName = 'php://fd/' . $streamName;
                     } else {
-                        throw new FileException('You need PHP5.3.6 to use a file descriptor '.'other than 0, 1 or 2 (tried %d with PHP%s).', 0, [$streamName, \PHP_VERSION]);
+                        throw new FileException('You need PHP5.3.6 to use a file descriptor ' . 'other than 0, 1 or 2 (tried %d with PHP%s).', 0, [$streamName, \PHP_VERSION]);
                     }
                 }
         }
@@ -142,43 +143,15 @@ abstract class File extends FileGeneric implements StreamBufferable, StreamLocka
     }
 
     /**
-     * Open the stream and return the associated resource.
+     * Create a file.
      */
-    protected function &_open(string $streamName, StreamContext $context = null)
+    public static function create(string $name)
     {
-        if (\substr($streamName, 0, 4) === 'file' &&
-            false === \is_dir(\dirname($streamName))) {
-            throw new FileException('Directory %s does not exist. Could not open file %s.', 1, [\dirname($streamName), \basename($streamName)]);
+        if (\file_exists($name)) {
+            return true;
         }
 
-        if (null === $context) {
-            if (false === $out = @\fopen($streamName, $this->getMode(), true)) {
-                throw new FileException('Failed to open stream %s.', 2, $streamName);
-            }
-
-            return $out;
-        }
-
-        $out = @\fopen(
-            $streamName,
-            $this->getMode(),
-            true,
-            $context->getContext()
-        );
-
-        if (false === $out) {
-            throw new FileException('Failed to open stream %s.', 3, $streamName);
-        }
-
-        return $out;
-    }
-
-    /**
-     * Close the current stream.
-     */
-    protected function _close(): bool
-    {
-        return @\fclose($this->getStream());
+        return \touch($name);
     }
 
     /**
@@ -265,14 +238,42 @@ abstract class File extends FileGeneric implements StreamBufferable, StreamLocka
     }
 
     /**
-     * Create a file.
+     * Open the stream and return the associated resource.
      */
-    public static function create(string $name)
+    protected function &_open(string $streamName, StreamContext $context = null)
     {
-        if (\file_exists($name)) {
-            return true;
+        if (\substr($streamName, 0, 4) === 'file' &&
+            false === \is_dir(\dirname($streamName))) {
+            throw new FileException('Directory %s does not exist. Could not open file %s.', 1, [\dirname($streamName), \basename($streamName)]);
         }
 
-        return \touch($name);
+        if (null === $context) {
+            if (false === $out = @\fopen($streamName, $this->getMode(), true)) {
+                throw new FileException('Failed to open stream %s.', 2, $streamName);
+            }
+
+            return $out;
+        }
+
+        $out = @\fopen(
+            $streamName,
+            $this->getMode(),
+            true,
+            $context->getContext()
+        );
+
+        if (false === $out) {
+            throw new FileException('Failed to open stream %s.', 3, $streamName);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Close the current stream.
+     */
+    protected function _close(): bool
+    {
+        return @\fclose($this->getStream());
     }
 }

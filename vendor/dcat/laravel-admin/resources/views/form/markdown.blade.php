@@ -1,5 +1,7 @@
 <style>
-    .editormd-fullscreen {z-index: 99999999;}
+    .editormd-fullscreen {
+        z-index: 99999999;
+    }
 </style>
 
 <div class="{{$viewClass['form-group']}}">

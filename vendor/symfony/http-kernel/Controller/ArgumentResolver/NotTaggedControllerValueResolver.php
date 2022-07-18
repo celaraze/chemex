@@ -39,7 +39,7 @@ final class NotTaggedControllerValueResolver implements ArgumentValueResolverInt
         $controller = $request->attributes->get('_controller');
 
         if (\is_array($controller) && \is_callable($controller, true) && \is_string($controller[0])) {
-            $controller = $controller[0].'::'.$controller[1];
+            $controller = $controller[0] . '::' . $controller[1];
         } elseif (!\is_string($controller) || '' === $controller) {
             return false;
         }
@@ -49,7 +49,7 @@ final class NotTaggedControllerValueResolver implements ArgumentValueResolverInt
         }
 
         if (!$this->container->has($controller) && false !== $i = strrpos($controller, ':')) {
-            $controller = substr($controller, 0, $i).strtolower(substr($controller, $i));
+            $controller = substr($controller, 0, $i) . strtolower(substr($controller, $i));
         }
 
         return false === $this->container->has($controller);
@@ -61,7 +61,7 @@ final class NotTaggedControllerValueResolver implements ArgumentValueResolverInt
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         if (\is_array($controller = $request->attributes->get('_controller'))) {
-            $controller = $controller[0].'::'.$controller[1];
+            $controller = $controller[0] . '::' . $controller[1];
         }
 
         if ('\\' === $controller[0]) {
@@ -70,7 +70,7 @@ final class NotTaggedControllerValueResolver implements ArgumentValueResolverInt
 
         if (!$this->container->has($controller)) {
             $i = strrpos($controller, ':');
-            $controller = substr($controller, 0, $i).strtolower(substr($controller, $i));
+            $controller = substr($controller, 0, $i) . strtolower(substr($controller, $i));
         }
 
         $what = sprintf('argument $%s of "%s()"', $argument->getName(), $controller);

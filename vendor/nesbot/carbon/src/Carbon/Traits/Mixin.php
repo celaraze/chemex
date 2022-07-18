@@ -35,6 +35,11 @@ trait Mixin
     /**
      * Mix another object into the class.
      *
+     * @param object|string $mixin
+     *
+     * @return void
+     * @throws ReflectionException
+     *
      * @example
      * ```
      * Carbon::mixin(new class {
@@ -57,39 +62,12 @@ trait Mixin
      * echo "$previousBlackMoon\n";
      * ```
      *
-     * @param object|string $mixin
-     *
-     * @throws ReflectionException
-     *
-     * @return void
      */
     public static function mixin($mixin)
     {
         \is_string($mixin) && trait_exists($mixin)
             ? self::loadMixinTrait($mixin)
             : self::loadMixinClass($mixin);
-    }
-
-    /**
-     * @param object|string $mixin
-     *
-     * @throws ReflectionException
-     */
-    private static function loadMixinClass($mixin)
-    {
-        $methods = (new ReflectionClass($mixin))->getMethods(
-            ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED
-        );
-
-        foreach ($methods as $method) {
-            if ($method->isConstructor() || $method->isDestructor()) {
-                continue;
-            }
-
-            $method->setAccessible(true);
-
-            static::macro($method->name, $method->invoke($mixin));
-        }
     }
 
     /**
@@ -124,7 +102,7 @@ trait Mixin
 
     private static function getAnonymousClassCodeForTrait(string $trait)
     {
-        return 'return new class() extends '.static::class.' {use '.$trait.';};';
+        return 'return new class() extends ' . static::class . ' {use ' . $trait . ';};';
     }
 
     private static function getMixableMethods(self $context): Generator
@@ -139,14 +117,36 @@ trait Mixin
     }
 
     /**
+     * @param object|string $mixin
+     *
+     * @throws ReflectionException
+     */
+    private static function loadMixinClass($mixin)
+    {
+        $methods = (new ReflectionClass($mixin))->getMethods(
+            ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PROTECTED
+        );
+
+        foreach ($methods as $method) {
+            if ($method->isConstructor() || $method->isDestructor()) {
+                continue;
+            }
+
+            $method->setAccessible(true);
+
+            static::macro($method->name, $method->invoke($mixin));
+        }
+    }
+
+    /**
      * Stack a Carbon context from inside calls of self::this() and execute a given action.
      *
      * @param static|null $context
-     * @param callable    $callable
-     *
-     * @throws Throwable
+     * @param callable $callable
      *
      * @return mixed
+     * @throws Throwable
+     *
      */
     protected static function bindMacroContext($context, callable $callable)
     {

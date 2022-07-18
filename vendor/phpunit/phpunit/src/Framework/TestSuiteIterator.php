@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
+use RecursiveIterator;
 use function assert;
 use function count;
-use RecursiveIterator;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -38,19 +39,9 @@ final class TestSuiteIterator implements RecursiveIterator
         $this->position = 0;
     }
 
-    public function valid(): bool
-    {
-        return $this->position < count($this->tests);
-    }
-
     public function key(): int
     {
         return $this->position;
-    }
-
-    public function current(): Test
-    {
-        return $this->tests[$this->position];
     }
 
     public function next(): void
@@ -79,5 +70,15 @@ final class TestSuiteIterator implements RecursiveIterator
     public function hasChildren(): bool
     {
         return $this->valid() && $this->current() instanceof TestSuite;
+    }
+
+    public function valid(): bool
+    {
+        return $this->position < count($this->tests);
+    }
+
+    public function current(): Test
+    {
+        return $this->tests[$this->position];
     }
 }

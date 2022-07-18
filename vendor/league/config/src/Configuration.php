@@ -55,7 +55,7 @@ final class Configuration implements ConfigurationBuilderInterface, Configuratio
     public function __construct(array $baseSchemas = [])
     {
         $this->configSchemas = $baseSchemas;
-        $this->userConfig    = new Data();
+        $this->userConfig = new Data();
 
         $this->reader = new ReadOnlyConfiguration($this);
     }
@@ -70,6 +70,15 @@ final class Configuration implements ConfigurationBuilderInterface, Configuratio
         $this->invalidate();
 
         $this->configSchemas[$key] = $schema;
+    }
+
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function invalidate(): void
+    {
+        $this->cache = [];
+        $this->finalConfig = null;
     }
 
     /**
@@ -96,7 +105,7 @@ final class Configuration implements ConfigurationBuilderInterface, Configuratio
         try {
             $this->userConfig->set($key, $value);
         } catch (DataException $ex) {
-            throw new UnknownOptionException($ex->getMessage(), $key, (int) $ex->getCode(), $ex);
+            throw new UnknownOptionException($ex->getMessage(), $key, (int)$ex->getCode(), $ex);
         }
     }
 
@@ -115,9 +124,65 @@ final class Configuration implements ConfigurationBuilderInterface, Configuratio
 
         try {
             return $this->cache[$key] = $this->finalConfig->get($key);
-        } catch (InvalidPathException | MissingPathException $ex) {
-            throw new UnknownOptionException($ex->getMessage(), $key, (int) $ex->getCode(), $ex);
+        } catch (InvalidPathException|MissingPathException $ex) {
+            throw new UnknownOptionException($ex->getMessage(), $key, (int)$ex->getCode(), $ex);
         }
+    }
+
+    /**
+     * Applies the schema against the configuration to return the final configuration
+     *
+     * @throws ValidationException
+     *
+     * @psalm-allow-private-mutation
+     */
+    private function build(): Data
+    {
+        try {
+            $schema = Expect::structure($this->configSchemas);
+            $processor = new Processor();
+            $processed = $processor->process($schema, $this->userConfig->export());
+
+            $this->raiseAnyDeprecationNotices($processor->getWarnings());
+
+            return $this->finalConfig = new Data(self::convertStdClassesToArrays($processed));
+        } catch (NetteValidationException $ex) {
+            throw new ValidationException($ex);
+        }
+    }
+
+    /**
+     * @param string[] $warnings
+     */
+    private function raiseAnyDeprecationNotices(array $warnings): void
+    {
+        foreach ($warnings as $warning) {
+            @\trigger_error($warning, \E_USER_DEPRECATED);
+        }
+    }
+
+    /**
+     * Recursively converts stdClass instances to arrays
+     *
+     * @param mixed $data
+     *
+     * @return mixed
+     *
+     * @psalm-pure
+     */
+    private static function convertStdClassesToArrays($data)
+    {
+        if ($data instanceof \stdClass) {
+            $data = (array)$data;
+        }
+
+        if (\is_array($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k] = self::convertStdClassesToArrays($v);
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -146,70 +211,5 @@ final class Configuration implements ConfigurationBuilderInterface, Configuratio
     public function reader(): ConfigurationInterface
     {
         return $this->reader;
-    }
-
-    /**
-     * @psalm-external-mutation-free
-     */
-    private function invalidate(): void
-    {
-        $this->cache       = [];
-        $this->finalConfig = null;
-    }
-
-    /**
-     * Applies the schema against the configuration to return the final configuration
-     *
-     * @throws ValidationException
-     *
-     * @psalm-allow-private-mutation
-     */
-    private function build(): Data
-    {
-        try {
-            $schema    = Expect::structure($this->configSchemas);
-            $processor = new Processor();
-            $processed = $processor->process($schema, $this->userConfig->export());
-
-            $this->raiseAnyDeprecationNotices($processor->getWarnings());
-
-            return $this->finalConfig = new Data(self::convertStdClassesToArrays($processed));
-        } catch (NetteValidationException $ex) {
-            throw new ValidationException($ex);
-        }
-    }
-
-    /**
-     * Recursively converts stdClass instances to arrays
-     *
-     * @param mixed $data
-     *
-     * @return mixed
-     *
-     * @psalm-pure
-     */
-    private static function convertStdClassesToArrays($data)
-    {
-        if ($data instanceof \stdClass) {
-            $data = (array) $data;
-        }
-
-        if (\is_array($data)) {
-            foreach ($data as $k => $v) {
-                $data[$k] = self::convertStdClassesToArrays($v);
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param string[] $warnings
-     */
-    private function raiseAnyDeprecationNotices(array $warnings): void
-    {
-        foreach ($warnings as $warning) {
-            @\trigger_error($warning, \E_USER_DEPRECATED);
-        }
     }
 }

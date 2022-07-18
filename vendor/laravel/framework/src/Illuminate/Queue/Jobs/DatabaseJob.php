@@ -25,11 +25,11 @@ class DatabaseJob extends Job implements JobContract
     /**
      * Create a new job instance.
      *
-     * @param  \Illuminate\Container\Container  $container
-     * @param  \Illuminate\Queue\DatabaseQueue  $database
-     * @param  \stdClass  $job
-     * @param  string  $connectionName
-     * @param  string  $queue
+     * @param \Illuminate\Container\Container $container
+     * @param \Illuminate\Queue\DatabaseQueue $database
+     * @param \stdClass $job
+     * @param string $connectionName
+     * @param string $queue
      * @return void
      */
     public function __construct(Container $container, DatabaseQueue $database, $job, $connectionName, $queue)
@@ -44,7 +44,7 @@ class DatabaseJob extends Job implements JobContract
     /**
      * Release the job back into the queue after (n) seconds.
      *
-     * @param  int  $delay
+     * @param int $delay
      * @return void
      */
     public function release($delay = 0)
@@ -73,7 +73,7 @@ class DatabaseJob extends Job implements JobContract
      */
     public function attempts()
     {
-        return (int) $this->job->attempts;
+        return (int)$this->job->attempts;
     }
 
     /**

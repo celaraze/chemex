@@ -3,38 +3,34 @@
 namespace Enlightn\Enlightn\Analyzers\Performance;
 
 use Enlightn\Enlightn\Composer;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 
 class DevDependencyAnalyzer extends PerformanceAnalyzer
 {
-    /**
-     * The title describing the analyzer.
-     *
-     * @var string|null
-     */
-    public $title = 'Dev dependencies are not installed in production.';
-
-    /**
-     * The severity of the analyzer.
-     *
-     * @var string|null
-     */
-    public $severity = self::SEVERITY_MAJOR;
-
-    /**
-     * The time to fix in minutes.
-     *
-     * @var int|null
-     */
-    public $timeToFix = 1;
-
     /**
      * Determine whether the analyzer should be run in CI mode.
      *
      * @var bool
      */
     public static $runInCI = false;
+    /**
+     * The title describing the analyzer.
+     *
+     * @var string|null
+     */
+    public $title = 'Dev dependencies are not installed in production.';
+    /**
+     * The severity of the analyzer.
+     *
+     * @var string|null
+     */
+    public $severity = self::SEVERITY_MAJOR;
+    /**
+     * The time to fix in minutes.
+     *
+     * @var int|null
+     */
+    public $timeToFix = 1;
 
     /**
      * Get the error message describing the analyzer insights.
@@ -44,8 +40,8 @@ class DevDependencyAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return "Your application's dev dependencies are installed while your application is in a non-local environment. "
-                ."This may slow down your application as dev dependencies such as Ignition are known to have memory "
-                ."leaks and are automatically discovered if you have package discovery enabled.";
+            . "This may slow down your application as dev dependencies such as Ignition are known to have memory "
+            . "leaks and are automatically discovered if you have package discovery enabled.";
     }
 
     /**

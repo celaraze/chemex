@@ -24,14 +24,14 @@ class Param extends NodeAbstract
     /**
      * Constructs a parameter node.
      *
-     * @param Expr\Variable|Expr\Error                $var        Parameter variable
-     * @param null|Expr                               $default    Default value
-     * @param null|string|Identifier|Name|ComplexType $type       Type declaration
-     * @param bool                                    $byRef      Whether is passed by reference
-     * @param bool                                    $variadic   Whether this is a variadic argument
-     * @param array                                   $attributes Additional attributes
-     * @param int                                     $flags      Optional visibility flags
-     * @param AttributeGroup[]                        $attrGroups PHP attribute groups
+     * @param Expr\Variable|Expr\Error $var Parameter variable
+     * @param null|Expr $default Default value
+     * @param null|string|Identifier|Name|ComplexType $type Type declaration
+     * @param bool $byRef Whether is passed by reference
+     * @param bool $variadic Whether this is a variadic argument
+     * @param array $attributes Additional attributes
+     * @param int $flags Optional visibility flags
+     * @param AttributeGroup[] $attrGroups PHP attribute groups
      */
     public function __construct(
         $var, Expr $default = null, $type = null,
@@ -39,7 +39,8 @@ class Param extends NodeAbstract
         array $attributes = [],
         int $flags = 0,
         array $attrGroups = []
-    ) {
+    )
+    {
         $this->attributes = $attributes;
         $this->type = \is_string($type) ? new Identifier($type) : $type;
         $this->byRef = $byRef;
@@ -50,11 +51,13 @@ class Param extends NodeAbstract
         $this->attrGroups = $attrGroups;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['attrGroups', 'flags', 'type', 'byRef', 'variadic', 'var', 'default'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Param';
     }
 }

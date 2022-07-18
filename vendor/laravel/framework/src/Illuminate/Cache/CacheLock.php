@@ -14,10 +14,10 @@ class CacheLock extends Lock
     /**
      * Create a new lock instance.
      *
-     * @param  \Illuminate\Contracts\Cache\Store  $store
-     * @param  string  $name
-     * @param  int  $seconds
-     * @param  string|null  $owner
+     * @param \Illuminate\Contracts\Cache\Store $store
+     * @param string $name
+     * @param int $seconds
+     * @param string|null $owner
      * @return void
      */
     public function __construct($store, $name, $seconds, $owner = null)
@@ -40,13 +40,13 @@ class CacheLock extends Lock
             );
         }
 
-        if (! is_null($this->store->get($this->name))) {
+        if (!is_null($this->store->get($this->name))) {
             return false;
         }
 
         return ($this->seconds > 0)
-                ? $this->store->put($this->name, $this->owner, $this->seconds)
-                : $this->store->forever($this->name, $this->owner);
+            ? $this->store->put($this->name, $this->owner, $this->seconds)
+            : $this->store->forever($this->name, $this->owner);
     }
 
     /**

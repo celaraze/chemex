@@ -8,7 +8,9 @@
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-    <title>{{ Dcat\Admin\Admin::title() }} @if(! empty($header)) | {{ $header }}@endif</title>
+    <title>{{ Dcat\Admin\Admin::title() }} @if(! empty($header))
+            | {{ $header }}
+        @endif</title>
 
     @if(! config('admin.disable_no_referrer_meta'))
         <meta name="referrer" content="no-referrer"/>

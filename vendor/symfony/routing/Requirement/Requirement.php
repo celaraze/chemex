@@ -14,6 +14,7 @@ namespace Symfony\Component\Routing\Requirement;
 /*
  * A collection of universal regular-expression constants to use as route parameter requirements.
  */
+
 enum Requirement
 {
     public const ASCII_SLUG = '[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*'; // symfony/string AsciiSlugger default implementation

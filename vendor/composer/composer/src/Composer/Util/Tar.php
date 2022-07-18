@@ -36,9 +36,9 @@ class Tar
     /**
      * @param \PharData $phar
      *
+     * @return string
      * @throws \RuntimeException
      *
-     * @return string
      */
     private static function extractComposerJsonFromFolder(\PharData $phar): string
     {
@@ -53,12 +53,12 @@ class Tar
             if ($folderFile->isDir()) {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: ' . implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
 
-        $composerJsonPath = key($topLevelPaths).'/composer.json';
+        $composerJsonPath = key($topLevelPaths) . '/composer.json';
         if ($topLevelPaths && isset($phar[$composerJsonPath])) {
             return $phar[$composerJsonPath]->getContent();
         }

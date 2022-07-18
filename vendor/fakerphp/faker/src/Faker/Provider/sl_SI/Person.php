@@ -119,12 +119,9 @@ class Person extends \Faker\Provider\Person
         'dr.', 'mag.', 'inž.', 'univ. dipl.', 'dipl.', 'univ. dipl. inž.', 'dipl. inž.', 'prof.', 'akad.', 'dr. med.', 'spec.',
     ];
 
-    /**
-     * replaced by specific unisex slovenian title
-     */
-    public function title($gender = null)
+    public static function lastNameMale()
     {
-        return static::randomElement(static::$title);
+        return static::lastName();
     }
 
     /**
@@ -137,13 +134,16 @@ class Person extends \Faker\Provider\Person
         return static::randomElement(static::$lastName);
     }
 
-    public static function lastNameMale()
+    public static function lastNameFemale()
     {
         return static::lastName();
     }
 
-    public static function lastNameFemale()
+    /**
+     * replaced by specific unisex slovenian title
+     */
+    public function title($gender = null)
     {
-        return static::lastName();
+        return static::randomElement(static::$title);
     }
 }

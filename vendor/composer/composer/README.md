@@ -17,15 +17,18 @@ For usage, see [the documentation](https://getcomposer.org/doc/).
 Packages
 --------
 
-Find public packages on [Packagist.org](https://packagist.org). For private package hosting take a look at [Private Packagist](https://packagist.com).
+Find public packages on [Packagist.org](https://packagist.org). For private package hosting take a look
+at [Private Packagist](https://packagist.com).
 
 Community
 ---------
 
-Follow [@packagist](https://twitter.com/packagist) or [@seldaek](https://twitter.com/seldaek) on Twitter for announcements, or check the [#composerphp](https://twitter.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
+Follow [@packagist](https://twitter.com/packagist) or [@seldaek](https://twitter.com/seldaek) on Twitter for
+announcements, or check the [#composerphp](https://twitter.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
 
 For support, Stack Overflow offers a good collection of
-[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php), or you can use the [GitHub discussions](https://github.com/composer/composer/discussions).
+[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php), or you can use
+the [GitHub discussions](https://github.com/composer/composer/discussions).
 
 Please note that this project is released with a
 [Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/).
@@ -47,8 +50,10 @@ should be automatically selected.
 Authors
 -------
 
-- Nils Adermann  | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman) | <naderman@naderman.de> | [naderman.de](https://naderman.de)
-- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://seld.be)
+- Nils Adermann | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman)
+  | <naderman@naderman.de> | [naderman.de](https://naderman.de)
+- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be>
+  | [seld.be](https://seld.be)
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 

@@ -44,6 +44,17 @@ class ComplexHeader extends Widget
         $this->addDefaultAttributes();
     }
 
+    protected function addDefaultAttributes()
+    {
+        $count = $this->columnNames->count();
+
+        if ($count == 1) {
+            $this->htmlAttributes['rowspan'] = 2;
+        } else {
+            $this->htmlAttributes['colspan'] = $count;
+        }
+    }
+
     /**
      * @return Collection
      */
@@ -85,20 +96,9 @@ class ComplexHeader extends Widget
     }
 
     /**
-     * @param  string  $html
-     * @return $this
-     */
-    public function append($html)
-    {
-        $this->html[] = $html;
-
-        return $this;
-    }
-
-    /**
-     * @param  string|\Closure  $message
-     * @param  null|string  $style  'green', 'blue', 'red', 'purple'
-     * @param  null|string  $placement  'bottom', 'left', 'right', 'top'
+     * @param string|\Closure $message
+     * @param null|string $style 'green', 'blue', 'red', 'purple'
+     * @param null|string $placement 'bottom', 'left', 'right', 'top'
      * @return $this
      */
     public function help($message, ?string $style = null, ?string $placement = null)
@@ -106,15 +106,15 @@ class ComplexHeader extends Widget
         return $this->append((new Help($message, $style, $placement))->render());
     }
 
-    protected function addDefaultAttributes()
+    /**
+     * @param string $html
+     * @return $this
+     */
+    public function append($html)
     {
-        $count = $this->columnNames->count();
+        $this->html[] = $html;
 
-        if ($count == 1) {
-            $this->htmlAttributes['rowspan'] = 2;
-        } else {
-            $this->htmlAttributes['colspan'] = $count;
-        }
+        return $this;
     }
 
     public function render()

@@ -15,7 +15,6 @@ namespace phpDocumentor\Reflection\DocBlock;
 
 use phpDocumentor\Reflection\DocBlock\Tags\Formatter;
 use phpDocumentor\Reflection\DocBlock\Tags\Formatter\PassthroughFormatter;
-
 use function vsprintf;
 
 /**
@@ -66,7 +65,7 @@ class Description
     public function __construct(string $bodyTemplate, array $tags = [])
     {
         $this->bodyTemplate = $bodyTemplate;
-        $this->tags         = $tags;
+        $this->tags = $tags;
     }
 
     /**
@@ -88,6 +87,14 @@ class Description
     }
 
     /**
+     * Returns a plain string representation of this description.
+     */
+    public function __toString(): string
+    {
+        return $this->render();
+    }
+
+    /**
      * Renders this description as a string where the provided formatter will format the tags in the expected string
      * format.
      */
@@ -103,13 +110,5 @@ class Description
         }
 
         return vsprintf($this->bodyTemplate, $tags);
-    }
-
-    /**
-     * Returns a plain string representation of this description.
-     */
-    public function __toString(): string
-    {
-        return $this->render();
     }
 }

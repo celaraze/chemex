@@ -45,6 +45,32 @@ class GlobalVariableEnumerator extends Enumerator
     }
 
     /**
+     * Prepare formatted global variable array.
+     *
+     * @param array $globals
+     *
+     * @return array
+     */
+    protected function prepareGlobals(array $globals): array
+    {
+        // My kingdom for a generator.
+        $ret = [];
+
+        foreach ($globals as $name => $value) {
+            if ($this->showItem($name)) {
+                $fname = '$' . $name;
+                $ret[$fname] = [
+                    'name' => $fname,
+                    'style' => self::IS_GLOBAL,
+                    'value' => $this->presentRef($value),
+                ];
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
      * Get defined global variables.
      *
      * @return array
@@ -59,32 +85,6 @@ class GlobalVariableEnumerator extends Enumerator
         $ret = [];
         foreach ($names as $name) {
             $ret[$name] = $GLOBALS[$name];
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Prepare formatted global variable array.
-     *
-     * @param array $globals
-     *
-     * @return array
-     */
-    protected function prepareGlobals(array $globals): array
-    {
-        // My kingdom for a generator.
-        $ret = [];
-
-        foreach ($globals as $name => $value) {
-            if ($this->showItem($name)) {
-                $fname = '$'.$name;
-                $ret[$fname] = [
-                    'name'  => $fname,
-                    'style' => self::IS_GLOBAL,
-                    'value' => $this->presentRef($value),
-                ];
-            }
         }
 
         return $ret;

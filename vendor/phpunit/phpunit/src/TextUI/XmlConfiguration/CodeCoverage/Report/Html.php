@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report;
 
 use PHPUnit\TextUI\XmlConfiguration\Directory;
@@ -34,8 +35,8 @@ final class Html
 
     public function __construct(Directory $target, int $lowUpperBound, int $highLowerBound)
     {
-        $this->target         = $target;
-        $this->lowUpperBound  = $lowUpperBound;
+        $this->target = $target;
+        $this->lowUpperBound = $lowUpperBound;
         $this->highLowerBound = $highLowerBound;
     }
 

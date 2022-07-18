@@ -1,23 +1,24 @@
 <?php
+
 namespace Egulias\EmailValidator\Parser;
 
 use Egulias\EmailValidator\EmailLexer;
 use Egulias\EmailValidator\Parser\Parser;
-use Egulias\EmailValidator\Result\ValidEmail;
 use Egulias\EmailValidator\Result\InvalidEmail;
-use Egulias\EmailValidator\Warning\CFWSWithFWS;
-use Egulias\EmailValidator\Warning\QuotedString;
 use Egulias\EmailValidator\Result\Reason\ExpectingATEXT;
 use Egulias\EmailValidator\Result\Reason\UnclosedQuotedString;
 use Egulias\EmailValidator\Result\Result;
+use Egulias\EmailValidator\Result\ValidEmail;
+use Egulias\EmailValidator\Warning\CFWSWithFWS;
+use Egulias\EmailValidator\Warning\QuotedString;
 
 class DoubleQuote extends PartParser
 {
-    public function parse() : Result
+    public function parse(): Result
     {
 
         $validQuotedString = $this->checkDQUOTE();
-        if($validQuotedString->isInvalid()) return $validQuotedString;
+        if ($validQuotedString->isInvalid()) return $validQuotedString;
 
         $special = [
             EmailLexer::S_CR => true,
@@ -31,7 +32,7 @@ class DoubleQuote extends PartParser
             EmailLexer::S_CR => true,
             EmailLexer::S_LF => true
         ];
-        
+
         $setSpecialsWarning = true;
 
         $this->lexer->moveNext();
@@ -56,7 +57,7 @@ class DoubleQuote extends PartParser
 
         if ($prev['type'] === EmailLexer::S_BACKSLASH) {
             $validQuotedString = $this->checkDQUOTE();
-            if($validQuotedString->isInvalid()) return $validQuotedString;
+            if ($validQuotedString->isInvalid()) return $validQuotedString;
         }
 
         if (!$this->lexer->isNextToken(EmailLexer::S_AT) && $prev['type'] !== EmailLexer::S_BACKSLASH) {
@@ -66,7 +67,7 @@ class DoubleQuote extends PartParser
         return new ValidEmail();
     }
 
-    protected function checkDQUOTE() : Result
+    protected function checkDQUOTE(): Result
     {
         $previous = $this->lexer->getPrevious();
 

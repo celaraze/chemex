@@ -26,9 +26,9 @@ class SchemaConfig
     protected $defaultTableOptions = [];
 
     /**
+     * @return bool
      * @deprecated
      *
-     * @return bool
      */
     public function hasExplicitForeignKeyIndexes()
     {
@@ -42,11 +42,11 @@ class SchemaConfig
     }
 
     /**
-     * @deprecated
-     *
      * @param bool $flag
      *
      * @return void
+     * @deprecated
+     *
      */
     public function setExplicitForeignKeyIndexes($flag)
     {
@@ -56,7 +56,15 @@ class SchemaConfig
             'SchemaConfig::setExplicitForeignKeyIndexes() is deprecated.'
         );
 
-        $this->hasExplicitForeignKeyIndexes = (bool) $flag;
+        $this->hasExplicitForeignKeyIndexes = (bool)$flag;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxIdentifierLength()
+    {
+        return $this->maxIdentifierLength;
     }
 
     /**
@@ -66,15 +74,7 @@ class SchemaConfig
      */
     public function setMaxIdentifierLength($length)
     {
-        $this->maxIdentifierLength = (int) $length;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMaxIdentifierLength()
-    {
-        return $this->maxIdentifierLength;
+        $this->maxIdentifierLength = (int)$length;
     }
 
     /**

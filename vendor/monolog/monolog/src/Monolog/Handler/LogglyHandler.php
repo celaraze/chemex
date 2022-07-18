@@ -11,11 +11,11 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
+use CurlHandle;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LogglyFormatter;
+use Monolog\Logger;
 use function array_key_exists;
-use CurlHandle;
 
 /**
  * Sends errors to Loggly.
@@ -60,6 +60,59 @@ class LogglyHandler extends AbstractProcessingHandler
     }
 
     /**
+     * @param string[]|string $tag
+     */
+    public function setTag($tag): self
+    {
+        $tag = !empty($tag) ? $tag : [];
+        $this->tag = is_array($tag) ? $tag : [$tag];
+
+        return $this;
+    }
+
+    /**
+     * @param string[]|string $tag
+     */
+    public function addTag($tag): self
+    {
+        if (!empty($tag)) {
+            $tag = is_array($tag) ? $tag : [$tag];
+            $this->tag = array_unique(array_merge($this->tag, $tag));
+        }
+
+        return $this;
+    }
+
+    public function handleBatch(array $records): void
+    {
+        $level = $this->level;
+
+        $records = array_filter($records, function ($record) use ($level) {
+            return ($record['level'] >= $level);
+        });
+
+        if ($records) {
+            $this->send($this->getFormatter()->formatBatch($records), static::ENDPOINT_BATCH);
+        }
+    }
+
+    protected function send(string $data, string $endpoint): void
+    {
+        $ch = $this->getCurlHandler($endpoint);
+
+        $headers = ['Content-Type: application/json'];
+
+        if (!empty($this->tag)) {
+            $headers[] = 'X-LOGGLY-TAG: ' . implode(',', $this->tag);
+        }
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        Curl\Util::execute($ch, 5, false);
+    }
+
+    /**
      * Loads and returns the shared curl handler for the given endpoint.
      *
      * @param string $endpoint
@@ -95,62 +148,9 @@ class LogglyHandler extends AbstractProcessingHandler
         return $ch;
     }
 
-    /**
-     * @param string[]|string $tag
-     */
-    public function setTag($tag): self
-    {
-        $tag = !empty($tag) ? $tag : [];
-        $this->tag = is_array($tag) ? $tag : [$tag];
-
-        return $this;
-    }
-
-    /**
-     * @param string[]|string $tag
-     */
-    public function addTag($tag): self
-    {
-        if (!empty($tag)) {
-            $tag = is_array($tag) ? $tag : [$tag];
-            $this->tag = array_unique(array_merge($this->tag, $tag));
-        }
-
-        return $this;
-    }
-
     protected function write(array $record): void
     {
         $this->send($record["formatted"], static::ENDPOINT_SINGLE);
-    }
-
-    public function handleBatch(array $records): void
-    {
-        $level = $this->level;
-
-        $records = array_filter($records, function ($record) use ($level) {
-            return ($record['level'] >= $level);
-        });
-
-        if ($records) {
-            $this->send($this->getFormatter()->formatBatch($records), static::ENDPOINT_BATCH);
-        }
-    }
-
-    protected function send(string $data, string $endpoint): void
-    {
-        $ch = $this->getCurlHandler($endpoint);
-
-        $headers = ['Content-Type: application/json'];
-
-        if (!empty($this->tag)) {
-            $headers[] = 'X-LOGGLY-TAG: '.implode(',', $this->tag);
-        }
-
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        Curl\Util::execute($ch, 5, false);
     }
 
     protected function getDefaultFormatter(): FormatterInterface

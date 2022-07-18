@@ -20,6 +20,37 @@ class SheetTest extends TestCase
         $this->validateSheetArray($sheet->toArray());
     }
 
+    protected function makeSheet()
+    {
+        $sheet = $this->factory()->first();
+
+        $this->assertInstanceOf(Sheet::class, $sheet);
+
+        return $sheet;
+    }
+
+    protected function factory()
+    {
+        $file = __DIR__ . '/../resources/test-sheets.xlsx';
+
+        return Excel::xlsx($file);
+    }
+
+    protected function validateSheetArray(array $sheet)
+    {
+        $this->assertIsArray($sheet);
+        $this->assertEquals(count($sheet), 30);
+
+        $sheet = $this->convertDatetimeObjectToString($sheet);
+
+        $users = include __DIR__ . '/../resources/users.php';
+
+        $this->assertEquals(
+            array_values($sheet),
+            array_slice($users, 0, 30)
+        );
+    }
+
     /**
      * @group importer
      */
@@ -49,7 +80,7 @@ class SheetTest extends TestCase
             $lastLine = $lineNumber;
         });
 
-        $users = include __DIR__.'/../resources/users.php';
+        $users = include __DIR__ . '/../resources/users.php';
 
         $this->assertEquals(array_keys(current($users)), $headers);
 
@@ -73,7 +104,7 @@ class SheetTest extends TestCase
             $chunks[] = array_values($collection->toArray());
         });
 
-        $users = include __DIR__.'/../resources/users.php';
+        $users = include __DIR__ . '/../resources/users.php';
         $users = (new SheetCollection(array_slice($users, 0, 30)))
             ->chunk($chunkSize)
             ->map(function ($collection) {
@@ -108,36 +139,5 @@ class SheetTest extends TestCase
 
         // getSheet
         $this->assertInstanceOf(SheetInterface::class, $sheet->getSheet());
-    }
-
-    protected function validateSheetArray(array $sheet)
-    {
-        $this->assertIsArray($sheet);
-        $this->assertEquals(count($sheet), 30);
-
-        $sheet = $this->convertDatetimeObjectToString($sheet);
-
-        $users = include __DIR__.'/../resources/users.php';
-
-        $this->assertEquals(
-            array_values($sheet),
-            array_slice($users, 0, 30)
-        );
-    }
-
-    protected function makeSheet()
-    {
-        $sheet = $this->factory()->first();
-
-        $this->assertInstanceOf(Sheet::class, $sheet);
-
-        return $sheet;
-    }
-
-    protected function factory()
-    {
-        $file = __DIR__.'/../resources/test-sheets.xlsx';
-
-        return Excel::xlsx($file);
     }
 }

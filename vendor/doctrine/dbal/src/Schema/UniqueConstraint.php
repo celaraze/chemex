@@ -3,7 +3,6 @@
 namespace Doctrine\DBAL\Schema;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-
 use function array_keys;
 use function array_map;
 use function strtolower;
@@ -39,7 +38,7 @@ class UniqueConstraint extends AbstractAsset implements Constraint
     /**
      * @param string[] $columns
      * @param string[] $flags
-     * @param mixed[]  $options
+     * @param mixed[] $options
      */
     public function __construct(string $name, array $columns, array $flags = [], array $options = [])
     {
@@ -57,11 +56,25 @@ class UniqueConstraint extends AbstractAsset implements Constraint
     }
 
     /**
-     * {@inheritdoc}
+     * Adds a new column to the unique constraint.
      */
-    public function getColumns()
+    protected function addColumn(string $column): void
     {
-        return array_keys($this->columns);
+        $this->columns[$column] = new Identifier($column);
+    }
+
+    /**
+     * Adds flag for a unique constraint that translates to platform specific handling.
+     *
+     * @return $this
+     *
+     * @example $uniqueConstraint->addFlag('CLUSTERED')
+     */
+    public function addFlag(string $flag): UniqueConstraint
+    {
+        $this->flags[strtolower($flag)] = true;
+
+        return $this;
     }
 
     /**
@@ -87,6 +100,14 @@ class UniqueConstraint extends AbstractAsset implements Constraint
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getColumns()
+    {
+        return array_keys($this->columns);
+    }
+
+    /**
      * Returns platform specific flags for unique constraint.
      *
      * @return string[]
@@ -94,20 +115,6 @@ class UniqueConstraint extends AbstractAsset implements Constraint
     public function getFlags(): array
     {
         return array_keys($this->flags);
-    }
-
-    /**
-     * Adds flag for a unique constraint that translates to platform specific handling.
-     *
-     * @return $this
-     *
-     * @example $uniqueConstraint->addFlag('CLUSTERED')
-     */
-    public function addFlag(string $flag): UniqueConstraint
-    {
-        $this->flags[strtolower($flag)] = true;
-
-        return $this;
     }
 
     /**
@@ -148,13 +155,5 @@ class UniqueConstraint extends AbstractAsset implements Constraint
     public function getOptions(): array
     {
         return $this->options;
-    }
-
-    /**
-     * Adds a new column to the unique constraint.
-     */
-    protected function addColumn(string $column): void
-    {
-        $this->columns[$column] = new Identifier($column);
     }
 }

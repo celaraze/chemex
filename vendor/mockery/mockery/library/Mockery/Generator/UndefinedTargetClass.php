@@ -34,11 +34,6 @@ class UndefinedTargetClass implements TargetClassInterface
         return new self($name);
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
     public function isAbstract()
     {
         return false;
@@ -59,6 +54,11 @@ class UndefinedTargetClass implements TargetClassInterface
         return array();
     }
 
+    public function inNamespace()
+    {
+        return $this->getNamespaceName() !== '';
+    }
+
     public function getNamespaceName()
     {
         $parts = explode("\\", ltrim($this->getName(), "\\"));
@@ -66,9 +66,9 @@ class UndefinedTargetClass implements TargetClassInterface
         return implode("\\", $parts);
     }
 
-    public function inNamespace()
+    public function getName()
     {
-        return $this->getNamespaceName() !== '';
+        return $this->name;
     }
 
     public function getShortName()

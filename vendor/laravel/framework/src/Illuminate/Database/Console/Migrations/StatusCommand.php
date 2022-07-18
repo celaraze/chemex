@@ -32,7 +32,7 @@ class StatusCommand extends BaseCommand
     /**
      * Create a new migration rollback command instance.
      *
-     * @param  \Illuminate\Database\Migrations\Migrator  $migrator
+     * @param \Illuminate\Database\Migrations\Migrator $migrator
      * @return void
      */
     public function __construct(Migrator $migrator)
@@ -50,7 +50,7 @@ class StatusCommand extends BaseCommand
     public function handle()
     {
         return $this->migrator->usingConnection($this->option('database'), function () {
-            if (! $this->migrator->repositoryExists()) {
+            if (!$this->migrator->repositoryExists()) {
                 $this->error('Migration table not found.');
 
                 return 1;
@@ -71,20 +71,20 @@ class StatusCommand extends BaseCommand
     /**
      * Get the status for the given run migrations.
      *
-     * @param  array  $ran
-     * @param  array  $batches
+     * @param array $ran
+     * @param array $batches
      * @return \Illuminate\Support\Collection
      */
     protected function getStatusFor(array $ran, array $batches)
     {
         return Collection::make($this->getAllMigrationFiles())
-                    ->map(function ($migration) use ($ran, $batches) {
-                        $migrationName = $this->migrator->getMigrationName($migration);
+            ->map(function ($migration) use ($ran, $batches) {
+                $migrationName = $this->migrator->getMigrationName($migration);
 
-                        return in_array($migrationName, $ran)
-                                ? ['<info>Yes</info>', $migrationName, $batches[$migrationName]]
-                                : ['<fg=red>No</fg=red>', $migrationName];
-                    });
+                return in_array($migrationName, $ran)
+                    ? ['<info>Yes</info>', $migrationName, $batches[$migrationName]]
+                    : ['<fg=red>No</fg=red>', $migrationName];
+            });
     }
 
     /**

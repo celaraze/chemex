@@ -5,7 +5,6 @@ namespace Enlightn\Enlightn\Analyzers\Performance;
 use Enlightn\Enlightn\Analyzers\Concerns\InspectsCode;
 use Enlightn\Enlightn\Inspection\Inspector;
 use Enlightn\Enlightn\Inspection\QueryBuilder;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 
 class SharedCacheLockAnalyzer extends PerformanceAnalyzer
@@ -41,11 +40,11 @@ class SharedCacheLockAnalyzer extends PerformanceAnalyzer
     public function errorMessage()
     {
         return 'Your application uses cache locks on your default cache store. This means that when '
-            .'your cache is cleared, your locks will also be cleared. Typically, this is not the '
-            .'intention when using locks for managing race conditions or concurrent processing. '
-            .'If you intend to persist locks despite cache clearing, it is recommended that '
-            .'you use cache locks on a separate store, which uses a connection and database that '
-            .'is not shared with your default cache store.';
+            . 'your cache is cleared, your locks will also be cleared. Typically, this is not the '
+            . 'intention when using locks for managing race conditions or concurrent processing. '
+            . 'If you intend to persist locks despite cache clearing, it is recommended that '
+            . 'you use cache locks on a separate store, which uses a connection and database that '
+            . 'is not shared with your default cache store.';
     }
 
     /**
@@ -56,8 +55,8 @@ class SharedCacheLockAnalyzer extends PerformanceAnalyzer
      */
     public function handle(Inspector $inspector)
     {
-        if (! is_null($lockConnection = config('cache.stores.'.config('cache.default').'.lock_connection'))
-            && $lockConnection !== config('cache.stores.'.config('cache.default').'.connection')) {
+        if (!is_null($lockConnection = config('cache.stores.' . config('cache.default') . '.lock_connection'))
+            && $lockConnection !== config('cache.stores.' . config('cache.default') . '.connection')) {
             // Laravel 8.20+ ships with an option to have a separate lock connection.
             return;
         }
@@ -75,6 +74,6 @@ class SharedCacheLockAnalyzer extends PerformanceAnalyzer
     public function skip()
     {
         // Skip this analyzer if the application does not use a Redis cache driver.
-        return config('cache.stores.'.config('cache.default').'.driver') !== 'redis';
+        return config('cache.stores.' . config('cache.default') . '.driver') !== 'redis';
     }
 }

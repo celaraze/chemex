@@ -45,7 +45,7 @@ class Editor extends Field
     /**
      * 设置文件上传存储配置.
      *
-     * @param  string  $disk
+     * @param string $disk
      * @return $this
      */
     public function disk(string $disk)
@@ -58,7 +58,7 @@ class Editor extends Field
     /**
      * 设置图片上传文件夹.
      *
-     * @param  string  $dir
+     * @param string $dir
      * @return $this
      */
     public function imageDirectory(string $dir)
@@ -71,7 +71,7 @@ class Editor extends Field
     /**
      * 自定义图片上传接口.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function imageUrl(string $url)
@@ -80,9 +80,25 @@ class Editor extends Field
     }
 
     /**
+     * @param string $url
+     * @return string
+     */
+    protected function formatUrl(string $url)
+    {
+        return Helper::urlWithQuery(
+            $url,
+            [
+                '_token' => csrf_token(),
+                'disk' => $this->disk,
+                'dir' => $this->imageUploadDirectory,
+            ]
+        );
+    }
+
+    /**
      * 设置语言包url.
      *
-     * @param  string  $url
+     * @param string $url
      * @return $this
      */
     public function languageUrl(string $url)
@@ -93,7 +109,7 @@ class Editor extends Field
     /**
      * 设置编辑器高度.
      *
-     * @param  int  $height
+     * @param int $height
      * @return $this
      */
     public function height(int $height)
@@ -102,12 +118,24 @@ class Editor extends Field
     }
 
     /**
+     * @return string
+     */
+    public function render()
+    {
+        $this->addVariables([
+            'options' => $this->formatOptions(),
+        ]);
+
+        return parent::render();
+    }
+
+    /**
      * @return array
      */
     protected function formatOptions()
     {
         $this->options['language'] = config('app.locale');
-        $this->options['readonly'] = ! empty($this->attributes['readonly']) || ! empty($this->attributes['disabled']);
+        $this->options['readonly'] = !empty($this->attributes['readonly']) || !empty($this->attributes['disabled']);
 
         if (empty($this->options['images_upload_url'])) {
             $this->options['images_upload_url'] = $this->defaultImageUploadUrl();
@@ -122,33 +150,5 @@ class Editor extends Field
     protected function defaultImageUploadUrl()
     {
         return $this->formatUrl(route(admin_api_route_name('tinymce.upload')));
-    }
-
-    /**
-     * @param  string  $url
-     * @return string
-     */
-    protected function formatUrl(string $url)
-    {
-        return Helper::urlWithQuery(
-            $url,
-            [
-                '_token' => csrf_token(),
-                'disk'   => $this->disk,
-                'dir'    => $this->imageUploadDirectory,
-            ]
-        );
-    }
-
-    /**
-     * @return string
-     */
-    public function render()
-    {
-        $this->addVariables([
-            'options' => $this->formatOptions(),
-        ]);
-
-        return parent::render();
     }
 }

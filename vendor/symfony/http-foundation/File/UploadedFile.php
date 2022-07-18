@@ -50,11 +50,11 @@ class UploadedFile extends File
      *
      * Calling any other method on an non-valid instance will cause an unpredictable result.
      *
-     * @param string      $path         The full temporary path to the file
-     * @param string      $originalName The original file name of the uploaded file
-     * @param string|null $mimeType     The type of the file as provided by PHP; null defaults to application/octet-stream
-     * @param int|null    $error        The error constant of the upload (one of PHP's UPLOAD_ERR_XXX constants); null defaults to UPLOAD_ERR_OK
-     * @param bool        $test         Whether the test mode is active
+     * @param string $path The full temporary path to the file
+     * @param string $originalName The original file name of the uploaded file
+     * @param string|null $mimeType The type of the file as provided by PHP; null defaults to application/octet-stream
+     * @param int|null $error The error constant of the upload (one of PHP's UPLOAD_ERR_XXX constants); null defaults to UPLOAD_ERR_OK
+     * @param bool $test Whether the test mode is active
      *                                  Local files are used in test mode hence the code should not enforce HTTP uploads
      *
      * @throws FileException         If file_uploads is disabled
@@ -71,17 +71,6 @@ class UploadedFile extends File
     }
 
     /**
-     * Returns the original file name.
-     *
-     * It is extracted from the request from which the file has been uploaded.
-     * Then it should not be considered as a safe value.
-     */
-    public function getClientOriginalName(): string
-    {
-        return $this->originalName;
-    }
-
-    /**
      * Returns the original file extension.
      *
      * It is extracted from the original file name that was uploaded.
@@ -90,22 +79,6 @@ class UploadedFile extends File
     public function getClientOriginalExtension(): string
     {
         return pathinfo($this->originalName, \PATHINFO_EXTENSION);
-    }
-
-    /**
-     * Returns the file mime type.
-     *
-     * The client mime type is extracted from the request from which the file
-     * was uploaded, so it should not be considered as a safe value.
-     *
-     * For a trusted mime type, use getMimeType() instead (which guesses the mime
-     * type based on the file content).
-     *
-     * @see getMimeType()
-     */
-    public function getClientMimeType(): string
-    {
-        return $this->mimeType;
     }
 
     /**
@@ -133,6 +106,22 @@ class UploadedFile extends File
     }
 
     /**
+     * Returns the file mime type.
+     *
+     * The client mime type is extracted from the request from which the file
+     * was uploaded, so it should not be considered as a safe value.
+     *
+     * For a trusted mime type, use getMimeType() instead (which guesses the mime
+     * type based on the file content).
+     *
+     * @see getMimeType()
+     */
+    public function getClientMimeType(): string
+    {
+        return $this->mimeType;
+    }
+
+    /**
      * Returns the upload error.
      *
      * If the upload was successful, the constant UPLOAD_ERR_OK is returned.
@@ -141,16 +130,6 @@ class UploadedFile extends File
     public function getError(): int
     {
         return $this->error;
-    }
-
-    /**
-     * Returns whether the file has been uploaded with HTTP and no error occurred.
-     */
-    public function isValid(): bool
-    {
-        $isOk = \UPLOAD_ERR_OK === $this->error;
-
-        return $this->test ? $isOk : $isOk && is_uploaded_file($this->getPathname());
     }
 
     /**
@@ -167,7 +146,9 @@ class UploadedFile extends File
 
             $target = $this->getTargetFile($directory, $name);
 
-            set_error_handler(function ($type, $msg) use (&$error) { $error = $msg; });
+            set_error_handler(function ($type, $msg) use (&$error) {
+                $error = $msg;
+            });
             try {
                 $moved = move_uploaded_file($this->getPathname(), $target);
             } finally {
@@ -203,6 +184,38 @@ class UploadedFile extends File
     }
 
     /**
+     * Returns whether the file has been uploaded with HTTP and no error occurred.
+     */
+    public function isValid(): bool
+    {
+        $isOk = \UPLOAD_ERR_OK === $this->error;
+
+        return $this->test ? $isOk : $isOk && is_uploaded_file($this->getPathname());
+    }
+
+    /**
+     * Returns an informative upload error message.
+     */
+    public function getErrorMessage(): string
+    {
+        static $errors = [
+            \UPLOAD_ERR_INI_SIZE => 'The file "%s" exceeds your upload_max_filesize ini directive (limit is %d KiB).',
+            \UPLOAD_ERR_FORM_SIZE => 'The file "%s" exceeds the upload limit defined in your form.',
+            \UPLOAD_ERR_PARTIAL => 'The file "%s" was only partially uploaded.',
+            \UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
+            \UPLOAD_ERR_CANT_WRITE => 'The file "%s" could not be written on disk.',
+            \UPLOAD_ERR_NO_TMP_DIR => 'File could not be uploaded: missing temporary directory.',
+            \UPLOAD_ERR_EXTENSION => 'File upload was stopped by a PHP extension.',
+        ];
+
+        $errorCode = $this->error;
+        $maxFilesize = \UPLOAD_ERR_INI_SIZE === $errorCode ? self::getMaxFilesize() / 1024 : 0;
+        $message = $errors[$errorCode] ?? 'The file "%s" was not uploaded due to an unknown error.';
+
+        return sprintf($message, $this->getClientOriginalName(), $maxFilesize);
+    }
+
+    /**
      * Returns the maximum size of an uploaded file as configured in php.ini.
      *
      * @return int|float The maximum size of an uploaded file in bytes (returns float if size > PHP_INT_MAX)
@@ -229,38 +242,31 @@ class UploadedFile extends File
         } elseif (str_starts_with($max, '0')) {
             $max = \intval($max, 8);
         } else {
-            $max = (int) $max;
+            $max = (int)$max;
         }
 
         switch (substr($size, -1)) {
-            case 't': $max *= 1024;
-            case 'g': $max *= 1024;
-            case 'm': $max *= 1024;
-            case 'k': $max *= 1024;
+            case 't':
+                $max *= 1024;
+            case 'g':
+                $max *= 1024;
+            case 'm':
+                $max *= 1024;
+            case 'k':
+                $max *= 1024;
         }
 
         return $max;
     }
 
     /**
-     * Returns an informative upload error message.
+     * Returns the original file name.
+     *
+     * It is extracted from the request from which the file has been uploaded.
+     * Then it should not be considered as a safe value.
      */
-    public function getErrorMessage(): string
+    public function getClientOriginalName(): string
     {
-        static $errors = [
-            \UPLOAD_ERR_INI_SIZE => 'The file "%s" exceeds your upload_max_filesize ini directive (limit is %d KiB).',
-            \UPLOAD_ERR_FORM_SIZE => 'The file "%s" exceeds the upload limit defined in your form.',
-            \UPLOAD_ERR_PARTIAL => 'The file "%s" was only partially uploaded.',
-            \UPLOAD_ERR_NO_FILE => 'No file was uploaded.',
-            \UPLOAD_ERR_CANT_WRITE => 'The file "%s" could not be written on disk.',
-            \UPLOAD_ERR_NO_TMP_DIR => 'File could not be uploaded: missing temporary directory.',
-            \UPLOAD_ERR_EXTENSION => 'File upload was stopped by a PHP extension.',
-        ];
-
-        $errorCode = $this->error;
-        $maxFilesize = \UPLOAD_ERR_INI_SIZE === $errorCode ? self::getMaxFilesize() / 1024 : 0;
-        $message = $errors[$errorCode] ?? 'The file "%s" was not uploaded due to an unknown error.';
-
-        return sprintf($message, $this->getClientOriginalName(), $maxFilesize);
+        return $this->originalName;
     }
 }

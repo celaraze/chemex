@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Comparator;
 
 use function array_unshift;
@@ -32,6 +33,37 @@ class Factory
     private $defaultComparators = [];
 
     /**
+     * Constructs a new factory.
+     */
+    public function __construct()
+    {
+        $this->registerDefaultComparators();
+    }
+
+    private function registerDefaultComparators(): void
+    {
+        $this->registerDefaultComparator(new MockObjectComparator);
+        $this->registerDefaultComparator(new DateTimeComparator);
+        $this->registerDefaultComparator(new DOMNodeComparator);
+        $this->registerDefaultComparator(new SplObjectStorageComparator);
+        $this->registerDefaultComparator(new ExceptionComparator);
+        $this->registerDefaultComparator(new ObjectComparator);
+        $this->registerDefaultComparator(new ResourceComparator);
+        $this->registerDefaultComparator(new ArrayComparator);
+        $this->registerDefaultComparator(new DoubleComparator);
+        $this->registerDefaultComparator(new NumericComparator);
+        $this->registerDefaultComparator(new ScalarComparator);
+        $this->registerDefaultComparator(new TypeComparator);
+    }
+
+    private function registerDefaultComparator(Comparator $comparator): void
+    {
+        $this->defaultComparators[] = $comparator;
+
+        $comparator->setFactory($this);
+    }
+
+    /**
      * @return Factory
      */
     public static function getInstance()
@@ -44,18 +76,10 @@ class Factory
     }
 
     /**
-     * Constructs a new factory.
-     */
-    public function __construct()
-    {
-        $this->registerDefaultComparators();
-    }
-
-    /**
      * Returns the correct comparator for comparing two values.
      *
      * @param mixed $expected The first value to compare
-     * @param mixed $actual   The second value to compare
+     * @param mixed $actual The second value to compare
      *
      * @return Comparator
      */
@@ -115,28 +139,5 @@ class Factory
     public function reset()/*: void*/
     {
         $this->customComparators = [];
-    }
-
-    private function registerDefaultComparators(): void
-    {
-        $this->registerDefaultComparator(new MockObjectComparator);
-        $this->registerDefaultComparator(new DateTimeComparator);
-        $this->registerDefaultComparator(new DOMNodeComparator);
-        $this->registerDefaultComparator(new SplObjectStorageComparator);
-        $this->registerDefaultComparator(new ExceptionComparator);
-        $this->registerDefaultComparator(new ObjectComparator);
-        $this->registerDefaultComparator(new ResourceComparator);
-        $this->registerDefaultComparator(new ArrayComparator);
-        $this->registerDefaultComparator(new DoubleComparator);
-        $this->registerDefaultComparator(new NumericComparator);
-        $this->registerDefaultComparator(new ScalarComparator);
-        $this->registerDefaultComparator(new TypeComparator);
-    }
-
-    private function registerDefaultComparator(Comparator $comparator): void
-    {
-        $this->defaultComparators[] = $comparator;
-
-        $comparator->setFactory($this);
     }
 }

@@ -7,10 +7,21 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\Annotation;
 
-use const JSON_ERROR_NONE;
-use const PREG_OFFSET_CAPTURE;
+use PharIo\Version\VersionConstraintParser;
+use PHPUnit\Framework\InvalidDataProviderException;
+use PHPUnit\Framework\SkippedTestError;
+use PHPUnit\Framework\Warning;
+use PHPUnit\Util\Exception;
+use PHPUnit\Util\InvalidDataSetException;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
+use Reflector;
+use Traversable;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
@@ -40,18 +51,8 @@ use function strpos;
 use function strtolower;
 use function substr;
 use function trim;
-use PharIo\Version\VersionConstraintParser;
-use PHPUnit\Framework\InvalidDataProviderException;
-use PHPUnit\Framework\SkippedTestError;
-use PHPUnit\Framework\Warning;
-use PHPUnit\Util\Exception;
-use PHPUnit\Util\InvalidDataSetException;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
-use Reflector;
-use Traversable;
+use const JSON_ERROR_NONE;
+use const PREG_OFFSET_CAPTURE;
 
 /**
  * This is an abstraction around a PHPUnit-specific docBlock,
@@ -121,12 +122,31 @@ final class DocBlock
      */
     private $className;
 
+    /**
+     * Note: we do not preserve an instance of the reflection object, since it cannot be safely (de-)serialized.
+     *
+     * @param array<string, array<int, string>> $symbolAnnotations
+     *
+     * @psalm-param class-string $className
+     */
+    private function __construct(string $docComment, bool $isMethod, array $symbolAnnotations, int $startLine, int $endLine, string $fileName, string $name, string $className)
+    {
+        $this->docComment = $docComment;
+        $this->isMethod = $isMethod;
+        $this->symbolAnnotations = $symbolAnnotations;
+        $this->startLine = $startLine;
+        $this->endLine = $endLine;
+        $this->fileName = $fileName;
+        $this->name = $name;
+        $this->className = $className;
+    }
+
     public static function ofClass(ReflectionClass $class): self
     {
         $className = $class->getName();
 
         return new self(
-            (string) $class->getDocComment(),
+            (string)$class->getDocComment(),
             false,
             self::extractAnnotationsFromReflector($class),
             $class->getStartLine(),
@@ -137,13 +157,54 @@ final class DocBlock
         );
     }
 
+    /** @param ReflectionClass|ReflectionFunctionAbstract $reflector */
+    private static function extractAnnotationsFromReflector(Reflector $reflector): array
+    {
+        $annotations = [];
+
+        if ($reflector instanceof ReflectionClass) {
+            $annotations = array_merge(
+                $annotations,
+                ...array_map(
+                    static function (ReflectionClass $trait): array {
+                        return self::parseDocBlock((string)$trait->getDocComment());
+                    },
+                    array_values($reflector->getTraits())
+                )
+            );
+        }
+
+        return array_merge(
+            $annotations,
+            self::parseDocBlock((string)$reflector->getDocComment())
+        );
+    }
+
+    /** @return array<string, array<int, string>> */
+    private static function parseDocBlock(string $docBlock): array
+    {
+        // Strip away the docblock header and footer to ease parsing of one line annotations
+        $docBlock = (string)substr($docBlock, 3, -2);
+        $annotations = [];
+
+        if (preg_match_all('/@(?P<name>[A-Za-z_-]+)(?:[ \t]+(?P<value>.*?))?[ \t]*\r?$/m', $docBlock, $matches)) {
+            $numMatches = count($matches[0]);
+
+            for ($i = 0; $i < $numMatches; $i++) {
+                $annotations[$matches['name'][$i]][] = (string)$matches['value'][$i];
+            }
+        }
+
+        return $annotations;
+    }
+
     /**
      * @psalm-param class-string $classNameInHierarchy
      */
     public static function ofMethod(ReflectionMethod $method, string $classNameInHierarchy): self
     {
         return new self(
-            (string) $method->getDocComment(),
+            (string)$method->getDocComment(),
             true,
             self::extractAnnotationsFromReflector($method),
             $method->getStartLine(),
@@ -152,25 +213,6 @@ final class DocBlock
             $method->getName(),
             $classNameInHierarchy
         );
-    }
-
-    /**
-     * Note: we do not preserve an instance of the reflection object, since it cannot be safely (de-)serialized.
-     *
-     * @param array<string, array<int, string>> $symbolAnnotations
-     *
-     * @psalm-param class-string $className
-     */
-    private function __construct(string $docComment, bool $isMethod, array $symbolAnnotations, int $startLine, int $endLine, string $fileName, string $name, string $className)
-    {
-        $this->docComment        = $docComment;
-        $this->isMethod          = $isMethod;
-        $this->symbolAnnotations = $symbolAnnotations;
-        $this->startLine         = $startLine;
-        $this->endLine           = $endLine;
-        $this->fileName          = $fileName;
-        $this->name              = $name;
-        $this->className         = $className;
     }
 
     /**
@@ -191,11 +233,11 @@ final class DocBlock
             return $this->parsedRequirements;
         }
 
-        $offset            = $this->startLine;
-        $requires          = [];
-        $recordedSettings  = [];
+        $offset = $this->startLine;
+        $requires = [];
+        $recordedSettings = [];
         $extensionVersions = [];
-        $recordedOffsets   = [
+        $recordedOffsets = [
             '__FILE' => realpath($this->fileName),
         ];
 
@@ -205,13 +247,13 @@ final class DocBlock
 
         foreach ($lines as $line) {
             if (preg_match(self::REGEX_REQUIRES_OS, $line, $matches)) {
-                $requires[$matches['name']]        = $matches['value'];
+                $requires[$matches['name']] = $matches['value'];
                 $recordedOffsets[$matches['name']] = $offset;
             }
 
             if (preg_match(self::REGEX_REQUIRES_VERSION, $line, $matches)) {
                 $requires[$matches['name']] = [
-                    'version'  => $matches['version'],
+                    'version' => $matches['version'],
                     'operator' => $matches['operator'],
                 ];
                 $recordedOffsets[$matches['name']] = $offset;
@@ -237,7 +279,7 @@ final class DocBlock
             }
 
             if (preg_match(self::REGEX_REQUIRES_SETTING, $line, $matches)) {
-                $recordedSettings[$matches['setting']]               = $matches['value'];
+                $recordedSettings[$matches['setting']] = $matches['value'];
                 $recordedOffsets['__SETTING_' . $matches['setting']] = $offset;
             }
 
@@ -248,12 +290,12 @@ final class DocBlock
                     $requires[$name] = [];
                 }
 
-                $requires[$name][]                                           = $matches['value'];
+                $requires[$name][] = $matches['value'];
                 $recordedOffsets[$matches['name'] . '_' . $matches['value']] = $offset;
 
                 if ($name === 'extensions' && !empty($matches['version'])) {
                     $extensionVersions[$matches['value']] = [
-                        'version'  => $matches['version'],
+                        'version' => $matches['version'],
                         'operator' => $matches['operator'],
                     ];
                 }
@@ -266,7 +308,7 @@ final class DocBlock
             $requires,
             ['__OFFSET' => $recordedOffsets],
             array_filter([
-                'setting'            => $recordedSettings,
+                'setting' => $recordedSettings,
                 'extension_versions' => $extensionVersions,
             ])
         );
@@ -304,22 +346,162 @@ final class DocBlock
         return $data;
     }
 
+    private function getDataFromDataProviderAnnotation(string $docComment): ?array
+    {
+        $methodName = null;
+        $className = $this->className;
+
+        if ($this->isMethod) {
+            $methodName = $this->name;
+        }
+
+        if (!preg_match_all(self::REGEX_DATA_PROVIDER, $docComment, $matches)) {
+            return null;
+        }
+
+        $result = [];
+
+        foreach ($matches[1] as $match) {
+            $dataProviderMethodNameNamespace = explode('\\', $match);
+            $leaf = explode('::', array_pop($dataProviderMethodNameNamespace));
+            $dataProviderMethodName = array_pop($leaf);
+
+            if (empty($dataProviderMethodNameNamespace)) {
+                $dataProviderMethodNameNamespace = '';
+            } else {
+                $dataProviderMethodNameNamespace = implode('\\', $dataProviderMethodNameNamespace) . '\\';
+            }
+
+            if (empty($leaf)) {
+                $dataProviderClassName = $className;
+            } else {
+                /** @psalm-var class-string $dataProviderClassName */
+                $dataProviderClassName = $dataProviderMethodNameNamespace . array_pop($leaf);
+            }
+
+            try {
+                $dataProviderClass = new ReflectionClass($dataProviderClassName);
+
+                $dataProviderMethod = $dataProviderClass->getMethod(
+                    $dataProviderMethodName
+                );
+                // @codeCoverageIgnoreStart
+            } catch (ReflectionException $e) {
+                throw new Exception(
+                    $e->getMessage(),
+                    (int)$e->getCode(),
+                    $e
+                );
+                // @codeCoverageIgnoreEnd
+            }
+
+            if ($dataProviderMethod->isStatic()) {
+                $object = null;
+            } else {
+                $object = $dataProviderClass->newInstance();
+            }
+
+            if ($dataProviderMethod->getNumberOfParameters() === 0) {
+                $data = $dataProviderMethod->invoke($object);
+            } else {
+                $data = $dataProviderMethod->invoke($object, $methodName);
+            }
+
+            if ($data instanceof Traversable) {
+                $origData = $data;
+                $data = [];
+
+                foreach ($origData as $key => $value) {
+                    if (is_int($key)) {
+                        $data[] = $value;
+                    } elseif (array_key_exists($key, $data)) {
+                        throw new InvalidDataProviderException(
+                            sprintf(
+                                'The key "%s" has already been defined in the data provider "%s".',
+                                $key,
+                                $match
+                            )
+                        );
+                    } else {
+                        $data[$key] = $value;
+                    }
+                }
+            }
+
+            if (is_array($data)) {
+                $result = array_merge($result, $data);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getDataFromTestWithAnnotation(string $docComment): ?array
+    {
+        $docComment = $this->cleanUpMultiLineAnnotation($docComment);
+
+        if (!preg_match(self::REGEX_TEST_WITH, $docComment, $matches, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $offset = strlen($matches[0][0]) + $matches[0][1];
+        $annotationContent = substr($docComment, $offset);
+        $data = [];
+
+        foreach (explode("\n", $annotationContent) as $candidateRow) {
+            $candidateRow = trim($candidateRow);
+
+            if ($candidateRow[0] !== '[') {
+                break;
+            }
+
+            $dataSet = json_decode($candidateRow, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception(
+                    'The data set for the @testWith annotation cannot be parsed: ' . json_last_error_msg()
+                );
+            }
+
+            $data[] = $dataSet;
+        }
+
+        if (!$data) {
+            throw new Exception('The data set for the @testWith annotation cannot be parsed.');
+        }
+
+        return $data;
+    }
+
+    private function cleanUpMultiLineAnnotation(string $docComment): string
+    {
+        //removing initial '   * ' for docComment
+        $docComment = str_replace("\r\n", "\n", $docComment);
+        $docComment = preg_replace('/' . '\n' . '\s*' . '\*' . '\s?' . '/', "\n", $docComment);
+        $docComment = (string)substr($docComment, 0, -1);
+
+        return rtrim($docComment, "\n");
+    }
+
     /**
      * @psalm-return array<string, array{line: int, value: string}>
      */
     public function getInlineAnnotations(): array
     {
-        $code        = file($this->fileName);
-        $lineNumber  = $this->startLine;
-        $startLine   = $this->startLine - 1;
-        $endLine     = $this->endLine - 1;
-        $codeLines   = array_slice($code, $startLine, $endLine - $startLine + 1);
+        $code = file($this->fileName);
+        $lineNumber = $this->startLine;
+        $startLine = $this->startLine - 1;
+        $endLine = $this->endLine - 1;
+        $codeLines = array_slice($code, $startLine, $endLine - $startLine + 1);
         $annotations = [];
 
         foreach ($codeLines as $line) {
             if (preg_match('#/\*\*?\s*@(?P<name>[A-Za-z_-]+)(?:[ \t]+(?P<value>.*?))?[ \t]*\r?\*/$#m', $line, $matches)) {
                 $annotations[strtolower($matches['name'])] = [
-                    'line'  => $lineNumber,
+                    'line' => $lineNumber,
                     'value' => $matches['value'],
                 ];
             }
@@ -365,187 +547,5 @@ final class DocBlock
     public function isToBeExecutedAsPostCondition(): bool
     {
         return 1 === preg_match('/@postCondition\b/', $this->docComment);
-    }
-
-    private function getDataFromDataProviderAnnotation(string $docComment): ?array
-    {
-        $methodName = null;
-        $className  = $this->className;
-
-        if ($this->isMethod) {
-            $methodName = $this->name;
-        }
-
-        if (!preg_match_all(self::REGEX_DATA_PROVIDER, $docComment, $matches)) {
-            return null;
-        }
-
-        $result = [];
-
-        foreach ($matches[1] as $match) {
-            $dataProviderMethodNameNamespace = explode('\\', $match);
-            $leaf                            = explode('::', array_pop($dataProviderMethodNameNamespace));
-            $dataProviderMethodName          = array_pop($leaf);
-
-            if (empty($dataProviderMethodNameNamespace)) {
-                $dataProviderMethodNameNamespace = '';
-            } else {
-                $dataProviderMethodNameNamespace = implode('\\', $dataProviderMethodNameNamespace) . '\\';
-            }
-
-            if (empty($leaf)) {
-                $dataProviderClassName = $className;
-            } else {
-                /** @psalm-var class-string $dataProviderClassName */
-                $dataProviderClassName = $dataProviderMethodNameNamespace . array_pop($leaf);
-            }
-
-            try {
-                $dataProviderClass = new ReflectionClass($dataProviderClassName);
-
-                $dataProviderMethod = $dataProviderClass->getMethod(
-                    $dataProviderMethodName
-                );
-                // @codeCoverageIgnoreStart
-            } catch (ReflectionException $e) {
-                throw new Exception(
-                    $e->getMessage(),
-                    (int) $e->getCode(),
-                    $e
-                );
-                // @codeCoverageIgnoreEnd
-            }
-
-            if ($dataProviderMethod->isStatic()) {
-                $object = null;
-            } else {
-                $object = $dataProviderClass->newInstance();
-            }
-
-            if ($dataProviderMethod->getNumberOfParameters() === 0) {
-                $data = $dataProviderMethod->invoke($object);
-            } else {
-                $data = $dataProviderMethod->invoke($object, $methodName);
-            }
-
-            if ($data instanceof Traversable) {
-                $origData = $data;
-                $data     = [];
-
-                foreach ($origData as $key => $value) {
-                    if (is_int($key)) {
-                        $data[] = $value;
-                    } elseif (array_key_exists($key, $data)) {
-                        throw new InvalidDataProviderException(
-                            sprintf(
-                                'The key "%s" has already been defined in the data provider "%s".',
-                                $key,
-                                $match
-                            )
-                        );
-                    } else {
-                        $data[$key] = $value;
-                    }
-                }
-            }
-
-            if (is_array($data)) {
-                $result = array_merge($result, $data);
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function getDataFromTestWithAnnotation(string $docComment): ?array
-    {
-        $docComment = $this->cleanUpMultiLineAnnotation($docComment);
-
-        if (!preg_match(self::REGEX_TEST_WITH, $docComment, $matches, PREG_OFFSET_CAPTURE)) {
-            return null;
-        }
-
-        $offset            = strlen($matches[0][0]) + $matches[0][1];
-        $annotationContent = substr($docComment, $offset);
-        $data              = [];
-
-        foreach (explode("\n", $annotationContent) as $candidateRow) {
-            $candidateRow = trim($candidateRow);
-
-            if ($candidateRow[0] !== '[') {
-                break;
-            }
-
-            $dataSet = json_decode($candidateRow, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception(
-                    'The data set for the @testWith annotation cannot be parsed: ' . json_last_error_msg()
-                );
-            }
-
-            $data[] = $dataSet;
-        }
-
-        if (!$data) {
-            throw new Exception('The data set for the @testWith annotation cannot be parsed.');
-        }
-
-        return $data;
-    }
-
-    private function cleanUpMultiLineAnnotation(string $docComment): string
-    {
-        //removing initial '   * ' for docComment
-        $docComment = str_replace("\r\n", "\n", $docComment);
-        $docComment = preg_replace('/' . '\n' . '\s*' . '\*' . '\s?' . '/', "\n", $docComment);
-        $docComment = (string) substr($docComment, 0, -1);
-
-        return rtrim($docComment, "\n");
-    }
-
-    /** @return array<string, array<int, string>> */
-    private static function parseDocBlock(string $docBlock): array
-    {
-        // Strip away the docblock header and footer to ease parsing of one line annotations
-        $docBlock    = (string) substr($docBlock, 3, -2);
-        $annotations = [];
-
-        if (preg_match_all('/@(?P<name>[A-Za-z_-]+)(?:[ \t]+(?P<value>.*?))?[ \t]*\r?$/m', $docBlock, $matches)) {
-            $numMatches = count($matches[0]);
-
-            for ($i = 0; $i < $numMatches; $i++) {
-                $annotations[$matches['name'][$i]][] = (string) $matches['value'][$i];
-            }
-        }
-
-        return $annotations;
-    }
-
-    /** @param ReflectionClass|ReflectionFunctionAbstract $reflector */
-    private static function extractAnnotationsFromReflector(Reflector $reflector): array
-    {
-        $annotations = [];
-
-        if ($reflector instanceof ReflectionClass) {
-            $annotations = array_merge(
-                $annotations,
-                ...array_map(
-                    static function (ReflectionClass $trait): array
-                    {
-                        return self::parseDocBlock((string) $trait->getDocComment());
-                    },
-                    array_values($reflector->getTraits())
-                )
-            );
-        }
-
-        return array_merge(
-            $annotations,
-            self::parseDocBlock((string) $reflector->getDocComment())
-        );
     }
 }

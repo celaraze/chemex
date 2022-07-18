@@ -14,9 +14,9 @@ namespace Composer\Command;
 
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\PackageInfo;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -50,8 +50,7 @@ the installed dependencies.
 
 Read more at https://getcomposer.org/doc/03-cli.md#licenses
 EOT
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -75,9 +74,9 @@ EOT
 
         switch ($format = $input->getOption('format')) {
             case 'text':
-                $io->write('Name: <comment>'.$root->getPrettyName().'</comment>');
-                $io->write('Version: <comment>'.$root->getFullPrettyVersion().'</comment>');
-                $io->write('Licenses: <comment>'.(implode(', ', $root->getLicense()) ?: 'none').'</comment>');
+                $io->write('Name: <comment>' . $root->getPrettyName() . '</comment>');
+                $io->write('Version: <comment>' . $root->getFullPrettyVersion() . '</comment>');
+                $io->write('Licenses: <comment>' . (implode(', ', $root->getLicense()) ?: 'none') . '</comment>');
                 $io->write('Dependencies:');
                 $io->write('');
 
@@ -87,7 +86,7 @@ EOT
                 foreach ($packages as $package) {
                     $link = PackageInfo::getViewSourceOrHomepageUrl($package);
                     if ($link !== null) {
-                        $name = '<href='.OutputFormatter::escape($link).'>'.$package->getPrettyName().'</>';
+                        $name = '<href=' . OutputFormatter::escape($link) . '>' . $package->getPrettyName() . '</>';
                     } else {
                         $name = $package->getPrettyName();
                     }
@@ -157,7 +156,7 @@ EOT
     /**
      * Find package requires and child requires
      *
-     * @param  array<string, PackageInterface> $bucket
+     * @param array<string, PackageInterface> $bucket
      * @return array<string, PackageInterface>
      */
     private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
@@ -184,8 +183,8 @@ EOT
     /**
      * Adds packages to the package list
      *
-     * @param  PackageInterface[]              $packages the list of packages to add
-     * @param  array<string, PackageInterface> $bucket   the list to add packages to
+     * @param PackageInterface[] $packages the list of packages to add
+     * @param array<string, PackageInterface> $bucket the list to add packages to
      * @return array<string, PackageInterface>
      */
     public function appendPackages(array $packages, array $bucket): array

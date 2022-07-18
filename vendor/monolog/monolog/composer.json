@@ -1,7 +1,11 @@
 {
     "name": "monolog/monolog",
     "description": "Sends your logs to files, sockets, inboxes, databases and various web services",
-    "keywords": ["log", "logging", "psr-3"],
+    "keywords": [
+        "log",
+        "logging",
+        "psr-3"
+    ],
     "homepage": "https://github.com/Seldaek/monolog",
     "type": "library",
     "license": "MIT",
@@ -55,10 +59,14 @@
         "ext-openssl": "Required to send log messages using SSL"
     },
     "autoload": {
-        "psr-4": {"Monolog\\": "src/Monolog"}
+        "psr-4": {
+            "Monolog\\": "src/Monolog"
+        }
     },
     "autoload-dev": {
-        "psr-4": {"Monolog\\": "tests/Monolog"}
+        "psr-4": {
+            "Monolog\\": "tests/Monolog"
+        }
     },
     "provide": {
         "psr/log-implementation": "1.0.0 || 2.0.0 || 3.0.0"

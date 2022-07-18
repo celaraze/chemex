@@ -15,10 +15,10 @@ class SQLiteConnection extends Connection
     /**
      * Create a new database connection instance.
      *
-     * @param  \PDO|\Closure  $pdo
-     * @param  string  $database
-     * @param  string  $tablePrefix
-     * @param  array  $config
+     * @param \PDO|\Closure $pdo
+     * @param string $database
+     * @param string $tablePrefix
+     * @param array $config
      * @return void
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
@@ -37,13 +37,13 @@ class SQLiteConnection extends Connection
     }
 
     /**
-     * Get the default query grammar instance.
+     * Get the database connection foreign key constraints configuration option.
      *
-     * @return \Illuminate\Database\Query\Grammars\SQLiteGrammar
+     * @return bool|null
      */
-    protected function getDefaultQueryGrammar()
+    protected function getForeignKeyConstraintsConfigurationValue()
     {
-        return $this->withTablePrefix(new QueryGrammar);
+        return $this->getConfig('foreign_key_constraints');
     }
 
     /**
@@ -61,6 +61,29 @@ class SQLiteConnection extends Connection
     }
 
     /**
+     * Get the schema state for the connection.
+     *
+     * @param \Illuminate\Filesystem\Filesystem|null $files
+     * @param callable|null $processFactory
+     *
+     * @throws \RuntimeException
+     */
+    public function getSchemaState(Filesystem $files = null, callable $processFactory = null)
+    {
+        return new SqliteSchemaState($this, $files, $processFactory);
+    }
+
+    /**
+     * Get the default query grammar instance.
+     *
+     * @return \Illuminate\Database\Query\Grammars\SQLiteGrammar
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return $this->withTablePrefix(new QueryGrammar);
+    }
+
+    /**
      * Get the default schema grammar instance.
      *
      * @return \Illuminate\Database\Schema\Grammars\SQLiteGrammar
@@ -68,19 +91,6 @@ class SQLiteConnection extends Connection
     protected function getDefaultSchemaGrammar()
     {
         return $this->withTablePrefix(new SchemaGrammar);
-    }
-
-    /**
-     * Get the schema state for the connection.
-     *
-     * @param  \Illuminate\Filesystem\Filesystem|null  $files
-     * @param  callable|null  $processFactory
-     *
-     * @throws \RuntimeException
-     */
-    public function getSchemaState(Filesystem $files = null, callable $processFactory = null)
-    {
-        return new SqliteSchemaState($this, $files, $processFactory);
     }
 
     /**
@@ -101,15 +111,5 @@ class SQLiteConnection extends Connection
     protected function getDoctrineDriver()
     {
         return new SQLiteDriver;
-    }
-
-    /**
-     * Get the database connection foreign key constraints configuration option.
-     *
-     * @return bool|null
-     */
-    protected function getForeignKeyConstraintsConfigurationValue()
-    {
-        return $this->getConfig('foreign_key_constraints');
     }
 }

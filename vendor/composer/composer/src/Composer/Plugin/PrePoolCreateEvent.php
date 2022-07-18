@@ -12,10 +12,10 @@
 
 namespace Composer\Plugin;
 
-use Composer\EventDispatcher\Event;
-use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\Request;
+use Composer\EventDispatcher\Event;
 use Composer\Package\BasePackage;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * The pre command run event.
@@ -62,14 +62,14 @@ class PrePoolCreateEvent extends Event
     private $unacceptableFixedPackages;
 
     /**
-     * @param string                $name                   The event name
+     * @param string $name The event name
      * @param RepositoryInterface[] $repositories
-     * @param int[]                 $acceptableStabilities  array of stability => BasePackage::STABILITY_* value
-     * @param int[]                 $stabilityFlags         array of package name => BasePackage::STABILITY_* value
-     * @param array[]               $rootAliases            array of package => version => [alias, alias_normalized]
-     * @param string[]              $rootReferences
-     * @param BasePackage[]         $packages
-     * @param BasePackage[]         $unacceptableFixedPackages
+     * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
+     * @param int[] $stabilityFlags array of package name => BasePackage::STABILITY_* value
+     * @param array[] $rootAliases array of package => version => [alias, alias_normalized]
+     * @param string[] $rootReferences
+     * @param BasePackage[] $packages
+     * @param BasePackage[] $unacceptableFixedPackages
      *
      * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
@@ -151,14 +151,6 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return BasePackage[]
-     */
-    public function getUnacceptableFixedPackages(): array
-    {
-        return $this->unacceptableFixedPackages;
-    }
-
-    /**
      * @param BasePackage[] $packages
      *
      * @return void
@@ -166,6 +158,14 @@ class PrePoolCreateEvent extends Event
     public function setPackages(array $packages): void
     {
         $this->packages = $packages;
+    }
+
+    /**
+     * @return BasePackage[]
+     */
+    public function getUnacceptableFixedPackages(): array
+    {
+        return $this->unacceptableFixedPackages;
     }
 
     /**

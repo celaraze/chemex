@@ -8,6 +8,15 @@ class ContextMenuActions extends DropdownActions
 {
     protected $elementId = 'grid-context-menu';
 
+    public function display($callback = null)
+    {
+        $this->addScript();
+
+        Admin::style('.grid__actions__ .dropdown{display: none!important;} th.grid__actions__{display: none!important;} .grid__actions__{width:1px}');
+
+        return parent::display($callback);
+    }
+
     protected function addScript()
     {
         $script = <<<JS
@@ -49,14 +58,5 @@ class ContextMenuActions extends DropdownActions
 JS;
 
         Admin::script($script);
-    }
-
-    public function display($callback = null)
-    {
-        $this->addScript();
-
-        Admin::style('.grid__actions__ .dropdown{display: none!important;} th.grid__actions__{display: none!important;} .grid__actions__{width:1px}');
-
-        return parent::display($callback);
     }
 }

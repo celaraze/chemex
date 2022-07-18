@@ -47,11 +47,23 @@ class ServerDumpCommand extends Command
     {
         $this->server = $server;
         $this->descriptors = $descriptors + [
-            'cli' => new CliDescriptor(new CliDumper()),
-            'html' => new HtmlDescriptor(new HtmlDumper()),
-        ];
+                'cli' => new CliDescriptor(new CliDumper()),
+                'html' => new HtmlDescriptor(new HtmlDumper()),
+            ];
 
         parent::__construct();
+    }
+
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestOptionValuesFor('format')) {
+            $suggestions->suggestValues($this->getAvailableFormats());
+        }
+    }
+
+    private function getAvailableFormats(): array
+    {
+        return array_keys($this->descriptors);
     }
 
     protected function configure()
@@ -70,8 +82,7 @@ and redirecting the output to a file:
   <info>php %command.full_name% --format="html" > dump.html</info>
 
 EOF
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -96,17 +107,5 @@ EOF
         });
 
         return 0;
-    }
-
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        if ($input->mustSuggestOptionValuesFor('format')) {
-            $suggestions->suggestValues($this->getAvailableFormats());
-        }
-    }
-
-    private function getAvailableFormats(): array
-    {
-        return array_keys($this->descriptors);
     }
 }

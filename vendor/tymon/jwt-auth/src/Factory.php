@@ -59,8 +59,8 @@ class Factory
     /**
      * Constructor.
      *
-     * @param  \Tymon\JWTAuth\Claims\Factory  $claimFactory
-     * @param  \Tymon\JWTAuth\Validators\PayloadValidator  $validator
+     * @param \Tymon\JWTAuth\Claims\Factory $claimFactory
+     * @param \Tymon\JWTAuth\Validators\PayloadValidator $validator
      * @return void
      */
     public function __construct(ClaimFactory $claimFactory, PayloadValidator $validator)
@@ -71,43 +71,61 @@ class Factory
     }
 
     /**
-     * Create the Payload instance.
+     * Helper to set the ttl.
      *
-     * @param  bool  $resetClaims
-     * @return \Tymon\JWTAuth\Payload
-     */
-    public function make($resetClaims = false)
-    {
-        if ($resetClaims) {
-            $this->emptyClaims();
-        }
-
-        return $this->withClaims($this->buildClaimsCollection());
-    }
-
-    /**
-     * Empty the claims collection.
-     *
+     * @param int $ttl
      * @return $this
      */
-    public function emptyClaims()
+    public function setTTL($ttl)
     {
-        $this->claims = new Collection;
+        $this->claimFactory->setTTL($ttl);
 
         return $this;
     }
 
     /**
-     * Add an array of claims to the Payload.
+     * Get the default claims.
      *
-     * @param  array  $claims
+     * @return array
+     */
+    public function getDefaultClaims()
+    {
+        return $this->defaultClaims;
+    }
+
+    /**
+     * Set the default claims to be added to the Payload.
+     *
+     * @param array $claims
      * @return $this
      */
-    protected function addClaims(array $claims)
+    public function setDefaultClaims(array $claims)
     {
-        foreach ($claims as $name => $value) {
-            $this->addClaim($name, $value);
-        }
+        $this->defaultClaims = $claims;
+
+        return $this;
+    }
+
+    /**
+     * Get the PayloadValidator instance.
+     *
+     * @return \Tymon\JWTAuth\Validators\PayloadValidator
+     */
+    public function validator()
+    {
+        return $this->validator;
+    }
+
+    /**
+     * Magically add a claim.
+     *
+     * @param string $method
+     * @param array $parameters
+     * @return $this
+     */
+    public function __call($method, $parameters)
+    {
+        $this->addClaim($method, $parameters[0]);
 
         return $this;
     }
@@ -115,8 +133,8 @@ class Factory
     /**
      * Add a claim to the Payload.
      *
-     * @param  string  $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param mixed $value
      * @return $this
      */
     protected function addClaim($name, $value)
@@ -148,15 +166,51 @@ class Factory
     }
 
     /**
-     * Build out the Claim DTO's.
+     * Helper to get the ttl.
      *
-     * @return \Tymon\JWTAuth\Claims\Collection
+     * @return int
      */
-    protected function resolveClaims()
+    public function getTTL()
     {
-        return $this->claims->map(function ($value, $name) {
-            return $value instanceof Claim ? $value : $this->claimFactory->get($name, $value);
-        });
+        return $this->claimFactory->getTTL();
+    }
+
+    /**
+     * Create the Payload instance.
+     *
+     * @param bool $resetClaims
+     * @return \Tymon\JWTAuth\Payload
+     */
+    public function make($resetClaims = false)
+    {
+        if ($resetClaims) {
+            $this->emptyClaims();
+        }
+
+        return $this->withClaims($this->buildClaimsCollection());
+    }
+
+    /**
+     * Empty the claims collection.
+     *
+     * @return $this
+     */
+    public function emptyClaims()
+    {
+        $this->claims = new Collection;
+
+        return $this;
+    }
+
+    /**
+     * Get a Payload instance with a claims collection.
+     *
+     * @param \Tymon\JWTAuth\Claims\Collection $claims
+     * @return \Tymon\JWTAuth\Payload
+     */
+    public function withClaims(Collection $claims)
+    {
+        return new Payload($claims, $this->validator, $this->refreshFlow);
     }
 
     /**
@@ -170,82 +224,28 @@ class Factory
     }
 
     /**
-     * Get a Payload instance with a claims collection.
+     * Build out the Claim DTO's.
      *
-     * @param  \Tymon\JWTAuth\Claims\Collection  $claims
-     * @return \Tymon\JWTAuth\Payload
+     * @return \Tymon\JWTAuth\Claims\Collection
      */
-    public function withClaims(Collection $claims)
+    protected function resolveClaims()
     {
-        return new Payload($claims, $this->validator, $this->refreshFlow);
+        return $this->claims->map(function ($value, $name) {
+            return $value instanceof Claim ? $value : $this->claimFactory->get($name, $value);
+        });
     }
 
     /**
-     * Set the default claims to be added to the Payload.
+     * Add an array of claims to the Payload.
      *
-     * @param  array  $claims
+     * @param array $claims
      * @return $this
      */
-    public function setDefaultClaims(array $claims)
+    protected function addClaims(array $claims)
     {
-        $this->defaultClaims = $claims;
-
-        return $this;
-    }
-
-    /**
-     * Helper to set the ttl.
-     *
-     * @param  int  $ttl
-     * @return $this
-     */
-    public function setTTL($ttl)
-    {
-        $this->claimFactory->setTTL($ttl);
-
-        return $this;
-    }
-
-    /**
-     * Helper to get the ttl.
-     *
-     * @return int
-     */
-    public function getTTL()
-    {
-        return $this->claimFactory->getTTL();
-    }
-
-    /**
-     * Get the default claims.
-     *
-     * @return array
-     */
-    public function getDefaultClaims()
-    {
-        return $this->defaultClaims;
-    }
-
-    /**
-     * Get the PayloadValidator instance.
-     *
-     * @return \Tymon\JWTAuth\Validators\PayloadValidator
-     */
-    public function validator()
-    {
-        return $this->validator;
-    }
-
-    /**
-     * Magically add a claim.
-     *
-     * @param  string  $method
-     * @param  array  $parameters
-     * @return $this
-     */
-    public function __call($method, $parameters)
-    {
-        $this->addClaim($method, $parameters[0]);
+        foreach ($claims as $name => $value) {
+            $this->addClaim($name, $value);
+        }
 
         return $this;
     }

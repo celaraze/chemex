@@ -18,21 +18,6 @@ class FulfilledPromise implements ExtendedPromiseInterface, CancellablePromiseIn
         $this->value = $value;
     }
 
-    public function then(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
-    {
-        if (null === $onFulfilled) {
-            return $this;
-        }
-
-        try {
-            return resolve($onFulfilled($this->value));
-        } catch (\Throwable $exception) {
-            return new RejectedPromise($exception);
-        } catch (\Exception $exception) {
-            return new RejectedPromise($exception);
-        }
-    }
-
     public function done(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
     {
         if (null === $onFulfilled) {
@@ -58,6 +43,21 @@ class FulfilledPromise implements ExtendedPromiseInterface, CancellablePromiseIn
                 return $value;
             });
         });
+    }
+
+    public function then(callable $onFulfilled = null, callable $onRejected = null, callable $onProgress = null)
+    {
+        if (null === $onFulfilled) {
+            return $this;
+        }
+
+        try {
+            return resolve($onFulfilled($this->value));
+        } catch (\Throwable $exception) {
+            return new RejectedPromise($exception);
+        } catch (\Exception $exception) {
+            return new RejectedPromise($exception);
+        }
     }
 
     public function progress(callable $onProgress)

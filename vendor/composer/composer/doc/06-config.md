@@ -53,7 +53,8 @@ and **false** to disallow while suppressing further warnings and prompts.
 }
 ```
 
-You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended).
+You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT
+recommended).
 
 ## use-include-path
 
@@ -150,7 +151,7 @@ A list of domain names and private tokens. Private token can be either simple
 string, or array with username and token. For example using `{"gitlab.com":
 "privatetoken"}` as the value of this option will use `privatetoken` to access
 private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
- "token": "privatetoken"}}` will use both username and token for gitlab deploy
+"token": "privatetoken"}}` will use both username and token for gitlab deploy
 token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
 Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
@@ -350,7 +351,7 @@ github API will have a date instead of the machine hostname.
 
 ## use-github-api
 
-Defaults to `true`.  Similar to the `no-api` key on a specific repository,
+Defaults to `true`. Similar to the `no-api` key on a specific repository,
 setting `use-github-api` to `false` will define the global behavior for all
 GitHub repositories to clone the repository as it would with any other git
 repository instead of using the GitHub API. But unlike using the `git`

@@ -39,23 +39,13 @@ class WebUploader
     protected function prepareRequest($request)
     {
         $relation = $request->get('_relation');
-        if (! $relation || ! is_string($relation)) {
+        if (!$relation || !is_string($relation)) {
             return $request;
         }
 
         return $request->merge([
             '_relation' => trim($relation, ','),
         ]);
-    }
-
-    /**
-     * 判断是否是分块上传.
-     *
-     * @return bool
-     */
-    public function hasChunkFile()
-    {
-        return $this->chunks > 1;
     }
 
     /**
@@ -68,9 +58,9 @@ class WebUploader
         $file = $this->file;
 
         if (
-            ! $file
-            || ! $this->upload_column
-            || ! $file instanceof UploadedFile
+            !$file
+            || !$this->upload_column
+            || !$file instanceof UploadedFile
         ) {
             return false;
         }
@@ -87,11 +77,11 @@ class WebUploader
     {
         $file = $this->file;
 
-        if (! $file || ! $file instanceof UploadedFile) {
+        if (!$file || !$file instanceof UploadedFile) {
             return;
         }
 
-        if (! $this->hasChunkFile()) {
+        if (!$this->hasChunkFile()) {
             return $file;
         }
 
@@ -103,29 +93,19 @@ class WebUploader
     }
 
     /**
-     * 移除临时文件以及文件夹.
+     * 判断是否是分块上传.
+     *
+     * @return bool
      */
-    public function deleteTemporaryFile()
+    public function hasChunkFile()
     {
-        if (! $this->temporaryFilePath) {
-            return;
-        }
-        @unlink($this->temporaryFilePath);
-
-        if (
-            ! Finder::create()
-                ->in($dir = dirname($this->temporaryFilePath))
-                ->files()
-                ->count()
-        ) {
-            @rmdir($dir);
-        }
+        return $this->chunks > 1;
     }
 
     /**
      * 合并分块文件.
      *
-     * @param  UploadedFile  $file
+     * @param UploadedFile $file
      * @return UploadedFile|false
      */
     protected function mergeChunks(UploadedFile $file)
@@ -137,11 +117,11 @@ class WebUploader
         $this->moveChunk($file, $tmpDir, $newFilename);
 
         // 判断所有分块是否上传完毕.
-        if (! $this->isComplete($tmpDir, $newFilename)) {
+        if (!$this->isComplete($tmpDir, $newFilename)) {
             return false;
         }
 
-        $this->temporaryFilePath = $tmpDir.'/'.$newFilename.'.tmp';
+        $this->temporaryFilePath = $tmpDir . '/' . $newFilename . '.tmp';
 
         $this->putTempFileContent($this->temporaryFilePath, $tmpDir, $newFilename);
 
@@ -155,16 +135,66 @@ class WebUploader
     }
 
     /**
+     * 获取临时文件路径.
+     *
+     * @param mixed $path
+     * @return string
+     */
+    public function getTemporaryPath($path)
+    {
+        return $this->getTemporaryDirectory() . '/' . $path;
+    }
+
+    /**
+     * 获取临时文件目录.
+     *
+     * @return string
+     */
+    public function getTemporaryDirectory()
+    {
+        $dir = storage_path($this->temporaryDirectory);
+
+        if (!is_dir($dir)) {
+            app('files')->makeDirectory($dir, 0755, true);
+        }
+
+        return rtrim($dir, '/');
+    }
+
+    /**
+     * 生成分块文件名称.
+     *
+     * @param UploadedFile $file
+     * @return string
+     */
+    protected function generateChunkFileName(UploadedFile $file)
+    {
+        return md5($file->getClientOriginalName());
+    }
+
+    /**
+     * 移动分块文件到临时目录.
+     *
+     * @param UploadedFile $file
+     * @param string $tmpDir
+     * @param string $newFilename
+     */
+    protected function moveChunk(UploadedFile $file, $tmpDir, $newFilename)
+    {
+        $file->move($tmpDir, "{$newFilename}.{$this->chunk}.part");
+    }
+
+    /**
      * 判断所有分块是否上传完毕.
      *
-     * @param  string  $tmpDir
-     * @param  string  $newFilename
+     * @param string $tmpDir
+     * @param string $newFilename
      * @return bool
      */
     protected function isComplete($tmpDir, $newFilename)
     {
         for ($index = 0; $index < $this->chunks; $index++) {
-            if (! is_file("{$tmpDir}/{$newFilename}.{$index}.part")) {
+            if (!is_file("{$tmpDir}/{$newFilename}.{$index}.part")) {
                 return false;
             }
         }
@@ -173,21 +203,9 @@ class WebUploader
     }
 
     /**
-     * 移动分块文件到临时目录.
-     *
-     * @param  UploadedFile  $file
-     * @param  string  $tmpDir
-     * @param  string  $newFilename
-     */
-    protected function moveChunk(UploadedFile $file, $tmpDir, $newFilename)
-    {
-        $file->move($tmpDir, "{$newFilename}.{$this->chunk}.part");
-    }
-
-    /**
-     * @param  string  $path
-     * @param  string  $tmpDir
-     * @param  string  $newFilename
+     * @param string $path
+     * @param string $tmpDir
+     * @param string $newFilename
      */
     protected function putTempFileContent($path, $tmpDir, $newFileame)
     {
@@ -196,7 +214,7 @@ class WebUploader
         if (flock($out, LOCK_EX)) {
             for ($index = 0; $index < $this->chunks; $index++) {
                 $partPath = "{$tmpDir}/{$newFileame}.{$index}.part";
-                if (! $in = @fopen($partPath, 'rb')) {
+                if (!$in = @fopen($partPath, 'rb')) {
                     break;
                 }
 
@@ -215,40 +233,22 @@ class WebUploader
     }
 
     /**
-     * 生成分块文件名称.
-     *
-     * @param  UploadedFile  $file
-     * @return string
+     * 移除临时文件以及文件夹.
      */
-    protected function generateChunkFileName(UploadedFile $file)
+    public function deleteTemporaryFile()
     {
-        return md5($file->getClientOriginalName());
-    }
-
-    /**
-     * 获取临时文件路径.
-     *
-     * @param  mixed  $path
-     * @return string
-     */
-    public function getTemporaryPath($path)
-    {
-        return $this->getTemporaryDirectory().'/'.$path;
-    }
-
-    /**
-     * 获取临时文件目录.
-     *
-     * @return string
-     */
-    public function getTemporaryDirectory()
-    {
-        $dir = storage_path($this->temporaryDirectory);
-
-        if (! is_dir($dir)) {
-            app('files')->makeDirectory($dir, 0755, true);
+        if (!$this->temporaryFilePath) {
+            return;
         }
+        @unlink($this->temporaryFilePath);
 
-        return rtrim($dir, '/');
+        if (
+            !Finder::create()
+                ->in($dir = dirname($this->temporaryFilePath))
+                ->files()
+                ->count()
+        ) {
+            @rmdir($dir);
+        }
     }
 }

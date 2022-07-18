@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Diff;
 
 final class Line
 {
-    public const ADDED     = 1;
+    public const ADDED = 1;
 
-    public const REMOVED   = 2;
+    public const REMOVED = 2;
 
     public const UNCHANGED = 3;
 
@@ -29,7 +30,7 @@ final class Line
 
     public function __construct(int $type = self::UNCHANGED, string $content = '')
     {
-        $this->type    = $type;
+        $this->type = $type;
         $this->content = $content;
     }
 

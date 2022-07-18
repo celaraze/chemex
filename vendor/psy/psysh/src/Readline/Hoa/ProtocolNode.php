@@ -80,6 +80,14 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Get root the protocol.
+     */
+    public static function getRoot(): Protocol
+    {
+        return Protocol::getInstance();
+    }
+
+    /**
      * Add a node.
      */
     #[\ReturnTypeWillChange]
@@ -98,6 +106,14 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
         }
 
         $this->_children[$name] = $node;
+    }
+
+    /**
+     * Get node's name.
+     */
+    public function getName()
+    {
+        return $this->_name;
     }
 
     /**
@@ -127,6 +143,32 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
     public function offsetUnset($name)
     {
         unset($this->_children[$name]);
+    }
+
+    /**
+     * Get an iterator.
+     */
+    public function getIterator(): \ArrayIterator
+    {
+        return new \ArrayIterator($this->_children);
+    }
+
+    /**
+     * Print a tree of component.
+     */
+    public function __toString(): string
+    {
+        static $i = 0;
+
+        $out = \str_repeat('  ', $i) . $this->getName() . "\n";
+
+        foreach ($this as $node) {
+            ++$i;
+            $out .= $node;
+            --$i;
+        }
+
+        return $out;
     }
 
     /**
@@ -232,7 +274,7 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
                 }
             } else {
                 foreach ($ref as $entry) {
-                    $accumulator[] = $entry.$choice;
+                    $accumulator[] = $entry . $choice;
                 }
             }
         }
@@ -261,25 +303,6 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Set a new reach value.
-     */
-    public function setReach(string $reach)
-    {
-        $old = $this->_reach;
-        $this->_reach = $reach;
-
-        return $old;
-    }
-
-    /**
-     * Get node's name.
-     */
-    public function getName()
-    {
-        return $this->_name;
-    }
-
-    /**
      * Get reach's root.
      */
     protected function getReach()
@@ -288,36 +311,13 @@ class ProtocolNode implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Get an iterator.
+     * Set a new reach value.
      */
-    public function getIterator(): \ArrayIterator
+    public function setReach(string $reach)
     {
-        return new \ArrayIterator($this->_children);
-    }
+        $old = $this->_reach;
+        $this->_reach = $reach;
 
-    /**
-     * Get root the protocol.
-     */
-    public static function getRoot(): Protocol
-    {
-        return Protocol::getInstance();
-    }
-
-    /**
-     * Print a tree of component.
-     */
-    public function __toString(): string
-    {
-        static $i = 0;
-
-        $out = \str_repeat('  ', $i).$this->getName()."\n";
-
-        foreach ($this as $node) {
-            ++$i;
-            $out .= $node;
-            --$i;
-        }
-
-        return $out;
+        return $old;
     }
 }

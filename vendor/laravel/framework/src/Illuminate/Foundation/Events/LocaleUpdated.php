@@ -14,7 +14,7 @@ class LocaleUpdated
     /**
      * Create a new event instance.
      *
-     * @param  string  $locale
+     * @param string $locale
      * @return void
      */
     public function __construct($locale)

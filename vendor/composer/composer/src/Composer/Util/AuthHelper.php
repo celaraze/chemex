@@ -13,8 +13,8 @@
 namespace Composer\Util;
 
 use Composer\Config;
-use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 
 /**
@@ -36,7 +36,7 @@ class AuthHelper
     }
 
     /**
-     * @param string      $origin
+     * @param string $origin
      * @param 'prompt'|bool $storeAuth
      *
      * @return void
@@ -49,10 +49,10 @@ class AuthHelper
             $store = $configSource;
         } elseif ($storeAuth === 'prompt') {
             $answer = $this->io->askAndValidate(
-                'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
+                'Do you want to store credentials for ' . $origin . ' in ' . $configSource->getName() . ' ? [Yn] ',
                 function ($value): string {
                     $input = strtolower(substr(trim($value), 0, 1));
-                    if (in_array($input, array('y','n'))) {
+                    if (in_array($input, array('y', 'n'))) {
                         return $input;
                     }
                     throw new \RuntimeException('Please answer (y)es or (n)o');
@@ -67,19 +67,19 @@ class AuthHelper
         }
         if ($store) {
             $store->addConfigSetting(
-                'http-basic.'.$origin,
+                'http-basic.' . $origin,
                 $this->io->getAuthentication($origin)
             );
         }
     }
 
     /**
-     * @param  string      $url
-     * @param  string      $origin
-     * @param  int         $statusCode HTTP status code that triggered this call
-     * @param  string|null $reason     a message/description explaining why this was called
-     * @param  string[]    $headers
-     * @param  int         $retryCount the amount of retries already done on this URL
+     * @param string $url
+     * @param string $origin
+     * @param int $statusCode HTTP status code that triggered this call
+     * @param string|null $reason a message/description explaining why this was called
+     * @param string[] $headers
+     * @param int $retryCount the amount of retries already done on this URL
      * @return array       containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return array{retry: bool, storeAuth: 'prompt'|bool}
@@ -116,12 +116,12 @@ class AuthHelper
                 }
 
                 $message = sprintf(
-                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.$url.'. '.$message.' You can also wait until %s for the rate limit to reset.',
-                    $rateLimit['limit'],
-                    $rateLimit['reset']
-                )."\n";
+                        'GitHub API limit (%d calls/hr) is exhausted, could not fetch ' . $url . '. ' . $message . ' You can also wait until %s for the rate limit to reset.',
+                        $rateLimit['limit'],
+                        $rateLimit['reset']
+                    ) . "\n";
             } else {
-                $message .= 'Could not fetch '.$url.', please ';
+                $message .= 'Could not fetch ' . $url . ', please ';
                 if ($this->io->hasAuthentication($origin)) {
                     $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
                 } else {
@@ -132,10 +132,10 @@ class AuthHelper
             if (!$gitHubUtil->authorizeOAuth($origin)
                 && (!$this->io->isInteractive() || !$gitHubUtil->authorizeOAuthInteractively($origin, $message))
             ) {
-                throw new TransportException('Could not authenticate against '.$origin, 401);
+                throw new TransportException('Could not authenticate against ' . $origin, 401);
             }
         } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n" . 'Could not fetch ' . $url . ', enter your ' . $origin . ' credentials ' . ($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
             $auth = null;
@@ -149,7 +149,7 @@ class AuthHelper
             if (!$gitLabUtil->authorizeOAuth($origin)
                 && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively(parse_url($url, PHP_URL_SCHEME), $origin, $message))
             ) {
-                throw new TransportException('Could not authenticate against '.$origin, 401);
+                throw new TransportException('Could not authenticate against ' . $origin, 401);
             }
 
             if ($auth !== null && $this->io->hasAuthentication($origin)) {
@@ -175,7 +175,7 @@ class AuthHelper
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
+                $message = "\n" . 'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (!$bitBucketUtil->authorizeOAuth($origin)
                     && (!$this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
@@ -213,7 +213,7 @@ class AuthHelper
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
-            $this->io->writeError('    Authentication required (<info>'.$origin.'</info>):');
+            $this->io->writeError('    Authentication required (<info>' . $origin . '</info>):');
             $username = $this->io->ask('      Username: ');
             $password = $this->io->askAndHideAnswer('      Password: ');
             $this->io->setAuthentication($origin, $username, $password);
@@ -225,8 +225,8 @@ class AuthHelper
 
     /**
      * @param string[] $headers
-     * @param string   $origin
-     * @param string   $url
+     * @param string $origin
+     * @param string $url
      *
      * @return string[] updated headers array
      */
@@ -236,11 +236,11 @@ class AuthHelper
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
-                $headers[] = 'Authorization: Bearer '.$auth['username'];
+                $headers[] = 'Authorization: Bearer ' . $auth['username'];
             } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 // only add the access_token if it is actually a github API URL
                 if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
-                    $headers[] = 'Authorization: token '.$auth['username'];
+                    $headers[] = 'Authorization: token ' . $auth['username'];
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
@@ -248,10 +248,10 @@ class AuthHelper
                 && in_array($auth['password'], array('oauth2', 'private-token', 'gitlab-ci-token'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
-                    $headers[] = 'Authorization: Bearer '.$auth['username'];
+                    $headers[] = 'Authorization: Bearer ' . $auth['username'];
                     $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
                 } else {
-                    $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
+                    $headers[] = 'PRIVATE-TOKEN: ' . $auth['username'];
                     $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif (
@@ -265,7 +265,7 @@ class AuthHelper
                 }
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-                $headers[] = 'Authorization: Basic '.$authStr;
+                $headers[] = 'Authorization: Basic ' . $authStr;
                 $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
             }
 

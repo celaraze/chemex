@@ -24,7 +24,7 @@ class Imported
     /**
      * Constructor.
      *
-     * @param User  $user
+     * @param User $user
      * @param Model $model
      */
     public function __construct(User $user, Model $model)

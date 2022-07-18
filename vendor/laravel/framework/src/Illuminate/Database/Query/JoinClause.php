@@ -51,9 +51,9 @@ class JoinClause extends Builder
     /**
      * Create a new join clause instance.
      *
-     * @param  \Illuminate\Database\Query\Builder  $parentQuery
-     * @param  string  $type
-     * @param  string  $table
+     * @param \Illuminate\Database\Query\Builder $parentQuery
+     * @param string $type
+     * @param string $table
      * @return void
      */
     public function __construct(Builder $parentQuery, $type, $table)
@@ -71,6 +71,19 @@ class JoinClause extends Builder
     }
 
     /**
+     * Add an "or on" clause to the join.
+     *
+     * @param \Closure|string $first
+     * @param string|null $operator
+     * @param \Illuminate\Database\Query\Expression|string|null $second
+     * @return \Illuminate\Database\Query\JoinClause
+     */
+    public function orOn($first, $operator = null, $second = null)
+    {
+        return $this->on($first, $operator, $second, 'or');
+    }
+
+    /**
      * Add an "on" clause to the join.
      *
      * On clauses can be chained, e.g.
@@ -82,10 +95,10 @@ class JoinClause extends Builder
      *
      * on `contacts`.`user_id` = `users`.`id` and `contacts`.`info_id` = `info`.`id`
      *
-     * @param  \Closure|string  $first
-     * @param  string|null  $operator
-     * @param  \Illuminate\Database\Query\Expression|string|null  $second
-     * @param  string  $boolean
+     * @param \Closure|string $first
+     * @param string|null $operator
+     * @param \Illuminate\Database\Query\Expression|string|null $second
+     * @param string $boolean
      * @return $this
      *
      * @throws \InvalidArgumentException
@@ -100,16 +113,13 @@ class JoinClause extends Builder
     }
 
     /**
-     * Add an "or on" clause to the join.
+     * Create a new query instance for sub-query.
      *
-     * @param  \Closure|string  $first
-     * @param  string|null  $operator
-     * @param  \Illuminate\Database\Query\Expression|string|null  $second
-     * @return \Illuminate\Database\Query\JoinClause
+     * @return \Illuminate\Database\Query\Builder
      */
-    public function orOn($first, $operator = null, $second = null)
+    protected function forSubQuery()
     {
-        return $this->on($first, $operator, $second, 'or');
+        return $this->newParentQuery()->newQuery();
     }
 
     /**
@@ -120,16 +130,6 @@ class JoinClause extends Builder
     public function newQuery()
     {
         return new static($this->newParentQuery(), $this->type, $this->table);
-    }
-
-    /**
-     * Create a new query instance for sub-query.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    protected function forSubQuery()
-    {
-        return $this->newParentQuery()->newQuery();
     }
 
     /**

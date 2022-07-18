@@ -32,9 +32,9 @@ class CacheBasedMaintenanceMode implements MaintenanceMode
     /**
      * Create a new cache based maintenance mode implementation.
      *
-     * @param  \Illuminate\Contracts\Cache\Factory  $cache
-     * @param  string  $store
-     * @param  string  $key
+     * @param \Illuminate\Contracts\Cache\Factory $cache
+     * @param string $store
+     * @param string $key
      * @return void
      */
     public function __construct(Factory $cache, string $store, string $key)
@@ -47,12 +47,22 @@ class CacheBasedMaintenanceMode implements MaintenanceMode
     /**
      * Take the application down for maintenance.
      *
-     * @param  array  $payload
+     * @param array $payload
      * @return void
      */
     public function activate(array $payload): void
     {
         $this->getStore()->put($this->key, $payload);
+    }
+
+    /**
+     * Get the cache store to use.
+     *
+     * @return \Illuminate\Contracts\Cache\Repository
+     */
+    protected function getStore(): Repository
+    {
+        return $this->cache->store($this->store);
     }
 
     /**
@@ -83,15 +93,5 @@ class CacheBasedMaintenanceMode implements MaintenanceMode
     public function data(): array
     {
         return $this->getStore()->get($this->key);
-    }
-
-    /**
-     * Get the cache store to use.
-     *
-     * @return \Illuminate\Contracts\Cache\Repository
-     */
-    protected function getStore(): Repository
-    {
-        return $this->cache->store($this->store);
     }
 }

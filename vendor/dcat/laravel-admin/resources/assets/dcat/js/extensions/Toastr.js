@@ -1,4 +1,3 @@
-
 export default class Toastr {
     constructor(Dcat) {
         let _this = this;

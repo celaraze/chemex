@@ -31,7 +31,7 @@ class SmallIntType extends Type implements PhpIntegerMappingType
      */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return $value === null ? null : (int) $value;
+        return $value === null ? null : (int)$value;
     }
 
     /**

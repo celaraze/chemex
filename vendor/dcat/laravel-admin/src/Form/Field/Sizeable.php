@@ -19,6 +19,13 @@ trait Sizeable
         return $this->size('sm');
     }
 
+    public function size(?string $size)
+    {
+        $this->size = $size;
+
+        return $this;
+    }
+
     /**
      * 设置为大尺寸.
      *
@@ -29,18 +36,11 @@ trait Sizeable
         return $this->size('lg');
     }
 
-    public function size(?string $size)
-    {
-        $this->size = $size;
-
-        return $this;
-    }
-
     protected function initSize()
     {
         if ($this->size) {
-            $this->addElementClass('form-control-'.$this->size);
-            $this->setLabelClass('control-label-'.$this->size);
+            $this->addElementClass('form-control-' . $this->size);
+            $this->setLabelClass('control-label-' . $this->size);
         }
     }
 }

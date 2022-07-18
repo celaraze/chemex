@@ -12,11 +12,11 @@
 
 namespace Composer\Installer;
 
-use React\Promise\PromiseInterface;
-use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use React\Promise\PromiseInterface;
 
 /**
  * Project Installer is used to install a single package into a directory as
@@ -38,7 +38,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function __construct(string $installPath, DownloadManager $dm, Filesystem $fs)
     {
-        $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
+        $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/') . '/';
         $this->downloadManager = $dm;
         $this->filesystem = $fs;
     }
@@ -46,7 +46,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Decides if the installer supports the given type
      *
-     * @param  string $packageType
+     * @param string $packageType
      * @return bool
      */
     public function supports(string $packageType): bool
@@ -121,7 +121,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Returns the installation path of a package
      *
-     * @param  PackageInterface $package
+     * @param PackageInterface $package
      * @return string           path
      */
     public function getInstallPath(PackageInterface $package): string

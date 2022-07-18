@@ -65,15 +65,15 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         }
     }
 
-    public function register()
-    {
-        // Needed for Laravel < 5.3 compatibility
-    }
-
     protected function isEventDispatcher($instance)
     {
         return $instance instanceof EventDispatcher
             || $instance instanceof Dispatcher
             || $instance instanceof DispatcherContract;
+    }
+
+    public function register()
+    {
+        // Needed for Laravel < 5.3 compatibility
     }
 }

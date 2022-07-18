@@ -64,9 +64,33 @@ class Company extends \Faker\Provider\Company
     ];
 
     /**
-     * @example 'Fietsenmaker Zijlemans'
+     * Alias dutch vat number format
      *
      * @return string
+     */
+    public static function btw()
+    {
+        return self::vat();
+    }
+
+    /**
+     * Belasting Toegevoegde Waarde (BTW) = VAT
+     *
+     * @return string VAT Number
+     * @see https://www.belastingdienst.nl/wps/wcm/connect/bldcontentnl/belastingdienst/zakelijk/btw/administratie_bijhouden/btw_nummers_controleren/uw_btw_nummer
+     *
+     * @example 'NL123456789B01'
+     *
+     */
+    public static function vat()
+    {
+        return sprintf('%s%d%s%d', 'NL', self::randomNumber(9, true), 'B', self::randomNumber(2, true));
+    }
+
+    /**
+     * @return string
+     * @example 'Fietsenmaker Zijlemans'
+     *
      */
     public function company()
     {
@@ -94,29 +118,5 @@ class Company extends \Faker\Provider\Company
         }
 
         return $companyName;
-    }
-
-    /**
-     * Belasting Toegevoegde Waarde (BTW) = VAT
-     *
-     * @example 'NL123456789B01'
-     *
-     * @see https://www.belastingdienst.nl/wps/wcm/connect/bldcontentnl/belastingdienst/zakelijk/btw/administratie_bijhouden/btw_nummers_controleren/uw_btw_nummer
-     *
-     * @return string VAT Number
-     */
-    public static function vat()
-    {
-        return sprintf('%s%d%s%d', 'NL', self::randomNumber(9, true), 'B', self::randomNumber(2, true));
-    }
-
-    /**
-     * Alias dutch vat number format
-     *
-     * @return string
-     */
-    public static function btw()
-    {
-        return self::vat();
     }
 }

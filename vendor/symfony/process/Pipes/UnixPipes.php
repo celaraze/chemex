@@ -37,12 +37,12 @@ class UnixPipes extends AbstractPipes
 
     public function __sleep(): array
     {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
 
     public function __wakeup()
     {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
 
     public function __destruct()
@@ -158,6 +158,6 @@ class UnixPipes extends AbstractPipes
      */
     public function areOpen(): bool
     {
-        return (bool) $this->pipes;
+        return (bool)$this->pipes;
     }
 }

@@ -32,22 +32,6 @@ class StabilityOption extends Option
     }
 
     /**
-     * @return string
-     */
-    protected function getDescription(): string
-    {
-        return 'Release minimum stability flag';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function default(): string
-    {
-        return Stability::STABILITY_STABLE;
-    }
-
-    /**
      * {@inheritDoc}
      * @return StabilityType|string
      */
@@ -55,7 +39,7 @@ class StabilityOption extends Option
     {
         $stability = parent::get($input, $io);
 
-        if (! Stability::isValid($stability)) {
+        if (!Stability::isValid($stability)) {
             $message = 'Possibly invalid stability (--%s=%s) option (available: %s)';
             $io->warning(\sprintf($message, $this->name, $stability, $this->choices()));
         }
@@ -69,5 +53,21 @@ class StabilityOption extends Option
     private function choices(): string
     {
         return \implode(', ', Stability::all());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDescription(): string
+    {
+        return 'Release minimum stability flag';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function default(): string
+    {
+        return Stability::STABILITY_STABLE;
     }
 }

@@ -45,26 +45,19 @@ final class RelationForwardsCallsExtension implements MethodsClassReflectionExte
 
     public function hasMethod(ClassReflection $classReflection, string $methodName): bool
     {
-        if (array_key_exists($classReflection->getCacheKey().'-'.$methodName, $this->cache)) {
+        if (array_key_exists($classReflection->getCacheKey() . '-' . $methodName, $this->cache)) {
             return true;
         }
 
         $methodReflection = $this->findMethod($classReflection, $methodName);
 
         if ($methodReflection !== null) {
-            $this->cache[$classReflection->getCacheKey().'-'.$methodName] = $methodReflection;
+            $this->cache[$classReflection->getCacheKey() . '-' . $methodName] = $methodReflection;
 
             return true;
         }
 
         return false;
-    }
-
-    public function getMethod(
-        ClassReflection $classReflection,
-        string $methodName
-    ): MethodReflection {
-        return $this->cache[$classReflection->getCacheKey().'-'.$methodName];
     }
 
     /**
@@ -73,7 +66,7 @@ final class RelationForwardsCallsExtension implements MethodsClassReflectionExte
      */
     private function findMethod(ClassReflection $classReflection, string $methodName): ?MethodReflection
     {
-        if (! $classReflection->isSubclassOf(Relation::class)) {
+        if (!$classReflection->isSubclassOf(Relation::class)) {
             return null;
         }
 
@@ -135,5 +128,13 @@ final class RelationForwardsCallsExtension implements MethodsClassReflectionExte
             $returnType,
             $parametersAcceptor->isVariadic()
         );
+    }
+
+    public function getMethod(
+        ClassReflection $classReflection,
+        string          $methodName
+    ): MethodReflection
+    {
+        return $this->cache[$classReflection->getCacheKey() . '-' . $methodName];
     }
 }

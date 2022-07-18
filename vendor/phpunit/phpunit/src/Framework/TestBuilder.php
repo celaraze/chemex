@@ -7,18 +7,19 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework;
 
-use function assert;
-use function count;
-use function get_class;
-use function sprintf;
-use function trim;
 use PHPUnit\Util\Filter;
 use PHPUnit\Util\InvalidDataSetException;
 use PHPUnit\Util\Test as TestUtil;
 use ReflectionClass;
 use Throwable;
+use function assert;
+use function count;
+use function get_class;
+use function sprintf;
+use function trim;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -138,16 +139,41 @@ final class TestBuilder
         return new $className;
     }
 
+    private function throwableToString(Throwable $t): string
+    {
+        $message = $t->getMessage();
+
+        if (empty(trim($message))) {
+            $message = '<no message>';
+        }
+
+        if ($t instanceof InvalidDataSetException) {
+            return sprintf(
+                "%s\n%s",
+                $message,
+                Filter::getFilteredStacktrace($t)
+            );
+        }
+
+        return sprintf(
+            "%s: %s\n%s",
+            get_class($t),
+            $message,
+            Filter::getFilteredStacktrace($t)
+        );
+    }
+
     /** @psalm-param class-string $className */
     private function buildDataProviderTestSuite(
         string $methodName,
         string $className,
-        $data,
-        bool $runTestInSeparateProcess,
-        ?bool $preserveGlobalState,
-        bool $runClassInSeparateProcess,
-        array $backupSettings
-    ): DataProviderTestSuite {
+               $data,
+        bool   $runTestInSeparateProcess,
+        ?bool  $preserveGlobalState,
+        bool   $runClassInSeparateProcess,
+        array  $backupSettings
+    ): DataProviderTestSuite
+    {
         $dataProviderTestSuite = new DataProviderTestSuite(
             $className . '::' . $methodName
         );
@@ -181,11 +207,12 @@ final class TestBuilder
 
     private function configureTestCase(
         TestCase $test,
-        bool $runTestInSeparateProcess,
-        ?bool $preserveGlobalState,
-        bool $runClassInSeparateProcess,
-        array $backupSettings
-    ): void {
+        bool     $runTestInSeparateProcess,
+        ?bool    $preserveGlobalState,
+        bool     $runClassInSeparateProcess,
+        array    $backupSettings
+    ): void
+    {
         if ($runTestInSeparateProcess) {
             $test->setRunTestInSeparateProcess(true);
 
@@ -211,29 +238,5 @@ final class TestBuilder
                 $backupSettings['backupStaticAttributes']
             );
         }
-    }
-
-    private function throwableToString(Throwable $t): string
-    {
-        $message = $t->getMessage();
-
-        if (empty(trim($message))) {
-            $message = '<no message>';
-        }
-
-        if ($t instanceof InvalidDataSetException) {
-            return sprintf(
-                "%s\n%s",
-                $message,
-                Filter::getFilteredStacktrace($t)
-            );
-        }
-
-        return sprintf(
-            "%s: %s\n%s",
-            get_class($t),
-            $message,
-            Filter::getFilteredStacktrace($t)
-        );
     }
 }

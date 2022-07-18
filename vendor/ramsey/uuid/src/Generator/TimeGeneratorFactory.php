@@ -40,10 +40,11 @@ class TimeGeneratorFactory
     private $timeProvider;
 
     public function __construct(
-        NodeProviderInterface $nodeProvider,
+        NodeProviderInterface  $nodeProvider,
         TimeConverterInterface $timeConverter,
-        TimeProviderInterface $timeProvider
-    ) {
+        TimeProviderInterface  $timeProvider
+    )
+    {
         $this->nodeProvider = $nodeProvider;
         $this->timeConverter = $timeConverter;
         $this->timeProvider = $timeProvider;

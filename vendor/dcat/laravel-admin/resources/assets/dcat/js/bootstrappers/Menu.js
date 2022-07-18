@@ -1,4 +1,3 @@
-
 export default class Menu {
     constructor(Dcat) {
         this.init();
@@ -7,7 +6,7 @@ export default class Menu {
 
     // 菜单点击选中效果
     init() {
-        if (! $('.main-sidebar .sidebar').length) {
+        if (!$('.main-sidebar .sidebar').length) {
             return;
         }
 
@@ -20,7 +19,7 @@ export default class Menu {
 
         $items.find('a').click(function () {
             let href = $(this).attr('href');
-            if (! href || href === '#') {
+            if (!href || href === '#') {
                 return;
             }
 
@@ -70,15 +69,15 @@ export default class Menu {
 
         // 重新计算高度
         let resize = function () {
-            if (! $('.horizontal-menu').length) {
+            if (!$('.horizontal-menu').length) {
                 return;
             }
 
-            if (! defaultHorizontalMenuHeight) {
+            if (!defaultHorizontalMenuHeight) {
                 defaultHorizontalMenuHeight = $horizontalMenu.height()
             }
 
-            if (! horizontalMenuTop) {
+            if (!horizontalMenuTop) {
                 horizontalMenuTop = $horizontalMenu.offset().top + 15;
             }
 

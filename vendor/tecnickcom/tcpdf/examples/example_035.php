@@ -38,11 +38,11 @@ $pdf->setSubject('TCPDF Tutorial');
 $pdf->setKeywords('TCPDF, PDF, example, test, guide');
 
 // set default header data
-$pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 035', PDF_HEADER_STRING);
+$pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE . ' 035', PDF_HEADER_STRING);
 
 // set header and footer fonts
-$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+$pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
 // set default monospaced font
 $pdf->setDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -59,9 +59,9 @@ $pdf->setAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 // set some language-dependent strings (optional)
-if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-	require_once(dirname(__FILE__).'/lang/eng.php');
-	$pdf->setLanguageArray($l);
+if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
+    require_once(dirname(__FILE__) . '/lang/eng.php');
+    $pdf->setLanguageArray($l);
 }
 
 // ---------------------------------------------------------
@@ -77,28 +77,28 @@ $pdf->Write(0, 'Example of SetLineStyle() method', '', 0, 'L', true, 0, false, f
 $pdf->Ln();
 
 $pdf->setLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 4, 'color' => array(255, 0, 0)));
-$pdf->setFillColor(255,255,128);
-$pdf->setTextColor(0,0,128);
+$pdf->setFillColor(255, 255, 128);
+$pdf->setTextColor(0, 0, 128);
 
-$text="DUMMY";
+$text = "DUMMY";
 
 $pdf->Cell(0, 0, $text, 1, 1, 'L', 1, 0);
 
 $pdf->Ln();
 
 $pdf->setLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 255)));
-$pdf->setFillColor(255,255,0);
-$pdf->setTextColor(0,0,255);
+$pdf->setFillColor(255, 255, 0);
+$pdf->setTextColor(0, 0, 255);
 $pdf->MultiCell(60, 4, $text, 1, 'C', 1, 0);
 
 $pdf->setLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255, 255, 0)));
-$pdf->setFillColor(0,0,255);
-$pdf->setTextColor(255,255,0);
+$pdf->setFillColor(0, 0, 255);
+$pdf->setTextColor(255, 255, 0);
 $pdf->MultiCell(60, 4, $text, 'TB', 'C', 1, 0);
 
 $pdf->setLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255, 0, 255)));
-$pdf->setFillColor(0,255,0);
-$pdf->setTextColor(255,0,255);
+$pdf->setFillColor(0, 255, 0);
+$pdf->setTextColor(255, 0, 255);
 $pdf->MultiCell(60, 4, $text, 1, 'C', 1, 1);
 
 // ---------------------------------------------------------

@@ -5,22 +5,21 @@ namespace Dcat\Admin\Http\Middleware;
 use Closure;
 use Dcat\Admin\Admin;
 use Dcat\Admin\Support\Helper;
-use Illuminate\Http\Request;
 
 class Authenticate
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
         if (
-            ! config('admin.auth.enable', true)
-            || ! Admin::guard()->guest()
+            !config('admin.auth.enable', true)
+            || !Admin::guard()->guest()
             || $this->shouldPassThrough($request)
         ) {
             return $next($request);
@@ -32,13 +31,13 @@ class Authenticate
     /**
      * Determine if the request has a URI that should pass through verification.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public static function shouldPassThrough($request)
     {
         $excepts = array_merge(
-            (array) config('admin.auth.except', []),
+            (array)config('admin.auth.except', []),
             Admin::context()->getArray('auth.except')
         );
 

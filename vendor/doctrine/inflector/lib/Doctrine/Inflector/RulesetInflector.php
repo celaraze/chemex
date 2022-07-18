@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Doctrine\Inflector;
 
 use Doctrine\Inflector\Rules\Ruleset;
-
 use function array_merge;
 
 /**

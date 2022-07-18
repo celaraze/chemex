@@ -23,10 +23,14 @@ class SentReports
         return $this->reports;
     }
 
-    /** @return array<int, string> */
-    public function uuids(): array
+    public function latestUuid(): ?string
     {
-        return array_map(fn (Report $report) => $report->trackingUuid(), $this->reports);
+        return Arr::last($this->reports)?->trackingUuid();
+    }
+
+    public function latestUrl(): ?string
+    {
+        return Arr::last($this->urls());
     }
 
     /** @return array<int, string> */
@@ -37,14 +41,10 @@ class SentReports
         }, $this->uuids());
     }
 
-    public function latestUuid(): ?string
+    /** @return array<int, string> */
+    public function uuids(): array
     {
-        return Arr::last($this->reports)?->trackingUuid();
-    }
-
-    public function latestUrl(): ?string
-    {
-        return Arr::last($this->urls());
+        return array_map(fn(Report $report) => $report->trackingUuid(), $this->reports);
     }
 
     public function clear(): void

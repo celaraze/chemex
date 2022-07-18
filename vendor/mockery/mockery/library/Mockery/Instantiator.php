@@ -20,9 +20,9 @@
 namespace Mockery;
 
 use Closure;
+use InvalidArgumentException;
 use ReflectionClass;
 use UnexpectedValueException;
-use InvalidArgumentException;
 
 /**
  * This is a trimmed down version of https://github.com/doctrine/instantiator,
@@ -37,8 +37,8 @@ final class Instantiator
      */
     public function instantiate($className)
     {
-        $factory    = $this->buildFactory($className);
-        $instance   = $factory();
+        $factory = $this->buildFactory($className);
+        $instance = $factory();
 
         return $instance;
     }
@@ -83,7 +83,7 @@ final class Instantiator
      */
     private function getReflectionClass($className)
     {
-        if (! class_exists($className)) {
+        if (!class_exists($className)) {
             throw new InvalidArgumentException("Class:$className does not exist");
         }
 
@@ -98,11 +98,21 @@ final class Instantiator
 
     /**
      * @param ReflectionClass $reflectionClass
-     * @param string          $serializedString
      *
-     * @throws UnexpectedValueException
+     * @return bool
+     */
+    private function isInstantiableViaReflection(ReflectionClass $reflectionClass)
+    {
+        return !($reflectionClass->isInternal() && $reflectionClass->isFinal());
+    }
+
+    /**
+     * @param ReflectionClass $reflectionClass
+     * @param string $serializedString
      *
      * @return void
+     * @throws UnexpectedValueException
+     *
      */
     private function attemptInstantiationViaUnSerialization(ReflectionClass $reflectionClass, $serializedString)
     {
@@ -130,16 +140,6 @@ final class Instantiator
         if ($error) {
             throw $error;
         }
-    }
-
-    /**
-     * @param ReflectionClass $reflectionClass
-     *
-     * @return bool
-     */
-    private function isInstantiableViaReflection(ReflectionClass $reflectionClass)
-    {
-        return ! ($reflectionClass->isInternal() && $reflectionClass->isFinal());
     }
 
     /**

@@ -7,11 +7,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util;
 
-use const ENT_COMPAT;
-use const ENT_SUBSTITUTE;
-use const PHP_SAPI;
 use function assert;
 use function count;
 use function dirname;
@@ -27,6 +25,9 @@ use function sprintf;
 use function str_replace;
 use function strncmp;
 use function strpos;
+use const ENT_COMPAT;
+use const ENT_SUBSTITUTE;
+use const PHP_SAPI;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -72,7 +73,7 @@ class Printer
                 );
             }
 
-            $this->stream = fsockopen($tmp[0], (int) $tmp[1]);
+            $this->stream = fsockopen($tmp[0], (int)$tmp[1]);
 
             return;
         }
@@ -86,7 +87,7 @@ class Printer
             );
         }
 
-        $this->stream      = fopen($out, 'wb');
+        $this->stream = fopen($out, 'wb');
         $this->isPhpStream = strncmp($out, 'php://', 6) !== 0;
     }
 

@@ -19,14 +19,6 @@ final class Uninflected
     /**
      * @return Pattern[]
      */
-    public static function getPlural(): iterable
-    {
-        yield from self::getDefault();
-    }
-
-    /**
-     * @return Pattern[]
-     */
     private static function getDefault(): iterable
     {
         yield new Pattern('tórax');
@@ -34,5 +26,13 @@ final class Uninflected
         yield new Pattern('ônibus');
         yield new Pattern('lápis');
         yield new Pattern('fênix');
+    }
+
+    /**
+     * @return Pattern[]
+     */
+    public static function getPlural(): iterable
+    {
+        yield from self::getDefault();
     }
 }

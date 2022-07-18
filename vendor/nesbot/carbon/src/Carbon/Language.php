@@ -79,61 +79,6 @@ class Language implements JsonSerializable
     }
 
     /**
-     * Get the list of the known languages.
-     *
-     * @return array
-     */
-    public static function all()
-    {
-        if (!static::$languagesNames) {
-            static::$languagesNames = require __DIR__.'/List/languages.php';
-        }
-
-        return static::$languagesNames;
-    }
-
-    /**
-     * Get the list of the known regions.
-     *
-     * @return array
-     */
-    public static function regions()
-    {
-        if (!static::$regionsNames) {
-            static::$regionsNames = require __DIR__.'/List/regions.php';
-        }
-
-        return static::$regionsNames;
-    }
-
-    /**
-     * Get both isoName and nativeName as an array.
-     *
-     * @return array
-     */
-    public function getNames(): array
-    {
-        if (!$this->names) {
-            $this->names = static::all()[$this->code] ?? [
-                'isoName' => $this->code,
-                'nativeName' => $this->code,
-            ];
-        }
-
-        return $this->names;
-    }
-
-    /**
-     * Returns the original locale ID.
-     *
-     * @return string
-     */
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    /**
      * Returns the code of the locale "en"/"fr".
      *
      * @return string
@@ -151,6 +96,53 @@ class Language implements JsonSerializable
     public function getVariant(): ?string
     {
         return $this->variant;
+    }
+
+    /**
+     * Returns the region part of the locale.
+     *
+     * @return string|null
+     */
+    public function getRegion(): ?string
+    {
+        return $this->region;
+    }
+
+    /**
+     * Get a string with short native name, region in parentheses if applicable, variant in parentheses if applicable.
+     *
+     * @return string
+     */
+    public function getNativeDescription()
+    {
+        $region = $this->getRegionName();
+        $variant = $this->getVariantName();
+
+        return $this->getNativeName() . ($region ? ' (' . $region . ')' : '') . ($variant ? ' (' . $variant . ')' : '');
+    }
+
+    /**
+     * Returns the region name for the current language.
+     *
+     * @return string|null
+     */
+    public function getRegionName(): ?string
+    {
+        return $this->region ? (static::regions()[$this->region] ?? $this->region) : null;
+    }
+
+    /**
+     * Get the list of the known regions.
+     *
+     * @return array
+     */
+    public static function regions()
+    {
+        if (!static::$regionsNames) {
+            static::$regionsNames = require __DIR__ . '/List/regions.php';
+        }
+
+        return static::$regionsNames;
     }
 
     /**
@@ -172,47 +164,25 @@ class Language implements JsonSerializable
     }
 
     /**
-     * Returns the region part of the locale.
-     *
-     * @return string|null
-     */
-    public function getRegion(): ?string
-    {
-        return $this->region;
-    }
-
-    /**
-     * Returns the region name for the current language.
-     *
-     * @return string|null
-     */
-    public function getRegionName(): ?string
-    {
-        return $this->region ? (static::regions()[$this->region] ?? $this->region) : null;
-    }
-
-    /**
-     * Returns the long ISO language name.
+     * Get the short name of the language in this language.
      *
      * @return string
      */
-    public function getFullIsoName(): string
+    public function getNativeName(): string
     {
-        if (!$this->isoName) {
-            $this->isoName = $this->getNames()['isoName'];
-        }
+        $name = $this->getFullNativeName();
 
-        return $this->isoName;
+        return trim(strstr($name, ',', true) ?: $name);
     }
 
     /**
-     * Set the ISO language name.
+     * Set the name of the language in this language.
      *
-     * @param string $isoName
+     * @param string $nativeName
      */
-    public function setIsoName(string $isoName): self
+    public function setNativeName(string $nativeName): self
     {
-        $this->isoName = $isoName;
+        $this->nativeName = $nativeName;
 
         return $this;
     }
@@ -232,15 +202,118 @@ class Language implements JsonSerializable
     }
 
     /**
-     * Set the name of the language in this language.
+     * Get both isoName and nativeName as an array.
      *
-     * @param string $nativeName
+     * @return array
      */
-    public function setNativeName(string $nativeName): self
+    public function getNames(): array
     {
-        $this->nativeName = $nativeName;
+        if (!$this->names) {
+            $this->names = static::all()[$this->code] ?? [
+                    'isoName' => $this->code,
+                    'nativeName' => $this->code,
+                ];
+        }
 
-        return $this;
+        return $this->names;
+    }
+
+    /**
+     * Get the list of the known languages.
+     *
+     * @return array
+     */
+    public static function all()
+    {
+        if (!static::$languagesNames) {
+            static::$languagesNames = require __DIR__ . '/List/languages.php';
+        }
+
+        return static::$languagesNames;
+    }
+
+    /**
+     * Get a string with long ISO name, region in parentheses if applicable, variant in parentheses if applicable.
+     *
+     * @return string
+     */
+    public function getFullIsoDescription()
+    {
+        $region = $this->getRegionName();
+        $variant = $this->getVariantName();
+
+        return $this->getFullIsoName() . ($region ? ' (' . $region . ')' : '') . ($variant ? ' (' . $variant . ')' : '');
+    }
+
+    /**
+     * Returns the long ISO language name.
+     *
+     * @return string
+     */
+    public function getFullIsoName(): string
+    {
+        if (!$this->isoName) {
+            $this->isoName = $this->getNames()['isoName'];
+        }
+
+        return $this->isoName;
+    }
+
+    /**
+     * Get a string with long native name, region in parentheses if applicable, variant in parentheses if applicable.
+     *
+     * @return string
+     */
+    public function getFullNativeDescription()
+    {
+        $region = $this->getRegionName();
+        $variant = $this->getVariantName();
+
+        return $this->getFullNativeName() . ($region ? ' (' . $region . ')' : '') . ($variant ? ' (' . $variant . ')' : '');
+    }
+
+    /**
+     * Returns the original locale ID.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getId();
+    }
+
+    /**
+     * Returns the original locale ID.
+     *
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * Get a string with short ISO name, region in parentheses if applicable, variant in parentheses if applicable.
+     *
+     * @return string
+     */
+    #[ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return $this->getIsoDescription();
+    }
+
+    /**
+     * Get a string with short ISO name, region in parentheses if applicable, variant in parentheses if applicable.
+     *
+     * @return string
+     */
+    public function getIsoDescription()
+    {
+        $region = $this->getRegionName();
+        $variant = $this->getVariantName();
+
+        return $this->getIsoName() . ($region ? ' (' . $region . ')' : '') . ($variant ? ' (' . $variant . ')' : '');
     }
 
     /**
@@ -256,87 +329,14 @@ class Language implements JsonSerializable
     }
 
     /**
-     * Get the short name of the language in this language.
+     * Set the ISO language name.
      *
-     * @return string
+     * @param string $isoName
      */
-    public function getNativeName(): string
+    public function setIsoName(string $isoName): self
     {
-        $name = $this->getFullNativeName();
+        $this->isoName = $isoName;
 
-        return trim(strstr($name, ',', true) ?: $name);
-    }
-
-    /**
-     * Get a string with short ISO name, region in parentheses if applicable, variant in parentheses if applicable.
-     *
-     * @return string
-     */
-    public function getIsoDescription()
-    {
-        $region = $this->getRegionName();
-        $variant = $this->getVariantName();
-
-        return $this->getIsoName().($region ? ' ('.$region.')' : '').($variant ? ' ('.$variant.')' : '');
-    }
-
-    /**
-     * Get a string with short native name, region in parentheses if applicable, variant in parentheses if applicable.
-     *
-     * @return string
-     */
-    public function getNativeDescription()
-    {
-        $region = $this->getRegionName();
-        $variant = $this->getVariantName();
-
-        return $this->getNativeName().($region ? ' ('.$region.')' : '').($variant ? ' ('.$variant.')' : '');
-    }
-
-    /**
-     * Get a string with long ISO name, region in parentheses if applicable, variant in parentheses if applicable.
-     *
-     * @return string
-     */
-    public function getFullIsoDescription()
-    {
-        $region = $this->getRegionName();
-        $variant = $this->getVariantName();
-
-        return $this->getFullIsoName().($region ? ' ('.$region.')' : '').($variant ? ' ('.$variant.')' : '');
-    }
-
-    /**
-     * Get a string with long native name, region in parentheses if applicable, variant in parentheses if applicable.
-     *
-     * @return string
-     */
-    public function getFullNativeDescription()
-    {
-        $region = $this->getRegionName();
-        $variant = $this->getVariantName();
-
-        return $this->getFullNativeName().($region ? ' ('.$region.')' : '').($variant ? ' ('.$variant.')' : '');
-    }
-
-    /**
-     * Returns the original locale ID.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->getId();
-    }
-
-    /**
-     * Get a string with short ISO name, region in parentheses if applicable, variant in parentheses if applicable.
-     *
-     * @return string
-     */
-    #[ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return $this->getIsoDescription();
+        return $this;
     }
 }

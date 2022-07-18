@@ -154,7 +154,7 @@ interface PackageInterface
     public function getSourceMirrors(): ?array;
 
     /**
-     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
+     * @param null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
     public function setSourceMirrors(?array $mirrors): void;
@@ -202,7 +202,7 @@ interface PackageInterface
     public function getDistMirrors(): ?array;
 
     /**
-     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
+     * @param null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
     public function setDistMirrors(?array $mirrors): void;
@@ -224,13 +224,13 @@ interface PackageInterface
     /**
      * Returns the pretty version string plus a git or hg commit hash of this package
      *
-     * @see getPrettyVersion
-     *
-     * @param  bool   $truncate    If the source reference is a sha1 hash, truncate it
-     * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
+     * @param bool $truncate If the source reference is a sha1 hash, truncate it
+     * @param int $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
      *
      * @phpstan-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
+     * @see getPrettyVersion
+     *
      */
     public function getFullPrettyVersion(bool $truncate = true, int $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV): string;
 

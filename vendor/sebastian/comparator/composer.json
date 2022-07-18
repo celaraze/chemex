@@ -1,7 +1,11 @@
 {
     "name": "sebastian/comparator",
     "description": "Provides the functionality to compare PHP values for equality",
-    "keywords": ["comparator","compare","equality"],
+    "keywords": [
+        "comparator",
+        "compare",
+        "equality"
+    ],
     "homepage": "https://github.com/sebastianbergmann/comparator",
     "license": "BSD-3-Clause",
     "authors": [

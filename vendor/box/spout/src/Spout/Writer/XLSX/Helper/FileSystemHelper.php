@@ -92,8 +92,8 @@ class FileSystemHelper extends \Box\Spout\Common\Helper\FileSystemHelper impleme
     /**
      * Creates all the folders needed to create a XLSX file, as well as the files that won't change.
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the base folders
      * @return void
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the base folders
      */
     public function createBaseFilesAndFolders()
     {
@@ -105,51 +105,42 @@ class FileSystemHelper extends \Box\Spout\Common\Helper\FileSystemHelper impleme
     }
 
     /**
-     * Creates the folder that will be used as root
+     * Creates the "xl" folder under the root folder as well as its subfolders
      *
+     * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the folders
+     */
+    private function createXlFolderAndSubFolders()
+    {
+        $this->xlFolder = $this->createFolder($this->rootFolder, self::XL_FOLDER_NAME);
+        $this->createXlRelsFolder();
+        $this->createXlWorksheetsFolder();
+
+        return $this;
+    }
+
+    /**
+     * Creates the "_rels" folder under the "xl" folder
+     *
+     * @return FileSystemHelper
      * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
-     * @return FileSystemHelper
      */
-    private function createRootFolder()
+    private function createXlRelsFolder()
     {
-        $this->rootFolder = $this->createFolder($this->baseFolderRealPath, \uniqid('xlsx', true));
+        $this->xlRelsFolder = $this->createFolder($this->xlFolder, self::RELS_FOLDER_NAME);
 
         return $this;
     }
 
     /**
-     * Creates the "_rels" folder under the root folder as well as the ".rels" file in it
+     * Creates the "worksheets" folder under the "xl" folder
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or the ".rels" file
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      */
-    private function createRelsFolderAndFile()
+    private function createXlWorksheetsFolder()
     {
-        $this->relsFolder = $this->createFolder($this->rootFolder, self::RELS_FOLDER_NAME);
-
-        $this->createRelsFile();
-
-        return $this;
-    }
-
-    /**
-     * Creates the ".rels" file under the "_rels" folder (under root)
-     *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
-     * @return FileSystemHelper
-     */
-    private function createRelsFile()
-    {
-        $relsFileContents = <<<'EOD'
-<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-    <Relationship Id="rIdWorkbook" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-    <Relationship Id="rIdCore" Type="http://schemas.openxmlformats.org/officedocument/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
-    <Relationship Id="rIdApp" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
-</Relationships>
-EOD;
-
-        $this->createFileWithContents($this->relsFolder, self::RELS_FILE_NAME, $relsFileContents);
+        $this->xlWorksheetsFolder = $this->createFolder($this->xlFolder, self::WORKSHEETS_FOLDER_NAME);
 
         return $this;
     }
@@ -157,8 +148,8 @@ EOD;
     /**
      * Creates the "docProps" folder under the root folder as well as the "app.xml" and "core.xml" files in it
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or one of the files
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or one of the files
      */
     private function createDocPropsFolderAndFiles()
     {
@@ -173,8 +164,8 @@ EOD;
     /**
      * Creates the "app.xml" file under the "docProps" folder
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      */
     private function createAppXmlFile()
     {
@@ -195,8 +186,8 @@ EOD;
     /**
      * Creates the "core.xml" file under the "docProps" folder
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      */
     private function createCoreXmlFile()
     {
@@ -216,42 +207,51 @@ EOD;
     }
 
     /**
-     * Creates the "xl" folder under the root folder as well as its subfolders
+     * Creates the "_rels" folder under the root folder as well as the ".rels" file in it
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create at least one of the folders
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder or the ".rels" file
      */
-    private function createXlFolderAndSubFolders()
+    private function createRelsFolderAndFile()
     {
-        $this->xlFolder = $this->createFolder($this->rootFolder, self::XL_FOLDER_NAME);
-        $this->createXlRelsFolder();
-        $this->createXlWorksheetsFolder();
+        $this->relsFolder = $this->createFolder($this->rootFolder, self::RELS_FOLDER_NAME);
+
+        $this->createRelsFile();
 
         return $this;
     }
 
     /**
-     * Creates the "_rels" folder under the "xl" folder
+     * Creates the ".rels" file under the "_rels" folder (under root)
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the file
      */
-    private function createXlRelsFolder()
+    private function createRelsFile()
     {
-        $this->xlRelsFolder = $this->createFolder($this->xlFolder, self::RELS_FOLDER_NAME);
+        $relsFileContents = <<<'EOD'
+<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rIdWorkbook" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+    <Relationship Id="rIdCore" Type="http://schemas.openxmlformats.org/officedocument/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+    <Relationship Id="rIdApp" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>
+EOD;
+
+        $this->createFileWithContents($this->relsFolder, self::RELS_FILE_NAME, $relsFileContents);
 
         return $this;
     }
 
     /**
-     * Creates the "worksheets" folder under the "xl" folder
+     * Creates the folder that will be used as root
      *
-     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      * @return FileSystemHelper
+     * @throws \Box\Spout\Common\Exception\IOException If unable to create the folder
      */
-    private function createXlWorksheetsFolder()
+    private function createRootFolder()
     {
-        $this->xlWorksheetsFolder = $this->createFolder($this->xlFolder, self::WORKSHEETS_FOLDER_NAME);
+        $this->rootFolder = $this->createFolder($this->baseFolderRealPath, \uniqid('xlsx', true));
 
         return $this;
     }

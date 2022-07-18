@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 use function mb_stripos;
@@ -31,7 +32,7 @@ final class StringContains extends Constraint
 
     public function __construct(string $string, bool $ignoreCase = false)
     {
-        $this->string     = $string;
+        $this->string = $string;
         $this->ignoreCase = $ignoreCase;
     }
 

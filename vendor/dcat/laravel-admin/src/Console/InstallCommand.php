@@ -59,16 +59,6 @@ class InstallCommand extends Command
     }
 
     /**
-     * Set admin directory.
-     *
-     * @return void
-     */
-    protected function setDirectory()
-    {
-        $this->directory = config('admin.directory');
-    }
-
-    /**
      * Initialize the admin directory.
      *
      * @return void
@@ -84,7 +74,7 @@ class InstallCommand extends Command
         }
 
         $this->makeDir('/');
-        $this->line('<info>Admin directory was created:</info> '.str_replace(base_path(), '', $this->directory));
+        $this->line('<info>Admin directory was created:</info> ' . str_replace(base_path(), '', $this->directory));
 
         $this->makeDir('Controllers');
         $this->makeDir('Metrics/Examples');
@@ -98,13 +88,33 @@ class InstallCommand extends Command
     }
 
     /**
+     * Set admin directory.
+     *
+     * @return void
+     */
+    protected function setDirectory()
+    {
+        $this->directory = config('admin.directory');
+    }
+
+    /**
+     * Make new directory.
+     *
+     * @param string $path
+     */
+    protected function makeDir($path = '')
+    {
+        $this->laravel['files']->makeDirectory("{$this->directory}/$path", 0755, true, true);
+    }
+
+    /**
      * Create HomeController.
      *
      * @return void
      */
     public function createHomeController()
     {
-        $homeController = $this->directory.'/Controllers/HomeController.php';
+        $homeController = $this->directory . '/Controllers/HomeController.php';
         $contents = $this->getStub('HomeController');
 
         $this->laravel['files']->put(
@@ -115,95 +125,7 @@ class InstallCommand extends Command
                 $contents
             )
         );
-        $this->line('<info>HomeController file was created:</info> '.str_replace(base_path(), '', $homeController));
-    }
-
-    /**
-     * Create AuthController.
-     *
-     * @return void
-     */
-    public function createAuthController()
-    {
-        $authController = $this->directory.'/Controllers/AuthController.php';
-        $contents = $this->getStub('AuthController');
-
-        $this->laravel['files']->put(
-            $authController,
-            str_replace(
-                ['DummyNamespace'],
-                [$this->namespace('Controllers')],
-                $contents
-            )
-        );
-        $this->line('<info>AuthController file was created:</info> '.str_replace(base_path(), '', $authController));
-    }
-
-    /**
-     * @return void
-     */
-    public function createMetricCards()
-    {
-        $map = [
-            '/Metrics/Examples/NewUsers.php'      => 'metrics/NewUsers',
-            '/Metrics/Examples/NewDevices.php'    => 'metrics/NewDevices',
-            '/Metrics/Examples/ProductOrders.php' => 'metrics/ProductOrders',
-            '/Metrics/Examples/Sessions.php'      => 'metrics/Sessions',
-            '/Metrics/Examples/Tickets.php'       => 'metrics/Tickets',
-            '/Metrics/Examples/TotalUsers.php'    => 'metrics/TotalUsers',
-        ];
-
-        $namespace = $this->namespace('Metrics\\Examples');
-
-        foreach ($map as $path => $stub) {
-            $this->laravel['files']->put(
-                $this->directory.$path,
-                str_replace(
-                    'DummyNamespace',
-                    $namespace,
-                    $this->getStub($stub)
-                )
-            );
-        }
-    }
-
-    /**
-     * @param  string  $name
-     * @return string
-     */
-    protected function namespace($name = null)
-    {
-        $base = str_replace('\\Controllers', '\\', config('admin.route.namespace'));
-
-        return trim($base, '\\').($name ? "\\{$name}" : '');
-    }
-
-    /**
-     * Create routes file.
-     *
-     * @return void
-     */
-    protected function createBootstrapFile()
-    {
-        $file = $this->directory.'/bootstrap.php';
-
-        $contents = $this->getStub('bootstrap');
-        $this->laravel['files']->put($file, $contents);
-        $this->line('<info>Bootstrap file was created:</info> '.str_replace(base_path(), '', $file));
-    }
-
-    /**
-     * Create routes file.
-     *
-     * @return void
-     */
-    protected function createRoutesFile()
-    {
-        $file = $this->directory.'/routes.php';
-
-        $contents = $this->getStub('routes');
-        $this->laravel['files']->put($file, str_replace('DummyNamespace', $this->namespace('Controllers'), $contents));
-        $this->line('<info>Routes file was created:</info> '.str_replace(base_path(), '', $file));
+        $this->line('<info>HomeController file was created:</info> ' . str_replace(base_path(), '', $homeController));
     }
 
     /**
@@ -214,16 +136,94 @@ class InstallCommand extends Command
      */
     protected function getStub($name)
     {
-        return $this->laravel['files']->get(__DIR__."/stubs/$name.stub");
+        return $this->laravel['files']->get(__DIR__ . "/stubs/$name.stub");
     }
 
     /**
-     * Make new directory.
-     *
-     * @param  string  $path
+     * @param string $name
+     * @return string
      */
-    protected function makeDir($path = '')
+    protected function namespace($name = null)
     {
-        $this->laravel['files']->makeDirectory("{$this->directory}/$path", 0755, true, true);
+        $base = str_replace('\\Controllers', '\\', config('admin.route.namespace'));
+
+        return trim($base, '\\') . ($name ? "\\{$name}" : '');
+    }
+
+    /**
+     * Create AuthController.
+     *
+     * @return void
+     */
+    public function createAuthController()
+    {
+        $authController = $this->directory . '/Controllers/AuthController.php';
+        $contents = $this->getStub('AuthController');
+
+        $this->laravel['files']->put(
+            $authController,
+            str_replace(
+                ['DummyNamespace'],
+                [$this->namespace('Controllers')],
+                $contents
+            )
+        );
+        $this->line('<info>AuthController file was created:</info> ' . str_replace(base_path(), '', $authController));
+    }
+
+    /**
+     * @return void
+     */
+    public function createMetricCards()
+    {
+        $map = [
+            '/Metrics/Examples/NewUsers.php' => 'metrics/NewUsers',
+            '/Metrics/Examples/NewDevices.php' => 'metrics/NewDevices',
+            '/Metrics/Examples/ProductOrders.php' => 'metrics/ProductOrders',
+            '/Metrics/Examples/Sessions.php' => 'metrics/Sessions',
+            '/Metrics/Examples/Tickets.php' => 'metrics/Tickets',
+            '/Metrics/Examples/TotalUsers.php' => 'metrics/TotalUsers',
+        ];
+
+        $namespace = $this->namespace('Metrics\\Examples');
+
+        foreach ($map as $path => $stub) {
+            $this->laravel['files']->put(
+                $this->directory . $path,
+                str_replace(
+                    'DummyNamespace',
+                    $namespace,
+                    $this->getStub($stub)
+                )
+            );
+        }
+    }
+
+    /**
+     * Create routes file.
+     *
+     * @return void
+     */
+    protected function createBootstrapFile()
+    {
+        $file = $this->directory . '/bootstrap.php';
+
+        $contents = $this->getStub('bootstrap');
+        $this->laravel['files']->put($file, $contents);
+        $this->line('<info>Bootstrap file was created:</info> ' . str_replace(base_path(), '', $file));
+    }
+
+    /**
+     * Create routes file.
+     *
+     * @return void
+     */
+    protected function createRoutesFile()
+    {
+        $file = $this->directory . '/routes.php';
+
+        $contents = $this->getStub('routes');
+        $this->laravel['files']->put($file, str_replace('DummyNamespace', $this->namespace('Controllers'), $contents));
+        $this->line('<info>Routes file was created:</info> ' . str_replace(base_path(), '', $file));
     }
 }

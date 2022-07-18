@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 use function json_decode;
@@ -64,8 +65,8 @@ final class IsJson extends Constraint
         }
 
         json_decode($other);
-        $error = (string) JsonMatchesErrorMessageProvider::determineJsonError(
-            (string) json_last_error()
+        $error = (string)JsonMatchesErrorMessageProvider::determineJsonError(
+            (string)json_last_error()
         );
 
         return sprintf(

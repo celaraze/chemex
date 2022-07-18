@@ -139,6 +139,41 @@ class IseedCommand extends Command
     }
 
     /**
+     * Generate file name, to be used in test wether seed file already exist
+     *
+     * @param string $table
+     * @return string
+     */
+    protected function generateFileName($table, $prefix = null, $suffix = null)
+    {
+        if (!\Schema::connection($this->option('database') ? $this->option('database') : config('database.default'))->hasTable($table)) {
+            throw new TableNotFoundException("Table $table was not found.");
+        }
+
+        // Generate class name and file name
+        $className = app('iseed')->generateClassName($table, $prefix, $suffix);
+        $seedPath = base_path() . config('iseed::config.path');
+        return [$seedPath . '/' . $className . '.php', $className . '.php'];
+    }
+
+    /**
+     * Provide user feedback, based on success or not.
+     *
+     * @param boolean $successful
+     * @param string $table
+     * @return void
+     */
+    protected function printResult($successful, $table)
+    {
+        if ($successful) {
+            $this->info("Created a seed file from table {$table}");
+            return;
+        }
+
+        $this->error("Could not create seed file from table {$table}");
+    }
+
+    /**
      * Get the console command arguments.
      *
      * @return array
@@ -173,40 +208,5 @@ class IseedCommand extends Command
             array('classnameprefix', null, InputOption::VALUE_OPTIONAL, 'prefix for class and file name', null),
             array('classnamesuffix', null, InputOption::VALUE_OPTIONAL, 'suffix for class and file name', null),
         );
-    }
-
-    /**
-     * Provide user feedback, based on success or not.
-     *
-     * @param  boolean $successful
-     * @param  string $table
-     * @return void
-     */
-    protected function printResult($successful, $table)
-    {
-        if ($successful) {
-            $this->info("Created a seed file from table {$table}");
-            return;
-        }
-
-        $this->error("Could not create seed file from table {$table}");
-    }
-
-    /**
-     * Generate file name, to be used in test wether seed file already exist
-     *
-     * @param  string $table
-     * @return string
-     */
-    protected function generateFileName($table, $prefix=null, $suffix=null)
-    {
-        if (!\Schema::connection($this->option('database') ? $this->option('database') : config('database.default'))->hasTable($table)) {
-            throw new TableNotFoundException("Table $table was not found.");
-        }
-
-        // Generate class name and file name
-        $className = app('iseed')->generateClassName($table, $prefix, $suffix);
-        $seedPath = base_path() . config('iseed::config.path');
-        return [$seedPath . '/' . $className . '.php', $className . '.php'];
     }
 }

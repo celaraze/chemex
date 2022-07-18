@@ -1,4 +1,3 @@
-
 export default class Helper {
     constructor(Uploder) {
         this.uploader = Uploder;

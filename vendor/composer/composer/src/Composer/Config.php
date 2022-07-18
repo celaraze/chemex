@@ -112,8 +112,8 @@ class Config
     private $sourceOfConfigValue = array();
 
     /**
-     * @param bool    $useEnvironment Use COMPOSER_ environment variables to replace config settings
-     * @param ?string $baseDir        Optional base directory of the config
+     * @param bool $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     * @param ?string $baseDir Optional base directory of the config
      */
     public function __construct(bool $useEnvironment = true, ?string $baseDir = null)
     {
@@ -126,7 +126,7 @@ class Config
         }
 
         $this->repositories = static::$defaultRepositories;
-        $this->useEnvironment = (bool) $useEnvironment;
+        $this->useEnvironment = (bool)$useEnvironment;
         $this->baseDir = is_string($baseDir) && '' !== $baseDir ? $baseDir : null;
 
         foreach ($this->config as $configKey => $configValue) {
@@ -139,11 +139,39 @@ class Config
     }
 
     /**
+     * @param mixed $configValue
+     * @param string $path
+     * @param string $source
+     *
      * @return void
      */
-    public function setConfigSource(ConfigSourceInterface $source): void
+    private function setSourceOfConfigValue($configValue, string $path, string $source): void
     {
-        $this->configSource = $source;
+        $this->sourceOfConfigValue[$path] = $source;
+
+        if (is_array($configValue)) {
+            foreach ($configValue as $key => $value) {
+                $this->setSourceOfConfigValue($value, $path . '.' . $key, $source);
+            }
+        }
+    }
+
+    /**
+     * Used by long-running custom scripts in composer.json
+     *
+     * "scripts": {
+     *   "watch": [
+     *     "Composer\\Config::disableProcessTimeout",
+     *     "vendor/bin/long-running-script --watch"
+     *   ]
+     * }
+     *
+     * @return void
+     */
+    public static function disableProcessTimeout(): void
+    {
+        // Override global timeout set earlier by environment or config
+        ProcessExecutor::setTimeout(0);
     }
 
     /**
@@ -157,9 +185,9 @@ class Config
     /**
      * @return void
      */
-    public function setAuthConfigSource(ConfigSourceInterface $source): void
+    public function setConfigSource(ConfigSourceInterface $source): void
     {
-        $this->authConfigSource = $source;
+        $this->configSource = $source;
     }
 
     /**
@@ -168,6 +196,14 @@ class Config
     public function getAuthConfigSource(): ConfigSourceInterface
     {
         return $this->authConfigSource;
+    }
+
+    /**
+     * @return void
+     */
+    public function setAuthConfigSource(ConfigSourceInterface $source): void
+    {
+        $this->authConfigSource = $source;
     }
 
     /**
@@ -228,13 +264,13 @@ class Config
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
                 if (false === $repository) {
-                    $this->disableRepoByName((string) $name);
+                    $this->disableRepoByName((string)$name);
                     continue;
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
                 if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
-                    $this->disableRepoByName((string) key($repository));
+                    $this->disableRepoByName((string)key($repository));
                     continue;
                 }
 
@@ -262,6 +298,37 @@ class Config
     }
 
     /**
+     * @param string $name
+     *
+     * @return void
+     */
+    private function disableRepoByName(string $name): void
+    {
+        if (isset($this->repositories[$name])) {
+            unset($this->repositories[$name]);
+        } elseif ($name === 'packagist') { // BC support for default "packagist" named repo
+            unset($this->repositories['packagist.org']);
+        }
+    }
+
+    /**
+     * @param int $flags
+     *
+     * @return array<string, mixed[]>
+     */
+    public function all(int $flags = 0): array
+    {
+        $all = array(
+            'repositories' => $this->getRepositories(),
+        );
+        foreach (array_keys($this->config) as $key) {
+            $all['config'][$key] = $this->get($key, $flags);
+        }
+
+        return $all;
+    }
+
+    /**
      * @return array<int|string, mixed>
      */
     public function getRepositories(): array
@@ -272,11 +339,11 @@ class Config
     /**
      * Returns a setting
      *
-     * @param  string            $key
-     * @param  int               $flags Options (see class constants)
+     * @param string $key
+     * @param int $flags Options (see class constants)
+     * @return mixed
      * @throws \RuntimeException
      *
-     * @return mixed
      */
     public function get(string $key, int $flags = 0)
     {
@@ -301,10 +368,10 @@ class Config
                 }
 
                 if ($key === 'process-timeout') {
-                    return max(0, false !== $val ? (int) $val : $this->config[$key]);
+                    return max(0, false !== $val ? (int)$val : $this->config[$key]);
                 }
 
-                $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
+                $val = rtrim((string)$this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
                 if (substr($key, -4) !== '-dir') {
@@ -326,7 +393,7 @@ class Config
                     $this->setSourceOfConfigValue($val, $key, $env);
                 }
 
-                return $val !== 'false' && (bool) $val;
+                return $val !== 'false' && (bool)$val;
 
             // booleans without env var support
             case 'disable-tls':
@@ -338,42 +405,42 @@ class Config
                     return false;
                 }
 
-                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+                return $this->config[$key] !== 'false' && (bool)$this->config[$key];
 
             // ints without env var support
             case 'cache-ttl':
-                return max(0, (int) $this->config[$key]);
+                return max(0, (int)$this->config[$key]);
 
             // numbers with kb/mb/gb support, without env var support
             case 'cache-files-maxsize':
-                if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', (string) $this->config[$key], $matches)) {
+                if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', (string)$this->config[$key], $matches)) {
                     throw new \RuntimeException(
                         "Could not parse the value of '$key': {$this->config[$key]}"
                     );
                 }
-                $size = (float) $matches[1];
+                $size = (float)$matches[1];
                 if (isset($matches[2])) {
                     switch (strtolower($matches[2])) {
                         case 'g':
                             $size *= 1024;
-                            // intentional fallthrough
-                            // no break
+                        // intentional fallthrough
+                        // no break
                         case 'm':
                             $size *= 1024;
-                            // intentional fallthrough
-                            // no break
+                        // intentional fallthrough
+                        // no break
                         case 'k':
                             $size *= 1024;
                             break;
                     }
                 }
 
-                return max(0, (int) $size);
+                return max(0, (int)$size);
 
             // special cases below
             case 'cache-files-ttl':
                 if (isset($this->config[$key])) {
-                    return max(0, (int) $this->config[$key]);
+                    return max(0, (int)$this->config[$key]);
                 }
 
                 return $this->get('cache-ttl');
@@ -408,7 +475,7 @@ class Config
                     }
 
                     // convert string value to bool
-                    return $env !== 'false' && (bool) $env;
+                    return $env !== 'false' && (bool)$env;
                 }
 
                 if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
@@ -447,78 +514,28 @@ class Config
     }
 
     /**
-     * @param int $flags
+     * Reads the value of a Composer environment variable
      *
-     * @return array<string, mixed[]>
+     * This should be used to read COMPOSER_ environment variables
+     * that overload config values.
+     *
+     * @param string $var
+     * @return string|bool
      */
-    public function all(int $flags = 0): array
+    private function getComposerEnv(string $var)
     {
-        $all = array(
-            'repositories' => $this->getRepositories(),
-        );
-        foreach (array_keys($this->config) as $key) {
-            $all['config'][$key] = $this->get($key, $flags);
+        if ($this->useEnvironment) {
+            return Platform::getEnv($var);
         }
 
-        return $all;
-    }
-
-    /**
-     * @param string $key
-     * @return string
-     */
-    public function getSourceOfValue(string $key): string
-    {
-        $this->get($key);
-
-        return $this->sourceOfConfigValue[$key] ?? self::SOURCE_UNKNOWN;
-    }
-
-    /**
-     * @param mixed  $configValue
-     * @param string $path
-     * @param string $source
-     *
-     * @return void
-     */
-    private function setSourceOfConfigValue($configValue, string $path, string $source): void
-    {
-        $this->sourceOfConfigValue[$path] = $source;
-
-        if (is_array($configValue)) {
-            foreach ($configValue as $key => $value) {
-                $this->setSourceOfConfigValue($value, $path . '.' . $key, $source);
-            }
-        }
-    }
-
-    /**
-     * @return array<string, mixed[]>
-     */
-    public function raw(): array
-    {
-        return array(
-            'repositories' => $this->getRepositories(),
-            'config' => $this->config,
-        );
-    }
-
-    /**
-     * Checks whether a setting exists
-     *
-     * @param  string $key
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        return array_key_exists($key, $this->config);
+        return false;
     }
 
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param  string|mixed $value a config string that can contain {$refs-to-other-config}
-     * @param  int          $flags Options (see class constants)
+     * @param string|mixed $value a config string that can contain {$refs-to-other-config}
+     * @param int $flags Options (see class constants)
      *
      * @return string|mixed
      */
@@ -538,7 +555,7 @@ class Config
      *
      * Since the dirs might not exist yet we can not call realpath or it will fail.
      *
-     * @param  string $path
+     * @param string $path
      * @return string
      */
     private function realpath(string $path): string
@@ -551,43 +568,44 @@ class Config
     }
 
     /**
-     * Reads the value of a Composer environment variable
-     *
-     * This should be used to read COMPOSER_ environment variables
-     * that overload config values.
-     *
-     * @param  string      $var
-     * @return string|bool
+     * @param string $key
+     * @return string
      */
-    private function getComposerEnv(string $var)
+    public function getSourceOfValue(string $key): string
     {
-        if ($this->useEnvironment) {
-            return Platform::getEnv($var);
-        }
+        $this->get($key);
 
-        return false;
+        return $this->sourceOfConfigValue[$key] ?? self::SOURCE_UNKNOWN;
     }
 
     /**
-     * @param string $name
-     *
-     * @return void
+     * @return array<string, mixed[]>
      */
-    private function disableRepoByName(string $name): void
+    public function raw(): array
     {
-        if (isset($this->repositories[$name])) {
-            unset($this->repositories[$name]);
-        } elseif ($name === 'packagist') { // BC support for default "packagist" named repo
-            unset($this->repositories['packagist.org']);
-        }
+        return array(
+            'repositories' => $this->getRepositories(),
+            'config' => $this->config,
+        );
+    }
+
+    /**
+     * Checks whether a setting exists
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->config);
     }
 
     /**
      * Validates that the passed URL is allowed to be used by current config, or throws an exception.
      *
-     * @param string      $url
+     * @param string $url
      * @param IOInterface $io
-     * @param mixed[]     $repoOptions
+     * @param mixed[] $repoOptions
      *
      * @return void
      */
@@ -613,7 +631,7 @@ class Config
 
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
-            if ($io  !== null) {
+            if ($io !== null) {
                 if (is_string($hostname)) {
                     if (!isset($this->warnedHosts[$hostname])) {
                         $io->writeError("<warning>Warning: Accessing $hostname over $scheme which is an insecure protocol.</warning>");
@@ -625,11 +643,11 @@ class Config
 
         if ($io !== null && is_string($hostname) && !isset($this->sslVerifyWarnedHosts[$hostname])) {
             $warning = null;
-            if (isset($repoOptions['ssl']['verify_peer']) && !(bool) $repoOptions['ssl']['verify_peer']) {
+            if (isset($repoOptions['ssl']['verify_peer']) && !(bool)$repoOptions['ssl']['verify_peer']) {
                 $warning = 'verify_peer';
             }
 
-            if (isset($repoOptions['ssl']['verify_peer_name']) && !(bool) $repoOptions['ssl']['verify_peer_name']) {
+            if (isset($repoOptions['ssl']['verify_peer_name']) && !(bool)$repoOptions['ssl']['verify_peer_name']) {
                 $warning = $warning === null ? 'verify_peer_name' : $warning . ' and verify_peer_name';
             }
 
@@ -638,23 +656,5 @@ class Config
                 $this->sslVerifyWarnedHosts[$hostname] = true;
             }
         }
-    }
-
-    /**
-     * Used by long-running custom scripts in composer.json
-     *
-     * "scripts": {
-     *   "watch": [
-     *     "Composer\\Config::disableProcessTimeout",
-     *     "vendor/bin/long-running-script --watch"
-     *   ]
-     * }
-     *
-     * @return void
-     */
-    public static function disableProcessTimeout(): void
-    {
-        // Override global timeout set earlier by environment or config
-        ProcessExecutor::setTimeout(0);
     }
 }

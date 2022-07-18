@@ -5,11 +5,22 @@ namespace Tests;
 trait InteractsWithDatabase
 {
     /**
+     * Seed a given database connection.
+     *
+     * @param string $class
+     * @return void
+     */
+    public function seed($class = 'DatabaseSeeder')
+    {
+        $this->artisan('db:seed', ['--class' => $class]);
+    }
+
+    /**
      * Assert that a given where condition exists in the database.
      *
-     * @param  string  $table
-     * @param  array  $data
-     * @param  string  $connection
+     * @param string $table
+     * @param array $data
+     * @param string $connection
      * @return $this
      */
     protected function seeInDatabase($table, array $data, $connection = null)
@@ -30,9 +41,9 @@ trait InteractsWithDatabase
     /**
      * Assert that a given where condition does not exist in the database.
      *
-     * @param  string  $table
-     * @param  array  $data
-     * @param  string  $connection
+     * @param string $table
+     * @param array $data
+     * @param string $connection
      * @return $this
      */
     protected function missingFromDatabase($table, array $data, $connection = null)
@@ -43,22 +54,9 @@ trait InteractsWithDatabase
     /**
      * Assert that a given where condition does not exist in the database.
      *
-     * @param  string  $table
-     * @param  array  $data
-     * @param  string  $connection
-     * @return $this
-     */
-    protected function dontSeeInDatabase($table, array $data, $connection = null)
-    {
-        return $this->notSeeInDatabase($table, $data, $connection);
-    }
-
-    /**
-     * Assert that a given where condition does not exist in the database.
-     *
-     * @param  string  $table
-     * @param  array  $data
-     * @param  string  $connection
+     * @param string $table
+     * @param array $data
+     * @param string $connection
      * @return $this
      */
     protected function notSeeInDatabase($table, array $data, $connection = null)
@@ -77,13 +75,15 @@ trait InteractsWithDatabase
     }
 
     /**
-     * Seed a given database connection.
+     * Assert that a given where condition does not exist in the database.
      *
-     * @param  string  $class
-     * @return void
+     * @param string $table
+     * @param array $data
+     * @param string $connection
+     * @return $this
      */
-    public function seed($class = 'DatabaseSeeder')
+    protected function dontSeeInDatabase($table, array $data, $connection = null)
     {
-        $this->artisan('db:seed', ['--class' => $class]);
+        return $this->notSeeInDatabase($table, $data, $connection);
     }
 }

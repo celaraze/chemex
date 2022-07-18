@@ -5,7 +5,6 @@ namespace Lcobucci\JWT;
 
 use Lcobucci\JWT\Encoding\CannotDecodeContent;
 use SodiumException;
-
 use function base64_decode;
 use function base64_encode;
 use function function_exists;
@@ -18,14 +17,14 @@ use function strtr;
 /** @internal */
 final class SodiumBase64Polyfill
 {
-    public const SODIUM_BASE64_VARIANT_ORIGINAL            = 1;
+    public const SODIUM_BASE64_VARIANT_ORIGINAL = 1;
     public const SODIUM_BASE64_VARIANT_ORIGINAL_NO_PADDING = 3;
-    public const SODIUM_BASE64_VARIANT_URLSAFE             = 5;
-    public const SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING  = 7;
+    public const SODIUM_BASE64_VARIANT_URLSAFE = 5;
+    public const SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING = 7;
 
     public static function bin2base64(string $decoded, int $variant): string
     {
-        if (! function_exists('sodium_bin2base64')) {
+        if (!function_exists('sodium_bin2base64')) {
             return self::bin2base64Fallback($decoded, $variant); // @codeCoverageIgnore
         }
 
@@ -56,7 +55,7 @@ final class SodiumBase64Polyfill
     /** @throws CannotDecodeContent */
     public static function base642bin(string $encoded, int $variant): string
     {
-        if (! function_exists('sodium_base642bin')) {
+        if (!function_exists('sodium_base642bin')) {
             return self::base642binFallback($encoded, $variant); // @codeCoverageIgnore
         }
 
@@ -79,7 +78,7 @@ final class SodiumBase64Polyfill
 
         $decoded = base64_decode($encoded, true);
 
-        if (! is_string($decoded)) {
+        if (!is_string($decoded)) {
             throw CannotDecodeContent::invalidBase64String();
         }
 

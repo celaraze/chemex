@@ -18,22 +18,18 @@ abstract class AbstractDisplayer
      * @var array
      */
     protected static $js = [];
-
-    /**
-     * @var Grid
-     */
-    protected $grid;
-
-    /**
-     * @var Column
-     */
-    protected $column;
-
     /**
      * @var \Illuminate\Database\Eloquent\Model
      */
     public $row;
-
+    /**
+     * @var Grid
+     */
+    protected $grid;
+    /**
+     * @var Column
+     */
+    protected $column;
     /**
      * @var mixed
      */
@@ -42,10 +38,10 @@ abstract class AbstractDisplayer
     /**
      * Create a new displayer instance.
      *
-     * @param  mixed  $value
-     * @param  Grid  $grid
-     * @param  Column  $column
-     * @param  \stdClass  $row
+     * @param mixed $value
+     * @param Grid $grid
+     * @param Column $column
+     * @param \stdClass $row
      */
     public function __construct($value, Grid $grid, Column $column, $row)
     {
@@ -57,6 +53,15 @@ abstract class AbstractDisplayer
         $this->requireAssets();
     }
 
+    protected function setRow($row)
+    {
+        if (is_array($row)) {
+            $row = new Fluent($row);
+        }
+
+        $this->row = $row;
+    }
+
     protected function requireAssets()
     {
         if (static::$js) {
@@ -66,15 +71,6 @@ abstract class AbstractDisplayer
         if (static::$css) {
             Admin::css(static::$css);
         }
-    }
-
-    protected function setRow($row)
-    {
-        if (is_array($row)) {
-            $row = new Fluent($row);
-        }
-
-        $this->row = $row;
     }
 
     /**
@@ -117,20 +113,20 @@ abstract class AbstractDisplayer
     }
 
     /**
+     * Display method.
+     *
+     * @return mixed
+     */
+    abstract public function display();
+
+    /**
      * Get translation.
      *
-     * @param  string  $text
+     * @param string $text
      * @return string|\Symfony\Component\Translation\TranslatorInterface
      */
     protected function trans($text)
     {
         return trans("admin.$text");
     }
-
-    /**
-     * Display method.
-     *
-     * @return mixed
-     */
-    abstract public function display();
 }

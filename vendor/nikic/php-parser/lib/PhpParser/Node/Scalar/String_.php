@@ -12,34 +12,29 @@ class String_ extends Scalar
     const KIND_DOUBLE_QUOTED = 2;
     const KIND_HEREDOC = 3;
     const KIND_NOWDOC = 4;
-
-    /** @var string String value */
-    public $value;
-
     protected static $replacements = [
         '\\' => '\\',
-        '$'  =>  '$',
-        'n'  => "\n",
-        'r'  => "\r",
-        't'  => "\t",
-        'f'  => "\f",
-        'v'  => "\v",
-        'e'  => "\x1B",
+        '$' => '$',
+        'n' => "\n",
+        'r' => "\r",
+        't' => "\t",
+        'f' => "\f",
+        'v' => "\v",
+        'e' => "\x1B",
     ];
+    /** @var string String value */
+    public $value;
 
     /**
      * Constructs a string scalar node.
      *
-     * @param string $value      Value of the string
-     * @param array  $attributes Additional attributes
+     * @param string $value Value of the string
+     * @param array $attributes Additional attributes
      */
-    public function __construct(string $value, array $attributes = []) {
+    public function __construct(string $value, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->value = $value;
-    }
-
-    public function getSubNodeNames() : array {
-        return ['value'];
     }
 
     /**
@@ -59,16 +54,17 @@ class String_ extends Scalar
     }
 
     /**
-     * @internal
-     *
-     * Parses a string token.
-     *
      * @param string $str String token content
      * @param bool $parseUnicodeEscape Whether to parse PHP 7 \u escapes
      *
      * @return string The parsed string
+     * @internal
+     *
+     * Parses a string token.
+     *
      */
-    public static function parse(string $str, bool $parseUnicodeEscape = true) : string {
+    public static function parse(string $str, bool $parseUnicodeEscape = true): string
+    {
         $bLength = 0;
         if ('b' === $str[0] || 'B' === $str[0]) {
             $bLength = 1;
@@ -88,17 +84,18 @@ class String_ extends Scalar
     }
 
     /**
-     * @internal
-     *
-     * Parses escape sequences in strings (all string types apart from single quoted).
-     *
-     * @param string      $str   String without quotes
+     * @param string $str String without quotes
      * @param null|string $quote Quote type
      * @param bool $parseUnicodeEscape Whether to parse PHP 7 \u escapes
      *
      * @return string String with escape sequences parsed
+     * @internal
+     *
+     * Parses escape sequences in strings (all string types apart from single quoted).
+     *
      */
-    public static function parseEscapeSequences(string $str, $quote, bool $parseUnicodeEscape = true) : string {
+    public static function parseEscapeSequences(string $str, $quote, bool $parseUnicodeEscape = true): string
+    {
         if (null !== $quote) {
             $str = str_replace('\\' . $quote, $quote, $str);
         }
@@ -110,7 +107,7 @@ class String_ extends Scalar
 
         return preg_replace_callback(
             '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}' . $extra . ')~',
-            function($matches) {
+            function ($matches) {
                 $str = $matches[1];
 
                 if (isset(self::$replacements[$str])) {
@@ -134,24 +131,31 @@ class String_ extends Scalar
      *
      * @return string UTF-8 representation of code point
      */
-    private static function codePointToUtf8(int $num) : string {
+    private static function codePointToUtf8(int $num): string
+    {
         if ($num <= 0x7F) {
             return chr($num);
         }
         if ($num <= 0x7FF) {
-            return chr(($num>>6) + 0xC0) . chr(($num&0x3F) + 0x80);
+            return chr(($num >> 6) + 0xC0) . chr(($num & 0x3F) + 0x80);
         }
         if ($num <= 0xFFFF) {
-            return chr(($num>>12) + 0xE0) . chr((($num>>6)&0x3F) + 0x80) . chr(($num&0x3F) + 0x80);
+            return chr(($num >> 12) + 0xE0) . chr((($num >> 6) & 0x3F) + 0x80) . chr(($num & 0x3F) + 0x80);
         }
         if ($num <= 0x1FFFFF) {
-            return chr(($num>>18) + 0xF0) . chr((($num>>12)&0x3F) + 0x80)
-                 . chr((($num>>6)&0x3F) + 0x80) . chr(($num&0x3F) + 0x80);
+            return chr(($num >> 18) + 0xF0) . chr((($num >> 12) & 0x3F) + 0x80)
+                . chr((($num >> 6) & 0x3F) + 0x80) . chr(($num & 0x3F) + 0x80);
         }
         throw new Error('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
     }
 
-    public function getType() : string {
+    public function getSubNodeNames(): array
+    {
+        return ['value'];
+    }
+
+    public function getType(): string
+    {
         return 'Scalar_String';
     }
 }

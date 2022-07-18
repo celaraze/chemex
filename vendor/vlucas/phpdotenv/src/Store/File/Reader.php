@@ -32,13 +32,13 @@ final class Reader
      * short circuit mode is enabled, then the returned array with have length
      * at most one. File paths that couldn't be read are omitted entirely.
      *
-     * @param string[]    $filePaths
-     * @param bool        $shortCircuit
+     * @param string[] $filePaths
+     * @param bool $shortCircuit
      * @param string|null $fileEncoding
      *
+     * @return array<string,string>
      * @throws \Dotenv\Exception\InvalidEncodingException
      *
-     * @return array<string,string>
      */
     public static function read(array $filePaths, bool $shortCircuit = true, string $fileEncoding = null)
     {
@@ -60,12 +60,12 @@ final class Reader
     /**
      * Read the given file.
      *
-     * @param string      $path
+     * @param string $path
      * @param string|null $encoding
      *
+     * @return \PhpOption\Option<string>
      * @throws \Dotenv\Exception\InvalidEncodingException
      *
-     * @return \PhpOption\Option<string>
      */
     private static function readFromFile(string $path, string $encoding = null)
     {

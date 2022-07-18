@@ -56,71 +56,23 @@ class SyncPassword
     }
 
     /**
-     * Applies the password to the users model.
-     *
-     * @param string $password
-     *
-     * @return void
-     */
-    protected function applyPassword($password)
-    {
-        // If the model has a mutator for the password field, we
-        // can assume hashing passwords is taken care of.
-        // Otherwise, we will hash it normally.
-        $password = $this->model->hasSetMutator($this->column()) ? $password : Hash::make($password);
-
-        $this->model->setAttribute($this->column(), $password);
-    }
-
-    /**
-     * Determines if the current model requires a password update.
-     *
-     * This checks if the model does not currently have a
-     * password, or if the password fails a hash check.
-     *
-     * @param string|null $password
-     *
-     * @return bool
-     */
-    protected function passwordNeedsUpdate($password = null): bool
-    {
-        $current = $this->currentModelPassword();
-
-        if ($current !== null && $this->canSync()) {
-            return ! Hash::check($password, $current);
-        }
-
-        return is_null($current);
-    }
-
-    /**
      * Determines if the developer has configured a password column.
      *
      * @return bool
      */
     protected function hasPasswordColumn(): bool
     {
-        return ! is_null($this->column());
+        return !is_null($this->column());
     }
 
     /**
-     * Retrieves the password from the users credentials.
+     * Retrieves the password column to use.
      *
      * @return string|null
      */
-    protected function password()
+    protected function column()
     {
-        return Arr::get($this->credentials, 'password');
-    }
-
-    /**
-     * Retrieves the current models hashed password.
-     *
-     * @return string|null
-     */
-    protected function currentModelPassword()
-    {
-        return $this->model->getAttribute($this->column());
+        return Config::get('ldap_auth.passwords.column', 'password');
     }
 
     /**
@@ -144,12 +96,60 @@ class SyncPassword
     }
 
     /**
-     * Retrieves the password column to use.
+     * Retrieves the password from the users credentials.
      *
      * @return string|null
      */
-    protected function column()
+    protected function password()
     {
-        return Config::get('ldap_auth.passwords.column', 'password');
+        return Arr::get($this->credentials, 'password');
+    }
+
+    /**
+     * Determines if the current model requires a password update.
+     *
+     * This checks if the model does not currently have a
+     * password, or if the password fails a hash check.
+     *
+     * @param string|null $password
+     *
+     * @return bool
+     */
+    protected function passwordNeedsUpdate($password = null): bool
+    {
+        $current = $this->currentModelPassword();
+
+        if ($current !== null && $this->canSync()) {
+            return !Hash::check($password, $current);
+        }
+
+        return is_null($current);
+    }
+
+    /**
+     * Retrieves the current models hashed password.
+     *
+     * @return string|null
+     */
+    protected function currentModelPassword()
+    {
+        return $this->model->getAttribute($this->column());
+    }
+
+    /**
+     * Applies the password to the users model.
+     *
+     * @param string $password
+     *
+     * @return void
+     */
+    protected function applyPassword($password)
+    {
+        // If the model has a mutator for the password field, we
+        // can assume hashing passwords is taken care of.
+        // Otherwise, we will hash it normally.
+        $password = $this->model->hasSetMutator($this->column()) ? $password : Hash::make($password);
+
+        $this->model->setAttribute($this->column(), $password);
     }
 }

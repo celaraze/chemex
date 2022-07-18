@@ -28,7 +28,7 @@ final class ModelFactoryDynamicStaticMethodReturnTypeExtension implements Dynami
         }
 
         // Class only available on Laravel 8
-        if (! class_exists('\Illuminate\Database\Eloquent\Factories\Factory')) {
+        if (!class_exists('\Illuminate\Database\Eloquent\Factories\Factory')) {
             return false;
         }
 
@@ -37,21 +37,22 @@ final class ModelFactoryDynamicStaticMethodReturnTypeExtension implements Dynami
 
     public function getTypeFromStaticMethodCall(
         MethodReflection $methodReflection,
-        StaticCall $methodCall,
-        Scope $scope
-    ): Type {
+        StaticCall       $methodCall,
+        Scope            $scope
+    ): Type
+    {
         $class = $methodCall->class;
 
-        if (! $class instanceof Name) {
+        if (!$class instanceof Name) {
             return new ErrorType();
         }
 
         $modelName = basename(str_replace('\\', '/', $class->toCodeString()));
 
-        if (! class_exists('Database\\Factories\\'.$modelName.'Factory')) {
+        if (!class_exists('Database\\Factories\\' . $modelName . 'Factory')) {
             return new ErrorType();
         }
 
-        return new ObjectType('Database\\Factories\\'.$modelName.'Factory');
+        return new ObjectType('Database\\Factories\\' . $modelName . 'Factory');
     }
 }

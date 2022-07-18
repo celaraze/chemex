@@ -14,21 +14,24 @@ class Declare_ extends Node\Stmt
     /**
      * Constructs a declare node.
      *
-     * @param DeclareDeclare[] $declares   List of declares
-     * @param Node\Stmt[]|null $stmts      Statements
-     * @param array            $attributes Additional attributes
+     * @param DeclareDeclare[] $declares List of declares
+     * @param Node\Stmt[]|null $stmts Statements
+     * @param array $attributes Additional attributes
      */
-    public function __construct(array $declares, array $stmts = null, array $attributes = []) {
+    public function __construct(array $declares, array $stmts = null, array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->declares = $declares;
         $this->stmts = $stmts;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['declares', 'stmts'];
     }
-    
-    public function getType() : string {
+
+    public function getType(): string
+    {
         return 'Stmt_Declare';
     }
 }

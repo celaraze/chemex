@@ -32,9 +32,9 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Create a new database failed job provider.
      *
-     * @param  \Illuminate\Database\ConnectionResolverInterface  $resolver
-     * @param  string  $database
-     * @param  string  $table
+     * @param \Illuminate\Database\ConnectionResolverInterface $resolver
+     * @param string $database
+     * @param string $table
      * @return void
      */
     public function __construct(ConnectionResolverInterface $resolver, $database, $table)
@@ -47,21 +47,31 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Log a failed job into storage.
      *
-     * @param  string  $connection
-     * @param  string  $queue
-     * @param  string  $payload
-     * @param  \Throwable  $exception
+     * @param string $connection
+     * @param string $queue
+     * @param string $payload
+     * @param \Throwable $exception
      * @return int|null
      */
     public function log($connection, $queue, $payload, $exception)
     {
         $failed_at = Date::now();
 
-        $exception = (string) mb_convert_encoding($exception, 'UTF-8');
+        $exception = (string)mb_convert_encoding($exception, 'UTF-8');
 
         return $this->getTable()->insertGetId(compact(
             'connection', 'queue', 'payload', 'exception', 'failed_at'
         ));
+    }
+
+    /**
+     * Get a new query builder instance for the table.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function getTable()
+    {
+        return $this->resolver->connection($this->database)->table($this->table);
     }
 
     /**
@@ -77,7 +87,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Get a single failed job.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return object|null
      */
     public function find($id)
@@ -88,7 +98,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Delete a single failed job from storage.
      *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return bool
      */
     public function forget($id)
@@ -99,7 +109,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Flush all of the failed jobs from storage.
      *
-     * @param  int|null  $hours
+     * @param int|null $hours
      * @return void
      */
     public function flush($hours = null)
@@ -112,7 +122,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
     /**
      * Prune all of the entries older than the given date.
      *
-     * @param  \DateTimeInterface  $before
+     * @param \DateTimeInterface $before
      * @return int
      */
     public function prune(DateTimeInterface $before)
@@ -128,15 +138,5 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface, PrunableF
         } while ($deleted !== 0);
 
         return $totalDeleted;
-    }
-
-    /**
-     * Get a new query builder instance for the table.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    protected function getTable()
-    {
-        return $this->resolver->connection($this->database)->table($this->table);
     }
 }

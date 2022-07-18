@@ -60,8 +60,8 @@ final class RepositoryBuilder
      *
      * @param \Dotenv\Repository\Adapter\ReaderInterface[] $readers
      * @param \Dotenv\Repository\Adapter\WriterInterface[] $writers
-     * @param bool                                         $immutable
-     * @param string[]|null                                $allowList
+     * @param bool $immutable
+     * @param string[]|null $allowList
      *
      * @return void
      */
@@ -111,22 +111,6 @@ final class RepositoryBuilder
     }
 
     /**
-     * Determine if the given name if of an adapaterclass.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    private static function isAnAdapterClass(string $name)
-    {
-        if (!\class_exists($name)) {
-            return false;
-        }
-
-        return (new ReflectionClass($name))->implementsInterface(AdapterInterface::class);
-    }
-
-    /**
      * Creates a repository builder with the given reader added.
      *
      * Accepts either a reader instance, or a class-string for an adapter. If
@@ -134,9 +118,9 @@ final class RepositoryBuilder
      *
      * @param \Dotenv\Repository\Adapter\ReaderInterface|string $reader
      *
+     * @return \Dotenv\Repository\RepositoryBuilder
      * @throws \InvalidArgumentException
      *
-     * @return \Dotenv\Repository\RepositoryBuilder
      */
     public function addReader($reader)
     {
@@ -160,6 +144,22 @@ final class RepositoryBuilder
     }
 
     /**
+     * Determine if the given name if of an adapaterclass.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    private static function isAnAdapterClass(string $name)
+    {
+        if (!\class_exists($name)) {
+            return false;
+        }
+
+        return (new ReflectionClass($name))->implementsInterface(AdapterInterface::class);
+    }
+
+    /**
      * Creates a repository builder with the given writer added.
      *
      * Accepts either a writer instance, or a class-string for an adapter. If
@@ -167,9 +167,9 @@ final class RepositoryBuilder
      *
      * @param \Dotenv\Repository\Adapter\WriterInterface|string $writer
      *
+     * @return \Dotenv\Repository\RepositoryBuilder
      * @throws \InvalidArgumentException
      *
-     * @return \Dotenv\Repository\RepositoryBuilder
      */
     public function addWriter($writer)
     {
@@ -201,9 +201,9 @@ final class RepositoryBuilder
      *
      * @param \Dotenv\Repository\Adapter\WriterInterface|string $adapter
      *
+     * @return \Dotenv\Repository\RepositoryBuilder
      * @throws \InvalidArgumentException
      *
-     * @return \Dotenv\Repository\RepositoryBuilder
      */
     public function addAdapter($adapter)
     {

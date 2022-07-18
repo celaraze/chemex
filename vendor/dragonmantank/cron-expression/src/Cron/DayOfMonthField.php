@@ -38,45 +38,6 @@ class DayOfMonthField extends AbstractField
     protected $rangeEnd = 31;
 
     /**
-     * Get the nearest day of the week for a given day in a month.
-     *
-     * @param int $currentYear Current year
-     * @param int $currentMonth Current month
-     * @param int $targetDay Target day of the month
-     *
-     * @return \DateTime|null Returns the nearest date
-     */
-    private static function getNearestWeekday(int $currentYear, int $currentMonth, int $targetDay): ?DateTime
-    {
-        $tday = str_pad((string) $targetDay, 2, '0', STR_PAD_LEFT);
-        $target = DateTime::createFromFormat('Y-m-d', "${currentYear}-${currentMonth}-${tday}");
-
-        if ($target === false) {
-            return null;
-        }
-
-        $currentWeekday = (int) $target->format('N');
-
-        if ($currentWeekday < 6) {
-            return $target;
-        }
-
-        $lastDayOfMonth = $target->format('t');
-        foreach ([-1, 1, -2, 2] as $i) {
-            $adjusted = $targetDay + $i;
-            if ($adjusted > 0 && $adjusted <= $lastDayOfMonth) {
-                $target->setDate($currentYear, $currentMonth, $adjusted);
-
-                if ((int) $target->format('N') < 6 && (int) $target->format('m') === $currentMonth) {
-                    return $target;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function isSatisfiedBy(DateTimeInterface $date, $value, bool $invert): bool
@@ -96,11 +57,11 @@ class DayOfMonthField extends AbstractField
         // Check to see if this is the nearest weekday to a particular value
         if (strpos($value, 'W')) {
             // Parse the target day
-            $targetDay = (int) substr($value, 0, strpos($value, 'W'));
+            $targetDay = (int)substr($value, 0, strpos($value, 'W'));
             // Find out if the current day is the nearest day of the week
             $nearest = self::getNearestWeekday(
-                (int) $date->format('Y'),
-                (int) $date->format('m'),
+                (int)$date->format('Y'),
+                (int)$date->format('m'),
                 $targetDay
             );
             if ($nearest) {
@@ -110,7 +71,46 @@ class DayOfMonthField extends AbstractField
             throw new \RuntimeException('Unable to return nearest weekday');
         }
 
-        return $this->isSatisfied((int) $date->format('d'), $value);
+        return $this->isSatisfied((int)$date->format('d'), $value);
+    }
+
+    /**
+     * Get the nearest day of the week for a given day in a month.
+     *
+     * @param int $currentYear Current year
+     * @param int $currentMonth Current month
+     * @param int $targetDay Target day of the month
+     *
+     * @return \DateTime|null Returns the nearest date
+     */
+    private static function getNearestWeekday(int $currentYear, int $currentMonth, int $targetDay): ?DateTime
+    {
+        $tday = str_pad((string)$targetDay, 2, '0', STR_PAD_LEFT);
+        $target = DateTime::createFromFormat('Y-m-d', "${currentYear}-${currentMonth}-${tday}");
+
+        if ($target === false) {
+            return null;
+        }
+
+        $currentWeekday = (int)$target->format('N');
+
+        if ($currentWeekday < 6) {
+            return $target;
+        }
+
+        $lastDayOfMonth = $target->format('t');
+        foreach ([-1, 1, -2, 2] as $i) {
+            $adjusted = $targetDay + $i;
+            if ($adjusted > 0 && $adjusted <= $lastDayOfMonth) {
+                $target->setDate($currentYear, $currentMonth, $adjusted);
+
+                if ((int)$target->format('N') < 6 && (int)$target->format('m') === $currentMonth) {
+                    return $target;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -120,7 +120,7 @@ class DayOfMonthField extends AbstractField
      */
     public function increment(DateTimeInterface &$date, $invert = false, $parts = null): FieldInterface
     {
-        if (! $invert) {
+        if (!$invert) {
             $date = $date->add(new \DateInterval('P1D'));
             $date = $date->setTime(0, 0);
         } else {

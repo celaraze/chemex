@@ -66,10 +66,10 @@ final class FragmentUriGenerator implements FragmentUriGeneratorInterface
 
         $controller->attributes['_controller'] = $controller->controller;
         $controller->query['_path'] = http_build_query($controller->attributes, '', '&');
-        $path = $this->fragmentPath.'?'.http_build_query($controller->query, '', '&');
+        $path = $this->fragmentPath . '?' . http_build_query($controller->query, '', '&');
 
         // we need to sign the absolute URI, but want to return the path only.
-        $fragmentUri = $sign || $absolute ? $request->getUriForPath($path) : $request->getBaseUrl().$path;
+        $fragmentUri = $sign || $absolute ? $request->getUriForPath($path) : $request->getBaseUrl() . $path;
 
         if (!$sign) {
             return $fragmentUri;

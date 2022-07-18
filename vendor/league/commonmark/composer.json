@@ -2,7 +2,16 @@
     "name": "league/commonmark",
     "type": "library",
     "description": "Highly-extensible PHP Markdown parser which fully supports the CommonMark spec and GitHub-Flavored Markdown (GFM)",
-    "keywords": ["markdown","parser","commonmark","gfm","github","flavored","github-flavored","md"],
+    "keywords": [
+        "markdown",
+        "parser",
+        "commonmark",
+        "gfm",
+        "github",
+        "flavored",
+        "github-flavored",
+        "md"
+    ],
     "homepage": "https://commonmark.thephpleague.com",
     "license": "BSD-3-Clause",
     "authors": [

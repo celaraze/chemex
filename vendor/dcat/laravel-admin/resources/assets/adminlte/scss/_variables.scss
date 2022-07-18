@@ -126,21 +126,21 @@ $main-footer-bg: transparent !default;
 
 // #262d37 #313a46 lighten(#8391a2, 8%) #242939
 // icon lighten(#4B5575, 3%)   #989EB3
-$sidebar-dark-bg: lighten(#3a4452, 2%)!default;
+$sidebar-dark-bg: lighten(#3a4452, 2%) !default;
 $sidebar-dark-hover-bg: transparent !default;
-$sidebar-dark-color: hsla(0,0%,100%,.95)!default;
-$sidebar-dark-icon-color: $sidebar-dark-color!default;
+$sidebar-dark-color: hsla(0, 0%, 100%, .95) !default;
+$sidebar-dark-icon-color: $sidebar-dark-color !default;
 $sidebar-dark-hover-color: lighten($sidebar-dark-color, 10%) !default;
 $sidebar-dark-active-bg: transparent !default;
 $sidebar-dark-active-color: $white !default;
 $sidebar-dark-submenu-bg: transparent !default;
 //$sidebar-dark-submenu-color: lighten(#C2C7D0, 6%) !default;
-$sidebar-dark-submenu-color: $sidebar-dark-color!default;
+$sidebar-dark-submenu-color: $sidebar-dark-color !default;
 $sidebar-dark-submenu-hover-color: $white !default;
 $sidebar-dark-submenu-hover-bg: $sidebar-dark-hover-bg !default;
 $sidebar-dark-submenu-active-color: $white !default;
 $sidebar-dark-submenu-active-bg: transparent !default;
-$sidebar-dark-header-color: hsla(0,0%,100%,.8) !default;
+$sidebar-dark-header-color: hsla(0, 0%, 100%, .8) !default;
 // #505b6b #49525f
 
 // Light sidebar
@@ -154,7 +154,7 @@ $sidebar-light-submenu-color: $sidebar-light-color !default;
 $sidebar-light-submenu-hover-color: #000 !default;
 $sidebar-light-submenu-hover-bg: $sidebar-light-hover-bg !default;
 $sidebar-light-submenu-active-color: $sidebar-light-color !default;
-$sidebar-light-submenu-active-bg: linear-gradient(118deg, $primary, rgba($primary,.7));
+$sidebar-light-submenu-active-bg: linear-gradient(118deg, $primary, rgba($primary, .7));
 $sidebar-light-header-color: $gray-800 !default;
 
 // SIDEBAR PADDING
@@ -234,7 +234,7 @@ $button-line-height-xs: $line-height-sm !default;
 $button-font-size-xs: ($font-size-base * .75) !default;
 $button-border-radius-xs: .15rem !default;
 
-  
+
 // ELEVATION
 // --------------------------------------------------------
 $elevations: ();
@@ -245,7 +245,7 @@ $elevations: map-merge((
     4: unquote('0 14px 28px ' + rgba($black, 0.25) + ', 0 10px 10px ' + rgba($black, 0.22)),
     5: unquote('0 19px 38px ' + rgba($black, 0.30) + ', 0 15px 12px ' + rgba($black, 0.22)),
 ), $elevations);
-  
+
 // RIBBON
 // --------------------------------------------------------
 $ribbon-border-size: 3px !default;

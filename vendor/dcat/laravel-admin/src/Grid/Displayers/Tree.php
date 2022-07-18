@@ -10,6 +10,23 @@ class Tree extends AbstractDisplayer
         '@grid-extension',
     ];
 
+    public function display()
+    {
+        $this->setupScript();
+
+        $key = $this->getKey();
+        $tableId = $this->grid->getTableId();
+
+        $depth = $this->grid->model()->getDepthFromRequest();
+        $indents = str_repeat(' &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ', $depth);
+
+        return <<<EOT
+<a href="javascript:void(0)" class="{$tableId}-grid-load-children" data-depth="{$depth}" data-inserted="0" data-key="{$key}">
+   {$indents}<i class="fa fa-angle-right"></i> &nbsp; {$this->value}
+</a>
+EOT;
+    }
+
     protected function setupScript()
     {
         $tableId = $this->grid->getTableId();
@@ -35,29 +52,12 @@ JS;
         Admin::script($script);
     }
 
-    public function display()
-    {
-        $this->setupScript();
-
-        $key = $this->getKey();
-        $tableId = $this->grid->getTableId();
-
-        $depth = $this->grid->model()->getDepthFromRequest();
-        $indents = str_repeat(' &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ', $depth);
-
-        return <<<EOT
-<a href="javascript:void(0)" class="{$tableId}-grid-load-children" data-depth="{$depth}" data-inserted="0" data-key="{$key}">
-   {$indents}<i class="fa fa-angle-right"></i> &nbsp; {$this->value}
-</a>
-EOT;
-    }
-
     protected function showNextPage()
     {
         $model = $this->grid->model();
 
         $showNextPage = $this->grid->allowPagination();
-        if (! $model->showAllChildrenNodes() && $showNextPage) {
+        if (!$model->showAllChildrenNodes() && $showNextPage) {
             $showNextPage =
                 $model->getCurrentChildrenPage() < $model->paginator()->lastPage()
                 && $model->buildData()->count() == $model->getPerPage();

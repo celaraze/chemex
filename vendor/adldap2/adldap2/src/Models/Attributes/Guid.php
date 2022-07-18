@@ -48,18 +48,6 @@ class Guid
     ];
 
     /**
-     * Determines if the specified GUID is valid.
-     *
-     * @param string $guid
-     *
-     * @return bool
-     */
-    public static function isValid($guid)
-    {
-        return Utilities::isValidGuid($guid);
-    }
-
-    /**
      * Constructor.
      *
      * @param mixed $value
@@ -75,6 +63,30 @@ class Guid
         } else {
             throw new InvalidArgumentException('Invalid Binary / String GUID.');
         }
+    }
+
+    /**
+     * Determines if the specified GUID is valid.
+     *
+     * @param string $guid
+     *
+     * @return bool
+     */
+    public static function isValid($guid)
+    {
+        return Utilities::isValidGuid($guid);
+    }
+
+    /**
+     * Returns the string variant of a binary GUID.
+     *
+     * @param string $binary
+     *
+     * @return string|null
+     */
+    protected function binaryGuidToString($binary)
+    {
+        return Utilities::binaryGuidToString($binary);
     }
 
     /**
@@ -116,29 +128,17 @@ class Guid
     }
 
     /**
-     * Returns the string variant of a binary GUID.
-     *
-     * @param string $binary
-     *
-     * @return string|null
-     */
-    protected function binaryGuidToString($binary)
-    {
-        return Utilities::binaryGuidToString($binary);
-    }
-
-    /**
      * Return the specified section of the hexadecimal string.
      *
+     * @param string $hex The full hex string.
+     * @param array $sections An array of start and length (unless octet is true, then length is always 2).
+     * @param bool $octet Whether this is for octet string form.
+     *
+     * @return string The concatenated sections in upper-case.
      * @author Chad Sikorra <Chad.Sikorra@gmail.com>
      *
      * @link https://github.com/ldaptools/ldaptools
      *
-     * @param string $hex      The full hex string.
-     * @param array  $sections An array of start and length (unless octet is true, then length is always 2).
-     * @param bool   $octet    Whether this is for octet string form.
-     *
-     * @return string The concatenated sections in upper-case.
      */
     protected function parseSection($hex, array $sections, $octet = false)
     {

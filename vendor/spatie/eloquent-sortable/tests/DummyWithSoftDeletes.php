@@ -12,7 +12,7 @@ class DummyWithSoftDeletes extends Model implements Sortable
     use SoftDeletes;
     use SortableTrait;
 
+    public $timestamps = false;
     protected $table = 'dummies';
     protected $guarded = [];
-    public $timestamps = false;
 }

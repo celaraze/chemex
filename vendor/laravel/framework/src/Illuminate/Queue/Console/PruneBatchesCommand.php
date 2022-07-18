@@ -13,15 +13,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class PruneBatchesCommand extends Command
 {
     /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'queue:prune-batches
-                {--hours=24 : The number of hours to retain batch data}
-                {--unfinished= : The number of hours to retain unfinished batch data }';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -31,7 +22,14 @@ class PruneBatchesCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'queue:prune-batches';
-
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'queue:prune-batches
+                {--hours=24 : The number of hours to retain batch data}
+                {--unfinished= : The number of hours to retain unfinished batch data }';
     /**
      * The console command description.
      *

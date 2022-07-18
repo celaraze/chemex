@@ -9,9 +9,9 @@ interface StoreInterface
     /**
      * Read the content of the environment file(s).
      *
+     * @return string
      * @throws \Dotenv\Exception\InvalidEncodingException|\Dotenv\Exception\InvalidPathException
      *
-     * @return string
      */
     public function read();
 }

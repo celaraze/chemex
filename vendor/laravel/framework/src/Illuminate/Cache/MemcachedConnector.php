@@ -9,10 +9,10 @@ class MemcachedConnector
     /**
      * Create a new Memcached connection.
      *
-     * @param  array  $servers
-     * @param  string|null  $connectionId
-     * @param  array  $options
-     * @param  array  $credentials
+     * @param array $servers
+     * @param string|null $connectionId
+     * @param array $options
+     * @param array $credentials
      * @return \Memcached
      */
     public function connect(array $servers, $connectionId = null, array $options = [], array $credentials = [])
@@ -21,7 +21,7 @@ class MemcachedConnector
             $connectionId, $credentials, $options
         );
 
-        if (! $memcached->getServerList()) {
+        if (!$memcached->getServerList()) {
             // For each server in the array, we'll just extract the configuration and add
             // the server to the Memcached connection. Once we have added all of these
             // servers we'll verify the connection is successful and return it back.
@@ -38,9 +38,9 @@ class MemcachedConnector
     /**
      * Get a new Memcached instance.
      *
-     * @param  string|null  $connectionId
-     * @param  array  $credentials
-     * @param  array  $options
+     * @param string|null $connectionId
+     * @param array $credentials
+     * @param array $options
      * @return \Memcached
      */
     protected function getMemcached($connectionId, array $credentials, array $options)
@@ -61,7 +61,7 @@ class MemcachedConnector
     /**
      * Create the Memcached instance.
      *
-     * @param  string|null  $connectionId
+     * @param string|null $connectionId
      * @return \Memcached
      */
     protected function createMemcachedInstance($connectionId)
@@ -72,8 +72,8 @@ class MemcachedConnector
     /**
      * Set the SASL credentials on the Memcached connection.
      *
-     * @param  \Memcached  $memcached
-     * @param  array  $credentials
+     * @param \Memcached $memcached
+     * @param array $credentials
      * @return void
      */
     protected function setCredentials($memcached, $credentials)

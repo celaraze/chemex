@@ -11,17 +11,17 @@
 
 namespace Monolog\Handler;
 
-use Elastic\Elasticsearch\Response\Elasticsearch;
-use Throwable;
-use RuntimeException;
-use Monolog\Logger;
-use Monolog\Formatter\FormatterInterface;
-use Monolog\Formatter\ElasticsearchFormatter;
-use InvalidArgumentException;
-use Elasticsearch\Common\Exceptions\RuntimeException as ElasticsearchRuntimeException;
-use Elasticsearch\Client;
-use Elastic\Elasticsearch\Exception\InvalidArgumentException as ElasticInvalidArgumentException;
 use Elastic\Elasticsearch\Client as Client8;
+use Elastic\Elasticsearch\Exception\InvalidArgumentException as ElasticInvalidArgumentException;
+use Elastic\Elasticsearch\Response\Elasticsearch;
+use Elasticsearch\Client;
+use Elasticsearch\Common\Exceptions\RuntimeException as ElasticsearchRuntimeException;
+use InvalidArgumentException;
+use Monolog\Formatter\ElasticsearchFormatter;
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Logger;
+use RuntimeException;
+use Throwable;
 
 /**
  * Elasticsearch handler
@@ -62,8 +62,8 @@ class ElasticsearchHandler extends AbstractProcessingHandler
     private $needsType;
 
     /**
-     * @param Client|Client8 $client  Elasticsearch Client object
-     * @param mixed[]        $options Handler configuration
+     * @param Client|Client8 $client Elasticsearch Client object
+     * @param mixed[] $options Handler configuration
      */
     public function __construct($client, array $options = [], $level = Logger::DEBUG, bool $bubble = true)
     {
@@ -75,8 +75,8 @@ class ElasticsearchHandler extends AbstractProcessingHandler
         $this->client = $client;
         $this->options = array_merge(
             [
-                'index'        => 'monolog', // Elastic index name
-                'type'         => '_doc',    // Elastic document type
+                'index' => 'monolog', // Elastic index name
+                'type' => '_doc',    // Elastic document type
                 'ignore_error' => false,     // Suppress Elasticsearch exceptions
             ],
             $options
@@ -89,14 +89,6 @@ class ElasticsearchHandler extends AbstractProcessingHandler
         } else {
             $this->needsType = true;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function write(array $record): void
-    {
-        $this->bulkSend([$record['formatted']]);
     }
 
     /**
@@ -124,14 +116,6 @@ class ElasticsearchHandler extends AbstractProcessingHandler
     /**
      * {@inheritDoc}
      */
-    protected function getDefaultFormatter(): FormatterInterface
-    {
-        return new ElasticsearchFormatter($this->options['index'], $this->options['type']);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function handleBatch(array $records): void
     {
         $documents = $this->getFormatter()->formatBatch($records);
@@ -141,7 +125,7 @@ class ElasticsearchHandler extends AbstractProcessingHandler
     /**
      * Use Elasticsearch bulk API to send list of documents
      *
-     * @param  array[]           $records Records + _index/_type keys
+     * @param array[] $records Records + _index/_type keys
      * @throws \RuntimeException
      */
     protected function bulkSend(array $records): void
@@ -155,7 +139,7 @@ class ElasticsearchHandler extends AbstractProcessingHandler
                 $params['body'][] = [
                     'index' => $this->needsType ? [
                         '_index' => $record['_index'],
-                        '_type'  => $record['_type'],
+                        '_type' => $record['_type'],
                     ] : [
                         '_index' => $record['_index'],
                     ],
@@ -172,7 +156,7 @@ class ElasticsearchHandler extends AbstractProcessingHandler
                 throw $this->createExceptionFromResponses($responses);
             }
         } catch (Throwable $e) {
-            if (! $this->options['ignore_error']) {
+            if (!$this->options['ignore_error']) {
                 throw new RuntimeException('Error sending messages to Elasticsearch', 0, $e);
             }
         }
@@ -214,5 +198,21 @@ class ElasticsearchHandler extends AbstractProcessingHandler
         }
 
         return new ElasticsearchRuntimeException($error['type'] . ': ' . $error['reason'], 0, $previous);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function write(array $record): void
+    {
+        $this->bulkSend([$record['formatted']]);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultFormatter(): FormatterInterface
+    {
+        return new ElasticsearchFormatter($this->options['index'], $this->options['type']);
     }
 }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Type;
 
 use function is_subclass_of;
@@ -26,7 +27,7 @@ final class ObjectType extends Type
 
     public function __construct(TypeName $className, bool $allowsNull)
     {
-        $this->className  = $className;
+        $this->className = $className;
         $this->allowsNull = $allowsNull;
     }
 

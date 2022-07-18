@@ -62,6 +62,14 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
+    public function canChangePasswords()
+    {
+        return $this->isUsingSSL() || $this->isUsingTLS();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function isUsingSSL()
     {
         return $this->useSSL;
@@ -73,22 +81,6 @@ class Ldap implements ConnectionInterface
     public function isUsingTLS()
     {
         return $this->useTLS;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isBound()
-    {
-        return $this->bound;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canChangePasswords()
-    {
-        return $this->isUsingSSL() || $this->isUsingTLS();
     }
 
     /**
@@ -208,17 +200,25 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function getValuesLen($entry, $attribute)
+    public function errNo()
     {
-        return ldap_get_values_len($this->connection, $entry, $attribute);
+        return ldap_errno($this->connection);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setOption($option, $value)
+    public function err2Str($number)
     {
-        return ldap_set_option($this->connection, $option, $value);
+        return ldap_err2str($number);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getValuesLen($entry, $attribute)
+    {
+        return ldap_get_values_len($this->connection, $entry, $attribute);
     }
 
     /**
@@ -234,21 +234,17 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function setRebindCallback(callable $callback)
+    public function setOption($option, $value)
     {
-        return ldap_set_rebind_proc($this->connection, $callback);
+        return ldap_set_option($this->connection, $option, $value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function startTLS()
+    public function setRebindCallback(callable $callback)
     {
-        try {
-            return ldap_start_tls($this->connection);
-        } catch (\ErrorException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
-        }
+        return ldap_set_rebind_proc($this->connection, $callback);
     }
 
     /**
@@ -262,6 +258,43 @@ class Ldap implements ConnectionInterface
         $this->bound = false;
 
         return $this->connection = ldap_connect($this->host);
+    }
+
+    /**
+     * Generates an LDAP connection string for each host given.
+     *
+     * @param string|array $hosts
+     * @param string $protocol
+     * @param string $port
+     *
+     * @return string
+     */
+    protected function getConnectionString($hosts, $protocol, $port)
+    {
+        // If we are using SSL and using the default port, we
+        // will override it to use the default SSL port.
+        if ($this->isUsingSSL() && $port == 389) {
+            $port = self::PORT_SSL;
+        }
+
+        // Normalize hosts into an array.
+        $hosts = is_array($hosts) ? $hosts : [$hosts];
+
+        $hosts = array_map(function ($host) use ($protocol, $port) {
+            return "{$protocol}{$host}:{$port}";
+        }, $hosts);
+
+        return implode(' ', $hosts);
+    }
+
+    /**
+     * Returns the LDAP protocol to utilize for the current connection.
+     *
+     * @return string
+     */
+    public function getProtocol()
+    {
+        return $this->isUsingSSL() ? $this::PROTOCOL_SSL : $this::PROTOCOL;
     }
 
     /**
@@ -308,11 +341,11 @@ class Ldap implements ConnectionInterface
      * @link https://www.php.net/manual/en/function.ldap-parse-result.php
      *
      * @param resource $result
-     * @param int      $errorCode
-     * @param string   $dn
-     * @param string   $errorMessage
-     * @param array    $referrals
-     * @param array    $serverControls
+     * @param int $errorCode
+     * @param string $dn
+     * @param string $errorMessage
+     * @param array $referrals
+     * @param array $serverControls
      *
      * @return bool
      */
@@ -321,6 +354,16 @@ class Ldap implements ConnectionInterface
         return $this->supportsServerControlsInMethods() && !empty($serverControls) ?
             ldap_parse_result($this->connection, $result, $errorCode, $dn, $errorMessage, $referrals, $serverControls) :
             ldap_parse_result($this->connection, $result, $errorCode, $dn, $errorMessage, $referrals);
+    }
+
+    /**
+     * Determine if the current PHP version supports server controls.
+     *
+     * @return bool
+     */
+    public function supportsServerControlsInMethods()
+    {
+        return version_compare(PHP_VERSION, '7.3.0') >= 0;
     }
 
     /**
@@ -344,6 +387,26 @@ class Ldap implements ConnectionInterface
             $username,
             html_entity_decode($password)
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isBound()
+    {
+        return $this->bound;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function startTLS()
+    {
+        try {
+            return ldap_start_tls($this->connection);
+        } catch (\ErrorException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -437,22 +500,6 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function errNo()
-    {
-        return ldap_errno($this->connection);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getExtendedError()
-    {
-        return $this->getDiagnosticMessage();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getExtendedErrorHex()
     {
         if (preg_match("/(?<=data\s).*?(?=\,)/", $this->getExtendedError(), $code)) {
@@ -463,17 +510,9 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function getExtendedErrorCode()
+    public function getExtendedError()
     {
-        return $this->extractDiagnosticCode($this->getExtendedError());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function err2Str($number)
-    {
-        return ldap_err2str($number);
+        return $this->getDiagnosticMessage();
     }
 
     /**
@@ -489,57 +528,18 @@ class Ldap implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
+    public function getExtendedErrorCode()
+    {
+        return $this->extractDiagnosticCode($this->getExtendedError());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function extractDiagnosticCode($message)
     {
         preg_match('/^([\da-fA-F]+):/', $message, $matches);
 
         return isset($matches[1]) ? $matches[1] : false;
-    }
-
-    /**
-     * Returns the LDAP protocol to utilize for the current connection.
-     *
-     * @return string
-     */
-    public function getProtocol()
-    {
-        return $this->isUsingSSL() ? $this::PROTOCOL_SSL : $this::PROTOCOL;
-    }
-
-    /**
-     * Determine if the current PHP version supports server controls.
-     *
-     * @return bool
-     */
-    public function supportsServerControlsInMethods()
-    {
-        return version_compare(PHP_VERSION, '7.3.0') >= 0;
-    }
-
-    /**
-     * Generates an LDAP connection string for each host given.
-     *
-     * @param string|array $hosts
-     * @param string       $protocol
-     * @param string       $port
-     *
-     * @return string
-     */
-    protected function getConnectionString($hosts, $protocol, $port)
-    {
-        // If we are using SSL and using the default port, we
-        // will override it to use the default SSL port.
-        if ($this->isUsingSSL() && $port == 389) {
-            $port = self::PORT_SSL;
-        }
-
-        // Normalize hosts into an array.
-        $hosts = is_array($hosts) ? $hosts : [$hosts];
-
-        $hosts = array_map(function ($host) use ($protocol, $port) {
-            return "{$protocol}{$host}:{$port}";
-        }, $hosts);
-
-        return implode(' ', $hosts);
     }
 }

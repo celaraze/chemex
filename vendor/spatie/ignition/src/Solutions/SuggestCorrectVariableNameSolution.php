@@ -23,7 +23,7 @@ class SuggestCorrectVariableNameSolution implements Solution
 
     public function getSolutionTitle(): string
     {
-        return 'Possible typo $'.$this->variableName;
+        return 'Possible typo $' . $this->variableName;
     }
 
     public function getDocumentationLinks(): array

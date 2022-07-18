@@ -32,13 +32,6 @@ final class DelayedEnvelope extends Envelope
         $this->message = $message;
     }
 
-    public function setSender(Address $sender): void
-    {
-        parent::setSender($sender);
-
-        $this->senderSet = true;
-    }
-
     public function getSender(): Address
     {
         if (!$this->senderSet) {
@@ -48,11 +41,33 @@ final class DelayedEnvelope extends Envelope
         return parent::getSender();
     }
 
+    public function setSender(Address $sender): void
+    {
+        parent::setSender($sender);
+
+        $this->senderSet = true;
+    }
+
+    private static function getSenderFromHeaders(Headers $headers): Address
+    {
+        if ($sender = $headers->get('Sender')) {
+            return $sender->getAddress();
+        }
+        if ($return = $headers->get('Return-Path')) {
+            return $return->getAddress();
+        }
+        if ($from = $headers->get('From')) {
+            return $from->getAddresses()[0];
+        }
+
+        throw new LogicException('Unable to determine the sender of the message.');
+    }
+
     public function setRecipients(array $recipients): void
     {
         parent::setRecipients($recipients);
 
-        $this->recipientsSet = (bool) parent::getRecipients();
+        $this->recipientsSet = (bool)parent::getRecipients();
     }
 
     /**
@@ -79,20 +94,5 @@ final class DelayedEnvelope extends Envelope
         }
 
         return $recipients;
-    }
-
-    private static function getSenderFromHeaders(Headers $headers): Address
-    {
-        if ($sender = $headers->get('Sender')) {
-            return $sender->getAddress();
-        }
-        if ($return = $headers->get('Return-Path')) {
-            return $return->getAddress();
-        }
-        if ($from = $headers->get('From')) {
-            return $from->getAddresses()[0];
-        }
-
-        throw new LogicException('Unable to determine the sender of the message.');
     }
 }

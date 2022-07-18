@@ -63,6 +63,29 @@ class HasManyTest extends TestCase
     }
 
     /**
+     * @return array
+     */
+    protected function data()
+    {
+        return [
+            'username' => 'uuu',
+            'bio' => 'bxbxbxbxbxbx',
+            'paintings' => [
+                [
+                    'title' => '蒙娜丽莎',
+                    'body' => '(*￣︶￣)',
+                    'completed_at' => now(),
+                ],
+                [
+                    'title' => '鸡蛋',
+                    'body' => '(*￣︶￣)',
+                    'completed_at' => now(),
+                ],
+            ],
+        ];
+    }
+
+    /**
      * 测试编辑页面.
      *
      * @throws \Throwable
@@ -79,7 +102,7 @@ class HasManyTest extends TestCase
     }
 
     /**
-     * @param  array  $data
+     * @param array $data
      * @return Painter
      */
     protected function save($data)
@@ -94,28 +117,5 @@ class HasManyTest extends TestCase
         }
 
         return $painter;
-    }
-
-    /**
-     * @return array
-     */
-    protected function data()
-    {
-        return [
-            'username' => 'uuu',
-            'bio'      => 'bxbxbxbxbxbx',
-            'paintings' => [
-                [
-                    'title' => '蒙娜丽莎',
-                    'body' => '(*￣︶￣)',
-                    'completed_at' => now(),
-                ],
-                [
-                    'title' => '鸡蛋',
-                    'body' => '(*￣︶￣)',
-                    'completed_at' => now(),
-                ],
-            ],
-        ];
     }
 }

@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\Diff;
 
 use function array_pop;
@@ -32,8 +33,8 @@ final class Parser
         }
 
         $lineCount = count($lines);
-        $diffs     = [];
-        $diff      = null;
+        $diffs = [];
+        $diff = null;
         $collected = [];
 
         for ($i = 0; $i < $lineCount; ++$i) {
@@ -42,7 +43,7 @@ final class Parser
                 if ($diff !== null) {
                     $this->parseFileDiff($diff, $collected);
 
-                    $diffs[]   = $diff;
+                    $diffs[] = $diff;
                     $collected = [];
                 }
 
@@ -69,20 +70,20 @@ final class Parser
 
     private function parseFileDiff(Diff $diff, array $lines): void
     {
-        $chunks    = [];
-        $chunk     = null;
+        $chunks = [];
+        $chunk = null;
         $diffLines = [];
 
         foreach ($lines as $line) {
             if (preg_match('/^@@\s+-(?P<start>\d+)(?:,\s*(?P<startrange>\d+))?\s+\+(?P<end>\d+)(?:,\s*(?P<endrange>\d+))?\s+@@/', $line, $match)) {
                 $chunk = new Chunk(
-                    (int) $match['start'],
-                    isset($match['startrange']) ? max(1, (int) $match['startrange']) : 1,
-                    (int) $match['end'],
-                    isset($match['endrange']) ? max(1, (int) $match['endrange']) : 1
+                    (int)$match['start'],
+                    isset($match['startrange']) ? max(1, (int)$match['startrange']) : 1,
+                    (int)$match['end'],
+                    isset($match['endrange']) ? max(1, (int)$match['endrange']) : 1
                 );
 
-                $chunks[]  = $chunk;
+                $chunks[] = $chunk;
                 $diffLines = [];
 
                 continue;

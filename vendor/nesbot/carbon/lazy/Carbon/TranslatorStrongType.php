@@ -25,8 +25,8 @@ if (!class_exists(LazyTranslator::class, false)) {
         {
             $messages = $this->getPrivateProperty($catalogue, 'messages');
 
-            if (isset($messages[$domain.MessageCatalogueInterface::INTL_DOMAIN_SUFFIX][$id])) {
-                return $messages[$domain.MessageCatalogueInterface::INTL_DOMAIN_SUFFIX][$id];
+            if (isset($messages[$domain . MessageCatalogueInterface::INTL_DOMAIN_SUFFIX][$id])) {
+                return $messages[$domain . MessageCatalogueInterface::INTL_DOMAIN_SUFFIX][$id];
             }
 
             if (isset($messages[$domain][$id])) {

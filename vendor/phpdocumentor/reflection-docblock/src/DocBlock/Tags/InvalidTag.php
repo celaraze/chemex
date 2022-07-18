@@ -11,7 +11,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use Throwable;
-
 use function array_map;
 use function get_class;
 use function get_resource_type;
@@ -47,6 +46,11 @@ final class InvalidTag implements Tag
         $this->body = $body;
     }
 
+    public static function create(string $body, string $name = ''): self
+    {
+        return new self($name, $body);
+    }
+
     public function getException(): ?Throwable
     {
         return $this->throwable;
@@ -57,15 +61,10 @@ final class InvalidTag implements Tag
         return $this->name;
     }
 
-    public static function create(string $body, string $name = ''): self
-    {
-        return new self($name, $body);
-    }
-
     public function withError(Throwable $exception): self
     {
         $this->flattenExceptionBacktrace($exception);
-        $tag            = new self($this->name, $this->body);
+        $tag = new self($this->name, $this->body);
         $tag->throwable = $exception;
 
         return $tag;
@@ -102,6 +101,20 @@ final class InvalidTag implements Tag
         $traceProperty->setAccessible(false);
     }
 
+    public function render(?Formatter $formatter = null): string
+    {
+        if ($formatter === null) {
+            $formatter = new Formatter\PassthroughFormatter();
+        }
+
+        return $formatter->format($this);
+    }
+
+    public function __toString(): string
+    {
+        return $this->body;
+    }
+
     /**
      * @param mixed $value
      *
@@ -113,7 +126,7 @@ final class InvalidTag implements Tag
     {
         if ($value instanceof Closure) {
             $closureReflection = new ReflectionFunction($value);
-            $value             = sprintf(
+            $value = sprintf(
                 '(Closure at %s:%s)',
                 $closureReflection->getFileName(),
                 $closureReflection->getStartLine()
@@ -127,19 +140,5 @@ final class InvalidTag implements Tag
         }
 
         return $value;
-    }
-
-    public function render(?Formatter $formatter = null): string
-    {
-        if ($formatter === null) {
-            $formatter = new Formatter\PassthroughFormatter();
-        }
-
-        return $formatter->format($this);
-    }
-
-    public function __toString(): string
-    {
-        return $this->body;
     }
 }

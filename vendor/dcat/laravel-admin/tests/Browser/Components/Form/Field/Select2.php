@@ -15,19 +15,9 @@ class Select2 extends Component
     }
 
     /**
-     * 获取组件的 root selector.
-     *
-     * @return string
-     */
-    public function selector()
-    {
-        return $this->selector;
-    }
-
-    /**
      * 浏览器包含组件的断言
      *
-     * @param  Browser  $browser
+     * @param Browser $browser
      * @return void
      */
     public function assert(Browser $browser)
@@ -35,6 +25,16 @@ class Select2 extends Component
         $browser
             ->assertVisible($this->selector())
             ->assertVisible('@container');
+    }
+
+    /**
+     * 获取组件的 root selector.
+     *
+     * @return string
+     */
+    public function selector()
+    {
+        return $this->selector;
     }
 
     /**
@@ -52,8 +52,8 @@ class Select2 extends Component
     /**
      * 选中下拉选框.
      *
-     * @param  Browser  $browser
-     * @param  mixed  $value
+     * @param Browser $browser
+     * @param mixed $value
      * @return Browser
      */
     public function choose(Browser $browser, $value)

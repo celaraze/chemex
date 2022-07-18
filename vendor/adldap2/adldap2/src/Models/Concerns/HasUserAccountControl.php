@@ -7,16 +7,6 @@ use Adldap\Models\Attributes\AccountControl;
 trait HasUserAccountControl
 {
     /**
-     * Returns the users user account control integer.
-     *
-     * @return string
-     */
-    public function getUserAccountControl()
-    {
-        return $this->getFirstAttribute($this->schema->userAccountControl());
-    }
-
-    /**
      * Returns the users user account control as an AccountControl object.
      *
      * @return AccountControl
@@ -24,6 +14,16 @@ trait HasUserAccountControl
     public function getUserAccountControlObject()
     {
         return new AccountControl($this->getUserAccountControl());
+    }
+
+    /**
+     * Returns the users user account control integer.
+     *
+     * @return string
+     */
+    public function getUserAccountControl()
+    {
+        return $this->getFirstAttribute($this->schema->userAccountControl());
     }
 
     /**
@@ -35,17 +35,7 @@ trait HasUserAccountControl
      */
     public function setUserAccountControl($accountControl)
     {
-        return $this->setAttribute($this->schema->userAccountControl(), (string) $accountControl);
-    }
-
-    /**
-     * Returns if the user is disabled.
-     *
-     * @return bool
-     */
-    public function isDisabled()
-    {
-        return ($this->getUserAccountControl() & AccountControl::ACCOUNTDISABLE) === AccountControl::ACCOUNTDISABLE;
+        return $this->setAttribute($this->schema->userAccountControl(), (string)$accountControl);
     }
 
     /**
@@ -56,5 +46,15 @@ trait HasUserAccountControl
     public function isEnabled()
     {
         return $this->getUserAccountControl() === null ? false : !$this->isDisabled();
+    }
+
+    /**
+     * Returns if the user is disabled.
+     *
+     * @return bool
+     */
+    public function isDisabled()
+    {
+        return ($this->getUserAccountControl() & AccountControl::ACCOUNTDISABLE) === AccountControl::ACCOUNTDISABLE;
     }
 }

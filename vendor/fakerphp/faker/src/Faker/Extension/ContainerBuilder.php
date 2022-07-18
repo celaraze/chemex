@@ -17,6 +17,34 @@ final class ContainerBuilder
      */
     private $definitions = [];
 
+    public static function getDefault(): ContainerInterface
+    {
+        $instance = new self();
+
+        foreach (self::defaultExtensions() as $id => $definition) {
+            $instance->add($definition, $id);
+        }
+
+        return $instance->build();
+    }
+
+    /**
+     * Get an array with extension that represent the default English
+     * functionality.
+     */
+    public static function defaultExtensions(): array
+    {
+        return [
+            BarcodeExtension::class => Core\Barcode::class,
+            BloodExtension::class => Core\Blood::class,
+            ColorExtension::class => Core\Color::class,
+            FileExtension::class => Core\File::class,
+            NumberExtension::class => Core\Number::class,
+            VersionExtension::class => Core\Version::class,
+            UuidExtension::class => Core\Uuid::class,
+        ];
+    }
+
     /**
      * @param callable|object|string $value
      *
@@ -52,33 +80,5 @@ final class ContainerBuilder
     public function build(): ContainerInterface
     {
         return new Container($this->definitions);
-    }
-
-    /**
-     * Get an array with extension that represent the default English
-     * functionality.
-     */
-    public static function defaultExtensions(): array
-    {
-        return [
-            BarcodeExtension::class => Core\Barcode::class,
-            BloodExtension::class => Core\Blood::class,
-            ColorExtension::class => Core\Color::class,
-            FileExtension::class => Core\File::class,
-            NumberExtension::class => Core\Number::class,
-            VersionExtension::class => Core\Version::class,
-            UuidExtension::class => Core\Uuid::class,
-        ];
-    }
-
-    public static function getDefault(): ContainerInterface
-    {
-        $instance = new self();
-
-        foreach (self::defaultExtensions() as $id => $definition) {
-            $instance->add($definition, $id);
-        }
-
-        return $instance->build();
     }
 }

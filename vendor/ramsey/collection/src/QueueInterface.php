@@ -117,8 +117,6 @@ interface QueueInterface extends ArrayInterface
      * than returning `false`). This preserves the invariant that a queue always
      * contains the specified element after this call returns.
      *
-     * @see self::offer()
-     *
      * @param T $element The element to add to this queue.
      *
      * @return bool `true` if this queue changed as a result of the call.
@@ -127,6 +125,8 @@ interface QueueInterface extends ArrayInterface
      *     for any reason other than that it already contains the element.
      *     Implementations should use a more-specific exception that extends
      *     `\RuntimeException`.
+     * @see self::offer()
+     *
      */
     // phpcs:ignore SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     public function add($element): bool;
@@ -137,11 +137,11 @@ interface QueueInterface extends ArrayInterface
      * This method differs from `peek()` only in that it throws an exception if
      * this queue is empty.
      *
-     * @see self::peek()
-     *
      * @return T the head of this queue.
      *
      * @throws NoSuchElementException if this queue is empty.
+     * @see self::peek()
+     *
      */
     public function element();
 
@@ -153,11 +153,11 @@ interface QueueInterface extends ArrayInterface
      * preferable to `add()`, which can fail to insert an element only by
      * throwing an exception.
      *
-     * @see self::add()
-     *
      * @param T $element The element to add to this queue.
      *
      * @return bool `true` if the element was added to this queue, else `false`.
+     * @see self::add()
+     *
      */
     // phpcs:ignore SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     public function offer($element): bool;
@@ -166,9 +166,9 @@ interface QueueInterface extends ArrayInterface
      * Retrieves, but does not remove, the head of this queue, or returns `null`
      * if this queue is empty.
      *
+     * @return T|null the head of this queue, or `null` if this queue is empty.
      * @see self::element()
      *
-     * @return T|null the head of this queue, or `null` if this queue is empty.
      */
     public function peek();
 
@@ -176,9 +176,9 @@ interface QueueInterface extends ArrayInterface
      * Retrieves and removes the head of this queue, or returns `null`
      * if this queue is empty.
      *
+     * @return T|null the head of this queue, or `null` if this queue is empty.
      * @see self::remove()
      *
-     * @return T|null the head of this queue, or `null` if this queue is empty.
      */
     public function poll();
 
@@ -188,11 +188,11 @@ interface QueueInterface extends ArrayInterface
      * This method differs from `poll()` only in that it throws an exception if
      * this queue is empty.
      *
-     * @see self::poll()
-     *
      * @return T the head of this queue.
      *
      * @throws NoSuchElementException if this queue is empty.
+     * @see self::poll()
+     *
      */
     public function remove();
 

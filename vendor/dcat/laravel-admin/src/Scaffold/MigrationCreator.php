@@ -17,7 +17,7 @@ class MigrationCreator extends BaseMigrationCreator
     /**
      * Create a new migration creator instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -28,10 +28,10 @@ class MigrationCreator extends BaseMigrationCreator
     /**
      * Create a new model.
      *
-     * @param  string  $name
-     * @param  string  $path
-     * @param  null  $table
-     * @param  bool|true  $create
+     * @param string $name
+     * @param string $path
+     * @param null $table
+     * @param bool|true $create
      * @return string
      */
     public function create($name, $path, $table = null, $create = true)
@@ -40,7 +40,7 @@ class MigrationCreator extends BaseMigrationCreator
 
         $path = $this->getPath($name, $path);
 
-        $stub = $this->files->get(__DIR__.'/stubs/create.stub');
+        $stub = $this->files->get(__DIR__ . '/stubs/create.stub');
 
         $this->files->put($path, $this->populateAdminStub($name, $stub, $table));
         $this->files->chmod($path, 0777);
@@ -53,9 +53,9 @@ class MigrationCreator extends BaseMigrationCreator
     /**
      * Populate stub.
      *
-     * @param  string  $name
-     * @param  string  $stub
-     * @param  string  $table
+     * @param string $name
+     * @param string $stub
+     * @param string $table
      * @return mixed
      */
     protected function populateAdminStub($name, $stub, $table)
@@ -70,10 +70,10 @@ class MigrationCreator extends BaseMigrationCreator
     /**
      * Build the table blueprint.
      *
-     * @param  array  $fields
-     * @param  string  $keyName
-     * @param  bool|true  $useTimestamps
-     * @param  bool|false  $softDeletes
+     * @param array $fields
+     * @param string $keyName
+     * @param bool|true $useTimestamps
+     * @param bool|false $softDeletes
      * @return $this
      *
      * @throws \Exception
@@ -81,7 +81,7 @@ class MigrationCreator extends BaseMigrationCreator
     public function buildBluePrint($fields = [], $keyName = 'id', $useTimestamps = true, $softDeletes = false)
     {
         $fields = array_filter($fields, function ($field) {
-            return isset($field['name']) && ! empty($field['name']);
+            return isset($field['name']) && !empty($field['name']);
         });
 
         if (empty($fields)) {
@@ -98,7 +98,7 @@ class MigrationCreator extends BaseMigrationCreator
             }
 
             $hasDefault = isset($field['default'])
-                && ! is_null($field['default'])
+                && !is_null($field['default'])
                 && $field['default'] !== '';
             if ($hasDefault) {
                 $column .= "->default('{$field['default']}')";
@@ -106,7 +106,7 @@ class MigrationCreator extends BaseMigrationCreator
 
             if (Arr::get($field, 'nullable') == 'on') {
                 $column .= '->nullable()';
-            } elseif (! $hasDefault && $field['type'] === 'string') {
+            } elseif (!$hasDefault && $field['type'] === 'string') {
                 $column .= "->default('')";
             }
 
@@ -114,7 +114,7 @@ class MigrationCreator extends BaseMigrationCreator
                 $column .= "->comment('{$field['comment']}')";
             }
 
-            $rows[] = $column.";\n";
+            $rows[] = $column . ";\n";
         }
 
         if ($useTimestamps) {

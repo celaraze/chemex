@@ -40,6 +40,54 @@ class StyleManager extends \Box\Spout\Writer\Common\Manager\Style\StyleManager
     }
 
     /**
+     * Returns the fill ID associated to the given style ID.
+     * For the default style, we don't a fill.
+     *
+     * @param int $styleId
+     * @return int
+     */
+    private function getFillIdForStyleId($styleId)
+    {
+        // For the default style (ID = 0), we don't want to override the fill.
+        // Otherwise all cells of the spreadsheet will have a background color.
+        $isDefaultStyle = ($styleId === 0);
+
+        return $isDefaultStyle ? 0 : ($this->styleRegistry->getFillIdForStyleId($styleId) ?: 0);
+    }
+
+    /**
+     * Returns the fill ID associated to the given style ID.
+     * For the default style, we don't a border.
+     *
+     * @param int $styleId
+     * @return int
+     */
+    private function getBorderIdForStyleId($styleId)
+    {
+        // For the default style (ID = 0), we don't want to override the border.
+        // Otherwise all cells of the spreadsheet will have a border.
+        $isDefaultStyle = ($styleId === 0);
+
+        return $isDefaultStyle ? 0 : ($this->styleRegistry->getBorderIdForStyleId($styleId) ?: 0);
+    }
+
+    /**
+     * Returns the format ID associated to the given style ID.
+     * For the default style use general format.
+     *
+     * @param int $styleId
+     * @return int
+     */
+    private function getFormatIdForStyleId($styleId)
+    {
+        // For the default style (ID = 0), we don't want to override the format.
+        // Otherwise all cells of the spreadsheet will have a format.
+        $isDefaultStyle = ($styleId === 0);
+
+        return $isDefaultStyle ? 0 : ($this->styleRegistry->getFormatIdForStyleId($styleId) ?: 0);
+    }
+
+    /**
      * Returns the content of the "styles.xml" file, given a list of styles.
      *
      * @return string
@@ -268,54 +316,6 @@ EOD;
         $content .= '</cellXfs>';
 
         return $content;
-    }
-
-    /**
-     * Returns the fill ID associated to the given style ID.
-     * For the default style, we don't a fill.
-     *
-     * @param int $styleId
-     * @return int
-     */
-    private function getFillIdForStyleId($styleId)
-    {
-        // For the default style (ID = 0), we don't want to override the fill.
-        // Otherwise all cells of the spreadsheet will have a background color.
-        $isDefaultStyle = ($styleId === 0);
-
-        return $isDefaultStyle ? 0 : ($this->styleRegistry->getFillIdForStyleId($styleId) ?: 0);
-    }
-
-    /**
-     * Returns the fill ID associated to the given style ID.
-     * For the default style, we don't a border.
-     *
-     * @param int $styleId
-     * @return int
-     */
-    private function getBorderIdForStyleId($styleId)
-    {
-        // For the default style (ID = 0), we don't want to override the border.
-        // Otherwise all cells of the spreadsheet will have a border.
-        $isDefaultStyle = ($styleId === 0);
-
-        return $isDefaultStyle ? 0 : ($this->styleRegistry->getBorderIdForStyleId($styleId) ?: 0);
-    }
-
-    /**
-     * Returns the format ID associated to the given style ID.
-     * For the default style use general format.
-     *
-     * @param int $styleId
-     * @return int
-     */
-    private function getFormatIdForStyleId($styleId)
-    {
-        // For the default style (ID = 0), we don't want to override the format.
-        // Otherwise all cells of the spreadsheet will have a format.
-        $isDefaultStyle = ($styleId === 0);
-
-        return $isDefaultStyle ? 0 : ($this->styleRegistry->getFormatIdForStyleId($styleId) ?: 0);
     }
 
     /**

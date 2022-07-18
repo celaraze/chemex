@@ -42,10 +42,47 @@ class LoggingTranslator implements TranslatorInterface, TranslatorBagInterface, 
      */
     public function trans(?string $id, array $parameters = [], string $domain = null, string $locale = null): string
     {
-        $trans = $this->translator->trans($id = (string) $id, $parameters, $domain, $locale);
+        $trans = $this->translator->trans($id = (string)$id, $parameters, $domain, $locale);
         $this->log($id, $domain, $locale);
 
         return $trans;
+    }
+
+    /**
+     * Logs for missing translations.
+     */
+    private function log(string $id, ?string $domain, ?string $locale)
+    {
+        if (null === $domain) {
+            $domain = 'messages';
+        }
+
+        $catalogue = $this->translator->getCatalogue($locale);
+        if ($catalogue->defines($id, $domain)) {
+            return;
+        }
+
+        if ($catalogue->has($id, $domain)) {
+            $this->logger->debug('Translation use fallback catalogue.', ['id' => $id, 'domain' => $domain, 'locale' => $catalogue->getLocale()]);
+        } else {
+            $this->logger->warning('Translation not found.', ['id' => $id, 'domain' => $domain, 'locale' => $catalogue->getLocale()]);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCatalogue(string $locale = null): MessageCatalogueInterface
+    {
+        return $this->translator->getCatalogue($locale);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLocale(): string
+    {
+        return $this->translator->getLocale();
     }
 
     /**
@@ -60,22 +97,6 @@ class LoggingTranslator implements TranslatorInterface, TranslatorBagInterface, 
         }
 
         $this->logger->debug(sprintf('The locale of the translator has changed from "%s" to "%s".', $prev, $locale));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLocale(): string
-    {
-        return $this->translator->getLocale();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCatalogue(string $locale = null): MessageCatalogueInterface
-    {
-        return $this->translator->getCatalogue($locale);
     }
 
     /**
@@ -104,26 +125,5 @@ class LoggingTranslator implements TranslatorInterface, TranslatorBagInterface, 
     public function __call(string $method, array $args)
     {
         return $this->translator->{$method}(...$args);
-    }
-
-    /**
-     * Logs for missing translations.
-     */
-    private function log(string $id, ?string $domain, ?string $locale)
-    {
-        if (null === $domain) {
-            $domain = 'messages';
-        }
-
-        $catalogue = $this->translator->getCatalogue($locale);
-        if ($catalogue->defines($id, $domain)) {
-            return;
-        }
-
-        if ($catalogue->has($id, $domain)) {
-            $this->logger->debug('Translation use fallback catalogue.', ['id' => $id, 'domain' => $domain, 'locale' => $catalogue->getLocale()]);
-        } else {
-            $this->logger->warning('Translation not found.', ['id' => $id, 'domain' => $domain, 'locale' => $catalogue->getLocale()]);
-        }
     }
 }

@@ -2,35 +2,51 @@
 
 <title>CodeMirror: Diff mode</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="../../doc/docs.css">
+<link href="../../doc/docs.css" rel=stylesheet>
 
-<link rel="stylesheet" href="../../lib/codemirror.css">
+<link href="../../lib/codemirror.css" rel="stylesheet">
 <script src="../../lib/codemirror.js"></script>
 <script src="diff.js"></script>
 <style>
-      .CodeMirror {border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;}
-      span.cm-meta {color: #a0b !important;}
-      span.cm-error { background-color: black; opacity: 0.4;}
-      span.cm-error.cm-string { background-color: red; }
-      span.cm-error.cm-tag { background-color: #2b2; }
-    </style>
-<div id=nav>
-  <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+    .CodeMirror {
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+    }
 
-  <ul>
-    <li><a href="../../index.html">Home</a>
-    <li><a href="../../doc/manual.html">Manual</a>
-    <li><a href="https://github.com/codemirror/codemirror">Code</a>
-  </ul>
-  <ul>
-    <li><a href="../index.html">Language modes</a>
-    <li><a class=active href="#">Diff</a>
-  </ul>
+    span.cm-meta {
+        color: #a0b !important;
+    }
+
+    span.cm-error {
+        background-color: black;
+        opacity: 0.4;
+    }
+
+    span.cm-error.cm-string {
+        background-color: red;
+    }
+
+    span.cm-error.cm-tag {
+        background-color: #2b2;
+    }
+</style>
+<div id=nav>
+    <a href="http://codemirror.net"><h1>CodeMirror</h1><img id=logo src="../../doc/logo.png"></a>
+
+    <ul>
+        <li><a href="../../index.html">Home</a>
+        <li><a href="../../doc/manual.html">Manual</a>
+        <li><a href="https://github.com/codemirror/codemirror">Code</a>
+    </ul>
+    <ul>
+        <li><a href="../index.html">Language modes</a>
+        <li><a class=active href="#">Diff</a>
+    </ul>
 </div>
 
 <article>
-<h2>Diff mode</h2>
-<form><textarea id="code" name="code">
+    <h2>Diff mode</h2>
+    <form><textarea id="code" name="code">
 diff --git a/index.html b/index.html
 index c1d9156..7764744 100644
 --- a/index.html
@@ -51,21 +67,21 @@ index 04646a9..9a39cc7 100644
 +++ b/lib/codemirror.js
 @@ -399,10 +399,16 @@ var CodeMirror = (function() {
      }
- 
+
      function onMouseDown(e) {
--      var start = posFromMouse(e), last = start;    
+-      var start = posFromMouse(e), last = start;
 +      var start = posFromMouse(e), last = start, target = e.target();
        if (!start) return;
        setCursor(start.line, start.ch, false);
        if (e.button() != 1) return;
-+      if (target.parentNode == gutter) {    
++      if (target.parentNode == gutter) {
 +        if (options.onGutterClick)
 +          options.onGutterClick(indexOf(gutter.childNodes, target) + showingFrom);
 +        return;
 +      }
 +
        if (!focused) onFocus();
- 
+
        e.stop();
 @@ -808,7 +814,7 @@ var CodeMirror = (function() {
        for (var i = showingFrom; i < showingTo; ++i) {
@@ -91,7 +107,7 @@ index 04646a9..9a39cc7 100644
        undo: operation(undo),
 @@ -1402,7 +1406,8 @@ var CodeMirror = (function() {
        replaceRange: operation(replaceRange),
- 
+
        operation: function(f){return operation(f)();},
 -      refresh: function(){updateDisplay([{from: 0, to: lines.length}]);}
 +      refresh: function(){updateDisplay([{from: 0, to: lines.length}]);},
@@ -109,9 +125,9 @@ index 04646a9..9a39cc7 100644
      workDelay: 300,
 </textarea></form>
     <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {});
+        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {});
     </script>
 
     <p><strong>MIME types defined:</strong> <code>text/x-diff</code>.</p>
 
-  </article>
+</article>

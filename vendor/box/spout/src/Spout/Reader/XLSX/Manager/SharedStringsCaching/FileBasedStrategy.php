@@ -96,9 +96,20 @@ class FileBasedStrategy implements CachingStrategyInterface
      */
     protected function getSharedStringTempFilePath($sharedStringIndex)
     {
-        $numTempFile = (int) ($sharedStringIndex / $this->maxNumStringsPerTempFile);
+        $numTempFile = (int)($sharedStringIndex / $this->maxNumStringsPerTempFile);
 
         return $this->tempFolder . '/sharedstrings' . $numTempFile;
+    }
+
+    /**
+     * Escapes the line feed characters (\n)
+     *
+     * @param string $unescapedString
+     * @return string
+     */
+    private function escapeLineFeed($unescapedString)
+    {
+        return \str_replace("\n", self::ESCAPED_LINE_FEED_CHARACTER, $unescapedString);
     }
 
     /**
@@ -119,8 +130,8 @@ class FileBasedStrategy implements CachingStrategyInterface
      * Returns the string located at the given index from the cache.
      *
      * @param int $sharedStringIndex Index of the shared string in the sharedStrings.xml file
-     * @throws \Box\Spout\Reader\Exception\SharedStringNotFoundException If no shared string found for the given index
      * @return string The shared string at the given index
+     * @throws \Box\Spout\Reader\Exception\SharedStringNotFoundException If no shared string found for the given index
      */
     public function getStringAtIndex($sharedStringIndex)
     {
@@ -152,17 +163,6 @@ class FileBasedStrategy implements CachingStrategyInterface
         }
 
         return \rtrim($sharedString, PHP_EOL);
-    }
-
-    /**
-     * Escapes the line feed characters (\n)
-     *
-     * @param string $unescapedString
-     * @return string
-     */
-    private function escapeLineFeed($unescapedString)
-    {
-        return \str_replace("\n", self::ESCAPED_LINE_FEED_CHARACTER, $unescapedString);
     }
 
     /**

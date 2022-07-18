@@ -53,9 +53,9 @@ class ReflectionLanguageConstructParameter extends \ReflectionParameter
     /**
      * Get param default value.
      *
+     * @return mixed
      * @todo remove \ReturnTypeWillChange attribute after dropping support for PHP 7.x (when we can use mixed type)
      *
-     * @return mixed
      */
     #[\ReturnTypeWillChange]
     public function getDefaultValue()
@@ -65,6 +65,16 @@ class ReflectionLanguageConstructParameter extends \ReflectionParameter
         }
 
         return null;
+    }
+
+    /**
+     * Does the param have a default value?
+     *
+     * @return bool
+     */
+    public function isDefaultValueAvailable(): bool
+    {
+        return \array_key_exists('defaultValue', $this->opts);
     }
 
     /**
@@ -85,16 +95,6 @@ class ReflectionLanguageConstructParameter extends \ReflectionParameter
     public function isOptional(): bool
     {
         return \array_key_exists('isOptional', $this->opts) && $this->opts['isOptional'];
-    }
-
-    /**
-     * Does the param have a default value?
-     *
-     * @return bool
-     */
-    public function isDefaultValueAvailable(): bool
-    {
-        return \array_key_exists('defaultValue', $this->opts);
     }
 
     /**

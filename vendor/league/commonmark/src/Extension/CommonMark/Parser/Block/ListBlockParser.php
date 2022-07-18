@@ -48,7 +48,7 @@ final class ListBlockParser extends AbstractBlockContinueParser
 
     public function canContain(AbstractBlock $childBlock): bool
     {
-        if (! $childBlock instanceof ListItem) {
+        if (!$childBlock instanceof ListItem) {
             return false;
         }
 
@@ -66,7 +66,7 @@ final class ListBlockParser extends AbstractBlockContinueParser
     public function tryContinue(Cursor $cursor, BlockContinueParserInterface $activeBlockParser): ?BlockContinue
     {
         if ($cursor->isBlank()) {
-            $this->hadBlankLine    = true;
+            $this->hadBlankLine = true;
             $this->linesAfterBlank = 0;
         } elseif ($this->hadBlankLine) {
             $this->linesAfterBlank++;

@@ -9,6 +9,6 @@ class CommitHash
      */
     public static function get()
     {
-        return trim(exec('cd '.app_path().' && git log --pretty="%h" -n1 HEAD 2> /dev/null'));
+        return trim(exec('cd ' . app_path() . ' && git log --pretty="%h" -n1 HEAD 2> /dev/null'));
     }
 }

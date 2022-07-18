@@ -39,8 +39,8 @@ class ConfigDataCollector extends DataCollector implements LateDataCollectorInte
      */
     public function collect(Request $request, Response $response, \Throwable $exception = null)
     {
-        $eom = \DateTime::createFromFormat('d/m/Y', '01/'.Kernel::END_OF_MAINTENANCE);
-        $eol = \DateTime::createFromFormat('d/m/Y', '01/'.Kernel::END_OF_LIFE);
+        $eom = \DateTime::createFromFormat('d/m/Y', '01/' . Kernel::END_OF_MAINTENANCE);
+        $eol = \DateTime::createFromFormat('d/m/Y', '01/' . Kernel::END_OF_LIFE);
 
         $this->data = [
             'token' => $response->headers->get('X-Debug-Token'),
@@ -73,6 +73,40 @@ class ConfigDataCollector extends DataCollector implements LateDataCollectorInte
             $this->data['php_version'] = $matches[1];
             $this->data['php_version_extra'] = $matches[2];
         }
+    }
+
+    private function determineSymfonyState(): string
+    {
+        $now = new \DateTime();
+        $eom = \DateTime::createFromFormat('d/m/Y', '01/' . Kernel::END_OF_MAINTENANCE)->modify('last day of this month');
+        $eol = \DateTime::createFromFormat('d/m/Y', '01/' . Kernel::END_OF_LIFE)->modify('last day of this month');
+
+        if ($now > $eol) {
+            $versionState = 'eol';
+        } elseif ($now > $eom) {
+            $versionState = 'eom';
+        } elseif ('' !== Kernel::EXTRA_VERSION) {
+            $versionState = 'dev';
+        } else {
+            $versionState = 'stable';
+        }
+
+        return $versionState;
+    }
+
+    /**
+     * Returns true if the debug is enabled.
+     *
+     * @return bool|string true if debug is enabled, false otherwise or a string if no kernel was set
+     */
+    public function isDebug(): bool|string
+    {
+        return $this->data['debug'];
+    }
+
+    public function getBundles()
+    {
+        return $this->data['bundles'];
     }
 
     /**
@@ -185,16 +219,6 @@ class ConfigDataCollector extends DataCollector implements LateDataCollectorInte
     }
 
     /**
-     * Returns true if the debug is enabled.
-     *
-     * @return bool|string true if debug is enabled, false otherwise or a string if no kernel was set
-     */
-    public function isDebug(): bool|string
-    {
-        return $this->data['debug'];
-    }
-
-    /**
      * Returns true if the Xdebug is enabled.
      */
     public function hasXdebug(): bool
@@ -226,11 +250,6 @@ class ConfigDataCollector extends DataCollector implements LateDataCollectorInte
         return $this->data['zend_opcache_enabled'];
     }
 
-    public function getBundles()
-    {
-        return $this->data['bundles'];
-    }
-
     /**
      * Gets the PHP SAPI name.
      */
@@ -245,24 +264,5 @@ class ConfigDataCollector extends DataCollector implements LateDataCollectorInte
     public function getName(): string
     {
         return 'config';
-    }
-
-    private function determineSymfonyState(): string
-    {
-        $now = new \DateTime();
-        $eom = \DateTime::createFromFormat('d/m/Y', '01/'.Kernel::END_OF_MAINTENANCE)->modify('last day of this month');
-        $eol = \DateTime::createFromFormat('d/m/Y', '01/'.Kernel::END_OF_LIFE)->modify('last day of this month');
-
-        if ($now > $eol) {
-            $versionState = 'eol';
-        } elseif ($now > $eom) {
-            $versionState = 'eom';
-        } elseif ('' !== Kernel::EXTRA_VERSION) {
-            $versionState = 'dev';
-        } else {
-            $versionState = 'stable';
-        }
-
-        return $versionState;
     }
 }

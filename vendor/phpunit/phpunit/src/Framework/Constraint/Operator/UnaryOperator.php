@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint;
 
 use function count;
@@ -64,6 +65,32 @@ abstract class UnaryOperator extends Operator
     }
 
     /**
+     * Returns true if the $constraint needs to be wrapped with parentheses.
+     */
+    protected function constraintNeedsParentheses(Constraint $constraint): bool
+    {
+        $constraint = $constraint->reduce();
+
+        return $constraint instanceof self || parent::constraintNeedsParentheses($constraint);
+    }
+
+    /**
+     * Transforms string returned by the memeber constraint's toString() or
+     * failureDescription() such that it reflects constraint's participation in
+     * this expression.
+     *
+     * The method may be overwritten in a subclass to apply default
+     * transformation in case the operand constraint does not provide its own
+     * custom strings via toStringInContext() or failureDescriptionInContext().
+     *
+     * @param string $string the string to be transformed
+     */
+    protected function transformString(string $string): string
+    {
+        return $string;
+    }
+
+    /**
      * Counts the number of constraint elements.
      */
     public function count(): int
@@ -105,36 +132,10 @@ abstract class UnaryOperator extends Operator
     }
 
     /**
-     * Transforms string returned by the memeber constraint's toString() or
-     * failureDescription() such that it reflects constraint's participation in
-     * this expression.
-     *
-     * The method may be overwritten in a subclass to apply default
-     * transformation in case the operand constraint does not provide its own
-     * custom strings via toStringInContext() or failureDescriptionInContext().
-     *
-     * @param string $string the string to be transformed
-     */
-    protected function transformString(string $string): string
-    {
-        return $string;
-    }
-
-    /**
      * Provides access to $this->constraint for subclasses.
      */
     final protected function constraint(): Constraint
     {
         return $this->constraint;
-    }
-
-    /**
-     * Returns true if the $constraint needs to be wrapped with parentheses.
-     */
-    protected function constraintNeedsParentheses(Constraint $constraint): bool
-    {
-        $constraint = $constraint->reduce();
-
-        return $constraint instanceof self || parent::constraintNeedsParentheses($constraint);
     }
 }

@@ -42,7 +42,15 @@ class EnvVariableAnalyzer extends ReliabilityAnalyzer
     public function errorMessage()
     {
         return "Your application has some missing environment variables that are defined in your .env.example file "
-            ."but missing in your .env file: ".$this->formatMissingEnvVariables();
+            . "but missing in your .env file: " . $this->formatMissingEnvVariables();
+    }
+
+    /**
+     * @return string
+     */
+    protected function formatMissingEnvVariables()
+    {
+        return $this->missingEnvVariables->join(', ', ' and ');
     }
 
     /**
@@ -67,7 +75,7 @@ class EnvVariableAnalyzer extends ReliabilityAnalyzer
         $this->missingEnvVariables = collect($examples->getEnvironmentVariableNames())
             ->diff($actual->getEnvironmentVariableNames());
 
-        if (! $this->missingEnvVariables->isEmpty()) {
+        if (!$this->missingEnvVariables->isEmpty()) {
             $this->markFailed();
         }
     }
@@ -84,16 +92,8 @@ class EnvVariableAnalyzer extends ReliabilityAnalyzer
             ->diffKeys($actual->safeLoad())
             ->keys();
 
-        if (! $this->missingEnvVariables->isEmpty()) {
+        if (!$this->missingEnvVariables->isEmpty()) {
             $this->markFailed();
         }
-    }
-
-    /**
-     * @return string
-     */
-    protected function formatMissingEnvVariables()
-    {
-        return $this->missingEnvVariables->join(', ', ' and ');
     }
 }

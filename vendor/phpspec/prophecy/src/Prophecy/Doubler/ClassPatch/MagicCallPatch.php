@@ -77,7 +77,7 @@ class MagicCallPatch implements ClassPatchInterface
 
                         // only magic methods can have a contract that needs to be enforced
                         if (in_array($methodName, self::MAGIC_METHODS_WITH_ARGUMENTS)) {
-                            foreach($tag->getArguments() as $argument) {
+                            foreach ($tag->getArguments() as $argument) {
                                 $argumentNode = new ArgumentNode($argument['name']);
                                 $methodNode->addArgument($argumentNode);
                             }

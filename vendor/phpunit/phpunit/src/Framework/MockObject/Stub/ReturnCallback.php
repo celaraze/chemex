@@ -7,14 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject\Stub;
 
+use PHPUnit\Framework\MockObject\Invocation;
 use function call_user_func_array;
 use function get_class;
 use function is_array;
 use function is_object;
 use function sprintf;
-use PHPUnit\Framework\MockObject\Invocation;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -38,10 +39,10 @@ final class ReturnCallback implements Stub
         if (is_array($this->callback)) {
             if (is_object($this->callback[0])) {
                 $class = get_class($this->callback[0]);
-                $type  = '->';
+                $type = '->';
             } else {
                 $class = $this->callback[0];
-                $type  = '::';
+                $type = '::';
             }
 
             return sprintf(
@@ -54,6 +55,6 @@ final class ReturnCallback implements Stub
         }
 
         return 'return result of user defined callback ' . $this->callback .
-               ' with the passed arguments';
+            ' with the passed arguments';
     }
 }

@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Util\Annotation;
 
-use function array_key_exists;
 use PHPUnit\Util\Exception;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use function array_key_exists;
 
 /**
  * Reflection information, and therefore DocBlock information, is static within
@@ -32,13 +33,13 @@ final class Registry
     /** @var array<string, array<string, DocBlock>> indexed by class name and method name */
     private $methodDocBlocks = [];
 
+    private function __construct()
+    {
+    }
+
     public static function getInstance(): self
     {
         return self::$instance ?? self::$instance = new self;
-    }
-
-    private function __construct()
-    {
     }
 
     /**
@@ -57,7 +58,7 @@ final class Registry
         } catch (ReflectionException $e) {
             throw new Exception(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -82,7 +83,7 @@ final class Registry
         } catch (ReflectionException $e) {
             throw new Exception(
                 $e->getMessage(),
-                (int) $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }

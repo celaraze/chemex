@@ -33,6 +33,15 @@ class View
         return new self($file, $data);
     }
 
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'file' => $this->file,
+            'data' => array_map([$this, 'dumpViewData'], $this->data),
+        ];
+    }
+
     protected function dumpViewData(mixed $variable): string
     {
         $cloner = new VarCloner();
@@ -42,7 +51,7 @@ class View
 
         $output = fopen('php://memory', 'r+b');
 
-        if (! $output) {
+        if (!$output) {
             return '';
         }
 
@@ -52,14 +61,5 @@ class View
         ]);
 
         return (string)stream_get_contents($output, -1, 0);
-    }
-
-    /** @return array<string, mixed> */
-    public function toArray(): array
-    {
-        return [
-            'file' => $this->file,
-            'data' => array_map([$this, 'dumpViewData'], $this->data),
-        ];
     }
 }

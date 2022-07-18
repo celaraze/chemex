@@ -10,22 +10,6 @@ namespace Doctrine\DBAL\Driver;
 final class FetchUtils
 {
     /**
-     * @return mixed|false
-     *
-     * @throws Exception
-     */
-    public static function fetchOne(Result $result)
-    {
-        $row = $result->fetchNumeric();
-
-        if ($row === false) {
-            return false;
-        }
-
-        return $row[0];
-    }
-
-    /**
      * @return list<list<mixed>>
      *
      * @throws Exception
@@ -71,5 +55,21 @@ final class FetchUtils
         }
 
         return $rows;
+    }
+
+    /**
+     * @return mixed|false
+     *
+     * @throws Exception
+     */
+    public static function fetchOne(Result $result)
+    {
+        $row = $result->fetchNumeric();
+
+        if ($row === false) {
+            return false;
+        }
+
+        return $row[0];
     }
 }

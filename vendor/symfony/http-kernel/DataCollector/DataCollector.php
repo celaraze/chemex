@@ -35,6 +35,15 @@ abstract class DataCollector implements DataCollectorInterface
 
     private ClonerInterface $cloner;
 
+    public function __sleep(): array
+    {
+        return ['data'];
+    }
+
+    public function __wakeup()
+    {
+    }
+
     /**
      * Converts the variable into a serializable Data instance.
      *
@@ -61,29 +70,20 @@ abstract class DataCollector implements DataCollectorInterface
     protected function getCasters()
     {
         $casters = [
-            '*' => function ($v, array $a, Stub $s, $isNested) {
-                if (!$v instanceof Stub) {
-                    foreach ($a as $k => $v) {
-                        if (\is_object($v) && !$v instanceof \DateTimeInterface && !$v instanceof Stub) {
-                            $a[$k] = new CutStub($v);
+                '*' => function ($v, array $a, Stub $s, $isNested) {
+                    if (!$v instanceof Stub) {
+                        foreach ($a as $k => $v) {
+                            if (\is_object($v) && !$v instanceof \DateTimeInterface && !$v instanceof Stub) {
+                                $a[$k] = new CutStub($v);
+                            }
                         }
                     }
-                }
 
-                return $a;
-            },
-        ] + ReflectionCaster::UNSET_CLOSURE_FILE_INFO;
+                    return $a;
+                },
+            ] + ReflectionCaster::UNSET_CLOSURE_FILE_INFO;
 
         return $casters;
-    }
-
-    public function __sleep(): array
-    {
-        return ['data'];
-    }
-
-    public function __wakeup()
-    {
     }
 
     /**

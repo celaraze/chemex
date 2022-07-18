@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class VariableCollection implements Countable, IteratorAggregate
      */
     private $variables;
 
+    private function __construct(Variable ...$variables)
+    {
+        $this->variables = $variables;
+    }
+
     /**
      * @param Variable[] $variables
      */
     public static function fromArray(array $variables): self
     {
         return new self(...$variables);
-    }
-
-    private function __construct(Variable ...$variables)
-    {
-        $this->variables = $variables;
     }
 
     /**

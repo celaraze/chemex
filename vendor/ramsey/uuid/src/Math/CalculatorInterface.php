@@ -68,8 +68,8 @@ interface CalculatorInterface
      * @return NumberInterface The quotient of dividing the provided parameters left-to-right
      */
     public function divide(
-        int $roundingMode,
-        int $scale,
+        int             $roundingMode,
+        int             $scale,
         NumberInterface $dividend,
         NumberInterface ...$divisors
     ): NumberInterface;

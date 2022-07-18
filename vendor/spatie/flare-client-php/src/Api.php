@@ -22,13 +22,6 @@ class Api
         register_shutdown_function([$this, 'sendQueuedReports']);
     }
 
-    public function sendReportsImmediately(): self
-    {
-        $this->sendReportsImmediately = true;
-
-        return $this;
-    }
-
     public function report(Report $report): void
     {
         try {
@@ -41,31 +34,11 @@ class Api
         }
     }
 
-    public function sendTestReport(Report $report): self
+    public function sendReportsImmediately(): self
     {
-        $this->sendReportToApi($report);
+        $this->sendReportsImmediately = true;
 
         return $this;
-    }
-
-    protected function addReportToQueue(Report $report): self
-    {
-        $this->queue[] = $report;
-
-        return $this;
-    }
-
-    public function sendQueuedReports(): void
-    {
-        try {
-            foreach ($this->queue as $report) {
-                $this->sendReportToApi($report);
-            }
-        } catch (Exception $e) {
-            //
-        } finally {
-            $this->queue = [];
-        }
     }
 
     protected function sendReportToApi(Report $report): void
@@ -83,5 +56,32 @@ class Api
     protected function truncateReport(array $payload): array
     {
         return (new ReportTrimmer())->trim($payload);
+    }
+
+    protected function addReportToQueue(Report $report): self
+    {
+        $this->queue[] = $report;
+
+        return $this;
+    }
+
+    public function sendTestReport(Report $report): self
+    {
+        $this->sendReportToApi($report);
+
+        return $this;
+    }
+
+    public function sendQueuedReports(): void
+    {
+        try {
+            foreach ($this->queue as $report) {
+                $this->sendReportToApi($report);
+            }
+        } catch (Exception $e) {
+            //
+        } finally {
+            $this->queue = [];
+        }
     }
 }

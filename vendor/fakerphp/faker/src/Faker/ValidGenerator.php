@@ -18,8 +18,8 @@ class ValidGenerator
 
     /**
      * @param Extension|Generator $generator
-     * @param callable|null       $validator
-     * @param int                 $maxRetries
+     * @param callable|null $validator
+     * @param int $maxRetries
      */
     public function __construct($generator, $validator = null, $maxRetries = 10000)
     {
@@ -58,7 +58,7 @@ class ValidGenerator
      * Catch and proxy all generator calls with arguments but return only valid values
      *
      * @param string $name
-     * @param array  $arguments
+     * @param array $arguments
      */
     public function __call($name, $arguments)
     {

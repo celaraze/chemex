@@ -61,7 +61,7 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
             $ch = $this->handle;
         }
 
-        $this->id = $id = (int) $ch;
+        $this->id = $id = (int)$ch;
         $this->logger = $logger;
         $this->shouldBuffer = $options['buffer'] ?? true;
         $this->timeout = $options['timeout'] ?? null;
@@ -76,7 +76,7 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
 
         if (!$info['response_headers']) {
             // Used to keep track of what we're waiting for
-            curl_setopt($ch, \CURLOPT_PRIVATE, \in_array($method, ['GET', 'HEAD', 'OPTIONS', 'TRACE'], true) && 1.0 < (float) ($options['http_version'] ?? 1.1) ? 'H2' : 'H0'); // H = headers + retry counter
+            curl_setopt($ch, \CURLOPT_PRIVATE, \in_array($method, ['GET', 'HEAD', 'OPTIONS', 'TRACE'], true) && 1.0 < (float)($options['http_version'] ?? 1.1) ? 'H2' : 'H0'); // H = headers + retry counter
         }
 
         curl_setopt($ch, \CURLOPT_HEADERFUNCTION, static function ($ch, string $data) use (&$info, &$headers, $options, $multi, $id, &$location, $resolveRedirect, $logger): int {
@@ -114,13 +114,13 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                 }
 
                 $lastExpiry = end($multi->pauseExpiries);
-                $multi->pauseExpiries[(int) $ch] = $duration += microtime(true);
+                $multi->pauseExpiries[(int)$ch] = $duration += microtime(true);
                 if (false !== $lastExpiry && $lastExpiry > $duration) {
                     asort($multi->pauseExpiries);
                 }
                 curl_pause($ch, \CURLPAUSE_ALL);
             } else {
-                unset($multi->pauseExpiries[(int) $ch]);
+                unset($multi->pauseExpiries[(int)$ch]);
                 curl_pause($ch, \CURLPAUSE_CONT);
                 curl_multi_add_handle($multi->handle, $ch);
             }
@@ -138,8 +138,8 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                     $debug = ['debug' => stream_get_contents($debugBuffer)];
                     $onProgress($dlNow, $dlSize, $url + curl_getinfo($ch) + $info + $debug);
                 } catch (\Throwable $e) {
-                    $multi->handlesActivity[(int) $ch][] = null;
-                    $multi->handlesActivity[(int) $ch][] = $e;
+                    $multi->handlesActivity[(int)$ch][] = null;
+                    $multi->handlesActivity[(int)$ch][] = $e;
 
                     return 1; // Abort the request
                 }
@@ -202,177 +202,6 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                 $multi->dnsCache->removals = $multi->dnsCache->hostnames = [];
             }
         });
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getInfo(string $type = null): mixed
-    {
-        if (!$info = $this->finalInfo) {
-            $info = array_merge($this->info, curl_getinfo($this->handle));
-            $info['url'] = $this->info['url'] ?? $info['url'];
-            $info['redirect_url'] = $this->info['redirect_url'] ?? null;
-
-            // workaround curl not subtracting the time offset for pushed responses
-            if (isset($this->info['url']) && $info['start_time'] / 1000 < $info['total_time']) {
-                $info['total_time'] -= $info['starttransfer_time'] ?: $info['total_time'];
-                $info['starttransfer_time'] = 0.0;
-            }
-
-            rewind($this->debugBuffer);
-            $info['debug'] = stream_get_contents($this->debugBuffer);
-            $waitFor = curl_getinfo($this->handle, \CURLINFO_PRIVATE);
-
-            if ('H' !== $waitFor[0] && 'C' !== $waitFor[0]) {
-                curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
-                rewind($this->debugBuffer);
-                ftruncate($this->debugBuffer, 0);
-                $this->finalInfo = $info;
-            }
-        }
-
-        return null !== $type ? $info[$type] ?? null : $info;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getContent(bool $throw = true): string
-    {
-        $performing = self::$performing;
-        self::$performing = $performing || '_0' === curl_getinfo($this->handle, \CURLINFO_PRIVATE);
-
-        try {
-            return $this->doGetContent($throw);
-        } finally {
-            self::$performing = $performing;
-        }
-    }
-
-    public function __destruct()
-    {
-        try {
-            if (null === $this->timeout) {
-                return; // Unused pushed response
-            }
-
-            $this->doDestruct();
-        } finally {
-            if (\is_resource($this->handle) || $this->handle instanceof \CurlHandle) {
-                curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    private static function schedule(self $response, array &$runningResponses): void
-    {
-        if (isset($runningResponses[$i = (int) $response->multi->handle])) {
-            $runningResponses[$i][1][$response->id] = $response;
-        } else {
-            $runningResponses[$i] = [$response->multi, [$response->id => $response]];
-        }
-
-        if ('_0' === curl_getinfo($ch = $response->handle, \CURLINFO_PRIVATE)) {
-            // Response already completed
-            $response->multi->handlesActivity[$response->id][] = null;
-            $response->multi->handlesActivity[$response->id][] = null !== $response->info['error'] ? new TransportException($response->info['error']) : null;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param CurlClientState $multi
-     */
-    private static function perform(ClientState $multi, array &$responses = null): void
-    {
-        if (self::$performing) {
-            if ($responses) {
-                $response = current($responses);
-                $multi->handlesActivity[(int) $response->handle][] = null;
-                $multi->handlesActivity[(int) $response->handle][] = new TransportException(sprintf('Userland callback cannot use the client nor the response while processing "%s".', curl_getinfo($response->handle, \CURLINFO_EFFECTIVE_URL)));
-            }
-
-            return;
-        }
-
-        try {
-            self::$performing = true;
-            ++$multi->execCounter;
-            $active = 0;
-            while (\CURLM_CALL_MULTI_PERFORM === ($err = curl_multi_exec($multi->handle, $active))) {
-            }
-
-            if (\CURLM_OK !== $err) {
-                throw new TransportException(curl_multi_strerror($err));
-            }
-
-            while ($info = curl_multi_info_read($multi->handle)) {
-                if (\CURLMSG_DONE !== $info['msg']) {
-                    continue;
-                }
-                $result = $info['result'];
-                $id = (int) $ch = $info['handle'];
-                $waitFor = @curl_getinfo($ch, \CURLINFO_PRIVATE) ?: '_0';
-
-                if (\in_array($result, [\CURLE_SEND_ERROR, \CURLE_RECV_ERROR, /*CURLE_HTTP2*/ 16, /*CURLE_HTTP2_STREAM*/ 92], true) && $waitFor[1] && 'C' !== $waitFor[0]) {
-                    curl_multi_remove_handle($multi->handle, $ch);
-                    $waitFor[1] = (string) ((int) $waitFor[1] - 1); // decrement the retry counter
-                    curl_setopt($ch, \CURLOPT_PRIVATE, $waitFor);
-                    curl_setopt($ch, \CURLOPT_FORBID_REUSE, true);
-
-                    if (0 === curl_multi_add_handle($multi->handle, $ch)) {
-                        continue;
-                    }
-                }
-
-                if (\CURLE_RECV_ERROR === $result && 'H' === $waitFor[0] && 400 <= ($responses[(int) $ch]->info['http_code'] ?? 0)) {
-                    $multi->handlesActivity[$id][] = new FirstChunk();
-                }
-
-                $multi->handlesActivity[$id][] = null;
-                $multi->handlesActivity[$id][] = \in_array($result, [\CURLE_OK, \CURLE_TOO_MANY_REDIRECTS], true) || '_0' === $waitFor || curl_getinfo($ch, \CURLINFO_SIZE_DOWNLOAD) === curl_getinfo($ch, \CURLINFO_CONTENT_LENGTH_DOWNLOAD) ? null : new TransportException(ucfirst(curl_error($ch) ?: curl_strerror($result)).sprintf(' for "%s".', curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL)));
-            }
-        } finally {
-            self::$performing = false;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param CurlClientState $multi
-     */
-    private static function select(ClientState $multi, float $timeout): int
-    {
-        if ($multi->pauseExpiries) {
-            $now = microtime(true);
-
-            foreach ($multi->pauseExpiries as $id => $pauseExpiry) {
-                if ($now < $pauseExpiry) {
-                    $timeout = min($timeout, $pauseExpiry - $now);
-                    break;
-                }
-
-                unset($multi->pauseExpiries[$id]);
-                curl_pause($multi->openHandles[$id][0], \CURLPAUSE_CONT);
-                curl_multi_add_handle($multi->handle, $multi->openHandles[$id][0]);
-            }
-        }
-
-        if (0 !== $selected = curl_multi_select($multi->handle, $timeout)) {
-            return $selected;
-        }
-
-        if ($multi->pauseExpiries && 0 < $timeout -= microtime(true) - $now) {
-            usleep((int) (1E6 * $timeout));
-        }
-
-        return 0;
     }
 
     /**
@@ -468,5 +297,176 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
         $location = null;
 
         return \strlen($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    private static function schedule(self $response, array &$runningResponses): void
+    {
+        if (isset($runningResponses[$i = (int)$response->multi->handle])) {
+            $runningResponses[$i][1][$response->id] = $response;
+        } else {
+            $runningResponses[$i] = [$response->multi, [$response->id => $response]];
+        }
+
+        if ('_0' === curl_getinfo($ch = $response->handle, \CURLINFO_PRIVATE)) {
+            // Response already completed
+            $response->multi->handlesActivity[$response->id][] = null;
+            $response->multi->handlesActivity[$response->id][] = null !== $response->info['error'] ? new TransportException($response->info['error']) : null;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param CurlClientState $multi
+     */
+    private static function perform(ClientState $multi, array &$responses = null): void
+    {
+        if (self::$performing) {
+            if ($responses) {
+                $response = current($responses);
+                $multi->handlesActivity[(int)$response->handle][] = null;
+                $multi->handlesActivity[(int)$response->handle][] = new TransportException(sprintf('Userland callback cannot use the client nor the response while processing "%s".', curl_getinfo($response->handle, \CURLINFO_EFFECTIVE_URL)));
+            }
+
+            return;
+        }
+
+        try {
+            self::$performing = true;
+            ++$multi->execCounter;
+            $active = 0;
+            while (\CURLM_CALL_MULTI_PERFORM === ($err = curl_multi_exec($multi->handle, $active))) {
+            }
+
+            if (\CURLM_OK !== $err) {
+                throw new TransportException(curl_multi_strerror($err));
+            }
+
+            while ($info = curl_multi_info_read($multi->handle)) {
+                if (\CURLMSG_DONE !== $info['msg']) {
+                    continue;
+                }
+                $result = $info['result'];
+                $id = (int)$ch = $info['handle'];
+                $waitFor = @curl_getinfo($ch, \CURLINFO_PRIVATE) ?: '_0';
+
+                if (\in_array($result, [\CURLE_SEND_ERROR, \CURLE_RECV_ERROR, /*CURLE_HTTP2*/ 16, /*CURLE_HTTP2_STREAM*/ 92], true) && $waitFor[1] && 'C' !== $waitFor[0]) {
+                    curl_multi_remove_handle($multi->handle, $ch);
+                    $waitFor[1] = (string)((int)$waitFor[1] - 1); // decrement the retry counter
+                    curl_setopt($ch, \CURLOPT_PRIVATE, $waitFor);
+                    curl_setopt($ch, \CURLOPT_FORBID_REUSE, true);
+
+                    if (0 === curl_multi_add_handle($multi->handle, $ch)) {
+                        continue;
+                    }
+                }
+
+                if (\CURLE_RECV_ERROR === $result && 'H' === $waitFor[0] && 400 <= ($responses[(int)$ch]->info['http_code'] ?? 0)) {
+                    $multi->handlesActivity[$id][] = new FirstChunk();
+                }
+
+                $multi->handlesActivity[$id][] = null;
+                $multi->handlesActivity[$id][] = \in_array($result, [\CURLE_OK, \CURLE_TOO_MANY_REDIRECTS], true) || '_0' === $waitFor || curl_getinfo($ch, \CURLINFO_SIZE_DOWNLOAD) === curl_getinfo($ch, \CURLINFO_CONTENT_LENGTH_DOWNLOAD) ? null : new TransportException(ucfirst(curl_error($ch) ?: curl_strerror($result)) . sprintf(' for "%s".', curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL)));
+            }
+        } finally {
+            self::$performing = false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param CurlClientState $multi
+     */
+    private static function select(ClientState $multi, float $timeout): int
+    {
+        if ($multi->pauseExpiries) {
+            $now = microtime(true);
+
+            foreach ($multi->pauseExpiries as $id => $pauseExpiry) {
+                if ($now < $pauseExpiry) {
+                    $timeout = min($timeout, $pauseExpiry - $now);
+                    break;
+                }
+
+                unset($multi->pauseExpiries[$id]);
+                curl_pause($multi->openHandles[$id][0], \CURLPAUSE_CONT);
+                curl_multi_add_handle($multi->handle, $multi->openHandles[$id][0]);
+            }
+        }
+
+        if (0 !== $selected = curl_multi_select($multi->handle, $timeout)) {
+            return $selected;
+        }
+
+        if ($multi->pauseExpiries && 0 < $timeout -= microtime(true) - $now) {
+            usleep((int)(1E6 * $timeout));
+        }
+
+        return 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(string $type = null): mixed
+    {
+        if (!$info = $this->finalInfo) {
+            $info = array_merge($this->info, curl_getinfo($this->handle));
+            $info['url'] = $this->info['url'] ?? $info['url'];
+            $info['redirect_url'] = $this->info['redirect_url'] ?? null;
+
+            // workaround curl not subtracting the time offset for pushed responses
+            if (isset($this->info['url']) && $info['start_time'] / 1000 < $info['total_time']) {
+                $info['total_time'] -= $info['starttransfer_time'] ?: $info['total_time'];
+                $info['starttransfer_time'] = 0.0;
+            }
+
+            rewind($this->debugBuffer);
+            $info['debug'] = stream_get_contents($this->debugBuffer);
+            $waitFor = curl_getinfo($this->handle, \CURLINFO_PRIVATE);
+
+            if ('H' !== $waitFor[0] && 'C' !== $waitFor[0]) {
+                curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
+                rewind($this->debugBuffer);
+                ftruncate($this->debugBuffer, 0);
+                $this->finalInfo = $info;
+            }
+        }
+
+        return null !== $type ? $info[$type] ?? null : $info;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getContent(bool $throw = true): string
+    {
+        $performing = self::$performing;
+        self::$performing = $performing || '_0' === curl_getinfo($this->handle, \CURLINFO_PRIVATE);
+
+        try {
+            return $this->doGetContent($throw);
+        } finally {
+            self::$performing = $performing;
+        }
+    }
+
+    public function __destruct()
+    {
+        try {
+            if (null === $this->timeout) {
+                return; // Unused pushed response
+            }
+
+            $this->doDestruct();
+        } finally {
+            if (\is_resource($this->handle) || $this->handle instanceof \CurlHandle) {
+                curl_setopt($this->handle, \CURLOPT_VERBOSE, false);
+            }
+        }
     }
 }

@@ -31,10 +31,10 @@ class Reader extends ReaderAbstract
     /**
      * Opens the file at the given file path to make it ready to be read.
      *
-     * @param  string $filePath Path of the file to be read
-     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path or its content cannot be read
-     * @throws \Box\Spout\Reader\Exception\NoSheetsFoundException If there are no sheets in the file
+     * @param string $filePath Path of the file to be read
      * @return void
+     * @throws \Box\Spout\Reader\Exception\NoSheetsFoundException If there are no sheets in the file
+     * @throws \Box\Spout\Common\Exception\IOException If the file at the given path or its content cannot be read
      */
     protected function openReader($filePath)
     {

@@ -9,9 +9,9 @@ class Payment extends \Faker\Provider\Payment
      *
      * @see http://en.wikipedia.org/wiki/International_Bank_Account_Number
      *
-     * @param string $prefix      for generating bank account number of a specific bank
+     * @param string $prefix for generating bank account number of a specific bank
      * @param string $countryCode ISO 3166-1 alpha-2 country code
-     * @param int    $length      total length without country code and 2 check digits
+     * @param int $length total length without country code and 2 check digits
      *
      * @return string
      */
@@ -23,14 +23,14 @@ class Payment extends \Faker\Provider\Payment
     /**
      * Value Added Tax (VAT)
      *
-     * @example 'BG1234567890', ('spaced') 'BG 1234567890'
-     *
-     * @see http://ec.europa.eu/taxation_customs/vies/faq.html?locale=en#item_11
-     * @see http://en.wikipedia.org/wiki/VAT_identification_number
-     *
      * @param bool $spacedNationalPrefix
      *
      * @return string VAT Number
+     * @see http://en.wikipedia.org/wiki/VAT_identification_number
+     *
+     * @example 'BG1234567890', ('spaced') 'BG 1234567890'
+     *
+     * @see http://ec.europa.eu/taxation_customs/vies/faq.html?locale=en#item_11
      */
     public static function vat($spacedNationalPrefix = true)
     {

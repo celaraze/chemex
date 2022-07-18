@@ -40,50 +40,6 @@ trait PackageDiscoveryTrait
     private $repositorySets;
 
     /**
-     * @return CompositeRepository
-     */
-    protected function getRepos(): CompositeRepository
-    {
-        if (null === $this->repos) {
-            $this->repos = new CompositeRepository(array_merge(
-                array(new PlatformRepository),
-                RepositoryFactory::defaultReposWithDefaultManager($this->getIO())
-            ));
-        }
-
-        return $this->repos;
-    }
-
-    private function getRepositorySet(InputInterface $input, ?string $minimumStability = null): RepositorySet
-    {
-        $key = $minimumStability ?? 'default';
-
-        if (!isset($this->repositorySets[$key])) {
-            $this->repositorySets[$key] = $repositorySet = new RepositorySet($minimumStability ?? $this->getMinimumStability($input));
-            $repositorySet->addRepository($this->getRepos());
-        }
-
-        return $this->repositorySets[$key];
-    }
-
-    private function getMinimumStability(InputInterface $input): string
-    {
-        if ($input->hasOption('stability')) { // @phpstan-ignore-line as InitCommand does have this option but not all classes using this trait do
-            return VersionParser::normalizeStability($input->getOption('stability') ?? 'stable');
-        }
-
-        // @phpstan-ignore-next-line as RequireCommand does not have the option above so this code is reachable there
-        $file = Factory::getComposerFile();
-        if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode((string) file_get_contents($file), true))) {
-            if (!empty($composer['minimum-stability'])) {
-                return VersionParser::normalizeStability($composer['minimum-stability']);
-            }
-        }
-
-        return 'stable';
-    }
-
-    /**
      * @param array<string> $requires
      *
      * @return array<string>
@@ -191,8 +147,8 @@ trait PackageDiscoveryTrait
                             return false;
                         }
 
-                        if (is_numeric($selection) && isset($matches[(int) $selection])) {
-                            $package = $matches[(int) $selection];
+                        if (is_numeric($selection) && isset($matches[(int)$selection])) {
+                            $package = $matches[(int)$selection];
 
                             return $package['name'];
                         }
@@ -204,7 +160,7 @@ trait PackageDiscoveryTrait
                                 // validate version constraint
                                 $versionParser->parseConstraints($packageMatches['version']);
 
-                                return $packageMatches['name'].' '.$packageMatches['version'];
+                                return $packageMatches['name'] . ' ' . $packageMatches['version'];
                             }
 
                             // parsing `acme/example`
@@ -247,7 +203,7 @@ trait PackageDiscoveryTrait
                         ));
                     }
 
-                    $package .= ' '.$constraint;
+                    $package .= ' ' . $constraint;
                 }
 
                 if (false !== $package) {
@@ -265,8 +221,8 @@ trait PackageDiscoveryTrait
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @throws \InvalidArgumentException
      * @return array{string, string}     name version
+     * @throws \InvalidArgumentException
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, string $name, ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', ?string $requiredVersion = null, ?string $minimumStability = null, bool $fixed = false): array
     {
@@ -296,7 +252,7 @@ trait PackageDiscoveryTrait
             if (count($providers) > 0) {
                 $constraint = '*';
                 if ($input->isInteractive()) {
-                    $constraint = $this->getIO()->askAndValidate('Package "<info>'.$name.'</info>" does not exist but is provided by '.count($providers).' packages. Which version constraint would you like to use? [<info>*</info>] ', function ($value) {
+                    $constraint = $this->getIO()->askAndValidate('Package "<info>' . $name . '</info>" does not exist but is provided by ' . count($providers) . ' packages. Which version constraint would you like to use? [<info>*</info>] ', function ($value) {
                         $parser = new VersionParser();
                         $parser->parseConstraints($value);
 
@@ -312,7 +268,7 @@ trait PackageDiscoveryTrait
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s%s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
-                    is_string($requiredVersion) ? ' at version '.$requiredVersion : ''
+                    is_string($requiredVersion) ? ' at version ' . $requiredVersion : ''
                 ));
             }
             // Check whether the minimum stability was the problem but the package exists
@@ -320,7 +276,7 @@ trait PackageDiscoveryTrait
                 // we must first verify if a valid package would be found in a lower priority repository
                 if (false !== ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
                     throw new \InvalidArgumentException(
-                        'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
+                        'Package ' . $name . ' exists in ' . $allReposPackage->getRepository()->getRepoName() . ' and ' . $package->getRepository()->getRepoName() . ' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
                 }
 
@@ -335,12 +291,12 @@ trait PackageDiscoveryTrait
                 // we must first verify if a valid package would be found in a lower priority repository
                 if (false !== ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, PlatformRequirementFilterFactory::ignoreNothing(), RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
                     throw new \InvalidArgumentException(
-                        'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your constraint and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
+                        'Package ' . $name . ' exists in ' . $allReposPackage->getRepository()->getRepoName() . ' and ' . $package->getRepository()->getRepoName() . ' which has a higher repository priority. The packages from the higher priority repository do not match your constraint and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
                 }
 
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in a version matching "%s" and a stability matching "'.$effectiveMinimumStability.'".',
+                    'Could not find package %s in a version matching "%s" and a stability matching "' . $effectiveMinimumStability . '".',
                     $name,
                     $requiredVersion
                 ));
@@ -349,7 +305,7 @@ trait PackageDiscoveryTrait
             if (!$platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter && false !== ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
                 $additional = '';
                 if (false === $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll())) {
-                    $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
+                    $additional = PHP_EOL . PHP_EOL . 'Additionally, the package was only found with a stability of "' . $candidate->getStability() . '" while your minimum stability is "' . $effectiveMinimumStability . '".';
                 }
 
                 throw new \InvalidArgumentException(sprintf(
@@ -389,6 +345,87 @@ trait PackageDiscoveryTrait
         );
     }
 
+    private function getRepositorySet(InputInterface $input, ?string $minimumStability = null): RepositorySet
+    {
+        $key = $minimumStability ?? 'default';
+
+        if (!isset($this->repositorySets[$key])) {
+            $this->repositorySets[$key] = $repositorySet = new RepositorySet($minimumStability ?? $this->getMinimumStability($input));
+            $repositorySet->addRepository($this->getRepos());
+        }
+
+        return $this->repositorySets[$key];
+    }
+
+    private function getMinimumStability(InputInterface $input): string
+    {
+        if ($input->hasOption('stability')) { // @phpstan-ignore-line as InitCommand does have this option but not all classes using this trait do
+            return VersionParser::normalizeStability($input->getOption('stability') ?? 'stable');
+        }
+
+        // @phpstan-ignore-next-line as RequireCommand does not have the option above so this code is reachable there
+        $file = Factory::getComposerFile();
+        if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode((string)file_get_contents($file), true))) {
+            if (!empty($composer['minimum-stability'])) {
+                return VersionParser::normalizeStability($composer['minimum-stability']);
+            }
+        }
+
+        return 'stable';
+    }
+
+    /**
+     * @return CompositeRepository
+     */
+    protected function getRepos(): CompositeRepository
+    {
+        if (null === $this->repos) {
+            $this->repos = new CompositeRepository(array_merge(
+                array(new PlatformRepository),
+                RepositoryFactory::defaultReposWithDefaultManager($this->getIO())
+            ));
+        }
+
+        return $this->repos;
+    }
+
+    private function getPlatformExceptionDetails(PackageInterface $candidate, ?PlatformRepository $platformRepo = null): string
+    {
+        $details = array();
+        if (null === $platformRepo) {
+            return '';
+        }
+
+        foreach ($candidate->getRequires() as $link) {
+            if (!PlatformRepository::isPlatformPackage($link->getTarget())) {
+                continue;
+            }
+            $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
+            if (null === $platformPkg) {
+                if ($platformRepo->isPlatformPackageDisabled($link->getTarget())) {
+                    $details[] = $candidate->getPrettyName() . ' ' . $candidate->getPrettyVersion() . ' requires ' . $link->getTarget() . ' ' . $link->getPrettyConstraint() . ' but it is disabled by your platform config. Enable it again with "composer config platform.' . $link->getTarget() . ' --unset".';
+                } else {
+                    $details[] = $candidate->getPrettyName() . ' ' . $candidate->getPrettyVersion() . ' requires ' . $link->getTarget() . ' ' . $link->getPrettyConstraint() . ' but it is not present.';
+                }
+                continue;
+            }
+            if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
+                $platformPkgVersion = $platformPkg->getPrettyVersion();
+                $platformExtra = $platformPkg->getExtra();
+                if (isset($platformExtra['config.platform']) && $platformPkg instanceof CompletePackageInterface) {
+                    $platformPkgVersion .= ' (' . $platformPkg->getDescription() . ')';
+                }
+                $details[] = $candidate->getPrettyName() . ' ' . $candidate->getPrettyVersion() . ' requires ' . $link->getTarget() . ' ' . $link->getPrettyConstraint() . ' which does not match your installed version ' . $platformPkgVersion . '.';
+            }
+        }
+
+        if (count($details) === 0) {
+            return '';
+        }
+
+        return ':' . PHP_EOL . '  - ' . implode(PHP_EOL . '  - ', $details);
+    }
+
     /**
      * @return array<string>
      */
@@ -421,42 +458,5 @@ trait PackageDiscoveryTrait
         asort($similarPackages);
 
         return array_keys(array_slice($similarPackages, 0, 5));
-    }
-
-    private function getPlatformExceptionDetails(PackageInterface $candidate, ?PlatformRepository $platformRepo = null): string
-    {
-        $details = array();
-        if (null === $platformRepo) {
-            return '';
-        }
-
-        foreach ($candidate->getRequires() as $link) {
-            if (!PlatformRepository::isPlatformPackage($link->getTarget())) {
-                continue;
-            }
-            $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
-            if (null === $platformPkg) {
-                if ($platformRepo->isPlatformPackageDisabled($link->getTarget())) {
-                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is disabled by your platform config. Enable it again with "composer config platform.'.$link->getTarget().' --unset".';
-                } else {
-                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
-                }
-                continue;
-            }
-            if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
-                $platformPkgVersion = $platformPkg->getPrettyVersion();
-                $platformExtra = $platformPkg->getExtra();
-                if (isset($platformExtra['config.platform']) && $platformPkg instanceof CompletePackageInterface) {
-                    $platformPkgVersion .= ' ('.$platformPkg->getDescription().')';
-                }
-                $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' which does not match your installed version '.$platformPkgVersion.'.';
-            }
-        }
-
-        if (count($details) === 0) {
-            return '';
-        }
-
-        return ':'.PHP_EOL.'  - ' . implode(PHP_EOL.'  - ', $details);
     }
 }

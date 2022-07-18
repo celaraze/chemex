@@ -20,7 +20,7 @@ class SuggestImportSolution implements Solution
 
     public function getSolutionDescription(): string
     {
-        return 'You have a missing class import. Try importing this class: `'.$this->class.'`.';
+        return 'You have a missing class import. Try importing this class: `' . $this->class . '`.';
     }
 
     public function getDocumentationLinks(): array

@@ -93,7 +93,7 @@ call_user_func(function () {
 // We didn't find an autoloader for a local version, so use the autoloader that
 // came with this script.
 if (!class_exists('Psy\Shell')) {
-/* <<< */
+    /* <<< */
     if (is_file(__DIR__ . '/../vendor/autoload.php')) {
         require __DIR__ . '/../vendor/autoload.php';
     } elseif (is_file(__DIR__ . '/../../../autoload.php')) {
@@ -103,7 +103,7 @@ if (!class_exists('Psy\Shell')) {
         fwrite(STDERR, 'See https://getcomposer.org to get Composer.' . PHP_EOL);
         exit(1);
     }
-/* >>> */
+    /* >>> */
 }
 
 // If the psysh binary was included directly, assume they just wanted an

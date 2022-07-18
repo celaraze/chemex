@@ -22,7 +22,7 @@ class Extension extends Repository
     }
 
     /**
-     * @param  AbstractExtension  $extension
+     * @param AbstractExtension $extension
      * @return array
      */
     protected function each(AbstractExtension $extension)
@@ -34,18 +34,18 @@ class Extension extends Repository
         $latest = $extension->getLocalLatestVersion();
 
         return [
-            'id'           => $name,
-            'alias'        => $extension->getAlias(),
-            'logo'         => $extension->getLogoBase64(),
-            'name'         => $name,
-            'version'      => $current,
-            'type'         => $extension->getType(),
-            'description'  => $property->description,
-            'authors'      => $property->authors,
-            'homepage'     => $property->homepage,
-            'enabled'      => $extension->enabled(),
-            'new_version'  => $latest === $current || ! $current ? '' : $latest,
-            'extension'    => $extension,
+            'id' => $name,
+            'alias' => $extension->getAlias(),
+            'logo' => $extension->getLogoBase64(),
+            'name' => $name,
+            'version' => $current,
+            'type' => $extension->getType(),
+            'description' => $property->description,
+            'authors' => $property->authors,
+            'homepage' => $property->homepage,
+            'enabled' => $extension->enabled(),
+            'new_version' => $latest === $current || !$current ? '' : $latest,
+            'extension' => $extension,
         ];
     }
 
@@ -62,7 +62,7 @@ class Extension extends Repository
     /**
      * Get data before update.
      *
-     * @param  Form  $form
+     * @param Form $form
      * @return array
      */
     public function updating(Form $form): array

@@ -14,7 +14,7 @@ class Expression
     /**
      * Create a new raw query expression.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return void
      */
     public function __construct($value)
@@ -25,20 +25,20 @@ class Expression
     /**
      * Get the value of the expression.
      *
-     * @return mixed
+     * @return string
      */
-    public function getValue()
+    public function __toString()
     {
-        return $this->value;
+        return (string)$this->getValue();
     }
 
     /**
      * Get the value of the expression.
      *
-     * @return string
+     * @return mixed
      */
-    public function __toString()
+    public function getValue()
     {
-        return (string) $this->getValue();
+        return $this->value;
     }
 }

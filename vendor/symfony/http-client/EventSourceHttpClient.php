@@ -122,7 +122,7 @@ final class EventSourceHttpClient implements HttpClientInterface, ResetInterface
             }
 
             $rx = '/((?:\r\n|[\r\n]){2,})/';
-            $content = $state->buffer.$chunk->getContent();
+            $content = $state->buffer . $chunk->getContent();
 
             if ($chunk->isLast()) {
                 $rx = substr_replace($rx, '|$', -2, 0);
@@ -131,7 +131,7 @@ final class EventSourceHttpClient implements HttpClientInterface, ResetInterface
             $state->buffer = array_pop($events);
 
             for ($i = 0; isset($events[$i]); $i += 2) {
-                $event = new ServerSentEvent($events[$i].$events[1 + $i]);
+                $event = new ServerSentEvent($events[$i] . $events[1 + $i]);
 
                 if ('' !== $event->getId()) {
                     $context->setInfo('last_event_id', $state->lastEventId = $event->getId());

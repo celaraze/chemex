@@ -29,7 +29,7 @@ class IniFileDumper extends FileDumper
 
         foreach ($messages->all($domain) as $source => $target) {
             $escapeTarget = str_replace('"', '\"', $target);
-            $output .= $source.'="'.$escapeTarget."\"\n";
+            $output .= $source . '="' . $escapeTarget . "\"\n";
         }
 
         return $output;

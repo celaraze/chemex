@@ -13,11 +13,11 @@ class Image extends AbstractDisplayer
             $this->value = $this->value->toArray();
         }
 
-        return collect((array) $this->value)->filter()->map(function ($path) use ($server, $width, $height) {
+        return collect((array)$this->value)->filter()->map(function ($path) use ($server, $width, $height) {
             if (url()->isValidUrl($path) || mb_strpos($path, 'data:image') === 0) {
                 $src = $path;
             } elseif ($server) {
-                $src = rtrim($server, '/').'/'.ltrim($path, '/');
+                $src = rtrim($server, '/') . '/' . ltrim($path, '/');
             } else {
                 $src = Storage::disk(config('admin.upload.disk'))->url($path);
             }

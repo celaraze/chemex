@@ -36,10 +36,20 @@ final class MentionParser implements InlineParserInterface
 
     public function __construct(string $name, string $prefix, string $identifierPattern, MentionGeneratorInterface $mentionGenerator)
     {
-        $this->name              = $name;
-        $this->prefix            = $prefix;
+        $this->name = $name;
+        $this->prefix = $prefix;
         $this->identifierPattern = $identifierPattern;
-        $this->mentionGenerator  = $mentionGenerator;
+        $this->mentionGenerator = $mentionGenerator;
+    }
+
+    public static function createWithStringTemplate(string $name, string $prefix, string $mentionRegex, string $urlTemplate): MentionParser
+    {
+        return new self($name, $prefix, $mentionRegex, new StringTemplateLinkGenerator($urlTemplate));
+    }
+
+    public static function createWithCallback(string $name, string $prefix, string $mentionRegex, callable $callback): MentionParser
+    {
+        return new self($name, $prefix, $mentionRegex, new CallbackGenerator($callback));
     }
 
     public function getMatchDefinition(): InlineParserMatch
@@ -73,15 +83,5 @@ final class MentionParser implements InlineParserInterface
         $inlineContext->getContainer()->appendChild($mention);
 
         return true;
-    }
-
-    public static function createWithStringTemplate(string $name, string $prefix, string $mentionRegex, string $urlTemplate): MentionParser
-    {
-        return new self($name, $prefix, $mentionRegex, new StringTemplateLinkGenerator($urlTemplate));
-    }
-
-    public static function createWithCallback(string $name, string $prefix, string $mentionRegex, callable $callback): MentionParser
-    {
-        return new self($name, $prefix, $mentionRegex, new CallbackGenerator($callback));
     }
 }

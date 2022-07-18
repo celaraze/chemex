@@ -7,6 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\MockObject;
 
 use function call_user_func;
@@ -37,8 +38,8 @@ final class MockClass implements MockType
      */
     public function __construct(string $classCode, string $mockName, array $configurableMethods)
     {
-        $this->classCode           = $classCode;
-        $this->mockName            = $mockName;
+        $this->classCode = $classCode;
+        $this->mockName = $mockName;
         $this->configurableMethods = $configurableMethods;
     }
 

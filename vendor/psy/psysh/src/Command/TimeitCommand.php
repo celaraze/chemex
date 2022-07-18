@@ -52,6 +52,18 @@ class TimeitCommand extends Command
     }
 
     /**
+     * Internal method for marking the start of timeit execution.
+     *
+     * A static call to this method will be injected at the start of the timeit
+     * input code to instrument the call. We will use the saved start time to
+     * more accurately calculate time elapsed during execution.
+     */
+    public static function markStart()
+    {
+        self::$start = \microtime(true);
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function configure()
@@ -111,53 +123,6 @@ HELP
     }
 
     /**
-     * Internal method for marking the start of timeit execution.
-     *
-     * A static call to this method will be injected at the start of the timeit
-     * input code to instrument the call. We will use the saved start time to
-     * more accurately calculate time elapsed during execution.
-     */
-    public static function markStart()
-    {
-        self::$start = \microtime(true);
-    }
-
-    /**
-     * Internal method for marking the end of timeit execution.
-     *
-     * A static call to this method is injected by TimeitVisitor at the end
-     * of the timeit input code to instrument the call.
-     *
-     * Note that this accepts an optional $ret parameter, which is used to pass
-     * the return value of the last statement back out of timeit. This saves us
-     * a bunch of code rewriting shenanigans.
-     *
-     * @param mixed $ret
-     *
-     * @return mixed it just passes $ret right back
-     */
-    public static function markEnd($ret = null)
-    {
-        self::$times[] = \microtime(true) - self::$start;
-        self::$start = null;
-
-        return $ret;
-    }
-
-    /**
-     * Ensure that the end of code execution was marked.
-     *
-     * The end *should* be marked in the instrumented code, but just in case
-     * we'll add a fallback here.
-     */
-    private function ensureEndMarked()
-    {
-        if (self::$start !== null) {
-            self::markEnd();
-        }
-    }
-
-    /**
      * Instrument code for timeit execution.
      *
      * This inserts `markStart` and `markEnd` calls to ensure that (reasonably)
@@ -181,7 +146,7 @@ HELP
      */
     private function parse(string $code): array
     {
-        $code = '<?php '.$code;
+        $code = '<?php ' . $code;
 
         try {
             return $this->parser->parse($code);
@@ -191,7 +156,42 @@ HELP
             }
 
             // If we got an unexpected EOF, let's try it again with a semicolon.
-            return $this->parser->parse($code.';');
+            return $this->parser->parse($code . ';');
         }
+    }
+
+    /**
+     * Ensure that the end of code execution was marked.
+     *
+     * The end *should* be marked in the instrumented code, but just in case
+     * we'll add a fallback here.
+     */
+    private function ensureEndMarked()
+    {
+        if (self::$start !== null) {
+            self::markEnd();
+        }
+    }
+
+    /**
+     * Internal method for marking the end of timeit execution.
+     *
+     * A static call to this method is injected by TimeitVisitor at the end
+     * of the timeit input code to instrument the call.
+     *
+     * Note that this accepts an optional $ret parameter, which is used to pass
+     * the return value of the last statement back out of timeit. This saves us
+     * a bunch of code rewriting shenanigans.
+     *
+     * @param mixed $ret
+     *
+     * @return mixed it just passes $ret right back
+     */
+    public static function markEnd($ret = null)
+    {
+        self::$times[] = \microtime(true) - self::$start;
+        self::$start = null;
+
+        return $ret;
     }
 }

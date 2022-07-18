@@ -7,10 +7,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Driver;
 
-use const PHP_SAPI;
-use const PHP_VERSION;
+use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 use function array_diff;
 use function array_keys;
 use function array_merge;
@@ -18,7 +18,8 @@ use function get_included_files;
 use function phpdbg_end_oplog;
 use function phpdbg_get_executable;
 use function phpdbg_start_oplog;
-use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
+use const PHP_SAPI;
+use const PHP_VERSION;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -71,11 +72,6 @@ final class PhpdbgDriver extends Driver
         );
     }
 
-    public function nameAndVersion(): string
-    {
-        return 'PHPDBG ' . PHP_VERSION;
-    }
-
     private function detectExecutedLines(array $sourceLines, array $dbgData): array
     {
         foreach ($dbgData as $file => $coveredLines) {
@@ -89,5 +85,10 @@ final class PhpdbgDriver extends Driver
         }
 
         return $sourceLines;
+    }
+
+    public function nameAndVersion(): string
+    {
+        return 'PHPDBG ' . PHP_VERSION;
     }
 }

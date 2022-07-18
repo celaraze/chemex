@@ -43,7 +43,6 @@ final class TableExtension implements ConfigurableExtensionInterface
 
         $environment
             ->addBlockStartParser(new TableStartParser())
-
             ->addRenderer(Table::class, $tableRenderer)
             ->addRenderer(TableSection::class, new TableSectionRenderer())
             ->addRenderer(TableRow::class, new TableRowRenderer())

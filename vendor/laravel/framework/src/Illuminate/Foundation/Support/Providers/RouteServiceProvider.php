@@ -53,36 +53,13 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        //
-    }
-
-    /**
-     * Register the callback that will be used to load the application's routes.
-     *
-     * @param  \Closure  $routesCallback
-     * @return $this
-     */
-    protected function routes(Closure $routesCallback)
-    {
-        $this->loadRoutesUsing = $routesCallback;
-
-        return $this;
-    }
-
-    /**
      * Set the root controller namespace for the application.
      *
      * @return void
      */
     protected function setRootControllerNamespace()
     {
-        if (! is_null($this->namespace)) {
+        if (!is_null($this->namespace)) {
             $this->app[UrlGenerator::class]->setRootControllerNamespace($this->namespace);
         }
     }
@@ -116,7 +93,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function loadRoutes()
     {
-        if (! is_null($this->loadRoutesUsing)) {
+        if (!is_null($this->loadRoutesUsing)) {
             $this->app->call($this->loadRoutesUsing);
         } elseif (method_exists($this, 'map')) {
             $this->app->call([$this, 'map']);
@@ -124,10 +101,20 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        //
+    }
+
+    /**
      * Pass dynamic methods onto the router instance.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -135,5 +122,18 @@ class RouteServiceProvider extends ServiceProvider
         return $this->forwardCallTo(
             $this->app->make(Router::class), $method, $parameters
         );
+    }
+
+    /**
+     * Register the callback that will be used to load the application's routes.
+     *
+     * @param \Closure $routesCallback
+     * @return $this
+     */
+    protected function routes(Closure $routesCallback)
+    {
+        $this->loadRoutesUsing = $routesCallback;
+
+        return $this;
     }
 }

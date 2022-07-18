@@ -20,13 +20,11 @@ use phpDocumentor\Reflection\TypeResolver;
 use phpDocumentor\Reflection\Types\Context as TypeContext;
 use phpDocumentor\Reflection\Utils;
 use Webmozart\Assert\Assert;
-
 use function array_shift;
 use function array_unshift;
 use function implode;
 use function strpos;
 use function substr;
-
 use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
@@ -44,37 +42,39 @@ final class Param extends TagWithType implements Factory\StaticMethod
     private $isReference;
 
     public function __construct(
-        ?string $variableName,
-        ?Type $type = null,
-        bool $isVariadic = false,
+        ?string      $variableName,
+        ?Type        $type = null,
+        bool         $isVariadic = false,
         ?Description $description = null,
-        bool $isReference = false
-    ) {
-        $this->name         = 'param';
+        bool         $isReference = false
+    )
+    {
+        $this->name = 'param';
         $this->variableName = $variableName;
-        $this->type         = $type;
-        $this->isVariadic   = $isVariadic;
-        $this->description  = $description;
-        $this->isReference  = $isReference;
+        $this->type = $type;
+        $this->isVariadic = $isVariadic;
+        $this->description = $description;
+        $this->isReference = $isReference;
     }
 
     public static function create(
-        string $body,
-        ?TypeResolver $typeResolver = null,
+        string              $body,
+        ?TypeResolver       $typeResolver = null,
         ?DescriptionFactory $descriptionFactory = null,
-        ?TypeContext $context = null
-    ): self {
+        ?TypeContext        $context = null
+    ): self
+    {
         Assert::stringNotEmpty($body);
         Assert::notNull($typeResolver);
         Assert::notNull($descriptionFactory);
 
         [$firstPart, $body] = self::extractTypeFromBody($body);
 
-        $type         = null;
-        $parts        = Utils::pregSplit('/(\s+)/Su', $body, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $type = null;
+        $parts = Utils::pregSplit('/(\s+)/Su', $body, 2, PREG_SPLIT_DELIM_CAPTURE);
         $variableName = '';
-        $isVariadic   = false;
-        $isReference   = false;
+        $isVariadic = false;
+        $isReference = false;
 
         // if the first item that is encountered is not a variable; it is a type
         if ($firstPart && !self::strStartsWithVariable($firstPart)) {
@@ -102,8 +102,8 @@ final class Param extends TagWithType implements Factory\StaticMethod
                 $isVariadic = true;
                 $variableName = substr($variableName, 4);
             } elseif (strpos($variableName, '&...$') === 0) {
-                $isVariadic   = true;
-                $isReference  = true;
+                $isVariadic = true;
+                $isReference = true;
                 $variableName = substr($variableName, 5);
             }
         }
@@ -111,6 +111,17 @@ final class Param extends TagWithType implements Factory\StaticMethod
         $description = $descriptionFactory->create(implode('', $parts), $context);
 
         return new static($variableName, $type, $isVariadic, $description, $isReference);
+    }
+
+    private static function strStartsWithVariable(string $str): bool
+    {
+        return strpos($str, '$') === 0
+            ||
+            strpos($str, '...$') === 0
+            ||
+            strpos($str, '&$') === 0
+            ||
+            strpos($str, '&...$') === 0;
     }
 
     /**
@@ -154,21 +165,10 @@ final class Param extends TagWithType implements Factory\StaticMethod
             $variableName .= '$' . $this->variableName;
         }
 
-        $type = (string) $this->type;
+        $type = (string)$this->type;
 
         return $type
             . ($variableName !== '' ? ($type !== '' ? ' ' : '') . $variableName : '')
             . ($description !== '' ? ($type !== '' || $variableName !== '' ? ' ' : '') . $description : '');
-    }
-
-    private static function strStartsWithVariable(string $str): bool
-    {
-        return strpos($str, '$') === 0
-               ||
-               strpos($str, '...$') === 0
-               ||
-               strpos($str, '&$') === 0
-               ||
-               strpos($str, '&...$') === 0;
     }
 }

@@ -20,9 +20,22 @@ class Callout extends Widget
     }
 
     /**
+     * Set contents.
+     *
+     * @param string|\Closure|Renderable $content
+     * @return $this
+     */
+    public function content($content)
+    {
+        $this->content = $this->toString($content);
+
+        return $this;
+    }
+
+    /**
      * Set title.
      *
-     * @param  string  $title
+     * @param string $title
      * @return $this
      */
     public function title(?string $title)
@@ -33,14 +46,14 @@ class Callout extends Widget
     }
 
     /**
-     * Set contents.
+     * Add style.
      *
-     * @param  string|\Closure|Renderable  $content
+     * @param string $style
      * @return $this
      */
-    public function content($content)
+    public function style(?string $style = 'info')
     {
-        $this->content = $this->toString($content);
+        $this->style = $style;
 
         return $this;
     }
@@ -108,25 +121,12 @@ class Callout extends Widget
     /**
      * Show close button.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function removable(bool $value = true)
     {
         $this->showCloseBtn = $value;
-
-        return $this;
-    }
-
-    /**
-     * Add style.
-     *
-     * @param  string  $style
-     * @return $this
-     */
-    public function style(?string $style = 'info')
-    {
-        $this->style = $style;
 
         return $this;
     }
@@ -139,9 +139,9 @@ class Callout extends Widget
         $this->class("callout callout-{$this->style} alert alert-dismissable");
 
         return [
-            'title'        => $this->title,
-            'content'      => $this->content,
-            'attributes'   => $this->formatHtmlAttributes(),
+            'title' => $this->title,
+            'content' => $this->content,
+            'attributes' => $this->formatHtmlAttributes(),
             'showCloseBtn' => $this->showCloseBtn,
         ];
     }

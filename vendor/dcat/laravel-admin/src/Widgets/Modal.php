@@ -69,12 +69,12 @@ class Modal extends Widget
     /**
      * Modal constructor.
      *
-     * @param  string|Closure|Renderable  $title
-     * @param  string|Closure|Renderable|LazyRenderable  $content
+     * @param string|Closure|Renderable $title
+     * @param string|Closure|Renderable|LazyRenderable $content
      */
     public function __construct($title = null, $content = null)
     {
-        $this->id('modal-'.Str::random(10));
+        $this->id('modal-' . Str::random(10));
         $this->title($title);
         $this->content($content);
 
@@ -82,9 +82,74 @@ class Modal extends Widget
     }
 
     /**
+     * 设置弹窗标题.
+     *
+     * @param string|Closure|Renderable $title
+     * @return $this
+     */
+    public function title($title)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * 设置弹窗内容.
+     *
+     * @param string|Closure|Renderable|LazyRenderable $content
+     * @return $this
+     */
+    public function content($content)
+    {
+        if ($content instanceof LazyGrid) {
+            $content = $table =
+                LazyTable::make()
+                    ->from($content)
+                    ->simple()
+                    ->load(false);
+
+            $this->onShow("target.find('{$table->getElementSelector()}').trigger('table:load')");
+        }
+
+        if ($content instanceof LazyRenderable) {
+            $this->setRenderable($content);
+        } else {
+            $this->content = $content;
+        }
+
+        return $this;
+    }
+
+    /**
+     * 监听弹窗显示事件.
+     *
+     * @param string $script
+     * @return $this
+     */
+    public function onShow(string $script)
+    {
+        return $this->on('show.bs.modal', $script);
+    }
+
+    /**
+     * 监听弹窗事件.
+     *
+     * @param string $event
+     * @param string $script
+     * @return $this
+     */
+    public function on(string $event, string $script)
+    {
+        $this->events[] = compact('event', 'script');
+
+        return $this;
+    }
+
+    /**
      * 设置弹窗垂直居中.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function centered(bool $value = true)
@@ -97,25 +162,12 @@ class Modal extends Widget
     /**
      * 设置弹窗内容滚动.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function scrollable(bool $value = true)
     {
         $this->scrollable = $value ? 'modal-dialog-scrollable' : '';
-
-        return $this;
-    }
-
-    /**
-     * 设置弹窗尺寸.
-     *
-     * @param  string  $size
-     * @return $this
-     */
-    public function size(string $size)
-    {
-        $this->size = $size;
 
         return $this;
     }
@@ -128,6 +180,19 @@ class Modal extends Widget
     public function sm()
     {
         return $this->size('sm');
+    }
+
+    /**
+     * 设置弹窗尺寸.
+     *
+     * @param string $size
+     * @return $this
+     */
+    public function size(string $size)
+    {
+        $this->size = $size;
+
+        return $this;
     }
 
     /**
@@ -153,7 +218,7 @@ class Modal extends Widget
     /**
      * 设置loading效果延迟时间.
      *
-     * @param  int  $delay
+     * @param int $delay
      * @return $this
      */
     public function delay(int $delay)
@@ -166,7 +231,7 @@ class Modal extends Widget
     /**
      * 设置按钮.
      *
-     * @param  string|Closure|Renderable  $button
+     * @param string|Closure|Renderable $button
      * @return $this
      */
     public function button($button)
@@ -177,47 +242,7 @@ class Modal extends Widget
     }
 
     /**
-     * 设置弹窗标题.
-     *
-     * @param  string|Closure|Renderable  $title
-     * @return $this
-     */
-    public function title($title)
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * 设置弹窗内容.
-     *
-     * @param  string|Closure|Renderable|LazyRenderable  $content
-     * @return $this
-     */
-    public function content($content)
-    {
-        if ($content instanceof LazyGrid) {
-            $content = $table =
-                LazyTable::make()
-                ->from($content)
-                ->simple()
-                ->load(false);
-
-            $this->onShow("target.find('{$table->getElementSelector()}').trigger('table:load')");
-        }
-
-        if ($content instanceof LazyRenderable) {
-            $this->setRenderable($content);
-        } else {
-            $this->content = $content;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param  string|Closure|Renderable|LazyRenderable  $content
+     * @param string|Closure|Renderable|LazyRenderable $content
      * @return $this
      */
     public function body($content)
@@ -228,7 +253,7 @@ class Modal extends Widget
     /**
      * 设置是否返回弹窗HTML.
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return $this
      */
     public function join(bool $value = true)
@@ -241,7 +266,7 @@ class Modal extends Widget
     /**
      * 设置弹窗底部内容.
      *
-     * @param  string|Closure|Renderable|LazyRenderable  $footer
+     * @param string|Closure|Renderable|LazyRenderable $footer
      * @return $this
      */
     public function footer($footer)
@@ -252,34 +277,9 @@ class Modal extends Widget
     }
 
     /**
-     * 监听弹窗事件.
-     *
-     * @param  string  $event
-     * @param  string  $script
-     * @return $this
-     */
-    public function on(string $event, string $script)
-    {
-        $this->events[] = compact('event', 'script');
-
-        return $this;
-    }
-
-    /**
-     * 监听弹窗显示事件.
-     *
-     * @param  string  $script
-     * @return $this
-     */
-    public function onShow(string $script)
-    {
-        return $this->on('show.bs.modal', $script);
-    }
-
-    /**
      * 监听弹窗已显示事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onShown(string $script)
@@ -290,7 +290,7 @@ class Modal extends Widget
     /**
      * 监听弹窗隐藏事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onHide(string $script)
@@ -301,7 +301,7 @@ class Modal extends Widget
     /**
      * 监听弹窗已隐藏事件.
      *
-     * @param  string  $script
+     * @param string $script
      * @return $this
      */
     public function onHidden(string $script)
@@ -309,9 +309,42 @@ class Modal extends Widget
         return $this->on('hidden.bs.modal', $script);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function render()
+    {
+        $this->addLoadRenderableScript();
+        $this->addScript();
+
+        if ($this->join) {
+            return $this->renderButton() . parent::render();
+        }
+
+        Admin::html(parent::render());
+
+        return $this->renderButton();
+    }
+
+    protected function addLoadRenderableScript()
+    {
+        if (!$this->getRenderable()) {
+            return;
+        }
+
+        $this->on('show.bs.modal', <<<JS
+body.html('<div style="min-height:150px"></div>').loading();
+
+setTimeout(function () {
+    target.trigger('{$this->target}:load')
+}, {$this->delay});
+JS
+        );
+    }
+
     protected function addScript()
     {
-        if (! $this->events) {
+        if (!$this->events) {
             return;
         }
 
@@ -332,37 +365,22 @@ class Modal extends Widget
 JS;
     }
 
-    protected function addLoadRenderableScript()
+    protected function renderButton()
     {
-        if (! $this->getRenderable()) {
+        if (!$this->button) {
             return;
         }
 
-        $this->on('show.bs.modal', <<<JS
-body.html('<div style="min-height:150px"></div>').loading();
-        
-setTimeout(function () {
-    target.trigger('{$this->target}:load')
-}, {$this->delay});
-JS
-        );
-    }
+        $button = Helper::render($this->button);
 
-    /**
-     * {@inheritdoc}
-     */
-    public function render()
-    {
-        $this->addLoadRenderableScript();
-        $this->addScript();
-
-        if ($this->join) {
-            return $this->renderButton().parent::render();
+        // 如果没有HTML标签则添加一个 a 标签
+        if (!preg_match('/(\<\/[\d\w]+\s*\>+)/i', $button)) {
+            $button = "<a href=\"javascript:void(0)\">{$button}</a>";
         }
 
-        Admin::html(parent::render());
-
-        return $this->renderButton();
+        return <<<HTML
+<span style="cursor: pointer" data-toggle="modal" data-target="#{$this->id()}">{$button}</span>
+HTML;
     }
 
     public function html()
@@ -397,30 +415,12 @@ HTML;
     {
         $footer = Helper::render($this->footer);
 
-        if (! $footer) {
+        if (!$footer) {
             return;
         }
 
         return <<<HTML
 <div class="modal-footer">{$footer}</div>
-HTML;
-    }
-
-    protected function renderButton()
-    {
-        if (! $this->button) {
-            return;
-        }
-
-        $button = Helper::render($this->button);
-
-        // 如果没有HTML标签则添加一个 a 标签
-        if (! preg_match('/(\<\/[\d\w]+\s*\>+)/i', $button)) {
-            $button = "<a href=\"javascript:void(0)\">{$button}</a>";
-        }
-
-        return <<<HTML
-<span style="cursor: pointer" data-toggle="modal" data-target="#{$this->id()}">{$button}</span>
 HTML;
     }
 }

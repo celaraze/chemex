@@ -1,9 +1,11 @@
 <?php
+
 namespace Hamcrest\Core;
 
 /*
  Copyright (c) 2009 hamcrest.org
  */
+
 use Hamcrest\Description;
 use Hamcrest\DiagnosingMatcher;
 use Hamcrest\Util;
@@ -25,6 +27,18 @@ class AllOf extends DiagnosingMatcher
         $this->_matchers = $matchers;
     }
 
+    /**
+     * Evaluates to true only if ALL of the passed in matchers evaluate to true.
+     *
+     * @factory ...
+     */
+    public static function allOf(/* args... */)
+    {
+        $args = func_get_args();
+
+        return new self(Util::createMatcherArray($args));
+    }
+
     public function matchesWithDiagnosticDescription($item, Description $mismatchDescription)
     {
         /** @var $matcher \Hamcrest\Matcher */
@@ -43,17 +57,5 @@ class AllOf extends DiagnosingMatcher
     public function describeTo(Description $description)
     {
         $description->appendList('(', ' and ', ')', $this->_matchers);
-    }
-
-    /**
-     * Evaluates to true only if ALL of the passed in matchers evaluate to true.
-     *
-     * @factory ...
-     */
-    public static function allOf(/* args... */)
-    {
-        $args = func_get_args();
-
-        return new self(Util::createMatcherArray($args));
     }
 }

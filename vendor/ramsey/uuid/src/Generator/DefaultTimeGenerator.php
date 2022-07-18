@@ -22,7 +22,6 @@ use Ramsey\Uuid\Provider\NodeProviderInterface;
 use Ramsey\Uuid\Provider\TimeProviderInterface;
 use Ramsey\Uuid\Type\Hexadecimal;
 use Throwable;
-
 use function ctype_xdigit;
 use function dechex;
 use function hex2bin;
@@ -31,7 +30,6 @@ use function pack;
 use function sprintf;
 use function str_pad;
 use function strlen;
-
 use const STR_PAD_LEFT;
 
 /**
@@ -56,10 +54,11 @@ class DefaultTimeGenerator implements TimeGeneratorInterface
     private $timeProvider;
 
     public function __construct(
-        NodeProviderInterface $nodeProvider,
+        NodeProviderInterface  $nodeProvider,
         TimeConverterInterface $timeConverter,
-        TimeProviderInterface $timeProvider
-    ) {
+        TimeProviderInterface  $timeProvider
+    )
+    {
         $this->nodeProvider = $nodeProvider;
         $this->timeConverter = $timeConverter;
         $this->timeProvider = $timeProvider;
@@ -86,7 +85,7 @@ class DefaultTimeGenerator implements TimeGeneratorInterface
             } catch (Throwable $exception) {
                 throw new RandomSourceException(
                     $exception->getMessage(),
-                    (int) $exception->getCode(),
+                    (int)$exception->getCode(),
                     $exception
                 );
             }
@@ -108,7 +107,7 @@ class DefaultTimeGenerator implements TimeGeneratorInterface
             ));
         }
 
-        $timeBytes = (string) hex2bin($timeHex);
+        $timeBytes = (string)hex2bin($timeHex);
 
         return $timeBytes[4] . $timeBytes[5] . $timeBytes[6] . $timeBytes[7]
             . $timeBytes[2] . $timeBytes[3]
@@ -138,10 +137,10 @@ class DefaultTimeGenerator implements TimeGeneratorInterface
             $node = dechex($node);
         }
 
-        if (!ctype_xdigit((string) $node) || strlen((string) $node) > 12) {
+        if (!ctype_xdigit((string)$node) || strlen((string)$node) > 12) {
             throw new InvalidArgumentException('Invalid node value');
         }
 
-        return (string) hex2bin(str_pad((string) $node, 12, '0', STR_PAD_LEFT));
+        return (string)hex2bin(str_pad((string)$node, 12, '0', STR_PAD_LEFT));
     }
 }

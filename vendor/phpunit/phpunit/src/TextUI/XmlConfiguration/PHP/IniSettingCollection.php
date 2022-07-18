@@ -7,11 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function count;
 use Countable;
 use IteratorAggregate;
+use function count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -24,17 +25,17 @@ final class IniSettingCollection implements Countable, IteratorAggregate
      */
     private $iniSettings;
 
+    private function __construct(IniSetting ...$iniSettings)
+    {
+        $this->iniSettings = $iniSettings;
+    }
+
     /**
      * @param IniSetting[] $iniSettings
      */
     public static function fromArray(array $iniSettings): self
     {
         return new self(...$iniSettings);
-    }
-
-    private function __construct(IniSetting ...$iniSettings)
-    {
-        $this->iniSettings = $iniSettings;
     }
 
     /**

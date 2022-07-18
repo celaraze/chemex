@@ -76,8 +76,8 @@ class Sheet
      *  - it should be unique
      *
      * @param string $name Name of the sheet
-     * @throws \Box\Spout\Writer\Exception\InvalidSheetNameException If the sheet's name is invalid.
      * @return Sheet
+     * @throws \Box\Spout\Writer\Exception\InvalidSheetNameException If the sheet's name is invalid.
      */
     public function setName($name)
     {

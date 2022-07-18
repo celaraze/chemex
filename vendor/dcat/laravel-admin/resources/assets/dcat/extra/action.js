@@ -11,12 +11,15 @@
                 data: {}, // 发送到接口的附加参数
                 confirm: null,
                 calledClass: null,
-                before: function (data, target) {}, // 发起请求之前回调，返回false可以中断请求
+                before: function (data, target) {
+                }, // 发起请求之前回调，返回false可以中断请求
                 html: function (target, html, data) { // 处理返回的HTML代码
                     target.html(html);
                 },
-                success: function (target, results) {}, // 请求成功回调，返回false可以中断默认的成功处理逻辑
-                error: function (target, results) {}, // 请求出错回调，返回false可以中断默认的错误处理逻辑
+                success: function (target, results) {
+                }, // 请求成功回调，返回false可以中断默认的成功处理逻辑
+                error: function (target, results) {
+                }, // 请求出错回调，返回false可以中断默认的错误处理逻辑
             }, options);
 
             this.init();
@@ -60,7 +63,7 @@
 
             return function (result) {
                 var response = result[0],
-                    target   = result[1];
+                    target = result[1];
 
                 if (options.success(target, response) === false) {
                     return;
@@ -108,7 +111,7 @@
                         Dcat.NP.done();
                         resolve([data, target]);
                     },
-                    error:function(request){
+                    error: function (request) {
                         target.attr('loading', 0);
                         Dcat.NP.done();
                         reject([request, target]);

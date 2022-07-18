@@ -21,26 +21,20 @@ use Box\Spout\Writer\Exception\WriterNotOpenedException;
  */
 abstract class WriterAbstract implements WriterInterface
 {
-    /** @var string Path to the output file */
-    protected $outputFilePath;
-
-    /** @var resource Pointer to the file/stream we will write to */
-    protected $filePointer;
-
-    /** @var bool Indicates whether the writer has been opened or not */
-    protected $isWriterOpened = false;
-
-    /** @var GlobalFunctionsHelper Helper to work with global functions */
-    protected $globalFunctionsHelper;
-
-    /** @var HelperFactory */
-    protected $helperFactory;
-
-    /** @var OptionsManagerInterface Writer options manager */
-    protected $optionsManager;
-
     /** @var string Content-Type value for the header - to be defined by child class */
     protected static $headerContentType;
+    /** @var string Path to the output file */
+    protected $outputFilePath;
+    /** @var resource Pointer to the file/stream we will write to */
+    protected $filePointer;
+    /** @var bool Indicates whether the writer has been opened or not */
+    protected $isWriterOpened = false;
+    /** @var GlobalFunctionsHelper Helper to work with global functions */
+    protected $globalFunctionsHelper;
+    /** @var HelperFactory */
+    protected $helperFactory;
+    /** @var OptionsManagerInterface Writer options manager */
+    protected $optionsManager;
 
     /**
      * @param OptionsManagerInterface $optionsManager
@@ -49,38 +43,14 @@ abstract class WriterAbstract implements WriterInterface
      */
     public function __construct(
         OptionsManagerInterface $optionsManager,
-        GlobalFunctionsHelper $globalFunctionsHelper,
-        HelperFactory $helperFactory
-    ) {
+        GlobalFunctionsHelper   $globalFunctionsHelper,
+        HelperFactory           $helperFactory
+    )
+    {
         $this->optionsManager = $optionsManager;
         $this->globalFunctionsHelper = $globalFunctionsHelper;
         $this->helperFactory = $helperFactory;
     }
-
-    /**
-     * Opens the streamer and makes it ready to accept data.
-     *
-     * @throws IOException If the writer cannot be opened
-     * @return void
-     */
-    abstract protected function openWriter();
-
-    /**
-     * Adds a row to the currently opened writer.
-     *
-     * @param Row $row The row containing cells and styles
-     * @throws WriterNotOpenedException If the workbook is not created yet
-     * @throws IOException If unable to write data
-     * @return void
-     */
-    abstract protected function addRowToWriter(Row $row);
-
-    /**
-     * Closes the streamer, preventing any additional writing.
-     *
-     * @return void
-     */
-    abstract protected function closeWriter();
 
     /**
      * {@inheritdoc}
@@ -107,6 +77,28 @@ abstract class WriterAbstract implements WriterInterface
 
         return $this;
     }
+
+    /**
+     * Checks if the pointer to the file/stream to write to is available.
+     * Will throw an exception if not available.
+     *
+     * @return void
+     * @throws IOException If the pointer is not available
+     */
+    protected function throwIfFilePointerIsNotAvailable()
+    {
+        if (!$this->filePointer) {
+            throw new IOException('File pointer has not be opened');
+        }
+    }
+
+    /**
+     * Opens the streamer and makes it ready to accept data.
+     *
+     * @return void
+     * @throws IOException If the writer cannot be opened
+     */
+    abstract protected function openWriter();
 
     /**
      * @codeCoverageIgnore
@@ -161,33 +153,65 @@ abstract class WriterAbstract implements WriterInterface
     }
 
     /**
-     * Checks if the pointer to the file/stream to write to is available.
-     * Will throw an exception if not available.
+     * {@inheritdoc}
+     */
+    public function addRows(array $rows)
+    {
+        foreach ($rows as $row) {
+            if (!$row instanceof Row) {
+                $this->closeAndAttemptToCleanupAllFiles();
+                throw new InvalidArgumentException('The input should be an array of Row');
+            }
+
+            $this->addRow($row);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Closes the writer and attempts to cleanup all files that were
+     * created during the writing process (temp files & final file).
      *
-     * @throws IOException If the pointer is not available
      * @return void
      */
-    protected function throwIfFilePointerIsNotAvailable()
+    private function closeAndAttemptToCleanupAllFiles()
     {
-        if (!$this->filePointer) {
-            throw new IOException('File pointer has not be opened');
+        // close the writer, which should remove all temp files
+        $this->close();
+
+        // remove output file if it was created
+        if ($this->globalFunctionsHelper->file_exists($this->outputFilePath)) {
+            $outputFolderPath = \dirname($this->outputFilePath);
+            $fileSystemHelper = $this->helperFactory->createFileSystemHelper($outputFolderPath);
+            $fileSystemHelper->deleteFile($this->outputFilePath);
         }
     }
 
     /**
-     * Checks if the writer has already been opened, since some actions must be done before it gets opened.
-     * Throws an exception if already opened.
+     * {@inheritdoc}
+     */
+    public function close()
+    {
+        if (!$this->isWriterOpened) {
+            return;
+        }
+
+        $this->closeWriter();
+
+        if (\is_resource($this->filePointer)) {
+            $this->globalFunctionsHelper->fclose($this->filePointer);
+        }
+
+        $this->isWriterOpened = false;
+    }
+
+    /**
+     * Closes the streamer, preventing any additional writing.
      *
-     * @param string $message Error message
-     * @throws WriterAlreadyOpenedException If the writer was already opened and must not be.
      * @return void
      */
-    protected function throwIfWriterAlreadyOpened($message)
-    {
-        if ($this->isWriterOpened) {
-            throw new WriterAlreadyOpenedException($message);
-        }
-    }
+    abstract protected function closeWriter();
 
     /**
      * {@inheritdoc}
@@ -213,56 +237,27 @@ abstract class WriterAbstract implements WriterInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function addRows(array $rows)
-    {
-        foreach ($rows as $row) {
-            if (!$row instanceof Row) {
-                $this->closeAndAttemptToCleanupAllFiles();
-                throw new InvalidArgumentException('The input should be an array of Row');
-            }
-
-            $this->addRow($row);
-        }
-
-        return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function close()
-    {
-        if (!$this->isWriterOpened) {
-            return;
-        }
-
-        $this->closeWriter();
-
-        if (\is_resource($this->filePointer)) {
-            $this->globalFunctionsHelper->fclose($this->filePointer);
-        }
-
-        $this->isWriterOpened = false;
-    }
-
-    /**
-     * Closes the writer and attempts to cleanup all files that were
-     * created during the writing process (temp files & final file).
+     * Adds a row to the currently opened writer.
      *
+     * @param Row $row The row containing cells and styles
      * @return void
+     * @throws IOException If unable to write data
+     * @throws WriterNotOpenedException If the workbook is not created yet
      */
-    private function closeAndAttemptToCleanupAllFiles()
-    {
-        // close the writer, which should remove all temp files
-        $this->close();
+    abstract protected function addRowToWriter(Row $row);
 
-        // remove output file if it was created
-        if ($this->globalFunctionsHelper->file_exists($this->outputFilePath)) {
-            $outputFolderPath = \dirname($this->outputFilePath);
-            $fileSystemHelper = $this->helperFactory->createFileSystemHelper($outputFolderPath);
-            $fileSystemHelper->deleteFile($this->outputFilePath);
+    /**
+     * Checks if the writer has already been opened, since some actions must be done before it gets opened.
+     * Throws an exception if already opened.
+     *
+     * @param string $message Error message
+     * @return void
+     * @throws WriterAlreadyOpenedException If the writer was already opened and must not be.
+     */
+    protected function throwIfWriterAlreadyOpened($message)
+    {
+        if ($this->isWriterOpened) {
+            throw new WriterAlreadyOpenedException($message);
         }
     }
 }

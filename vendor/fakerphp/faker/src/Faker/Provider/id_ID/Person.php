@@ -238,7 +238,17 @@ class Person extends \Faker\Provider\Person
      */
     private static $suffix = ['S.Ked', 'S.Gz', 'S.Pt', 'S.IP', 'S.E.I',
         'S.E.', 'S.Kom', 'S.H.', 'S.T.', 'S.Pd', 'S.Psi', 'S.I.Kom',
-        'S.Sos', 'S.Farm', 'M.M.', 'M.Kom.', 'M.TI.', 'M.Pd', 'M.Farm', 'M.Ak', ];
+        'S.Sos', 'S.Farm', 'M.M.', 'M.Kom.', 'M.TI.', 'M.Pd', 'M.Farm', 'M.Ak',];
+
+    /**
+     * For academic title
+     *
+     * @return string suffix
+     */
+    public static function suffix()
+    {
+        return static::randomElement(static::$suffix);
+    }
 
     /**
      * Return last name
@@ -282,21 +292,11 @@ class Person extends \Faker\Provider\Person
     }
 
     /**
-     * For academic title
-     *
-     * @return string suffix
-     */
-    public static function suffix()
-    {
-        return static::randomElement(static::$suffix);
-    }
-
-    /**
      * Generates Nomor Induk Kependudukan (NIK)
      *
      * @see https://en.wikipedia.org/wiki/National_identification_number#Indonesia
      *
-     * @param string|null    $gender
+     * @param string|null $gender
      * @param \DateTime|null $birthDate
      *
      * @return string

@@ -44,13 +44,11 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
     use TransportResponseTrait;
 
     private static string $nextId = 'a';
-
+    private static ?string $delay = null;
     private AmpClientState $multi;
     private ?array $options;
     private CancellationTokenSource $canceller;
     private \Closure $onProgress;
-
-    private static ?string $delay = null;
 
     /**
      * @internal
@@ -76,7 +74,7 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         $canceller = $this->canceller = new CancellationTokenSource();
         $handle = &$this->handle;
 
-        $info['url'] = (string) $request->getUri();
+        $info['url'] = (string)$request->getUri();
         $info['http_method'] = $request->getMethod();
         $info['start_time'] = null;
         $info['redirect_url'] = null;
@@ -91,10 +89,11 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         $info['max_duration'] = $options['max_duration'];
         $info['debug'] = '';
 
-        $onProgress = $options['on_progress'] ?? static function () {};
+        $onProgress = $options['on_progress'] ?? static function () {
+            };
         $onProgress = $this->onProgress = static function () use (&$info, $onProgress) {
             $info['total_time'] = microtime(true) - $info['start_time'];
-            $onProgress((int) $info['size_download'], ((int) (1 + $info['download_content_length']) ?: 1) - 1, (array) $info);
+            $onProgress((int)$info['size_download'], ((int)(1 + $info['download_content_length']) ?: 1) - 1, (array)$info);
         };
 
         $pauseDeferred = new Deferred();
@@ -137,97 +136,6 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getInfo(string $type = null): mixed
-    {
-        return null !== $type ? $this->info[$type] ?? null : $this->info;
-    }
-
-    public function __sleep(): array
-    {
-        throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
-    }
-
-    public function __wakeup()
-    {
-        throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
-    }
-
-    public function __destruct()
-    {
-        try {
-            $this->doDestruct();
-        } finally {
-            // Clear the DNS cache when all requests completed
-            if (0 >= --$this->multi->responseCount) {
-                $this->multi->responseCount = 0;
-                $this->multi->dnsCache = [];
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    private static function schedule(self $response, array &$runningResponses): void
-    {
-        if (isset($runningResponses[0])) {
-            $runningResponses[0][1][$response->id] = $response;
-        } else {
-            $runningResponses[0] = [$response->multi, [$response->id => $response]];
-        }
-
-        if (!isset($response->multi->openHandles[$response->id])) {
-            $response->multi->handlesActivity[$response->id][] = null;
-            $response->multi->handlesActivity[$response->id][] = null !== $response->info['error'] ? new TransportException($response->info['error']) : null;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param AmpClientState $multi
-     */
-    private static function perform(ClientState $multi, array &$responses = null): void
-    {
-        if ($responses) {
-            foreach ($responses as $response) {
-                try {
-                    if ($response->info['start_time']) {
-                        $response->info['total_time'] = microtime(true) - $response->info['start_time'];
-                        ($response->onProgress)();
-                    }
-                } catch (\Throwable $e) {
-                    $multi->handlesActivity[$response->id][] = null;
-                    $multi->handlesActivity[$response->id][] = $e;
-                }
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @param AmpClientState $multi
-     */
-    private static function select(ClientState $multi, float $timeout): int
-    {
-        $timeout += microtime(true);
-        self::$delay = Loop::defer(static function () use ($timeout) {
-            if (0 < $timeout -= microtime(true)) {
-                self::$delay = Loop::delay(ceil(1000 * $timeout), [Loop::class, 'stop']);
-            } else {
-                Loop::stop();
-            }
-        });
-
-        Loop::run();
-
-        return null === self::$delay ? 1 : 0;
-    }
-
     private static function generateResponse(Request $request, AmpClientState $multi, string $id, array &$info, array &$headers, CancellationTokenSource $canceller, array &$options, \Closure $onProgress, &$handle, ?LoggerInterface $logger, Promise &$pause): \Generator
     {
         $request->setInformationalResponseHandler(static function (Response $response) use ($multi, $id, &$info, &$headers) {
@@ -257,7 +165,7 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
             }
 
             if ($response->hasHeader('content-length')) {
-                $info['download_content_length'] = (float) $response->getHeader('content-length');
+                $info['download_content_length'] = (float)$response->getHeader('content-length');
             }
 
             $body = $response->getBody();
@@ -285,6 +193,91 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         }
 
         self::stopLoop();
+    }
+
+    private static function addResponseHeaders(Response $response, array &$info, array &$headers): void
+    {
+        $info['http_code'] = $response->getStatus();
+
+        if ($headers) {
+            $info['debug'] .= "< \r\n";
+            $headers = [];
+        }
+
+        $h = sprintf('HTTP/%s %s %s', $response->getProtocolVersion(), $response->getStatus(), $response->getReason());
+        $info['debug'] .= "< {$h}\r\n";
+        $info['response_headers'][] = $h;
+
+        foreach ($response->getRawHeaders() as [$name, $value]) {
+            $headers[strtolower($name)][] = $value;
+            $h = $name . ': ' . $value;
+            $info['debug'] .= "< {$h}\r\n";
+            $info['response_headers'][] = $h;
+        }
+
+        $info['debug'] .= "< \r\n";
+    }
+
+    private static function stopLoop(): void
+    {
+        if (null !== self::$delay) {
+            Loop::cancel(self::$delay);
+            self::$delay = null;
+        }
+
+        Loop::defer([Loop::class, 'stop']);
+    }
+
+    /**
+     * Accepts pushed responses only if their headers related to authentication match the request.
+     */
+    private static function getPushedResponse(Request $request, AmpClientState $multi, array &$info, array &$headers, array $options, ?LoggerInterface $logger): \Generator
+    {
+        if ('' !== $options['body']) {
+            return null;
+        }
+
+        $authority = $request->getUri()->getAuthority();
+
+        foreach ($multi->pushedResponses[$authority] ?? [] as $i => [$pushedUrl, $pushDeferred, $pushedRequest, $pushedResponse, $parentOptions]) {
+            if ($info['url'] !== $pushedUrl || $info['http_method'] !== $pushedRequest->getMethod()) {
+                continue;
+            }
+
+            foreach ($parentOptions as $k => $v) {
+                if ($options[$k] !== $v) {
+                    continue 2;
+                }
+            }
+
+            foreach (['authorization', 'cookie', 'range', 'proxy-authorization'] as $k) {
+                if ($pushedRequest->getHeaderArray($k) !== $request->getHeaderArray($k)) {
+                    continue 2;
+                }
+            }
+
+            $response = yield $pushedResponse;
+
+            foreach ($response->getHeaderArray('vary') as $vary) {
+                foreach (preg_split('/\s*+,\s*+/', $vary) as $v) {
+                    if ('*' === $v || ($pushedRequest->getHeaderArray($v) !== $request->getHeaderArray($v) && 'accept-encoding' !== strtolower($v))) {
+                        $logger?->debug(sprintf('Skipping pushed response: "%s"', $info['url']));
+                        continue 3;
+                    }
+                }
+            }
+
+            $pushDeferred->resolve();
+            $logger?->debug(sprintf('Accepting pushed response: "%s %s"', $info['http_method'], $info['url']));
+            self::addResponseHeaders($response, $info, $headers);
+            unset($multi->pushedResponses[$authority][$i]);
+
+            if (!$multi->pushedResponses[$authority]) {
+                unset($multi->pushedResponses[$authority]);
+            }
+
+            return $response;
+        }
     }
 
     private static function followRedirects(Request $originRequest, AmpClientState $multi, array &$info, array &$headers, CancellationTokenSource $canceller, array $options, \Closure $onProgress, &$handle, ?LoggerInterface $logger, Promise &$pause): \Generator
@@ -375,88 +368,94 @@ final class AmpResponse implements ResponseInterface, StreamableInterface
         }
     }
 
-    private static function addResponseHeaders(Response $response, array &$info, array &$headers): void
+    /**
+     * {@inheritdoc}
+     */
+    private static function schedule(self $response, array &$runningResponses): void
     {
-        $info['http_code'] = $response->getStatus();
-
-        if ($headers) {
-            $info['debug'] .= "< \r\n";
-            $headers = [];
+        if (isset($runningResponses[0])) {
+            $runningResponses[0][1][$response->id] = $response;
+        } else {
+            $runningResponses[0] = [$response->multi, [$response->id => $response]];
         }
 
-        $h = sprintf('HTTP/%s %s %s', $response->getProtocolVersion(), $response->getStatus(), $response->getReason());
-        $info['debug'] .= "< {$h}\r\n";
-        $info['response_headers'][] = $h;
-
-        foreach ($response->getRawHeaders() as [$name, $value]) {
-            $headers[strtolower($name)][] = $value;
-            $h = $name.': '.$value;
-            $info['debug'] .= "< {$h}\r\n";
-            $info['response_headers'][] = $h;
+        if (!isset($response->multi->openHandles[$response->id])) {
+            $response->multi->handlesActivity[$response->id][] = null;
+            $response->multi->handlesActivity[$response->id][] = null !== $response->info['error'] ? new TransportException($response->info['error']) : null;
         }
-
-        $info['debug'] .= "< \r\n";
     }
 
     /**
-     * Accepts pushed responses only if their headers related to authentication match the request.
+     * {@inheritdoc}
+     *
+     * @param AmpClientState $multi
      */
-    private static function getPushedResponse(Request $request, AmpClientState $multi, array &$info, array &$headers, array $options, ?LoggerInterface $logger): \Generator
+    private static function perform(ClientState $multi, array &$responses = null): void
     {
-        if ('' !== $options['body']) {
-            return null;
-        }
-
-        $authority = $request->getUri()->getAuthority();
-
-        foreach ($multi->pushedResponses[$authority] ?? [] as $i => [$pushedUrl, $pushDeferred, $pushedRequest, $pushedResponse, $parentOptions]) {
-            if ($info['url'] !== $pushedUrl || $info['http_method'] !== $pushedRequest->getMethod()) {
-                continue;
-            }
-
-            foreach ($parentOptions as $k => $v) {
-                if ($options[$k] !== $v) {
-                    continue 2;
-                }
-            }
-
-            foreach (['authorization', 'cookie', 'range', 'proxy-authorization'] as $k) {
-                if ($pushedRequest->getHeaderArray($k) !== $request->getHeaderArray($k)) {
-                    continue 2;
-                }
-            }
-
-            $response = yield $pushedResponse;
-
-            foreach ($response->getHeaderArray('vary') as $vary) {
-                foreach (preg_split('/\s*+,\s*+/', $vary) as $v) {
-                    if ('*' === $v || ($pushedRequest->getHeaderArray($v) !== $request->getHeaderArray($v) && 'accept-encoding' !== strtolower($v))) {
-                        $logger?->debug(sprintf('Skipping pushed response: "%s"', $info['url']));
-                        continue 3;
+        if ($responses) {
+            foreach ($responses as $response) {
+                try {
+                    if ($response->info['start_time']) {
+                        $response->info['total_time'] = microtime(true) - $response->info['start_time'];
+                        ($response->onProgress)();
                     }
+                } catch (\Throwable $e) {
+                    $multi->handlesActivity[$response->id][] = null;
+                    $multi->handlesActivity[$response->id][] = $e;
                 }
             }
-
-            $pushDeferred->resolve();
-            $logger?->debug(sprintf('Accepting pushed response: "%s %s"', $info['http_method'], $info['url']));
-            self::addResponseHeaders($response, $info, $headers);
-            unset($multi->pushedResponses[$authority][$i]);
-
-            if (!$multi->pushedResponses[$authority]) {
-                unset($multi->pushedResponses[$authority]);
-            }
-
-            return $response;
         }
     }
 
-    private static function stopLoop(): void
+    /**
+     * {@inheritdoc}
+     *
+     * @param AmpClientState $multi
+     */
+    private static function select(ClientState $multi, float $timeout): int
     {
-        if (null !== self::$delay) {
-            Loop::cancel(self::$delay);
-            self::$delay = null;
-        }
+        $timeout += microtime(true);
+        self::$delay = Loop::defer(static function () use ($timeout) {
+            if (0 < $timeout -= microtime(true)) {
+                self::$delay = Loop::delay(ceil(1000 * $timeout), [Loop::class, 'stop']);
+            } else {
+                Loop::stop();
+            }
+        });
 
-        Loop::defer([Loop::class, 'stop']);
+        Loop::run();
+
+        return null === self::$delay ? 1 : 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInfo(string $type = null): mixed
+    {
+        return null !== $type ? $this->info[$type] ?? null : $this->info;
+    }
+
+    public function __sleep(): array
+    {
+        throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
+    }
+
+    public function __wakeup()
+    {
+        throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
+    }
+
+    public function __destruct()
+    {
+        try {
+            $this->doDestruct();
+        } finally {
+            // Clear the DNS cache when all requests completed
+            if (0 >= --$this->multi->responseCount) {
+                $this->multi->responseCount = 0;
+                $this->multi->dnsCache = [];
+            }
+        }
     }
 }

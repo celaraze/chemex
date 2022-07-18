@@ -13,10 +13,10 @@ class UpdateCommand extends Command
     public function handle()
     {
         $this->call('admin:publish', [
-            '--assets'     => true,
+            '--assets' => true,
             '--migrations' => true,
-            '--lang'       => true,
-            '--force'      => true,
+            '--lang' => true,
+            '--force' => true,
         ]);
         $this->call('migrate');
     }

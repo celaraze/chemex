@@ -28,7 +28,7 @@ class DetailedError
     /**
      * Constructor.
      *
-     * @param int    $errorCode
+     * @param int $errorCode
      * @param string $errorMessage
      * @param string $diagnosticMessage
      */

@@ -7,9 +7,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\FileIterator;
 
-use const GLOB_ONLYDIR;
+use AppendIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -17,9 +20,7 @@ use function glob;
 use function is_dir;
 use function is_string;
 use function realpath;
-use AppendIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use const GLOB_ONLYDIR;
 
 class Factory
 {
@@ -34,7 +35,7 @@ class Factory
             $paths = [$paths];
         }
 
-        $paths   = $this->getPathsAfterResolvingWildcards($paths);
+        $paths = $this->getPathsAfterResolvingWildcards($paths);
         $exclude = $this->getPathsAfterResolvingWildcards($exclude);
 
         if (is_string($prefixes)) {

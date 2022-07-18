@@ -21,7 +21,7 @@ class InstalledFilesystemRepository extends FilesystemRepository implements Inst
 {
     public function getRepoName()
     {
-        return 'installed '.parent::getRepoName();
+        return 'installed ' . parent::getRepoName();
     }
 
     /**

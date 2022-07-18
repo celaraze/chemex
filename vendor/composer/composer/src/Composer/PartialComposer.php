@@ -12,11 +12,11 @@
 
 namespace Composer;
 
-use Composer\Package\RootPackageInterface;
-use Composer\Util\Loop;
-use Composer\Repository\RepositoryManager;
-use Composer\Installer\InstallationManager;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\InstallationManager;
+use Composer\Package\RootPackageInterface;
+use Composer\Repository\RepositoryManager;
+use Composer\Util\Loop;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -54,14 +54,6 @@ class PartialComposer
     private $eventDispatcher;
 
     /**
-     * @return void
-     */
-    public function setPackage(RootPackageInterface $package): void
-    {
-        $this->package = $package;
-    }
-
-    /**
      * @return RootPackageInterface
      */
     public function getPackage(): RootPackageInterface
@@ -72,9 +64,9 @@ class PartialComposer
     /**
      * @return void
      */
-    public function setConfig(Config $config): void
+    public function setPackage(RootPackageInterface $package): void
     {
-        $this->config = $config;
+        $this->package = $package;
     }
 
     /**
@@ -88,9 +80,9 @@ class PartialComposer
     /**
      * @return void
      */
-    public function setLoop(Loop $loop): void
+    public function setConfig(Config $config): void
     {
-        $this->loop = $loop;
+        $this->config = $config;
     }
 
     /**
@@ -104,9 +96,9 @@ class PartialComposer
     /**
      * @return void
      */
-    public function setRepositoryManager(RepositoryManager $manager): void
+    public function setLoop(Loop $loop): void
     {
-        $this->repositoryManager = $manager;
+        $this->loop = $loop;
     }
 
     /**
@@ -120,9 +112,9 @@ class PartialComposer
     /**
      * @return void
      */
-    public function setInstallationManager(InstallationManager $manager): void
+    public function setRepositoryManager(RepositoryManager $manager): void
     {
-        $this->installationManager = $manager;
+        $this->repositoryManager = $manager;
     }
 
     /**
@@ -136,9 +128,9 @@ class PartialComposer
     /**
      * @return void
      */
-    public function setEventDispatcher(EventDispatcher $eventDispatcher): void
+    public function setInstallationManager(InstallationManager $manager): void
     {
-        $this->eventDispatcher = $eventDispatcher;
+        $this->installationManager = $manager;
     }
 
     /**
@@ -147,5 +139,13 @@ class PartialComposer
     public function getEventDispatcher(): EventDispatcher
     {
         return $this->eventDispatcher;
+    }
+
+    /**
+     * @return void
+     */
+    public function setEventDispatcher(EventDispatcher $eventDispatcher): void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 }

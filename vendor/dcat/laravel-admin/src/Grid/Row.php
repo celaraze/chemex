@@ -61,9 +61,20 @@ class Row implements Arrayable
     }
 
     /**
+     * Format attributes to html.
+     *
+     * @param array $attributes
+     * @return string
+     */
+    private function formatHtmlAttributes($attributes = [])
+    {
+        return Helper::buildHtmlAttributes($attributes);
+    }
+
+    /**
      * Get column attributes.
      *
-     * @param  string  $column
+     * @param string $column
      * @return string
      */
     public function columnAttributes($column)
@@ -79,20 +90,9 @@ class Row implements Arrayable
     }
 
     /**
-     * Format attributes to html.
-     *
-     * @param  array  $attributes
-     * @return string
-     */
-    private function formatHtmlAttributes($attributes = [])
-    {
-        return Helper::buildHtmlAttributes($attributes);
-    }
-
-    /**
      * Set attributes.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      */
     public function setAttributes(array $attributes)
     {
@@ -104,7 +104,7 @@ class Row implements Arrayable
     /**
      * Set style of the row.
      *
-     * @param  array|string  $style
+     * @param array|string $style
      */
     public function style($style)
     {
@@ -132,7 +132,7 @@ class Row implements Arrayable
     /**
      * Getter.
      *
-     * @param  mixed  $attr
+     * @param mixed $attr
      * @return mixed
      */
     public function __get($attr)
@@ -143,8 +143,8 @@ class Row implements Arrayable
     /**
      * Setter.
      *
-     * @param  mixed  $attr
-     * @param  mixed  $value
+     * @param mixed $attr
+     * @param mixed $value
      * @return void
      */
     public function __set($attr, $value)
@@ -155,8 +155,8 @@ class Row implements Arrayable
     /**
      * Get or set value of column in this row.
      *
-     * @param  string  $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param mixed $value
      * @return $this|mixed
      */
     public function column($name, $value = null)
@@ -177,17 +177,9 @@ class Row implements Arrayable
     }
 
     /**
-     * @return array
-     */
-    public function toArray()
-    {
-        return $this->data->toArray();
-    }
-
-    /**
      * Output column value.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return mixed|string
      */
     protected function output($value)
@@ -208,10 +200,18 @@ class Row implements Arrayable
             $value = $value->toJson();
         }
 
-        if (! is_null($value) && ! is_scalar($value)) {
+        if (!is_null($value) && !is_scalar($value)) {
             return sprintf('<pre class="dump">%s</pre>', json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
 
         return $value;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->data->toArray();
     }
 }

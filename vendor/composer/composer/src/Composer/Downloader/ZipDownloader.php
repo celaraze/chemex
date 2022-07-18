@@ -17,9 +17,9 @@ use Composer\Pcre\Preg;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use React\Promise\PromiseInterface;
 use ZipArchive;
 
 /**
@@ -46,16 +46,16 @@ class ZipDownloader extends ArchiveDownloader
             self::$unzipCommands = array();
             $finder = new ExecutableFinder;
             if (Platform::isWindows() && ($cmd = $finder->find('7z', null, array('C:\Program Files\7-Zip')))) {
-                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd) . ' x -bb0 -y %s -o%s');
             }
             if ($cmd = $finder->find('unzip')) {
-                self::$unzipCommands[] = array('unzip', ProcessExecutor::escape($cmd).' -qq %s -d %s');
+                self::$unzipCommands[] = array('unzip', ProcessExecutor::escape($cmd) . ' -qq %s -d %s');
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd) . ' x -bb0 -y %s -o%s');
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = array('7zz', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+                self::$unzipCommands[] = array('7zz', ProcessExecutor::escape($cmd) . ' x -bb0 -y %s -o%s');
             }
         }
 
@@ -101,10 +101,22 @@ class ZipDownloader extends ArchiveDownloader
     }
 
     /**
+     * extract $file to $path
+     *
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
+     * @return PromiseInterface
+     */
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
+    {
+        return $this->extractWithSystemUnzip($package, $file, $path);
+    }
+
+    /**
      * extract $file to $path with "unzip" command
      *
-     * @param  string           $file File to extract
-     * @param  string           $path Path where to extract file
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
      * @return PromiseInterface
      */
     private function extractWithSystemUnzip(PackageInterface $package, string $file, string $path): PromiseInterface
@@ -133,7 +145,7 @@ class ZipDownloader extends ArchiveDownloader
             $warned7ZipLinux = true;
             if (0 === $this->process->execute($executable, $output)) {
                 if (Preg::isMatch('{^\s*7-Zip(?: \[64\])? ([0-9.]+)}', $output, $match) && version_compare($match[1], '21.01', '<')) {
-                    $this->io->writeError('    <warning>Unzipping using '.$executable.' '.$match[1].' may result in incorrect file permissions. Install '.$executable.' 21.01+ or unzip to ensure you get correct permissions.</warning>');
+                    $this->io->writeError('    <warning>Unzipping using ' . $executable . ' ' . $match[1] . ' may result in incorrect file permissions. Install ' . $executable . ' 21.01+ or unzip to ensure you get correct permissions.</warning>');
                 }
             }
         }
@@ -145,13 +157,13 @@ class ZipDownloader extends ArchiveDownloader
             }
 
             if (!is_file($file)) {
-                $io->writeError('    <warning>'.$processError->getMessage().'</warning>');
+                $io->writeError('    <warning>' . $processError->getMessage() . '</warning>');
                 $io->writeError('    <warning>This most likely is due to a custom installer plugin not handling the returned Promise from the downloader</warning>');
                 $io->writeError('    <warning>See https://github.com/composer/installers/commit/5006d0c28730ade233a8f42ec31ac68fb1c5c9bb for an example fix</warning>');
             } else {
-                $io->writeError('    <warning>'.$processError->getMessage().'</warning>');
+                $io->writeError('    <warning>' . $processError->getMessage() . '</warning>');
                 $io->writeError('    The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems)');
-                $io->writeError('    Unzip with '.$executable.' command failed, falling back to ZipArchive class');
+                $io->writeError('    Unzip with ' . $executable . ' command failed, falling back to ZipArchive class');
             }
 
             return $this->extractWithZipArchive($package, $file, $path);
@@ -163,13 +175,13 @@ class ZipDownloader extends ArchiveDownloader
             return $promise->then(function (Process $process) use ($tryFallback, $command, $package, $file) {
                 if (!$process->isSuccessful()) {
                     if (isset($this->cleanupExecuted[$package->getName()])) {
-                        throw new \RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
+                        throw new \RuntimeException('Failed to extract ' . $package->getName() . ' as the installation was aborted by another package operation.');
                     }
 
                     $output = $process->getErrorOutput();
-                    $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
+                    $output = str_replace(', ' . $file . '.zip or ' . $file . '.ZIP', '', $output);
 
-                    return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
+                    return $tryFallback(new \RuntimeException('Failed to extract ' . $package->getName() . ': (' . $process->getExitCode() . ') ' . $command . "\n\n" . $output));
                 }
             });
         } catch (\Throwable $e) {
@@ -180,8 +192,8 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with ZipArchive
      *
-     * @param  string           $file File to extract
-     * @param  string           $path Path where to extract file
+     * @param string $file File to extract
+     * @param string $path Path where to extract file
      * @return PromiseInterface
      */
     private function extractWithZipArchive(PackageInterface $package, string $file, string $path): PromiseInterface
@@ -206,10 +218,10 @@ class ZipDownloader extends ArchiveDownloader
 
                 $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
             } else {
-                $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
+                $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file) . "\n"), $retval);
             }
         } catch (\ErrorException $e) {
-            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
+            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): ' . $e->getMessage(), 0, $e);
         } catch (\Throwable $e) {
             $processError = $e;
         }
@@ -218,22 +230,10 @@ class ZipDownloader extends ArchiveDownloader
     }
 
     /**
-     * extract $file to $path
-     *
-     * @param  string                $file File to extract
-     * @param  string                $path Path where to extract file
-     * @return PromiseInterface
-     */
-    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
-    {
-        return $this->extractWithSystemUnzip($package, $file, $path);
-    }
-
-    /**
      * Give a meaningful error message to the user.
      *
-     * @param  int    $retval
-     * @param  string $file
+     * @param int $retval
+     * @param string $file
      * @return string
      */
     protected function getErrorMessage(int $retval, string $file): string

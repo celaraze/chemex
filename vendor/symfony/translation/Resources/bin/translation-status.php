@@ -103,7 +103,7 @@ function findTranslationFiles($originalFilePath, $localeToAnalyze)
     $originalFileName = basename($originalFilePath);
     $translationFileNamePattern = str_replace('.en.', '.*.', $originalFileName);
 
-    $translationFiles = glob($translationsDir.'/'.$translationFileNamePattern, \GLOB_NOSORT);
+    $translationFiles = glob($translationsDir . '/' . $translationFileNamePattern, \GLOB_NOSORT);
     sort($translationFiles);
     foreach ($translationFiles as $filePath) {
         $locale = extractLocaleFromFilePath($filePath);
@@ -149,7 +149,7 @@ function printTranslationStatus($originalFilePath, $translationStatus, $verboseO
 {
     printTitle($originalFilePath);
     printTable($translationStatus, $verboseOutput, $includeCompletedLanguages);
-    echo \PHP_EOL.\PHP_EOL;
+    echo \PHP_EOL . \PHP_EOL;
 }
 
 function extractLocaleFromFilePath($filePath)
@@ -165,8 +165,8 @@ function extractTranslationKeys($filePath)
     $contents = new \SimpleXMLElement(file_get_contents($filePath));
 
     foreach ($contents->file->body->{'trans-unit'} as $translationKey) {
-        $translationId = (string) $translationKey['id'];
-        $translationKey = (string) $translationKey->source;
+        $translationId = (string)$translationKey['id'];
+        $translationKey = (string)$translationKey->source;
 
         $translationKeys[$translationId] = $translationKey;
     }
@@ -198,8 +198,8 @@ function findTransUnitMismatches(array $baseTranslationKeys, array $translatedKe
 
 function printTitle($title)
 {
-    echo $title.\PHP_EOL;
-    echo str_repeat('=', strlen($title)).\PHP_EOL.\PHP_EOL;
+    echo $title . \PHP_EOL;
+    echo str_repeat('=', strlen($title)) . \PHP_EOL . \PHP_EOL;
 }
 
 function printTable($translations, $verboseOutput, bool $includeCompletedLanguages)
@@ -225,35 +225,35 @@ function printTable($translations, $verboseOutput, bool $includeCompletedLanguag
         }
 
         echo sprintf(
-            '|  Locale: %-'.$longestLocaleNameLength.'s  |  Translated: %2d/%2d  |  Mismatches: %d  |',
-            $locale,
-            $translation['translated'],
-            $translation['total'],
-            count($translation['mismatches'])
-        ).\PHP_EOL;
+                '|  Locale: %-' . $longestLocaleNameLength . 's  |  Translated: %2d/%2d  |  Mismatches: %d  |',
+                $locale,
+                $translation['translated'],
+                $translation['total'],
+                count($translation['mismatches'])
+            ) . \PHP_EOL;
 
         textColorNormal();
 
         $shouldBeClosed = false;
         if (true === $verboseOutput && count($translation['missingKeys']) > 0) {
-            echo '|    Missing Translations:'.\PHP_EOL;
+            echo '|    Missing Translations:' . \PHP_EOL;
 
             foreach ($translation['missingKeys'] as $id => $content) {
-                echo sprintf('|      (id=%s) %s', $id, $content).\PHP_EOL;
+                echo sprintf('|      (id=%s) %s', $id, $content) . \PHP_EOL;
             }
             $shouldBeClosed = true;
         }
         if (true === $verboseOutput && count($translation['mismatches']) > 0) {
-            echo '|    Mismatches between trans-unit id and source:'.\PHP_EOL;
+            echo '|    Mismatches between trans-unit id and source:' . \PHP_EOL;
 
             foreach ($translation['mismatches'] as $id => $content) {
-                echo sprintf('|      (id=%s) Expected: %s', $id, $content['expected']).\PHP_EOL;
-                echo sprintf('|              Found:    %s', $content['found']).\PHP_EOL;
+                echo sprintf('|      (id=%s) Expected: %s', $id, $content['expected']) . \PHP_EOL;
+                echo sprintf('|              Found:    %s', $content['found']) . \PHP_EOL;
             }
             $shouldBeClosed = true;
         }
         if ($shouldBeClosed) {
-            echo str_repeat('-', 80).\PHP_EOL;
+            echo str_repeat('-', 80) . \PHP_EOL;
         }
     }
 }

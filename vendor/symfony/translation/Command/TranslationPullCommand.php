@@ -116,8 +116,7 @@ This command pulls all translations associated with the <comment>messages</> and
 Local translations for the specified domains and locale are deleted if they're not present on the provider and overwritten if it's the case.
 Local translations for others domains and locales are ignored.
 EOF
-            )
-        ;
+            );
     }
 
     /**
@@ -140,9 +139,11 @@ EOF
         }
 
         switch ($format) {
-            case 'xlf20': $xliffVersion = '2.0';
+            case 'xlf20':
+                $xliffVersion = '2.0';
             // no break
-            case 'xlf12': $format = 'xlf';
+            case 'xlf12':
+                $format = 'xlf';
         }
 
         $writeOptions = [

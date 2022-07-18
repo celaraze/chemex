@@ -7,15 +7,16 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\LinesOfCode;
 
-use function array_merge;
-use function array_unique;
-use function count;
 use PhpParser\Comment;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeVisitorAbstract;
+use function array_merge;
+use function array_unique;
+use function count;
 
 final class LineCountingVisitor extends NodeVisitorAbstract
 {

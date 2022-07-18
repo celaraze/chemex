@@ -53,8 +53,8 @@ trait CanCascadeFields
     }
 
     /**
-     * @param  string  $operator
-     * @param  mixed  $value
+     * @param string $operator
+     * @param mixed $value
      */
     protected function formatValues(string $operator, &$value)
     {
@@ -70,9 +70,9 @@ trait CanCascadeFields
     }
 
     /**
-     * @param  string  $operator
-     * @param  mixed  $value
-     * @param  \Closure  $closure
+     * @param string $operator
+     * @param mixed $value
+     * @param \Closure $closure
      */
     protected function addDependents(string $operator, $value, \Closure $closure)
     {
@@ -80,13 +80,13 @@ trait CanCascadeFields
 
         ($this->parent ?: $this->form)->cascadeGroup($closure, [
             'column' => $this->column(),
-            'index'  => count($this->conditions) - 1,
-            'class'  => $this->getCascadeClass($value, $operator),
+            'index' => count($this->conditions) - 1,
+            'class' => $this->getCascadeClass($value, $operator),
         ]);
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return string
      */
     protected function getCascadeClass($value, string $operator)
@@ -116,7 +116,7 @@ trait CanCascadeFields
 
     protected function addCascadeScript()
     {
-        if (! $script = $this->getCascadeScript()) {
+        if (!$script = $this->getCascadeScript()) {
             return;
         }
 
@@ -142,9 +142,9 @@ JS
 
         $cascadeGroups = collect($this->conditions)->map(function ($condition) {
             return [
-                'class'    => $this->getCascadeClass($condition['value'], $condition['operator']),
+                'class' => $this->getCascadeClass($condition['value'], $condition['operator']),
                 'operator' => $condition['operator'],
-                'value'    => $condition['value'],
+                'value' => $condition['value'],
             ];
         })->toJson();
 

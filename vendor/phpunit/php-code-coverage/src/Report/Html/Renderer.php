@@ -7,19 +7,20 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace SebastianBergmann\CodeCoverage\Report\Html;
 
-use function array_pop;
-use function count;
-use function sprintf;
-use function str_repeat;
-use function substr_count;
 use SebastianBergmann\CodeCoverage\Node\AbstractNode;
 use SebastianBergmann\CodeCoverage\Node\Directory as DirectoryNode;
 use SebastianBergmann\CodeCoverage\Node\File as FileNode;
 use SebastianBergmann\CodeCoverage\Version;
 use SebastianBergmann\Environment\Runtime;
 use SebastianBergmann\Template\Template;
+use function array_pop;
+use function count;
+use function sprintf;
+use function str_repeat;
+use function substr_count;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
@@ -63,12 +64,12 @@ abstract class Renderer
 
     public function __construct(string $templatePath, string $generator, string $date, int $lowUpperBound, int $highLowerBound, bool $hasBranchCoverage)
     {
-        $this->templatePath      = $templatePath;
-        $this->generator         = $generator;
-        $this->date              = $date;
-        $this->lowUpperBound     = $lowUpperBound;
-        $this->highLowerBound    = $highLowerBound;
-        $this->version           = Version::id();
+        $this->templatePath = $templatePath;
+        $this->generator = $generator;
+        $this->date = $date;
+        $this->lowUpperBound = $lowUpperBound;
+        $this->highLowerBound = $highLowerBound;
+        $this->version = Version::id();
         $this->hasBranchCoverage = $hasBranchCoverage;
     }
 
@@ -86,9 +87,9 @@ abstract class Renderer
                 $data['testedClassesPercent']
             );
         } else {
-            $classesLevel                         = '';
-            $classesNumber                        = '0' . $numSeparator . '0';
-            $classesBar                           = '';
+            $classesLevel = '';
+            $classesNumber = '0' . $numSeparator . '0';
+            $classesBar = '';
             $data['testedClassesPercentAsString'] = 'n/a';
         }
 
@@ -102,9 +103,9 @@ abstract class Renderer
                 $data['testedMethodsPercent']
             );
         } else {
-            $methodsLevel                         = '';
-            $methodsNumber                        = '0' . $numSeparator . '0';
-            $methodsBar                           = '';
+            $methodsLevel = '';
+            $methodsNumber = '0' . $numSeparator . '0';
+            $methodsBar = '';
             $data['testedMethodsPercentAsString'] = 'n/a';
         }
 
@@ -118,9 +119,9 @@ abstract class Renderer
                 $data['linesExecutedPercent']
             );
         } else {
-            $linesLevel                           = '';
-            $linesNumber                          = '0' . $numSeparator . '0';
-            $linesBar                             = '';
+            $linesLevel = '';
+            $linesNumber = '0' . $numSeparator . '0';
+            $linesBar = '';
             $data['linesExecutedPercentAsString'] = 'n/a';
         }
 
@@ -134,9 +135,9 @@ abstract class Renderer
                 $data['pathsExecutedPercent']
             );
         } else {
-            $pathsLevel                           = '';
-            $pathsNumber                          = '0' . $numSeparator . '0';
-            $pathsBar                             = '';
+            $pathsLevel = '';
+            $pathsNumber = '0' . $numSeparator . '0';
+            $pathsBar = '';
             $data['pathsExecutedPercentAsString'] = 'n/a';
         }
 
@@ -150,39 +151,69 @@ abstract class Renderer
                 $data['branchesExecutedPercent']
             );
         } else {
-            $branchesLevel                           = '';
-            $branchesNumber                          = '0' . $numSeparator . '0';
-            $branchesBar                             = '';
+            $branchesLevel = '';
+            $branchesNumber = '0' . $numSeparator . '0';
+            $branchesBar = '';
             $data['branchesExecutedPercentAsString'] = 'n/a';
         }
 
         $template->setVar(
             [
-                'icon'                      => $data['icon'] ?? '',
-                'crap'                      => $data['crap'] ?? '',
-                'name'                      => $data['name'],
-                'lines_bar'                 => $linesBar,
-                'lines_executed_percent'    => $data['linesExecutedPercentAsString'],
-                'lines_level'               => $linesLevel,
-                'lines_number'              => $linesNumber,
-                'paths_bar'                 => $pathsBar,
-                'paths_executed_percent'    => $data['pathsExecutedPercentAsString'],
-                'paths_level'               => $pathsLevel,
-                'paths_number'              => $pathsNumber,
-                'branches_bar'              => $branchesBar,
+                'icon' => $data['icon'] ?? '',
+                'crap' => $data['crap'] ?? '',
+                'name' => $data['name'],
+                'lines_bar' => $linesBar,
+                'lines_executed_percent' => $data['linesExecutedPercentAsString'],
+                'lines_level' => $linesLevel,
+                'lines_number' => $linesNumber,
+                'paths_bar' => $pathsBar,
+                'paths_executed_percent' => $data['pathsExecutedPercentAsString'],
+                'paths_level' => $pathsLevel,
+                'paths_number' => $pathsNumber,
+                'branches_bar' => $branchesBar,
                 'branches_executed_percent' => $data['branchesExecutedPercentAsString'],
-                'branches_level'            => $branchesLevel,
-                'branches_number'           => $branchesNumber,
-                'methods_bar'               => $methodsBar,
-                'methods_tested_percent'    => $data['testedMethodsPercentAsString'],
-                'methods_level'             => $methodsLevel,
-                'methods_number'            => $methodsNumber,
-                'classes_bar'               => $classesBar,
-                'classes_tested_percent'    => $data['testedClassesPercentAsString'] ?? '',
-                'classes_level'             => $classesLevel,
-                'classes_number'            => $classesNumber,
+                'branches_level' => $branchesLevel,
+                'branches_number' => $branchesNumber,
+                'methods_bar' => $methodsBar,
+                'methods_tested_percent' => $data['testedMethodsPercentAsString'],
+                'methods_level' => $methodsLevel,
+                'methods_number' => $methodsNumber,
+                'classes_bar' => $classesBar,
+                'classes_tested_percent' => $data['testedClassesPercentAsString'] ?? '',
+                'classes_level' => $classesLevel,
+                'classes_number' => $classesNumber,
             ]
         );
+
+        return $template->render();
+    }
+
+    protected function colorLevel(float $percent): string
+    {
+        if ($percent <= $this->lowUpperBound) {
+            return 'danger';
+        }
+
+        if ($percent > $this->lowUpperBound &&
+            $percent < $this->highLowerBound) {
+            return 'warning';
+        }
+
+        return 'success';
+    }
+
+    protected function coverageBar(float $percent): string
+    {
+        $level = $this->colorLevel($percent);
+
+        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'coverage_bar_branch.html' : 'coverage_bar.html');
+        $template = new Template(
+            $templateName,
+            '{{',
+            '}}'
+        );
+
+        $template->setVar(['level' => $level, 'percent' => sprintf('%.2F', $percent)]);
 
         return $template->render();
     }
@@ -191,26 +222,39 @@ abstract class Renderer
     {
         $template->setVar(
             [
-                'id'               => $node->id(),
-                'full_path'        => $node->pathAsString(),
-                'path_to_root'     => $this->pathToRoot($node),
-                'breadcrumbs'      => $this->breadcrumbs($node),
-                'date'             => $this->date,
-                'version'          => $this->version,
-                'runtime'          => $this->runtimeString(),
-                'generator'        => $this->generator,
-                'low_upper_bound'  => $this->lowUpperBound,
+                'id' => $node->id(),
+                'full_path' => $node->pathAsString(),
+                'path_to_root' => $this->pathToRoot($node),
+                'breadcrumbs' => $this->breadcrumbs($node),
+                'date' => $this->date,
+                'version' => $this->version,
+                'runtime' => $this->runtimeString(),
+                'generator' => $this->generator,
+                'low_upper_bound' => $this->lowUpperBound,
                 'high_lower_bound' => $this->highLowerBound,
             ]
         );
     }
 
+    protected function pathToRoot(AbstractNode $node): string
+    {
+        $id = $node->id();
+        $depth = substr_count($id, '/');
+
+        if ($id !== 'index' &&
+            $node instanceof DirectoryNode) {
+            $depth++;
+        }
+
+        return str_repeat('../', $depth);
+    }
+
     protected function breadcrumbs(AbstractNode $node): string
     {
         $breadcrumbs = '';
-        $path        = $node->pathAsArray();
-        $pathToRoot  = [];
-        $max         = count($path);
+        $path = $node->pathAsArray();
+        $pathToRoot = [];
+        $max = count($path);
 
         if ($node instanceof FileNode) {
             $max--;
@@ -234,6 +278,15 @@ abstract class Renderer
         return $breadcrumbs;
     }
 
+    protected function inactiveBreadcrumb(AbstractNode $node, string $pathToRoot): string
+    {
+        return sprintf(
+            '         <li class="breadcrumb-item"><a href="%sindex.html">%s</a></li>' . "\n",
+            $pathToRoot,
+            $node->name()
+        );
+    }
+
     protected function activeBreadcrumb(AbstractNode $node): string
     {
         $buffer = sprintf(
@@ -246,58 +299,6 @@ abstract class Renderer
         }
 
         return $buffer;
-    }
-
-    protected function inactiveBreadcrumb(AbstractNode $node, string $pathToRoot): string
-    {
-        return sprintf(
-            '         <li class="breadcrumb-item"><a href="%sindex.html">%s</a></li>' . "\n",
-            $pathToRoot,
-            $node->name()
-        );
-    }
-
-    protected function pathToRoot(AbstractNode $node): string
-    {
-        $id    = $node->id();
-        $depth = substr_count($id, '/');
-
-        if ($id !== 'index' &&
-            $node instanceof DirectoryNode) {
-            $depth++;
-        }
-
-        return str_repeat('../', $depth);
-    }
-
-    protected function coverageBar(float $percent): string
-    {
-        $level = $this->colorLevel($percent);
-
-        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'coverage_bar_branch.html' : 'coverage_bar.html');
-        $template     = new Template(
-            $templateName,
-            '{{',
-            '}}'
-        );
-
-        $template->setVar(['level' => $level, 'percent' => sprintf('%.2F', $percent)]);
-
-        return $template->render();
-    }
-
-    protected function colorLevel(float $percent): string
-    {
-        if ($percent <= $this->lowUpperBound) {
-            return 'danger';
-        }
-
-        if ($percent > $this->lowUpperBound &&
-            $percent < $this->highLowerBound) {
-            return 'warning';
-        }
-
-        return 'success';
     }
 
     private function runtimeString(): string

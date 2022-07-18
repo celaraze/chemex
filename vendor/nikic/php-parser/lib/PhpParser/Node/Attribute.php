@@ -14,21 +14,24 @@ class Attribute extends NodeAbstract
     public $args;
 
     /**
-     * @param Node\Name $name       Attribute name
-     * @param Arg[]     $args       Attribute arguments
-     * @param array     $attributes Additional node attributes
+     * @param Node\Name $name Attribute name
+     * @param Arg[] $args Attribute arguments
+     * @param array $attributes Additional node attributes
      */
-    public function __construct(Name $name, array $args = [], array $attributes = []) {
+    public function __construct(Name $name, array $args = [], array $attributes = [])
+    {
         $this->attributes = $attributes;
         $this->name = $name;
         $this->args = $args;
     }
 
-    public function getSubNodeNames() : array {
+    public function getSubNodeNames(): array
+    {
         return ['name', 'args'];
     }
 
-    public function getType() : string {
+    public function getType(): string
+    {
         return 'Attribute';
     }
 }

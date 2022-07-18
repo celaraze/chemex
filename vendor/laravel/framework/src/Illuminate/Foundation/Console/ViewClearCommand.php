@@ -11,13 +11,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 class ViewClearCommand extends Command
 {
     /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'view:clear';
-
-    /**
      * The name of the console command.
      *
      * This name is used to identify the command during lazy loading.
@@ -27,7 +20,12 @@ class ViewClearCommand extends Command
      * @deprecated
      */
     protected static $defaultName = 'view:clear';
-
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $name = 'view:clear';
     /**
      * The console command description.
      *
@@ -45,7 +43,7 @@ class ViewClearCommand extends Command
     /**
      * Create a new config clear command instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -66,7 +64,7 @@ class ViewClearCommand extends Command
     {
         $path = $this->laravel['config']['view.compiled'];
 
-        if (! $path) {
+        if (!$path) {
             throw new RuntimeException('View path not found.');
         }
 

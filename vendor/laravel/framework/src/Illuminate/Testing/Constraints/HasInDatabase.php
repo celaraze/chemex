@@ -32,8 +32,8 @@ class HasInDatabase extends Constraint
     /**
      * Create a new constraint instance.
      *
-     * @param  \Illuminate\Database\Connection  $database
-     * @param  array  $data
+     * @param \Illuminate\Database\Connection $database
+     * @param array $data
      * @return void
      */
     public function __construct(Connection $database, array $data)
@@ -46,7 +46,7 @@ class HasInDatabase extends Constraint
     /**
      * Check if the data is found in the given table.
      *
-     * @param  string  $table
+     * @param string $table
      * @return bool
      */
     public function matches($table): bool
@@ -57,7 +57,7 @@ class HasInDatabase extends Constraint
     /**
      * Get the description of the failure.
      *
-     * @param  string  $table
+     * @param string $table
      * @return string
      */
     public function failureDescription($table): string
@@ -69,9 +69,24 @@ class HasInDatabase extends Constraint
     }
 
     /**
+     * Get a string representation of the object.
+     *
+     * @param int $options
+     * @return string
+     */
+    public function toString($options = 0): string
+    {
+        foreach ($this->data as $key => $data) {
+            $output[$key] = $data instanceof Expression ? (string)$data : $data;
+        }
+
+        return json_encode($output ?? [], $options);
+    }
+
+    /**
      * Get additional info about the records found in the database table.
      *
-     * @param  string  $table
+     * @param string $table
      * @return string
      */
     protected function getAdditionalInfo($table)
@@ -84,7 +99,7 @@ class HasInDatabase extends Constraint
         )->limit($this->show)->get();
 
         if ($similarResults->isNotEmpty()) {
-            $description = 'Found similar results: '.json_encode($similarResults, JSON_PRETTY_PRINT);
+            $description = 'Found similar results: ' . json_encode($similarResults, JSON_PRETTY_PRINT);
         } else {
             $query = $this->database->table($table);
 
@@ -94,7 +109,7 @@ class HasInDatabase extends Constraint
                 return 'The table is empty';
             }
 
-            $description = 'Found: '.json_encode($results, JSON_PRETTY_PRINT);
+            $description = 'Found: ' . json_encode($results, JSON_PRETTY_PRINT);
         }
 
         if ($query->count() > $this->show) {
@@ -102,20 +117,5 @@ class HasInDatabase extends Constraint
         }
 
         return $description;
-    }
-
-    /**
-     * Get a string representation of the object.
-     *
-     * @param  int  $options
-     * @return string
-     */
-    public function toString($options = 0): string
-    {
-        foreach ($this->data as $key => $data) {
-            $output[$key] = $data instanceof Expression ? (string) $data : $data;
-        }
-
-        return json_encode($output ?? [], $options);
     }
 }

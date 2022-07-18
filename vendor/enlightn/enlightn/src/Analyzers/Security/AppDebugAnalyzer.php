@@ -38,14 +38,14 @@ class AppDebugAnalyzer extends SecurityAnalyzer
     public function errorMessage()
     {
         return "Your app debug is set to true while your application is in production. "
-                ."This can be very dangerous as your app users will be able to view detailed "
-                ."error messages along with stack traces.";
+            . "This can be very dangerous as your app users will be able to view detailed "
+            . "error messages along with stack traces.";
     }
 
     /**
      * Execute the analyzer.
      *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
+     * @param \Illuminate\Contracts\Config\Repository $config
      * @return void
      */
     public function handle(ConfigRepository $config)

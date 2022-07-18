@@ -25,6 +25,16 @@ class MbString
     }
 
     /**
+     * Checks if the mbstring extension is enabled in PHP.
+     *
+     * @return bool
+     */
+    public static function isLoaded()
+    {
+        return extension_loaded('mbstring');
+    }
+
+    /**
      * Get the character for a specific integer value.
      *
      * @param $int
@@ -66,15 +76,5 @@ class MbString
         }
 
         return $string;
-    }
-
-    /**
-     * Checks if the mbstring extension is enabled in PHP.
-     *
-     * @return bool
-     */
-    public static function isLoaded()
-    {
-        return extension_loaded('mbstring');
     }
 }

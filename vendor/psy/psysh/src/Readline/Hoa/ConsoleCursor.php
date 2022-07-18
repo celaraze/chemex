@@ -221,8 +221,8 @@ class ConsoleCursor
         }
 
         return [
-            'x' => (int) $x,
-            'y' => (int) $y,
+            'x' => (int)$x,
+            'y' => (int)$y,
         ];
     }
 
@@ -302,7 +302,7 @@ class ConsoleCursor
 
                 case 'line':
                 case '↔':
-                    $output->writeAll("\r".$tput->get('clr_eol'));
+                    $output->writeAll("\r" . $tput->get('clr_eol'));
 
                     break;
             }
@@ -565,8 +565,8 @@ class ConsoleCursor
 
                                     $d = \sqrt(
                                         ($_r - $r) ** 2
-                                      + ($_g - $g) ** 2
-                                      + ($_b - $b) ** 2
+                                        + ($_g - $g) ** 2
+                                        + ($_b - $b) ** 2
                                     );
 
                                     if (null === $distance ||
@@ -576,19 +576,19 @@ class ConsoleCursor
                                     }
                                 }
                             } else {
-                                $_handle = (int) ($m[2]);
+                                $_handle = (int)($m[2]);
                             }
                     }
 
                     if (true === $_keyword) {
                         $handle[] = $_handle + $shift;
                     } else {
-                        $handle[] = (38 + $shift).';5;'.$_handle;
+                        $handle[] = (38 + $shift) . ';5;' . $_handle;
                     }
             }
         }
 
-        Console::getOutput()->writeAll("\033[".\implode(';', $handle).'m');
+        Console::getOutput()->writeAll("\033[" . \implode(';', $handle) . 'm');
 
         return;
     }
@@ -672,7 +672,7 @@ class ConsoleCursor
         }
 
         // Not sure what tput entry we can use here…
-        Console::getOutput()->writeAll("\033[".$_style.' q');
+        Console::getOutput()->writeAll("\033[" . $_style . ' q');
 
         return;
     }

@@ -12,14 +12,14 @@
 
 namespace Composer\Repository;
 
+use Composer\Installer\InstallationManager;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackageInterface;
-use Composer\Package\AliasPackage;
-use Composer\Package\Dumper\ArrayDumper;
-use Composer\Installer\InstallationManager;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 
@@ -45,9 +45,9 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param JsonFile              $repositoryFile repository json file
-     * @param bool                  $dumpVersions
-     * @param ?RootPackageInterface $rootPackage    Must be provided if $dumpVersions is true
+     * @param JsonFile $repositoryFile repository json file
+     * @param bool $dumpVersions
+     * @param ?RootPackageInterface $rootPackage Must be provided if $dumpVersions is true
      */
     public function __construct(JsonFile $repositoryFile, bool $dumpVersions = false, RootPackageInterface $rootPackage = null, Filesystem $filesystem = null)
     {
@@ -67,52 +67,6 @@ class FilesystemRepository extends WritableArrayRepository
     public function getDevMode()
     {
         return $this->devMode;
-    }
-
-    /**
-     * Initializes repository (reads file, or remote address).
-     */
-    protected function initialize()
-    {
-        parent::initialize();
-
-        if (!$this->file->exists()) {
-            return;
-        }
-
-        try {
-            $data = $this->file->read();
-            if (isset($data['packages'])) {
-                $packages = $data['packages'];
-            } else {
-                $packages = $data;
-            }
-
-            if (isset($data['dev-package-names'])) {
-                $this->setDevPackageNames($data['dev-package-names']);
-            }
-            if (isset($data['dev'])) {
-                $this->devMode = $data['dev'];
-            }
-
-            if (!is_array($packages)) {
-                throw new \UnexpectedValueException('Could not parse package list from the repository');
-            }
-        } catch (\Exception $e) {
-            throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
-        }
-
-        $loader = new ArrayLoader(null, true);
-        foreach ($packages as $packageData) {
-            $package = $loader->load($packageData);
-            $this->addPackage($package);
-        }
-    }
-
-    public function reload()
-    {
-        $this->packages = null;
-        $this->initialize();
     }
 
     /**
@@ -162,49 +116,12 @@ class FilesystemRepository extends WritableArrayRepository
         if ($this->dumpVersions) {
             $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
 
-            $this->filesystem->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
-            $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
-            $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
+            $this->filesystem->filePutContentsIfModified($repoDir . '/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';' . "\n");
+            $installedVersionsClass = file_get_contents(__DIR__ . '/../InstalledVersions.php');
+            $this->filesystem->filePutContentsIfModified($repoDir . '/InstalledVersions.php', $installedVersionsClass);
 
             \Composer\InstalledVersions::reload($versions);
         }
-    }
-
-    /**
-     * @param array<mixed> $array
-     * @param int $level
-     *
-     * @return string
-     */
-    private function dumpToPhpCode(array $array = array(), int $level = 0): string
-    {
-        $lines = "array(\n";
-        $level++;
-
-        foreach ($array as $key => $value) {
-            $lines .= str_repeat('    ', $level);
-            $lines .= is_int($key) ? $key . ' => ' : '\'' . $key . '\' => ';
-
-            if (is_array($value)) {
-                if (!empty($value)) {
-                    $lines .= $this->dumpToPhpCode($value, $level);
-                } else {
-                    $lines .= "array(),\n";
-                }
-            } elseif ($key === 'install_path' && is_string($value)) {
-                if ($this->filesystem->isAbsolutePath($value)) {
-                    $lines .= var_export($value, true) . ",\n";
-                } else {
-                    $lines .= "__DIR__ . " . var_export('/' . $value, true) . ",\n";
-                }
-            } else {
-                $lines .= var_export($value, true) . ",\n";
-            }
-        }
-
-        $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 == 0 ? '' : ",\n");
-
-        return $lines;
     }
 
     /**
@@ -300,6 +217,27 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * @param array<string, string> $installPaths
      * @param array<string, int> $devPackages
+     * @return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}
+     */
+    private function dumpRootPackage(RootPackageInterface $package, array $installPaths, bool $devMode, string $repoDir, array $devPackages)
+    {
+        $data = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages);
+
+        return [
+            'name' => $package->getName(),
+            'pretty_version' => $data['pretty_version'],
+            'version' => $data['version'],
+            'reference' => $data['reference'],
+            'type' => $data['type'],
+            'install_path' => $data['install_path'],
+            'aliases' => $data['aliases'],
+            'dev' => $devMode,
+        ];
+    }
+
+    /**
+     * @param array<string, string> $installPaths
+     * @param array<string, int> $devPackages
      * @return array{pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev_requirement: bool}
      */
     private function dumpInstalledPackage(PackageInterface $package, array $installPaths, string $repoDir, array $devPackages): array
@@ -333,23 +271,85 @@ class FilesystemRepository extends WritableArrayRepository
     }
 
     /**
-     * @param array<string, string> $installPaths
-     * @param array<string, int> $devPackages
-     * @return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}
+     * @param array<mixed> $array
+     * @param int $level
+     *
+     * @return string
      */
-    private function dumpRootPackage(RootPackageInterface $package, array $installPaths, bool $devMode, string $repoDir, array $devPackages)
+    private function dumpToPhpCode(array $array = array(), int $level = 0): string
     {
-        $data = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages);
+        $lines = "array(\n";
+        $level++;
 
-        return [
-            'name' => $package->getName(),
-            'pretty_version' => $data['pretty_version'],
-            'version' => $data['version'],
-            'reference' => $data['reference'],
-            'type' => $data['type'],
-            'install_path' => $data['install_path'],
-            'aliases' => $data['aliases'],
-            'dev' => $devMode,
-        ];
+        foreach ($array as $key => $value) {
+            $lines .= str_repeat('    ', $level);
+            $lines .= is_int($key) ? $key . ' => ' : '\'' . $key . '\' => ';
+
+            if (is_array($value)) {
+                if (!empty($value)) {
+                    $lines .= $this->dumpToPhpCode($value, $level);
+                } else {
+                    $lines .= "array(),\n";
+                }
+            } elseif ($key === 'install_path' && is_string($value)) {
+                if ($this->filesystem->isAbsolutePath($value)) {
+                    $lines .= var_export($value, true) . ",\n";
+                } else {
+                    $lines .= "__DIR__ . " . var_export('/' . $value, true) . ",\n";
+                }
+            } else {
+                $lines .= var_export($value, true) . ",\n";
+            }
+        }
+
+        $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 == 0 ? '' : ",\n");
+
+        return $lines;
+    }
+
+    public function reload()
+    {
+        $this->packages = null;
+        $this->initialize();
+    }
+
+    /**
+     * Initializes repository (reads file, or remote address).
+     */
+    protected function initialize()
+    {
+        parent::initialize();
+
+        if (!$this->file->exists()) {
+            return;
+        }
+
+        try {
+            $data = $this->file->read();
+            if (isset($data['packages'])) {
+                $packages = $data['packages'];
+            } else {
+                $packages = $data;
+            }
+
+            if (isset($data['dev-package-names'])) {
+                $this->setDevPackageNames($data['dev-package-names']);
+            }
+            if (isset($data['dev'])) {
+                $this->devMode = $data['dev'];
+            }
+
+            if (!is_array($packages)) {
+                throw new \UnexpectedValueException('Could not parse package list from the repository');
+            }
+        } catch (\Exception $e) {
+            throw new InvalidRepositoryException('Invalid repository data in ' . $this->file->getPath() . ', packages could not be loaded: [' . get_class($e) . '] ' . $e->getMessage());
+        }
+
+        $loader = new ArrayLoader(null, true);
+        foreach ($packages as $packageData) {
+            $package = $loader->load($packageData);
+            $this->addPackage($package);
+        }
     }
 }

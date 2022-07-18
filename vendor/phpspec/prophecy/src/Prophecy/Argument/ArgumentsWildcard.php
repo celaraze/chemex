@@ -53,7 +53,7 @@ class ArgumentsWildcard
             return 1;
         }
 
-        $arguments  = array_values($arguments);
+        $arguments = array_values($arguments);
         $totalScore = 0;
         foreach ($this->tokens as $i => $token) {
             $argument = isset($arguments[$i]) ? $arguments[$i] : null;
@@ -84,7 +84,7 @@ class ArgumentsWildcard
     {
         if (null === $this->string) {
             $this->string = implode(', ', array_map(function ($token) {
-                return (string) $token;
+                return (string)$token;
             }, $this->tokens));
         }
 

@@ -104,16 +104,16 @@ class Address extends \Faker\Provider\Address
         return static::randomElement(static::$street);
     }
 
-    public function cityName()
-    {
-        return static::randomElement(static::$cityNames);
-    }
-
     public static function localCoordinates()
     {
         return [
             'latitude' => static::latitude(42.43, 42.45),
             'longitude' => static::longitude(19.16, 19.27),
         ];
+    }
+
+    public function cityName()
+    {
+        return static::randomElement(static::$cityNames);
     }
 }

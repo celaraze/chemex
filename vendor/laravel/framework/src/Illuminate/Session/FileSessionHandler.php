@@ -33,9 +33,9 @@ class FileSessionHandler implements SessionHandlerInterface
     /**
      * Create a new file driven handler instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
-     * @param  string  $path
-     * @param  int  $minutes
+     * @param \Illuminate\Filesystem\Filesystem $files
+     * @param string $path
+     * @param int $minutes
      * @return void
      */
     public function __construct(Filesystem $files, $path, $minutes)
@@ -72,7 +72,7 @@ class FileSessionHandler implements SessionHandlerInterface
      */
     public function read($sessionId): string|false
     {
-        if ($this->files->isFile($path = $this->path.'/'.$sessionId) &&
+        if ($this->files->isFile($path = $this->path . '/' . $sessionId) &&
             $this->files->lastModified($path) >= Carbon::now()->subMinutes($this->minutes)->getTimestamp()) {
             return $this->files->sharedGet($path);
         }
@@ -87,7 +87,7 @@ class FileSessionHandler implements SessionHandlerInterface
      */
     public function write($sessionId, $data): bool
     {
-        $this->files->put($this->path.'/'.$sessionId, $data, true);
+        $this->files->put($this->path . '/' . $sessionId, $data, true);
 
         return true;
     }
@@ -99,7 +99,7 @@ class FileSessionHandler implements SessionHandlerInterface
      */
     public function destroy($sessionId): bool
     {
-        $this->files->delete($this->path.'/'.$sessionId);
+        $this->files->delete($this->path . '/' . $sessionId);
 
         return true;
     }
@@ -112,10 +112,10 @@ class FileSessionHandler implements SessionHandlerInterface
     public function gc($lifetime): int
     {
         $files = Finder::create()
-                    ->in($this->path)
-                    ->files()
-                    ->ignoreDotFiles(true)
-                    ->date('<= now - '.$lifetime.' seconds');
+            ->in($this->path)
+            ->files()
+            ->ignoreDotFiles(true)
+            ->date('<= now - ' . $lifetime . ' seconds');
 
         $deletedSessions = 0;
 
