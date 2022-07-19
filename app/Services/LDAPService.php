@@ -120,6 +120,7 @@ class LDAPService
             $users = Adldap::search()->users()->get();
             $users = json_decode($users, true);
             foreach ($users as $user) {
+                $user_account = $user['samaccountname'][0];
                 $user_name = $user['cn'][0];
                 $user_dns = $user['distinguishedname'][0];
                 $user_dn_array = explode(',', $user_dns);
@@ -134,10 +135,10 @@ class LDAPService
                         $department_id = $department->id;
                     }
                 }
-                $user = User::withTrashed()->where('name', $user_name)->first();
+                $user = User::withTrashed()->where('username', $user_account)->first();
                 if (empty($user)) {
                     $user = new User();
-                    $user->username = $user_name;
+                    $user->username = $user_account;
                     $user->password = bcrypt($user->username);
                     $user->name = $user_name;
                     $user->department_id = $department_id;
