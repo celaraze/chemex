@@ -5,6 +5,7 @@ namespace App\Admin\Controllers;
 use App\Form;
 use App\Models\RoleUser;
 use App\Models\User;
+use App\Models\Department;
 use App\Support\LDAP;
 use Dcat\Admin\Admin;
 use Dcat\Admin\Form\Tools;
@@ -16,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use Adldap\Laravel\Facades\Adldap;
 
 /**
  * @property string password
@@ -117,37 +119,80 @@ class AuthController extends BaseAuthController
          * LDAP验证处理.
          */
         if (admin_setting('ad_enabled') && admin_setting('ad_login')) {
+
             $ldap = new LDAP();
-
             try {
-                if ($ldap->auth($username, $password)) {
-                    $admin_user = User::where('username', $username)->first();
-                    if (empty($admin_user)) {
-                        $admin_user = new User();
-                        if ($username == admin_setting('ad_bind_administrator')) {
-                            $role_id = 1;
-                        } else {
-                            $role_id = 2;
-                        }
-                        $admin_user->username = $username;
-                        $admin_user->password = bcrypt($password);
-                        $admin_user->name = $username;
-                        $admin_user->department_id = 0;
-                        $admin_user->save();
 
-                        $admin_role_user = RoleUser::where('user_id', $admin_user->id)
-                            ->where('role_id', $role_id)
-                            ->first();
-                        if (empty($admin_role_user)) {
-                            $admin_role_user = new RoleUser();
+                // 搜索账户信息.
+                $samaccountname_search = Adldap::search()->where('samaccountname', '=', $username)->get();
+                
+                if (count($samaccountname_search) > 0) {
+
+                    // 获取账户信息.
+                    $user = json_decode($samaccountname_search, true)[0];
+
+                    // 获取带域账号.
+                    $user_userprincipalname = $user['userprincipalname'][0];
+
+                    // 验证账户.
+                    if ($ldap->auth($user_userprincipalname, $password)) {
+
+                        // 获取账户的指定信息.
+                        $user_account = $user['samaccountname'][0];
+                        $user_name = $user['cn'][0];
+                        $user_dns = $user['distinguishedname'][0];
+                        $user_dn_array = explode(',', $user_dns);
+                        $user_dn_up = $user_dn_array[1];
+
+                        // 默认写入的部门ID为0，也就是根部门.
+                        $department_id = 0;
+
+                        // 如果用户有所属部门.
+                        if (str_contains($user_dn_up, 'OU=')) {
+                            $user_dn_department = explode('=', $user_dn_up)[1];
+                            $department = Department::where('name', $user_dn_department)->first();
+                            if (!empty($department)) {
+                                $department_id = $department->id;
+                            }
                         }
-                        $admin_role_user->role_id = $role_id;
-                        $admin_role_user->user_id = $admin_user->id;
-                        $admin_role_user->save();
+
+                        $admin_user = User::where('username', $user_account)->first();
+
+                        // 本地账户不存在，则新建账户.
+                        if (empty($admin_user)) {
+                            if ($username == admin_setting('ad_bind_administrator')) {
+                                $role_id = 1;
+                            } else {
+                                $role_id = 2;
+                            }
+
+                            $admin_user = new User();
+                            $admin_user->username = $user_account;
+                            $admin_user->password = bcrypt($password);
+                            $admin_user->name = $user_name;
+                            $admin_user->department_id = $department_id;
+                            $admin_user->ad_tag = '1';
+                            $admin_user->save();
+
+                            $admin_role_user = RoleUser::where('user_id', $admin_user->id)
+                                ->where('role_id', $role_id)
+                                ->first();
+                            if (empty($admin_role_user)) {
+                                $admin_role_user = new RoleUser();
+                            }
+                            $admin_role_user->role_id = $role_id;
+                            $admin_role_user->user_id = $admin_user->id;
+                            $admin_role_user->save();
+                        }
+
+                        // 更新密码.
+                        $admin_user->password = bcrypt($password);
+
+                        // 保存信息.
+                        $admin_user->save();
                     }
-                    $admin_user->password = bcrypt($password);
-                    $admin_user->save();
                 }
+
             } catch (Exception $exception) {
                 dd($exception->getMessage());
                 // 如果LDAP服务器连接出现异常，这里可以做异常处理的逻辑
@@ -156,7 +201,7 @@ class AuthController extends BaseAuthController
         }
 
         $credentials = $request->only([$this->username(), 'password']);
-//        $credentials = [$username, $password];
+        //$credentials = [$username, $password];
         $remember = (bool)$request->input('remember', false);
 
         /** @var \Illuminate\Validation\Validator $validator */
