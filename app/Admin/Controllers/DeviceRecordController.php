@@ -427,19 +427,58 @@ class DeviceRecordController extends AdminController
                 if (admin_setting('switch_to_filter_panel')) {
                     $filter->panel();
                 }
-                $filter->scope('history', admin_trans_label('Deleted'))->onlyTrashed();
-                $filter->scope('Discard', trans('main.discard'))->doesntHave('admin_user')->whereNotNull('discard_at');
-                $filter->scope('maintenance', trans('main.maintenance'))->whereHas('maintenance', function ($query) {
-                    $query->where('status', '0');
-                });
-                $filter->scope('lend', trans('main.lend'))->whereHas('track', function ($query) {
-                    $query->whereNotNUll('lend_time');
-                });
-                $filter->scope('using', trans('main.using'))->has('admin_user');
-                $filter->scope('dead', trans('main.dead'))->doesntHave('admin_user')->where('expired', '<', now());
+
+                /**
+                 * 回收站.
+                 */
+                $filter->scope('history', admin_trans_label('Deleted'))
+                        ->onlyTrashed();
+
+                /**
+                 * 已报废.
+                 */
+                $filter->scope('Discard', trans('main.discard'))
+                        ->doesntHave('admin_user')
+                        ->whereNotNull('discard_at');
+
+                /**
+                 * 维修中.
+                 */
+                $filter->scope('maintenance', trans('main.maintenance'))
+                        ->whereHas('maintenance', function ($query) {
+                            $query->where('status', '0');
+                        });
+
+                /**
+                 * 借用中.
+                 */
+                $filter->scope('lend', trans('main.lend'))
+                        ->whereHas('track', function ($query) {
+                            $query->whereNotNUll('lend_time');
+                        });
+
+                /**
+                 * 使用中.
+                 */
+                $filter->scope('using', trans('main.using'))
+                        ->has('admin_user');
+
+                /**
+                 * 堪用.
+                 */
+                $filter->scope('dead', trans('main.dead'))
+                        ->doesntHave('admin_user')
+                        ->where('expired', '<', now())
+                        ->whereNull('discard_at');
+
+                /**
+                 * 闲置.
+                 */
                 $filter->scope('idle', trans('main.idle'))
-                    ->doesntHave('admin_user')
-                    ->whereNull('expired');
+                        ->doesntHave('admin_user')
+                        ->whereNull('expired')
+                        ->whereNull('discard_at');
+
                 $filter->equal('category_id')->select(DeviceCategory::pluck('name', 'id'));
                 $filter->equal('vendor_id')->select(VendorRecord::pluck('name', 'id'));
                 $filter->equal('admin_user.name')->select(Support::selectUsers('name'));
