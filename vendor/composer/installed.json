@@ -1326,17 +1326,17 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "3.5.0",
-            "version_normalized": "3.5.0.0",
+            "version": "3.5.1",
+            "version_normalized": "3.5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/dbal.git",
-                "reference": "b66f55c7037402d9f522f19d86841e71c09f0195"
+                "reference": "f38ee8aaca2d58ee88653cb34a6a3880c23f38a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/b66f55c7037402d9f522f19d86841e71c09f0195",
-                "reference": "b66f55c7037402d9f522f19d86841e71c09f0195",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/f38ee8aaca2d58ee88653cb34a6a3880c23f38a5",
+                "reference": "f38ee8aaca2d58ee88653cb34a6a3880c23f38a5",
                 "shasum": ""
             },
             "require": {
@@ -1363,7 +1363,7 @@
             "suggest": {
                 "symfony/console": "For helpful console commands such as SQL execution and import of files."
             },
-            "time": "2022-10-22T14:33:42+00:00",
+            "time": "2022-10-24T07:26:18+00:00",
             "bin": [
                 "bin/doctrine-dbal"
             ],
@@ -1420,7 +1420,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/3.5.0"
+                "source": "https://github.com/doctrine/dbal/tree/3.5.1"
             },
             "funding": [
                 {
@@ -3610,17 +3610,17 @@
         },
         {
             "name": "league/flysystem",
-            "version": "3.10.1",
-            "version_normalized": "3.10.1.0",
+            "version": "3.10.2",
+            "version_normalized": "3.10.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "9857d7208a94fc63c7bf09caf223280e59ac7274"
+                "reference": "b9bd194b016114d6ff6765c09d40c7d427e4e3f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/9857d7208a94fc63c7bf09caf223280e59ac7274",
-                "reference": "9857d7208a94fc63c7bf09caf223280e59ac7274",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/b9bd194b016114d6ff6765c09d40c7d427e4e3f6",
+                "reference": "b9bd194b016114d6ff6765c09d40c7d427e4e3f6",
                 "shasum": ""
             },
             "require": {
@@ -3650,7 +3650,7 @@
                 "phpunit/phpunit": "^9.5.11",
                 "sabre/dav": "^4.3.1"
             },
-            "time": "2022-10-21T18:57:47+00:00",
+            "time": "2022-10-25T07:01:47+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -3684,7 +3684,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.10.1"
+                "source": "https://github.com/thephpleague/flysystem/tree/3.10.2"
             },
             "funding": [
                 {
