@@ -3546,6 +3546,7 @@ return array(
     'Illuminate\\Http\\File' => $vendorDir . '/laravel/framework/src/Illuminate/Http/File.php',
     'Illuminate\\Http\\FileHelpers' => $vendorDir . '/laravel/framework/src/Illuminate/Http/FileHelpers.php',
     'Illuminate\\Http\\JsonResponse' => $vendorDir . '/laravel/framework/src/Illuminate/Http/JsonResponse.php',
+    'Illuminate\\Http\\Middleware\\AddLinkHeadersForPreloadedAssets' => $vendorDir . '/laravel/framework/src/Illuminate/Http/Middleware/AddLinkHeadersForPreloadedAssets.php',
     'Illuminate\\Http\\Middleware\\CheckResponseForModifications' => $vendorDir . '/laravel/framework/src/Illuminate/Http/Middleware/CheckResponseForModifications.php',
     'Illuminate\\Http\\Middleware\\FrameGuard' => $vendorDir . '/laravel/framework/src/Illuminate/Http/Middleware/FrameGuard.php',
     'Illuminate\\Http\\Middleware\\HandleCors' => $vendorDir . '/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php',
