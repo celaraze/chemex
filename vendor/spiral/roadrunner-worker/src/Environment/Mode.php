@@ -40,4 +40,9 @@ interface Mode
      * @var string
      */
     public const MODE_TCP = 'tcp';
+
+    /**
+     * @var string
+     */
+    public const MODE_CENTRIFUGE = 'centrifuge';
 }
