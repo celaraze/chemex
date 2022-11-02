@@ -1,6 +1,56 @@
 # Release Notes for 9.x
 
-## [Unreleased](https://github.com/laravel/framework/compare/v9.36.1...9.x)
+## [Unreleased](https://github.com/laravel/framework/compare/v9.37.0...9.x)
+
+
+## [v9.37.0](https://github.com/laravel/framework/compare/v9.36.4...v9.37.0) - 2022-10-25
+
+### Added
+- Added optional verbose output when view caching ([#44673](https://github.com/laravel/framework/pull/44673))
+- Allow passing closure to rescue $report parameter ([#44710](https://github.com/laravel/framework/pull/44710))
+- Support preloading assets with Vite ([#44096](https://github.com/laravel/framework/pull/44096))
+- Added `Illuminate/Mail/Mailables/Content::htmlString()` ([#44703](https://github.com/laravel/framework/pull/44703))
+
+### Fixed
+- Fixed model:show registering getAttribute() as a null accessor ([#44683](https://github.com/laravel/framework/pull/44683))
+- Fix expectations for output assertions in PendingCommand ([#44723](https://github.com/laravel/framework/pull/44723))
+
+
+## [v9.36.4](https://github.com/laravel/framework/compare/v9.36.3...v9.36.4) - 2022-10-20
+
+### Added
+- Added rawValue to Database Query Builder (and Eloquent as wrapper) ([#44631](https://github.com/laravel/framework/pull/44631))
+- Added TransactionCommitting ([#44608](https://github.com/laravel/framework/pull/44608))
+- Added dontIncludeSource to CliDumper and HtmlDumper ([#44623](https://github.com/laravel/framework/pull/44623))
+- Added `Illuminate/Filesystem/FilesystemAdapter::checksum()` ([#44660](https://github.com/laravel/framework/pull/44660))
+- Added handlers for silently discarded and missing attribute violations ([#44664](https://github.com/laravel/framework/pull/44664))
+
+### Reverted
+- Reverted ["Let MustVerifyEmail to be used on models without id as primary key"](https://github.com/laravel/framework/pull/44613) ([#44672](https://github.com/laravel/framework/pull/44672))
+
+### Changed
+- Create new Json ParameterBag Instance when cloning Request ([#44671](https://github.com/laravel/framework/pull/44671))
+- Prevents booting providers when running env:decrypt ([#44654](https://github.com/laravel/framework/pull/44654))
+
+
+## [v9.36.3](https://github.com/laravel/framework/compare/v9.36.2...v9.36.3) - 2022-10-19
+
+### Reverted
+- Reverts micro-optimization on view events ([#44653](https://github.com/laravel/framework/pull/44653))
+
+### Fixed
+- Fixes blade not forgetting compiled views on view:clear ([#44643](https://github.com/laravel/framework/pull/44643))
+- Fixed `Illuminate/Database/Eloquent/Model::offsetExists()` ([#44642](https://github.com/laravel/framework/pull/44642))
+- Forget component's cache and factory between tests ([#44648](https://github.com/laravel/framework/pull/44648))
+
+### Changed
+- Bump Testbench dependencies ([#44651](https://github.com/laravel/framework/pull/44651))
+
+
+## [v9.36.2](https://github.com/laravel/framework/compare/v9.36.1...v9.36.2) - 2022-10-18
+
+### Fixed
+- Ensures view creators and composers are called when * is present ([#44636](https://github.com/laravel/framework/pull/44636))
 
 
 ## [v9.36.1](https://github.com/laravel/framework/compare/v9.36.0...v9.36.1) - 2022-10-18
