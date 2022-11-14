@@ -54,6 +54,7 @@ return array(
     'Spiral\\Logger\\' => array($vendorDir . '/spiral/logger/src'),
     'Spiral\\Goridge\\' => array($vendorDir . '/spiral/goridge/src'),
     'Spiral\\Core\\' => array($vendorDir . '/spiral/core/src'),
+    'Spipu\\Html2Pdf\\' => array($vendorDir . '/spipu/html2pdf/src'),
     'Spatie\\LaravelPackageTools\\' => array($vendorDir . '/spatie/laravel-package-tools/src'),
     'Spatie\\LaravelIgnition\\' => array($vendorDir . '/spatie/laravel-ignition/src'),
     'Spatie\\Ignition\\' => array($vendorDir . '/spatie/ignition/src'),

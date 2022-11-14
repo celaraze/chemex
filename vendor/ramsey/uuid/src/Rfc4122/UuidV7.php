@@ -22,8 +22,10 @@ use Ramsey\Uuid\Rfc4122\FieldsInterface as Rfc4122FieldsInterface;
 use Ramsey\Uuid\Uuid;
 
 /**
- * Gregorian time, or version 1, UUIDs include timestamp, clock sequence, and node
- * values that are combined into a 128-bit unsigned integer
+ * Unix Epoch time, or version 7, UUIDs include a timestamp in milliseconds
+ * since the Unix Epoch, along with random bytes
+ *
+ * @link https://datatracker.ietf.org/doc/html/draft-ietf-uuidrev-rfc4122bis-00#section-5.7 UUID Version 7
  *
  * @psalm-immutable
  */

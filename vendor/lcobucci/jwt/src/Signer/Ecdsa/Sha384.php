@@ -19,13 +19,8 @@ final class Sha384 extends Ecdsa
         return OPENSSL_ALGO_SHA384;
     }
 
-    public function pointLength(): int
+    public function keyLength(): int
     {
         return 96;
-    }
-
-    public function expectedKeyLength(): int
-    {
-        return 384;
     }
 }
