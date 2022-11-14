@@ -73,7 +73,7 @@ Route::group([
         ->name('selection.device.records');
     $router->get('/selection/device/categories', [DeviceCategoryController::class, 'selectList'])
         ->name('selection.device.categories');
-    $router->get('/device/print/tag', [DevicePrintController::class, 'tag'])
+    $router->post('/device/print/tag', [DevicePrintController::class, 'tag'])
         ->name('device.print.tag');
     $router->get('/device/print/list', [DevicePrintController::class, 'list'])
         ->name('device.print.list');

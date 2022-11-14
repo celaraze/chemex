@@ -2,48 +2,37 @@
 
 namespace App\Admin\Actions\Grid\ToolAction;
 
+use App\Admin\Forms\DeviceRecordTagPrintForm as DeviceRecordTagPrintForm;
 use Dcat\Admin\Grid\BatchAction;
+use Dcat\Admin\Widgets\Modal;
 
 class DevicePrintTagAction extends BatchAction
 {
-    protected $title = '打印标签';
-
     /**
-     * Handle the action request.
-     *
-     * @return \Dcat\Admin\Actions\Response|void
+     * 渲染模态框.
      */
-    public function handle()
+    public function render()
     {
-        $keys = $this->getkey();
-        $url = admin_route("device.print.tag", ["ids" => implode("-", $keys)]);
-        if (count($keys) > 0) {
-            return $this->response()->script("window.open('{$url}')");
-        }
+        $modalTitle = admin_trans_label('Tag Print Mode');
+        $buttonTitle = admin_trans_label('Tag Print');
+
+        $form = DeviceRecordTagPrintForm::make();//->payload(['id' => $this->getSelectedKeysScript()]);
+
+        return Modal::make()
+            ->lg()
+            ->title($modalTitle)
+            ->body($form)
+            ->onLoad($this->getModalScript())
+            ->button("<a class='btn btn-primary' style='color: white;'><i class='feather icon-tag'></i>&nbsp;$buttonTitle</a>");
     }
 
-    public function actionScript(): string
+    protected function getModalScript()
     {
-        $warning = "请选择打印的设备！";
+        // 弹窗显示后往隐藏的id表单中写入批量选中的行ID
         return <<<JS
-function (data, target, action) {
- var key = {$this->getSelectedKeysScript()}
- if (key.length === 0) {
-     Dcat.warning('{$warning}');
-     return false;
- }
- // 设置主键为复选框选中的行ID数组
- action.options.key = key;
-}
-JS;
-    }
-
-    protected function html(): string
-    {
-        return <<<HTML
-<a {$this->formatHtmlAttributes()}><button class="btn btn-primary btn-mini">{$this->title()}</button></a>
-
-
-HTML;
+        // 获取选中的ID数组
+        var key = {$this->getSelectedKeysScript()};
+        $('#check-Device-ids').val(key);
+        JS;
     }
 }
