@@ -1,22 +1,9 @@
 <?php
 namespace App\Admin\Forms;
 
-use App\Models\CustomColumn;
-use App\Models\DeviceCategory;
-use App\Models\DeviceRecord;
-use App\Models\DeviceTrack;
-use App\Models\ImportLog;
-use App\Models\ImportLogDetail;
-use App\Models\User;
-use App\Models\VendorRecord;
-use Box\Spout\Common\Exception\IOException;
-use Box\Spout\Common\Exception\UnsupportedTypeException;
-use Dcat\Admin\Admin;
-use Dcat\Admin\Http\JsonResponse;
 use Dcat\Admin\Widgets\Form;
 use Dcat\Admin\Traits\LazyWidget;
 use Dcat\Admin\Contracts\LazyRenderable;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeviceRecordTagPrintForm extends Form implements LazyRenderable
 {
