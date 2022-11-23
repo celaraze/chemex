@@ -41,7 +41,9 @@ return [
         'Deleted' => '回收站',
         'Track Delete' => '解除归属',
         'Track Delete Confirm' => '确认解除与此用户的关联？',
-        'No User' => '闲置'
+        'No User' => '闲置',
+        'Tag Print' => '打印标签',
+        'Tag Print Mode' => '标签打印模式'
     ],
     'fields' => [
         'asset_number_qrcode' => '二维码',

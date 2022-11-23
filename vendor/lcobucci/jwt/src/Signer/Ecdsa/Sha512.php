@@ -19,13 +19,8 @@ final class Sha512 extends Ecdsa
         return OPENSSL_ALGO_SHA512;
     }
 
-    public function pointLength(): int
+    public function keyLength(): int
     {
         return 132;
-    }
-
-    public function expectedKeyLength(): int
-    {
-        return 521;
     }
 }
