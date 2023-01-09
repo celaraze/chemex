@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\ViewException;
 use Laravel\Octane\Events\RequestReceived;
+use Laravel\Octane\Events\RequestTerminated;
 use Laravel\Octane\Events\TaskReceived;
 use Laravel\Octane\Events\TickReceived;
 use Monolog\Logger;
@@ -261,6 +262,7 @@ class IgnitionServiceProvider extends ServiceProvider
         // When using a sync queue this also reports the queued reports from previous exceptions.
         $queue->before(function () {
             $this->resetFlareAndLaravelIgnition();
+            app(Flare::class)->sendReportsImmediately();
         });
 
         // Send queued reports (and reset) after executing a queue job.
@@ -320,6 +322,10 @@ class IgnitionServiceProvider extends ServiceProvider
         });
 
         $this->app['events']->listen(TickReceived::class, function () {
+            $this->resetFlareAndLaravelIgnition();
+        });
+
+        $this->app['events']->listen(RequestTerminated::class, function () {
             $this->resetFlareAndLaravelIgnition();
         });
     }

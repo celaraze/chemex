@@ -65,9 +65,10 @@ class VersionSelector
      * @param string                                           $targetPackageVersion
      * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
      * @param IOInterface|null                                 $io                        If passed, warnings will be output there in case versions cannot be selected due to platform requirements
+     * @param callable(PackageInterface):bool|bool             $showWarnings
      * @return PackageInterface|false
      */
-    public function findBestCandidate(string $packageName, ?string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null)
+    public function findBestCandidate(string $packageName, ?string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null, $showWarnings = true)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -114,6 +115,8 @@ class VersionSelector
         if (count($this->platformConstraints) > 0 && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             /** @var array<string, true> $alreadyWarnedNames */
             $alreadyWarnedNames = [];
+            /** @var array<string, true> $alreadySeenNames */
+            $alreadySeenNames = [];
 
             foreach ($candidates as $pkg) {
                 $reqs = $pkg->getRequires();
@@ -137,14 +140,16 @@ class VersionSelector
                         $reason = 'is missing from your platform';
                     }
 
-                    if ($io !== null) {
-                        $isFirst = !isset($alreadyWarnedNames[$pkg->getName()]);
+                    $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
+                    $alreadySeenNames[$pkg->getName()] = true;
+                    if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                        $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName()]);
                         $alreadyWarnedNames[$pkg->getName()] = true;
-                        $latest = $isFirst ? "'s latest version" : '';
+                        $latest = $isLatestVersion ? "'s latest version" : '';
                         $io->writeError(
                             '<warning>Cannot use '.$pkg->getPrettyName().$latest.' '.$pkg->getPrettyVersion().' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$reason.'.</>',
                             true,
-                            $isFirst ? IOInterface::NORMAL : IOInterface::VERBOSE
+                            $isFirstWarning ? IOInterface::NORMAL : IOInterface::VERBOSE
                         );
                     }
 
@@ -205,7 +210,7 @@ class VersionSelector
         $extra = $loader->getBranchAlias($dumper->dump($package));
         if ($extra && $extra !== VersionParser::DEFAULT_BRANCH_ALIAS) {
             $extra = Preg::replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
-            if ($count) {
+            if ($count > 0) {
                 $extra = str_replace('.9999999', '.0', $extra);
 
                 return $this->transformVersion($extra, $extra, 'dev');

@@ -32,9 +32,9 @@ class ValidatingArrayLoader implements LoaderInterface
     private $loader;
     /** @var VersionParser */
     private $versionParser;
-    /** @var string[] */
+    /** @var list<string> */
     private $errors;
-    /** @var string[] */
+    /** @var list<string> */
     private $warnings;
     /** @var mixed[] */
     private $config;
@@ -246,7 +246,6 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $unboundConstraint = new Constraint('=', '10000000-dev');
-        $stableConstraint = new Constraint('=', '1.0.0');
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
@@ -429,7 +428,7 @@ class ValidatingArrayLoader implements LoaderInterface
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getWarnings(): array
     {
@@ -437,7 +436,7 @@ class ValidatingArrayLoader implements LoaderInterface
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getErrors(): array
     {

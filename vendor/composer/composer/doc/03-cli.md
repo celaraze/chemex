@@ -107,6 +107,7 @@ resolution.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
+* **--download-only:** Download only, do not install packages.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
   generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
@@ -134,7 +135,7 @@ resolution.
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
 
-## update / u
+## update / u / upgrade
 
 In order to get the latest versions of the dependencies and to update the
 `composer.lock` file, you should use the `update` command. This command is also
@@ -310,6 +311,8 @@ After removing the requirements, the modified requirements will be
 uninstalled.
 
 ### Options
+
+* **--unused** Remove unused packages that are not a direct or indirect dependency (anymore)
 * **--dev:** Remove packages from `require-dev`.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -474,7 +477,7 @@ You can also search for more than one term by passing multiple arguments.
   for Packagist.org search results and other repositories may return more or less
   data.
 
-## show
+## show / info
 
 To list all of the available packages, you can use the `show` command.
 
@@ -630,7 +633,7 @@ get machine-readable output.
 
 * **--format (-f):** Lets you pick between text (default) or json output format.
 
-## depends (why)
+## depends / why
 
 The `depends` command tells you which other packages depend on a certain
 package. As with installation `require-dev` relationships are only considered
@@ -668,7 +671,7 @@ psr/log 1.1.4 Common interface for logging libraries
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
 
-## prohibits (why-not)
+## prohibits / why-not
 
 The `prohibits` command tells you which packages are blocking a given package
 from being installed. Specify a version constraint to verify whether upgrades
@@ -742,7 +745,7 @@ vendor/seld/jsonlint:
     M README.mdown
 ```
 
-## self-update (selfupdate)
+## self-update / selfupdate
 
 To update Composer itself to the latest version, run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
@@ -933,7 +936,7 @@ By default the command checks for the packages on packagist.org.
   does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--ask:** Ask the user to provide a target directory for the new project.
 
-## dump-autoload (dumpautoload)
+## dump-autoload / dumpautoload
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use `dump-autoload` to do that without having to
@@ -986,7 +989,7 @@ Lists the name, version and license of every package installed. Use
 * **--format:** Format of the output: text, json or summary (default: "text")
 * **--no-dev:** Remove dev dependencies from the output
 
-## run-script
+## run-script / run
 
 ### Options
 
@@ -1041,6 +1044,8 @@ This command is used to audit the packages you have installed
 for possible security issues. It checks for and
 lists security vulnerability advisories according to the
 [Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
+
+The audit command returns the amount of vulnerabilities found. `0` if successful, and up to `255` otherwise.
 
 ```shell
 php composer.phar audit

@@ -15,18 +15,18 @@ final class Tcp extends AbstractSection
                 'servers' => [
                     'server1' => [
                         'addr' => '127.0.0.1:7778',
-                        'delimiter' => '\r\n',
-                        'read_buf_size' => 1
+//                        'delimiter' => '\r\n',
+//                        'read_buf_size' => 1
                     ],
-                    'server2' => [
-                        'addr' => '127.0.0.1:8811',
-                        'read_buf_size' => 10
-                    ],
-                    'server3' => [
-                        'addr' => '127.0.0.1:8812',
-                        'delimiter' => '\r\n',
-                        'read_buf_size' => 1
-                    ]
+//                    'server2' => [
+//                        'addr' => '127.0.0.1:8811',
+//                        'read_buf_size' => 10
+//                    ],
+//                    'server3' => [
+//                        'addr' => '127.0.0.1:8812',
+//                        'delimiter' => '\r\n',
+//                        'read_buf_size' => 1
+//                    ]
                 ],
                 'pool' => [
                     'command' => '',

@@ -33,6 +33,8 @@ use JetBrains\PhpStorm\Immutable;
 #[Immutable]
 final class Request
 {
+    public const PARSED_BODY_ATTRIBUTE_NAME = 'rr_parsed_body';
+
     /**
      * @var string
      */

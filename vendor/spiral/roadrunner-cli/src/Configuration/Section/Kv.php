@@ -18,14 +18,14 @@ final class Kv extends AbstractSection
                         'interval' => 60
                     ]
                 ],
-                'redis' => [
-                    'driver' => 'redis',
-                    'config' => [
-                        'addrs' => [
-                            'localhost:6379'
-                        ]
-                    ]
-                ]
+//                'redis' => [
+//                    'driver' => 'redis',
+//                    'config' => [
+//                        'addrs' => [
+//                            'localhost:6379'
+//                        ]
+//                    ]
+//                ]
             ]
         ];
     }

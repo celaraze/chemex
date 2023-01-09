@@ -12,7 +12,7 @@ final class Metrics extends AbstractSection
     {
         return [
             self::NAME => [
-                'address' => 'localhost:2112'
+                'address' => '127.0.0.1:2112'
             ]
         ];
     }

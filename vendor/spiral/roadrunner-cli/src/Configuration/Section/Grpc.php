@@ -12,31 +12,31 @@ final class Grpc extends AbstractSection
     {
         return [
             self::NAME => [
-                'listen' => 'tcp://localhost:9001',
+                'listen' => 'tcp://127.0.0.1:9001',
                 'proto' => [
                     'first.proto',
                     'second.proto'
                 ],
-                'tls' => [
-                    'key' => '',
-                    'cert' => '',
-                    'root_ca' => '',
-                    'client_auth_type' => 'no_client_certs'
-                ],
-                'max_send_msg_size' => 50,
-                'max_recv_msg_size' => 50,
-                'max_connection_idle' => '0s',
-                'max_connection_age' => '0s',
-                'max_connection_age_grace' => '0s8h',
-                'max_concurrent_streams' => 10,
-                'ping_time' => '1s',
-                'timeout' => '200s',
-                'pool' => [
-                    'num_workers' => 2,
-                    'max_jobs' => 0,
-                    'allocate_timeout' => '60s',
-                    'destroy_timeout' => 60
-                ]
+//                'tls' => [
+//                    'key' => '',
+//                    'cert' => '',
+//                    'root_ca' => '',
+//                    'client_auth_type' => 'no_client_certs'
+//                ],
+//                'max_send_msg_size' => 50,
+//                'max_recv_msg_size' => 50,
+//                'max_connection_idle' => '0s',
+//                'max_connection_age' => '0s',
+//                'max_connection_age_grace' => '0s8h',
+//                'max_concurrent_streams' => 10,
+//                'ping_time' => '1s',
+//                'timeout' => '200s',
+//                'pool' => [
+//                    'num_workers' => 2,
+//                    'max_jobs' => 0,
+//                    'allocate_timeout' => '60s',
+//                    'destroy_timeout' => 60
+//                ]
             ]
         ];
     }

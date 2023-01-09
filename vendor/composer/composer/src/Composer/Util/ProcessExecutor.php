@@ -415,6 +415,8 @@ class ProcessExecutor
 
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
         $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', static function ($m): string {
+            assert(is_string($m['user']));
+
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
             if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                 return '://***:***@';
@@ -458,7 +460,7 @@ class ProcessExecutor
         // In addition to whitespace, commas need quoting to preserve paths
         $quote = strpbrk($argument, " \t,") !== false;
         $argument = Preg::replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
-        $meta = $dquotes || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
+        $meta = $dquotes > 0 || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
 
         if (!$meta && !$quote) {
             $quote = strpbrk($argument, '^&|<>()') !== false;

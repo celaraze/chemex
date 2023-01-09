@@ -11,6 +11,7 @@
 
 namespace Psy\CodeCleaner;
 
+use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\Declare_;
@@ -42,6 +43,8 @@ class StrictTypesPass extends CodeCleanerPass
      * @throws FatalErrorException if an invalid `strict_types` declaration is found
      *
      * @param array $nodes
+     *
+     * @return Node[]|null Array of nodes
      */
     public function beforeTraverse(array $nodes)
     {

@@ -80,6 +80,8 @@ use const T_WHILE;
 use const T_YIELD;
 use const T_YIELD_FROM;
 use function array_key_exists;
+use function array_keys;
+use function array_merge;
 use function array_pop;
 use function array_unique;
 use function constant;
@@ -89,6 +91,9 @@ use function explode;
 use function file_get_contents;
 use function htmlspecialchars;
 use function is_string;
+use function ksort;
+use function range;
+use function sort;
 use function sprintf;
 use function str_replace;
 use function substr;
@@ -279,19 +284,19 @@ final class File extends Renderer
             $buffer .= $this->renderItemTemplate(
                 $template,
                 [
-                    'name'                 => $this->abbreviateClassName($name),
-                    'numClasses'           => $numClasses,
-                    'numTestedClasses'     => $numTestedClasses,
-                    'numMethods'           => $numMethods,
-                    'numTestedMethods'     => $numTestedMethods,
-                    'linesExecutedPercent' => Percentage::fromFractionAndTotal(
+                    'name'                            => $this->abbreviateClassName($name),
+                    'numClasses'                      => $numClasses,
+                    'numTestedClasses'                => $numTestedClasses,
+                    'numMethods'                      => $numMethods,
+                    'numTestedMethods'                => $numTestedMethods,
+                    'linesExecutedPercent'            => Percentage::fromFractionAndTotal(
                         $item['executedLines'],
                         $item['executableLines'],
                     )->asFloat(),
-                    'linesExecutedPercentAsString' => $linesExecutedPercentAsString,
-                    'numExecutedLines'             => $item['executedLines'],
-                    'numExecutableLines'           => $item['executableLines'],
-                    'branchesExecutedPercent'      => Percentage::fromFractionAndTotal(
+                    'linesExecutedPercentAsString'    => $linesExecutedPercentAsString,
+                    'numExecutedLines'                => $item['executedLines'],
+                    'numExecutableLines'              => $item['executableLines'],
+                    'branchesExecutedPercent'         => Percentage::fromFractionAndTotal(
                         $item['executedBranches'],
                         $item['executableBranches'],
                     )->asFloat(),
@@ -302,14 +307,14 @@ final class File extends Renderer
                         $item['executedPaths'],
                         $item['executablePaths']
                     )->asFloat(),
-                    'pathsExecutedPercentAsString' => $pathsExecutedPercentAsString,
-                    'numExecutedPaths'             => $item['executedPaths'],
-                    'numExecutablePaths'           => $item['executablePaths'],
-                    'testedMethodsPercent'         => $testedMethodsPercentage->asFloat(),
-                    'testedMethodsPercentAsString' => $testedMethodsPercentage->asString(),
-                    'testedClassesPercent'         => $testedClassesPercentage->asFloat(),
-                    'testedClassesPercentAsString' => $testedClassesPercentage->asString(),
-                    'crap'                         => $item['crap'],
+                    'pathsExecutedPercentAsString'    => $pathsExecutedPercentAsString,
+                    'numExecutedPaths'                => $item['executedPaths'],
+                    'numExecutablePaths'              => $item['executablePaths'],
+                    'testedMethodsPercent'            => $testedMethodsPercentage->asFloat(),
+                    'testedMethodsPercentAsString'    => $testedMethodsPercentage->asString(),
+                    'testedClassesPercent'            => $testedClassesPercentage->asFloat(),
+                    'testedClassesPercentAsString'    => $testedClassesPercentage->asString(),
+                    'crap'                            => $item['crap'],
                 ]
             );
 
@@ -379,7 +384,7 @@ final class File extends Renderer
         return $this->renderItemTemplate(
             $template,
             [
-                'name' => sprintf(
+                'name'                            => sprintf(
                     '%s<a href="#%d"><abbr title="%s">%s</abbr></a>',
                     $indent,
                     $item['startLine'],

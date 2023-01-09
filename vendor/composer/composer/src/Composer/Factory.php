@@ -219,9 +219,7 @@ class Factory
         if ($composerAuthEnv = Platform::getEnv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv);
             if (null === $authData) {
-                if ($io instanceof IOInterface) {
-                    $io->writeError('<error>COMPOSER_AUTH environment variable is malformed, should be a valid JSON object</error>');
-                }
+                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
             } else {
                 if ($io instanceof IOInterface) {
                     $io->writeError('Loading auth config from COMPOSER_AUTH', true, IOInterface::DEBUG);
@@ -338,7 +336,7 @@ class Factory
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
                 $config->merge(['config' => $localAuthFile->read()], $localAuthFile->getPath());
-                $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
+                $config->setLocalAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
 

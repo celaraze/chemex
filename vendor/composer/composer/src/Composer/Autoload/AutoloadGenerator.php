@@ -1020,9 +1020,16 @@ REGISTER_LOADER;
 
         if ($useIncludeFiles) {
             $file .= <<<INCLUDE_FILES
-        \$includeFiles = \Composer\Autoload\ComposerStaticInit$suffix::\$files;
-        foreach (\$includeFiles as \$fileIdentifier => \$file) {
-            composerRequire$suffix(\$fileIdentifier, \$file);
+        \$filesToLoad = \Composer\Autoload\ComposerStaticInit$suffix::\$files;
+        \$requireFile = static function (\$fileIdentifier, \$file) {
+            if (empty(\$GLOBALS['__composer_autoload_files'][\$fileIdentifier])) {
+                \$GLOBALS['__composer_autoload_files'][\$fileIdentifier] = true;
+
+                require \$file;
+            }
+        };
+        foreach (\$filesToLoad as \$fileIdentifier => \$file) {
+            (\$requireFile)(\$fileIdentifier, \$file);
         }
 
 
@@ -1036,27 +1043,6 @@ INCLUDE_FILES;
 METHOD_FOOTER;
 
         $file .= $targetDirLoader;
-
-        if ($useIncludeFiles) {
-            return $file . <<<FOOTER
-}
-
-/**
- * @param string \$fileIdentifier
- * @param string \$file
- * @return void
- */
-function composerRequire$suffix(\$fileIdentifier, \$file)
-{
-    if (empty(\$GLOBALS['__composer_autoload_files'][\$fileIdentifier])) {
-        \$GLOBALS['__composer_autoload_files'][\$fileIdentifier] = true;
-
-        require \$file;
-    }
-}
-
-FOOTER;
-        }
 
         return $file . <<<FOOTER
 }

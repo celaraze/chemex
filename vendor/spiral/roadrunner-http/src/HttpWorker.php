@@ -157,6 +157,8 @@ class HttpWorker implements HttpWorkerInterface
         $request->cookies = (array)($context['cookies'] ?? []);
         $request->uploads = (array)($context['uploads'] ?? []);
         $request->parsed = (bool)$context['parsed'];
+
+        $request->attributes[Request::PARSED_BODY_ATTRIBUTE_NAME] = $request->parsed;
     }
 
     /**

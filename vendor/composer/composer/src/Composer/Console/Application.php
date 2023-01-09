@@ -85,10 +85,12 @@ class Application extends BaseApplication
     /** @var SignalHandler */
     private $signalHandler;
 
-    public function __construct()
+    public function __construct(string $name = 'Composer', string $version = '')
     {
         static $shutdownRegistered = false;
-
+        if ($version === '') {
+            $version = Composer::getVersion();
+        }
         if (function_exists('ini_set') && extension_loaded('xdebug')) {
             ini_set('xdebug.show_exception_trace', '0');
             ini_set('xdebug.scream', '0');
@@ -122,7 +124,7 @@ class Application extends BaseApplication
 
         $this->initialWorkingDirectory = getcwd();
 
-        parent::__construct('Composer', Composer::getVersion());
+        parent::__construct($name, $version);
     }
 
     public function __destruct()
@@ -401,17 +403,7 @@ class Application extends BaseApplication
                     $this->renderThrowable($e, $output);
                 }
 
-                $exitCode = $e->getCode();
-                if (is_numeric($exitCode)) {
-                    $exitCode = (int) $exitCode;
-                    if (0 === $exitCode) {
-                        $exitCode = 1;
-                    }
-                } else {
-                    $exitCode = 1;
-                }
-
-                return $exitCode;
+                return max(1, $e->getCode());
             }
 
             throw $e;
@@ -449,12 +441,12 @@ class Application extends BaseApplication
             if (null !== $composer && function_exists('disk_free_space')) {
                 $config = $composer->getConfig();
 
-                $minSpaceFree = 1024 * 1024;
+                $minSpaceFree = 100 * 1024 * 1024;
                 if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
                     || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
                     || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
-                    $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
+                    $io->writeError('<error>The disk hosting '.$dir.' has less than 100MiB of free space, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }
             }
         } catch (\Exception $e) {

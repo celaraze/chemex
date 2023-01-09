@@ -24,7 +24,7 @@ class Generator
     {
         $this->collectSections($plugins->getPlugins());
 
-        return $this->getHeaderComment() . PHP_EOL . Yaml::dump($this->getContent(), 10);
+        return Yaml::dump($this->getContent(), 10);
     }
 
     protected function getContent(): array
@@ -56,24 +56,5 @@ class Generator
         foreach ($section->getRequired() as $required) {
             $this->fromSection(new $required());
         }
-    }
-
-    protected function getHeaderComment(): string
-    {
-        $comment = [
-            '########################################################################################',
-            '#                       THIS IS SAMPLE OF THE CONFIGURATION                            #',
-            '#           IT\'S NOT A DEFAULT CONFIGURATION, IT\'S JUST A SIMPLE SAMPLE                #',
-            '#       MORE DOCS CAN BE FOUND HERE: <https://roadrunner.dev/docs/intro-config>        #',
-            '########################################################################################',
-            '',
-            '# Hint: RR will replace any config options using reference to environment variables,',
-            '# eg.: `option_key: ${ENVIRONMENT_VARIABLE_NAME}`.',
-            '',
-            '# Important: TCP port numbers for each plugin (rpc, http, etc) must be unique!',
-            ''
-        ];
-
-        return \implode(PHP_EOL, $comment);
     }
 }

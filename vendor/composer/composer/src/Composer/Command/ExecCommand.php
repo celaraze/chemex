@@ -51,6 +51,30 @@ EOT
         ;
     }
 
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $binaries = $this->getBinaries(false);
+        if (count($binaries) === 0) {
+            return;
+        }
+
+        if ($input->getArgument('binary') !== null || $input->getOption('list')) {
+            return;
+        }
+
+        $io = $this->getIO();
+        /** @var int $binary */
+        $binary = $io->select(
+            'Binary to run: ',
+            $binaries,
+            '',
+            1,
+            'Invalid binary name "%s"'
+        );
+
+        $input->setArgument('binary', $binaries[$binary]);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->requireComposer();
@@ -99,7 +123,7 @@ EOT
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     private function getBinaries(bool $forDisplay): array
     {

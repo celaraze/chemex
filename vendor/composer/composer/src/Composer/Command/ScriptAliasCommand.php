@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Pcre\Preg;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -32,6 +33,8 @@ class ScriptAliasCommand extends BaseCommand
         $this->script = $script;
         $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json';
 
+        $this->ignoreValidationErrors();
+
         parent::__construct();
     }
 
@@ -51,7 +54,7 @@ The <info>run-script</info> command runs scripts defined in composer.json:
 
 <info>php composer.phar run-script post-update-cmd</info>
 
-Read more at https://getcomposer.org/doc/03-cli.md#run-script
+Read more at https://getcomposer.org/doc/03-cli.md#run-script-run
 EOT
             )
         ;
@@ -63,6 +66,11 @@ EOT
 
         $args = $input->getArguments();
 
-        return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
+        // TODO remove for Symfony 6+ as it is then in the interface
+        if (!method_exists($input, '__toString')) { // @phpstan-ignore-line
+            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+        }
+
+        return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args'], ['script-alias-input' => Preg::replace('{^\S+ ?}', '', $input->__toString(), 1)]);
     }
 }

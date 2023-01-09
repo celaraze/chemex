@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 use Spiral\RoadRunner\Console\DownloadProtocBinaryCommand;
 use Spiral\RoadRunner\Console\GetBinaryCommand;
+use Spiral\RoadRunner\Console\MakeConfigCommand;
 use Spiral\RoadRunner\Console\VersionsCommand;
 use Spiral\RoadRunner\Version;
 
@@ -70,5 +71,6 @@ $app = new Symfony\Component\Console\Application('RoadRunner CLI', Version::curr
 $app->add(new GetBinaryCommand());
 $app->add(new VersionsCommand());
 $app->add(new DownloadProtocBinaryCommand());
+$app->add(new MakeConfigCommand());
 
 $app->run();

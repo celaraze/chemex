@@ -55,6 +55,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Jérémy Romey <jeremyFreeAgent>
  * @author Mihai Plasoianu <mihai@plasoianu.de>
+ *
+ * @phpstan-import-type AutoloadRules from PackageInterface
+ * @phpstan-type JsonStructure array<string, null|string|array<string|null>|AutoloadRules>
  */
 class ShowCommand extends BaseCommand
 {
@@ -107,7 +110,7 @@ class ShowCommand extends BaseCommand
 The show command displays detailed information about a package, or
 lists all packages available.
 
-Read more at https://getcomposer.org/doc/03-cli.md#show
+Read more at https://getcomposer.org/doc/03-cli.md#show-info
 EOT
             )
         ;
@@ -615,7 +618,11 @@ EOT
                         $io->writeError('Everything up to date');
                     }
                 } else {
-                    $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                    if ($writeLatest && \count($packages) === 0) {
+                        $io->writeError('All your direct dependencies are up to date');
+                    } else {
+                        $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                    }
                 }
 
                 if ($showAllTypes) {
@@ -816,7 +823,7 @@ EOT
             }
         }
 
-        if ($package->getAutoload()) {
+        if (\count($package->getAutoload()) > 0) {
             $io->write("\n<info>autoload</info>");
             $autoloadConfig = $package->getAutoload();
             foreach ($autoloadConfig as $type => $autoloads) {
@@ -951,9 +958,9 @@ EOT
         }
 
         if ($installedRepo->hasPackage($package)) {
-            $json['path'] = realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package));
-            if ($json['path'] === false) {
-                unset($json['path']);
+            $path = realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package));
+            if ($path !== false) {
+                $json['path'] = $path;
             }
         }
 
@@ -981,9 +988,9 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
+     * @param JsonStructure $json
      * @param array<string, string> $versions
-     * @return array<string, string|string[]|null>
+     * @return JsonStructure
      */
     private function appendVersions(array $json, array $versions): array
     {
@@ -995,8 +1002,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLicenses(array $json, CompletePackageInterface $package): array
     {
@@ -1022,12 +1029,12 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendAutoload(array $json, CompletePackageInterface $package): array
     {
-        if ($package->getAutoload()) {
+        if (\count($package->getAutoload()) > 0) {
             $autoload = [];
 
             foreach ($package->getAutoload() as $type => $autoloads) {
@@ -1055,8 +1062,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLinks(array $json, CompletePackageInterface $package): array
     {
@@ -1068,8 +1075,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLink(array $json, CompletePackageInterface $package, string $linkType): array
     {
@@ -1362,7 +1369,7 @@ EOT
 
         if ($targetVersion === null) {
             if ($majorOnly && Preg::isMatch('{^(?P<zero_major>(?:0\.)+)?(?P<first_meaningful>\d+)\.}', $package->getVersion(), $match)) {
-                $targetVersion = '>='.$match['zero_major'].($match['first_meaningful'] + 1).',<9999999-dev';
+                $targetVersion = '>='.$match['zero_major'].(((int) $match['first_meaningful']) + 1).',<9999999-dev';
             }
 
             if ($minorOnly) {
@@ -1379,7 +1386,17 @@ EOT
             }
         }
 
-        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter);
+        if ($this->getIO()->isVerbose()) {
+            $showWarnings = true;
+        } else {
+            $showWarnings = static function (PackageInterface $candidate) use ($package): bool {
+                if (str_starts_with($candidate->getVersion(), 'dev-') || str_starts_with($package->getVersion(), 'dev-')) {
+                    return false;
+                }
+                return version_compare($candidate->getVersion(), $package->getVersion(), '<=');
+            };
+        }
+        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter, 0, $this->getIO(), $showWarnings);
         while ($candidate instanceof AliasPackage) {
             $candidate = $candidate->getAliasOf();
         }
