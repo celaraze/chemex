@@ -37,6 +37,7 @@ use Illuminate\Http\Client\Factory;
  * @method static \Illuminate\Http\Client\PendingRequest withDigestAuth(string $username, string $password)
  * @method static \Illuminate\Http\Client\PendingRequest withToken(string $token, string $type = 'Bearer')
  * @method static \Illuminate\Http\Client\PendingRequest withUserAgent(string $userAgent)
+ * @method static \Illuminate\Http\Client\PendingRequest withUrlParameters(array $parameters = [])
  * @method static \Illuminate\Http\Client\PendingRequest withCookies(array $cookies, string $domain)
  * @method static \Illuminate\Http\Client\PendingRequest maxRedirects(int $max)
  * @method static \Illuminate\Http\Client\PendingRequest withoutRedirecting()
@@ -76,8 +77,8 @@ use Illuminate\Http\Client\Factory;
  * @method static \Illuminate\Http\Client\PendingRequest setClient(\GuzzleHttp\Client $client)
  * @method static \Illuminate\Http\Client\PendingRequest setHandler(callable $handler)
  * @method static array getOptions()
- * @method static \Illuminate\Http\Client\PendingRequest|mixed when((\Closure(\Illuminate\Http\Client\PendingRequest): mixed)|mixed $value = null, (callable(\Illuminate\Http\Client\PendingRequest, mixed): mixed)|null $callback = null, (callable(\Illuminate\Http\Client\PendingRequest, mixed): mixed)|null $default = null)
- * @method static \Illuminate\Http\Client\PendingRequest|mixed unless((\Closure(\Illuminate\Http\Client\PendingRequest): mixed)|mixed $value = null, (callable(\Illuminate\Http\Client\PendingRequest, mixed): mixed)|null $callback = null, (callable(\Illuminate\Http\Client\PendingRequest, mixed): mixed)|null $default = null)
+ * @method static \Illuminate\Http\Client\PendingRequest|mixed when(\Closure|mixed|null $value = null, callable|null $callback = null, callable|null $default = null)
+ * @method static \Illuminate\Http\Client\PendingRequest|mixed unless(\Closure|mixed|null $value = null, callable|null $callback = null, callable|null $default = null)
  *
  * @see \Illuminate\Http\Client\Factory
  */

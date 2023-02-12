@@ -207,6 +207,11 @@ class Validator implements ValidatorContract
         'Declined',
         'DeclinedIf',
         'Filled',
+        'Missing',
+        'MissingIf',
+        'MissingUnless',
+        'MissingWith',
+        'MissingWithAll',
         'Present',
         'Required',
         'RequiredIf',
@@ -274,7 +279,7 @@ class Validator implements ValidatorContract
      *
      * @var string[]
      */
-    protected $numericRules = ['Numeric', 'Integer'];
+    protected $numericRules = ['Numeric', 'Integer', 'Decimal'];
 
     /**
      * The current placeholder for dots in rule keys.

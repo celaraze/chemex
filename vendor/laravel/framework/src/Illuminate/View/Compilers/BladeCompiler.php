@@ -31,6 +31,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
         Concerns\CompilesLoops,
         Concerns\CompilesRawPhp,
         Concerns\CompilesStacks,
+        Concerns\CompilesStyles,
         Concerns\CompilesTranslations,
         ReflectsClosures;
 
@@ -499,16 +500,112 @@ class BladeCompiler extends Compiler implements CompilerInterface
     /**
      * Compile Blade statements that start with "@".
      *
-     * @param  string  $value
+     * @param  string  $template
      * @return string
      */
-    protected function compileStatements($value)
+    protected function compileStatements($template)
     {
-        return preg_replace_callback(
-            '/\B@(@?\w+(?:::\w+)?)([ \t]*)(\( ( (?>[^()]+) | (?3) )* \))?/x', function ($match) {
-                return $this->compileStatement($match);
-            }, $value
-        );
+        preg_match_all('/\B@(@?\w+(?:::\w+)?)([ \t]*)(\( ( [\S\s]*? ) \))?/x', $template, $matches);
+
+        $offset = 0;
+
+        for ($i = 0; isset($matches[0][$i]); $i++) {
+            $match = [
+                $matches[0][$i],
+                $matches[1][$i],
+                $matches[2][$i],
+                $matches[3][$i] ?: null,
+                $matches[4][$i] ?: null,
+            ];
+
+            // Here we check to see if we have properly found the closing parenthesis by
+            // regex pattern or not, and will recursively continue on to the next ")"
+            // then check again until the tokenizer confirms we find the right one.
+            while (isset($match[4]) &&
+                   Str::endsWith($match[0], ')') &&
+                   ! $this->hasEvenNumberOfParentheses($match[0])) {
+                if (($after = Str::after($template, $match[0])) === $template) {
+                    break;
+                }
+
+                $rest = Str::before($after, ')');
+
+                if (isset($matches[0][$i + 1]) && Str::contains($rest.')', $matches[0][$i + 1])) {
+                    unset($matches[0][$i + 1]);
+                    $i++;
+                }
+
+                $match[0] = $match[0].$rest.')';
+                $match[3] = $match[3].$rest.')';
+                $match[4] = $match[4].$rest;
+            }
+
+            [$template, $offset] = $this->replaceFirstStatement(
+                $match[0],
+                $this->compileStatement($match),
+                $template,
+                $offset
+            );
+        }
+
+        return $template;
+    }
+
+    /**
+     * Replace the first match for a statement compilation operation.
+     *
+     * @param  string  $search
+     * @param  string  $replace
+     * @param  string  $subject
+     * @param  int  $offset
+     * @return array
+     */
+    protected function replaceFirstStatement($search, $replace, $subject, $offset)
+    {
+        $search = (string) $search;
+
+        if ($search === '') {
+            return $subject;
+        }
+
+        $position = strpos($subject, $search, $offset);
+
+        if ($position !== false) {
+            return [
+                substr_replace($subject, $replace, $position, strlen($search)),
+                $position + strlen($replace),
+            ];
+        }
+
+        return [$subject, 0];
+    }
+
+    /**
+     * Determine if the given expression has the same number of opening and closing parentheses.
+     *
+     * @param  string  $expression
+     * @return bool
+     */
+    protected function hasEvenNumberOfParentheses(string $expression)
+    {
+        $tokens = token_get_all('<?php '.$expression);
+
+        if (Arr::last($tokens) !== ')') {
+            return false;
+        }
+
+        $opening = 0;
+        $closing = 0;
+
+        foreach ($tokens as $token) {
+            if ($token == ')') {
+                $closing++;
+            } elseif ($token == '(') {
+                $opening++;
+            }
+        }
+
+        return $opening === $closing;
     }
 
     /**
@@ -624,7 +721,7 @@ class BladeCompiler extends Compiler implements CompilerInterface
      * Check the result of a condition.
      *
      * @param  string  $name
-     * @param  array  $parameters
+     * @param  array  ...$parameters
      * @return bool
      */
     public function check($name, ...$parameters)
