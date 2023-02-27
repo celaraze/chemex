@@ -35,7 +35,7 @@ class DeviceTrackUpdateDeleteForm extends Form implements LazyRenderable
         }
 
         // 设备追踪
-        $device_track = DeviceTrack::where('id', $id)->first();
+        $device_track = DeviceTrack::where('device_id', $id)->first();
 
         $device_track->return_time = $return_time;
         $device_track->return_description = $return_description;
