@@ -18,7 +18,7 @@ interface BinderInterface
      * every method call), function array or Closure (executed every call). Only object resolvers
      * supported by this method.
      *
-     * @psalm-param TResolver $resolver
+     * @param TResolver $resolver
      */
     public function bind(string $alias, string|array|callable|object $resolver): void;
 
@@ -41,17 +41,22 @@ interface BinderInterface
     /**
      * Bind class or class interface to the injector source (InjectorInterface).
      *
-     * @template TClass
+     * @template TClass of object
      *
      * @param class-string<TClass> $class
      * @param class-string<InjectorInterface<TClass>> $injector
      */
     public function bindInjector(string $class, string $injector): void;
 
+    /**
+     * @param class-string $class
+     */
     public function removeInjector(string $class): void;
 
     /**
      * Check if class points to injector.
+     *
+     * @param class-string $class
      */
     public function hasInjector(string $class): bool;
 }

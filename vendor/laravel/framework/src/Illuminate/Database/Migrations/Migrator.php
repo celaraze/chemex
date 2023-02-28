@@ -67,6 +67,13 @@ class Migrator
     protected $paths = [];
 
     /**
+     * The paths that have already been required.
+     *
+     * @var array<string, \Illuminate\Database\Migrations\Migration|null>
+     */
+    protected static $requiredPathCache = [];
+
+    /**
      * The output interface implementation.
      *
      * @var \Symfony\Component\Console\Output\OutputInterface
@@ -511,9 +518,15 @@ class Migrator
             return new $class;
         }
 
-        $migration = $this->files->getRequire($path);
+        $migration = static::$requiredPathCache[$path] ??= $this->files->getRequire($path);
 
-        return is_object($migration) ? $migration : new $class;
+        if (is_object($migration)) {
+            return method_exists($migration, '__construct')
+                    ? $this->files->getRequire($path)
+                    : clone $migration;
+        }
+
+        return new $class;
     }
 
     /**
