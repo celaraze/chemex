@@ -75,12 +75,16 @@ class CheckRecordController extends AdminController
                 if (empty($check)) {
                     return admin_trans_label('Record None');
                 } else {
-                    $check_item = $check->check_item;
+                    $check_item = match ($check->check_item) {
+                        get_class(new \App\Models\DeviceRecord()) => 'device',
+                        get_class(new \App\Models\PartRecord()) => 'part',
+                        get_class(new \App\Models\SoftwareRecord()) => 'software',
+                    };
                     $item = Support::getItemRecordByClass($check_item, $item_id);
                     if (empty($item)) {
                         return admin_trans_label('Item None');
                     } else {
-                        return $item->name;
+                        return $item->asset_number;
                     }
                 }
             });
