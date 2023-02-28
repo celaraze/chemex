@@ -30,7 +30,7 @@
 `JetBrains` 提供优秀的IDE。
 
 <a href="https://www.jetbrains.com/?from=Chemex" target="_blank">
-<img src="https://tva1.sinaimg.cn/large/008eGmZEly1gov9g3tzrnj30u00wj0tn.jpg" width="150"/>
+<img src="https://lab.celaraze.com:9999/chemex/jetbrains.png" width="150"/>
 </a>
 
 [Laravel](https://laravel.com) ，优雅的 PHP Web 框架。
