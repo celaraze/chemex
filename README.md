@@ -15,13 +15,17 @@
 </p>
 
 <p align="center">
-    <img src="https://travis-ci.com/Celaraze/Chemex.svg?branch=gesha" />
+    <img src="https://travis-ci.com/Celaraze/Chemex.svg?branch=dev" />
     <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FCelaraze%2FChemex.svg?type=shield" />
 </p>
 
-<p align="center">
-    <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FCelaraze%2FChemex.svg?type=large" />
-</p>
+## 仓库托管
+
+Gitlab `https://jihulab.com/chemex`
+
+Gitee `https://gitee.com/celaraze/chemex`
+
+Github `https://github.com/celaraze/chemex`
 
 ## 鸣谢
 
@@ -41,7 +45,8 @@
 
 ## 简介
 
-咖啡壶（Chemex）是一个轻量的、现代设计风格的 ICT 资产管理系统。得益于 [Laravel](https://laravel.com/) 框架以及 [Dcat Admin](https://dcatadmin.com)
+咖啡壶（Chemex）是一个轻量的、现代设计风格的 ICT 资产管理系统。得益于 [Laravel](https://laravel.com/)
+框架以及 [Dcat Admin](https://dcatadmin.com)
 开发平台，使其具备了优雅、简洁的优秀体验。 咖啡壶（Chemex）
 是完全免费且开源的，任何人都可以无限制的修改代码以及部署服务，这对于很多想要对ICT资产做信息化管理的中小型企业来说，是一个很好的选择：低廉的成本换回的是高效的管理方案，同时又有健康的生态提供支持。
 
