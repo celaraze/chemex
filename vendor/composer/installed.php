@@ -3,7 +3,7 @@
         'name' => 'celaraze/chemex',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '9e81dd15a9d64f3e43112b1c1e1a25443f9a13bc',
+        'reference' => '90a2ed3c9893c70a959891ff76c35f1ff0e3c038',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'celaraze/chemex' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '9e81dd15a9d64f3e43112b1c1e1a25443f9a13bc',
+            'reference' => '90a2ed3c9893c70a959891ff76c35f1ff0e3c038',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
