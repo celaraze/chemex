@@ -440,6 +440,10 @@ class Connection
             return $this->params['serverVersion'];
         }
 
+        if (isset($this->params['primary']) && isset($this->params['primary']['serverVersion'])) {
+            return $this->params['primary']['serverVersion'];
+        }
+
         // If not connected, we need to connect now to determine the platform version.
         if ($this->_conn === null) {
             try {
@@ -1051,7 +1055,7 @@ class Connection
     }
 
     /**
-     * Executes an, optionally parametrized, SQL query.
+     * Executes an, optionally parameterized, SQL query.
      *
      * If the query is parametrized, a prepared statement is used.
      * If an SQLLogger is configured, the execution is logged.

@@ -35,6 +35,7 @@ class YourPackageServiceProvider extends PackageServiceProvider
             ->hasInstallCommand(function(InstallCommand $command) {
                 $command
                     ->publishConfigFile()
+                    ->publishAssets()
                     ->publishMigrations()
                     ->copyAndRegisterServiceProviderInApp()
                     ->askToStarRepoOnGitHub();
@@ -356,7 +357,7 @@ When your package is installed into an app, running this command...
 php artisan vendor:publish --tag=your-package-name-provider
 ```
 
-... will copy `/resources/stubs/{$nameOfYourServiceProvider}.php` in your package
+... will copy `/resources/stubs/{$nameOfYourServiceProvider}.php.stub` in your package
 to `app/Providers/{$nameOfYourServiceProvider}.php` in the app of the user.
 
 ### Registering commands
@@ -407,6 +408,7 @@ class YourPackageServiceProvider extends PackageServiceProvider
             ->hasInstallCommand(function(InstallCommand $command) {
                 $command
                     ->publishConfigFile()
+                    ->publishAssets()
                     ->publishMigrations()
                     ->askToRunMigrations()
                     ->copyAndRegisterServiceProviderInApp()
@@ -425,6 +427,7 @@ php artisan your-package-name:install
 Using the code above, that command will:
 
 - publish the config file
+- publish the assets
 - publish the migrations
 - copy the `/resources/stubs/MyProviderName.php.stub` from your package to `app/Providers/MyServiceProviderName.php`, and also register that
   provider in `config/app.php`
@@ -448,6 +451,7 @@ public function configurePackage(Package $package): void
                     $command->info('Hello, and welcome to my great new package!')
                 })
                 ->publishConfigFile()
+                ->publishAssets()
                 ->publishMigrations()
                ->askToRunMigrations()
                 ->copyAndRegisterServiceProviderInApp()

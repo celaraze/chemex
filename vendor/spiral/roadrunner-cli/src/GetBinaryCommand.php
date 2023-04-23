@@ -93,6 +93,13 @@ class GetBinaryCommand extends Command
             InputOption::VALUE_OPTIONAL,
             'Generate configuration with plugins in a selected preset.'
         );
+
+        $this->addOption(
+            'no-config',
+            null,
+            InputOption::VALUE_NONE,
+            'Do not generate configuration at all.'
+        );
     }
 
     /**
@@ -227,7 +234,7 @@ class GetBinaryCommand extends Command
             return false;
         }
 
-        if (! $io->confirm('Do you want create default ".rr.yaml" configuration file?', true)) {
+        if ($in->getOption('no-config') || ! $io->confirm('Do you want create default ".rr.yaml" configuration file?', true)) {
             return false;
         }
 

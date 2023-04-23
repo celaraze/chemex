@@ -7,7 +7,7 @@ namespace Spiral\RoadRunner\Console\Configuration\Section;
 final class Version extends AbstractSection
 {
     private const NAME = 'version';
-    private const CONFIG_VERSION = '2.7';
+    private const CONFIG_VERSION = '3';
 
     public function render(): array
     {

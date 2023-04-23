@@ -39,7 +39,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
 
     public function __construct()
     {
-        $schema = JsonFile::parseJson((string) file_get_contents(__DIR__.'/../../../res/composer-schema.json'));
+        $schema = JsonFile::parseJson((string) file_get_contents(JsonFile::COMPOSER_SCHEMA_PATH));
         /**
          * @var string $prop
          */
@@ -69,9 +69,11 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
 
         $keyType = $scope->getType($args[0]->value);
-        if ($keyType instanceof ConstantStringType) {
-            if (isset($this->properties[$keyType->getValue()])) {
-                return $this->properties[$keyType->getValue()];
+        if (count($keyType->getConstantStrings()) > 0) {
+            foreach ($keyType->getConstantStrings() as $constantString) {
+                if (isset($this->properties[$constantString->getValue()])) {
+                    return $this->properties[$constantString->getValue()];
+                }
             }
         }
 

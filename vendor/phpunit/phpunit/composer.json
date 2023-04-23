@@ -17,7 +17,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/sebastianbergmann/phpunit/issues"
+        "issues": "https://github.com/sebastianbergmann/phpunit/issues",
+        "security": "https://github.com/sebastianbergmann/phpunit/security/policy"
     },
     "prefer-stable": true,
     "require": {
@@ -57,8 +58,8 @@
         "sort-packages": true
     },
     "suggest": {
-        "ext-soap": "*",
-        "ext-xdebug": "*"
+        "ext-soap": "To be able to generate mocks based on WSDL files",
+        "ext-xdebug": "PHP extension that provides line coverage as well as branch and path coverage"
     },
     "bin": [
         "phpunit"

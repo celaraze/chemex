@@ -8,15 +8,10 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Latest Release-3.6.0-orange" />
+    <img src="https://img.shields.io/badge/Latest Release-3.7.0-orange" />
     <img src="https://img.shields.io/badge/PHP-8+-green" />
     <img src="https://img.shields.io/badge/MySQL-5.7+-blueviolet" />
     <img src="https://img.shields.io/badge/License-GPL3.0-blue" />
-</p>
-
-<p align="center">
-    <img src="https://travis-ci.com/Celaraze/Chemex.svg?branch=dev" />
-    <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FCelaraze%2FChemex.svg?type=shield" />
 </p>
 
 ## 仓库托管

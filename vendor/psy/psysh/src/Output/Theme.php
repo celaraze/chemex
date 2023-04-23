@@ -57,15 +57,16 @@ class Theme
         'default'   => [null],
 
         // Types
-        'number'   => ['magenta'],
-        'integer'  => ['magenta'],
-        'float'    => ['yellow'],
-        'string'   => ['green'],
-        'bool'     => ['cyan'],
-        'keyword'  => ['yellow'],
-        'comment'  => ['blue'],
-        'object'   => ['blue'],
-        'resource' => ['yellow'],
+        'number'       => ['magenta'],
+        'integer'      => ['magenta'],
+        'float'        => ['yellow'],
+        'string'       => ['green'],
+        'bool'         => ['cyan'],
+        'keyword'      => ['yellow'],
+        'comment'      => ['blue'],
+        'code_comment' => ['gray'],
+        'object'       => ['blue'],
+        'resource'     => ['yellow'],
 
         // Code-specific formatting
         'inline_html' => ['cyan'],
@@ -95,7 +96,7 @@ class Theme
                     $config = static::MODERN_THEME;
                     break;
 
-                    case 'compact':
+                case 'compact':
                     $config = static::COMPACT_THEME;
                     break;
 
@@ -138,10 +139,6 @@ class Theme
 
                 case 'grayFallback':
                     $this->setGrayFallback($value);
-                    break;
-
-                case 'compact':
-                    $this->setCompact($value);
                     break;
             }
         }
