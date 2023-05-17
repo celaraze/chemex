@@ -45,6 +45,14 @@ Github `https://github.com/celaraze/chemex`
 开发平台，使其具备了优雅、简洁的优秀体验。 咖啡壶（Chemex）
 是完全免费且开源的，任何人都可以无限制的修改代码以及部署服务，这对于很多想要对ICT资产做信息化管理的中小型企业来说，是一个很好的选择：低廉的成本换回的是高效的管理方案，同时又有健康的生态提供支持。
 
+## 文档
+
+所有文档都存在于本项目的 `docs` 子目录中，可以随时查阅。
+
+请访问我了解如何 [安装](https://gitee.com/celaraze/chemex/tree/main/docs/安装.md)。
+
+请访问我了解如何 [升级](https://gitee.com/celaraze/chemex/tree/main/docs/升级.md)。
+
 ## 特点
 
 使用先进的 Web 框架进行开发。
