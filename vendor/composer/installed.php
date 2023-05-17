@@ -3,7 +3,7 @@
         'name' => 'celaraze/chemex',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '9907ba545b7258b427eb947579a58552fab43056',
+        'reference' => '3976edfd735dda445f6a0fb8caca2170537c7a0d',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'celaraze/chemex' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '9907ba545b7258b427eb947579a58552fab43056',
+            'reference' => '3976edfd735dda445f6a0fb8caca2170537c7a0d',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -951,8 +951,8 @@
         'psr/container-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '^1.1|^2.0',
-                1 => '1.1|2.0',
+                0 => '1.1|2.0',
+                1 => '^1.1|^2.0',
             ),
         ),
         'psr/event-dispatcher' => array(

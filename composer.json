@@ -18,6 +18,7 @@
         "ext-pdo": "*",
         "ext-pdo_mysql": "*",
         "ext-zip": "*",
+        "ext-gd": "*",
         "adldap2/adldap2-laravel": "^6.1",
         "celaraze/laravel-ace": "dev-main",
         "dcat/easy-excel": "^1.0",
