@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Latest Release-3.7.0-orange" />
+    <img src="https://img.shields.io/badge/Latest Release-3.7.1-orange" />
     <img src="https://img.shields.io/badge/PHP-8+-green" />
     <img src="https://img.shields.io/badge/MySQL-5.7+-blueviolet" />
     <img src="https://img.shields.io/badge/License-GPL3.0-blue" />

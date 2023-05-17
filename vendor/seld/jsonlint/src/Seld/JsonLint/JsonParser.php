@@ -30,13 +30,14 @@ class JsonParser
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
     const PARSE_TO_ASSOC = 4;
+    const ALLOW_COMMENTS = 8;
 
     /** @var Lexer */
     private $lexer;
 
     /**
      * @var int
-     * @psalm-var int-mask-of<self::*>
+     * @phpstan-var int-mask-of<self::*>
      */
     private $flags;
     /** @var list<int> */
@@ -177,6 +178,8 @@ class JsonParser
      * @param  string                $input JSON string
      * @param  int                   $flags Bitmask of parse/lint options (see constants of this class)
      * @return null|ParsingException null if no error is found, a ParsingException containing all details otherwise
+     *
+     * @phpstan-param int-mask-of<self::*> $flags
      */
     public function lint($input, $flags = 0)
     {
@@ -193,6 +196,8 @@ class JsonParser
      * @param  int              $flags Bitmask of parse/lint options (see constants of this class)
      * @return mixed
      * @throws ParsingException
+     *
+     * @phpstan-param int-mask-of<self::*> $flags
      */
     public function parse($input, $flags = 0)
     {
@@ -210,7 +215,7 @@ class JsonParser
         /** @var int<0,3> */
         $recovering = 0;
 
-        $this->lexer = new Lexer();
+        $this->lexer = new Lexer($flags);
         $this->lexer->setInput($input);
 
         $yyloc = $this->lexer->yylloc;

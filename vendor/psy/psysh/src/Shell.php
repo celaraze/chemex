@@ -49,7 +49,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Shell extends Application
 {
-    const VERSION = 'v0.11.15';
+    const VERSION = 'v0.11.17';
 
     /** @deprecated */
     const PROMPT = '>>> ';
@@ -626,7 +626,7 @@ class Shell extends Application
             $output = $output->getErrorOutput();
         }
 
-        $output->writeln(\sprintf('<aside>%s</aside>', OutputFormatter::escape($code)), ConsoleOutput::VERBOSITY_DEBUG);
+        $output->writeln(\sprintf('<whisper>%s</whisper>', OutputFormatter::escape($code)), ConsoleOutput::VERBOSITY_DEBUG);
 
         return $code;
     }
