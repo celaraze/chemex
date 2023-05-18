@@ -2344,6 +2344,7 @@
                     "type": "github"
                 }
             ],
+            "abandoned": true,
             "install-path": "../fruitcake/laravel-cors"
         },
         {
@@ -8455,12 +8456,12 @@
             "version_normalized": "3.2.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/spiral/goridge-php.git",
+                "url": "https://github.com/roadrunner-php/goridge.git",
                 "reference": "3d8e97d7d1cc26b6130d233177b23ecb3c7d4efb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spiral/goridge-php/zipball/3d8e97d7d1cc26b6130d233177b23ecb3c7d4efb",
+                "url": "https://api.github.com/repos/roadrunner-php/goridge/zipball/3d8e97d7d1cc26b6130d233177b23ecb3c7d4efb",
                 "reference": "3d8e97d7d1cc26b6130d233177b23ecb3c7d4efb",
                 "shasum": ""
             },
@@ -8509,9 +8510,15 @@
             ],
             "description": "High-performance PHP-to-Golang RPC bridge",
             "support": {
-                "issues": "https://github.com/spiral/goridge-php/issues",
-                "source": "https://github.com/spiral/goridge-php/tree/v3.2.0"
+                "issues": "https://github.com/roadrunner-php/goridge/issues",
+                "source": "https://github.com/roadrunner-php/goridge/tree/v3.2.0"
             },
+            "funding": [
+                {
+                    "url": "https://github.com/roadrunner-server",
+                    "type": "github"
+                }
+            ],
             "install-path": "../spiral/goridge"
         },
         {

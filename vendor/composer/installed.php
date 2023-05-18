@@ -3,7 +3,7 @@
         'name' => 'celaraze/chemex',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3976edfd735dda445f6a0fb8caca2170537c7a0d',
+        'reference' => '9488bfaecc26bbc540961805f50088e1b8df7b1f',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'celaraze/chemex' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3976edfd735dda445f6a0fb8caca2170537c7a0d',
+            'reference' => '9488bfaecc26bbc540961805f50088e1b8df7b1f',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -1027,8 +1027,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0.0 || 2.0.0 || 3.0.0',
-                1 => '1.0|2.0|3.0',
+                0 => '1.0|2.0|3.0',
+                1 => '1.0.0 || 2.0.0 || 3.0.0',
             ),
         ),
         'psr/simple-cache' => array(
