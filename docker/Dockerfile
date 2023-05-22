@@ -3,7 +3,6 @@ FROM celaraze/laravel-docker:latest
 RUN git clone --recursive https://github.com/celaraze/chemex.git /var/www/html/laravel
 COPY .env.docker /var/www/html/laravel/.env
 WORKDIR /var/www/html/laravel
-# RUN composer config -g repo.packagist composer https://packagist.phpcomposer.com
 RUN composer install -vvv
 
 RUN chown -R www-data:www-data /var/www/html/laravel && \
