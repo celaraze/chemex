@@ -1,6 +1,6 @@
 FROM celaraze/laravel-docker:latest
 
-RUN git clone --recursive https://gitee.com/celaraze/chemex.git /var/www/html/laravel
+RUN git clone --recursive https://github.com/celaraze/chemex.git /var/www/html/laravel
 COPY .env.docker /var/www/html/laravel/.env
 WORKDIR /var/www/html/laravel
 # RUN composer config -g repo.packagist composer https://packagist.phpcomposer.com
