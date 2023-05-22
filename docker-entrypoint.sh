@@ -2,7 +2,7 @@
 set -e
 
 # 设置环境变量
-source /var/www/chemex/.env
+source /var/www/html/laravel/.env
 
 # 等待数据库服务启动
 while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USERNAME" -p"$DB_PASSWORD" -P"${DB_PORT:-3306}" --silent; do

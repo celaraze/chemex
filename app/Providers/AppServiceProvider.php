@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\ApprovalRecord;
 use App\Models\CheckRecord;
 use App\Models\DeviceRecord;
 use App\Models\PartRecord;
@@ -10,9 +9,7 @@ use App\Models\ServiceRecord;
 use App\Models\SoftwareRecord;
 use App\Models\TodoRecord;
 use App\Models\User;
-use App\Observers\ApprovalRecordObserver;
 use App\Observers\CheckRecordObserver;
-use App\Observers\CustomColumnObserver;
 use App\Observers\DeviceRecordObserver;
 use App\Observers\PartRecordObserver;
 use App\Observers\ServiceRecordObserver;
