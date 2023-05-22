@@ -3,7 +3,6 @@
 </p>
 
 <p align="center">
-    <a href="http://chemex-docs.celaraze.com/">官方文档</a>
     <a href="https://jq.qq.com/?_wv=1027&k=tnV2HCWU">用户交流群</a>
 </p>
 
@@ -15,8 +14,6 @@
 </p>
 
 ## 仓库托管
-
-Gitlab `https://jihulab.com/chemex`
 
 Gitee `https://gitee.com/celaraze/chemex`
 

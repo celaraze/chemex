@@ -10,7 +10,7 @@
     ],
     "license": "GPL-3.0-or-later",
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-bcmath": "*",
         "ext-json": "*",
         "ext-ldap": "*",
@@ -22,27 +22,27 @@
         "adldap2/adldap2-laravel": "^6.1",
         "celaraze/laravel-ace": "dev-main",
         "dcat/easy-excel": "^1.0",
-        "dcat/laravel-admin": "^2.0",
+        "dcat/laravel-admin": "2.0.x-dev",
         "doctrine/dbal": "^3.0",
-        "enlightn/enlightn": "^1.7",
-        "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "^9.0",
-        "laravel/tinker": "^2.0",
+        "enlightn/enlightn": "^2.0",
+        "guzzlehttp/guzzle": "^7.2",
+        "laravel/framework": "^10.10",
+        "laravel/sanctum": "^3.2",
+        "laravel/tinker": "^2.8",
         "mosiboom/dcat-iframe-tab": "^1.2",
         "orangehill/iseed": "^3.0",
         "overtrue/laravel-pinyin": "~4.0",
         "spipu/html2pdf": "^5.2",
         "spiral/roadrunner": "^2.0",
         "tecnickcom/tcpdf": "^6.3",
-        "tymon/jwt-auth": "^1"
+        "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {
-        "spatie/laravel-ignition": "^1.0",
+        "spatie/laravel-ignition": "^2.0",
         "fakerphp/faker": "^1.9.1",
-        "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^6.1",
-        "phpunit/phpunit": "^9.3.3"
+        "mockery/mockery": "^1.4.4",
+        "nunomaduro/collision": "^7.0",
+        "phpunit/phpunit": "^10.1"
     },
     "config": {
         "optimize-autoloader": true,
