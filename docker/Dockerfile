@@ -4,12 +4,12 @@ RUN git clone --recursive https://github.com/celaraze/chemex.git /var/www/html/l
 COPY .env.docker /var/www/html/laravel/.env
 WORKDIR /var/www/html/laravel
 RUN composer install -vvv
+RUN php artisan chemex:update
 
-RUN chown -R www-data:www-data /var/www/html/laravel && \
-    chmod -R 755 /var/www/html/laravel && \
+RUN chmod -R 755 /var/www/html/laravel && \
     chmod -R 777 /var/www/html/laravel/storage
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY start.sh.sh /start.sh
+RUN chmod +x /start.sh
 
 entrypoint ["/docker-entrypoint.sh"]
