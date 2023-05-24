@@ -15,9 +15,9 @@
 
 ## 仓库托管
 
-Gitee `https://gitee.com/celaraze/chemex`
-
 Github `https://github.com/celaraze/chemex`
+
+Gitee `https://gitee.com/celaraze/chemex`
 
 ## 鸣谢
 
@@ -46,9 +46,9 @@ Github `https://github.com/celaraze/chemex`
 
 所有文档都存在于本项目的 `docs` 子目录中，可以随时查阅。
 
-请访问我了解如何 [安装](https://gitee.com/celaraze/chemex/tree/main/docs/安装.md)。
+请访问我了解如何 [安装](https://github.com/celaraze/chemex/blob/main/docs/%E5%AE%89%E8%A3%85.md)。
 
-请访问我了解如何 [升级](https://gitee.com/celaraze/chemex/tree/main/docs/升级.md)。
+请访问我了解如何 [升级](https://github.com/celaraze/chemex/blob/main/docs/%E5%8D%87%E7%BA%A7.md)。
 
 ## 特点
 
@@ -62,7 +62,7 @@ Github `https://github.com/celaraze/chemex`
 
 请随时牢记，这是一个开源项目，作者有自己的生活、自己的工作，QQ群建立的目的是提供一个场所供用户们互相交流，作者不会提供1对1的服务。
 
-最好的反馈方式即是在本代码仓库中提交 Issue，我们在空余时间检查并解决。
+最好的反馈方式是在本代码仓库中提交 Issue，我们在空余时间检查并解决。
 
 ## 截图
 

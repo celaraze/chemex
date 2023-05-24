@@ -6,4 +6,4 @@ services:
     container_name: chemex
     build: .
     ports:
-      - "8002:8002"
+      - "8000:8000"
