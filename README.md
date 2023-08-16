@@ -7,11 +7,15 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Latest Release-3.7.1-orange" />
+    <img src="https://img.shields.io/badge/Latest Release-3.9.0-orange" />
     <img src="https://img.shields.io/badge/PHP-8+-green" />
     <img src="https://img.shields.io/badge/MySQL-5.7+-blueviolet" />
     <img src="https://img.shields.io/badge/License-GPL3.0-blue" />
 </p>
+
+## 生命周期说明
+
+Chemex 3.9.0 是经典版本的最终形态，后续将不再维护。与此同时，采用新架构和设计思路的新版本已经在开发中（dev分支），我将全身心的投入到新架构的设计中去。
 
 ## 仓库托管
 

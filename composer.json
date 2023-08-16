@@ -33,7 +33,6 @@
         "orangehill/iseed": "^3.0",
         "overtrue/laravel-pinyin": "~4.0",
         "spipu/html2pdf": "^5.2",
-        "spiral/roadrunner": "^2.0",
         "tecnickcom/tcpdf": "^6.3",
         "tymon/jwt-auth": "^2.0"
     },
