@@ -1,0 +1,35 @@
+parameters:
+	deprecationRulesInstalled: true
+
+services:
+	-
+		class: PHPStan\Rules\Deprecations\DeprecatedClassHelper
+
+	-
+		class: PHPStan\DependencyInjection\LazyDeprecatedScopeResolverProvider
+	-
+		class: PHPStan\Rules\Deprecations\DeprecatedScopeHelper
+		factory: @PHPStan\DependencyInjection\LazyDeprecatedScopeResolverProvider::get
+
+	-
+		class: PHPStan\Rules\Deprecations\DefaultDeprecatedScopeResolver
+		tags:
+			- phpstan.deprecations.deprecatedScopeResolver
+
+rules:
+	- PHPStan\Rules\Deprecations\AccessDeprecatedPropertyRule
+	- PHPStan\Rules\Deprecations\AccessDeprecatedStaticPropertyRule
+	- PHPStan\Rules\Deprecations\CallToDeprecatedFunctionRule
+	- PHPStan\Rules\Deprecations\CallToDeprecatedMethodRule
+	- PHPStan\Rules\Deprecations\CallToDeprecatedStaticMethodRule
+	- PHPStan\Rules\Deprecations\FetchingClassConstOfDeprecatedClassRule
+	- PHPStan\Rules\Deprecations\FetchingDeprecatedConstRule
+	- PHPStan\Rules\Deprecations\ImplementationOfDeprecatedInterfaceRule
+	- PHPStan\Rules\Deprecations\InheritanceOfDeprecatedClassRule
+	- PHPStan\Rules\Deprecations\InheritanceOfDeprecatedInterfaceRule
+	- PHPStan\Rules\Deprecations\InstantiationOfDeprecatedClassRule
+	- PHPStan\Rules\Deprecations\TypeHintDeprecatedInClassMethodSignatureRule
+	- PHPStan\Rules\Deprecations\TypeHintDeprecatedInClosureSignatureRule
+	- PHPStan\Rules\Deprecations\TypeHintDeprecatedInFunctionSignatureRule
+	- PHPStan\Rules\Deprecations\UsageOfDeprecatedCastRule
+	- PHPStan\Rules\Deprecations\UsageOfDeprecatedTraitRule

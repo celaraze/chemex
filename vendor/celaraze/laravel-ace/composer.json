@@ -1,0 +1,26 @@
+{
+  "name": "celaraze/laravel-ace",
+  "description": "many useful libraries for Laravel.",
+  "type": "library",
+  "license": "MIT",
+  "version": "dev-main",
+  "authors": [
+    {
+      "name": "celaraze",
+      "email": "celaraze@qq.com"
+    }
+  ],
+  "require": {
+    "php": "^7.4|^8.0",
+    "ext-mbstring": "*",
+    "ext-json": "*",
+    "ext-bcmath": "*",
+    "ext-openssl": "*",
+    "nesbot/carbon": "^2.47"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ace\\": "src/"
+    }
+  }
+}

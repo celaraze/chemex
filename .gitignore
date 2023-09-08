@@ -14,4 +14,3 @@ yarn-error.log
 composer.lock
 .DS_Store
 .env
-/vendor
