@@ -1,0 +1,11 @@
+<?php
+
+namespace DummyNamespace;
+
+use Livewire\Attributes\Rule;
+use Livewire\Form;
+
+class DummyClass extends Form
+{
+    //
+}
