@@ -7,7 +7,7 @@ return [
     'track' => '归属',
     'issue' => '异常',
     'history' => '履历',
-    'lend' => '借用中',
+    'lend' => '借用',
     'idle' => '闲置',
     'using' => '使用中',
     'dead' => '堪用',
