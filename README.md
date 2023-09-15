@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-    <a href="https://jq.qq.com/?_wv=1027&k=tnV2HCWU">用户交流群</a>
+    <a href="https://pd.qq.com/s/sknbyfnh">用户交流频道</a>
 </p>
 
 <p align="center">
