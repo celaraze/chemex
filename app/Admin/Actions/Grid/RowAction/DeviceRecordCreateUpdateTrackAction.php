@@ -22,7 +22,7 @@ class DeviceRecordCreateUpdateTrackAction extends RowAction
      *
      * @return Modal|string
      */
-    public function render()
+    public function render(): string|Modal
     {
         // 实例化表单类并传递自定义参数
         $form = DeviceRecordCreateUpdateTrackForm::make()->payload([

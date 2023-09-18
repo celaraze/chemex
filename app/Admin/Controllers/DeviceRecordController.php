@@ -159,7 +159,7 @@ class DeviceRecordController extends AdminController
             /**
              * 自定义字段.
              */
-            ControllerHasCustomColumns::makeDetail((new DeviceRecord())->getTable(), $show, $sort_columns);
+            self::makeDetail((new DeviceRecord())->getTable(), $show, $sort_columns);
 
             $show->field('created_at', '', $sort_columns);
             $show->field('updated_at', '', $sort_columns);
@@ -280,7 +280,7 @@ class DeviceRecordController extends AdminController
             /**
              * 自定义字段.
              */
-            ControllerHasCustomColumns::makeGrid((new DeviceRecord())->getTable(), $grid, $sort_columns);
+            self::makeGrid((new DeviceRecord())->getTable(), $grid, $sort_columns);
 
             /**
              * 批量操作.
@@ -415,7 +415,7 @@ class DeviceRecordController extends AdminController
                     'expired',
                     'admin_user.name',
                     'admin_user.department.name',
-                ], ControllerHasCustomColumns::makeQuickSearch((new DeviceRecord())->getTable()))
+                ], self::makeQuickSearch((new DeviceRecord())->getTable()))
             )
                 ->placeholder(trans('main.quick_search'))
                 ->auto(false);
@@ -489,7 +489,7 @@ class DeviceRecordController extends AdminController
                 /**
                  * 自定义字段.
                  */
-                ControllerHasCustomColumns::makeFilter((new DeviceRecord())->getTable(), $filter);
+                self::makeFilter((new DeviceRecord())->getTable(), $filter);
             });
 
             /**

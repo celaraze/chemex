@@ -31,6 +31,7 @@ class DeviceService
             'status' => '',
             'style' => '',
             'datetime' => '',
+            'description' => ''
         ];
 
         // 处理设备使用者变动履历

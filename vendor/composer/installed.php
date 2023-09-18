@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'f7569774a761f4d250164880c59437e98c4300e8',
+        'reference' => '3701c42cad005a8d3fe609c0ffe578b69019c675',
         'name' => 'celaraze/chemex',
         'dev' => true,
     ),
@@ -52,7 +52,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'f7569774a761f4d250164880c59437e98c4300e8',
+            'reference' => '3701c42cad005a8d3fe609c0ffe578b69019c675',
             'dev_requirement' => false,
         ),
         'celaraze/laravel-ace' => array(
@@ -959,12 +959,12 @@
             ),
         ),
         'psy/psysh' => array(
-            'pretty_version' => 'v0.11.20',
-            'version' => '0.11.20.0',
+            'pretty_version' => 'v0.11.21',
+            'version' => '0.11.21.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../psy/psysh',
             'aliases' => array(),
-            'reference' => '0fa27040553d1d280a67a4393194df5228afea5b',
+            'reference' => 'bcb22101107f3bf770523b65630c9d547f60c540',
             'dev_requirement' => false,
         ),
         'ralouphie/getallheaders' => array(

@@ -87,6 +87,8 @@ class DeviceRecordCreateUpdateTrackForm extends Form implements LazyRenderable
                 return $this->response()
                     ->error(trans('main.record_same'));
             } else {
+                $device_track->setAttribute('deleted_description', '（自动生成）管理者重新分配使用者。');
+                $device_track->save();
                 $device_track->delete();
             }
         }
@@ -95,6 +97,7 @@ class DeviceRecordCreateUpdateTrackForm extends Form implements LazyRenderable
         $device_track = new DeviceTrack();
         $device_track->device_id = $device_id;
         $device_track->user_id = $user_id;
+        $device_track->setAttribute('description', $input['description']);
 
         if ($type == 'lend') {
             $device_track->user_id = $lend_user_id;
@@ -131,6 +134,8 @@ class DeviceRecordCreateUpdateTrackForm extends Form implements LazyRenderable
                     $form->select('user_id', trans('main.new_user_id'))
                         ->options($users)
                         ->help(trans('main.user_id_help'));
+                    $form->text('description', trans('main.device_track_description'))
+                        ->required();
                 })
                 ->when('lend', function (Form $form) use ($users) {
                     $form->select('lend_user_id', trans('main.new_user_id'))

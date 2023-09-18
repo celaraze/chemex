@@ -109,7 +109,8 @@ return [
         'file' => '文件',
         'depreciation_rule_id' => '折旧规则',
         'device_status' => '设备状态',
-        'no_user' => '闲置'
+        'no_user' => '闲置',
+        'deleted_description' => '解除归属原因'
     ],
     'options' => [
     ],

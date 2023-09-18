@@ -12,7 +12,7 @@
                         关联了 {{$item['type']}}
                     </h3>
                     <div class="timeline-body">
-                        {{$item['name']}}
+                        {{$item['name']}}。原因：{{$item['description']}}
                     </div>
                 </div>
             @else
@@ -23,7 +23,7 @@
                         解除了 {{$item['type']}}
                     </h3>
                     <div class="timeline-body">
-                        {{$item['name']}}
+                        {{$item['name']}}。原因：{{$item['description']}}
                     </div>
                 </div>
             @endif

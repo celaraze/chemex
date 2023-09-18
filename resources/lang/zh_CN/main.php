@@ -136,5 +136,6 @@ return [
     'device_category' => '设备分类',
     'part_category' => '配件分类',
     'software_category' => '软件分类',
-    'consumable_category' => '耗材分类'
+    'consumable_category' => '耗材分类',
+    'device_track_description' => '归属原因',
 ];

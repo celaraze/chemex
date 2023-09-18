@@ -61,14 +61,16 @@ class Support
      *
      * @return array
      */
-    public static function itemTrack($template, $item_track, $data = []): array
+    public static function itemTrack($template, $item_track, array $data = []): array
     {
         $template['status'] = '+';
         $template['datetime'] = json_decode($item_track, true)['created_at'];
+        $template['description'] = json_decode($item_track, true)['description'];
         $data[] = $template;
         if (!empty($item_track->deleted_at)) {
             $template['status'] = '-';
             $template['datetime'] = json_decode($item_track, true)['deleted_at'];
+            $template['description'] = json_decode($item_track, true)['deleted_description'];
             $data[] = $template;
         }
 
