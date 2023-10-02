@@ -10,7 +10,7 @@ use function array_key_exists;
 use function assert;
 use function is_array;
 use function is_bool;
-use function is_int;
+use function is_string;
 use function openssl_error_string;
 use function openssl_free_key;
 use function openssl_pkey_get_details;
@@ -19,21 +19,8 @@ use function openssl_pkey_get_public;
 use function openssl_sign;
 use function openssl_verify;
 
-use const OPENSSL_KEYTYPE_DH;
-use const OPENSSL_KEYTYPE_DSA;
-use const OPENSSL_KEYTYPE_EC;
-use const OPENSSL_KEYTYPE_RSA;
-use const PHP_EOL;
-
 abstract class OpenSSL implements Signer
 {
-    protected const KEY_TYPE_MAP = [
-        OPENSSL_KEYTYPE_RSA => 'RSA',
-        OPENSSL_KEYTYPE_DSA => 'DSA',
-        OPENSSL_KEYTYPE_DH => 'DH',
-        OPENSSL_KEYTYPE_EC => 'EC',
-    ];
-
     /**
      * @throws CannotSignPayload
      * @throws InvalidKeyProvided
@@ -49,7 +36,10 @@ abstract class OpenSSL implements Signer
             $signature = '';
 
             if (! openssl_sign($payload, $signature, $key, $this->algorithm())) {
-                throw CannotSignPayload::errorHappened($this->fullOpenSSLErrorString());
+                $error = openssl_error_string();
+                assert(is_string($error));
+
+                throw CannotSignPayload::errorHappened($error);
             }
 
             return $signature;
@@ -107,33 +97,19 @@ abstract class OpenSSL implements Signer
     private function validateKey($key): void
     {
         if (is_bool($key)) {
-            throw InvalidKeyProvided::cannotBeParsed($this->fullOpenSSLErrorString());
+            $error = openssl_error_string();
+            assert(is_string($error));
+
+            throw InvalidKeyProvided::cannotBeParsed($error);
         }
 
         $details = openssl_pkey_get_details($key);
         assert(is_array($details));
 
-        assert(array_key_exists('bits', $details));
-        assert(is_int($details['bits']));
-        assert(array_key_exists('type', $details));
-        assert(is_int($details['type']));
-
-        $this->guardAgainstIncompatibleKey($details['type'], $details['bits']);
-    }
-
-    private function fullOpenSSLErrorString(): string
-    {
-        $error = '';
-
-        while ($msg = openssl_error_string()) {
-            $error .= PHP_EOL . '* ' . $msg;
+        if (! array_key_exists('key', $details) || $details['type'] !== $this->keyType()) {
+            throw InvalidKeyProvided::incompatibleKey();
         }
-
-        return $error;
     }
-
-    /** @throws InvalidKeyProvided */
-    abstract protected function guardAgainstIncompatibleKey(int $type, int $lengthInBits): void;
 
     /** @param resource|OpenSSLAsymmetricKey $key */
     private function freeKey($key): void
@@ -144,6 +120,13 @@ abstract class OpenSSL implements Signer
 
         openssl_free_key($key); // Deprecated and no longer necessary as of PHP >= 8.0
     }
+
+    /**
+     * Returns the type of key to be used to create/verify the signature (using OpenSSL constants)
+     *
+     * @internal
+     */
+    abstract public function keyType(): int;
 
     /**
      * Returns which algorithm to be used to create/verify the signature (using OpenSSL constants)

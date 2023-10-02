@@ -25,10 +25,11 @@ function password(string $label, string $placeholder = '', bool|string $required
  * Prompt the user to select an option.
  *
  * @param  array<int|string, string>|Collection<int|string, string>  $options
+ * @param  true|string  $required
  */
-function select(string $label, array|Collection $options, int|string $default = null, int $scroll = 5, Closure $validate = null, string $hint = ''): int|string
+function select(string $label, array|Collection $options, int|string $default = null, int $scroll = 5, Closure $validate = null, string $hint = '', bool|string $required = true): int|string
 {
-    return (new SelectPrompt($label, $options, $default, $scroll, $validate, $hint))->prompt();
+    return (new SelectPrompt($label, $options, $default, $scroll, $validate, $hint, $required))->prompt();
 }
 
 /**
@@ -65,10 +66,22 @@ function suggest(string $label, array|Collection|Closure $options, string $place
  * Allow the user to search for an option.
  *
  * @param  Closure(string): array<int|string, string>  $options
+ * @param  true|string  $required
  */
-function search(string $label, Closure $options, string $placeholder = '', int $scroll = 5, Closure $validate = null, string $hint = ''): int|string
+function search(string $label, Closure $options, string $placeholder = '', int $scroll = 5, Closure $validate = null, string $hint = '', bool|string $required = true): int|string
 {
-    return (new SearchPrompt($label, $options, $placeholder, $scroll, $validate, $hint))->prompt();
+    return (new SearchPrompt($label, $options, $placeholder, $scroll, $validate, $hint, $required))->prompt();
+}
+
+/**
+ * Allow the user to search for multiple option.
+ *
+ * @param  Closure(string): array<int|string, string>  $options
+ * @return array<int|string>
+ */
+function multisearch(string $label, Closure $options, string $placeholder = '', int $scroll = 5, bool|string $required = false, Closure $validate = null, string $hint = 'Use the space bar to select options.'): array
+{
+    return (new MultiSearchPrompt($label, $options, $placeholder, $scroll, $required, $validate, $hint))->prompt();
 }
 
 /**
@@ -138,4 +151,36 @@ function intro(string $message): void
 function outro(string $message): void
 {
     (new Note($message, 'outro'))->display();
+}
+
+/**
+ * Display a table.
+ *
+ * @param  array<int, string|array<int, string>>|Collection<int, string|array<int, string>>  $headers
+ * @param  array<int, array<int, string>>|Collection<int, array<int, string>>  $rows
+ */
+function table(array|Collection $headers = [], array|Collection $rows = null): void
+{
+    (new Table($headers, $rows))->display();
+}
+
+/**
+ * Display a progress bar.
+ *
+ * @template TSteps of iterable<mixed>|int
+ * @template TReturn
+ *
+ * @param  TSteps  $steps
+ * @param  ?Closure((TSteps is int ? int : value-of<TSteps>), Progress<TSteps>): TReturn  $callback
+ * @return ($callback is null ? Progress<TSteps> : array<TReturn>)
+ */
+function progress(string $label, iterable|int $steps, Closure $callback = null, string $hint = ''): array|Progress
+{
+    $progress = new Progress($label, $steps, $hint);
+
+    if ($callback !== null) {
+        return $progress->map($callback);
+    }
+
+    return $progress;
 }

@@ -3,6 +3,7 @@
 namespace Laravel\Prompts;
 
 use Closure;
+use InvalidArgumentException;
 
 class SearchPrompt extends Prompt
 {
@@ -38,17 +39,22 @@ class SearchPrompt extends Prompt
         public string $placeholder = '',
         public int $scroll = 5,
         public ?Closure $validate = null,
-        public string $hint = ''
+        public string $hint = '',
+        public bool|string $required = true,
     ) {
+        if ($this->required === false) {
+            throw new InvalidArgumentException('Argument [required] must be true or a string.');
+        }
+
         $this->trackTypedValue(submit: false);
 
         $this->reduceScrollingToFitTerminal();
 
         $this->on('key', fn ($key) => match ($key) {
-            Key::UP, Key::UP_ARROW, Key::SHIFT_TAB => $this->highlightPrevious(),
-            Key::DOWN, Key::DOWN_ARROW, Key::TAB => $this->highlightNext(),
+            Key::UP, Key::UP_ARROW, Key::SHIFT_TAB, Key::CTRL_P => $this->highlightPrevious(),
+            Key::DOWN, Key::DOWN_ARROW, Key::TAB, Key::CTRL_N => $this->highlightNext(),
             Key::ENTER => $this->highlighted !== null ? $this->submit() : $this->search(),
-            Key::LEFT, Key::LEFT_ARROW, Key::RIGHT, Key::RIGHT_ARROW => $this->highlighted = null,
+            Key::LEFT, Key::LEFT_ARROW, Key::RIGHT, Key::RIGHT_ARROW, Key::CTRL_B, Key::CTRL_F, Key::HOME, Key::END, Key::CTRL_A, Key::CTRL_E => $this->highlighted = null,
             default => $this->search(),
         });
     }
@@ -62,6 +68,7 @@ class SearchPrompt extends Prompt
         $this->highlighted = null;
         $this->render();
         $this->matches = null;
+        $this->firstVisible = 0;
         $this->state = 'active';
     }
 
