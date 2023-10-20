@@ -37,7 +37,8 @@ function __phpunit_run_isolated_test()
         PHPUnit\Event\Telemetry\HRTime::fromSecondsAndNanoseconds(
             {offsetSeconds},
             {offsetNanoseconds}
-        )
+        ),
+        {exportObjects},
     );
 
     require_once '{filename}';
@@ -48,6 +49,7 @@ function __phpunit_run_isolated_test()
     }
 
     $test = new {className}('{name}');
+
     $test->setData('{dataName}', unserialize('{data}'));
     $test->setDependencyInput(unserialize('{dependencyInput}'));
     $test->setInIsolation(true);

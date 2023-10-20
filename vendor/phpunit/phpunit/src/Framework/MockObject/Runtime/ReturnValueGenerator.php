@@ -201,10 +201,10 @@ final class ReturnValueGenerator
      *
      * @throws RuntimeException
      */
-    private function testDoubleFor(string $type, string $className, string $methodName): MockObject
+    private function testDoubleFor(string $type, string $className, string $methodName): Stub
     {
         try {
-            return (new Generator)->getMock($type, [], [], '', false);
+            return (new Generator)->testDouble($type, false, [], [], '', false);
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf(
@@ -224,10 +224,10 @@ final class ReturnValueGenerator
      *
      * @throws RuntimeException
      */
-    private function testDoubleForIntersectionOfInterfaces(array $types, string $className, string $methodName): MockObject
+    private function testDoubleForIntersectionOfInterfaces(array $types, string $className, string $methodName): Stub
     {
         try {
-            return (new Generator)->getMockForInterfaces($types);
+            return (new Generator)->testDoubleForInterfaceIntersection($types, false);
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf(
