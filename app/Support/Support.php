@@ -65,12 +65,12 @@ class Support
     {
         $template['status'] = '+';
         $template['datetime'] = json_decode($item_track, true)['created_at'];
-        $template['description'] = json_decode($item_track, true)['description'];
+        $template['description'] = json_decode($item_track, true)['description'] ?? '无';
         $data[] = $template;
         if (!empty($item_track->deleted_at)) {
             $template['status'] = '-';
             $template['datetime'] = json_decode($item_track, true)['deleted_at'];
-            $template['description'] = json_decode($item_track, true)['deleted_description'];
+            $template['description'] = json_decode($item_track, true)['deleted_description'] ?? '无';
             $data[] = $template;
         }
 
