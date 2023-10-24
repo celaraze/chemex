@@ -43,8 +43,8 @@ return [
         'status' => '状态',
         'creator' => '创建者',
         'check_all_counts' => '盘点总数',
-        'check_yes_counts' => '盘盈数量',
-        'check_no_counts' => '盘亏数量',
+        'check_yes_counts' => '在库数量',
+        'check_no_counts' => '缺失数量',
         'check_left_counts' => '未盘数量',
     ],
     'options' => [

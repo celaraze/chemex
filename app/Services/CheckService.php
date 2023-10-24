@@ -68,8 +68,8 @@ class CheckService
         $no_counts = CheckTrack::where('check_id', $check_id)->where('status', 2)->count();
         $left_counts = $all_counts - $yes_counts - $no_counts;
         $pdf->writeHTML('<div style="text-align: center">条目总数：' . $all_counts . '</div>');
-        $pdf->writeHTML('<div style="text-align: center">盘盈总数：' . $yes_counts . '</div>');
-        $pdf->writeHTML('<div style="text-align: center">盘亏总数：' . $no_counts . '</div>');
+        $pdf->writeHTML('<div style="text-align: center">在库总数：' . $yes_counts . '</div>');
+        $pdf->writeHTML('<div style="text-align: center">缺失总数：' . $no_counts . '</div>');
         $pdf->writeHTML('<div style="text-align: center">未盘总数：' . $left_counts . '</div>');
 
         //输出PDF
