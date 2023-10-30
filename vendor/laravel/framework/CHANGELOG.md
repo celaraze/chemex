@@ -1,10 +1,29 @@
 # Release Notes for 10.x
 
-## [Unreleased](https://github.com/laravel/framework/compare/v10.26.2...10.x)
+## [Unreleased](https://github.com/laravel/framework/compare/v10.28.0...10.x)
+
+## [v10.28.0](https://github.com/laravel/framework/compare/v10.27.0...v10.28.0) - 2023-10-10
+
+- [10.x] Fixed issue: Added a call to the `getValue` method by [@lozobojan](https://github.com/lozobojan) in https://github.com/laravel/framework/pull/48652
+- [10.x] Add an example for queue retry range option by [@pionl](https://github.com/pionl) in https://github.com/laravel/framework/pull/48691
+- [10.x] Add percentage to be used as High Order Messages by [@WendellAdriel](https://github.com/WendellAdriel) in https://github.com/laravel/framework/pull/48689
+- [10.x] Optimize `exists` validation for empty array input by [@mtawil](https://github.com/mtawil) in https://github.com/laravel/framework/pull/48684
+
+## [v10.27.0](https://github.com/laravel/framework/compare/v10.26.2...v10.27.0) - 2023-10-09
+
+- [10.x] Store blocks after prepare strings by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/framework/pull/48641
+- [10.x] throw TransportException instead of Exception in SES mail drivers by [@bchalier](https://github.com/bchalier) in https://github.com/laravel/framework/pull/48645
+- [10.x] Fix `Model::replicate()` when using unique keys by [@axlon](https://github.com/axlon) in https://github.com/laravel/framework/pull/48636
+- [10.x] Don't crash if replacement cannot be represented as a string by [@GrahamCampbell](https://github.com/GrahamCampbell) in https://github.com/laravel/framework/pull/48530
+- [10.x] Extended `pluck()` testcases by [@bert-w](https://github.com/bert-w) in https://github.com/laravel/framework/pull/48657
+- [10.x] Fixes `GeneratorCommand` not able to prevent uppercase reserved name such as  `__CLASS__` by [@crynobone](https://github.com/crynobone) in https://github.com/laravel/framework/pull/48667
+- [10.x] Fix timing sensitive flaky test by [@KentarouTakeda](https://github.com/KentarouTakeda) in https://github.com/laravel/framework/pull/48664
+- [10.x] Fixed implementation related to `afterCommit` on Postgres and MSSQL database drivers by [@SakiTakamachi](https://github.com/SakiTakamachi) in https://github.com/laravel/framework/pull/48662
+- [10.x] Implement chunkById in descending order by [@cristiancalara](https://github.com/cristiancalara) in https://github.com/laravel/framework/pull/48666
 
 ## [v10.26.2](https://github.com/laravel/framework/compare/v10.26.1...v10.26.2) - 2023-10-03
 
-* Revert "Hint query builder closures (#48562)" by @taylorotwell in https://github.com/laravel/framework/pull/48620
+- Revert "Hint query builder closures (#48562)" by @taylorotwell in https://github.com/laravel/framework/pull/48620
 
 ## [v10.26.1](https://github.com/laravel/framework/compare/v10.26.0...v10.26.1) - 2023-10-03
 
