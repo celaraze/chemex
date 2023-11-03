@@ -39,8 +39,8 @@ return array(
     'dc1275c308c5b416beb314b6317daca2' => $vendorDir . '/overtrue/pinyin/src/const.php',
     '320163ac6b93aebe3dc25b60a0533d56' => $vendorDir . '/spatie/laravel-ignition/src/helpers.php',
     'b6b991a57620e2fb6b2f66f03fe9ddc2' => $vendorDir . '/symfony/string/Resources/functions.php',
+    '044fc72df35e84c745ee0d4120dc15d2' => $vendorDir . '/dcat/laravel-admin/src/Support/helpers.php',
     'b670c7ffff63265cc064eb6fd1051ae1' => $vendorDir . '/mosiboom/dcat-iframe-tab/src/helpers.php',
     'a1cfe24d14977df6878b9bf804af2d1c' => $vendorDir . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
     'cda2d2f579338909929d3104d0afc501' => $vendorDir . '/overtrue/laravel-pinyin/src/helpers.php',
-    '044fc72df35e84c745ee0d4120dc15d2' => $vendorDir . '/dcat/laravel-admin/src/Support/helpers.php',
 );
