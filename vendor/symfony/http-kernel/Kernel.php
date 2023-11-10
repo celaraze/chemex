@@ -76,11 +76,11 @@ abstract class Kernel implements KernelInterface, RebootableInterface, Terminabl
      */
     private static array $freshCache = [];
 
-    public const VERSION = '6.3.7';
-    public const VERSION_ID = 60307;
+    public const VERSION = '6.3.8';
+    public const VERSION_ID = 60308;
     public const MAJOR_VERSION = 6;
     public const MINOR_VERSION = 3;
-    public const RELEASE_VERSION = 7;
+    public const RELEASE_VERSION = 8;
     public const EXTRA_VERSION = '';
 
     public const END_OF_MAINTENANCE = '01/2024';
@@ -748,7 +748,9 @@ abstract class Kernel implements KernelInterface, RebootableInterface, Terminabl
             $this->startTime = microtime(true);
         }
         if ($this->debug && !isset($_ENV['SHELL_VERBOSITY']) && !isset($_SERVER['SHELL_VERBOSITY'])) {
-            putenv('SHELL_VERBOSITY=3');
+            if (\function_exists('putenv')) {
+                putenv('SHELL_VERBOSITY=3');
+            }
             $_ENV['SHELL_VERBOSITY'] = 3;
             $_SERVER['SHELL_VERBOSITY'] = 3;
         }
